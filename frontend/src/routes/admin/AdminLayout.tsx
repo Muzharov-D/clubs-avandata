@@ -1,8 +1,9 @@
 import { Link, NavLink, Outlet } from 'react-router-dom';
-import { useAuth } from '../../auth/AuthProvider';
+// Используем legacy AuthContext (единственный в App.tsx).
+import { useAuth } from '../../contexts/AuthContext';
 
 export function AdminLayout() {
-  const { user, logout } = useAuth();
+  const { user, logout } = useAuth() as { user: { email?: string } | null; logout: () => void };
 
   return (
     <div style={{ display: 'grid', gridTemplateColumns: '220px 1fr', minHeight: '100vh' }}>
