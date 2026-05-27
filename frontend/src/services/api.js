@@ -1,7 +1,9 @@
 const RAW_BASE = import.meta.env.VITE_API_BASE_URL || '';
 const API_BASE = String(RAW_BASE).replace(/\/+$/, '');
-const PREFIX = `${API_BASE}/api`;
-const TOKEN_KEY = 'legirus.auth.token';
+// Clubs Avandata backend живёт под /api/v1/ (vs legacy Легируса /api/).
+const PREFIX = `${API_BASE}/api/v1`;
+const TOKEN_KEY = 'avandata.auth.token';
+const USER_KEY = 'avandata.auth.user';
 
 export function getToken() { return localStorage.getItem(TOKEN_KEY); }
 export function setToken(t) {
@@ -65,14 +67,22 @@ async function fetchJson(path, opts = {}) {
 // Публичный helper для модулей, которым нужен авторизованный fetch (push.js и т.п.)
 export const apiFetch = (path, opts) => fetchJson(path, opts);
 
-// Auth
-export async function login(username, password) {
+// Auth — Clubs Avandata.
+// Поле «Логин» в форме = email (для platform_admin) или username (для legacy
+// клубных пользователей). Если содержит '@' — отправляем как email, иначе как
+// username. Опциональный tenantSlug — для входа в конкретный клуб.
+export async function login(loginOrEmail, password, tenantSlug) {
+  const isEmail = String(loginOrEmail).includes('@');
+  const body = isEmail
+    ? { email: loginOrEmail, password, tenantSlug: tenantSlug || undefined }
+    : { username: loginOrEmail, password, tenantSlug: tenantSlug || undefined };
   let res;
   try {
     res = await fetchWithTimeout(`${PREFIX}/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username, password }),
+      credentials: 'include',
+      body: JSON.stringify(body),
     });
   } catch (e) {
     if (e.name === 'AbortError') {
@@ -87,11 +97,29 @@ export async function login(username, password) {
     throw new Error(msg);
   }
   const data = JSON.parse(text);
-  setToken(data.token);
+  setToken(data.accessToken);
+  try { localStorage.setItem(USER_KEY, JSON.stringify(data.user)); } catch (_) {}
   return data.user;
 }
-export async function fetchMe() { return fetchJson('/auth/me'); }
-export function logout() { setToken(null); }
+
+// /api/v1/auth/me возвращает только { user: AccessTokenPayload } — это id/role/
+// tenantId/teamId/playerId без email/fullName. На фронте нам нужен полный user
+// с fullName, который мы получили в login(). Поэтому fetchMe читает из
+// localStorage; backend-вариант с merge придёт в W5 (auth API port).
+export async function fetchMe() {
+  try {
+    const raw = localStorage.getItem(USER_KEY);
+    if (!raw) throw new Error('not logged in');
+    return { user: JSON.parse(raw) };
+  } catch (e) {
+    throw new Error('Не авторизован');
+  }
+}
+
+export function logout() {
+  setToken(null);
+  try { localStorage.removeItem(USER_KEY); } catch (_) {}
+}
 export const changePassword = (currentPassword, newPassword) =>
   fetchJson('/auth/change-password', {
     method: 'POST', body: { currentPassword, newPassword },
