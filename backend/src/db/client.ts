@@ -3,11 +3,17 @@ import { drizzle, type NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { env } from '../env.js';
 import * as schema from './schema/index.js';
 
+const isLocalhost =
+  env.DATABASE_URL.includes('@localhost') || env.DATABASE_URL.includes('@127.0.0.1');
+
 export const pool = new pg.Pool({
   connectionString: env.DATABASE_URL,
   max: 10,
   idleTimeoutMillis: 30_000,
   connectionTimeoutMillis: 5_000,
+  // Render PG требует SSL, но использует self-signed cert — отключаем verify.
+  // Локальный Postgres SSL обычно не использует.
+  ssl: isLocalhost ? false : { rejectUnauthorized: false },
 });
 
 pool.on('error', (err) => {
