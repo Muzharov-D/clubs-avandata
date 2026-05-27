@@ -4,13 +4,13 @@ let accessToken: string | null = null;
 
 export function setAccessToken(token: string | null) {
   accessToken = token;
-  if (token) localStorage.setItem('accessToken', token);
-  else localStorage.removeItem('accessToken');
+  if (token) localStorage.setItem('avandata.auth.token', token);
+  else localStorage.removeItem('avandata.auth.token');
 }
 
 export function getAccessToken(): string | null {
   if (accessToken) return accessToken;
-  accessToken = localStorage.getItem('accessToken');
+  accessToken = localStorage.getItem('avandata.auth.token');
   return accessToken;
 }
 
