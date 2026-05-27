@@ -18,7 +18,11 @@ export default function Login() {
     e.preventDefault();
     setError(null); setBusy(true);
     try {
-      await login(u.trim().toLowerCase(), p);
+      // Email сохраняется case-as-entered (e.g. Muzharov26@gmail.com), а username
+      // в Легирусе — lowercase-нормализован. Различаем по наличию '@'.
+      const value = u.trim();
+      const normalized = value.includes('@') ? value : value.toLowerCase();
+      await login(normalized, p);
       const from = location.state?.from?.pathname || '/club';
       navigate(from, { replace: true });
     } catch (err) {
