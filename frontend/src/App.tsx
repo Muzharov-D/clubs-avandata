@@ -22,6 +22,7 @@ import PublicTeamSchedule from './pages/PublicTeamSchedule';
 import LeagueFixture from './pages/LeagueFixture';
 import PublicLanding from './pages/PublicLanding';
 import ClubLanding from './pages/ClubLanding';
+import { AvandataLanding } from './pages/AvandataLanding';
 import ErrorBoundary from './components/ErrorBoundary';
 import { ToastHost } from './components/Toast';
 
@@ -36,22 +37,14 @@ const queryClient = new QueryClient({
   },
 });
 
-// На clubs.avandata.ru — клуб-хост по умолчанию.
-// mobile.* хосты появятся в Фазе родительского экрана.
-function isClubHost() {
-  if (typeof window === 'undefined') return false;
-  const h = window.location.hostname;
-  if (h.startsWith('mobile.')) return false;
-  return true;
-}
-
+// На `clubs.avandata.ru/` показываем Avandata-лендинг (бренд платформы).
+// Tenant-specific ClubLanding (Легирус и т.д.) — после login или на subdomain'e.
 function RootRoute() {
   const { user } = useAuth() as { user: any };
-  if (isClubHost()) {
-    if (user) return <Navigate to="/club" replace />;
-    return <ClubLanding />;
-  }
-  return <PublicLanding />;
+  if (!user) return <AvandataLanding />;
+  // platform_admin → в админку; обычный пользователь → в свой кабинет
+  if (user.role === 'platform_admin') return <Navigate to="/admin" replace />;
+  return <Navigate to="/club" replace />;
 }
 
 function CoachOnly({ children }: { children: React.ReactNode }) {
