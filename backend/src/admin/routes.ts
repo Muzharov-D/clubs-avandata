@@ -99,13 +99,15 @@ export async function adminRoutes(app: FastifyInstance) {
   });
 
   /**
-   * PATCH /api/v1/admin/tenants/:slug — обновить status/brand/features.
+   * PATCH /api/v1/admin/tenants/:slug — обновить status/brand/features/provider.
    */
   const patchSchema = z.object({
     status: z.enum(['active', 'suspended', 'archived']).optional(),
     brand: z.record(z.string(), z.unknown()).optional(),
     features: z.record(z.string(), z.unknown()).optional(),
     plan: z.string().optional(),
+    dataProvider: z.enum(['ffspb', 'yfl', 'manual']).optional(),
+    providerConfig: z.record(z.string(), z.unknown()).optional(),
   });
 
   app.patch<{ Params: { slug: string } }>('/tenants/:slug', async (req) => {
