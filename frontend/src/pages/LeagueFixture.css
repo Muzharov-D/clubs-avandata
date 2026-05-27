@@ -1,0 +1,355 @@
+/* Полный календарь лиги — все матчи возраста, сгруппированы по турам.
+   Наш матч (Легирус) подсвечен зелёной обводкой. */
+
+.league-fixture {
+  padding: 12px 14px 60px;
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+.league-fixture__topbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+.league-fixture__back {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  color: #fff;
+  font: inherit;
+  font-size: 13px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+.league-fixture__back:hover { background: rgba(255, 255, 255, 0.10); }
+.league-fixture__title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #cbd5e1;
+  flex: 1;
+  text-align: right;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.league-fixture__skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* Сегмент лига/кубок */
+.league-fixture__tournament {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 10px;
+  padding: 4px;
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 10px;
+}
+.league-fixture__seg {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 12px;
+  background: transparent;
+  border: none;
+  color: #94a3c8;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  border-radius: 7px;
+  cursor: pointer;
+}
+.league-fixture__seg.is-active {
+  background: rgba(220, 38, 38, 0.18);
+  color: #fff;
+  box-shadow: 0 1px 4px rgba(220, 38, 38, 0.3);
+}
+
+.league-fixture__count {
+  margin-left: auto;
+  font-size: 12px;
+  color: #94a3c8;
+  padding: 4px 10px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+}
+
+/* Список туров */
+.league-fixture__list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-top: 12px;
+}
+.league-fixture__round-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+  padding: 0 4px;
+}
+.league-fixture__round-name {
+  font-size: 12px;
+  font-weight: 700;
+  color: #fff;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.league-fixture__round-count {
+  font-size: 10px;
+  color: #94a3c8;
+  background: rgba(255, 255, 255, 0.06);
+  padding: 2px 8px;
+  border-radius: 10px;
+}
+
+/* Бейдж «сейчас» на актуальном туре — зелёный, заметный без агрессии */
+.league-fixture__round-badge {
+  font-size: 9px;
+  color: #22c55e;
+  background: rgba(34, 197, 94, 0.15);
+  border: 1px solid rgba(34, 197, 94, 0.4);
+  padding: 2px 8px;
+  border-radius: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 700;
+}
+
+/* Лёгкая подсветка фона текущего тура — чтобы выделялся в длинном списке */
+.league-fixture__round.is-current {
+  scroll-margin-top: 80px; /* для smooth scrollIntoView с отступом от header */
+}
+.league-fixture__round.is-current .league-fixture__round-head {
+  position: relative;
+}
+.league-fixture__round.is-current .league-fixture__round-head::before {
+  content: '';
+  position: absolute;
+  left: -8px;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: #22c55e;
+  border-radius: 2px;
+}
+
+/* Плавающая кнопка «К текущему туру» — fixed внизу справа.
+   Минимально навязчиво: цвет бренда, тень, текст лаконичный. */
+.league-fixture__jump-btn {
+  position: fixed;
+  right: 14px;
+  bottom: max(20px, env(safe-area-inset-bottom));
+  z-index: 40;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 14px;
+  background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 22px;
+  color: #fff;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+  cursor: pointer;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(220, 38, 38, 0.4);
+  transition: transform 120ms, box-shadow 120ms;
+}
+.league-fixture__jump-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(220, 38, 38, 0.6);
+}
+.league-fixture__jump-btn:active { transform: scale(0.96); }
+.league-fixture__round-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+/* Карточка матча */
+.lf-card {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  padding: 10px 12px;
+  cursor: pointer;
+  transition: background 120ms, border-color 120ms;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.lf-card:hover { background: rgba(255, 255, 255, 0.07); border-color: rgba(255, 255, 255, 0.15); }
+.lf-card:active { transform: scale(0.99); }
+
+/* Наш матч — зелёная обводка + лёгкий фон */
+.lf-card--ours {
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.10) 0%, rgba(255, 255, 255, 0.03) 100%);
+  border-color: rgba(34, 197, 94, 0.40);
+}
+.lf-card--ours:hover { border-color: rgba(34, 197, 94, 0.6); }
+
+.lf-card__date {
+  font-size: 10px;
+  color: #94a3c8;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.lf-card__teams {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 10px;
+}
+.lf-card__team {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+.lf-card__team--home { justify-content: flex-start; }
+.lf-card__team--away { justify-content: flex-end; }
+.lf-card__team--us .lf-card__name { font-weight: 700; color: #fff; }
+.lf-card__shield {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+  flex: 0 0 auto;
+}
+.lf-card__name {
+  font-size: 13px;
+  color: #cbd5e1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.lf-card__score {
+  font-family: var(--font-display, 'Montserrat'), sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: 0.5px;
+}
+.lf-card__vs {
+  font-size: 11px;
+  color: #6b7896;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+}
+.lf-card__venue {
+  font-size: 10px;
+  color: #6b7896;
+  padding-top: 2px;
+}
+
+@media (max-width: 380px) {
+  .lf-card__name { font-size: 11px; }
+  .lf-card__shield { width: 20px; height: 20px; }
+  .lf-card__score { font-size: 14px; }
+}
+
+/* Бомбардиры — leaderboard */
+.lf-scorers {
+  list-style: none;
+  margin: 12px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.lf-scorers__skeleton {
+  margin-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.lf-scorers__row {
+  display: grid;
+  grid-template-columns: 28px 1fr auto;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  min-height: 48px;
+}
+.lf-scorers__row--top {
+  background: linear-gradient(135deg, rgba(220, 38, 38, 0.10) 0%, rgba(255, 255, 255, 0.03) 100%);
+  border-color: rgba(220, 38, 38, 0.30);
+}
+.lf-scorers__rank {
+  font-size: 14px;
+  font-weight: 700;
+  color: #94a3c8;
+  text-align: center;
+  font-family: var(--font-display, 'Montserrat'), sans-serif;
+}
+.lf-scorers__rank.is-gold   { color: #fbbf24; }
+.lf-scorers__rank.is-silver { color: #cbd5e1; }
+.lf-scorers__rank.is-bronze { color: #b45309; }
+.lf-scorers__name-block {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.lf-scorers__name {
+  font-size: 14px;
+  font-weight: 600;
+  color: #fff;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.lf-scorers__team {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  color: #94a3c8;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  margin-top: 2px;
+}
+.lf-scorers__team-shield {
+  width: 14px;
+  height: 14px;
+  object-fit: contain;
+  flex: 0 0 auto;
+}
+.lf-scorers__goals {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0;
+  min-width: 52px;
+}
+.lf-scorers__goals b {
+  font-family: var(--font-display, 'Montserrat'), sans-serif;
+  font-size: 18px;
+  font-weight: 800;
+  color: #fff;
+  line-height: 1;
+}
+.lf-scorers__goals-label {
+  font-size: 10px;
+  color: #6b7896;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  margin-top: 2px;
+}
+
+@media (max-width: 380px) {
+  .lf-scorers__name { font-size: 13px; }
+  .lf-scorers__goals b { font-size: 16px; }
+}

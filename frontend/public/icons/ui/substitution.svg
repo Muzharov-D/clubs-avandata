@@ -1,0 +1,8 @@
+<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Up arrow (came on) — green, football classic -->
+  <path d="M8 4 L8 19" stroke="#22c55e" stroke-width="2" stroke-linecap="round"/>
+  <path d="M5 7 L8 4 L11 7" stroke="#22c55e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  <!-- Down arrow (came off) — red, football classic -->
+  <path d="M16 5 L16 20" stroke="#ef4444" stroke-width="2" stroke-linecap="round"/>
+  <path d="M13 17 L16 20 L19 17" stroke="#ef4444" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+</svg>

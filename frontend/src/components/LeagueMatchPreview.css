@@ -1,0 +1,146 @@
+/* Мини-аналитика матча Лиги — отображается в bottom-sheet под основным
+   блоком (через extra-слот MatchDetailSheet). Симметричный layout home|away. */
+
+.lmp {
+  margin-top: 12px;
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+}
+.lmp__title {
+  font-size: 11px;
+  font-weight: 700;
+  color: #94a3c8;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 10px;
+}
+.lmp__empty {
+  font-size: 12px;
+  color: #94a3c8;
+  padding: 8px 0;
+  font-style: italic;
+}
+
+.lmp__teams {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.lmp__team {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 8px;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.lmp__team-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.lmp__team-shield {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+  flex: 0 0 auto;
+}
+.lmp__team-name-block {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.lmp__team-name {
+  font-size: 13px;
+  font-weight: 700;
+  color: #fff;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.lmp__team-rank {
+  font-size: 10px;
+  color: #94a3c8;
+}
+
+.lmp__form-row {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+.lmp__form-cell {
+  width: 20px;
+  height: 20px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  flex: 0 0 auto;
+}
+.lmp__form-cell--w { background: rgba(34, 197, 94, 0.85); }
+.lmp__form-cell--l { background: rgba(220, 38, 38, 0.85); }
+.lmp__form-cell--d { background: rgba(148, 163, 200, 0.45); }
+
+.lmp__avg {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  font-size: 11px;
+  color: #94a3c8;
+  flex-wrap: wrap;
+}
+.lmp__avg-num {
+  font-family: var(--font-display, 'Montserrat'), sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  color: #fff;
+}
+.lmp__avg-num--conc { color: #cbd5e1; opacity: 0.75; }
+.lmp__avg-sep { color: #6b7896; padding: 0 2px; }
+.lmp__avg-label {
+  font-size: 9px;
+  color: #6b7896;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  margin-left: 4px;
+}
+
+.lmp__h2h {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+.lmp__h2h-label {
+  font-size: 10px;
+  color: #94a3c8;
+  margin-bottom: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+.lmp__h2h-row {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.lmp__h2h-cell {
+  padding: 4px 10px;
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #fff;
+  font-family: var(--font-display, 'Montserrat'), sans-serif;
+  letter-spacing: 0.5px;
+}
+
+@media (max-width: 380px) {
+  .lmp__teams { grid-template-columns: 1fr; }
+  .lmp__team-name { font-size: 12px; }
+}

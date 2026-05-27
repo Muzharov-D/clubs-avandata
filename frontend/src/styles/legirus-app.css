@@ -1,0 +1,88 @@
+.app-layout {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background:
+    linear-gradient(180deg, rgba(7, 7, 28, 0.92) 0%, rgba(14, 14, 42, 0.95) 100%),
+    url('/assets/logos/fon-2_Монтажная область 1.jpg') center / cover fixed no-repeat;
+  background-color: #07071c;
+  color: #fff;
+  position: relative;
+}
+
+.app-layout::before {
+  content: '';
+  position: fixed;
+  top: 68px;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: url('/assets/logos/fon for web.png') center bottom / 100% auto no-repeat;
+  opacity: 0.06;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.app-body {
+  position: relative;
+  z-index: 1;
+}
+
+.app-content {
+  position: relative;
+  z-index: 1;
+}
+
+.app-body {
+  display: flex;
+  flex: 1;
+  position: relative;
+}
+
+.app-content {
+  flex: 1;
+  padding: 16px 20px;
+  position: relative;
+  min-width: 0;
+}
+
+.page {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.page-section-title {
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: rgba(255, 255, 255, 0.5);
+  margin-bottom: 10px;
+  font-weight: 600;
+}
+
+.card {
+  background: rgba(20, 20, 60, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  padding: 16px;
+}
+
+.empty-state {
+  color: rgba(255, 255, 255, 0.4);
+  text-align: center;
+  padding: 24px;
+  font-size: 14px;
+}
+
+/* === Mobile breakpoints === */
+@media (max-width: 768px) {
+  body, .page { font-size: 14px; }
+  .page { padding: 12px !important; }
+  .card { padding: 12px !important; border-radius: 10px; }
+  .page-section-title { font-size: 16px; }
+}
+@media (max-width: 480px) {
+  body, .page { font-size: 13px; }
+  .page { padding: 8px !important; }
+  .card { padding: 10px !important; }
+}

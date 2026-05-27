@@ -1,0 +1,60 @@
+.stat-compare {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 6px 0;
+}
+
+.stat-compare__row {
+  display: grid;
+  grid-template-columns: 64px 1fr 64px;
+  align-items: center;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.stat-compare__home {
+  color: #22d3ee;
+  text-align: left;
+}
+
+.stat-compare__away {
+  color: rgba(255, 255, 255, 0.7);
+  text-align: right;
+}
+
+.stat-compare__label {
+  text-align: center;
+  color: rgba(255, 255, 255, 0.55);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-size: 11px;
+}
+
+.stat-compare__bar {
+  display: flex;
+  height: 6px;
+  border-radius: 3px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.stat-compare__bar-home {
+  background: linear-gradient(90deg, #22d3ee, #2bc8ff);
+  height: 100%;
+}
+
+.stat-compare__bar-away {
+  background: rgba(255, 255, 255, 0.18);
+  height: 100%;
+}
+
+@media (max-width: 768px) {
+  .stat-compare { gap: 3px; padding: 3px 0; }
+  .stat-compare__row {
+    grid-template-columns: 48px 1fr 48px;
+    font-size: 12px;
+  }
+  .stat-compare__label { font-size: 10px; letter-spacing: 0.03em; }
+  .stat-compare__bar { height: 4px; }
+}

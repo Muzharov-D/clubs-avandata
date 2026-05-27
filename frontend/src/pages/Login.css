@@ -1,0 +1,95 @@
+.login-page {
+  min-height: 100vh;
+  min-width: 100vw;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background:
+    linear-gradient(180deg, rgba(7, 7, 28, 0.92) 0%, rgba(14, 14, 42, 0.95) 100%),
+    url('/assets/logos/fon-2_Монтажная область 1.jpg') center / cover no-repeat;
+  font-family: 'Inter', system-ui, sans-serif;
+  color: #fff;
+}
+
+.login-card {
+  width: min(420px, calc(100vw - 24px));
+  max-width: 100%;
+  background: rgba(20, 20, 60, 0.85);
+  border: 1px solid rgba(34, 211, 238, 0.25);
+  border-radius: 14px;
+  padding: 32px 32px 28px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(8px);
+}
+.login-brand {
+  display: flex; align-items: center; justify-content: center;
+  margin-bottom: 22px;
+}
+.login-brand img {
+  height: 56px;
+  width: auto;
+  filter: drop-shadow(0 0 12px rgba(50, 110, 255, 0.35));
+}
+.login-title {
+  font-size: 22px;
+  font-weight: 800;
+  margin: 6px 0 22px;
+  text-align: center;
+}
+.login-form { display: flex; flex-direction: column; gap: 8px; }
+.login-form label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: rgba(255, 255, 255, 0.5);
+  margin-top: 6px;
+}
+.login-form input {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #fff;
+  font-size: 14px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  font-family: inherit;
+  outline: none;
+}
+.login-form input:focus { border-color: rgba(34, 211, 238, 0.5); }
+.login-form button {
+  margin-top: 14px;
+  background: linear-gradient(135deg, #22d3ee 0%, #3b82f6 100%);
+  color: #0e0e2a;
+  border: none;
+  font-weight: 800;
+  font-size: 14px;
+  padding: 12px 14px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: filter 0.15s;
+  font-family: inherit;
+}
+.login-form button:hover:not(:disabled) { filter: brightness(1.1); }
+.login-form button:disabled { opacity: 0.5; cursor: wait; }
+.login-error {
+  background: rgba(211, 47, 47, 0.18);
+  border: 1px solid rgba(211, 47, 47, 0.4);
+  color: #ff8a8a;
+  padding: 8px 10px;
+  border-radius: 8px;
+  font-size: 13px;
+  margin-top: 6px;
+}
+.login-help {
+  margin-top: 18px;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.45);
+  text-align: center;
+}
+
+@media (max-width: 480px) {
+  /* JSX рендерит .login-card / .login-title (single underscore BEM),
+     раньше тут был промах в селекторе .login__card — мобильный override
+     не работал, карточка оставалась с desktop-паддингом 32px на узких экранах. */
+  .login-card { width: calc(100vw - 24px); padding: 22px 20px; }
+  .login-title { font-size: 20px; margin-bottom: 16px; }
+}

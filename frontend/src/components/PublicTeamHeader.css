@@ -1,0 +1,467 @@
+/* Шапка public-страницы:
+   [длинный лого АванDата] ← воздух → [ФК Легирус U17 + щит] */
+
+.public-header {
+  margin-bottom: 14px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(220, 38, 38, 0.18);
+}
+
+.public-header__row {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 0 18px;
+}
+/* Волна-подложка под логотипами и центральным U17 */
+.public-header__row::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 100vw;
+  height: 110%;
+  background: url('/icons/wave.png') center / 100% 100% no-repeat;
+  opacity: 0.85;
+  pointer-events: none;
+  z-index: 0;
+}
+/* Контент row выше волны-подложки */
+.public-header__row > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* === Платформа АванDата (слева) — длинный лого === */
+.public-header__platform {
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+  background: none;
+  border: none;
+  padding: 4px;
+  border-radius: 8px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: opacity 120ms;
+  flex-shrink: 1;
+  min-width: 0;
+}
+.public-header__platform:hover { opacity: 0.85; }
+.public-header__platform-logo {
+  height: 32px;
+  width: auto;
+  max-width: 100%;
+  object-fit: contain;
+  display: block;
+}
+
+/* === Клуб (справа) — текст + щит === */
+.public-header__club {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: none;
+  border: none;
+  padding: 4px 6px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-family: inherit;
+  color: inherit;
+  -webkit-tap-highlight-color: transparent;
+  transition: background 120ms;
+  flex-shrink: 0;
+}
+.public-header__club:hover { background: rgba(220, 38, 38, 0.08); }
+.public-header__club:active { transform: scale(0.98); }
+
+.public-header__club-text {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  text-align: right;
+  line-height: 1.05;
+  min-width: 0;
+}
+.public-header__club-name {
+  font-size: 13px;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+}
+.public-header__club-tier {
+  font-size: 18px;
+  font-weight: 900;
+  color: #ef4444;
+  letter-spacing: 0.04em;
+  margin-top: 2px;
+  text-shadow: 0 1px 4px rgba(220, 38, 38, 0.45);
+}
+
+.public-header__club-logo {
+  width: 44px;
+  height: 44px;
+  object-fit: contain;
+  flex-shrink: 0;
+  filter: drop-shadow(0 2px 8px rgba(220, 38, 38, 0.45));
+}
+
+/* === Личный набор команд (табы) + кнопка «+» === */
+.public-header__myteams {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: stretch;
+  gap: 6px;
+  margin-bottom: 12px;
+  padding: 4px;
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(220, 38, 38, 0.18);
+  border-radius: 10px;
+}
+/* Базовый таб (не-primary, дополнительная команда) — премиум-чёрный.
+   Спокойный нейтральный вид, чтобы не конкурировал с primary. */
+.public-header__myteam {
+  position: relative;
+  flex: 1 1 60px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  padding: 6px 14px 6px 8px; /* справа больше места под крестик */
+  background: linear-gradient(135deg, #0d0d0d 0%, #1a1a1a 100%);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 7px;
+  color: rgba(255, 255, 255, 0.78);
+  font-family: inherit;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: background 120ms, color 120ms, border-color 120ms;
+  min-height: 44px;
+  line-height: 1.1;
+}
+.public-header__myteam:hover { background: linear-gradient(135deg, #1a1a1a 0%, #262626 100%); color: #fff; border-color: rgba(255, 255, 255, 0.3); }
+/* Активный таб (не-primary) — заметно ярче и с акцентным border. */
+.public-header__myteam.is-active {
+  background: linear-gradient(135deg, #2a2a2a 0%, #141414 100%);
+  border-color: #67e8f9;
+  color: #fff;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.18),
+    0 0 0 1px rgba(103, 232, 249, 0.35),
+    0 4px 14px rgba(0, 0, 0, 0.55);
+}
+.public-header__myteam.is-active .public-header__myteam-tier {
+  color: #67e8f9;
+  text-shadow: 0 1px 4px rgba(103, 232, 249, 0.35);
+}
+
+/* Primary — изначально выбранная (фаворитная) команда. Красная — фирменный цвет
+   Легируса. Виден сразу как «вот моя команда». Может быть активной/неактивной. */
+.public-header__myteam.is-primary {
+  background: linear-gradient(135deg, rgba(234, 6, 6, 0.28) 0%, rgba(120, 6, 6, 0.45) 100%);
+  border: 1px solid rgba(239, 68, 68, 0.55);
+  color: #fff;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 2px 8px rgba(220, 38, 38, 0.25);
+}
+.public-header__myteam.is-primary .public-header__myteam-tier { color: #fff; letter-spacing: 0.04em; }
+.public-header__myteam.is-primary .public-header__myteam-year { color: rgba(255, 220, 220, 0.85); }
+.public-header__myteam.is-primary:hover {
+  background: linear-gradient(135deg, rgba(234, 6, 6, 0.42) 0%, rgba(120, 6, 6, 0.55) 100%);
+  border-color: #ef4444;
+}
+.public-header__myteam.is-primary.is-active {
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.55) 0%, rgba(120, 6, 6, 0.7) 100%);
+  border-color: #ef4444;
+  color: #fff;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.15), 0 4px 16px rgba(220, 38, 38, 0.5);
+}
+.public-header__myteam-tier {
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+}
+.public-header__myteam-year {
+  font-size: 10px;
+  margin-top: 2px;
+  opacity: 0.75;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+/* Крестик удаления — мелкий, в правом верхнем углу таба.
+   Имеет увеличенную тач-зону через :before чтобы пальцу было легче попасть. */
+.public-header__myteam-x {
+  position: absolute;
+  top: 1px;
+  right: 3px;
+  width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1;
+  color: rgba(255, 200, 200, 0.55);
+  border-radius: 50%;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: background 120ms, color 120ms, transform 120ms;
+}
+/* Расширяем тач-зону невидимым элементом — палец легко попадает */
+.public-header__myteam-x::before {
+  content: '';
+  position: absolute;
+  inset: -8px;
+}
+.public-header__myteam-x:hover {
+  background: rgba(239, 68, 68, 0.4);
+  color: #fff;
+}
+.public-header__myteam-x:active {
+  transform: scale(0.85);
+  background: rgba(239, 68, 68, 0.7);
+}
+/* На активной команде крестик заметнее */
+.public-header__myteam.is-active .public-header__myteam-x {
+  color: rgba(255, 220, 220, 0.85);
+}
+
+/* Кнопка «+» — компактная, в той же полосе что и myteam-табы */
+.public-header__addbtn {
+  flex: 0 0 44px;
+  min-width: 44px;
+  min-height: 44px;
+  background: linear-gradient(135deg, rgba(34, 211, 238, 0.18) 0%, rgba(0, 0, 0, 0.5) 100%);
+  border: 1px dashed rgba(34, 211, 238, 0.55);
+  border-radius: 7px;
+  color: #67e8f9;
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: background 140ms, transform 140ms, border-color 140ms;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 0 2px;
+}
+.public-header__addbtn:hover {
+  background: linear-gradient(135deg, rgba(34, 211, 238, 0.32) 0%, rgba(0, 0, 0, 0.55) 100%);
+  border-color: #22d3ee;
+  color: #fff;
+}
+.public-header__addbtn:active { transform: scale(0.94); }
+
+/* Кнопка «−» — симметричная с «+», но приглушённо-красная: убирает активную команду */
+.public-header__rmbtn {
+  flex: 0 0 44px;
+  min-width: 44px;
+  min-height: 44px;
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.18) 0%, rgba(0, 0, 0, 0.5) 100%);
+  border: 1px dashed rgba(239, 68, 68, 0.55);
+  border-radius: 7px;
+  color: #fca5a5;
+  font-size: 28px;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: background 140ms, transform 140ms, border-color 140ms, color 140ms;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 0 4px;
+}
+.public-header__rmbtn:hover {
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.32) 0%, rgba(0, 0, 0, 0.55) 100%);
+  border-color: #ef4444;
+  color: #fff;
+}
+.public-header__rmbtn:active { transform: scale(0.94); }
+
+/* Confirm-modal для удаления команды long-press'ом */
+.public-header__confirm {
+  position: fixed;
+  inset: 0;
+  z-index: 95;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+.public-header__confirm-card {
+  width: 100%;
+  max-width: 320px;
+  background: linear-gradient(180deg, #1f0a0a 0%, #150707 100%);
+  border: 1px solid rgba(220, 38, 38, 0.4);
+  border-radius: 16px;
+  padding: 20px 18px;
+  text-align: center;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+}
+.public-header__confirm-text {
+  font-size: 14px;
+  font-weight: 600;
+  color: #f1f5fb;
+  line-height: 1.45;
+  margin-bottom: 18px;
+}
+.public-header__confirm-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.public-header__confirm-btn {
+  padding: 10px;
+  background: rgba(255, 255, 255, 0.08);
+  border: none;
+  border-radius: 10px;
+  color: #f1f5fb;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: background 140ms;
+}
+.public-header__confirm-btn:hover { background: rgba(255, 255, 255, 0.16); }
+.public-header__confirm-btn--danger {
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.7) 0%, rgba(220, 38, 38, 0.7) 100%);
+  color: #fff;
+}
+.public-header__confirm-btn--danger:hover {
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.9) 0%, rgba(220, 38, 38, 0.9) 100%);
+}
+
+/* Серия (W/L/D) — отдельной строчкой под рангами, мелким акцентом */
+.public-header__streak-row {
+  display: flex;
+  justify-content: center;
+  margin-top: 8px;
+}
+
+/* === Ранг-блоки === */
+.public-header__ranks {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+}
+.public-header__rank {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  min-height: 56px;
+  background: linear-gradient(135deg, rgba(220, 38, 38, 0.32) 0%, rgba(60, 6, 6, 0.65) 100%);
+  border: 1.5px solid rgba(239, 68, 68, 0.7);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: transform 120ms, border-color 120ms, box-shadow 120ms;
+  color: inherit;
+  font-family: inherit;
+  text-align: left;
+  -webkit-tap-highlight-color: transparent;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 2px 8px rgba(0, 0, 0, 0.35);
+}
+.public-header__rank:hover {
+  transform: translateY(-1px);
+  border-color: #ef4444;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 4px 14px rgba(220, 38, 38, 0.35);
+}
+.public-header__rank:active { transform: scale(0.98); }
+.public-header__rank--club {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.16) 0%, rgba(20, 20, 30, 0.7) 100%);
+  border-color: rgba(255, 255, 255, 0.55);
+}
+.public-header__rank--club:hover {
+  border-color: rgba(255, 255, 255, 0.85);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12), 0 4px 14px rgba(0, 0, 0, 0.5);
+}
+/* Базовые стили внутренностей rank-блока. Раньше их не было — текст
+   съезжал и накладывался. */
+.public-header__rank-pos {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  font-size: 30px;
+  font-weight: 900;
+  line-height: 1;
+  flex-shrink: 0;
+  min-width: 28px;
+  color: #fff;
+}
+.public-header__rank-medal {
+  font-size: 18px;
+  line-height: 1;
+}
+.public-header__rank-meta {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.88);
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  line-height: 1.2;
+  overflow: hidden;
+}
+.public-header__rank-meta small {
+  font-size: 11px;
+  font-weight: 500;
+  text-transform: none;
+  letter-spacing: 0;
+  color: rgba(255, 255, 255, 0.6);
+  line-height: 1.3;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.public-header__rank.rank-medal--gold {
+  background: linear-gradient(135deg, rgba(255, 215, 0, 0.28) 0%, rgba(120, 80, 0, 0.5) 100%);
+  border-color: #ffd700;
+  box-shadow: 0 4px 14px rgba(255, 215, 0, 0.25);
+}
+.public-header__rank.rank-medal--gold .public-header__rank-pos { color: #ffd700; }
+.public-header__rank.rank-medal--silver {
+  background: linear-gradient(135deg, rgba(192, 192, 192, 0.28) 0%, rgba(60, 60, 60, 0.55) 100%);
+  border-color: #c0c0c0;
+}
+.public-header__rank.rank-medal--silver .public-header__rank-pos { color: #e8e8e8; }
+.public-header__rank.rank-medal--bronze {
+  background: linear-gradient(135deg, rgba(205, 127, 50, 0.28) 0%, rgba(80, 40, 20, 0.55) 100%);
+  border-color: #cd7f32;
+}
+.public-header__rank.rank-medal--bronze .public-header__rank-pos { color: #f0c090; }
+
+@media (max-width: 380px) {
+  .public-header { margin-bottom: 10px; }
+  .public-header__row { padding: 4px 0 10px; gap: 8px; }
+  .public-header__platform-logo { height: 28px; }
+  .public-header__club-name { font-size: 12px; }
+  .public-header__club-tier { font-size: 16px; }
+  .public-header__club-logo { width: 40px; height: 40px; }
+  .public-header__rank { padding: 8px 10px; gap: 8px; }
+  .public-header__rank-pos { font-size: 26px; min-width: 24px; }
+  .public-header__rank-medal { font-size: 16px; }
+  .public-header__rank-meta { font-size: 11px; }
+  .public-header__rank-meta small { font-size: 10px; }
+  .public-header__myteam-tier { font-size: 11px; }
+  .public-header__myteam-year { font-size: 9px; }
+  .public-header__myteam { padding: 4px 12px 4px 6px; min-height: 40px; }
+  .public-header__myteams { gap: 4px; padding: 3px; }
+  .public-header__addbtn { flex-basis: 40px; min-width: 40px; min-height: 40px; font-size: 22px; }
+  .public-header__myteam-x { width: 14px; height: 14px; font-size: 12px; top: 1px; right: 2px; }
+}

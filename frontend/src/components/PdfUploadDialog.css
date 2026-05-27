@@ -1,0 +1,161 @@
+.upload-dialog__backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 200;
+}
+
+.upload-dialog {
+  width: min(480px, calc(100vw - 24px));
+  max-width: 100%;
+  background: #14143c;
+  border: 1px solid rgba(34, 211, 238, 0.2);
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+.upload-dialog__head {
+  padding: 14px 18px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  font-weight: 700;
+  color: #22d3ee;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-size: 13px;
+}
+
+.upload-dialog__x {
+  background: transparent;
+  border: none;
+  color: rgba(255,255,255,0.6);
+  font-size: 18px;
+  cursor: pointer;
+}
+
+.upload-dialog__body {
+  padding: 16px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.upload-dialog__hint {
+  font-size: 13px;
+  line-height: 1.45;
+  color: rgba(255,255,255,0.7);
+}
+
+.upload-dialog__tournament {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.upload-dialog__tournament-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: rgba(255, 255, 255, 0.55);
+  font-weight: 600;
+}
+.upload-dialog__tournament-buttons {
+  display: flex;
+  gap: 8px;
+}
+.upload-dialog__tournament-btn {
+  flex: 1;
+  padding: 10px 12px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.7);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+.upload-dialog__tournament-btn:hover {
+  border-color: rgba(34, 211, 238, 0.5);
+  color: #fff;
+}
+.upload-dialog__tournament-btn--active {
+  background: linear-gradient(135deg, rgba(34, 211, 238, 0.2), rgba(59, 130, 246, 0.15));
+  border-color: #22d3ee;
+  color: #22d3ee;
+}
+.upload-dialog__tournament-btn:disabled { cursor: not-allowed; opacity: 0.6; }
+
+.upload-dialog__pick {
+  background: rgba(255,255,255,0.05);
+  border: 1px dashed rgba(34, 211, 238, 0.4);
+  color: #fff;
+  padding: 18px;
+  border-radius: 10px;
+  font-size: 14px;
+  cursor: pointer;
+}
+.upload-dialog__pick:hover { border-color: #22d3ee; }
+.upload-dialog__pick:disabled { cursor: not-allowed; opacity: 0.6; }
+
+.upload-dialog__progress {
+  background: rgba(26, 75, 160, 0.18);
+  border: 1px solid rgba(124, 179, 246, 0.35);
+  color: #cfe1ff;
+  padding: 10px 12px;
+  border-radius: 8px;
+  font-size: 13px;
+}
+
+.upload-dialog__error {
+  background: rgba(211,47,47,0.15);
+  border: 1px solid rgba(211,47,47,0.4);
+  color: #ff8080;
+  padding: 10px 12px;
+  border-radius: 8px;
+  font-size: 13px;
+}
+
+.upload-dialog__success {
+  background: rgba(46,125,50,0.15);
+  border: 1px solid rgba(124,179,66,0.5);
+  color: #a8d870;
+  padding: 10px 12px;
+  border-radius: 8px;
+  font-size: 13px;
+}
+
+.upload-dialog__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 6px;
+}
+
+.upload-dialog__cancel,
+.upload-dialog__submit {
+  padding: 10px 16px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+}
+.upload-dialog__cancel {
+  background: rgba(255,255,255,0.06);
+  color: rgba(255,255,255,0.7);
+}
+.upload-dialog__submit {
+  background: linear-gradient(135deg, #22d3ee, #3b82f6);
+  color: #0e0e2a;
+}
+.upload-dialog__submit:disabled {
+  background: rgba(255,255,255,0.1);
+  color: rgba(255,255,255,0.4);
+  cursor: not-allowed;
+}

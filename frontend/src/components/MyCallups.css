@@ -1,0 +1,176 @@
+.my-callups {
+  background: linear-gradient(135deg, rgba(34, 211, 238, 0.06) 0%, rgba(59, 130, 246, 0.04) 100%);
+  border: 1px solid rgba(34, 211, 238, 0.25);
+  border-radius: 14px;
+  padding: 18px;
+  margin-bottom: 16px;
+}
+
+.my-callups__head {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 12px;
+}
+.my-callups__head h3 {
+  margin: 0; font-size: 15px; font-weight: 700; color: #f1f5fb;
+  text-transform: uppercase; letter-spacing: 0.04em;
+}
+.my-callups__head span {
+  background: rgba(34, 211, 238, 0.18);
+  color: #22d3ee;
+  padding: 2px 10px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.my-callups__list {
+  display: flex; flex-direction: column; gap: 10px;
+}
+
+.my-callup {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 14px;
+  transition: border-color 120ms;
+}
+.my-callup--confirmed { border-color: rgba(34, 197, 94, 0.4); background: rgba(34, 197, 94, 0.05); }
+.my-callup--declined  { border-color: rgba(239, 68, 68, 0.4);  background: rgba(239, 68, 68, 0.05); }
+.my-callup--excused   { border-color: rgba(99, 102, 241, 0.4); background: rgba(99, 102, 241, 0.05); }
+
+.my-callup__row {
+  display: flex; justify-content: space-between; align-items: flex-start;
+  gap: 12px; margin-bottom: 12px;
+}
+.my-callup__opp {
+  display: flex; gap: 12px; align-items: center; min-width: 0;
+}
+.my-callup__shield {
+  width: 36px; height: 36px; object-fit: contain; flex-shrink: 0;
+}
+.my-callup__opp-name {
+  font-size: 15px; font-weight: 600; color: #f1f5fb;
+}
+.my-callup__date {
+  font-size: 12px; color: #94a3c8; margin-top: 2px;
+}
+.my-callup__venue {
+  font-size: 11px; color: #6b7896; margin-top: 2px;
+}
+.my-callup__badge {
+  background: rgba(245, 158, 11, 0.15);
+  color: #f59e0b;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.my-callup__buttons {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.my-callup__btn {
+  display: flex; align-items: center; justify-content: center;
+  gap: 6px;
+  padding: 10px 8px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+  color: #94a3c8;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 120ms;
+}
+.my-callup__btn:hover { background: rgba(255, 255, 255, 0.08); color: #f1f5fb; }
+.my-callup__btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.my-callup__btn-icon { font-size: 14px; }
+
+.my-callup__btn--go.is-on {
+  background: rgba(34, 197, 94, 0.18);
+  border-color: #22c55e;
+  color: #22c55e;
+}
+.my-callup__btn--no.is-on {
+  background: rgba(239, 68, 68, 0.18);
+  border-color: #ef4444;
+  color: #ef4444;
+}
+.my-callup__btn--excused.is-on {
+  background: rgba(99, 102, 241, 0.18);
+  border-color: #6366f1;
+  color: #818cf8;
+}
+
+.my-callup__hint {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  font-size: 12px;
+  color: #94a3c8;
+}
+
+.my-callup__expand {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 4px;
+}
+.my-callup__expand-title {
+  font-size: 12px;
+  color: #94a3c8;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 4px;
+}
+.my-callup__expand-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  text-align: left;
+  padding: 10px 14px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+  color: #f1f5fb;
+  cursor: pointer;
+  transition: all 120ms;
+}
+.my-callup__expand-btn:hover { background: rgba(255, 255, 255, 0.08); }
+.my-callup__expand-btn b {
+  font-size: 14px;
+  font-weight: 600;
+}
+.my-callup__expand-btn span {
+  font-size: 11px;
+  color: #94a3c8;
+  margin-top: 2px;
+}
+.my-callup__expand-btn--excused:hover {
+  border-color: rgba(99, 102, 241, 0.4);
+  color: #818cf8;
+}
+.my-callup__expand-btn--declined:hover {
+  border-color: rgba(239, 68, 68, 0.4);
+  color: #ef4444;
+}
+.my-callup__expand-cancel {
+  background: none;
+  border: none;
+  color: #6b7896;
+  font-size: 12px;
+  padding: 6px;
+  cursor: pointer;
+  align-self: flex-end;
+}
+.my-callup__expand-cancel:hover { color: #94a3c8; }
+
+.my-callups__err {
+  color: #ef4444;
+  font-size: 12px;
+  margin-top: 8px;
+}

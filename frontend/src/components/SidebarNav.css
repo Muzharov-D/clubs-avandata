@@ -1,0 +1,98 @@
+.sidebar-nav {
+  width: 96px;
+  background: rgba(8, 8, 32, 0.85);
+  border-right: 1px solid rgba(255, 255, 255, 0.06);
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  padding: 10px 6px;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.sidebar-nav__item {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 6px;
+  padding: 12px 4px;
+  width: 100%;
+  min-height: 76px;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.55);
+  border: 1px solid transparent;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  line-height: 1.2;
+  word-break: keep-all;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+
+.sidebar-nav__item:hover {
+  background: rgba(255, 255, 255, 0.04);
+  color: #fff;
+}
+
+.sidebar-nav__item--active {
+  background: rgba(26, 75, 160, 0.5);
+  color: #22d3ee;
+  border-color: rgba(34, 211, 238, 0.4);
+}
+
+.sidebar-nav__icon {
+  font-size: 22px;
+}
+
+.sidebar-nav__label {
+  font-weight: 600;
+}
+
+@media (max-width: 768px) {
+  .sidebar-nav {
+    position: fixed;
+    bottom: 0; left: 0; right: 0; top: auto;
+    width: 100%;
+    /* iPhone safe area + контент. На моделях с notch бордюр снизу значимый. */
+    height: calc(58px + env(safe-area-inset-bottom, 0px));
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    flex-direction: row;
+    border-right: none;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    padding-left: 4px;
+    padding-right: 4px;
+    padding-top: 4px;
+    gap: 2px;
+    z-index: 100;
+  }
+  .sidebar-nav__item {
+    flex: 1 1 0;
+    min-width: 0;
+    flex-direction: column;
+    padding: 4px 2px;
+    min-height: auto;
+    font-size: 9px;
+    letter-spacing: 0;
+    text-align: center;
+    gap: 2px;
+  }
+  .sidebar-nav__icon { font-size: 18px; margin-bottom: 0; }
+  .sidebar-nav__label {
+    font-size: 9px;
+    line-height: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+  }
+  /* Аналитика на мобильном не нужна — клуб стал главным */
+  .sidebar-nav__item[data-nav-id="analytics"] { display: none !important; }
+  /* Подушка снизу страницы под bottom-nav, плюс safe-area iPhone */
+  .page { padding-bottom: calc(72px + env(safe-area-inset-bottom, 0px)) !important; }
+  .app-content { padding-bottom: calc(72px + env(safe-area-inset-bottom, 0px)) !important; }
+}

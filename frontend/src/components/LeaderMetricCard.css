@@ -1,0 +1,58 @@
+.leader-card {
+  background: rgba(20, 20, 60, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+}
+.leader-card:hover {
+  border-color: rgba(34, 211, 238, 0.4);
+  background: rgba(26, 75, 160, 0.4);
+}
+.leader-card__label {
+  font-size: 11px;
+  color: rgba(255,255,255,0.55);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 600;
+}
+.leader-card__body {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 10px;
+}
+.leader-card__info { min-width: 0; }
+.leader-card__name {
+  font-size: 13px;
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.leader-card__pos {
+  font-size: 11px;
+  color: rgba(255,255,255,0.5);
+}
+.leader-card__value {
+  font-size: 22px;
+  font-weight: 800;
+  color: #22d3ee;
+}
+.leader-card__empty {
+  flex: 1;
+  font-size: 12px;
+  color: rgba(255,255,255,0.4);
+}
+.leader-card--locked {
+  cursor: default;
+  opacity: 0.55;
+}
+.leader-card--locked:hover {
+  border-color: rgba(255, 255, 255, 0.08);
+  background: rgba(20, 20, 60, 0.7);
+}

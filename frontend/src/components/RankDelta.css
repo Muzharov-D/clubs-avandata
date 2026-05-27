@@ -1,0 +1,32 @@
+/* Бейдж дельты позиции в шапке.
+   Тонкий, чтобы не перебивать цифру места (которая крупная и важнее).
+   Цвета — как у замен в timeline матча: зелёная вверх / красная вниз. */
+.rank-delta {
+  display: inline-flex;
+  align-items: center;
+  gap: 1px;
+  margin-left: 6px;
+  padding: 2px 5px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1;
+  vertical-align: middle;
+  letter-spacing: 0.2px;
+}
+.rank-delta--up {
+  color: #22c55e;
+  background: rgba(34, 197, 94, 0.12);
+}
+.rank-delta--down {
+  color: #ef4444;
+  background: rgba(239, 68, 68, 0.12);
+}
+.rank-delta__arrow {
+  font-size: 13px;
+  line-height: 1;
+  font-weight: 900;
+}
+.rank-delta__num {
+  font-size: 11px;
+}

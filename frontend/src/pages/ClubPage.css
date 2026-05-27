@@ -1,0 +1,323 @@
+.club-page {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding-bottom: 32px;
+}
+
+/* HERO */
+.club-page__hero {
+  position: relative;
+  padding: 28px 32px;
+  border-radius: 16px;
+  overflow: hidden;
+  background:
+    linear-gradient(120deg, rgba(8, 8, 32, 0.85) 0%, rgba(26, 75, 160, 0.55) 60%, rgba(8, 8, 32, 0.55) 100%),
+    url('/assets/logos/fon-3_Монтажная область 1.jpg') center / cover no-repeat;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+.club-page__hero-eyebrow {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  color: rgba(34, 211, 238, 0.85);
+  font-weight: 700;
+}
+.club-page__hero-title {
+  margin: 4px 0 6px;
+  font-size: 34px;
+  font-weight: 800;
+  color: #fff;
+  letter-spacing: 0.02em;
+  line-height: 1.05;
+}
+.club-page__hero-sub {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.75);
+}
+
+/* STANDINGS */
+.club-standings__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 6px;
+}
+.standings-tabs {
+  display: inline-flex;
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 999px;
+  padding: 3px;
+  gap: 2px;
+}
+.standings-tabs__btn {
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.65);
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 6px 14px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+  white-space: nowrap;
+}
+.standings-tabs__btn:hover { color: #fff; }
+.standings-tabs__btn--active {
+  background: linear-gradient(135deg, #22d3ee, #3b82f6);
+  color: #0e0e2a;
+}
+.standings-tabs__btn--active:hover { color: #0e0e2a; }
+.club-standings__hint {
+  font-size: 11px;
+  font-weight: 400;
+  color: rgba(255, 255, 255, 0.5);
+  text-transform: none;
+  letter-spacing: 0;
+}
+.club-standings__wrap {
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  margin-top: 6px;
+  max-width: 100%;
+}
+.club-standings__table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+  table-layout: fixed;
+}
+.club-standings__table th:first-child,
+.club-standings__table td:first-child { width: 28px; }
+.club-standings__table th:nth-child(2),
+.club-standings__table td:nth-child(2) {
+  width: auto;
+  text-align: left;
+}
+.club-standings__table th:nth-child(n+3),
+.club-standings__table td:nth-child(n+3) { width: 36px; }
+.club-standings__table thead th {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: rgba(255, 255, 255, 0.5);
+  font-weight: 600;
+  padding: 8px 6px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  text-align: center;
+}
+.club-standings__table thead th:nth-child(2) { text-align: left; }
+.club-standings__table tbody td {
+  padding: 10px 6px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  text-align: center;
+  color: rgba(255, 255, 255, 0.85);
+}
+.club-standings__table tbody td:nth-child(2) { text-align: left; }
+.club-standings__table tbody tr:hover { background: rgba(255, 255, 255, 0.03); }
+.club-standings__pos {
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.5);
+}
+.club-standings__team { font-weight: 600; }
+.club-standings__gd { color: rgba(255, 255, 255, 0.6); font-size: 12px; }
+.club-standings__pts {
+  font-weight: 800;
+  color: #22d3ee;
+  font-size: 15px;
+}
+.club-standings__team {
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.club-standings__shield {
+  width: 18px;
+  height: 18px;
+  object-fit: contain;
+  flex-shrink: 0;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.4));
+}
+@media (max-width: 768px) {
+  .club-standings__shield { width: 14px; height: 14px; }
+  .club-standings__team { gap: 5px; }
+}
+.club-standings__row--ours {
+  background: linear-gradient(90deg, rgba(34, 211, 238, 0.12), rgba(26, 75, 160, 0.18));
+}
+.club-standings__row--ours td { color: #fff; }
+.club-standings__row--ours .club-standings__pos { color: #22d3ee; }
+
+.club-standings__updated {
+  margin-top: 8px;
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.4);
+  letter-spacing: 0.02em;
+}
+
+/* TOP PLAYERS */
+.club-top-title { margin-top: 8px; }
+
+.club-top-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+}
+
+/* Большой десктоп — 4 колонки (7 карточек = 4+3) */
+@media (min-width: 1441px) {
+  .club-top-grid { grid-template-columns: repeat(4, 1fr); }
+}
+.club-top-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.club-top-card__head {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  padding-bottom: 6px;
+  margin-bottom: 4px;
+}
+.club-top-card__title {
+  font-size: 13px;
+  font-weight: 700;
+  color: #fff;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.club-top-card__sub {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.5);
+  letter-spacing: 0.02em;
+  margin-top: 2px;
+}
+.club-top-card__list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.club-top-row {
+  display: grid;
+  grid-template-columns: 22px auto 1fr auto;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 8px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.15s, transform 0.15s;
+}
+.club-top-row:hover {
+  background: rgba(34, 211, 238, 0.06);
+  transform: translateX(2px);
+}
+.club-top-row--locked {
+  cursor: default;
+  opacity: 0.55;
+}
+.club-top-row--locked:hover {
+  background: transparent;
+  transform: none;
+}
+.club-top-row__rank {
+  font-size: 13px;
+  font-weight: 800;
+  color: #22d3ee;
+  text-align: center;
+}
+.club-top-row__info { min-width: 0; }
+.club-top-row__name {
+  font-size: 13px;
+  font-weight: 600;
+  color: #fff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.club-top-row__pos {
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.5);
+  margin-top: 1px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.club-top-row__value {
+  font-size: 16px;
+  font-weight: 800;
+  color: #22d3ee;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.club-top-row__pill {
+  font-size: 13px;
+  font-weight: 800;
+  padding: 2px 8px;
+  border-radius: 8px;
+  font-variant-numeric: tabular-nums;
+  min-width: 38px;
+  text-align: center;
+}
+
+@media (max-width: 768px) {
+  .club-page__hero { padding: 18px 16px; border-radius: 12px; }
+  .club-page__hero-title { font-size: 24px; }
+  .club-top-grid { grid-template-columns: 1fr; gap: 10px; }
+
+  /* Таблица — впихиваем в экран без горизонтального скролла */
+  .club-standings__table { font-size: 11px; }
+  .club-standings__table thead th { padding: 6px 1px; font-size: 9px; }
+  .club-standings__table tbody td { padding: 7px 1px; }
+  /* # */
+  .club-standings__table th:first-child,
+  .club-standings__table td:first-child { width: 20px; }
+  /* Команда — забирает то что осталось, но имя обрезается ellipsis-ом */
+  .club-standings__team { font-size: 11px; gap: 4px; }
+  /* И, В, Н, П — узкие 1-2 значные числа */
+  .club-standings__table th:nth-child(3),
+  .club-standings__table td:nth-child(3),
+  .club-standings__table th:nth-child(4),
+  .club-standings__table td:nth-child(4),
+  .club-standings__table th:nth-child(5),
+  .club-standings__table td:nth-child(5),
+  .club-standings__table th:nth-child(6),
+  .club-standings__table td:nth-child(6) { width: 22px; }
+  /* М (разница мячей "35-12") — самое широкое числовое поле */
+  .club-standings__table th:nth-child(7),
+  .club-standings__table td:nth-child(7) { width: 42px; }
+  /* О (очки) — нужен запас под двузначные с жирным */
+  .club-standings__table th:nth-child(8),
+  .club-standings__table td:nth-child(8) { width: 30px; padding-right: 6px; }
+  .club-standings__pts { font-size: 13px; }
+  .club-standings__gd { font-size: 10px; white-space: nowrap; }
+  .club-standings__hint { display: block; margin-left: 0; margin-top: 2px; }
+}
+
+/* Galaxy Fold cover / extra-narrow */
+@media (max-width: 360px) {
+  .club-standings__table { font-size: 10px; }
+  .club-standings__table thead th { font-size: 8px; }
+  .club-standings__shield { width: 12px; height: 12px; }
+  .club-standings__team { gap: 3px; }
+  .club-standings__table th:nth-child(3),
+  .club-standings__table td:nth-child(3),
+  .club-standings__table th:nth-child(4),
+  .club-standings__table td:nth-child(4),
+  .club-standings__table th:nth-child(5),
+  .club-standings__table td:nth-child(5),
+  .club-standings__table th:nth-child(6),
+  .club-standings__table td:nth-child(6) { width: 18px; }
+  .club-standings__table th:nth-child(7),
+  .club-standings__table td:nth-child(7) { width: 38px; }
+  .club-standings__pts { font-size: 12px; }
+  .club-standings__gd { font-size: 9px; }
+}

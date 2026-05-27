@@ -1,0 +1,512 @@
+.player-detail {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding-bottom: 32px;
+}
+
+/* === Pizza chart card === */
+.player-detail__pizza { padding: 16px; }
+.player-detail__pizza-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.player-detail__pizza-pos {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: #94a3c8;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.player-detail__pizza-pos select {
+  background: rgba(255, 255, 255, 0.06);
+  color: #fff;
+  border: 1px solid rgba(220, 38, 38, 0.35);
+  border-radius: 6px;
+  padding: 5px 8px;
+  font-size: 12px;
+  font-family: inherit;
+  cursor: pointer;
+  outline: none;
+}
+.player-detail__pizza-pos select:focus {
+  border-color: #dc2626;
+}
+
+/* Табы фильтра группы метрик: Все / Атака / Оборона / Фитнес */
+.player-detail__pizza-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 4px 0 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+.player-detail__pizza-tab {
+  flex: 0 0 auto;
+  padding: 7px 12px 9px;
+  background: transparent;
+  border: none;
+  color: #94a3c8;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: color 0.15s, border-color 0.15s;
+}
+.player-detail__pizza-tab:disabled { opacity: 0.35; cursor: default; }
+.player-detail__pizza-tab:hover:not(:disabled) { color: #fff; }
+.player-detail__pizza-tab.is-active {
+  color: #fff;
+  border-bottom-color: #dc2626;
+}
+.player-detail__pizza-tab-count {
+  font-size: 10px;
+  font-weight: 700;
+  color: #94a3c8;
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 8px;
+  padding: 1px 6px;
+}
+.player-detail__pizza-tab.is-active .player-detail__pizza-tab-count {
+  color: #fff;
+  background: rgba(220, 38, 38, 0.3);
+}
+@media (max-width: 480px) {
+  .player-detail__pizza-tab { padding: 6px 9px 8px; font-size: 11px; }
+}
+
+/* === Полная таблица метрик: <details> аккордеон === */
+.player-detail__splits-toggle {
+  padding: 0;
+  overflow: hidden;
+}
+.player-detail__splits-summary {
+  list-style: none;
+  cursor: pointer;
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  font-weight: 700;
+  color: #fff;
+  user-select: none;
+  border-radius: inherit;
+  position: relative;
+}
+.player-detail__splits-summary::-webkit-details-marker { display: none; }
+.player-detail__splits-summary::before {
+  content: '▸';
+  color: #dc2626;
+  font-size: 14px;
+  margin-right: 6px;
+  transition: transform 0.18s;
+  display: inline-block;
+}
+.player-detail__splits-toggle[open] .player-detail__splits-summary::before {
+  transform: rotate(90deg);
+}
+.player-detail__splits-summary-meta {
+  font-weight: 500;
+  font-size: 11px;
+  color: #94a3c8;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+.player-detail__splits-body {
+  padding: 0 0 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+@media (max-width: 480px) {
+  .player-detail__pizza { padding: 12px 8px; }
+  .player-detail__splits-summary { padding: 12px; font-size: 13px; }
+  .player-detail__splits-summary-meta { display: none; }
+}
+
+.player-detail__topbar {
+  display: flex;
+  gap: 8px;
+}
+
+.player-detail__back {
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 6px 12px;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.player-detail__back:hover {
+  background: rgba(34, 211, 238, 0.15);
+  border-color: rgba(34, 211, 238, 0.5);
+}
+
+.player-detail__download {
+  margin-left: auto;
+  background: rgba(255, 255, 255, 0.04);
+  color: rgba(255, 255, 255, 0.4);
+  border: 1px dashed rgba(255, 255, 255, 0.15);
+  border-radius: 8px;
+  padding: 6px 12px;
+  font-size: 13px;
+  cursor: not-allowed;
+}
+
+/* RIBBON badges */
+.player-detail__ribbon-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 4px;
+}
+.badge {
+  display: grid;
+  grid-template-columns: auto auto auto;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, rgba(26, 75, 160, 0.4), rgba(20, 20, 60, 0.6));
+  border: 1px solid rgba(34, 211, 238, 0.25);
+}
+.badge--rank-1 {
+  background: linear-gradient(135deg, rgba(184, 134, 11, 0.45), rgba(34, 211, 238, 0.25));
+  border-color: rgba(34, 211, 238, 0.6);
+}
+.badge--rank-2 {
+  background: linear-gradient(135deg, rgba(120, 144, 156, 0.4), rgba(20, 20, 60, 0.6));
+  border-color: rgba(176, 190, 197, 0.5);
+}
+.badge--rank-3 {
+  background: linear-gradient(135deg, rgba(141, 110, 99, 0.4), rgba(20, 20, 60, 0.6));
+  border-color: rgba(205, 127, 50, 0.5);
+}
+.badge__icon { font-size: 18px; line-height: 1; }
+.badge__rank {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: rgba(255, 255, 255, 0.55);
+}
+.badge__label { font-size: 13px; font-weight: 600; color: #fff; }
+.badge__value {
+  font-size: 16px;
+  font-weight: 800;
+  color: #22d3ee;
+  font-variant-numeric: tabular-nums;
+}
+
+/* LINE COMPARISON */
+.player-detail__line-row {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 16px;
+  margin-top: 8px;
+}
+.player-detail__line-pair {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+.player-detail__line-pair--leader {
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+}
+.player-detail__line-pair--leader:hover {
+  border-color: rgba(34, 211, 238, 0.4);
+  background: rgba(34, 211, 238, 0.06);
+}
+.player-detail__line-name { font-size: 14px; font-weight: 700; color: #fff; }
+.player-detail__line-pos {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.5);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-top: 2px;
+}
+.player-detail__line-vs {
+  font-size: 18px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.4);
+  text-transform: lowercase;
+}
+.player-detail__line-self {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.85);
+  margin-top: 8px;
+}
+.player-detail__line-self .badge__icon { font-size: 24px; }
+
+/* HERO */
+.player-detail__hero {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 24px;
+  align-items: center;
+}
+
+.player-detail__hero-info {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.player-detail__hero-pos {
+  font-size: 12px;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.5);
+  letter-spacing: 0.05em;
+}
+
+.player-detail__hero-name {
+  margin: 0;
+  font-size: 28px;
+  font-weight: 700;
+  color: #fff;
+}
+
+.player-detail__hero-meta {
+  display: flex;
+  gap: 18px;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.player-detail__hero-meta b { color: #22d3ee; font-weight: 700; }
+
+.player-detail__hero-rating {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.player-detail__hero-rating-100 {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.5);
+  letter-spacing: 0.05em;
+}
+
+/* RATING CARDS */
+.player-detail__ratings {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+
+/* RADAR ROW */
+.player-detail__radars {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr;
+  gap: 14px;
+}
+
+/* MAPS */
+.player-detail__maps {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+/* FITNESS */
+.player-detail__fitness-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.fitness-cell {
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 8px;
+  padding: 12px;
+  text-align: center;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.fitness-cell__value {
+  font-size: 22px;
+  font-weight: 700;
+  color: #22d3ee;
+}
+
+.fitness-cell__label {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.6);
+  margin-top: 4px;
+}
+
+/* SPLITS TABLE */
+.splits-table__head,
+.splits-table__row {
+  display: grid;
+  grid-template-columns: minmax(0, 2.4fr) minmax(48px, 1fr) minmax(48px, 1fr) minmax(48px, 1fr) minmax(56px, 1fr);
+  gap: 8px;
+  padding: 6px 12px;
+  align-items: center;
+}
+
+.splits-table__head {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: rgba(255, 255, 255, 0.5);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  margin-top: 8px;
+}
+
+.splits-table__col-num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.splits-table__row {
+  font-size: 13px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.splits-table__row:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.splits-table__label {
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.splits-table__val {
+  text-align: right;
+  color: rgba(255, 255, 255, 0.75);
+  font-variant-numeric: tabular-nums;
+}
+
+.splits-table__val--match {
+  color: #22d3ee;
+  font-weight: 600;
+}
+
+.splits-table__delta {
+  text-align: right;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.splits-table__delta--up   { color: #7cb342; }
+.splits-table__delta--down { color: #ef5350; }
+.splits-table__delta--eq   { color: rgba(255, 255, 255, 0.4); }
+
+@media (max-width: 768px) {
+  .player-detail__header { flex-direction: column; align-items: center; text-align: center; }
+  .player-detail__photo { width: 80px; height: 80px; }
+  .player-detail__name { font-size: 18px; }
+  .player-detail__pos { font-size: 13px; }
+  .player-detail__radar { height: 280px !important; }
+  .player-detail__maps { grid-template-columns: 1fr; }
+  /* Splits table — overflow scroll */
+  .player-splits-table,
+  .splits-table { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .player-splits-table table,
+  .splits-table table { min-width: 480px; font-size: 11px; }
+  /* Fitness 5 столбцов не лезут на телефон (5 × 22px значение + 60px ячейка
+     даёт переполнение даже на 414px). Перестраиваем по 3 на узких экранах. */
+  .player-detail__fitness-grid { grid-template-columns: repeat(3, 1fr); gap: 8px; }
+}
+@media (max-width: 360px) {
+  .player-detail__fitness-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 768px) {
+  /* Хедер игрока — фото + текст в стек */
+  .player-detail__header { grid-template-columns: 1fr !important; gap: 10px; text-align: center; }
+  .player-detail__name {
+    white-space: normal !important;
+    overflow: visible !important;
+    word-break: break-word;
+    font-size: 18px;
+  }
+  /* Кнопки «К списку / К матчу / Скачать карточку» — wrap */
+  .player-detail__nav-buttons {
+    flex-wrap: wrap !important;
+    gap: 6px;
+  }
+  .player-detail__nav-buttons button,
+  .player-detail__nav-buttons a {
+    flex: 1 1 auto;
+    min-width: 90px;
+    font-size: 12px !important;
+    padding: 6px 10px !important;
+  }
+  /* Сводные рейтинги: 3 колонки → 2 */
+  .player-detail__ratings { grid-template-columns: repeat(2, 1fr) !important; gap: 8px; }
+  /* «Лучший в команде» — стек */
+  .player-detail__best { grid-template-columns: 1fr !important; gap: 8px; }
+  /* Радарная диаграмма + сравнение по позиции — стек, не 2 колонки */
+  .player-detail__radar-row,
+  .player-detail__compare-row { grid-template-columns: 1fr !important; gap: 12px; }
+  /* Заголовки карточек — wrap */
+  .player-detail__section-title,
+  .page-section-title {
+    white-space: normal !important;
+    overflow: visible !important;
+    word-break: break-word;
+    font-size: 14px;
+  }
+  /* Карты атаки/тепловая — стек */
+  .player-detail__maps { grid-template-columns: 1fr !important; }
+  /* Скрываем «Карта пасов и ударов» — игроку на мобильном не нужно */
+  .player-detail__map-card--attack { display: none !important; }
+  /* Тепловая карта — обрезаем плотно по газону, скрываем легенду/брендинг по краям */
+  .player-detail__map-card--heat .soccer-map__frame {
+    padding: 0 !important;
+    overflow: hidden !important;
+    width: 100% !important;
+    aspect-ratio: 5 / 3;
+    border-radius: 10px;
+    position: relative;
+    background: #1a6b3a;
+  }
+  .player-detail__map-card--heat .soccer-map__frame > img {
+    position: absolute !important;
+    inset: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    max-width: none !important;
+    margin: 0 !important;
+    display: block !important;
+    object-fit: cover !important;
+    object-position: center center !important;
+    transform: scale(1.32);
+    transform-origin: center center;
+  }
+  /* Подсказка «Увеличить» — поднимаем над zoom-областью, не обрезаем transform-ом */
+  .player-detail__map-card--heat .soccer-map__zoom-hint {
+    top: 8px;
+    right: 8px;
+    opacity: 0.85;
+    z-index: 2;
+  }
+}

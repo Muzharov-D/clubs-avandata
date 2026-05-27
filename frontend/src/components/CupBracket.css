@@ -1,0 +1,112 @@
+.cup-bracket { display: flex; flex-direction: column; gap: 12px; }
+.cup-bracket__title {
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: rgba(255, 255, 255, 0.55);
+  font-weight: 600;
+}
+.cup-bracket__rounds {
+  display: flex;
+  flex-direction: row;
+  gap: 16px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: 8px;
+}
+.cup-round {
+  flex: 0 0 220px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.cup-round__name {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #22d3ee;
+  font-weight: 700;
+  border-bottom: 1px solid rgba(34, 211, 238, 0.3);
+  padding-bottom: 4px;
+}
+.cup-round__matches {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.cup-match {
+  background: rgba(20, 20, 60, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  padding: 8px 10px;
+  font-size: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.cup-match--ours {
+  border-color: rgba(34, 211, 238, 0.5);
+  background: linear-gradient(90deg, rgba(34, 211, 238, 0.1), rgba(20, 20, 60, 0.55));
+}
+.cup-match--placeholder {
+  color: rgba(255, 255, 255, 0.35);
+  text-align: center;
+  padding: 14px 10px;
+}
+.cup-match__row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+.cup-match__team {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex: 1;
+  min-width: 0;
+}
+.cup-match__shield {
+  width: 16px;
+  height: 16px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+.cup-match__score {
+  font-weight: 800;
+  color: #22d3ee;
+  font-variant-numeric: tabular-nums;
+  flex-shrink: 0;
+}
+.cup-match__date {
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.45);
+  text-align: right;
+}
+
+.cup-bracket__empty {
+  padding: 14px;
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 10px;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.6);
+}
+.cup-bracket__debug {
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.35);
+  margin-top: 6px;
+  font-family: monospace;
+}
+
+.cup-bracket__updated {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.4);
+}
+
+@media (max-width: 768px) {
+  .cup-bracket__rounds { flex-direction: column; gap: 14px; overflow-x: visible; }
+  .cup-round { flex: 1 1 auto; }
+}

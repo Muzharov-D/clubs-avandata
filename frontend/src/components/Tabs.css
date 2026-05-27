@@ -1,0 +1,42 @@
+.tabs {
+  display: flex;
+  gap: 4px;
+  background: rgba(20, 20, 60, 0.5);
+  padding: 4px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  width: fit-content;
+}
+
+.tabs__item {
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.55);
+  padding: 8px 18px;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  cursor: pointer;
+  border-radius: 6px;
+  text-transform: uppercase;
+  transition: background 0.15s, color 0.15s;
+}
+
+.tabs__item:hover:not(:disabled) {
+  color: #fff;
+}
+
+.tabs__item--active {
+  background: linear-gradient(135deg, #1a4ba0 0%, #2c66c7 100%);
+  color: #fff;
+}
+
+.tabs__item--disabled,
+.tabs__item:disabled {
+  color: rgba(255, 255, 255, 0.25);
+  cursor: not-allowed;
+}
+
+.tabs--section .tabs__item {
+  padding: 6px 14px;
+}

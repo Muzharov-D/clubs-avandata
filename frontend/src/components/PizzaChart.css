@@ -1,0 +1,76 @@
+.pizza-chart {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+}
+
+.pizza-chart__title {
+  text-align: center;
+  line-height: 1.3;
+  width: 100%;
+}
+.pizza-chart__name {
+  font-size: 16px;
+  font-weight: 700;
+  color: #fff;
+}
+.pizza-chart__meta {
+  font-size: 11px;
+  color: #94a3c8;
+  margin-top: 2px;
+}
+
+.pizza-chart__svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-width: 640px;
+}
+
+.pizza-label {
+  font-family: var(--font-display);
+  font-weight: 700;
+  pointer-events: none;
+}
+.pizza-axis-label {
+  font-weight: 600;
+  fill: #e6ebf5;
+  pointer-events: none;
+}
+
+.pizza-chart__legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  font-size: 11px;
+  color: #cbd5e1;
+  text-transform: uppercase;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  justify-content: center;
+}
+.pizza-chart__dot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  margin-right: 6px;
+  vertical-align: middle;
+}
+
+.pizza-empty {
+  font-size: 13px;
+  color: #94a3c8;
+  text-align: center;
+  padding: 24px 12px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 8px;
+}
+
+@media (max-width: 480px) {
+  .pizza-chart__name { font-size: 14px; }
+  .pizza-chart__meta { font-size: 10px; }
+  .pizza-chart__legend { font-size: 10px; gap: 10px; }
+}

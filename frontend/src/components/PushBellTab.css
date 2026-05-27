@@ -1,0 +1,30 @@
+.push-bell-tab {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  line-height: 1;
+  margin-left: 4px;
+  width: 18px;
+  height: 18px;
+  border-radius: 4px;
+  cursor: pointer;
+  opacity: 0.6;
+  transition: opacity 0.15s, background 0.15s, transform 0.1s;
+  user-select: none;
+}
+.push-bell-tab:hover { opacity: 1; background: rgba(255, 255, 255, 0.08); }
+.push-bell-tab:active { transform: scale(0.92); }
+.push-bell-tab--on {
+  opacity: 1;
+  color: #dc2626;
+  background: rgba(220, 38, 38, 0.12);
+}
+.push-bell-tab--busy {
+  pointer-events: none;
+  opacity: 0.4;
+}
+
+@media (max-width: 480px) {
+  .push-bell-tab { width: 16px; height: 16px; font-size: 11px; }
+}

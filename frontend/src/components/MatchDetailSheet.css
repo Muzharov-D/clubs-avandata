@@ -1,0 +1,767 @@
+.mds-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(7, 7, 28, 0.7);
+  backdrop-filter: blur(4px);
+  z-index: 1000;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  animation: mds-fade 180ms ease-out;
+}
+
+.mds-sheet {
+  background: linear-gradient(180deg, #14143c 0%, #0d1424 100%);
+  border-top: 1px solid rgba(34, 211, 238, 0.3);
+  border-radius: 18px 18px 0 0;
+  padding: 28px 20px 32px;
+  padding-bottom: max(32px, env(safe-area-inset-bottom));
+  width: 100%;
+  max-width: 560px;
+  max-height: 92vh;
+  overflow-y: auto;
+  overflow-x: hidden;
+  box-sizing: border-box;
+  position: relative;
+  animation: mds-slide-up 220ms cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.5);
+}
+/* Drag-handle: визуальный индикатор bottom-sheet на mobile */
+.mds-sheet::before {
+  content: '';
+  position: sticky;
+  top: 0;
+  display: block;
+  width: 40px;
+  height: 4px;
+  margin: -16px auto 14px;
+  background: rgba(255, 255, 255, 0.22);
+  border-radius: 2px;
+  z-index: 1;
+}
+
+@keyframes mds-fade {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes mds-slide-up {
+  from { transform: translateY(100%); }
+  to   { transform: translateY(0); }
+}
+
+.mds-close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.08);
+  border: none;
+  color: #d6e2ff;
+  font-size: 18px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 120ms;
+  -webkit-tap-highlight-color: transparent;
+  z-index: 2;
+}
+.mds-close:hover { background: rgba(255, 255, 255, 0.16); }
+
+.mds-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 18px;
+}
+
+.mds-badge {
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.mds-badge--league {
+  background: rgba(34, 211, 238, 0.15);
+  color: #22d3ee;
+}
+.mds-badge--cup {
+  background: rgba(245, 158, 11, 0.15);
+  color: #f59e0b;
+}
+
+.mds-date {
+  font-size: 14px;
+  color: #f1f5fb;
+  font-weight: 600;
+}
+.mds-header-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.mds-round {
+  padding: 3px 10px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  background: rgba(255, 255, 255, 0.06);
+  color: #c5a3a3;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  white-space: nowrap;
+}
+.mds-no-date {
+  color: #fbbf24;
+  font-style: italic;
+  font-weight: 500;
+}
+.mds-theme--legirus .mds-round {
+  background: rgba(220, 38, 38, 0.14);
+  color: #fff;
+  border-color: rgba(220, 38, 38, 0.35);
+}
+
+.mds-teams {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 12px;
+  padding: 18px 8px;
+  margin: 8px 0 18px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 12px;
+}
+
+.mds-team {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: #f1f5fb;
+  font-weight: 600;
+  text-align: center;
+  min-width: 0;
+}
+.mds-team img {
+  width: 56px;
+  height: 56px;
+  object-fit: contain;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.4));
+}
+.mds-team span {
+  width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  line-height: 1.2;
+}
+
+.mds-vs {
+  font-family: var(--font-display);
+  font-size: 30px;
+  font-weight: 700;
+  color: #22d3ee;
+  min-width: 80px;
+  text-align: center;
+}
+.mds-vs-text {
+  font-size: 14px;
+  color: #6b7896;
+  font-weight: 500;
+}
+
+.mds-venue {
+  display: flex;
+  gap: 12px;
+  padding: 14px;
+  margin-bottom: 16px;
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+.mds-venue-icon {
+  font-size: 20px;
+  flex-shrink: 0;
+}
+.mds-venue-text {
+  flex: 1;
+  min-width: 0;
+}
+.mds-venue-name {
+  font-size: 14px;
+  color: #f1f5fb;
+  font-weight: 600;
+  line-height: 1.4;
+}
+.mds-venue-sub {
+  font-size: 12px;
+  color: #94a3c8;
+  margin-top: 2px;
+  line-height: 1.4;
+}
+
+.mds-cta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  padding: 14px 16px;
+  background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+  color: #1a1a3e;
+  border: none;
+  border-radius: 10px;
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 700;
+  text-decoration: none;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  transition: transform 120ms, box-shadow 120ms;
+  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+}
+.mds-cta:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(245, 158, 11, 0.4);
+}
+.mds-cta:active { transform: translateY(0); }
+.mds-cta-icon { font-size: 20px; }
+
+.mds-cta-secondary {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 12px 16px;
+  margin-top: 10px;
+  background: rgba(255, 255, 255, 0.04);
+  color: #d6e2ff;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background 120ms;
+}
+.mds-cta-secondary:hover {
+  background: rgba(34, 211, 238, 0.08);
+  border-color: rgba(34, 211, 238, 0.3);
+  color: #22d3ee;
+}
+
+.mds-no-venue {
+  padding: 12px 14px;
+  background: rgba(245, 158, 11, 0.08);
+  border: 1px solid rgba(245, 158, 11, 0.25);
+  border-radius: 8px;
+  font-size: 13px;
+  color: #d6e2ff;
+  line-height: 1.5;
+  text-align: center;
+}
+
+.mds-footer {
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  font-size: 12px;
+  color: #6b7896;
+  text-align: center;
+  line-height: 1.5;
+}
+
+@media (min-width: 641px) {
+  .mds-backdrop { align-items: center; }
+  .mds-sheet {
+    border-radius: 16px;
+    border-top: 1px solid rgba(34, 211, 238, 0.3);
+    border-left: 1px solid rgba(34, 211, 238, 0.15);
+    border-right: 1px solid rgba(34, 211, 238, 0.15);
+    border-bottom: 1px solid rgba(34, 211, 238, 0.15);
+  }
+  .mds-sheet::before { display: none; }
+  @keyframes mds-slide-up {
+    from { transform: translateY(40px); opacity: 0; }
+    to   { transform: translateY(0); opacity: 1; }
+  }
+}
+
+@media (max-width: 480px) {
+  .mds-team img { width: 44px; height: 44px; }
+  .mds-team { font-size: 13px; gap: 6px; }
+  .mds-vs { font-size: 24px; min-width: 64px; }
+  .mds-cta { padding: 13px 14px; font-size: 14px; }
+}
+
+/* Fullscreen на mobile — чтобы влезли все события матча, замены, карточки */
+@media (max-width: 640px) {
+  .mds-backdrop {
+    align-items: stretch;
+    padding: 0;
+  }
+  .mds-sheet {
+    width: 100%;
+    max-width: 100%;
+    height: 100vh;
+    height: 100dvh;
+    max-height: 100vh;
+    max-height: 100dvh;
+    border-radius: 0;
+    border: none;
+    border-top: none;
+    padding: 24px 16px 32px;
+    padding-top: max(24px, env(safe-area-inset-top));
+    padding-bottom: max(32px, env(safe-area-inset-bottom));
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    animation: mds-fade 220ms ease-out;
+  }
+  .mds-sheet::before { display: none; }
+  .mds-close {
+    position: sticky;
+    top: 0;
+    align-self: flex-end;
+    margin-left: auto;
+    margin-right: -4px;
+    margin-top: -8px;
+    z-index: 5;
+    background: rgba(0, 0, 0, 0.55);
+    backdrop-filter: blur(4px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+  }
+  /* Список событий полный без обрезания */
+  .mds-events {
+    margin-bottom: 16px;
+  }
+  .mds-event {
+    flex-wrap: wrap;
+  }
+  .mds-event__player {
+    white-space: normal;
+    overflow: visible;
+    text-overflow: clip;
+  }
+}
+
+/* === Theme: Legirus (для public-страницы — красно-чёрный брендбук) === */
+.mds-theme--legirus .mds-sheet {
+  background: linear-gradient(180deg, #1a0606 0%, #0a0202 100%);
+  border-color: rgba(220, 38, 38, 0.4) !important;
+}
+.mds-theme--legirus .mds-close {
+  background: rgba(220, 38, 38, 0.15);
+  color: #fff;
+}
+.mds-theme--legirus .mds-close:hover { background: rgba(220, 38, 38, 0.3); }
+.mds-theme--legirus .mds-badge {
+  background: rgba(220, 38, 38, 0.22);
+  color: #ef4444;
+  border: 1px solid rgba(220, 38, 38, 0.4);
+}
+.mds-theme--legirus .mds-badge--cup {
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.4);
+}
+.mds-theme--legirus .mds-date,
+.mds-theme--legirus .mds-venue-name,
+.mds-theme--legirus .mds-venue-sub,
+.mds-theme--legirus .mds-no-venue,
+.mds-theme--legirus .mds-footer { color: #c5a3a3; }
+.mds-theme--legirus .mds-team { color: #fff; }
+.mds-theme--legirus .mds-vs { color: #ef4444; }
+.mds-theme--legirus .mds-vs b { color: #ef4444; }
+.mds-theme--legirus .mds-vs-text { color: #c5a3a3; }
+.mds-theme--legirus .mds-venue {
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(220, 38, 38, 0.18);
+}
+.mds-theme--legirus .mds-cta {
+  background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%);
+  color: #fff;
+  border: none;
+  box-shadow: 0 4px 14px rgba(220, 38, 38, 0.35);
+}
+.mds-theme--legirus .mds-cta:hover {
+  box-shadow: 0 6px 18px rgba(220, 38, 38, 0.5);
+}
+.mds-theme--legirus .mds-cta-icon { filter: brightness(1.2); }
+.mds-theme--legirus .mds-cta-secondary {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(220, 38, 38, 0.35);
+  color: #fff;
+}
+.mds-theme--legirus .mds-cta-secondary:hover {
+  background: rgba(220, 38, 38, 0.12);
+  border-color: #ef4444;
+}
+.mds-theme--legirus .mds-events {
+  background: rgba(0, 0, 0, 0.4);
+  border-color: rgba(220, 38, 38, 0.18);
+}
+.mds-theme--legirus .mds-events__title { color: #c5a3a3; }
+.mds-theme--legirus .mds-event { border-bottom-color: rgba(220, 38, 38, 0.10); color: #fff; }
+.mds-theme--legirus .mds-event__minute { color: #ef4444; }
+.mds-theme--legirus .mds-event--guest .mds-event__minute { color: #fff; }
+.mds-theme--legirus .mds-event--yellow {
+  background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.04) 100%);
+}
+.mds-theme--legirus .mds-event__assist,
+.mds-theme--legirus .mds-event__comment { color: #c5a3a3; }
+
+@media (min-width: 481px) {
+  .mds-theme--legirus .mds-sheet {
+    border-top: 1px solid rgba(220, 38, 38, 0.5);
+    border-left: 1px solid rgba(220, 38, 38, 0.25);
+    border-right: 1px solid rgba(220, 38, 38, 0.25);
+    border-bottom: 1px solid rgba(220, 38, 38, 0.25);
+  }
+}
+
+/* События матча — двухколоночный таймлайн (home слева, away справа, минута по центру) */
+.mds-events {
+  margin-top: 16px;
+  padding: 14px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+}
+.mds-events__title {
+  font-size: 11px;
+  font-weight: 700;
+  color: #94a3c8;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 10px;
+}
+
+.mds-tl-headrow {
+  display: grid;
+  grid-template-columns: 1fr 44px 1fr;
+  gap: 6px;
+  padding-bottom: 8px;
+  margin-bottom: 8px;
+  border-bottom: 1px dashed rgba(255, 255, 255, 0.12);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #94a3c8;
+}
+.mds-tl-headrow .mds-tl-side--home { text-align: right; }
+.mds-tl-headrow .mds-tl-side--away { text-align: left; }
+.mds-tl-headrow .mds-tl-minute { text-align: center; }
+
+.mds-tl-list { display: flex; flex-direction: column; gap: 2px; }
+
+.mds-tl-row {
+  display: grid;
+  grid-template-columns: 1fr 44px 1fr;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 0;
+  position: relative;
+  border-radius: 6px;
+}
+.mds-tl-row:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  width: 1px;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.18);
+  transform: translateX(-50%);
+}
+
+.mds-tl-side {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  font-size: 13px;
+}
+.mds-tl-side--home { justify-content: flex-end; text-align: right; }
+.mds-tl-side--away { justify-content: flex-start; text-align: left; }
+
+.mds-tl-event {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  max-width: 100%;
+}
+
+.mds-tl-icon {
+  font-size: 16px;
+  flex-shrink: 0;
+  line-height: 1;
+}
+
+.mds-tl-text {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+.mds-tl-text b {
+  font-weight: 700;
+  color: #f1f5fb;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+  font-size: 13px;
+}
+.mds-tl-text small {
+  font-size: 11px;
+  color: #94a3c8;
+  font-style: italic;
+  margin-top: 1px;
+}
+.mds-tl-side--home .mds-tl-text { align-items: flex-end; }
+.mds-tl-side--away .mds-tl-text { align-items: flex-start; }
+
+.mds-tl-minute {
+  font-family: var(--font-display);
+  text-align: center;
+  font-weight: 700;
+  font-size: 12px;
+  color: #c5a3a3;
+  font-variant-numeric: tabular-nums;
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  border-radius: 12px;
+  padding: 3px 0;
+  min-width: 44px;
+}
+
+/* Tone-specific подсветки событий */
+.mds-tl-row--goal .mds-tl-event,
+.mds-tl-row--goal_special .mds-tl-event,
+.mds-tl-row--penalty .mds-tl-event {
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.18) 0%, rgba(34, 197, 94, 0.05) 100%);
+  border-color: rgba(34, 197, 94, 0.45);
+}
+.mds-tl-row--goal .mds-tl-text b,
+.mds-tl-row--goal_special .mds-tl-text b,
+.mds-tl-row--penalty .mds-tl-text b { color: #4ade80; }
+
+/* Незабитый пенальти — серый/тусклый, имя зачёркнуто, красная диагональ поверх мяча */
+.mds-tl-row--penalty_missed .mds-tl-event {
+  background: linear-gradient(135deg, rgba(148, 163, 184, 0.18) 0%, rgba(148, 163, 184, 0.05) 100%);
+  border-color: rgba(148, 163, 184, 0.4);
+}
+.mds-tl-row--penalty_missed .mds-tl-text b {
+  color: #cbd5e1;
+  text-decoration: line-through;
+  text-decoration-color: rgba(239, 68, 68, 0.7);
+}
+.mds-tl-label-missed {
+  color: #ef9a9a;
+  font-weight: 600;
+}
+
+/* Обёртка иконки — нужна для абсолютно-позиционированной диагональной линии.
+   Явно задаём размер чтобы flex-родитель не схлопывал её и иконка не обрезалась. */
+.mds-tl-icon-wrap {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  line-height: 1;
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+}
+.mds-tl-icon-wrap .mds-tl-icon {
+  width: 16px;
+  height: 16px;
+  display: block;
+}
+/* Перечёркивающая красная диагональ — точно поверх центра мяча, slight glow */
+.mds-tl-icon-wrap--strike {
+  opacity: 0.6;
+}
+.mds-tl-icon-wrap--strike::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: -3px;
+  right: -3px;
+  height: 2px;
+  background: #ef4444;
+  transform: translateY(-50%) rotate(-30deg);
+  border-radius: 1px;
+  pointer-events: none;
+  box-shadow: 0 0 4px rgba(239, 68, 68, 0.65);
+}
+
+.mds-tl-row--yellow_card .mds-tl-event,
+.mds-tl-row--yellow .mds-tl-event {
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.18) 0%, rgba(245, 158, 11, 0.05) 100%);
+  border-color: rgba(245, 158, 11, 0.45);
+}
+
+.mds-tl-row--red_card .mds-tl-event,
+.mds-tl-row--red .mds-tl-event {
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.20) 0%, rgba(239, 68, 68, 0.06) 100%);
+  border-color: rgba(239, 68, 68, 0.5);
+}
+
+.mds-tl-row--substitution .mds-tl-event,
+.mds-tl-row--substitution_in .mds-tl-event,
+.mds-tl-row--substitution_out .mds-tl-event,
+.mds-tl-row--sub .mds-tl-event { opacity: 0.9; }
+
+/* Мини-карта стадиона (statiс-maps yandex) — клик открывает Я.Карты */
+.mds-map {
+  display: block;
+  width: 100%;
+  max-height: 200px;
+  overflow: hidden;
+  border-radius: 10px;
+  margin: 4px 0 8px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  line-height: 0;
+  background: rgba(255, 255, 255, 0.02);
+}
+.mds-map img {
+  width: 100%;
+  height: auto;
+  display: block;
+  transition: transform 250ms cubic-bezier(.34,1.56,.64,1);
+}
+.mds-map:hover img, .mds-map:active img {
+  transform: scale(1.02);
+}
+
+/* Табы Обзор / Статистика / Состав / Комментарий — в модалке матча.
+   На узких экранах (iPhone XS = 375px, SE = 320px) 4 таба не помещаются в строку,
+   поэтому контейнер прокручивается горизонтально без видимой полосы. */
+.mds-tabs {
+  display: flex;
+  gap: 4px;
+  margin: 12px 0 8px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;          /* Firefox */
+  -webkit-overflow-scrolling: touch;
+}
+.mds-tabs::-webkit-scrollbar { display: none; } /* WebKit/Blink */
+.mds-tab {
+  flex: 0 0 auto;
+  padding: 8px 14px;
+  background: transparent;
+  border: none;
+  color: #94a3c8;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  transition: color 0.15s, border-color 0.15s;
+}
+.mds-tab:hover { color: #cbd5e1; }
+.mds-tab--active {
+  color: #dc2626;
+  border-bottom-color: #dc2626;
+}
+@media (max-width: 480px) {
+  .mds-tab { padding: 7px 10px; font-size: 12px; }
+}
+
+/* Комментарий тренера — таб «Комментарий» */
+.mds-comment {
+  padding: 12px 14px;
+  background: rgba(255, 255, 255, 0.03);
+  border-left: 3px solid #dc2626;
+  border-radius: 0 8px 8px 0;
+  margin: 6px 0 4px;
+  max-width: 100%;
+  min-width: 0;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+.mds-comment__caption {
+  font-size: 11px;
+  font-weight: 700;
+  color: #dc2626;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  margin-bottom: 6px;
+}
+.mds-comment__body {
+  font-size: 13px;
+  color: #f1f5fb;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  min-width: 0;
+  max-width: 100%;
+}
+
+/* Замена: пара «вошёл/ушёл» — каждая стрелка с новой строки */
+.mds-tl-sub-pair {
+  font-weight: 600;
+  white-space: normal;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  line-height: 1.25;
+}
+/* Классика футбольной графики: вошёл — зелёный, ушёл — красный. */
+.mds-tl-sub-in  { color: #22c55e; }
+.mds-tl-sub-out { color: #ef4444; }
+/* Сторонняя ориентация: на home (правая колонка модалки) — пара выровнена к
+   правому краю, на away — к левому. */
+.mds-tl-side--home .mds-tl-sub-pair { align-items: flex-end; }
+.mds-tl-side--away .mds-tl-sub-pair { align-items: flex-start; }
+
+/* Legirus theme overrides для двухколоночного таймлайна */
+.mds-theme--legirus .mds-tl-event {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(220, 38, 38, 0.25);
+}
+.mds-theme--legirus .mds-tl-text b { color: #fff; }
+.mds-theme--legirus .mds-tl-text small { color: #c5a3a3; }
+.mds-theme--legirus .mds-tl-minute {
+  background: rgba(220, 38, 38, 0.18);
+  border-color: rgba(220, 38, 38, 0.4);
+  color: #fff;
+}
+.mds-theme--legirus .mds-tl-headrow {
+  border-bottom-color: rgba(220, 38, 38, 0.25);
+  color: #c5a3a3;
+}
+
+/* Mobile двухколоночный — компактные размеры */
+@media (max-width: 480px) {
+  .mds-tl-event { padding: 5px 8px; gap: 6px; }
+  .mds-tl-text b { font-size: 12px; white-space: normal; }
+  .mds-tl-text small { font-size: 10px; }
+  .mds-tl-minute { font-size: 11px; min-width: 38px; padding: 2px 0; }
+  .mds-tl-headrow,
+  .mds-tl-row { grid-template-columns: 1fr 38px 1fr; }
+  .mds-round { font-size: 10px; padding: 2px 8px; }
+}
+
+.mds-event { display: flex; align-items: center; gap: 10px; padding: 8px 4px; font-size: 13px; color: #f1f5fb; }
+.mds-event__minute { flex-shrink: 0; min-width: 36px; font-weight: 700; color: #22d3ee; }
+.mds-event__icon { font-size: 16px; flex-shrink: 0; }
+.mds-event__player { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }

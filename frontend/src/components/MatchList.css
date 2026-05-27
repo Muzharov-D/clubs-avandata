@@ -1,0 +1,75 @@
+.match-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.match-list__title {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: rgba(255, 255, 255, 0.5);
+  margin-bottom: 4px;
+  font-weight: 600;
+}
+
+.match-list__item {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 12px 14px;
+  background: rgba(20, 20, 60, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  text-align: left;
+  color: #fff;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.match-list__item:hover {
+  background: rgba(26, 75, 160, 0.35);
+  border-color: rgba(34, 211, 238, 0.3);
+}
+
+.match-list__item--active {
+  background: rgba(26, 75, 160, 0.55);
+  border-color: rgba(34, 211, 238, 0.6);
+}
+
+.match-list__date {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.55);
+}
+
+.match-list__teams {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.match-list__score {
+  color: #22d3ee;
+  font-size: 16px;
+  font-weight: 700;
+  padding: 0 4px;
+}
+
+.match-list__status {
+  font-size: 10px;
+  letter-spacing: 0.05em;
+  color: rgba(255, 255, 255, 0.45);
+  text-transform: uppercase;
+}
+
+.match-list__empty {
+  padding: 20px;
+  text-align: center;
+  color: rgba(255,255,255,0.4);
+  font-size: 13px;
+  background: rgba(20,20,60,0.4);
+  border-radius: 10px;
+  border: 1px dashed rgba(255,255,255,0.1);
+}

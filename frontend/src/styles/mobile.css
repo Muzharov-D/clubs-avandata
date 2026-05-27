@@ -1,0 +1,536 @@
+/* === Global === */
+html, body {
+  overflow-x: hidden;
+  max-width: 100vw;
+  -webkit-text-size-adjust: 100%;
+}
+*, *::before, *::after { box-sizing: border-box; }
+img, svg, video { max-width: 100%; height: auto; }
+
+/* iOS prevent autozoom on inputs */
+@media (max-width: 768px) {
+  input, select, textarea { font-size: 16px; }
+}
+
+/* === Mobile layout adaptations === */
+@media (max-width: 768px) {
+  body { font-size: 14px; }
+
+  .app-body { flex-direction: column !important; }
+  .app-content, .page {
+    padding: 12px !important;
+    padding-bottom: 70px !important;
+    max-width: 100vw !important;
+  }
+
+  /* Многоколоночные сетки → 1 или 2 */
+  .club-overview,
+  .matches-dashboard__grid,
+  .match-detail__grid,
+  .player-detail__grid,
+  .player-detail__maps,
+  .comparison-view__grid {
+    grid-template-columns: 1fr !important;
+  }
+  .club-overview__ratings,
+  .match-detail__ratings,
+  .player-detail__ratings,
+  .club-overview__metrics,
+  .match-detail__metrics,
+  .club-overview__leaders,
+  .match-detail__leaders {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 8px !important;
+  }
+
+  /* Sidebar → bottom nav */
+  .sidebar-nav {
+    position: fixed; bottom: 0; left: 0; right: 0; top: auto;
+    width: 100%; height: 56px;
+    flex-direction: row !important;
+    border-right: none;
+    border-top: 1px solid rgba(255,255,255,0.1);
+    z-index: 100;
+    background: var(--card-bg, #0d1424);
+  }
+  .sidebar-nav__item {
+    flex: 1; flex-direction: column;
+    padding: 6px 4px; font-size: 10px;
+    text-align: center;
+  }
+  .sidebar-nav__icon { font-size: 20px; }
+
+  .agent-trigger, .agent-card { display: none !important; }
+}
+
+@media (max-width: 480px) {
+  .club-overview__ratings,
+  .match-detail__ratings,
+  .player-detail__ratings {
+    grid-template-columns: 1fr !important;
+  }
+  /* Баг 4 / Баг 5 — на узких экранах схлопываем top-players и leaders в 1 колонку */
+  [class*="top-players"],
+  [class*="players-row"],
+  [class*="leaders"],
+  [class*="line-leaders"] {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+@media (max-width: 768px) {
+  /* Убрать двойной padding на mobile */
+  .app-content {
+    padding: 8px !important;
+    padding-bottom: 70px !important;
+  }
+  .page {
+    padding: 0 !important;
+  }
+  .app-header {
+    padding: 0 10px !important;
+  }
+
+  /* Дефолт для всех cards — не вылазят за родителя */
+  .card {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    box-sizing: border-box !important;
+  }
+
+  /* Все прямые потомки контейнеров — обязательно сжимаются */
+  .app-content > *,
+  .page > *,
+  .card > * {
+    max-width: 100% !important;
+    min-width: 0;
+  }
+
+  /* Любые элементы с inline-style width:NNNpx или старыми px-ширинами */
+  [style*="width:"][style*="px"] {
+    max-width: 100% !important;
+  }
+
+  /* Баг 1 — Halftime bars chart container и SVG в полную ширину */
+  [class*="halftime"],
+  [class*="halftime-bars"],
+  [class*="HalfTime"] {
+    max-width: 100% !important;
+    overflow: hidden !important;
+  }
+  [class*="halftime"] svg,
+  [class*="halftime-bars"] svg {
+    width: 100% !important;
+    max-width: 100% !important;
+    height: auto !important;
+  }
+
+  /* Баг 2 — Ключевые показатели матча: 4 → 2 колонки */
+  [class*="metrics"],
+  [class*="key-stats"],
+  [class*="key_stats"] {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 8px !important;
+  }
+  [class*="metric-card"],
+  [class*="metrics__card"],
+  [class*="key-stat"] {
+    min-width: 0 !important;
+    overflow: hidden;
+  }
+
+  /* Баг 3 — «Лучший игрок матча» строка с метриками wrap */
+  [class*="motm"],
+  [class*="best-player"],
+  [class*="motm__stats"] {
+    flex-wrap: wrap !important;
+    white-space: normal !important;
+    overflow: visible !important;
+  }
+  [class*="motm__stats"] > *,
+  [class*="motm__row"] > * {
+    flex: 0 0 auto;
+    margin-right: 8px;
+  }
+
+  /* Баг 4 — Топ-5 игроков матча: карусель → 2-колоночный grid */
+  [class*="top-players"],
+  [class*="top5"],
+  [class*="top-5"],
+  [class*="players-row"],
+  [class*="player-card-row"] {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 8px !important;
+    overflow: visible !important;
+  }
+  [class*="top-player-card"],
+  [class*="player-card"] {
+    min-width: 0 !important;
+    width: 100% !important;
+  }
+
+  /* Баг 5 — Лидеры по линиям: 2-колоночный grid
+     ВНИМАНИЕ: убран [class*="leaders"] wildcard — он ловил page wrapper .players-leaders
+     и .players-leaders__top, ломая layout. Теперь только конкретные классы */
+  .line-leaders,
+  .leaders-row {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 8px !important;
+    overflow: visible !important;
+  }
+  .leader-card,
+  .line-leader {
+    min-width: 0 !important;
+    width: 100% !important;
+  }
+
+  /* Баг 6 — большой rating-pill inline вместо absolute */
+  [class*="rating-pill--xl"],
+  [class*="rating-pill__big"],
+  [class*="player-detail__rating-pill"],
+  [class*="player-detail__overall"] {
+    position: static !important;
+    transform: none !important;
+    margin: 8px auto !important;
+    font-size: 24px !important;
+    width: 64px !important;
+    height: 64px !important;
+  }
+  .player-detail__header {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    text-align: center;
+    gap: 10px;
+  }
+  .player-detail__name {
+    white-space: normal !important;
+    overflow: visible !important;
+    word-break: break-word;
+    font-size: 18px !important;
+  }
+
+  /* Баг 7 — кнопки «К списку / К матчу / Скачать карточку» wrap */
+  [class*="player-detail__nav-buttons"],
+  [class*="player-detail__back"],
+  [class*="back-buttons"] {
+    flex-wrap: wrap !important;
+    gap: 6px !important;
+  }
+  [class*="player-detail__nav-buttons"] > *,
+  [class*="back-buttons"] > * {
+    flex: 1 1 auto;
+    min-width: 90px;
+    font-size: 12px !important;
+    padding: 6px 10px !important;
+  }
+  [class*="player-detail__nav-buttons"] [class*="download"],
+  [class*="back-buttons"] [class*="download"] {
+    flex: 1 1 100%;
+    margin-top: 4px;
+  }
+
+  /* === SPEC_MOBILE_14 PR-1 — 13 targeted bugs (Bug 8 пропущен — HalfTimeBars удалён в Sprint 2) === */
+
+  /* Bug 1 — «Информация о команде» left-align */
+  .club-overview__hero,
+  .matches-dashboard__hero,
+  [class*="info-team"],
+  [class*="team-info"] {
+    text-align: left !important;
+    margin: 0 !important;
+    width: 100% !important;
+  }
+
+  /* Bug 2 — «Последний матч» под «Информацией о команде», не рядом */
+  .matches-dashboard__grid {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 10px !important;
+  }
+  .matches-dashboard__col-left,
+  .matches-dashboard__col-right {
+    width: 100% !important;
+  }
+
+  /* Bug 3 — соперник в last-match wrap (real: .matches-dashboard__last) */
+  .matches-dashboard__last {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 6px !important;
+  }
+  .matches-dashboard__last-team {
+    white-space: normal !important;
+    overflow: visible !important;
+    font-size: 13px !important;
+    min-width: 0 !important;
+  }
+
+  /* Bug 4 — «Лучший игрок матча» стек (real class: .best-player) */
+  .best-player,
+  .best-player__body {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 8px !important;
+  }
+  .best-player__rating { align-self: center; }
+  .best-player__stats {
+    flex-wrap: wrap !important;
+    white-space: normal !important;
+    font-size: 12px !important;
+    gap: 8px 12px !important;
+  }
+
+  /* Bug 5 — Топ-5 ClubOverview: горизонтальный свайп вместо grid */
+  .club-overview__top5 {
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    scroll-snap-type: x mandatory !important;
+    gap: 10px !important;
+    padding-bottom: 6px !important;
+  }
+  .top5-card {
+    flex: 0 0 calc(80vw - 24px) !important;
+    scroll-snap-align: start !important;
+    min-width: 0 !important;
+  }
+
+  /* Bug 6 — убрать полоску снизу у RatingCard, только цифры */
+  .rating-card__bar,
+  [class*="rating-card__bar"],
+  [class*="rating-card__progress"] {
+    display: none !important;
+  }
+  .rating-card {
+    padding: 10px 8px !important;
+    text-align: center !important;
+  }
+
+  /* Bug 7 — компактнее ключевые показатели/комп.статы (универсально) */
+  [class*="metric-card"],
+  [class*="key-stat"],
+  [class*="stat-card"],
+  .line-card__metrics,
+  .comparison-view__metrics {
+    font-size: 14px !important;
+  }
+  [class*="metric-card__label"],
+  [class*="metric-card__title"],
+  .line-card__metric-label,
+  .comparison-metric__label {
+    font-size: 11px !important;
+    white-space: normal !important;
+    word-break: keep-all !important;
+    line-height: 1.2 !important;
+  }
+  [class*="metric-card__value"],
+  .line-card__metric-val,
+  .comparison-metric__value {
+    font-size: 16px !important;
+  }
+
+  /* Bug 9 — Лидеры по линиям горизонтальный свайп
+     (только устаревшие селекторы; .players-leaders__grid обрабатывается локально в PlayersLeaders.css) */
+  .match-detail__leaders,
+  .club-overview__leaders {
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    scroll-snap-type: x mandatory !important;
+    gap: 10px !important;
+    padding-bottom: 6px !important;
+  }
+  .club-overview__leader-card {
+    flex: 0 0 calc(80vw - 24px) !important;
+    scroll-snap-align: start !important;
+    min-width: 0 !important;
+  }
+
+  /* Bug 10 — Атака и Оборона друг под другом (real: .player-detail__radars) */
+  .player-detail__radars {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 10px !important;
+  }
+
+  /* Bug 11 — счёт не залезает на название (real: .matches-dashboard__last-teams) */
+  .matches-dashboard__last-teams {
+    display: grid !important;
+    grid-template-columns: 1fr auto 1fr !important;
+    align-items: center !important;
+    gap: 8px !important;
+  }
+  .matches-dashboard__last-score {
+    font-size: 22px !important;
+    white-space: nowrap !important;
+  }
+
+  /* Bug 12 — оценка (rating-pill XL) inline в хедере профиля
+     real header class: .player-detail__hero (НЕ __header), name: .player-detail__hero-name */
+  .player-detail__hero {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    text-align: center !important;
+    gap: 8px !important;
+  }
+  .player-detail__hero-info { text-align: center !important; min-width: 0 !important; }
+  .player-detail__hero-name {
+    white-space: normal !important;
+    overflow: visible !important;
+    word-break: break-word !important;
+    font-size: 18px !important;
+  }
+  .player-detail__hero .rating-pill--xl,
+  .player-detail__hero-rating .rating-pill--xl {
+    position: static !important;
+    transform: none !important;
+    margin: 8px auto !important;
+    font-size: 22px !important;
+    min-width: 56px !important;
+    padding: 8px 14px !important;
+  }
+
+  /* Bug 13 / 14 — splits и фитнес: overflow scroll внутри их карточек */
+  .splits-table,
+  .player-splits-table,
+  .player-detail__fitness-grid,
+  [class*="player-detail__fitness"],
+  [class*="player-detail__main-stats"],
+  [class*="stats-table"] {
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    min-width: 0 !important;
+  }
+  .splits-table table,
+  .player-splits-table table,
+  [class*="stats-table"] table {
+    min-width: 480px;
+    font-size: 11px;
+  }
+}
+
+/* === Galaxy Fold cover screen / extra-narrow phones (≤ 360px) === */
+@media (max-width: 360px) {
+  body { font-size: 13px; }
+  .app-content, .page { padding: 8px !important; padding-bottom: 64px !important; }
+  .app-header { height: 48px !important; padding: 0 8px !important; }
+  .app-header__brand-logo { height: 18px !important; }
+  .sidebar-nav { height: 50px !important; padding: 2px 4px !important; }
+  .sidebar-nav__icon { font-size: 16px !important; }
+  .sidebar-nav__label { font-size: 9px !important; }
+
+  /* 2-колоночные сетки → 1 */
+  .club-overview__ratings,
+  .match-detail__ratings,
+  .player-detail__ratings,
+  .matches-dashboard__season,
+  [class*="metrics"],
+  [class*="key-stats"],
+  [class*="key_stats"] {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Top-5 / лидеры — 1 на экран в свайпе */
+  .topr-card,
+  .top5-card,
+  .leader-card,
+  .club-overview__leader-card {
+    flex: 0 0 calc(100vw - 24px) !important;
+  }
+
+  /* Карточка лидера на /players — фото маленькое, имя в столбик */
+  .players-leaders__top-body > :first-child img,
+  [class*="best-player"] img,
+  [class*="motm"] img {
+    width: 56px !important;
+    height: 56px !important;
+  }
+
+  /* Хиро-заголовки */
+  .matches-dashboard__hero-title,
+  .club-page__hero-title,
+  .player-detail__hero-name,
+  .players-leaders__top-name {
+    font-size: 18px !important;
+  }
+  .matches-dashboard__hero { padding: 14px 12px !important; }
+  .club-page__hero { padding: 14px 12px !important; }
+
+  /* Hero score уменьшается ещё */
+  .matches-dashboard__last-score { font-size: 18px !important; }
+  .match-detail__score { font-size: 32px !important; }
+
+  /* Таблицы — самый плотный режим */
+  .club-standings__table { font-size: 10px !important; }
+  .club-standings__table thead th { font-size: 8px !important; padding: 4px 1px !important; }
+  .club-standings__table tbody td { padding: 5px 1px !important; }
+  .club-standings__pts { font-size: 11px !important; }
+
+  /* Кнопки */
+  button, .btn, .upload-dialog__submit, .matches-dashboard__upload {
+    font-size: 12px !important;
+    padding: 8px 10px !important;
+  }
+}
+
+/* === Tablet portrait (769–1024px) === */
+@media (min-width: 769px) and (max-width: 1024px) {
+  /* Бок-нав остаётся вертикальным, но уже только с иконками */
+  .sidebar-nav { width: 64px; padding: 8px 4px; }
+  .sidebar-nav__item { padding: 12px 4px; font-size: 9px; }
+  .sidebar-nav__icon { font-size: 18px; }
+
+  /* Главная сетка матчей: узкая колонка слева, контент основной */
+  .matches-dashboard__grid { grid-template-columns: 220px minmax(0, 1fr) !important; gap: 16px; }
+  .match-detail__grid { grid-template-columns: 320px 1fr !important; gap: 14px; }
+  .match-detail__right { display: none; }   /* правая колонка прячется, motm и mvs съезжают вниз через media reorder при необходимости */
+  .player-detail__radars { grid-template-columns: 1fr !important; gap: 12px; }
+  .player-detail__maps { grid-template-columns: 1fr 1fr !important; }
+  .player-detail__fitness-grid { grid-template-columns: repeat(3, 1fr) !important; }
+
+  /* Top-7 КЛУБа: 2 колонки */
+  .club-top-grid { grid-template-columns: repeat(2, 1fr) !important; }
+
+  /* PlayersLeaders метрики — 3 в ряд */
+  .players-leaders__grid { grid-template-columns: repeat(3, 1fr) !important; }
+
+  /* Сетка KPI комбинированной аналитики — 4 колонки */
+  .club-overview__kpi { grid-template-columns: repeat(4, 1fr) !important; }
+  .match-detail__donuts { grid-template-columns: repeat(3, 1fr) !important; }
+
+  /* Командные карты — 3 колонки на планшете */
+  .match-detail__maps-grid { grid-template-columns: repeat(3, 1fr) !important; }
+
+  /* Hero чуть скромнее */
+  .matches-dashboard__hero-title,
+  .club-page__hero-title { font-size: 28px; }
+}
+
+/* === Small desktops / laptops (1025–1366px) === */
+@media (min-width: 1025px) and (max-width: 1366px) {
+  .match-detail__grid { grid-template-columns: 320px 1fr 280px !important; }
+  .matches-dashboard__grid { grid-template-columns: 240px minmax(0, 1fr) !important; }
+  .club-top-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+/* === Landscape phone (≤768 wide и ≤500 высота) — поджать вертикали === */
+@media (max-width: 768px) and (max-height: 500px) {
+  .sidebar-nav { height: 44px !important; }
+  .app-header { height: 44px !important; }
+  .app-content, .page { padding-bottom: 56px !important; }
+  .formation__pitch-wrap { aspect-ratio: 16 / 10 !important; max-height: 80vh; }
+}
+

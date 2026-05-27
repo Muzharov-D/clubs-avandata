@@ -1,0 +1,232 @@
+/* Бэкдроп */
+.addteam {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  animation: addteam-fade 180ms ease-out;
+}
+@keyframes addteam-fade {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* Сама карточка снизу */
+.addteam__sheet {
+  width: 100%;
+  max-width: 560px;
+  background: linear-gradient(180deg, #1f0a0a 0%, #150707 100%);
+  border-top: 1px solid rgba(220, 38, 38, 0.35);
+  border-radius: 20px 20px 0 0;
+  box-shadow: 0 -12px 40px rgba(0, 0, 0, 0.5);
+  padding: 8px 16px 24px;
+  padding-bottom: max(24px, env(safe-area-inset-bottom));
+  animation: addteam-rise 220ms ease-out;
+}
+@keyframes addteam-rise {
+  from { transform: translateY(20px); opacity: 0; }
+  to   { transform: translateY(0);     opacity: 1; }
+}
+
+/* Маленькая полоска сверху как на iOS */
+.addteam__handle {
+  width: 36px;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 2px;
+  margin: 0 auto 12px;
+}
+
+.addteam__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+.addteam__title {
+  font-size: 17px;
+  font-weight: 800;
+  color: #fff;
+  letter-spacing: 0.01em;
+}
+.addteam__close {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+  font-size: 22px;
+  line-height: 1;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 0 2px;
+  transition: background 140ms;
+}
+.addteam__close:hover { background: rgba(255, 255, 255, 0.14); }
+.addteam__close:active { background: rgba(255, 255, 255, 0.22); }
+
+/* Табы переключения страниц + page indicator */
+.addteam__pager {
+  display: flex;
+  gap: 8px;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 12px;
+  padding: 4px;
+  margin-bottom: 14px;
+}
+.addteam__pagerbtn {
+  flex: 1;
+  border: none;
+  background: transparent;
+  color: #c5a3a3;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 9px 0;
+  border-radius: 8px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: background 140ms, color 140ms;
+}
+.addteam__pagerbtn.is-active {
+  background: linear-gradient(135deg, rgba(234, 6, 6, 0.5) 0%, rgba(220, 38, 38, 0.4) 100%);
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(220, 38, 38, 0.35);
+}
+
+/* Свайпер */
+.addteam__scroller {
+  width: 100%;
+  display: flex;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-snap-type: x mandatory;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+.addteam__scroller::-webkit-scrollbar { display: none; }
+
+.addteam__page {
+  flex: 0 0 100%;
+  width: 100%;
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+}
+
+.addteam__grid {
+  display: grid;
+  gap: 10px;
+}
+.addteam__grid--younger { grid-template-columns: repeat(3, 1fr); }
+.addteam__grid--older   { grid-template-columns: repeat(3, 1fr); }
+
+/* Точки */
+.addteam__dots {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 14px;
+}
+.addteam__dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.2);
+  transition: background 180ms, transform 180ms;
+}
+.addteam__dot.is-active {
+  background: #ef4444;
+  transform: scale(1.2);
+}
+
+/* Карточка возраста */
+.addteam__card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 18px 6px;
+  min-height: 84px;
+  background: linear-gradient(135deg, rgba(234, 6, 6, 0.18) 0%, rgba(0, 0, 0, 0.5) 100%);
+  border: 1px solid rgba(220, 38, 38, 0.4);
+  border-radius: 14px;
+  color: #fff;
+  font-family: inherit;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform 140ms, border-color 140ms, box-shadow 140ms, background 140ms;
+}
+.addteam__card:hover {
+  transform: translateY(-2px);
+  border-color: #ef4444;
+}
+.addteam__card:active { transform: scale(0.97); }
+
+/* Карточки команд, которые уже в избранном */
+.addteam__card--mine {
+  border-color: #fbbf24;
+  background: linear-gradient(135deg, rgba(251, 191, 36, 0.12) 0%, rgba(0, 0, 0, 0.5) 100%);
+}
+.addteam__card--active {
+  border-color: #22d3ee;
+  background: linear-gradient(135deg, rgba(34, 211, 238, 0.18) 0%, rgba(0, 0, 0, 0.5) 100%);
+  box-shadow: 0 4px 14px rgba(34, 211, 238, 0.35);
+}
+
+.addteam__card-year {
+  font-size: 22px;
+  font-weight: 900;
+  color: #fff;
+  letter-spacing: 0.01em;
+  line-height: 1;
+  white-space: nowrap;
+}
+.addteam__card-tier {
+  font-size: 10px;
+  color: #c5a3a3;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  font-weight: 700;
+  margin-top: 4px;
+}
+.addteam__card-badge {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #fff;
+  background: rgba(0, 0, 0, 0.6);
+  padding: 3px 6px;
+  border-radius: 6px;
+  pointer-events: none;
+}
+
+/* Десктоп — больше карточек в ряд */
+@media (min-width: 641px) {
+  .addteam__grid--younger { grid-template-columns: repeat(3, 1fr); }
+  .addteam__grid--older   { grid-template-columns: repeat(5, 1fr); }
+  .addteam__card { min-height: 100px; padding: 22px 10px; }
+  .addteam__card-year { font-size: 28px; }
+}
+
+@media (max-width: 380px) {
+  .addteam__card { padding: 14px 4px; min-height: 72px; }
+  .addteam__card-year { font-size: 19px; }
+  .addteam__card-tier { font-size: 9px; }
+}

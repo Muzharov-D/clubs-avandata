@@ -1,0 +1,75 @@
+.streak-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 10px;
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  font-size: 12px;
+}
+
+.streak-badge--W { border-color: rgba(34, 197, 94, 0.4); background: rgba(34, 197, 94, 0.08); }
+.streak-badge--L { border-color: rgba(220, 38, 38, 0.4); background: rgba(220, 38, 38, 0.08); }
+.streak-badge--D { border-color: rgba(148, 163, 184, 0.4); background: rgba(148, 163, 184, 0.06); }
+
+.streak-badge__main {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.streak-badge__num {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 16px;
+  color: #fff;
+  line-height: 1;
+}
+.streak-badge--W .streak-badge__num { color: #22c55e; }
+.streak-badge--L .streak-badge__num { color: #fca5a5; }
+.streak-badge--D .streak-badge__num { color: #cbd5e1; }
+
+.streak-badge__word {
+  color: #cbd5e1;
+  font-weight: 600;
+}
+.streak-badge__fire {
+  font-size: 14px;
+  animation: streak-pulse 1.6s ease-in-out infinite;
+}
+@keyframes streak-pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.18); }
+}
+
+.streak-badge__form {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding-left: 8px;
+  border-left: 1px solid rgba(255, 255, 255, 0.08);
+}
+.streak-badge__dot {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 10px;
+}
+.streak-badge__dot--W { background: rgba(34, 197, 94, 0.35); color: #fff; }
+.streak-badge__dot--L { background: rgba(220, 38, 38, 0.35); color: #fff; }
+.streak-badge__dot--D { background: rgba(148, 163, 184, 0.3); color: #fff; }
+
+@media (max-width: 420px) {
+  .streak-badge { font-size: 11px; padding: 5px 8px; gap: 6px; }
+  .streak-badge__num { font-size: 14px; }
+  .streak-badge__dot { width: 16px; height: 16px; font-size: 9px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .streak-badge__fire { animation: none; }
+}

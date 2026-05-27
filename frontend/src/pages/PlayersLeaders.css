@@ -1,0 +1,136 @@
+.players-leaders__topbar {
+  margin-bottom: 16px;
+}
+
+.players-leaders__top {
+  cursor: pointer;
+  margin-bottom: 16px;
+  background: linear-gradient(135deg, rgba(26,75,160,0.55), rgba(20,20,60,0.7));
+}
+
+.players-leaders__top-label {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: rgba(255,255,255,0.55);
+  font-weight: 600;
+  margin-bottom: 14px;
+}
+
+.players-leaders__top-body {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 24px;
+}
+
+.players-leaders__top-info {
+  min-width: 0;
+}
+.players-leaders__top-name {
+  font-size: 26px;
+  font-weight: 800;
+  margin-bottom: 4px;
+}
+.players-leaders__top-pos {
+  font-size: 13px;
+  color: rgba(255,255,255,0.6);
+  margin-bottom: 10px;
+}
+.players-leaders__top-stats {
+  display: flex;
+  gap: 18px;
+  font-size: 13px;
+  color: rgba(255,255,255,0.7);
+}
+.players-leaders__top-stats b { color: #22d3ee; }
+
+.players-leaders__top-rating {
+  text-align: center;
+}
+.players-leaders__top-rating-100 {
+  font-size: 12px;
+  color: rgba(255,255,255,0.5);
+  margin-top: 6px;
+}
+
+.players-leaders__grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 12px;
+}
+
+.players-leaders__top--locked {
+  cursor: default;
+  opacity: 0.6;
+}
+.players-leaders__top--locked:hover {
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+/* Tablet portrait (769–1024px): сетка лидеров — 3 колонки */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .players-leaders__grid { grid-template-columns: repeat(3, 1fr); }
+  .players-leaders__top-body { gap: 16px; }
+}
+
+/* Mobile (≤768px): фото меньше, имя в нескольких строках, сетка 2-колонки */
+@media (max-width: 768px) {
+  /* Subnav на всю ширину, кнопки flex-1 */
+  .players-rating__subnav {
+    width: 100% !important;
+    display: grid !important;
+    grid-template-columns: 1fr 1fr;
+    gap: 4px;
+  }
+  .players-subnav__item {
+    text-align: center;
+    padding: 8px 12px;
+    font-size: 12px;
+  }
+  /* «Рейтинг игрока» карточка — стек */
+  .players-leaders__top-body {
+    grid-template-columns: auto 1fr !important;
+    gap: 12px !important;
+    align-items: start !important;
+  }
+  .players-leaders__top-body > :first-child img {
+    width: 72px !important;
+    height: 72px !important;
+  }
+  .players-leaders__top-name {
+    font-size: 17px !important;
+    white-space: normal !important;
+    overflow: visible !important;
+    word-break: break-word;
+    line-height: 1.15;
+    margin-bottom: 2px;
+  }
+  .players-leaders__top-pos {
+    font-size: 11px;
+    margin-bottom: 6px;
+  }
+  .players-leaders__top-stats {
+    flex-wrap: wrap;
+    gap: 6px 12px;
+    font-size: 11px;
+  }
+  .players-leaders__top-rating {
+    grid-column: 1 / -1;
+    text-align: left;
+    margin-top: 6px;
+  }
+  /* Сетка лидеров — 2 колонки вместо 5 */
+  .players-leaders__grid { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+}
+
+/* Galaxy Fold cover / extra-narrow (≤360px) */
+@media (max-width: 360px) {
+  .players-leaders__top-body > :first-child img {
+    width: 56px !important;
+    height: 56px !important;
+  }
+  .players-leaders__top-name { font-size: 15px !important; }
+  .players-leaders__grid { grid-template-columns: 1fr; }
+  .players-subnav__item { padding: 7px 6px; font-size: 11px; }
+}

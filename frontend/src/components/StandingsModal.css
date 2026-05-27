@@ -1,0 +1,198 @@
+.sm-backdrop {
+  position: fixed; inset: 0;
+  background: rgba(15, 0, 0, 0.85);
+  backdrop-filter: blur(6px);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 100;
+  padding: 16px;
+  animation: sm-fade 180ms ease-out;
+}
+@keyframes sm-fade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes sm-slide-up { from { transform: translateY(100%); } to { transform: translateY(0); } }
+.sm-sheet {
+  background: linear-gradient(180deg, #1a0606 0%, #0f0303 100%);
+  border: 1px solid rgba(220, 38, 38, 0.35);
+  border-radius: 16px;
+  padding: 22px;
+  width: 100%;
+  max-width: 720px;
+  max-height: 90vh;
+  overflow-y: auto;
+  position: relative;
+  color: #f1f5fb;
+  box-shadow: 0 20px 60px rgba(220, 38, 38, 0.25);
+}
+.sm-close {
+  position: absolute; top: 14px; right: 14px;
+  background: rgba(255, 255, 255, 0.08);
+  border: none;
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  color: #fff;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.sm-head {
+  margin-bottom: 14px;
+  padding-right: 40px;
+}
+.sm-head h3 {
+  margin: 0 0 4px;
+  font-size: 18px; font-weight: 700;
+  color: #fff;
+  letter-spacing: 0.01em;
+}
+.sm-sub {
+  font-size: 13px; color: #c5a3a3;
+}
+
+.sm-table-wrap {
+  overflow-x: auto;
+  margin-top: 8px;
+}
+.sm-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+.sm-table th, .sm-table td {
+  padding: 8px 6px;
+  border-bottom: 1px solid rgba(220, 38, 38, 0.12);
+  text-align: center;
+}
+.sm-table th {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #c5a3a3;
+  font-weight: 600;
+}
+.sm-team {
+  text-align: left !important;
+  min-width: 180px;
+}
+.sm-team img {
+  width: 22px; height: 22px;
+  vertical-align: middle;
+  margin-right: 8px;
+  object-fit: contain;
+}
+.sm-pos {
+  width: 36px;
+  font-weight: 700;
+  color: #94a3c8;
+}
+.sm-pts {
+  font-weight: 700;
+}
+.sm-pts b {
+  color: #fff;
+}
+.sm-row--ours {
+  background: linear-gradient(90deg, rgba(220, 38, 38, 0.18) 0%, rgba(220, 38, 38, 0) 100%);
+}
+.sm-row--ours .sm-pos { color: #ef4444; }
+.sm-row--ours .sm-team span { color: #fff; font-weight: 700; }
+
+/* Медали — подсветка строк по позиции в лиге/клубном зачёте */
+.sm-row--medal-gold {
+  background: linear-gradient(90deg, rgba(255, 215, 0, 0.16) 0%, rgba(255, 215, 0, 0) 60%);
+}
+.sm-row--medal-silver {
+  background: linear-gradient(90deg, rgba(192, 192, 192, 0.14) 0%, rgba(192, 192, 192, 0) 60%);
+}
+.sm-row--medal-bronze {
+  background: linear-gradient(90deg, rgba(205, 127, 50, 0.14) 0%, rgba(205, 127, 50, 0) 60%);
+}
+/* Если строка наша + медальная — комбинируем (наш приоритет, плюс medal-glow по бокам) */
+.sm-row--ours.sm-row--medal-gold {
+  background: linear-gradient(90deg, rgba(255, 215, 0, 0.2) 0%, rgba(220, 38, 38, 0.15) 50%, rgba(220, 38, 38, 0) 100%);
+}
+.sm-row--ours.sm-row--medal-silver {
+  background: linear-gradient(90deg, rgba(192, 192, 192, 0.18) 0%, rgba(220, 38, 38, 0.15) 50%, rgba(220, 38, 38, 0) 100%);
+}
+.sm-row--ours.sm-row--medal-bronze {
+  background: linear-gradient(90deg, rgba(205, 127, 50, 0.18) 0%, rgba(220, 38, 38, 0.15) 50%, rgba(220, 38, 38, 0) 100%);
+}
+.sm-row--medal-gold .sm-pos,
+.sm-row--medal-silver .sm-pos,
+.sm-row--medal-bronze .sm-pos {
+  font-size: 16px;
+}
+
+@media (max-width: 640px) {
+  .sm-backdrop {
+    align-items: center;       /* центрируем по вертикали */
+    padding: 16px 12px;        /* стандартные mobile-отступы по краям */
+  }
+  .sm-sheet {
+    padding: 22px 14px 24px;
+    width: 100%;
+    max-width: 100%;           /* растянуть на всю доступную ширину viewport - padding */
+    max-height: calc(100vh - 32px);
+    border-radius: 16px;       /* скругления со всех сторон, не bottom-sheet */
+    margin: 0;
+    animation: sm-fade 200ms ease-out;
+  }
+  /* drag-handle уже не нужен — это не bottom-sheet */
+  .sm-sheet::before { display: none; }
+  /* Таблица на mobile — компактные колонки, чтобы все 8 колонок поместились */
+  .sm-table { font-size: 12px; }
+  .sm-table th, .sm-table td { padding: 7px 2px; }
+  .sm-table th { font-size: 10px; }
+  .sm-team { min-width: 0 !important; }
+  .sm-team img { width: 18px !important; height: 18px !important; margin-right: 4px !important; }
+  .sm-team span {
+    display: inline-block;
+    max-width: 100%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    vertical-align: middle;
+  }
+  .sm-pos { width: 28px; }
+  .sm-table th:not(.sm-team):not(.sm-pos),
+  .sm-table td:not(.sm-team):not(.sm-pos) { width: 26px; }
+  .sm-close {
+    width: 40px;
+    height: 40px;
+    top: 8px;
+    right: 8px;
+    background: rgba(220, 38, 38, 0.18);
+  }
+}
+
+/* Очень узкие — ещё компактнее, но все колонки видны */
+@media (max-width: 380px) {
+  .sm-backdrop { padding: 12px 8px; }
+  .sm-sheet { padding: 18px 8px 22px; }
+  .sm-table { font-size: 11px; }
+  .sm-table th, .sm-table td { padding: 6px 1px; }
+  .sm-table th { font-size: 9px; }
+  .sm-team img { width: 16px !important; height: 16px !important; margin-right: 3px !important; }
+  .sm-pos { width: 24px; }
+  .sm-table th:not(.sm-team):not(.sm-pos),
+  .sm-table td:not(.sm-team):not(.sm-pos) { width: 22px; }
+}
+
+/* Подсветка ячеек места в клубном зачёте — золото/серебро/бронза.
+   Применяется к <td> с местом 1/2/3 в каждой возрастной лиге (breakdown). */
+.sm-table .sm-cell--gold {
+  background: linear-gradient(135deg, rgba(255, 215, 0, 0.32) 0%, rgba(180, 130, 0, 0.18) 100%);
+  color: #ffd700;
+  font-weight: 800;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+.sm-table .sm-cell--silver {
+  background: linear-gradient(135deg, rgba(220, 220, 220, 0.28) 0%, rgba(120, 120, 120, 0.18) 100%);
+  color: #e8e8e8;
+  font-weight: 800;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+.sm-table .sm-cell--bronze {
+  background: linear-gradient(135deg, rgba(205, 127, 50, 0.32) 0%, rgba(120, 70, 30, 0.18) 100%);
+  color: #f0c090;
+  font-weight: 800;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}

@@ -1,0 +1,18 @@
+.rating-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  border-radius: 6px;
+  letter-spacing: 0.02em;
+  line-height: 1;
+}
+.rating-pill--xs { padding: 2px 5px; font-size: 11px; min-width: 26px; }
+.rating-pill--sm { padding: 3px 7px; font-size: 12px; min-width: 32px; }
+.rating-pill--md { padding: 4px 9px; font-size: 14px; min-width: 38px; }
+.rating-pill--lg { padding: 8px 14px; font-size: 22px; min-width: 60px; }
+.rating-pill--xl { padding: 12px 20px; font-size: 36px; min-width: 88px; }
+.rating-pill--empty {
+  background: rgba(255,255,255,0.06);
+  color: rgba(255,255,255,0.4);
+}

@@ -1,0 +1,86 @@
+.mds-lu {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  padding: 8px 0 4px;
+}
+
+.mds-lu--empty {
+  display: block;
+  text-align: center;
+  font-size: 13px;
+  color: #94a3c8;
+  padding: 24px 12px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 8px;
+}
+
+.mds-lu__col {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.mds-lu__team {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 6px;
+  padding-bottom: 4px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+/* Бренд: Легирус — красный, соперник — белый. Класс на корне определяет
+   на какой стороне Легирус. */
+.mds-lu--us-home .mds-lu__col--home .mds-lu__team,
+.mds-lu--us-away .mds-lu__col--away .mds-lu__team { color: #dc2626; }
+.mds-lu--us-home .mds-lu__col--away .mds-lu__team,
+.mds-lu--us-away .mds-lu__col--home .mds-lu__team { color: #fff; }
+
+.mds-lu__group {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  color: #94a3c8;
+  margin: 8px 0 4px;
+}
+
+.mds-lu__row {
+  display: grid;
+  grid-template-columns: 24px 1fr;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  padding: 4px 6px;
+  border-radius: 4px;
+}
+.mds-lu__row--bench { opacity: 0.7; }
+.mds-lu__row:hover { background: rgba(255, 255, 255, 0.03); }
+
+.mds-lu__num {
+  font-weight: 700;
+  font-size: 11px;
+  color: #94a3c8;
+  text-align: center;
+  min-width: 20px;
+}
+
+.mds-lu__name {
+  color: #f1f5fb;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.mds-lu__empty {
+  font-size: 11px;
+  color: #94a3c8;
+  padding: 12px 0;
+  text-align: center;
+}
+
+@media (max-width: 480px) {
+  .mds-lu { gap: 8px; }
+  .mds-lu__row { font-size: 11px; padding: 3px 4px; }
+}

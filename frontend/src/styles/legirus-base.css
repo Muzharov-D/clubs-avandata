@@ -1,0 +1,89 @@
+/* ─── Шрифты ───────────────────────────────────────────────────────────
+   Montserrat — body, headings, UI (через Google Fonts <link> в index.html)
+   Xolonium  — display-числа, спорт-акценты (счёт, percentile, минуты в таймлайне)
+
+   Xolonium НЕ на Google Fonts. Положи файлы в frontend/public/fonts/Xolonium/:
+       Xolonium-Regular.woff2
+       Xolonium-Bold.woff2
+   Тогда подхватится автоматически. Если файлов нет — graceful fallback на Montserrat.
+   ─────────────────────────────────────────────────────────────────────── */
+@font-face {
+  font-family: 'Xolonium';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/Xolonium/Xolonium-Regular.woff2') format('woff2'),
+       url('/fonts/Xolonium/Xolonium-Regular.woff') format('woff');
+}
+@font-face {
+  font-family: 'Xolonium';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('/fonts/Xolonium/Xolonium-Bold.woff2') format('woff2'),
+       url('/fonts/Xolonium/Xolonium-Bold.woff') format('woff');
+}
+
+:root {
+  --font-body:    'Montserrat', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-display: 'Xolonium', 'Montserrat', system-ui, sans-serif;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: var(--font-body);
+  font-weight: 500;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background: #0e0e2a;
+  color: #fff;
+}
+
+/* Использовать так: <h1 className="font-display">42</h1>
+   или в CSS: font-family: var(--font-display); */
+.font-display {
+  font-family: var(--font-display);
+  letter-spacing: 0.02em;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+button {
+  font-family: inherit;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* СТРОГО: во всех dropdown'ах фон ТЁМНЫЙ, текст БЕЛЫЙ.
+   Раньше браузер рисовал option с белым фоном и почти-белым текстом —
+   ничего не было видно (особенно в селекторе команды в шапке тренера).
+   Применяем глобально, чтобы любой новый <select> наследовал тему без
+   копипасты. */
+select,
+select option {
+  background-color: #14143c;
+  color: #fff;
+  font-family: inherit;
+}
+select option:checked,
+select option:hover,
+select option:focus {
+  background-color: #22d3ee;
+  color: #07071c;
+  font-weight: 600;
+}
+/* color-scheme сообщает браузеру что элемент тёмный — он подбирает
+   соответствующие нативные стили (стрелка, скроллбар в dropdown). */
+select {
+  color-scheme: dark;
+}

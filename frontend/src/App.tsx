@@ -1,48 +1,135 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useParams } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { AuthProvider } from './auth/AuthProvider';
-import { TenantProvider } from './tenant/TenantProvider';
-import { ProtectedRoute } from './auth/ProtectedRoute';
-import { LoginPage } from './routes/Login';
-import { HomePage } from './routes/Home';
+
+// Legacy Легирус-контексты и компоненты (.jsx, через allowJs)
+import { AuthProvider, useAuth } from './contexts/AuthContext';
+import { TeamProvider } from './contexts/TeamContext';
+import { TournamentProvider } from './contexts/TournamentContext';
+import ProtectedRoute from './components/ProtectedRoute';
+import MainLayout from './layouts/MainLayout';
+import Login from './pages/Login';
+import ClubOverview from './pages/ClubOverview';
+import ClubPage from './pages/ClubPage';
+import MatchesDashboard from './pages/MatchesDashboard';
+import MatchDetail from './pages/MatchDetail';
+import ComparisonView from './pages/ComparisonView';
+import PlayersLeaders from './pages/PlayersLeaders';
+import PlayersRating from './pages/PlayersRating';
+import PlayerDetail from './pages/PlayerDetail';
+import CalendarPage from './pages/CalendarPage';
+import TrainingsPage from './pages/TrainingsPage';
+import PublicTeamSchedule from './pages/PublicTeamSchedule';
+import LeagueFixture from './pages/LeagueFixture';
+import PublicLanding from './pages/PublicLanding';
+import ClubLanding from './pages/ClubLanding';
+import ErrorBoundary from './components/ErrorBoundary';
+import { ToastHost } from './components/Toast';
+
+// Новые admin-страницы Clubs Avandata (платформенный уровень)
 import { AdminLayout } from './routes/admin/AdminLayout';
 import { AdminTenantsList } from './routes/admin/AdminTenantsList';
 import { AdminTenantNew } from './routes/admin/AdminTenantNew';
 
 const queryClient = new QueryClient({
   defaultOptions: {
-    queries: {
-      retry: 1,
-      refetchOnWindowFocus: false,
-      staleTime: 30_000,
-    },
+    queries: { retry: 1, refetchOnWindowFocus: false, staleTime: 30_000 },
   },
 });
 
+// На clubs.avandata.ru — клуб-хост по умолчанию.
+// mobile.* хосты появятся в Фазе родительского экрана.
+function isClubHost() {
+  if (typeof window === 'undefined') return false;
+  const h = window.location.hostname;
+  if (h.startsWith('mobile.')) return false;
+  return true;
+}
+
+function RootRoute() {
+  const { user } = useAuth() as { user: any };
+  if (isClubHost()) {
+    if (user) return <Navigate to="/club" replace />;
+    return <ClubLanding />;
+  }
+  return <PublicLanding />;
+}
+
+function CoachOnly({ children }: { children: React.ReactNode }) {
+  const { isCoach, isPlayer, user } = useAuth() as { isCoach: boolean; isPlayer: boolean; user: any };
+  if (isCoach) return <>{children}</>;
+  if (isPlayer && user?.playerId) {
+    return <Navigate to={`/players/${user.playerId}`} replace />;
+  }
+  return <Navigate to="/club" replace />;
+}
+
+function OwnPlayerOnly({ children }: { children: React.ReactNode }) {
+  const { isPlayer, user } = useAuth() as { isPlayer: boolean; user: any };
+  const { playerId: routePlayerId } = useParams();
+  if (isPlayer && user?.playerId && routePlayerId !== user.playerId) {
+    return <Navigate to={`/players/${user.playerId}`} replace />;
+  }
+  return <>{children}</>;
+}
+
+function PlatformAdminOnly({ children }: { children: React.ReactNode }) {
+  const { user } = useAuth() as { user: any };
+  if (!user) return <Navigate to="/login" replace />;
+  if (user.role !== 'platform_admin') return <Navigate to="/club" replace />;
+  return <>{children}</>;
+}
+
 export function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <BrowserRouter>
-        <AuthProvider>
-          <TenantProvider>
-            <Routes>
-              <Route path="/login" element={<LoginPage />} />
-              <Route path="/" element={<HomePage />} />
-              <Route
-                path="/admin"
-                element={
-                  <ProtectedRoute roles={['platform_admin']}>
-                    <AdminLayout />
-                  </ProtectedRoute>
-                }
-              >
-                <Route index element={<AdminTenantsList />} />
-                <Route path="tenants/new" element={<AdminTenantNew />} />
-              </Route>
-            </Routes>
-          </TenantProvider>
-        </AuthProvider>
-      </BrowserRouter>
-    </QueryClientProvider>
+    <ErrorBoundary>
+      <ToastHost />
+      <QueryClientProvider client={queryClient}>
+        <BrowserRouter>
+          <AuthProvider>
+            <TeamProvider>
+              <TournamentProvider>
+                <Routes>
+                  <Route path="/login" element={<Login />} />
+                  <Route path="/" element={<RootRoute />} />
+
+                  {/* Public родительский экран */}
+                  <Route path="/public" element={<PublicLanding />} />
+                  <Route path="/public/team/:age" element={<PublicTeamSchedule />} />
+                  <Route path="/public/team/:age/league" element={<LeagueFixture />} />
+
+                  {/* Платформенный админ (Clubs Avandata) */}
+                  <Route
+                    path="/admin"
+                    element={
+                      <PlatformAdminOnly>
+                        <AdminLayout />
+                      </PlatformAdminOnly>
+                    }
+                  >
+                    <Route index element={<AdminTenantsList />} />
+                    <Route path="tenants/new" element={<AdminTenantNew />} />
+                  </Route>
+
+                  {/* Авторизованный кабинет клуба */}
+                  <Route element={<ProtectedRoute roles={[]}><MainLayout /></ProtectedRoute>}>
+                    <Route path="/club" element={<ClubPage />} />
+                    <Route path="/analytics" element={<CoachOnly><ClubOverview /></CoachOnly>} />
+                    <Route path="/analytics/team" element={<CoachOnly><ComparisonView /></CoachOnly>} />
+                    <Route path="/matches" element={<MatchesDashboard />} />
+                    <Route path="/matches/:matchId" element={<MatchDetail />} />
+                    <Route path="/calendar" element={<CalendarPage />} />
+                    <Route path="/trainings" element={<TrainingsPage />} />
+                    <Route path="/players" element={<CoachOnly><PlayersLeaders /></CoachOnly>} />
+                    <Route path="/players/rating" element={<CoachOnly><PlayersRating /></CoachOnly>} />
+                    <Route path="/players/:playerId" element={<OwnPlayerOnly><PlayerDetail /></OwnPlayerOnly>} />
+                    <Route path="*" element={<Navigate to="/club" replace />} />
+                  </Route>
+                </Routes>
+              </TournamentProvider>
+            </TeamProvider>
+          </AuthProvider>
+        </BrowserRouter>
+      </QueryClientProvider>
+    </ErrorBoundary>
   );
 }

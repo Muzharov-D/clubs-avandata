@@ -1,0 +1,798 @@
+/* Public-страница ФК Легирус: красно-чёрный градиент, без посторонних брендов.
+   Mobile-first redesign — все touch-targets ≥44px, компактный header, dot-grid календарь. */
+
+.public-page {
+  position: relative;
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at 20% 0%, rgba(220, 38, 38, 0.18) 0%, transparent 55%),
+    radial-gradient(circle at 80% 100%, rgba(220, 38, 38, 0.12) 0%, transparent 50%),
+    linear-gradient(180deg, #1a0606 0%, #0a0202 100%);
+  color: #f1f5fb;
+  padding: 16px 12px 80px;
+  padding-top: max(16px, env(safe-area-inset-top));
+  padding-bottom: max(80px, env(safe-area-inset-bottom));
+  overflow-x: hidden;
+}
+
+.public-page__container {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+/* Декоративная волна — два разделителя: под шапкой и в самом низу страницы.
+   Растягиваем на всю ширину viewport (не container), чтобы шла «от края до края». */
+.public-page__wave {
+  position: relative;
+  height: 90px;
+  margin: 8px 0 14px;
+  pointer-events: none;
+  /* Вырываемся за container в полную ширину экрана */
+  margin-left: calc(50% - 50vw);
+  margin-right: calc(50% - 50vw);
+  width: 100vw;
+  background: url('/icons/wave.png') center / 100% 100% no-repeat;
+  opacity: 1;
+}
+.public-page__wave--bottom {
+  margin: 18px 0 0;
+  margin-left: calc(50% - 50vw);
+  margin-right: calc(50% - 50vw);
+  opacity: 0.85;
+  transform: scaleX(-1);
+}
+
+.public-page__container {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+/* === HEADER (mobile-first compact) === */
+.public-page__head {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  grid-template-areas:
+    "brand brand"
+    "ranks ranks";
+  gap: 14px;
+  margin-bottom: 16px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid rgba(220, 38, 38, 0.18);
+}
+
+.public-page__brand {
+  grid-area: brand;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.public-page__logo {
+  width: 44px;
+  height: 44px;
+  object-fit: contain;
+  filter: drop-shadow(0 2px 8px rgba(220, 38, 38, 0.4));
+  flex-shrink: 0;
+}
+
+.public-page__brand-eyebrow {
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  color: #ef4444;
+  text-transform: uppercase;
+  margin-bottom: 2px;
+  font-weight: 600;
+}
+
+.public-page__title {
+  font-size: 18px;
+  font-weight: 700;
+  margin: 0;
+  color: #fff;
+  letter-spacing: 0.01em;
+  line-height: 1.2;
+}
+
+.public-page__ranks {
+  grid-area: ranks;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+}
+
+/* Кликабельные ранг-блоки — touch target ≥44px */
+.public-page__rank {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  min-height: 56px;
+  background: linear-gradient(135deg, rgba(220, 38, 38, 0.18) 0%, rgba(0, 0, 0, 0.4) 100%);
+  border: 1px solid rgba(220, 38, 38, 0.4);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: transform 120ms, border-color 120ms, box-shadow 120ms;
+  color: inherit;
+  font-family: inherit;
+  text-align: left;
+  -webkit-tap-highlight-color: transparent;
+}
+.public-page__rank:hover { transform: translateY(-1px); border-color: #ef4444; box-shadow: 0 4px 12px rgba(220, 38, 38, 0.35); }
+.public-page__rank:active { transform: scale(0.98); }
+
+/* Клубный зачёт — нейтральный белый/серебро (не путать с лиговым красным) */
+.public-page__rank--club {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(0, 0, 0, 0.55) 100%);
+  border-color: rgba(255, 255, 255, 0.25);
+}
+.public-page__rank--club:hover { border-color: #fff; box-shadow: 0 4px 12px rgba(255, 255, 255, 0.18); }
+.public-page__rank--club .public-page__rank-pos { color: #fff; }
+
+.public-page__rank-pos {
+  font-size: 28px;
+  font-weight: 800;
+  color: #ef4444;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.public-page__rank-meta {
+  font-size: 10px;
+  color: #f1f5fb;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  line-height: 1.4;
+  min-width: 0;
+}
+
+.public-page__rank-meta small {
+  display: block;
+  font-size: 10px;
+  color: #c5a3a3;
+  margin-top: 2px;
+  text-transform: none;
+  letter-spacing: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* === SUBSCRIBE ROW — кнопка + крестик «скрыть» === */
+.public-page__subscribe-row {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 14px;
+  align-items: stretch;
+}
+.public-page__subscribe {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 52px;
+  padding: 14px 16px;
+  background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%);
+  border: none;
+  border-radius: 12px;
+  color: #fff;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 120ms, box-shadow 120ms;
+  box-shadow: 0 4px 14px rgba(220, 38, 38, 0.35);
+  -webkit-tap-highlight-color: transparent;
+}
+.public-page__subscribe:hover { transform: translateY(-1px); box-shadow: 0 6px 18px rgba(220, 38, 38, 0.5); }
+.public-page__subscribe:active { transform: scale(0.99); }
+.public-page__subscribe span:first-child { font-size: 18px; }
+
+.public-page__subscribe-dismiss {
+  flex-shrink: 0;
+  width: 44px;
+  min-height: 52px;
+  background: rgba(255, 255, 255, 0.06);
+  color: #c5a3a3;
+  border: 1px solid rgba(220, 38, 38, 0.3);
+  border-radius: 12px;
+  cursor: pointer;
+  font-size: 14px;
+  font-family: inherit;
+  -webkit-tap-highlight-color: transparent;
+  transition: background 120ms, color 120ms, border-color 120ms;
+}
+.public-page__subscribe-dismiss:hover {
+  background: rgba(220, 38, 38, 0.12);
+  color: #fff;
+  border-color: #ef4444;
+}
+
+/* === SETTINGS row — тогл «Показывать тренировки» === */
+.public-page__settings {
+  display: flex;
+  align-items: center;
+  margin-bottom: 12px;
+  padding: 0 4px;
+}
+.public-page__settings-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  min-height: 36px;
+}
+.public-page__settings-toggle input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+.public-page__settings-track {
+  position: relative;
+  width: 40px;
+  height: 22px;
+  border-radius: 11px;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(220, 38, 38, 0.25);
+  transition: background 160ms, border-color 160ms;
+  flex-shrink: 0;
+}
+.public-page__settings-track::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #c5a3a3;
+  transition: transform 180ms cubic-bezier(0.16, 1, 0.3, 1), background 160ms;
+}
+.public-page__settings-toggle input:checked + .public-page__settings-track {
+  background: linear-gradient(135deg, rgba(220, 38, 38, 0.55) 0%, rgba(120, 20, 20, 0.5) 100%);
+  border-color: #ef4444;
+}
+.public-page__settings-toggle input:checked + .public-page__settings-track::after {
+  transform: translateX(18px);
+  background: #fff;
+}
+.public-page__settings-toggle input:focus-visible + .public-page__settings-track {
+  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.25);
+}
+.public-page__settings-label {
+  font-size: 13px;
+  color: #f1f5fb;
+  font-weight: 500;
+}
+.public-page__settings-label small {
+  font-weight: 400;
+  color: #94a3c8;
+  margin-left: 4px;
+  font-size: 11px;
+}
+.public-page__settings-toggle.is-disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+.public-page__settings-toggle.is-disabled .public-page__settings-track {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+/* === WEEK NAVIGATION — две кнопки 'Текущая неделя' / 'Следующая' === */
+.public-page__week-nav {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.public-page__week-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  padding: 8px 12px;
+  min-height: 50px;
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(220, 38, 38, 0.25);
+  border-radius: 10px;
+  color: #c5a3a3;
+  cursor: pointer;
+  font-family: inherit;
+  -webkit-tap-highlight-color: transparent;
+  transition: background 120ms, border-color 120ms, color 120ms;
+}
+.public-page__week-btn:hover {
+  background: rgba(220, 38, 38, 0.08);
+  color: #fff;
+}
+.public-page__week-btn.is-active {
+  background: linear-gradient(135deg, rgba(220, 38, 38, 0.4) 0%, rgba(120, 20, 20, 0.55) 100%);
+  border-color: #ef4444;
+  color: #fff;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+}
+.public-page__week-btn span {
+  font-size: 13px;
+  font-weight: 600;
+}
+.public-page__week-btn small {
+  font-size: 10px;
+  letter-spacing: 0.02em;
+  opacity: 0.85;
+}
+
+.public-page__footer-link {
+  background: none;
+  border: none;
+  color: #ef4444;
+  font-size: 12px;
+  font-family: inherit;
+  cursor: pointer;
+  padding: 6px 8px;
+  margin-top: 4px;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  -webkit-tap-highlight-color: transparent;
+}
+.public-page__footer-link:hover { color: #fff; }
+
+/* === Единый фон-токен для кнопок public-страницы + blur === */
+.public-page__filter,
+.public-page__filter:not(.is-active),
+.public-page__week-btn:not(.is-active),
+.public-page__action--secondary,
+.public-page__rank,
+.public-page__day-details-close,
+.public-page__subscribe-dismiss {
+  background: rgba(234, 6, 6, 0.10) !important;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+.public-page__filter.is-active,
+.public-page__week-btn.is-active {
+  background: rgba(234, 6, 6, 0.40) !important;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+/* Контейнерные обёртки фильтр-row тоже с blur, чтобы за ними волна размывалась */
+.public-page__filters,
+.public-page__week-nav {
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+
+/* === ACTION BAR — две кнопки внизу: календарь + поделиться === */
+.public-page__actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 18px;
+  margin-bottom: 8px;
+}
+.public-page__action {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 48px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform 120ms, box-shadow 120ms, background 120ms;
+}
+.public-page__action:active { transform: scale(0.98); }
+
+.public-page__action--secondary {
+  background: rgba(0, 0, 0, 0.45);
+  border: 1px solid rgba(220, 38, 38, 0.35);
+  color: #fff;
+}
+.public-page__action--secondary:hover {
+  background: rgba(220, 38, 38, 0.12);
+  border-color: #ef4444;
+}
+
+.public-page__action--primary {
+  background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%);
+  border: none;
+  color: #fff;
+  box-shadow: 0 4px 14px rgba(220, 38, 38, 0.35);
+}
+.public-page__action--primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(220, 38, 38, 0.5);
+}
+
+.public-page__action span:first-child { font-size: 16px; }
+
+/* === АДАПТИВНАЯ ВЫСОТА КАРТОЧЕК === */
+/* Маленький телефон (<=640w * <=720h) — 2 события без скролла */
+.pub-card { min-height: 76px; }
+
+/* Средние телефоны (>=720h) — 3 события без скролла */
+@media (min-height: 720px) {
+  .pub-card { min-height: 90px; }
+}
+
+/* Высокие экраны (>=900h) — 4 события без скролла */
+@media (min-height: 900px) {
+  .pub-card { min-height: 102px; }
+}
+
+/* === FILTERS — segmented control 100% width, 44px height === */
+.public-page__filters {
+  display: flex;
+  align-items: stretch;
+  gap: 0;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(220, 38, 38, 0.25);
+  border-radius: 10px;
+  padding: 4px;
+}
+
+.public-page__filter {
+  flex: 1;
+  min-height: 40px;
+  padding: 0 12px;
+  background: transparent;
+  color: #c5a3a3;
+  border: none;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: inherit;
+  border-radius: 7px;
+  transition: all 120ms;
+  -webkit-tap-highlight-color: transparent;
+  white-space: nowrap;
+}
+.public-page__filter:hover { background: rgba(220, 38, 38, 0.08); color: #fff; }
+.public-page__filter.is-active {
+  background: linear-gradient(135deg, rgba(220, 38, 38, 0.4) 0%, rgba(120, 20, 20, 0.5) 100%);
+  color: #fff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+.public-page__count {
+  display: flex;
+  align-items: center;
+  padding: 0 10px;
+  font-size: 12px;
+  color: #c5a3a3;
+  white-space: nowrap;
+}
+.public-page__count--standalone {
+  margin: 0 0 12px 4px;
+  font-size: 12px;
+  color: #c5a3a3;
+  letter-spacing: 0.02em;
+}
+
+.public-page__view-toggle { margin-bottom: 10px; }
+
+/* === LIST CARDS === */
+.public-page__list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.pub-card {
+  background: linear-gradient(135deg, rgba(0, 0, 0, 0.5) 0%, rgba(26, 6, 6, 0.7) 100%);
+  border: 1px solid rgba(220, 38, 38, 0.18);
+  border-radius: 12px;
+  padding: 14px;
+  transition: background 120ms, border-color 120ms, transform 120ms;
+}
+.pub-card:hover {
+  background: linear-gradient(135deg, rgba(0, 0, 0, 0.6) 0%, rgba(26, 6, 6, 0.85) 100%);
+  border-color: rgba(220, 38, 38, 0.5);
+}
+.pub-card--past { opacity: 0.78; }
+
+.pub-card--clickable { cursor: pointer; user-select: none; -webkit-tap-highlight-color: transparent; }
+.pub-card--clickable:hover { border-color: #ef4444; transform: translateY(-1px); }
+.pub-card--clickable:active { transform: scale(0.99); }
+
+.pub-card__date {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: #c5a3a3;
+  margin-bottom: 10px;
+  letter-spacing: 0.02em;
+  flex-wrap: wrap;
+}
+.pub-card__badge {
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.pub-card__badge--league { background: rgba(220, 38, 38, 0.22); color: #ef4444; border: 1px solid rgba(220, 38, 38, 0.4); }
+.pub-card__badge--cup    { background: rgba(255, 255, 255, 0.08); color: #fff; border: 1px solid rgba(255, 255, 255, 0.4); }
+.pub-card__badge--training { background: rgba(34, 197, 94, 0.18); color: #4ade80; border: 1px solid rgba(34, 197, 94, 0.4); }
+
+/* Тур матча — нейтральная плашка */
+.pub-card__round {
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  background: rgba(255, 255, 255, 0.06);
+  color: #c5a3a3;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  white-space: nowrap;
+}
+.pub-card__no-date {
+  color: #fbbf24;
+  font-style: italic;
+  font-size: 12px;
+}
+
+.pub-card--training { border-left: 3px solid #22c55e; }
+.pub-card__training-row { display: flex; align-items: center; gap: 14px; padding: 4px 0; }
+.pub-card__training-info { flex: 1; }
+.pub-card__training-title { font-size: 16px; font-weight: 700; color: #fff; }
+.pub-card__training-sub { font-size: 12px; color: #c5a3a3; margin-top: 2px; }
+
+.pub-card__teams {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 10px;
+}
+
+.pub-card__team {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 15px;
+  color: #fff;
+  font-weight: 600;
+  min-width: 0;
+}
+.pub-card__team--home { justify-content: flex-end; text-align: right; }
+.pub-card__team--away { justify-content: flex-start; text-align: left; }
+
+.pub-card__team-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pub-card__shield {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+  flex-shrink: 0;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.5));
+}
+
+.pub-card__score {
+  text-align: center;
+  min-width: 70px;
+  font-size: 18px;
+  font-weight: 800;
+  color: #fff;
+}
+.pub-card__score b { color: #ef4444; }
+
+.pub-card__vs {
+  font-size: 13px;
+  color: #c5a3a3;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+}
+
+.pub-card__venue {
+  font-size: 12px;
+  color: #c5a3a3;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(220, 38, 38, 0.12);
+  word-break: break-word;
+}
+
+.public-page__empty {
+  text-align: center;
+  padding: 48px 24px;
+  color: #c5a3a3;
+  font-size: 14px;
+  line-height: 1.6;
+}
+.public-page__empty--error { color: #ef4444; }
+
+.public-page__footer {
+  margin-top: 32px;
+  padding-top: 20px;
+  border-top: 1px solid rgba(220, 38, 38, 0.12);
+  font-size: 12px;
+  color: #6b7896;
+  line-height: 1.6;
+  text-align: center;
+}
+
+/* === МЕСЯЧНЫЙ КАЛЕНДАРЬ — mobile dot-grid + selected-day inline events === */
+
+/* Inline список событий выбранного дня (mobile) */
+.public-page__day-details {
+  margin-top: 12px;
+  padding: 14px;
+  background: linear-gradient(135deg, rgba(220, 38, 38, 0.08) 0%, rgba(0, 0, 0, 0.5) 100%);
+  border: 1px solid rgba(220, 38, 38, 0.35);
+  border-radius: 12px;
+}
+.public-page__day-details-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  gap: 8px;
+}
+.public-page__day-details-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: 0.02em;
+  text-transform: capitalize;
+}
+.public-page__day-details-close {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(220, 38, 38, 0.2);
+  border: 1px solid rgba(220, 38, 38, 0.4);
+  color: #fff;
+  cursor: pointer;
+  font-size: 14px;
+  font-family: inherit;
+  flex-shrink: 0;
+}
+
+/* === Канбан-вид на public-странице — переопределяем cyan на красно-чёрный === */
+.cal-month--legirus {
+  background: linear-gradient(180deg, rgba(26, 6, 6, 0.85) 0%, rgba(10, 2, 2, 0.6) 100%);
+  border-color: rgba(220, 38, 38, 0.2);
+}
+.cal-month--legirus .cal-month__nav-btn {
+  background: rgba(220, 38, 38, 0.10);
+  border-color: rgba(220, 38, 38, 0.3);
+  color: #fff;
+  width: 44px;
+  height: 44px;
+  font-size: 14px;
+}
+.cal-month--legirus .cal-month__nav-btn:hover { background: rgba(220, 38, 38, 0.2); }
+.cal-month--legirus .cal-month__title { color: #fff; }
+.cal-month--legirus .cal-month__today {
+  background: rgba(220, 38, 38, 0.18);
+  border-color: rgba(220, 38, 38, 0.5);
+  color: #ef4444;
+  min-height: 44px;
+  padding: 0 14px;
+}
+.cal-month--legirus .cal-month__today:hover { background: rgba(220, 38, 38, 0.28); }
+.cal-month--legirus .cal-month__weekday { color: #c5a3a3; }
+.cal-month--legirus .cal-month__row--current {
+  border-color: rgba(220, 38, 38, 0.55);
+  background: rgba(220, 38, 38, 0.05);
+  box-shadow: 0 0 12px rgba(220, 38, 38, 0.18);
+}
+.cal-month--legirus .cal-month__day { background: rgba(255, 255, 255, 0.03); }
+.cal-month--legirus .cal-month__day--today {
+  background: linear-gradient(180deg, rgba(220, 38, 38, 0.18) 0%, rgba(220, 38, 38, 0.04) 100%);
+  border-color: rgba(220, 38, 38, 0.55);
+}
+.cal-month--legirus .cal-month__day--today .cal-month__day-num { color: #ef4444; }
+.cal-month--legirus .cal-month__event--match { border-left-color: #ef4444; }
+.cal-month--legirus .cal-month__event--match .cal-month__event-time { color: #ef4444; }
+.cal-month--legirus .cal-month__event--cup {
+  border-left-color: #fff;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.10) 0%, rgba(255, 255, 255, 0.02) 100%);
+}
+.cal-month--legirus .cal-month__event--cup .cal-month__event-time { color: #fff; }
+
+.cal-month--legirus .cal-month__day--selected {
+  border-color: #ef4444;
+  box-shadow: 0 0 0 2px rgba(220, 38, 38, 0.45), inset 0 0 0 1px rgba(220, 38, 38, 0.4);
+}
+
+@media (max-width: 640px) {
+  .cal-month--legirus .cal-month__day {
+    min-height: 56px;
+    padding: 6px 4px 8px;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .cal-month--legirus .cal-month__day:active { transform: scale(0.95); }
+  .cal-month--legirus .cal-month__events {
+    flex-direction: row;
+    gap: 4px;
+    justify-content: center;
+    align-items: center;
+    margin-top: auto;
+    padding-bottom: 2px;
+  }
+  .cal-month--legirus .cal-month__event {
+    width: 7px;
+    height: 7px;
+    padding: 0;
+    border-radius: 50%;
+    border: none;
+    background: #ef4444;
+    flex-shrink: 0;
+    box-shadow: 0 0 4px rgba(220, 38, 38, 0.5);
+    cursor: pointer;
+  }
+  .cal-month--legirus .cal-month__event--cup { background: #fff; box-shadow: 0 0 4px rgba(255, 255, 255, 0.4); }
+  .cal-month--legirus .cal-month__event--training { background: #22c55e; box-shadow: 0 0 4px rgba(34, 197, 94, 0.5); }
+  .cal-month--legirus .cal-month__event-time,
+  .cal-month--legirus .cal-month__event-icon,
+  .cal-month--legirus .cal-month__event-text { display: none; }
+
+  .cal-month--legirus .cal-month__day-num {
+    font-size: 14px;
+    text-align: center;
+    margin-bottom: 0;
+  }
+  .cal-month--legirus.cal-month { padding: 12px 6px; }
+  .cal-month--legirus .cal-month__title { font-size: 15px; }
+  .cal-month--legirus .cal-month__weekday { font-size: 10px; padding: 4px 0; }
+  .cal-month--legirus .cal-month__row { gap: 3px; padding: 1px; }
+  .cal-month--legirus .cal-month__weekday-row { gap: 3px; }
+}
+
+@media (max-width: 380px) {
+  .public-page__filter { font-size: 12px; padding: 0 8px; }
+  .pub-card__team { font-size: 14px; gap: 8px; }
+  .pub-card__shield { width: 28px; height: 28px; }
+  .pub-card__score { font-size: 16px; min-width: 56px; }
+  .public-page__action { font-size: 13px; padding: 10px 12px; min-height: 44px; }
+  .public-page__wave { height: 60px; margin: 6px 0 10px; }
+  .public-page__wave--bottom { margin: 12px 0 0; }
+}
+
+/* Кнопка перехода в полный календарь лиги — под OpponentPreview */
+.public-page__league-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  margin: 4px 0 14px;
+  padding: 12px 14px;
+  background: rgba(220, 38, 38, 0.08);
+  border: 1px solid rgba(220, 38, 38, 0.25);
+  border-radius: 10px;
+  color: #fff;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 120ms, border-color 120ms, transform 120ms;
+}
+.public-page__league-btn:hover {
+  background: rgba(220, 38, 38, 0.14);
+  border-color: rgba(220, 38, 38, 0.4);
+}
+.public-page__league-btn:active { transform: scale(0.99); }
+.public-page__league-btn-arrow {
+  margin-left: auto;
+  color: #fca5a5;
+  font-weight: 700;
+}
