@@ -1,0 +1,38 @@
+# Dependencies
+node_modules/
+.pnp.*
+
+# Build outputs
+dist/
+build/
+.cache/
+.vite/
+
+# Logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+
+# Env / secrets
+.env
+.env.local
+.env.*.local
+*.env
+
+# OS / IDE
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Claude / agents
+.claude/
+
+# Drizzle
+backend/drizzle/meta/
+
+# Temp
+tmp/
+.tmp/
+*.scratch.*
