@@ -19,6 +19,14 @@ const envSchema = z.object({
     .string()
     .transform((v) => v === 'true' || v === '1')
     .default('false'),
+
+  // Cron + external providers
+  START_CRONS: z
+    .string()
+    .transform((v) => v === 'true' || v === '1')
+    .default('false'),
+  FFSPB_API_KEY: z.string().optional(),
+  FFSPB_ENDPOINT: z.string().url().default('https://stat.ffspb.org/api'),
 });
 
 const parsed = envSchema.safeParse(process.env);

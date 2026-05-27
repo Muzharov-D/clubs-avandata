@@ -8,6 +8,7 @@ import { authRoutes } from './auth/routes.js';
 import { tenantRoutes } from './tenants/routes.js';
 import { adminRoutes } from './admin/routes.js';
 import { closePool } from './db/client.js';
+import { startCrons, stopCrons } from './cron/runner.js';
 
 async function buildServer() {
   const app = Fastify({
@@ -49,6 +50,7 @@ async function start() {
   const shutdown = async (signal: string) => {
     logger.info({ signal }, 'Shutting down');
     try {
+      stopCrons();
       await app.close();
       await closePool();
       process.exit(0);
@@ -64,6 +66,11 @@ async function start() {
   try {
     await app.listen({ host: '0.0.0.0', port: env.PORT });
     logger.info({ port: env.PORT }, `Server listening on http://localhost:${env.PORT}`);
+    if (env.START_CRONS) {
+      startCrons();
+    } else {
+      logger.info('START_CRONS=false — crons disabled');
+    }
   } catch (err) {
     logger.error({ err }, 'Failed to start server');
     process.exit(1);
