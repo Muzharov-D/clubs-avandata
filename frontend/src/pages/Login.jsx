@@ -12,7 +12,11 @@ export default function Login() {
   const [error, setError] = useState(null);
   const [busy, setBusy] = useState(false);
 
-  if (user) return <Navigate to="/club" replace />;
+  // Если уже залогинен — перекидываем по роли (без захода в форму).
+  if (user) {
+    const dest = user.role === 'platform_admin' ? '/admin' : '/club';
+    return <Navigate to={dest} replace />;
+  }
 
   async function submit(e) {
     e.preventDefault();
@@ -22,9 +26,16 @@ export default function Login() {
       // в Легирусе — lowercase-нормализован. Различаем по наличию '@'.
       const value = u.trim();
       const normalized = value.includes('@') ? value : value.toLowerCase();
-      await login(normalized, p);
-      const from = location.state?.from?.pathname || '/club';
-      navigate(from, { replace: true });
+      const loggedUser = await login(normalized, p);
+      // Куда перенаправить: platform_admin — в админку платформы,
+      // остальные — в кабинет клуба (или туда откуда пришли).
+      let target;
+      if (loggedUser?.role === 'platform_admin') {
+        target = '/admin';
+      } else {
+        target = location.state?.from?.pathname || '/club';
+      }
+      navigate(target, { replace: true });
     } catch (err) {
       setError(err.message || 'Ошибка входа');
     } finally { setBusy(false); }
