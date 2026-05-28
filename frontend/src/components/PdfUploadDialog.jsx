@@ -14,8 +14,39 @@ export default function PdfUploadDialog({ onClose, onSuccess }) {
   const [error, setError] = useState(null);
   const [result, setResult] = useState(null);
 
-  function pickPdf(e)  { setPdf(e.target.files?.[0] || null);  setError(null); setResult(null); }
-  function pickXlsx(e) { setXlsx(e.target.files?.[0] || null); setError(null); setResult(null); }
+  const MAX_BYTES = 50 * 1024 * 1024;  // 50 MB лимит сервера
+
+  function validateFile(file, kind) {
+    if (!file) return null;
+    if (file.size > MAX_BYTES) {
+      return `${kind} больше 50 МБ — backend не примет. Размер: ${(file.size / 1024 / 1024).toFixed(1)} МБ.`;
+    }
+    return null;
+  }
+  function pickPdf(e)  {
+    const f = e.target.files?.[0] || null;
+    const err = validateFile(f, 'PDF');
+    if (err) { setError(err); setPdf(null); return; }
+    setPdf(f);  setError(null); setResult(null);
+  }
+  function pickXlsx(e) {
+    const f = e.target.files?.[0] || null;
+    const err = validateFile(f, 'Excel');
+    if (err) { setError(err); setXlsx(null); return; }
+    setXlsx(f); setError(null); setResult(null);
+  }
+
+  function sanitize(msg) {
+    const s = String(msg || '');
+    if (s.length > 280) return s.slice(0, 280) + '…';
+    if (/ECONN|ETIMEDOUT|fetch failed|NetworkError/i.test(s)) {
+      return 'Не удалось связаться с сервером. Проверьте интернет и попробуйте ещё раз.';
+    }
+    if (/timeout|превышено время/i.test(s)) {
+      return 'Превышено время ожидания (парсинг большого PDF может занять до 3 минут). Попробуйте ещё раз.';
+    }
+    return s;
+  }
 
   async function handleSubmit() {
     if (!pdf) return;
@@ -25,9 +56,11 @@ export default function PdfUploadDialog({ onClose, onSuccess }) {
     try {
       const res = await uploadPdf(pdf, selectedTeamId, tournament, xlsx);
       setResult(res);
+      // Если backend не вернул matchId — всё равно даём вызвать onSuccess (родитель
+      // перенаправит на список матчей, например).
       onSuccess?.(res?.matchId);
     } catch (e) {
-      setError(e.message);
+      setError(sanitize(e?.message));
     } finally {
       setBusy(false);
     }
@@ -86,11 +119,18 @@ export default function PdfUploadDialog({ onClose, onSuccess }) {
             accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
             style={{ display: 'none' }} onChange={pickXlsx} />
 
-          {busy && <div className="upload-dialog__progress">Парсинг… до минуты.</div>}
-          {error && <div className="upload-dialog__error">Ошибка: {error}</div>}
+          {busy && (
+            <div className="upload-dialog__progress">
+              Парсинг отчёта — обычно 1-3 минуты. PDF большого матча может потребовать дольше.
+              <span className="upload-dialog__progress-spinner" aria-hidden />
+            </div>
+          )}
+          {error && <div className="upload-dialog__error">⚠️ {error}</div>}
           {result && (
             <div className="upload-dialog__success">
-              Матч {result.matchId} разобран — {result.playersProcessed} игроков{result.excelColumns ? `, ${result.excelColumns} колонок stats` : ''}. Перенаправляем…
+              ✓ Отчёт разобран — {result.playersProcessed ?? '?'} игроков
+              {result.excelColumns ? `, ${result.excelColumns} колонок Excel` : ''}.
+              {result.matchId ? ' Открываем матч…' : ' Открываем список матчей…'}
             </div>
           )}
 

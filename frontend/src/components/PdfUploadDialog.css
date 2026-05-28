@@ -110,7 +110,19 @@
   padding: 10px 12px;
   border-radius: 8px;
   font-size: 13px;
+  display: flex; align-items: center; gap: 10px;
+  line-height: 1.5;
 }
+.upload-dialog__progress-spinner {
+  width: 14px; height: 14px;
+  border: 2px solid rgba(124,179,246,0.3);
+  border-top-color: #22d3ee;
+  border-radius: 50%;
+  animation: upload-spin 0.8s linear infinite;
+  flex-shrink: 0;
+  margin-left: auto;
+}
+@keyframes upload-spin { to { transform: rotate(360deg); } }
 
 .upload-dialog__error {
   background: rgba(211,47,47,0.15);
