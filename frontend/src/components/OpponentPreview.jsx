@@ -149,7 +149,7 @@ export default function OpponentPreview({ nextMatch, allMatches, standings }) {
 
       {vsLegirus.length > 0 && (
         <div className="opp-preview__history">
-          <div className="opp-preview__history-label">В этом сезоне с Легирусом</div>
+          <div className="opp-preview__history-label">Личные встречи в этом сезоне</div>
           <div className="opp-preview__history-row">
             {vsLegirus.map((m, i) => {
               const isHome = normalizeTeamName(m.home) === oppNorm;
@@ -163,7 +163,7 @@ export default function OpponentPreview({ nextMatch, allMatches, standings }) {
                   className={`opp-preview__history-cell ${win ? 'is-win' : draw ? 'is-draw' : 'is-loss'}`}
                   title={`${isHome ? 'у них' : 'у нас'}: ${m.home} ${m.score.home}:${m.score.away} ${m.away}`}
                 >
-                  Легирус {ourScore}:{oppScore}
+                  {ourScore}:{oppScore}
                 </span>
               );
             })}

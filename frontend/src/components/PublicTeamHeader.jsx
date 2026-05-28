@@ -30,6 +30,8 @@ export default function PublicTeamHeader({
   onOpenLeague,
   onOpenClub,
   matches, // для StreakBadge
+  clubName = 'Avandata',
+  clubLogoSrc = '/icons/avandata.png',
 }) {
   const navigate = useNavigate();
   const tier = tierForAge(age);
@@ -109,13 +111,13 @@ export default function PublicTeamHeader({
           title="Профиль клуба"
         >
           <div className="public-header__club-text">
-            <div className="public-header__club-name">ФК&nbsp;Легирус</div>
+            <div className="public-header__club-name">{clubName}</div>
             <div className="public-header__club-tier">{tier}</div>
           </div>
           <img
-            src="/icons/legirus.png"
-            onError={(e) => { e.currentTarget.src = '/assets/logos/legirus.png'; }}
-            alt="ФК Легирус"
+            src={clubLogoSrc}
+            onError={(e) => { e.currentTarget.src = '/icons/avandata.png'; }}
+            alt={clubName}
             className="public-header__club-logo"
           />
         </button>

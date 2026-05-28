@@ -64,7 +64,7 @@ function positionOrder(p) {
 export default function FormationField({
   formation,
   players,
-  ourTeamName = 'Легирус 2010',
+  ourTeamName = 'Наша команда',
   imageSrc,
   imageFullSrc,
 }) {

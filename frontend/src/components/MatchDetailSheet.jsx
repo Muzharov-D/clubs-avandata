@@ -196,7 +196,7 @@ export default function MatchDetailSheet({ match, venue, age, onClose, theme = '
         {/* Комментарий тренера — публичный текст для родителей */}
         {hasCoachComment && tab === 'comment' && (
           <div className="mds-comment">
-            <div className="mds-comment__caption">От тренера ФК Легирус</div>
+            <div className="mds-comment__caption">Комментарий тренера</div>
             <div className="mds-comment__body">{coachComment}</div>
           </div>
         )}

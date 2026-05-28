@@ -56,7 +56,10 @@ export default function CallupRoster({ match, age, teamId, onClose }) {
   const [youngerExpanded, setYoungerExpanded] = useState(false);
 
   const youngerAge = youngerAgeOf(age);
-  const youngerTeamId = youngerAge ? `legirus-${youngerAge}` : null;
+  // Берём префикс из текущей teamId ("zenit-fk-2011" → "zenit-fk-" + youngerAge),
+  // вместо хардкода "legirus-". Так работает для любого tenant'а.
+  const teamIdPrefix = String(teamId || '').replace(/\d{4}$/, '');
+  const youngerTeamId = youngerAge && teamIdPrefix ? `${teamIdPrefix}${youngerAge}` : null;
 
   async function load() {
     if (!match?.matchId || !age) return;
