@@ -9,6 +9,9 @@ import { tenants } from '../db/schema/tenants.js';
 import { users } from '../db/schema/users.js';
 import { authenticate, authorize } from '../auth/middleware.js';
 import { BadRequestError } from '../shared/errors.js';
+import { syncTenantStandings } from '../services/standingsService.js';
+import { syncTenantCalendarTournament } from '../services/calendarService.js';
+import { isFfspbConfigured } from '../services/ffspbApi.js';
 
 const slugSchema = z
   .string()
@@ -119,5 +122,66 @@ export async function adminRoutes(app: FastifyInstance) {
         .where(eq(tenants.slug, req.params.slug));
     });
     return { ok: true };
+  });
+
+  /**
+   * POST /api/v1/admin/sync/:slug — manual trigger всех ffspb-syncs для тенанта.
+   * Для (а) первого прогона данных и (б) дебага без ожидания cron tick.
+   */
+  app.post<{ Params: { slug: string } }>('/sync/:slug', async (req) => {
+    const { slug } = req.params;
+    if (!isFfspbConfigured()) {
+      throw new BadRequestError('FFSPB_API_KEY not configured on server', 'FFSPB_NOT_CONFIGURED');
+    }
+    const rows = await withBypassRLS((tx) =>
+      tx.select().from(tenants).where(eq(tenants.slug, slug)).limit(1),
+    );
+    const tenant = rows[0];
+    if (!tenant) throw new BadRequestError('tenant not found', 'TENANT_NOT_FOUND');
+    if (tenant.dataProvider !== 'ffspb') {
+      throw new BadRequestError(`tenant has dataProvider='${tenant.dataProvider}'`, 'WRONG_PROVIDER');
+    }
+
+    const cfg = (tenant.providerConfig ?? {}) as {
+      ourMatcher?: string;
+      season?: string;
+      tournaments?: Record<string, { leagueId?: string | number | null; cupId?: string | number | null }>;
+    };
+    const ourMatcher = cfg.ourMatcher ?? tenant.displayName;
+    const season = cfg.season ?? new Date().getFullYear().toString();
+    const tournaments = Object.entries(cfg.tournaments ?? {});
+
+    const standingsResults = [];
+    const calendarResults = [];
+
+    for (const [ageGroup, tids] of tournaments) {
+      if (tids.leagueId) {
+        standingsResults.push(
+          await syncTenantStandings({
+            tenantSlug: slug, ageGroup, tournamentId: tids.leagueId, season, ourMatcher,
+          }),
+        );
+        calendarResults.push(
+          await syncTenantCalendarTournament({
+            tenantSlug: slug, ageGroup, season,
+            tournamentId: tids.leagueId, tournament: 'league', ourMatcher,
+          }),
+        );
+      }
+      if (tids.cupId) {
+        calendarResults.push(
+          await syncTenantCalendarTournament({
+            tenantSlug: slug, ageGroup, season,
+            tournamentId: tids.cupId, tournament: 'cup', ourMatcher,
+          }),
+        );
+      }
+    }
+
+    return {
+      tenant: slug,
+      standings: standingsResults,
+      calendar: calendarResults,
+    };
   });
 }
