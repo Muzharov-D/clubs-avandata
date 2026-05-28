@@ -20,8 +20,24 @@ async function buildServer() {
     trustProxy: true,
   });
 
+  // Production origins захардкожены — не зависят от env, чтобы deploy не падал
+  // из-за пропущенной переменной. env.CORS_ORIGIN добавляет dev / preview-домены.
+  const PROD_ORIGINS = [
+    'https://clubs-avandata.vercel.app',
+    'https://clubs.avandata.ru',
+    'http://localhost:5173',
+  ];
+  const envOrigins = env.CORS_ORIGIN.split(',').map((s) => s.trim()).filter(Boolean);
+  const allowedOrigins = Array.from(new Set([...PROD_ORIGINS, ...envOrigins]));
   await app.register(cors, {
-    origin: env.CORS_ORIGIN.split(',').map((s) => s.trim()),
+    // Функция-резолвер вместо массива: пускаем известные origin'ы + Vercel
+    // preview deployments (*.vercel.app для нашего проекта).
+    origin: (origin, cb) => {
+      if (!origin) return cb(null, true);  // server-to-server / curl
+      if (allowedOrigins.includes(origin)) return cb(null, true);
+      if (/^https:\/\/clubs-avandata-[a-z0-9-]+\.vercel\.app$/.test(origin)) return cb(null, true);
+      cb(new Error('CORS: origin не разрешён'), false);
+    },
     credentials: true,
   });
 
