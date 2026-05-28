@@ -58,11 +58,10 @@ export async function adminRoutes(app: FastifyInstance) {
       },
       ffspbProbe: null as unknown,
     };
-    const probes: Array<{ name: string; url: string; useAuth: boolean }> = [
-      { name: 'standings-iri',  url: 'https://stat.ffspb.org/api/standings?tournament=%2Fapi%2Ftournaments%2F44333&itemsPerPage=5', useAuth: true },
-      { name: 'standings-id',   url: 'https://stat.ffspb.org/api/standings?tournament_id=44333&itemsPerPage=5', useAuth: true },
-      { name: 'standings-dotid', url: 'https://stat.ffspb.org/api/standings?tournament.id=44333&itemsPerPage=5', useAuth: true },
-      { name: 'html-tournament', url: 'https://stat.ffspb.org/tournament44333', useAuth: false },
+    const probes: Array<{ name: string; url: string; useAuth: boolean; timeoutMs?: number }> = [
+      { name: 'matches', url: 'https://stat.ffspb.org/api/matches?tournament_id=44333&itemsPerPage=5', useAuth: true, timeoutMs: 10_000 },
+      { name: 'standings-30s', url: 'https://stat.ffspb.org/api/standings?tournament=%2Fapi%2Ftournaments%2F44333&itemsPerPage=5', useAuth: true, timeoutMs: 30_000 },
+      { name: 'standings-60s', url: 'https://stat.ffspb.org/api/standings?tournament=%2Fapi%2Ftournaments%2F44333&itemsPerPage=5', useAuth: true, timeoutMs: 60_000 },
     ];
     const results: unknown[] = [];
     for (const p of probes) {
@@ -75,7 +74,7 @@ export async function adminRoutes(app: FastifyInstance) {
         }
         const res = await fetch(p.url, {
           headers,
-          signal: AbortSignal.timeout(15_000),
+          signal: AbortSignal.timeout(p.timeoutMs ?? 15_000),
         });
         const text = await res.text();
         results.push({
