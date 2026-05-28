@@ -118,15 +118,31 @@ const PAST_MATCHES: PastMatch[] = [
   { date: '2026-03-22T11:00:00+03:00', home: 'Локомотив', away: 'Зенит',       scoreHome: 3, scoreAway: 3, venue: '«Сапсан Арена»',    round: 'Тур 3' },
 ];
 
+// Прошедшие 4 апреля и 11 апреля — переводим в past со счетом (для истории)
+const APRIL_PAST: PastMatch[] = [
+  { date: '2026-04-04T00:00:00+03:00', home: 'Динамо',    away: 'СШОР Зенит', scoreHome: 2, scoreAway: 1, venue: 'УТБ «Новогорск-Динамо»', round: 'Тур 4' },
+  { date: '2026-04-04T11:00:00+03:00', home: 'Зенит',     away: 'Ростов',     scoreHome: 4, scoreAway: 0, venue: '«Смена»',              round: 'Тур 4' },
+  { date: '2026-04-11T10:00:00+03:00', home: 'Краснодар', away: 'Зенит',      scoreHome: 1, scoreAway: 2, venue: 'Академия «Краснодар»', round: 'Тур 5' },
+  { date: '2026-04-11T10:30:00+03:00', home: 'СШОР Зенит', away: 'ЦСКА',       scoreHome: 0, scoreAway: 3, venue: 'СШОР «Зенит»',         round: 'Тур 5' },
+  { date: '2026-05-16T00:00:00+03:00', home: 'Зенит',     away: 'СШОР Зенит', scoreHome: 2, scoreAway: 2, venue: '«Смена»',              round: 'Тур 8' },
+];
+
+// Будущие матчи (июнь-ноябрь 2026, today = 2026-05-28)
 const UPCOMING_MATCHES: PastMatch[] = [
-  // 4 апреля — Тур 4
-  { date: '2026-04-04T00:00:00+03:00', home: 'Динамо',    away: 'СШОР Зенит', scoreHome: NaN, scoreAway: NaN, venue: 'УТБ «Новогорск-Динамо»', round: 'Тур 4' },
-  { date: '2026-04-04T11:00:00+03:00', home: 'Зенит',     away: 'Ростов',     scoreHome: NaN, scoreAway: NaN, venue: '«Смена»',              round: 'Тур 4' },
-  // 11 апреля — Тур 5
-  { date: '2026-04-11T10:00:00+03:00', home: 'Краснодар', away: 'Зенит',      scoreHome: NaN, scoreAway: NaN, venue: 'Академия «Краснодар»', round: 'Тур 5' },
-  { date: '2026-04-11T10:30:00+03:00', home: 'СШОР Зенит', away: 'ЦСКА',       scoreHome: NaN, scoreAway: NaN, venue: 'СШОР «Зенит»',         round: 'Тур 5' },
-  // 16 мая — Дерби!
-  { date: '2026-05-16T00:00:00+03:00', home: 'Зенит',     away: 'СШОР Зенит', scoreHome: NaN, scoreAway: NaN, venue: 'TBD',                  round: 'Тур 8' },
+  // 6 июня — Тур 9
+  { date: '2026-06-06T10:00:00+03:00', home: 'Зенит',     away: 'Локомотив',  scoreHome: NaN, scoreAway: NaN, venue: '«Смена»',              round: 'Тур 9' },
+  { date: '2026-06-06T11:00:00+03:00', home: 'СШОР Зенит', away: 'Динамо',     scoreHome: NaN, scoreAway: NaN, venue: 'СШОР «Зенит»',         round: 'Тур 9' },
+  // 13 июня — Тур 10
+  { date: '2026-06-13T10:30:00+03:00', home: 'Ростов',    away: 'Зенит',      scoreHome: NaN, scoreAway: NaN, venue: '«Локомотив»',          round: 'Тур 10' },
+  { date: '2026-06-13T11:00:00+03:00', home: 'Спартак',   away: 'СШОР Зенит', scoreHome: NaN, scoreAway: NaN, venue: '«Спартак» поле № 4',   round: 'Тур 10' },
+  // 20 июня — Тур 11
+  { date: '2026-06-20T11:00:00+03:00', home: 'Зенит',     away: 'Чертаново',  scoreHome: NaN, scoreAway: NaN, venue: '«Смена»',              round: 'Тур 11' },
+  { date: '2026-06-20T10:00:00+03:00', home: 'СШОР Зенит', away: 'МФА',        scoreHome: NaN, scoreAway: NaN, venue: 'СШОР «Зенит»',         round: 'Тур 11' },
+  // 27 июня — Дерби 2!
+  { date: '2026-06-27T11:00:00+03:00', home: 'СШОР Зенит', away: 'Зенит',     scoreHome: NaN, scoreAway: NaN, venue: 'СШОР «Зенит»',         round: 'Тур 12 · ДЕРБИ' },
+  // 4 июля — Тур 13
+  { date: '2026-07-04T10:00:00+03:00', home: 'Зенит',     away: 'ЦСКА',       scoreHome: NaN, scoreAway: NaN, venue: '«Смена»',              round: 'Тур 13' },
+  { date: '2026-07-04T11:00:00+03:00', home: 'СШОР Зенит', away: 'Краснодар',  scoreHome: NaN, scoreAway: NaN, venue: 'СШОР «Зенит»',         round: 'Тур 13' },
 ];
 
 // ============================================================================
@@ -303,7 +319,7 @@ async function main() {
     await upsertPlayers(t.slug, teamId);
     await upsertCalendarMeta(t.slug);
 
-    for (const m of [...PAST_MATCHES, ...UPCOMING_MATCHES]) {
+    for (const m of [...PAST_MATCHES, ...APRIL_PAST, ...UPCOMING_MATCHES]) {
       await upsertCalendarMatch(t.slug, m, t.ourMatcher, 'ourMatcherExclude' in t ? t.ourMatcherExclude : null);
     }
     console.log(`  ${PAST_MATCHES.length + UPCOMING_MATCHES.length} calendar rows`);
