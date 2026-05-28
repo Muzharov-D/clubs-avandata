@@ -1,0 +1,68 @@
+/* MatchTimeline — хроника матча, вертикальная лента */
+.match-timeline {
+  margin-bottom: 14px;
+}
+.match-timeline__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.match-timeline__row {
+  display: grid;
+  grid-template-columns: 56px 28px 1fr;
+  gap: 10px;
+  align-items: center;
+  padding: 8px 10px;
+  border-radius: 10px;
+  border-left: 3px solid transparent;
+  transition: background 120ms;
+}
+.match-timeline__row:hover { background: rgba(255,255,255,0.03); }
+
+.match-timeline__row--positive { border-left-color: #22c55e; }
+.match-timeline__row--negative { border-left-color: #ef4444; }
+.match-timeline__row--warning  { border-left-color: #facc15; }
+.match-timeline__row--neutral  { border-left-color: rgba(255,255,255,0.15); }
+
+.match-timeline__minute {
+  font-variant-numeric: tabular-nums;
+  color: #22d3ee;
+  font-weight: 700;
+  font-size: 14px;
+  text-align: right;
+}
+.match-timeline__icon {
+  font-size: 18px;
+  text-align: center;
+}
+.match-timeline__body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.match-timeline__type {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: rgba(255,255,255,0.5);
+  font-weight: 600;
+}
+.match-timeline__player {
+  font-size: 13px;
+  color: #f1f5fb;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@media (max-width: 480px) {
+  .match-timeline__row { grid-template-columns: 44px 22px 1fr; gap: 8px; padding: 6px 8px; }
+  .match-timeline__minute { font-size: 12px; }
+  .match-timeline__icon { font-size: 16px; }
+  .match-timeline__type { font-size: 10px; }
+  .match-timeline__player { font-size: 12px; }
+}

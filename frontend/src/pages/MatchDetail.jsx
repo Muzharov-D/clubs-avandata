@@ -5,6 +5,7 @@ import { fetchMatch, fetchPlayers, fetchMatches } from '../services/api';
 import { useTeam } from '../contexts/TeamContext';
 import { useDocumentTitle } from '../hooks/useDocumentTitle';
 import FormationField from '../components/FormationField';
+import MatchTimeline from '../components/MatchTimeline';
 import StatCompareBar from '../components/StatCompareBar';
 import DonutComparisonCard from '../components/DonutComparisonCard';
 import PlayerPhoto from '../components/PlayerPhoto';
@@ -187,6 +188,9 @@ export default function MatchDetail() {
         <RatingCard label="Атака" value={teamRatings.attack} />
         <RatingCard label="Защита" value={teamRatings.defence} />
       </div>
+
+      {/* Хроника матча (best-effort из PDF) — рендерится только если events найдены */}
+      <MatchTimeline events={match.events || []} />
 
       <div className="match-detail__grid">
         <div className="match-detail__left">
