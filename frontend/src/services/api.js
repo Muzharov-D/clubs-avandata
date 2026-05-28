@@ -1,9 +1,16 @@
+import { toast } from '../components/Toast';
+
 const RAW_BASE = import.meta.env.VITE_API_BASE_URL || '';
 const API_BASE = String(RAW_BASE).replace(/\/+$/, '');
 // Clubs Avandata backend живёт под /api/v1/ (vs legacy Легируса /api/).
 const PREFIX = `${API_BASE}/api/v1`;
 const TOKEN_KEY = 'avandata.auth.token';
 const USER_KEY = 'avandata.auth.user';
+
+// Эндпоинты, ошибки которых НЕ показываем тостом (поллинг, фоновые проверки,
+// первичный auth/me — там вызывающий код сам решает что делать).
+const SILENT_PATHS = ['/auth/me', '/auth/refresh', '/push/'];
+function isSilent(path) { return SILENT_PATHS.some((p) => path.includes(p)); }
 
 export function getToken() { return localStorage.getItem(TOKEN_KEY); }
 export function setToken(t) {
@@ -41,22 +48,42 @@ async function fetchJson(path, opts = {}) {
     res = await fetchWithTimeout(`${PREFIX}${path}`, { ...opts, headers, body });
   } catch (e) {
     if (e.name === 'AbortError') {
-      throw new Error('Превышено время ожидания. Проверьте интернет-соединение.');
+      const m = 'Превышено время ожидания. Проверьте интернет-соединение.';
+      if (!isSilent(path)) toast.error(m);
+      throw new Error(m);
     }
-    throw new Error('Не удалось связаться с сервером. Проверьте интернет.');
+    const m = 'Не удалось связаться с сервером. Проверьте интернет.';
+    if (!isSilent(path)) toast.error(m);
+    throw new Error(m);
   }
 
   if (res.status === 401) {
     setToken(null);
     if (typeof window !== 'undefined' && window.location.pathname !== '/login') {
-      window.location.href = '/login';
+      // Не делаем hard reload (он стирает toast). Показываем сообщение и просим
+      // перейти на /login через SPA-навигацию (window.history).
+      toast.info('Сессия истекла, нужно войти заново');
+      // Даем 600ms на показ toast'а, потом редирект
+      setTimeout(() => { window.location.href = '/login'; }, 600);
     }
     throw new Error('Не авторизован');
   }
+  if (res.status === 403) {
+    const m = 'Нет прав на это действие';
+    if (!isSilent(path)) toast.error(m);
+    throw new Error(m);
+  }
+  if (res.status >= 500) {
+    const m = `Сервер временно недоступен (${res.status}). Попробуйте через минуту.`;
+    if (!isSilent(path)) toast.error(m);
+    throw new Error(m);
+  }
   if (!res.ok) {
     const text = await res.text().catch(() => '');
-    let msg = `API ${res.status}: ${res.statusText}`;
+    let msg = `Ошибка ${res.status}: ${res.statusText}`;
     try { msg = JSON.parse(text).error || msg; } catch (_) { if (text) msg = text; }
+    // 4xx: пользовательская ошибка, тостим
+    if (!isSilent(path)) toast.error(msg);
     throw new Error(msg);
   }
   // Пустой ответ (204) — возвращаем null
