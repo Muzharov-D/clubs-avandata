@@ -10,6 +10,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useTeam } from '../contexts/TeamContext';
 import { useAuth } from '../contexts/AuthContext';
+import { useDocumentTitle } from '../hooks/useDocumentTitle';
 import {
   fetchTrainingsByTeam, createTraining, updateTraining, deleteTraining,
   fetchAttendance, saveAttendance, fetchPlayers,
@@ -52,6 +53,7 @@ function fromLocalInput(local) {
 }
 
 export default function TrainingsPage() {
+  useDocumentTitle('Тренировки');
   const { selectedTeam } = useTeam();
   const { user, isCoach, isHeadCoach } = useAuth();
   const teamId = selectedTeam?.id;

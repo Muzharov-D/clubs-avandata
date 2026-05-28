@@ -12,10 +12,12 @@ import {
   displayAge,
 } from '../utils/ageRating';
 import { readActiveTeam, addAndActivate } from '../utils/myTeams';
+import { useDocumentTitle } from '../hooks/useDocumentTitle';
 import OfflineBanner from '../components/OfflineBanner';
 import './PublicLanding.css';
 
 export default function PublicLanding() {
+  useDocumentTitle('Расписание команд');
   const navigate = useNavigate();
 
   useEffect(() => {
