@@ -4,56 +4,143 @@ import './AvandataLanding.css';
 export function AvandataLanding() {
   return (
     <div className="av-landing">
-      <header className="av-landing__nav">
-        <div className="av-landing__brand">
-          <img src="/icons/avandata.png" alt="Avandata" className="av-landing__logo" />
+      {/* Animated background gradients */}
+      <div className="av-landing__gradient" aria-hidden>
+        <div className="av-landing__gradient-bar" />
+        <div className="av-landing__gradient-bar" />
+        <div className="av-landing__gradient-bar" />
+      </div>
+      <div className="av-landing__gradient av-landing__gradient--two" aria-hidden>
+        <div className="av-landing__gradient-bar" />
+        <div className="av-landing__gradient-bar" />
+        <div className="av-landing__gradient-bar" />
+      </div>
+      <div className="av-landing__gradient av-landing__gradient--three" aria-hidden>
+        <div className="av-landing__gradient-bar" />
+        <div className="av-landing__gradient-bar" />
+        <div className="av-landing__gradient-bar" />
+      </div>
+      <div className="av-landing__glow-bottom" aria-hidden />
+
+      {/* Navigation */}
+      <header className="av-nav">
+        <div className="av-nav__brand">
+          <img src="/icons/avandata.png" alt="Avandata" className="av-nav__logo" />
           <div>
-            <div className="av-landing__name">Avandata</div>
-            <div className="av-landing__tagline">Clubs Platform</div>
+            <div className="av-nav__name">Avandata</div>
+            <div className="av-nav__tagline">Clubs Platform</div>
           </div>
         </div>
-        <Link to="/login" className="av-landing__login-btn">Войти</Link>
+        <Link to="/login" className="av-nav__login">Войти</Link>
       </header>
 
-      <main className="av-landing__hero">
-        <h1 className="av-landing__title">
-          SaaS-платформа для футбольных клубов
+      {/* Hero */}
+      <main className="av-hero">
+        <div className="av-hero__badge">
+          <span className="av-hero__badge-dot" />
+          <span>Платформа в продакшене · обновлено сегодня</span>
+        </div>
+
+        <h1 className="av-hero__title">
+          Цифровой кабинет<br />
+          для <span className="av-hero__title-accent">футбольного клуба</span>
         </h1>
-        <p className="av-landing__lead">
-          Расписание, статистика, состав, тренировки, push родителям —
+
+        <p className="av-hero__lead">
+          Расписание, статистика матчей, аналитика SportVisor, тренировки, push-уведомления родителям —
           всё в одном кабинете. Один кодbase, любое количество клубов.
         </p>
 
-        <div className="av-landing__features">
+        <div className="av-hero__cta-row">
+          <Link to="/login" className="av-hero__cta">
+            Войти в кабинет
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M5 12h14" />
+              <path d="m12 5 7 7-7 7" />
+            </svg>
+          </Link>
+          <a href="#features" className="av-hero__cta-secondary">Узнать больше</a>
+        </div>
+
+        <div className="av-stats">
+          <div className="av-stat">
+            <div className="av-stat__num">2</div>
+            <div className="av-stat__label">Клуба</div>
+          </div>
+          <div className="av-stat">
+            <div className="av-stat__num">32+</div>
+            <div className="av-stat__label">Игрока</div>
+          </div>
+          <div className="av-stat">
+            <div className="av-stat__num">22+</div>
+            <div className="av-stat__label">Матча</div>
+          </div>
+          <div className="av-stat">
+            <div className="av-stat__num">99.9%</div>
+            <div className="av-stat__label">Аптайм</div>
+          </div>
+        </div>
+      </main>
+
+      {/* Features */}
+      <section className="av-features" id="features">
+        <h2 className="av-features__title">Всё что нужно футбольному клубу</h2>
+        <p className="av-features__sub">
+          От синхронизации календаря с регламентом турнира до публичного экрана для родителей —
+          платформа покрывает каждый сценарий.
+        </p>
+
+        <div className="av-features__grid">
           <Feature
             icon="📊"
             title="Аналитика матчей"
-            text="SportVisor-разборы, рейтинги игроков, формации, тепловые карты"
+            text="SportVisor-разборы, рейтинги игроков по 15 метрикам, формации, тепловые карты"
           />
           <Feature
             icon="📅"
             title="Календарь и тренировки"
-            text="Расписание, отметка явки, RSVP игроком, ICS-подписка"
+            text="Расписание лиги, отметка явки, RSVP игроком, ICS-подписка в Apple/Google Calendar"
           />
           <Feature
             icon="🔔"
-            title="Push-уведомления"
-            text="За 24ч до матча, при публикации состава, после финального свистка"
+            title="Push родителям"
+            text="За 24 часа до матча, при публикации состава, после финального свистка"
           />
           <Feature
             icon="👨‍👩‍👧"
             title="Экран родителя"
-            text="Без логина — открой по ссылке и подпишись на команду ребёнка"
+            text="Без логина — открой ссылку и подпишись на команду ребёнка. PWA + offline"
+          />
+          <Feature
+            icon="🏆"
+            title="Турнирная таблица"
+            text="Авто-синк FFSPB/ЮФЛ + история таблиц по дням, дельта позиции команды"
+          />
+          <Feature
+            icon="⚙️"
+            title="Мульти-клуб"
+            text="Один кодбейс, любое количество клубов — каждый со своим брендом, ролями, данными"
           />
         </div>
+      </section>
 
-        <div className="av-landing__cta">
-          <Link to="/login" className="av-landing__cta-btn">Войти в кабинет клуба →</Link>
+      {/* Tenants showcase */}
+      <section className="av-tenants">
+        <div className="av-tenants__title">Сейчас в продакшене</div>
+        <div className="av-tenants__row">
+          <div className="av-tenant-badge">
+            <div className="av-tenant-badge__color" style={{ background: '#001489' }} />
+            <span className="av-tenant-badge__name">ФК Зенит</span>
+          </div>
+          <div className="av-tenant-badge">
+            <div className="av-tenant-badge__color" style={{ background: '#87CEEB' }} />
+            <span className="av-tenant-badge__name">СШОР Зенит</span>
+          </div>
         </div>
-      </main>
+      </section>
 
-      <footer className="av-landing__footer">
-        <div>clubs.avandata.ru · multi-tenant sports platform</div>
+      <footer className="av-footer">
+        clubs.avandata.ru · Multi-tenant sports platform · 2026
       </footer>
     </div>
   );
@@ -62,7 +149,7 @@ export function AvandataLanding() {
 function Feature({ icon, title, text }: { icon: string; title: string; text: string }) {
   return (
     <div className="av-feature">
-      <div className="av-feature__icon">{icon}</div>
+      <div className="av-feature__icon-wrap">{icon}</div>
       <div className="av-feature__title">{title}</div>
       <div className="av-feature__text">{text}</div>
     </div>
