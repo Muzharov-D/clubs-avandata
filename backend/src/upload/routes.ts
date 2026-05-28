@@ -397,7 +397,7 @@ export async function uploadRoutes(app: FastifyInstance) {
              team_summary_stats, team_aggregates, team_avg_ratings, meta
            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13::jsonb, $14::jsonb, $15::jsonb, $16::jsonb)`,
           [
-            matchId, tenantSlug, teamId, `sv-${matchId}`,
+            matchId, tenantSlug, teamId, matchId,
             homeName, awayName, matchDate, '2025-2026', tournament,
             score?.home ?? null, score?.away ?? null,
             `upload://${pdfFilename}`,
