@@ -30,7 +30,7 @@ interface HydraResponse<T> {
   view?: HydraView;
 }
 
-const FETCH_TIMEOUT_MS = 30_000;
+const FETCH_TIMEOUT_MS = 20_000;
 
 async function fetchWithRetry(url: string, opts: RequestInit = {}, attempt = 1): Promise<unknown> {
   const headers: Record<string, string> = {
@@ -51,7 +51,9 @@ async function fetchWithRetry(url: string, opts: RequestInit = {}, attempt = 1):
     return res.json();
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);
-    if (attempt < 3 && /timeout|ECONNRESET|fetch failed|aborted/i.test(msg)) {
+    // НЕ ретраить таймауты — они персистентные (FFSPB /api/standings >60s).
+    // Ретраим только сетевые сбои.
+    if (attempt < 2 && /ECONNRESET|fetch failed/i.test(msg)) {
       await new Promise((r) => setTimeout(r, 500 * attempt));
       return fetchWithRetry(url, opts, attempt + 1);
     }
