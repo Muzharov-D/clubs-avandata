@@ -185,22 +185,52 @@ export default function ClubDashboard() {
         )}
       </section>
 
-      {/* Stats from latest analyzed match */}
-      {latestMatch?.teamSummaryStats && (
+      {/* Stats from latest analyzed match — структура SportVisor: {home, away} */}
+      {latestMatch?.teamSummaryStats && (() => {
+        const our = pickOurSide(latestMatch, user);
+        const opp = pickOppSide(latestMatch, user);
+        if (!our) return null;
+        return (
+          <section className="cd__panel">
+            <div className="cd__panel-header">
+              <h2 className="cd__panel-title">Командные показатели</h2>
+              <span className="cd__panel-sub">
+                {latestMatch.home} {latestMatch.scoreHome}:{latestMatch.scoreAway} {latestMatch.away}
+              </span>
+            </div>
+            <div className="cd__stats-grid">
+              <StatTile label="Владение"     value={String(our.possessionPct ?? '—')} suffix="%" extra={opp ? `vs ${opp.possessionPct}%` : undefined} />
+              <StatTile label="Удары"        value={String(our.shots?.total ?? '—')} extra={`в створ ${our.shots?.onTarget ?? 0} (${our.shots?.accuracy ?? 0}%)`} />
+              <StatTile label="xG"           value={our.expectedGoals != null ? String(our.expectedGoals) : '—'} />
+              <StatTile label="Передачи"     value={String(our.passes?.total ?? '—')} extra={`точн ${our.passes?.accuracy ?? 0}% (${our.passes?.successful ?? 0})`} />
+              <StatTile label="Угловые"      value={String(our.corners?.total ?? '—')} extra={our.corners?.accuracy != null ? `${our.corners.accuracy}% реализация` : undefined} />
+              <StatTile label="Штрафные с ударом" value={String(our.freeKickShots ?? '—')} />
+              <StatTile label="Нарушения"    value={String(our.fouls ?? '—')} extra={opp ? `vs ${opp.fouls ?? 0}` : undefined} />
+              <StatTile label="Офсайды"      value={String(our.offsides ?? '—')} />
+            </div>
+            {latestMatch.teamAvgRatings && (
+              <div className="cd__avg-row">
+                <div className="cd__avg-item"><span className="cd__avg-label">Общий</span><span className="cd__avg-val">{Number(latestMatch.teamAvgRatings.overall ?? 0).toFixed(2)}</span></div>
+                <div className="cd__avg-item"><span className="cd__avg-label">Фитнес</span><span className="cd__avg-val">{Number(latestMatch.teamAvgRatings.fitness ?? 0).toFixed(2)}</span></div>
+                <div className="cd__avg-item"><span className="cd__avg-label">Атака</span><span className="cd__avg-val">{Number(latestMatch.teamAvgRatings.attack ?? 0).toFixed(2)}</span></div>
+                <div className="cd__avg-item"><span className="cd__avg-label">Защита</span><span className="cd__avg-val">{Number(latestMatch.teamAvgRatings.defence ?? 0).toFixed(2)}</span></div>
+              </div>
+            )}
+          </section>
+        );
+      })()}
+
+      {/* teamAggregates — глубокая аналитика по 10 категориям */}
+      {latestMatch?.teamAggregates && Object.keys(latestMatch.teamAggregates).length > 0 && (
         <section className="cd__panel">
           <div className="cd__panel-header">
-            <h2 className="cd__panel-title">Командные показатели</h2>
-            <span className="cd__panel-sub">
-              из SportVisor-разбора {latestMatch.home} {latestMatch.scoreHome}:{latestMatch.scoreAway} {latestMatch.away}
-            </span>
+            <h2 className="cd__panel-title">Детальная аналитика</h2>
+            <span className="cd__panel-sub">teamAggregates · {Object.keys(latestMatch.teamAggregates).length} категорий</span>
           </div>
-          <div className="cd__stats-grid">
-            <StatTile label="Владение"  value={pct(latestMatch.teamSummaryStats.possession)} suffix="%" />
-            <StatTile label="Удары"     value={num(latestMatch.teamSummaryStats.shotsTotal)} extra={`(${num(latestMatch.teamSummaryStats.shotsOnTarget)} в створ)`} />
-            <StatTile label="xG"        value={num(latestMatch.teamSummaryStats.xG, 2)} />
-            <StatTile label="Передачи"  value={num(latestMatch.teamSummaryStats.passes)} extra={`${pct(latestMatch.teamSummaryStats.passAccuracy)}%`} />
-            <StatTile label="Дистанция" value={kmFromMeters(latestMatch.teamSummaryStats.totalDistance)} suffix=" км" />
-            <StatTile label="Единоборства" value={pct(latestMatch.teamSummaryStats.duelsWon)} suffix="%" />
+          <div className="cd__agg-grid">
+            {Object.entries(latestMatch.teamAggregates as Record<string, AnyObj>).map(([key, vals]) => (
+              <AggregateCard key={key} title={aggTitle(key)} data={vals} />
+            ))}
           </div>
         </section>
       )}
@@ -298,6 +328,66 @@ export default function ClubDashboard() {
 
 function ourLabel(user: { tenantId?: string | null } | null): string {
   return user?.tenantId === 'zenit-fk' ? 'Зенит' : 'СШОР Зенит';
+}
+
+function pickOurSide(m: AnyObj, user: { tenantId?: string | null } | null): AnyObj | null {
+  const ss = m.teamSummaryStats as { home?: AnyObj; away?: AnyObj } | null;
+  if (!ss) return null;
+  const ourName = ourLabel(user).toLowerCase();
+  const homeName = String(m.home || '').toLowerCase();
+  const homeMatches = homeName.includes(ourName) && (ourName === 'зенит' ? !homeName.includes('сшор') : true);
+  return homeMatches ? (ss.home ?? null) : (ss.away ?? null);
+}
+function pickOppSide(m: AnyObj, user: { tenantId?: string | null } | null): AnyObj | null {
+  const ss = m.teamSummaryStats as { home?: AnyObj; away?: AnyObj } | null;
+  if (!ss) return null;
+  const ourName = ourLabel(user).toLowerCase();
+  const homeName = String(m.home || '').toLowerCase();
+  const homeMatches = homeName.includes(ourName) && (ourName === 'зенит' ? !homeName.includes('сшор') : true);
+  return homeMatches ? (ss.away ?? null) : (ss.home ?? null);
+}
+
+const AGG_TITLES: Record<string, string> = {
+  shooting: 'Удары и реализация',
+  passes:   'Передачи',
+  possession: 'Владение мячом',
+  attacks:  'Атаки',
+  pressing: 'Прессинг',
+  recoveriesAndTackling: 'Отборы и перехваты',
+  duels:    'Единоборства',
+  positioning: 'Позиционная игра',
+  setPieces: 'Стандарты',
+};
+function aggTitle(k: string): string { return AGG_TITLES[k] || k; }
+
+function AggregateCard({ title, data }: { title: string; data: AnyObj }) {
+  // Берём первые 6 числовых полей
+  const entries = Object.entries(data || {})
+    .filter(([, v]) => typeof v === 'number' || (v && typeof v === 'object' && (typeof (v as AnyObj).value === 'number' || typeof (v as AnyObj).pct === 'number')))
+    .slice(0, 6);
+  if (entries.length === 0) return null;
+  return (
+    <div className="cd__agg-card">
+      <div className="cd__agg-title">{title}</div>
+      {entries.map(([k, v]) => {
+        const isObj = v && typeof v === 'object';
+        const val = isObj ? ((v as AnyObj).value ?? (v as AnyObj).pct) : v;
+        const suffix = isObj && (v as AnyObj).pct != null ? '%' : '';
+        return (
+          <div key={k} className="cd__agg-row">
+            <span className="cd__agg-key">{humanize(k)}</span>
+            <span className="cd__agg-val">{typeof val === 'number' ? val.toLocaleString('ru-RU') : '—'}{suffix}</span>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+function humanize(k: string): string {
+  return k
+    .replace(/([a-z])([A-Z])/g, '$1 $2')
+    .replace(/_/g, ' ')
+    .replace(/^./, (c) => c.toUpperCase());
 }
 
 function num(v: any, digits = 0): string {
