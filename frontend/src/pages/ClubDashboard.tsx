@@ -115,8 +115,9 @@ export default function ClubDashboard() {
 
   const topPlayers = useMemo<AnyObj[]>(() => {
     const players: AnyObj[] = (latestMatch?.players ?? []) as AnyObj[];
+    // Фильтр > 0: бенч/не-вышедшие имеют overall=0 (placeholder) — в топ-5 их не должно быть.
     return [...players]
-      .filter((p) => p.ratings?.overall != null)
+      .filter((p) => p.ratings?.overall != null && Number(p.ratings.overall) > 0)
       .sort((a, b) => (b.ratings?.overall ?? 0) - (a.ratings?.overall ?? 0))
       .slice(0, 5);
   }, [latestMatch]);
@@ -137,9 +138,10 @@ export default function ClubDashboard() {
     return t.find((r: AnyObj) => r.isOurClub) ?? null;
   }, [standings]);
 
-  const tournamentTitle = (standings as AnyObj)?.leagueName
-    ? `${(standings as AnyObj).leagueName} · ${(standings as AnyObj).ageGroup || ''} г.р.`
-    : 'Турнир';
+  // Tournament title: только лига без дубля age. ClubDashboard hero уже
+  // выводит ageLabel/U-15 в eyebrow, плюс standings panel-sub имеет свой
+  // tournamentTitle — там показываем «ЮФЛ U-15 · сезон» без 2011 г.р.
+  const tournamentTitle = (standings as AnyObj)?.leagueName ?? 'Турнир';
 
   if (loading) return <div className="cd"><div className="cd__loading">Загрузка дашборда…</div></div>;
   if (error)   return <div className="cd"><div className="cd__error">{error}</div></div>;
@@ -230,35 +232,59 @@ export default function ClubDashboard() {
               </span>
             </div>
             <div className="cd__stats-grid">
-              <StatTile accent="cyan"   label="Владение"     value={our.possessionPct ?? '—'} unit="%"
-                extra={opp ? `соперник ${opp.possessionPct ?? '—'}%` : undefined}
-                delta={opp && our.possessionPct != null && opp.possessionPct != null
-                  ? { sign: our.possessionPct >= opp.possessionPct ? 'up' : 'down', text: `${Math.abs(our.possessionPct - opp.possessionPct)}%` }
+              <StatTile accent="cyan"   label="Владение"
+                value={our.possessionPct != null ? our.possessionPct : '—'}
+                unit={our.possessionPct != null ? '%' : undefined}
+                extra={opp?.possessionPct != null ? `соперник ${opp.possessionPct}%` : undefined}
+                delta={opp?.possessionPct != null && our.possessionPct != null && our.possessionPct !== opp.possessionPct
+                  ? { sign: our.possessionPct > opp.possessionPct ? 'up' : 'down', text: `${Math.abs(our.possessionPct - opp.possessionPct)}%` }
                   : undefined} />
-              <StatTile accent="gold"   label="Удары"        value={our.shots?.total ?? '—'}
-                extra={`в створ ${our.shots?.onTarget ?? 0} · ${our.shots?.accuracy ?? 0}%`} />
-              <StatTile accent="violet" label="xG"           value={our.expectedGoals != null ? Number(our.expectedGoals).toFixed(2) : '—'}
+              <StatTile accent="gold"   label="Удары"
+                value={our.shots?.total != null ? our.shots.total : '—'}
+                extra={our.shots?.total != null
+                  ? `в створ ${our.shots?.onTarget ?? '—'} · ${our.shots?.accuracy ?? '—'}%`
+                  : undefined} />
+              <StatTile accent="violet" label="xG"
+                value={our.expectedGoals != null ? Number(our.expectedGoals).toFixed(2) : '—'}
                 extra={opp?.expectedGoals != null ? `соперник ${Number(opp.expectedGoals).toFixed(2)}` : undefined} />
-              <StatTile accent="cyan"   label="Передачи"     value={our.passes?.total ?? '—'}
-                extra={`точность ${our.passes?.accuracy ?? 0}% (${our.passes?.successful ?? 0})`} />
-              <StatTile accent="green"  label="Угловые"      value={our.corners?.total ?? '—'}
+              <StatTile accent="cyan"   label="Передачи"
+                value={our.passes?.total != null ? our.passes.total : '—'}
+                extra={our.passes?.total != null
+                  ? `точность ${our.passes?.accuracy ?? '—'}% (${our.passes?.successful ?? '—'})`
+                  : undefined} />
+              <StatTile accent="green"  label="Угловые"
+                value={our.corners?.total != null ? our.corners.total : '—'}
                 extra={our.corners?.accuracy != null ? `${our.corners.accuracy}% реализация` : undefined} />
-              <StatTile accent="gold"   label="Штрафные с ударом" value={our.freeKickShots ?? '—'} />
-              <StatTile accent="red"    label="Нарушения"    value={our.fouls ?? '—'}
-                extra={opp ? `соперник ${opp.fouls ?? 0}` : undefined} />
-              <StatTile accent="muted"  label="Офсайды"      value={our.offsides ?? '—'} />
+              <StatTile accent="gold"   label="Штрафные с ударом"
+                value={our.freeKickShots != null ? our.freeKickShots : '—'} />
+              <StatTile accent="red"    label="Нарушения"
+                value={our.fouls != null ? our.fouls : '—'}
+                extra={opp?.fouls != null ? `соперник ${opp.fouls}` : undefined} />
+              <StatTile accent="muted"  label="Офсайды"
+                value={our.offsides != null ? our.offsides : '—'} />
             </div>
-            {latestMatch.teamAvgRatings && (
-              <>
-                <div className="cd__avg-caption">Средние Performance Index по команде</div>
-                <div className="cd__avg-row">
-                  <div className="cd__avg-item"><span className="cd__avg-label">Общий</span><span className="cd__avg-val">{Number(latestMatch.teamAvgRatings.overall ?? 0).toFixed(2)}</span></div>
-                  <div className="cd__avg-item"><span className="cd__avg-label">Фитнес</span><span className="cd__avg-val">{Number(latestMatch.teamAvgRatings.fitness ?? 0).toFixed(2)}</span></div>
-                  <div className="cd__avg-item"><span className="cd__avg-label">Атака</span><span className="cd__avg-val">{Number(latestMatch.teamAvgRatings.attack ?? 0).toFixed(2)}</span></div>
-                  <div className="cd__avg-item"><span className="cd__avg-label">Защита</span><span className="cd__avg-val">{Number(latestMatch.teamAvgRatings.defence ?? 0).toFixed(2)}</span></div>
-                </div>
-              </>
-            )}
+            {latestMatch.teamAvgRatings && (() => {
+              const tar = latestMatch.teamAvgRatings as Record<string, unknown>;
+              const fmt = (k: string) => {
+                const v = tar[k];
+                return v != null && Number(v) > 0 ? Number(v).toFixed(2) : '—';
+              };
+              const anyValue = ['overall','fitness','attack','defence'].some((k) => {
+                const v = tar[k]; return v != null && Number(v) > 0;
+              });
+              if (!anyValue) return null;
+              return (
+                <>
+                  <div className="cd__avg-caption">Средние Performance Index по команде</div>
+                  <div className="cd__avg-row">
+                    <div className="cd__avg-item"><span className="cd__avg-label">Общий</span><span className="cd__avg-val">{fmt('overall')}</span></div>
+                    <div className="cd__avg-item"><span className="cd__avg-label">Фитнес</span><span className="cd__avg-val">{fmt('fitness')}</span></div>
+                    <div className="cd__avg-item"><span className="cd__avg-label">Атака</span><span className="cd__avg-val">{fmt('attack')}</span></div>
+                    <div className="cd__avg-item"><span className="cd__avg-label">Защита</span><span className="cd__avg-val">{fmt('defence')}</span></div>
+                  </div>
+                </>
+              );
+            })()}
           </section>
         );
       })()}
@@ -395,20 +421,35 @@ export default function ClubDashboard() {
           </span>
         </div>
         <div className="cd__roster">
-          {(((latestMatch?.players ?? []) as AnyObj[])).map((p) => (
-            <div key={p.playerId} className="cd__player" onClick={() => navigate(`/players/${p.playerId}`)}>
-              <div className="cd__player-num">{p.number ?? '—'}</div>
-              <div className="cd__player-info">
-                <div className="cd__player-name">{p.fullName}</div>
-                <div className="cd__player-meta">{p.position || ''} · {p.minutes ?? 0}'</div>
-              </div>
-              {p.ratings?.overall != null && (
-                <div className="cd__player-rating" style={{ background: ratingColor(p.ratings.overall) }}>
-                  {p.ratings.overall.toFixed(1)}
+          {(((latestMatch?.players ?? []) as AnyObj[]))
+            // Сортировка: по минутам убыванию, потом по номеру — стартовый
+            // состав сверху, бенч ниже
+            .slice()
+            .sort((a, b) => {
+              const ma = Number(a.minutes ?? 0); const mb = Number(b.minutes ?? 0);
+              if (ma !== mb) return mb - ma;
+              return Number(a.number ?? 99) - Number(b.number ?? 99);
+            })
+            .map((p) => {
+              const r = Number(p.ratings?.overall ?? 0);
+              const mins = Number(p.minutes ?? 0);
+              return (
+                <div key={p.playerId} className="cd__player" onClick={() => navigate(`/players/${p.playerId}`)}>
+                  <div className="cd__player-num">{p.number ?? '—'}</div>
+                  <div className="cd__player-info">
+                    <div className="cd__player-name">{p.fullName}</div>
+                    <div className="cd__player-meta">
+                      {p.position || ''}{mins > 0 ? ` · ${mins}'` : ' · не выходил'}
+                    </div>
+                  </div>
+                  {r > 0 && (
+                    <div className="cd__player-rating" style={{ background: ratingColor(r) }}>
+                      {r.toFixed(1)}
+                    </div>
+                  )}
                 </div>
-              )}
-            </div>
-          ))}
+              );
+            })}
         </div>
       </section>
     </div>

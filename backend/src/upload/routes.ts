@@ -325,6 +325,36 @@ export async function uploadRoutes(app: FastifyInstance) {
           : derived;
       }
 
+      // ─── 4.7 Auto-derive teamAvgRatings из rich.radar
+      // Считаем средние Performance Index (overall/fitness/attack/defence) только
+      // среди реально игравших (minutes > 0 и overall > 0). Это закрывает кейс
+      // когда parse_team_tables возвращает teamAvgRatings = {overall: null, ...}
+      // и фронт показывает «0.00» во всех плитках.
+      const playedNums = Object.entries(rich.overall_meta)
+        .filter(([num, meta]) => Number(meta.minutes ?? 0) > 0 && Number(rich.radar[num]?.overall ?? 0) > 0)
+        .map(([num]) => num);
+      const avg = (key: string): number | null => {
+        if (!playedNums.length) return null;
+        const total = playedNums.reduce(
+          (s, n) => s + Number(rich.radar[n]?.[key] ?? 0), 0,
+        );
+        const result = total / playedNums.length;
+        return result > 0 ? Number(result.toFixed(2)) : null;
+      };
+      const derivedTeamAvg = {
+        overall: avg('overall'),
+        fitness: avg('fitnessTotal') ?? avg('fitnessRating'),
+        attack:  avg('attackTotal')  ?? avg('attackRating'),
+        defence: avg('defenceTotal') ?? avg('defenceRating'),
+      };
+      // Если build_match вернул содержательный teamAvgRatings — оставляем (приоритет
+      // legacy парсера), иначе используем derived.
+      const pdfTar = (pdfData.teamAvgRatings as Record<string, unknown> | null) ?? null;
+      const pdfHasReal = pdfTar && ['overall','fitness','attack','defence'].some((k) => {
+        const v = pdfTar[k]; return v != null && Number(v) > 0;
+      });
+      const finalTeamAvgRatings = pdfHasReal ? pdfTar : derivedTeamAvg;
+
       // ─── 5. Merge + insert ───────────────────────────────────────
       let matchDate = pdfData.date || excelData?.match.date || null;
       let homeName  = pdfData.homeTeam?.name || excelData?.match.homeTeam || '';
@@ -373,7 +403,7 @@ export async function uploadRoutes(app: FastifyInstance) {
             `upload://${pdfFilename}`,
             JSON.stringify(pdfData.teamSummaryStats ?? {}),
             JSON.stringify(teamAggregatesMerged),
-            JSON.stringify(pdfData.teamAvgRatings ?? {}),
+            JSON.stringify(finalTeamAvgRatings ?? {}),
             JSON.stringify({
               pdfFile: pdfFilename,
               xlsxFile: xlsxFilename,

@@ -46,9 +46,18 @@ function num(v) {
 
 function bestPlayer(match) {
   if (!match?.players?.length) return null;
-  return [...match.players].sort(
+  // Только реально играшие с положительным рейтингом — иначе MotM = бенч с 0.0
+  const eligible = match.players.filter((p) => Number(p.ratings?.overall ?? 0) > 0);
+  if (!eligible.length) return null;
+  return eligible.sort(
     (a, b) => (b.ratings?.overall ?? 0) - (a.ratings?.overall ?? 0)
   )[0];
+}
+
+// Безопасный рендер строки счёта/процента с fallback на «—»
+function fmtNumOrDash(v, suffix = '') {
+  if (v == null || Number.isNaN(Number(v))) return '—';
+  return `${v}${suffix}`;
 }
 
 function topByMetric(players, getter, n = 3) {
@@ -203,8 +212,10 @@ export default function MatchDetail() {
           />
           <div className="card guest-placeholder">
             <div className="page-section-title">Состав соперника</div>
-            <div className="guest-placeholder__msg">{match.guestTeamPlaceholder || 'Нет данных об игроках команды.'}</div>
-            <button className="guest-placeholder__btn" disabled>Назначить игроков</button>
+            <div className="guest-placeholder__msg">
+              {match.guestTeamPlaceholder ||
+                'SportVisor разбор содержит per-player статистику только нашей команды. Состав соперника появится, когда соперник загрузит свой отчёт.'}
+            </div>
           </div>
         </div>
 
@@ -212,18 +223,18 @@ export default function MatchDetail() {
           <div className="card">
             <div className="page-section-title">Командная статистика</div>
             <div className="match-detail__stats">
-              <StatCompareBar label="Владение" home={home.possessionPct + '%'} away={away.possessionPct + '%'} />
-              <StatCompareBar label="Удары" home={home.shots?.total} away={away.shots?.total} />
-              <StatCompareBar label="Удары в створ" home={home.shots?.onTarget} away={away.shots?.onTarget} />
-              <StatCompareBar label="xG" home={home.expectedGoals} away={away.expectedGoals} />
-              <StatCompareBar label="Передачи" home={home.passes?.total} away={away.passes?.total} />
-              <StatCompareBar label="Точные передачи" home={home.passes?.successful} away={away.passes?.successful} />
-              <StatCompareBar label="Удары со штрафных" home={home.freeKickShots} away={away.freeKickShots} />
-              <StatCompareBar label="Угловые" home={home.corners?.total} away={away.corners?.total} />
-              <StatCompareBar label="Нарушения" home={home.fouls} away={away.fouls} />
-              <StatCompareBar label="Жёлтые карточки" home={home.yellowCards} away={away.yellowCards} />
-              <StatCompareBar label="Красные карточки" home={home.redCards} away={away.redCards} />
-              <StatCompareBar label="Офсайды" home={home.offsides} away={away.offsides} />
+              <StatCompareBar label="Владение"          home={fmtNumOrDash(home.possessionPct, '%')} away={fmtNumOrDash(away.possessionPct, '%')} />
+              <StatCompareBar label="Удары"             home={fmtNumOrDash(home.shots?.total)}       away={fmtNumOrDash(away.shots?.total)} />
+              <StatCompareBar label="Удары в створ"     home={fmtNumOrDash(home.shots?.onTarget)}    away={fmtNumOrDash(away.shots?.onTarget)} />
+              <StatCompareBar label="xG"                home={fmtNumOrDash(home.expectedGoals)}      away={fmtNumOrDash(away.expectedGoals)} />
+              <StatCompareBar label="Передачи"          home={fmtNumOrDash(home.passes?.total)}      away={fmtNumOrDash(away.passes?.total)} />
+              <StatCompareBar label="Точные передачи"   home={fmtNumOrDash(home.passes?.successful)} away={fmtNumOrDash(away.passes?.successful)} />
+              <StatCompareBar label="Удары со штрафных" home={fmtNumOrDash(home.freeKickShots)}      away={fmtNumOrDash(away.freeKickShots)} />
+              <StatCompareBar label="Угловые"           home={fmtNumOrDash(home.corners?.total)}     away={fmtNumOrDash(away.corners?.total)} />
+              <StatCompareBar label="Нарушения"         home={fmtNumOrDash(home.fouls)}              away={fmtNumOrDash(away.fouls)} />
+              <StatCompareBar label="Жёлтые карточки"   home={fmtNumOrDash(home.yellowCards)}        away={fmtNumOrDash(away.yellowCards)} />
+              <StatCompareBar label="Красные карточки"  home={fmtNumOrDash(home.redCards)}           away={fmtNumOrDash(away.redCards)} />
+              <StatCompareBar label="Офсайды"           home={fmtNumOrDash(home.offsides)}           away={fmtNumOrDash(away.offsides)} />
             </div>
           </div>
 

@@ -275,10 +275,16 @@ export default function PlayerDetail() {
           <h1 className="player-detail__hero-name">{player.fullName}</h1>
           {matchSubtitle && <div className="player-detail__hero-match">{matchSubtitle}</div>}
           <div className="player-detail__hero-meta">
-            <span>Минут на поле: <b>{player.minutes ?? '—'}</b></span>
-            <span>Голы: <b>{num(player.stats?.attack4?.goal) ?? 0}</b></span>
-            <span>Ассисты: <b>{num(player.stats?.attack1?.assist) ?? 0}</b></span>
-            <span>Перехваты: <b>{num(player.stats?.defence1?.interception) ?? 0}</b></span>
+            {Number(player.minutes ?? 0) === 0 ? (
+              <span style={{ color: '#94a3c8' }}>Не выходил на поле в этом матче</span>
+            ) : (
+              <>
+                <span>Минут на поле: <b>{player.minutes}</b></span>
+                <span>Голы: <b>{num(player.stats?.attack4?.goal) || 0}</b></span>
+                <span>Ассисты: <b>{num(player.stats?.attack1?.assist) || 0}</b></span>
+                <span>Перехваты: <b>{num(player.stats?.defence1?.interception) || 0}</b></span>
+              </>
+            )}
           </div>
         </div>
         <div className="player-detail__hero-rating">
@@ -410,7 +416,9 @@ export default function PlayerDetail() {
       </div>
 
       {/* ПОЛНАЯ ТАБЛИЦА МЕТРИК — свёрнута по умолчанию.
-          Раскрывается по клику. Внутри — две большие сплит-таблицы. */}
+          Раскрывается по клику. Внутри — две большие сплит-таблицы.
+          Если обе пустые (splits {} в БД) — не показываем accordion вообще. */}
+      {(attackRows.length > 0 || defenceRows.length > 0) && (
       <details className="card player-detail__splits-toggle">
         <summary className="player-detail__splits-summary">
           <span>Раскрыть полную таблицу метрик</span>
@@ -433,6 +441,7 @@ export default function PlayerDetail() {
           />
         </div>
       </details>
+      )}
     </div>
   );
 }

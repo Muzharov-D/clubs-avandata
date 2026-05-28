@@ -74,9 +74,10 @@ export default function PlayersLeaders() {
               <div className="players-leaders__top-name">{shortNameFromPlayer(overall)}</div>
               <div className="players-leaders__top-pos">№{overall.number} · {overall.positionFull}</div>
               <div className="players-leaders__top-stats">
-                <span>Удары: <b>{overall.stats?.attack4?.shot?.value ?? '—'}</b></span>
-                <span>Отборы: <b>{overall.stats?.defence1?.tackle?.value ?? '—'}</b></span>
-                <span>Голы: <b>{overall.stats?.attack4?.goal?.value ?? '—'}</b></span>
+                {/* legirusAdapter возвращает scalar number, не {value:N} */}
+                <span>Удары: <b>{overall.stats?.attack4?.shot ?? '—'}</b></span>
+                <span>Отборы: <b>{overall.stats?.defence1?.tackle ?? '—'}</b></span>
+                <span>Голы: <b>{overall.stats?.attack4?.goal ?? '—'}</b></span>
               </div>
             </div>
             <div className="players-leaders__top-rating">
