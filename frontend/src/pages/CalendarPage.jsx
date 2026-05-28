@@ -10,6 +10,7 @@ import { useApi } from '../hooks/useApi';
 import { fetchCalendar, fetchCalendarList, fetchTrainingsByTeam } from '../services/api';
 import { useTeam } from '../contexts/TeamContext';
 import { useAuth } from '../contexts/AuthContext';
+import { useDocumentTitle } from '../hooks/useDocumentTitle';
 import CallupRoster from '../components/CallupRoster';
 import MatchDetailSheet from '../components/MatchDetailSheet';
 import TrainingDetailSheet from '../components/TrainingDetailSheet';
@@ -63,11 +64,17 @@ function shortName(name) {
 }
 
 export default function CalendarPage() {
+  useDocumentTitle('Календарь');
   const { selectedTeam } = useTeam();
   const { isCoach, user } = useAuth();
   const [openCallup, setOpenCallup] = useState(null);
   const [openMatch, setOpenMatch] = useState(null);
   const [openTraining, setOpenTraining] = useState(null);
+
+  // Префикс team-id текущего tenant'a — для подгрузки тренировок других возрастов.
+  // Раньше был хардкод "legirus-${age}" — теперь берём из selectedTeam.id
+  // ("zenit-fk-2011" → "zenit-fk-" + age).
+  const teamIdPrefix = (selectedTeam?.id || '').replace(/\d{4}$/, '') || 'legirus-';
 
   // Список доступных возрастных групп
   const listRes = useApi(fetchCalendarList, []);
@@ -98,7 +105,7 @@ export default function CalendarPage() {
   const singleMatches = cal?.matches || [];
 
   // Тренировки команды
-  const teamId = selectedTeam?.id || (age && age !== 'all' ? `legirus-${age}` : null);
+  const teamId = selectedTeam?.id || (age && age !== 'all' ? `${teamIdPrefix}${age}` : null);
   const showTrainings = !!user && !!teamId;
   const trRes = useApi(
     () => showTrainings ? fetchTrainingsByTeam(teamId, { scope: 'all', limit: 100 })
@@ -122,7 +129,7 @@ export default function CalendarPage() {
     Promise.all(ages.map((a) =>
       Promise.all([
         fetchCalendar(a).catch(() => null),
-        fetchTrainingsByTeam(`legirus-${a}`, { scope: 'all', limit: 100 }).catch(() => ({ trainings: [] })),
+        fetchTrainingsByTeam(`${teamIdPrefix}${a}`, { scope: 'all', limit: 100 }).catch(() => ({ trainings: [] })),
       ]).then(([cal, tr]) => ({ age: a, cal, tr: tr?.trainings || [] }))
     )).then((arr) => {
       if (cancelled) return;
