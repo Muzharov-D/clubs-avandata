@@ -145,6 +145,22 @@ def main():
     LOG.info("Stage 2/4: team tables")
     tables = parse_team_tables.parse_all(args.input_pdf)
 
+    # Fallback: если структурный парсер таблиц не нашёл "overall" (формат PDF
+    # отличается от Легируса) — используем regex-fallback по тексту страниц.
+    if not tables.get("overall"):
+        LOG.warning("Stage 2 structured parser empty — using text-regex fallback")
+        try:
+            from parse_ratings_simple import parse as simple_parse
+            simple = simple_parse(args.input_pdf)
+            if simple.get("overall"):
+                tables["overall"] = simple["overall"]
+                # fitness уже частично есть в overall (fitnessTotal),
+                # дополним totalDistance + intensity
+                tables["fitness"] = simple.get("fitness", {})
+                LOG.info("Fallback got overall: %d players", len(simple["overall"]))
+        except Exception as e:
+            LOG.warning("Fallback failed: %s", e)
+
     LOG.info("Stage 3/4: team aggregates (best-effort)")
     try:
         aggregates = parse_team_aggregates.parse(args.input_pdf, args.match_id)
