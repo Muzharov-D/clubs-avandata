@@ -73,3 +73,51 @@ label { display: block; font-size: 13px; color: var(--text-muted); margin-bottom
   border-radius: var(--radius);
   padding: 20px;
 }
+
+/* ===== Универсальные мобильные правила (применяются ко всему UI) ===== */
+
+/* Скроллбар тёмный (Chrome/Edge). На iOS системный auto-hide. */
+*::-webkit-scrollbar { width: 8px; height: 8px; }
+*::-webkit-scrollbar-track { background: transparent; }
+*::-webkit-scrollbar-thumb {
+  background: rgba(255,255,255,0.12);
+  border-radius: 4px;
+}
+*::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.2); }
+
+/* Focus-visible для всех кликабельных элементов (a11y) */
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+[role="button"]:focus-visible {
+  outline: 2px solid #22d3ee;
+  outline-offset: 2px;
+}
+
+/* Touch-target минимум 44×44 на мобильном (Apple/Google a11y) */
+@media (max-width: 720px) {
+  button:not([class*="cd__top-rank"]):not([class*="badge"]) {
+    min-height: 40px;
+  }
+}
+
+/* Узкий смартфон (iPhone SE / 360-420px): уменьшаем глобальный шрифт */
+@media (max-width: 480px) {
+  html, body, #root { font-size: 14px; }
+}
+
+/* Безопасные отступы для notch (iOS) */
+@supports (padding: env(safe-area-inset-top)) {
+  body { padding-top: env(safe-area-inset-top); }
+}
+
+/* tabular-nums для всех чисел в статистике (выравнивание колонок таблиц) */
+.cd__table td,
+.splits-table__val,
+.stat-tile__value,
+.fitness-cell__value,
+.cd__avg-val {
+  font-variant-numeric: tabular-nums;
+}

@@ -1,7 +1,9 @@
 import { Link } from 'react-router-dom';
+import { useDocumentTitle } from '../hooks/useDocumentTitle';
 import './AvandataLanding.css';
 
 export function AvandataLanding() {
+  useDocumentTitle('Clubs Avandata — платформа для футбольных клубов');
   return (
     <div className="av-landing">
       {/* Animated background gradients */}
@@ -48,7 +50,7 @@ export function AvandataLanding() {
 
         <p className="av-hero__lead">
           Расписание, статистика матчей, аналитика SportVisor, тренировки, push-уведомления родителям —
-          всё в одном кабинете. Один кодbase, любое количество клубов.
+          всё в одном кабинете. Одна кодовая база, любое количество клубов.
         </p>
 
         <div className="av-hero__cta-row">
@@ -140,7 +142,11 @@ export function AvandataLanding() {
       </section>
 
       <footer className="av-footer">
-        clubs.avandata.ru · Multi-tenant sports platform · 2026
+        clubs.avandata.ru · Multi-tenant sports platform · {new Date().getFullYear()}
+        {' · '}
+        <a href="mailto:hello@avandata.ru?subject=Хочу%20подключить%20клуб" style={{ color: '#22d3ee' }}>
+          подключить клуб
+        </a>
       </footer>
     </div>
   );

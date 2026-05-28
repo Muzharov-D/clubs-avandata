@@ -41,13 +41,14 @@ export function ToastHost() {
   if (items.length === 0) return null;
 
   return (
-    <div className="toast-host" aria-live="polite">
+    <div className="toast-host" aria-live="polite" aria-atomic="false">
       {items.map((it) => (
-        <div
+        <button
+          type="button"
           key={it.id}
           className={`toast toast--${it.type}`}
           onClick={() => setItems((p) => p.filter((x) => x.id !== it.id))}
-          role="status"
+          aria-label={`${it.type === 'error' ? 'Ошибка' : it.type === 'success' ? 'Успех' : 'Уведомление'}: ${it.msg} (нажмите чтобы закрыть)`}
         >
           <span className="toast__icon" aria-hidden>
             {it.type === 'success' && '✓'}
@@ -55,7 +56,7 @@ export function ToastHost() {
             {it.type === 'info' && 'i'}
           </span>
           <span className="toast__msg">{it.msg}</span>
-        </div>
+        </button>
       ))}
     </div>
   );
