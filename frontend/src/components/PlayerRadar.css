@@ -1,0 +1,17 @@
+.prdr { display: flex; flex-direction: column; align-items: center; gap: 14px; }
+.prdr__svg { width: 100%; max-width: 280px; height: auto; }
+.prdr__label {
+  font-size: 9px; font-weight: 600; fill: #94a3b8;
+  text-transform: uppercase; letter-spacing: 0.04em;
+}
+.prdr__legend {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 6px;
+  width: 100%; font-size: 11px;
+}
+.prdr__lg-item {
+  display: grid; grid-template-columns: 8px 1fr auto;
+  gap: 6px; align-items: center;
+}
+.prdr__lg-dot { width: 8px; height: 8px; border-radius: 50%; }
+.prdr__lg-label { color: #94a3b8; }
+.prdr__lg-val   { color: #f1f5fb; font-weight: 700; font-variant-numeric: tabular-nums; }

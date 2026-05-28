@@ -18,6 +18,7 @@ import {
 } from '../services/api';
 // @ts-ignore — legacy
 import { useAuth } from '../contexts/AuthContext';
+import { PlayerRadar } from '../components/PlayerRadar';
 import './ClubDashboard.css';
 
 type AnyObj = Record<string, any>;
@@ -294,6 +295,30 @@ export default function ClubDashboard() {
           )}
         </div>
       </section>
+
+      {/* Top-3 profile radars */}
+      {topPlayers.length > 0 && (
+        <section className="cd__panel">
+          <div className="cd__panel-header">
+            <h2 className="cd__panel-title">Профили топ-3</h2>
+            <span className="cd__panel-sub">проценты от лучшего в команде</span>
+          </div>
+          <div className="cd__radars-grid">
+            {topPlayers.slice(0, 3).map((p) => (
+              <div key={p.playerId} className="cd__radar-card" onClick={() => navigate(`/players/${p.playerId}`)}>
+                <div className="cd__radar-head">
+                  <span className="cd__radar-num">#{p.number}</span>
+                  <span className="cd__radar-name">{p.fullName}</span>
+                  <span className="cd__radar-rating" style={{ background: ratingColor(p.ratings?.overall) }}>
+                    {Number(p.ratings?.overall ?? 0).toFixed(1)}
+                  </span>
+                </div>
+                <PlayerRadar player={p} teamPlayers={(latestMatch?.players ?? []) as any[]} />
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* Roster */}
       <section className="cd__panel">
