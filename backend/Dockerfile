@@ -41,6 +41,5 @@ ENV NODE_ENV=production
 ENV PORT=10000
 EXPOSE 10000
 
-# Migrations runner — выполняется при старте.
-# Render не имеет отдельного hook'а на free-tier — кладём в start command.
-CMD ["sh", "-c", "npm run db:migrate && node dist/server.js"]
+# Migrations runner — compiled migrate.js (tsx нет после npm prune).
+CMD ["sh", "-c", "node dist/db/migrate.js && node dist/server.js"]
