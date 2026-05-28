@@ -208,11 +208,22 @@ export function adaptPlayerForLegirus(mp: AnyObj): AnyObj {
   const position = String(mp.position ?? '').toUpperCase();
   const positionFull = mp.positionFull ?? POSITION_FULL[position] ?? position;
 
+  // Maps: crop_all_b64 даёт {attackMap, heatmap}, но legacy PlayerDetail.jsx
+  // читает player.maps.fitnessHeatmap — нормализуем оба ключа.
+  const rawMaps = (mp.maps as AnyObj | null) ?? {};
+  const maps = {
+    attackMap:      rawMaps.attackMap as string | undefined,
+    fitnessHeatmap: (rawMaps.fitnessHeatmap as string | undefined)
+                    ?? (rawMaps.heatmap as string | undefined),
+    heatmap:        rawMaps.heatmap as string | undefined,
+  };
+
   return {
     ...mp,
     position,
     positionFull,
     stats,
+    maps,
   };
 }
 

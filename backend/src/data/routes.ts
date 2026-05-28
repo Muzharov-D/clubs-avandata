@@ -133,12 +133,27 @@ export async function dataRoutes(app: FastifyInstance) {
       );
       // Адаптер: rich PDF flat stats → Легирус-shape (attack1/2/3/4/5, defence1/2/3, fitness)
       // + legacy-shape для ClubOverview/MatchDetail: homeTeam.name / awayTeam.name / score.{home,away}
+      // + лифт meta.teamMaps в teamAggregates.<slug>.mapImage (для MatchDetail.SECTION_MAPS)
+      // + лифт meta.formationImage в top-level (для FormationField imageSrc)
+      const metaObj = (match.meta ?? {}) as Record<string, unknown>;
+      const teamMaps = (metaObj.teamMaps as Record<string, string>) || {};
+      const formationImg = (metaObj.formationImage as string | null) ?? null;
+      const taSrc = (match.teamAggregates as Record<string, unknown>) || {};
+      const teamAggregates: Record<string, unknown> = { ...taSrc };
+      for (const [slug, dataUrl] of Object.entries(teamMaps)) {
+        const existing = (teamAggregates[slug] as Record<string, unknown>) || {};
+        teamAggregates[slug] = { ...existing, mapImage: dataUrl };
+      }
       return {
         ...match,
         homeTeam: { name: match.home, isOurTeam: undefined },
         awayTeam: { name: match.away },
         score:    { home: match.scoreHome ?? 0, away: match.scoreAway ?? 0 },
         date:     match.date,
+        teamAggregates,
+        formation: metaObj.formation ?? null,
+        formationImage: formationImg,
+        formationImageFull: formationImg,
         players:  mp.map(adaptPlayerForLegirus),
       };
     });

@@ -193,6 +193,31 @@ export async function uploadRoutes(app: FastifyInstance) {
         ? JSON.parse(await readFile(pdfOutPath, 'utf-8')) as PdfOutput
         : ({} as PdfOutput);
 
+      // ─── 4.5 Maps (best-effort) — cropпим ВСЕ heatmap/pass-карты из PDF в base64.
+      // 9 командных карт + formation + per-player attack/heatmap. Storage в DB
+      // как data URL (нет ephemeral disk зависимости на Render).
+      const mapsOutPath = join(work, 'maps.json');
+      let maps: { teamMaps: Record<string, string>; formationImage: string | null;
+                  playerMaps: Record<string, { attackMap?: string; heatmap?: string }>; } = {
+        teamMaps: {}, formationImage: null, playerMaps: {},
+      };
+      try {
+        const mapsStdout = await runPython(PYTHON_BIN,
+          [join(PARSERS_DIR, 'crop_all_b64.py'), pdfPath, matchId, teamId!, mapsOutPath],
+          work, { ROSTER_JSON: playersPath });
+        if (existsSync(mapsOutPath)) {
+          maps = JSON.parse(await readFile(mapsOutPath, 'utf-8'));
+          logger.info({ matchId,
+            teamMaps: Object.keys(maps.teamMaps).length,
+            formation: maps.formationImage ? 1 : 0,
+            playerMaps: Object.keys(maps.playerMaps).length,
+            stdout: mapsStdout.slice(-200),
+          }, '[upload] maps cropped');
+        }
+      } catch (e) {
+        logger.warn({ matchId, err: (e as Error).message }, '[upload] maps crop failed — пустые карты');
+      }
+
       // ─── 5. Merge + insert ───────────────────────────────────────
       let matchDate = pdfData.date || excelData?.match.date || null;
       let homeName  = pdfData.homeTeam?.name || excelData?.match.homeTeam || '';
@@ -246,6 +271,8 @@ export async function uploadRoutes(app: FastifyInstance) {
               pdfFile: pdfFilename,
               xlsxFile: xlsxFilename,
               formation: pdfData.formation ?? null,
+              formationImage: maps.formationImage ?? null,
+              teamMaps: maps.teamMaps ?? {},
               excelMeta: excelData?.match ?? null,
               excelColumnsCount: excelData?.match.columnsCount ?? null,
             }),
@@ -268,6 +295,7 @@ export async function uploadRoutes(app: FastifyInstance) {
           radar:   unknown;
           stats:   unknown;
           splits:  unknown;
+          maps:    { attackMap?: string; heatmap?: string };
         };
         const combined = new Map<string, CombinedEntry>();
         const rosterByNum = new Map<string, typeof roster[number]>();
@@ -306,6 +334,7 @@ export async function uploadRoutes(app: FastifyInstance) {
               fitness: rich.fitness[numStr] ?? {},
             },
             splits: {},
+            maps: maps.playerMaps[playerId] ?? {},
           });
         }
         // FALLBACK: Excel — добавить группы которых нет в PDF (passing/duels/pressing/dribbling)
@@ -338,6 +367,7 @@ export async function uploadRoutes(app: FastifyInstance) {
               radar: pp.radar ?? {},
               stats: pp.stats ?? {},
               splits: pp.splits ?? {},
+              maps: maps.playerMaps[rosterRow.id] ?? {},
             });
           } else {
             // No roster row, no Excel — create placeholder
@@ -357,6 +387,7 @@ export async function uploadRoutes(app: FastifyInstance) {
               radar: pp.radar ?? {},
               stats: pp.stats ?? {},
               splits: pp.splits ?? {},
+              maps: maps.playerMaps[pid] ?? {},
             });
           }
         }
@@ -366,12 +397,13 @@ export async function uploadRoutes(app: FastifyInstance) {
           await conn.query(
             `INSERT INTO match_players (
                match_id, player_id, tenant_id, number, position, minutes,
-               ratings, stats, splits, radar
-             ) VALUES ($1, $2, $3, $4, $5, $6, $7::jsonb, $8::jsonb, $9::jsonb, $10::jsonb)
+               ratings, stats, splits, radar, maps
+             ) VALUES ($1, $2, $3, $4, $5, $6, $7::jsonb, $8::jsonb, $9::jsonb, $10::jsonb, $11::jsonb)
              ON CONFLICT (match_id, player_id) DO UPDATE SET
                number = EXCLUDED.number, position = EXCLUDED.position, minutes = EXCLUDED.minutes,
                ratings = EXCLUDED.ratings, stats = EXCLUDED.stats,
-               splits = EXCLUDED.splits, radar = EXCLUDED.radar`,
+               splits = EXCLUDED.splits, radar = EXCLUDED.radar,
+               maps = EXCLUDED.maps`,
             [
               matchId, e.playerId, tenantSlug,
               parseInt(e.number, 10), e.position, e.minutes,
@@ -379,6 +411,7 @@ export async function uploadRoutes(app: FastifyInstance) {
               JSON.stringify(e.stats),
               JSON.stringify(e.splits),
               JSON.stringify(e.radar),
+              JSON.stringify(e.maps),
             ],
           );
         }
