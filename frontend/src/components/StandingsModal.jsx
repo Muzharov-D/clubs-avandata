@@ -1,7 +1,7 @@
 // Модалка с двумя таблицами: турнир и клубный зачёт.
 
 import { useEffect } from 'react';
-import { isLegirus } from '../utils/legirus';
+import { isOurClub } from '../utils/legirus';
 import { tierForAge, leaguePosClass, clubPosClass } from '../utils/ageRating';
 import useModalBack from '../utils/useModalBack';
 import './StandingsModal.css';
@@ -122,7 +122,7 @@ export default function StandingsModal({ tab = 'league', onClose, standings, clu
                 <tbody>
                   {clubRank.ranking.map((c) => {
                     const medalCls = medalRowClass(clubPosClass(c.rank));
-                    const isOurs = isLegirus(c.name);
+                    const isOurs = isOurClub(c.name);
                     const oursCls = isOurs ? 'sm-row--ours' : '';
                     return (
                       <tr key={c.name + c.rank} className={(oursCls + ' ' + medalCls).trim()}>

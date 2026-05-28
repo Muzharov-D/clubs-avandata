@@ -20,6 +20,53 @@ export function shieldFor(teamName, fallbackUrl) {
   return isLegirus(teamName) ? LEGIRUS_LOGO : (fallbackUrl || '');
 }
 
+// ───────────────────────────────────────────────────────────────────────
+// Tenant-aware «это наша команда?»
+//
+// В multi-tenant SaaS (clubs.avandata.ru) клуб не обязательно Легирус —
+// это может быть ФК Зенит, СШОР Зенит, любой другой. AuthContext при
+// логине вызывает setClubHints(['ФК Зенит']) — и весь UI начинает считать
+// «нашими» матчи с этим клубом.
+//
+// «Легирус» остаётся в whitelist всегда — для обратной совместимости с
+// legacy-кодом и для tenant=legirus (если кто-то его реактивирует).
+// ───────────────────────────────────────────────────────────────────────
+const CLUB_HINTS = new Set(['легирус']);
+
+export function setClubHints(names) {
+  CLUB_HINTS.clear();
+  CLUB_HINTS.add('легирус');  // safety baseline
+  if (!Array.isArray(names)) names = [names];
+  for (const n of names) {
+    if (!n) continue;
+    const norm = normalizeTeamName(n);
+    if (norm) CLUB_HINTS.add(norm);
+  }
+}
+
+export function clearClubHints() {
+  CLUB_HINTS.clear();
+  CLUB_HINTS.add('легирус');
+}
+
+// «Это наша команда?» — учитывает тенант и edge case СШОР vs ФК
+// (если мы СШОР Зенит, то просто «Зенит» — это НЕ мы).
+export function isOurClub(name) {
+  const t = normalizeTeamName(name);
+  if (!t) return false;
+  for (const hint of CLUB_HINTS) {
+    if (!hint) continue;
+    // Edge: «сшор» в наших подсказках — но команда без «сшор» в имени —
+    // это другой клуб (ФК Зенит vs СШОР Зенит)
+    const hintIsShkola = hint.includes('сшор') || hint.includes('школа');
+    const nameIsShkola = t.includes('сшор') || t.includes('школа');
+    if (hintIsShkola !== nameIsShkola) continue;
+    if (t === hint) return true;
+    if (t.includes(hint) || hint.includes(t)) return true;
+  }
+  return false;
+}
+
 // Алиасы команд: одна команда у FFSPB фигурирует под разными именами.
 // Авто-схлопнуть нельзя (нельзя резать по дефису — «СШОР Лидер» и «СШОР
 // Лидер-Купчино» это РАЗНЫЕ команды). Поэтому ведём ручную мапу:

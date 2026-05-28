@@ -3,7 +3,7 @@
 
 import { useEffect, useState } from 'react';
 import useModalBack from '../utils/useModalBack';
-import { shieldFor, isLegirus } from '../utils/legirus';
+import { shieldFor, isLegirus, isOurClub } from '../utils/legirus';
 import UiIcon from './UiIcon';
 import MatchStatsBlock from './MatchStatsBlock';
 import MatchLineupsBlock from './MatchLineupsBlock';
@@ -209,7 +209,7 @@ export default function MatchDetailSheet({ match, venue, age, onClose, theme = '
             away={match.teamSummaryStats.away}
             hostName={shortName(match.home)}
             guestName={shortName(match.away)}
-            homeIsUs={isLegirus(match.home)}
+            homeIsUs={isOurClub(match.home)}
           />
         )}
 
@@ -219,7 +219,7 @@ export default function MatchDetailSheet({ match, venue, age, onClose, theme = '
             lineups={lineupsData}
             hostName={shortName(match.home)}
             guestName={shortName(match.away)}
-            homeIsUs={isLegirus(match.home)}
+            homeIsUs={isOurClub(match.home)}
           />
         )}
 

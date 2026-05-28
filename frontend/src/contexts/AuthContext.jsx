@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import { fetchMe, login as apiLogin, logout as apiLogout, getToken } from '../services/api';
 import { applyTheme, resetTheme } from '../tenant/applyTheme';
+import { setClubHints, clearClubHints } from '../utils/legirus';
 
 const AuthCtx = createContext(null);
 
@@ -41,11 +42,16 @@ export function AuthProvider({ children }) {
   }, []);
 
   // Применяем брендинг тенанта (CSS-переменные + favicon + title)
+  // + регистрируем имена «нашего» клуба для isOurClub() во всех компонентах
   useEffect(() => {
-    if (tenant?.brand) {
-      applyTheme(tenant.brand, tenant.slug);
+    if (tenant?.brand) applyTheme(tenant.brand, tenant.slug);
+    else resetTheme();
+
+    if (tenant) {
+      const names = [tenant.displayName, tenant.name].filter(Boolean);
+      setClubHints(names);
     } else {
-      resetTheme();
+      clearClubHints();
     }
   }, [tenant]);
 

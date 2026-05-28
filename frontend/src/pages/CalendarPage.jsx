@@ -15,7 +15,7 @@ import CallupRoster from '../components/CallupRoster';
 import MatchDetailSheet from '../components/MatchDetailSheet';
 import TrainingDetailSheet from '../components/TrainingDetailSheet';
 import CoachCommentForm from '../components/CoachCommentForm';
-import { shieldFor, isLegirus } from '../utils/legirus';
+import { shieldFor, isLegirus, normalizeTeamName } from '../utils/legirus';
 import './CalendarPage.css';
 
 const FILTERS = [
@@ -66,7 +66,18 @@ function shortName(name) {
 export default function CalendarPage() {
   useDocumentTitle('Календарь');
   const { selectedTeam } = useTeam();
-  const { isCoach, user } = useAuth();
+  const { isCoach, user, tenant } = useAuth();
+  // Имя «нас» для определения дом/гость в month view. Для multi-tenant —
+  // используем имя тенанта, для legacy — fallback на isLegirus.
+  const ourNameLower = normalizeTeamName(tenant?.displayName || tenant?.name || '');
+  const isOurTeam = (teamName) => {
+    if (!teamName) return false;
+    if (isLegirus(teamName)) return true;
+    if (!ourNameLower) return false;
+    const t = normalizeTeamName(teamName);
+    if (ourNameLower.includes('сшор') && !t.includes('сшор')) return false;
+    return t === ourNameLower || t.includes(ourNameLower) || ourNameLower.includes(t);
+  };
   const [openCallup, setOpenCallup] = useState(null);
   const [openMatch, setOpenMatch] = useState(null);
   const [openTraining, setOpenTraining] = useState(null);
@@ -407,7 +418,7 @@ export default function CalendarPage() {
                           {d.events.map((e, i) => {
                             if (e.type === 'match') {
                               const m = e.data;
-                              const ourHome = isLegirus(m.home);
+                              const ourHome = isOurTeam(m.home);
                               const opp = ourHome ? m.away : m.home;
                               return (
                                 <button

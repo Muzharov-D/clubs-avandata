@@ -2,7 +2,7 @@
 // Принимает массив matches (поля: isOurMatch, isPast, home, away, score.{home,away})
 // Возвращает: { type: 'W'|'L'|'D'|null, count: number, recent: ['W','L','D',...] последние 5 }
 
-import { isLegirus } from './legirus';
+import { isOurClub } from './legirus';
 
 export function computeStreak(matches) {
   if (!Array.isArray(matches)) return { type: null, count: 0, recent: [] };
@@ -15,7 +15,7 @@ export function computeStreak(matches) {
   if (ourPlayed.length === 0) return { type: null, count: 0, recent: [] };
 
   function resultOf(m) {
-    const homeIsUs = isLegirus(m.home);
+    const homeIsUs = isOurClub(m.home);
     const ourGoals = homeIsUs ? m.score.home : m.score.away;
     const themGoals = homeIsUs ? m.score.away : m.score.home;
     if (ourGoals > themGoals) return 'W';

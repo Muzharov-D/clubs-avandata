@@ -6,7 +6,7 @@
 //   - Среднее голов забивает/пропускает
 //   - История vs Легирус (если играли в этом сезоне)
 
-import { isLegirus, shieldFor, normalizeTeamName } from '../utils/legirus';
+import { isOurClub, shieldFor, normalizeTeamName } from '../utils/legirus';
 import './OpponentPreview.css';
 
 function shortTeamName(name) {
@@ -35,7 +35,7 @@ function resultFor(match, teamNorm) {
 
 export default function OpponentPreview({ nextMatch, allMatches, standings }) {
   if (!nextMatch) return null;
-  const opponentName = isLegirus(nextMatch.home) ? nextMatch.away : nextMatch.home;
+  const opponentName = isOurClub(nextMatch.home) ? nextMatch.away : nextMatch.home;
   if (!opponentName) return null;
 
   // Команды нашей подгруппы из standings. Имена нормализуем — FFSPB
@@ -95,7 +95,7 @@ export default function OpponentPreview({ nextMatch, allMatches, standings }) {
       <div className="opp-preview__head">
         <img
           src={shieldFor(opponentName, nextMatch.homeShield && nextMatch.awayShield
-            ? (isLegirus(nextMatch.home) ? nextMatch.awayShield : nextMatch.homeShield)
+            ? (isOurClub(nextMatch.home) ? nextMatch.awayShield : nextMatch.homeShield)
             : null)}
           alt=""
           className="opp-preview__shield"

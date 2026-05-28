@@ -3,7 +3,7 @@
 // Кнопки: «Иду» (confirmed) / «Не смогу» — раскрывает выбор причины (excused/declined).
 
 import { useEffect, useState } from 'react';
-import { isLegirus } from '../utils/legirus';
+import { isOurClub } from '../utils/legirus';
 import { fetchMyCallups, respondCallup } from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
 import './MyCallups.css';
@@ -79,7 +79,7 @@ export default function MyCallups() {
       <div className="my-callups__list">
         {items.map((c) => {
           const m = c.match || {};
-          const ourHome = isLegirus(m.home);
+          const ourHome = isOurClub(m.home);
           const opp = ourHome ? m.away : m.home;
           const oppShield = ourHome ? m.awayShield : m.homeShield;
           const key = c.ageGroup + '-' + c.extMatchId;

@@ -6,7 +6,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { fmtRelative, fmtCountdown } from '../utils/dates';
-import { shieldFor, isLegirus } from '../utils/legirus';
+import { shieldFor, isOurClub } from '../utils/legirus';
 import { hasCoords, openYandexRoute } from '../utils/map';
 import UiIcon from './UiIcon';
 import './HeroNextMatch.css';
@@ -40,7 +40,7 @@ export default function HeroNextMatch({ match, venue, onOpen }) {
 
   if (!match || !matchDate) return null;
 
-  const homeIsUs = isLegirus(match.home);
+  const homeIsUs = isOurClub(match.home);
   const opp = homeIsUs ? match.away : match.home;
   const oppShield = homeIsUs ? match.awayShield : match.homeShield;
   const placeLabel = homeIsUs ? 'Дома' : 'В гостях';
