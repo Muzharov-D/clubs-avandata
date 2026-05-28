@@ -1,6 +1,18 @@
+import { useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { api } from '../../api/client';
+
+const STATUS_LABELS: Record<string, string> = {
+  active: 'активен',
+  suspended: 'приостановлен',
+  archived: 'архив',
+};
+const PROVIDER_LABELS: Record<string, string> = {
+  ffspb: 'FFSPB',
+  yfl: 'ЮФЛ',
+  manual: 'вручную',
+};
 
 interface TenantBrand {
   primary?: string;
@@ -21,17 +33,33 @@ interface TenantRow {
 }
 
 export function AdminTenantsList() {
+  const [search, setSearch] = useState('');
+  const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'suspended' | 'archived'>('all');
+
   const { data, isLoading, error } = useQuery({
     queryKey: ['admin', 'tenants'],
     queryFn: () => api<{ tenants: TenantRow[] }>('/admin/tenants'),
   });
 
-  const tenants = data?.tenants ?? [];
-  const active = tenants.filter((t) => t.status === 'active').length;
-  const providerCounts = tenants.reduce<Record<string, number>>((acc, t) => {
+  const allTenants = data?.tenants ?? [];
+  const active = allTenants.filter((t) => t.status === 'active').length;
+  const providerCounts = allTenants.reduce<Record<string, number>>((acc, t) => {
     acc[t.dataProvider] = (acc[t.dataProvider] ?? 0) + 1;
     return acc;
   }, {});
+
+  const tenants = useMemo(() => {
+    const q = search.toLowerCase().trim();
+    return allTenants.filter((t) => {
+      if (statusFilter !== 'all' && t.status !== statusFilter) return false;
+      if (!q) return true;
+      return (
+        t.slug.toLowerCase().includes(q) ||
+        t.name.toLowerCase().includes(q) ||
+        t.displayName.toLowerCase().includes(q)
+      );
+    });
+  }, [allTenants, search, statusFilter]);
 
   return (
     <>
@@ -72,10 +100,46 @@ export function AdminTenantsList() {
         </div>
       </div>
 
+      {/* Filter bar */}
+      {data && allTenants.length > 0 && (
+        <div className="admin-filterbar" style={{
+          display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap', margin: '12px 0 18px',
+        }}>
+          <input
+            type="search"
+            placeholder="Поиск по названию или slug…"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            style={{
+              flex: '1 1 240px',
+              padding: '8px 12px', borderRadius: 8,
+              background: 'rgba(255,255,255,0.04)',
+              border: '1px solid rgba(255,255,255,0.1)',
+              color: '#fff', fontSize: 13, outline: 'none',
+            }}
+          />
+          {(['all', 'active', 'suspended', 'archived'] as const).map((s) => (
+            <button
+              key={s}
+              onClick={() => setStatusFilter(s)}
+              style={{
+                padding: '6px 12px', borderRadius: 999,
+                background: statusFilter === s ? 'rgba(34,211,238,0.18)' : 'rgba(255,255,255,0.04)',
+                border: statusFilter === s ? '1px solid rgba(34,211,238,0.5)' : '1px solid rgba(255,255,255,0.08)',
+                color: statusFilter === s ? '#22d3ee' : '#94a3b8',
+                fontSize: 12, fontWeight: 600, cursor: 'pointer', textTransform: 'uppercase', letterSpacing: '0.05em',
+              }}
+            >
+              {s === 'all' ? 'все' : STATUS_LABELS[s]}
+            </button>
+          ))}
+        </div>
+      )}
+
       {isLoading && <div style={{ color: 'var(--text-muted, #94a3b8)' }}>Загрузка…</div>}
       {error && <div style={{ color: '#f87171' }}>Ошибка загрузки</div>}
 
-      {data && tenants.length === 0 && (
+      {data && allTenants.length === 0 && (
         <div className="admin-empty">
           <div className="admin-empty__icon">🏟️</div>
           <div className="admin-empty__title">Пока нет ни одного клуба</div>
@@ -85,6 +149,13 @@ export function AdminTenantsList() {
               <button className="admin-btn">Создать первый клуб →</button>
             </Link>
           </div>
+        </div>
+      )}
+
+      {data && allTenants.length > 0 && tenants.length === 0 && (
+        <div className="admin-empty" style={{ padding: '32px' }}>
+          <div className="admin-empty__title">Ничего не найдено</div>
+          <div style={{ color: '#94a3b8' }}>Попробуйте другой запрос или сбросьте фильтр статуса.</div>
         </div>
       )}
 
@@ -120,32 +191,32 @@ function TenantCard({ tenant }: { tenant: TenantRow }) {
           </div>
         </div>
         <span className={`tenant-card__badge tenant-card__badge--${tenant.status}`}>
-          {tenant.status}
+          {STATUS_LABELS[tenant.status] ?? tenant.status}
         </span>
       </div>
 
       <div className="tenant-card__meta">
         <div className="tenant-card__meta-row">
-          <span className="tenant-card__meta-label">Провайдер</span>
-          <span className="tenant-card__meta-value">{tenant.dataProvider}</span>
+          <span className="tenant-card__meta-label">Источник</span>
+          <span className="tenant-card__meta-value">{PROVIDER_LABELS[tenant.dataProvider] ?? tenant.dataProvider}</span>
         </div>
         <div className="tenant-card__meta-row">
-          <span className="tenant-card__meta-label">План</span>
-          <span className="tenant-card__meta-value">{tenant.plan}</span>
+          <span className="tenant-card__meta-label">Тариф</span>
+          <span className="tenant-card__meta-value">{tenant.plan || 'Free'}</span>
         </div>
         <div className="tenant-card__meta-row">
-          <span className="tenant-card__meta-label">Полное имя</span>
+          <span className="tenant-card__meta-label">Юр. имя</span>
           <span className="tenant-card__meta-value" style={{ textAlign: 'right' }}>{tenant.name}</span>
         </div>
       </div>
 
       <div className="tenant-card__actions">
-        <Link to={`/admin/tenants/${tenant.slug}`} className="tenant-card__action">
-          Редактировать
+        <Link to={`/admin/tenants/${tenant.slug}`} className="tenant-card__action" aria-disabled>
+          Настройки
         </Link>
-        <a href="#" className="tenant-card__action">
+        <Link to="/club" className="tenant-card__action">
           В кабинет →
-        </a>
+        </Link>
       </div>
     </div>
   );

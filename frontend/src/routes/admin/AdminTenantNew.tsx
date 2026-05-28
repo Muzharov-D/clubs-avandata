@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from 'react';
+import { useState, useEffect, type FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { api, ApiError } from '../../api/client';
@@ -8,20 +8,55 @@ interface CreateTenantResponse {
   headCoach: { email: string; tempPassword: string };
 }
 
+/** Транслит «ФК Зенит» → "fk-zenit" — для авто-генерации slug. */
+const RU_TRANSLIT: Record<string, string> = {
+  а:'a',б:'b',в:'v',г:'g',д:'d',е:'e',ё:'yo',ж:'zh',з:'z',и:'i',й:'y',к:'k',л:'l',м:'m',
+  н:'n',о:'o',п:'p',р:'r',с:'s',т:'t',у:'u',ф:'f',х:'h',ц:'ts',ч:'ch',ш:'sh',щ:'sch',
+  ъ:'',ы:'y',ь:'',э:'e',ю:'yu',я:'ya',
+};
+function autoSlug(name: string): string {
+  return name
+    .toLowerCase()
+    .replace(/[а-яё]/g, (c) => RU_TRANSLIT[c] ?? '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, 40);
+}
+
 export function AdminTenantNew() {
   const nav = useNavigate();
   const qc = useQueryClient();
   const [form, setForm] = useState({
     slug: '',
+    slugManual: false,    // флаг — пользователь сам исправил slug → больше не автогеним
     name: '',
     displayName: '',
     dataProvider: 'manual' as 'ffspb' | 'yfl' | 'manual',
-    primary: '#dc2626',
+    primary: '#1FB6FF',
+    accent:  '#22d3ee',
     headCoachEmail: '',
     headCoachName: '',
   });
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<CreateTenantResponse | null>(null);
+
+  // Авто-генерация slug из name пока пользователь сам его не исправил.
+  useEffect(() => {
+    if (form.slugManual) return;
+    const candidate = autoSlug(form.name);
+    if (candidate !== form.slug) {
+      setForm((f) => ({ ...f, slug: candidate }));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [form.name]);
+
+  // displayName тоже автогеним из name, если пустой.
+  useEffect(() => {
+    if (form.displayName.trim() === '' && form.name.trim() !== '') {
+      setForm((f) => ({ ...f, displayName: f.name }));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [form.name]);
 
   const create = useMutation({
     mutationFn: (body: Record<string, unknown>) =>
@@ -43,7 +78,7 @@ export function AdminTenantNew() {
       name: form.name,
       displayName: form.displayName,
       dataProvider: form.dataProvider,
-      brand: { primary: form.primary },
+      brand: { primary: form.primary, accent: form.accent },
       headCoach: { email: form.headCoachEmail, fullName: form.headCoachName },
     });
   }
@@ -91,32 +126,40 @@ export function AdminTenantNew() {
       <h1>Новый клуб</h1>
       <form onSubmit={onSubmit} className="surface" style={{ display: 'grid', gap: 16 }}>
         <div>
-          <label>Slug (lowercase, dash)</label>
-          <input
-            value={form.slug}
-            onChange={(e) => setForm({ ...form, slug: e.target.value.toLowerCase() })}
-            placeholder="legirus"
-            required
-            pattern="[a-z0-9-]+"
-          />
-        </div>
-        <div>
-          <label>Название</label>
+          <label>Полное название клуба</label>
           <input
             value={form.name}
             onChange={(e) => setForm({ ...form, name: e.target.value })}
-            placeholder="ФК Легирус"
+            placeholder="ФК Зенит"
+            required
+            autoFocus
+          />
+        </div>
+        <div>
+          <label>Короткое имя <span style={{ color: '#94a3b8', fontWeight: 400 }}>(в шапке кабинета)</span></label>
+          <input
+            value={form.displayName}
+            onChange={(e) => setForm({ ...form, displayName: e.target.value })}
+            placeholder="Зенит"
             required
           />
         </div>
         <div>
-          <label>Display name (короткое)</label>
+          <label>
+            URL-идентификатор <span style={{ color: '#94a3b8', fontWeight: 400 }}>
+              ({form.slugManual ? 'правишь вручную' : 'генерируется автоматически'})
+            </span>
+          </label>
           <input
-            value={form.displayName}
-            onChange={(e) => setForm({ ...form, displayName: e.target.value })}
-            placeholder="Легирус"
+            value={form.slug}
+            onChange={(e) => setForm({ ...form, slug: e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ''), slugManual: true })}
+            placeholder="zenit-fk"
             required
+            pattern="[a-z0-9-]+"
           />
+          <div style={{ fontSize: 12, color: '#94a3b8', marginTop: 4 }}>
+            будет URL: <code style={{ color: '#22d3ee' }}>clubs.avandata.ru/m/{form.slug || '...'}</code>
+          </div>
         </div>
         <div>
           <label>Источник данных</label>
@@ -132,13 +175,42 @@ export function AdminTenantNew() {
           </select>
         </div>
         <div>
-          <label>Основной бренд-цвет</label>
-          <input
-            type="color"
-            value={form.primary}
-            onChange={(e) => setForm({ ...form, primary: e.target.value })}
-            style={{ height: 44, padding: 4 }}
-          />
+          <label>Бренд-цвета</label>
+          <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
+            <div style={{ flex: 1 }}>
+              <input
+                type="color"
+                value={form.primary}
+                onChange={(e) => setForm({ ...form, primary: e.target.value })}
+                style={{ width: '100%', height: 44, padding: 2, cursor: 'pointer' }}
+                aria-label="Основной бренд-цвет"
+              />
+              <div style={{ fontSize: 11, color: '#94a3b8', marginTop: 4, textAlign: 'center' }}>Основной</div>
+            </div>
+            <div style={{ flex: 1 }}>
+              <input
+                type="color"
+                value={form.accent}
+                onChange={(e) => setForm({ ...form, accent: e.target.value })}
+                style={{ width: '100%', height: 44, padding: 2, cursor: 'pointer' }}
+                aria-label="Акцентный цвет"
+              />
+              <div style={{ fontSize: 11, color: '#94a3b8', marginTop: 4, textAlign: 'center' }}>Акцент (цифры/кнопки)</div>
+            </div>
+            {/* Live preview */}
+            <div style={{
+              flex: 1,
+              padding: 10,
+              borderRadius: 8,
+              background: `linear-gradient(135deg, ${form.primary}22, transparent)`,
+              border: `1px solid ${form.primary}66`,
+              textAlign: 'center',
+            }}>
+              <div style={{ fontSize: 11, color: '#94a3b8', marginBottom: 4 }}>Превью</div>
+              <div style={{ color: form.accent, fontWeight: 800, fontSize: 24 }}>8.7</div>
+              <div style={{ fontSize: 10, color: '#94a3b8' }}>Рейтинг</div>
+            </div>
+          </div>
         </div>
 
         <hr style={{ border: 'none', borderTop: '1px solid var(--border)', margin: '8px 0' }} />
