@@ -10,6 +10,7 @@ import MainLayout from './layouts/MainLayout';
 import Login from './pages/Login';
 import ClubOverview from './pages/ClubOverview';
 import ClubPage from './pages/ClubPage';
+import ClubDashboard from './pages/ClubDashboard';
 import MatchesDashboard from './pages/MatchesDashboard';
 import MatchDetail from './pages/MatchDetail';
 import ComparisonView from './pages/ComparisonView';
@@ -108,7 +109,8 @@ export function App() {
 
                   {/* Авторизованный кабинет клуба */}
                   <Route element={<ProtectedRoute roles={[]}><MainLayout /></ProtectedRoute>}>
-                    <Route path="/club" element={<ClubPage />} />
+                    <Route path="/club" element={<ClubDashboard />} />
+                    <Route path="/club/legacy" element={<ClubPage />} />
                     <Route path="/analytics" element={<CoachOnly><ClubOverview /></CoachOnly>} />
                     <Route path="/analytics/team" element={<CoachOnly><ComparisonView /></CoachOnly>} />
                     <Route path="/matches" element={<MatchesDashboard />} />
