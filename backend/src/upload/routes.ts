@@ -194,12 +194,39 @@ export async function uploadRoutes(app: FastifyInstance) {
         : ({} as PdfOutput);
 
       // ─── 5. Merge + insert ───────────────────────────────────────
-      const matchDate = pdfData.date || excelData?.match.date || null;
-      const homeName  = pdfData.homeTeam?.name || excelData?.match.homeTeam || '';
-      const awayName  = pdfData.awayTeam?.name || excelData?.match.awayTeam || '';
-      const score     = pdfData.score || excelData?.match.score || null;
+      let matchDate = pdfData.date || excelData?.match.date || null;
+      let homeName  = pdfData.homeTeam?.name || excelData?.match.homeTeam || '';
+      let awayName  = pdfData.awayTeam?.name || excelData?.match.awayTeam || '';
+      const score   = pdfData.score || excelData?.match.score || null;
 
       await withTenant(tenantSlug, async (_tx, conn) => {
+        // Fallback 1: если парсер не вытянул home/away — берём из ближайшей
+        // фикстуры календаря текущего tenant'а (наш матч). Это закрывает кейс,
+        // когда PDF без явной шапки или формат титула не распознан.
+        if (!homeName || !awayName) {
+          const calRes = await conn.query<{ home_team: string; away_team: string; match_date: string }>(
+            `SELECT home_team, away_team, match_date
+               FROM calendar
+              WHERE tenant_id = $1 AND is_our_match = TRUE
+              ORDER BY ABS(EXTRACT(EPOCH FROM (COALESCE(match_date, NOW()) - COALESCE($2::timestamptz, NOW())))) ASC
+              LIMIT 1`,
+            [tenantSlug, matchDate],
+          );
+          if (calRes.rows[0]) {
+            if (!homeName) homeName = calRes.rows[0].home_team || '';
+            if (!awayName) awayName = calRes.rows[0].away_team || '';
+            if (!matchDate) matchDate = calRes.rows[0].match_date;
+            logger.info({ matchId, src: 'calendar', homeName, awayName }, '[upload] team names from calendar fallback');
+          }
+        }
+        // Fallback 2: подставляем имя нашей команды + «Соперник», чтобы не было пустоты.
+        if (!homeName || !awayName) {
+          const t = await conn.query<{ name: string }>(`SELECT name FROM teams WHERE id = $1`, [teamId]);
+          const ourName = t.rows[0]?.name || 'Наша команда';
+          if (!homeName) homeName = ourName;
+          if (!awayName) awayName = 'Соперник';
+          logger.warn({ matchId, homeName, awayName }, '[upload] team names — last-resort fallback');
+        }
         await conn.query(
           `INSERT INTO matches (
              id, tenant_id, team_id, ext_match_id,

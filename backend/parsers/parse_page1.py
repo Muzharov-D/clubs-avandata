@@ -11,7 +11,9 @@ from lib.pdf_extract import extract_page_text
 
 LOG = logging.getLogger("parser.page1")
 
-_TITLE_RE = re.compile(r"^(.+?)\s+(\d+):(\d+)\s+(.+)$")
+_TITLE_RE = re.compile(r"^(.+?)\s+(\d+)\s*[:\-–—]\s*(\d+)\s+(.+)$")
+# Fallback без счёта: "Команда A — Команда B" / " vs " / " - "
+_TITLE_NO_SCORE_RE = re.compile(r"^(.+?)\s+(?:[—–-]|vs\.?|VS|против)\s+(.+)$")
 _DATE_RE = re.compile(r"\b(\d{2}\.\d{2}\.\d{4})\b")
 _NUM_TOKEN = re.compile(r"\d+(?:[\.,]\d+)?%?")  # 13, 13%, 2.5, 0.0, etc.
 
@@ -111,15 +113,22 @@ def parse(pdf_path, team_id, match_id):
     out = {"matchId": match_id, "homeStats": {}, "awayStats": {}, "formation": None}
 
     # --- Title / score ---
-    first_line = next((l.strip() for l in lines if l.strip()), "")
-    m = _TITLE_RE.match(first_line)
-    if m:
-        out["homeTeam"] = m.group(1).strip()
-        out["awayTeam"] = m.group(4).strip()
-        out["score"] = {"home": int(m.group(2)), "away": int(m.group(3))}
-    else:
-        out["homeTeam"] = ""; out["awayTeam"] = ""
-        out["score"] = {"home": 0, "away": 0}
+    # Берём первые НЕпустые строки — пробуем найти match-title в каждой.
+    first_lines = [l.strip() for l in lines if l.strip()][:5]
+    out["homeTeam"] = ""; out["awayTeam"] = ""
+    out["score"] = {"home": 0, "away": 0}
+    for line in first_lines:
+        m = _TITLE_RE.match(line)
+        if m:
+            out["homeTeam"] = m.group(1).strip()
+            out["awayTeam"] = m.group(4).strip()
+            out["score"] = {"home": int(m.group(2)), "away": int(m.group(3))}
+            break
+        m2 = _TITLE_NO_SCORE_RE.match(line)
+        if m2:
+            out["homeTeam"] = m2.group(1).strip()
+            out["awayTeam"] = m2.group(2).strip()
+            break
 
     md = _DATE_RE.search(text)
     if md:
