@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: clubs-avandata-api
+    env: docker
+    plan: free
+    region: frankfurt
+    branch: main
+    dockerContext: ./backend
+    dockerfilePath: ./backend/Dockerfile
+    healthCheckPath: /health
+    autoDeploy: true

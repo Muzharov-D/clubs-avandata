@@ -1,0 +1,14 @@
+node_modules
+dist
+.env
+.env.*
+.git
+*.log
+parsers/golden
+parsers/intermediate
+parsers/tests
+parsers/pytest-cache-files-*
+parsers/sportvisor_*.pdf
+parsers/__pycache__
+**/__pycache__
+**/.pytest_cache
