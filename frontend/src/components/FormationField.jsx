@@ -73,9 +73,28 @@ export default function FormationField({
   // Без этого .forEach в buildLayout кидает TypeError и роняет всю MatchDetail.
   // Парсер иногда возвращает 22 стартующих (дубликаты для разных половин) —
   // ограничиваем до 11 уникальных по номеру/имени.
+  // PDF-парсер формации может вернуть игроков ОБЕИХ команд + дубликаты по
+  // тайму. Фильтруем: дедуп по (номер, имя) + оставляем только тех, кто
+  // есть в `players` (= наш ростер). Если матча по номеру/имени нет — это
+  // игрок соперника или дубль с другим номером — скипаем.
+  const ourPlayerNumbers = new Set(
+    (players || []).map((p) => Number(p?.number)).filter((n) => Number.isFinite(n)),
+  );
+  function isOurPlayer(s) {
+    const num = Number(s?.number);
+    if (Number.isFinite(num) && ourPlayerNumbers.has(num)) return true;
+    // Если нет номера — пробуем по имени
+    const short = s?.shortName || s?.fullName || '';
+    return (players || []).some((p) => {
+      const ln = (p?.lastName || '').toLowerCase();
+      return ln && short.toLowerCase().includes(ln);
+    });
+  }
+
   const rawStarters = Array.isArray(formation?.starters) ? formation.starters : [];
   const seenStarters = new Set();
   const starters = rawStarters
+    .filter(isOurPlayer)
     .filter((s) => {
       const k = `${s?.number || ''}-${s?.shortName || s?.fullName || ''}`;
       if (seenStarters.has(k)) return false;
@@ -85,12 +104,14 @@ export default function FormationField({
     .slice(0, 11);
   const rawSubs = Array.isArray(formation?.substitutes) ? formation.substitutes : [];
   const seenSubs = new Set();
-  const subs = rawSubs.filter((s) => {
-    const k = `${s?.number || ''}-${s?.shortName || s?.fullName || ''}`;
-    if (seenSubs.has(k)) return false;
-    seenSubs.add(k);
-    return true;
-  });
+  const subs = rawSubs
+    .filter(isOurPlayer)
+    .filter((s) => {
+      const k = `${s?.number || ''}-${s?.shortName || s?.fullName || ''}`;
+      if (seenSubs.has(k)) return false;
+      seenSubs.add(k);
+      return true;
+    });
 
   if (starters.length === 0 && imageSrc) {
     return (
