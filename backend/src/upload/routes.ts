@@ -172,7 +172,20 @@ export async function uploadRoutes(app: FastifyInstance) {
       if (!roster.length) throw new BadRequestError('Roster is empty', 'EMPTY_ROSTER');
       await writeFile(playersPath, JSON.stringify({ players: roster }, null, 2), 'utf-8');
 
-      // ─── 4. PDF parser ────────────────────────────────────────
+      // ─── 4. NEW rich PDF parser (extract_tables — все 13+ страниц) ──────
+      const richPath = join(work, 'rich.json');
+      await runPython(PYTHON_BIN,
+        [join(PARSERS_DIR, 'parse_zenit_full.py'), pdfPath, richPath], work);
+      const rich = JSON.parse(await readFile(richPath, 'utf-8')) as {
+        overall_meta: Record<string, { name: string; position: string; minutes: number | null }>;
+        radar:   Record<string, Record<string, number>>;
+        fitness: Record<string, Record<string, unknown>>;
+        attack:  Record<string, Record<string, unknown>>;
+        defence: Record<string, Record<string, unknown>>;
+      };
+      logger.info({ matchId, richPlayers: Object.keys(rich.radar).length }, '[upload] rich PDF parsed');
+
+      // Старый build_match — для page1 / teamSummary / teamAggregates / formation
       const pdfArgs = [join(PARSERS_DIR, 'build_match.py'), pdfPath, pdfOutPath, teamId!, matchId];
       const pyStdout = await runPython(PYTHON_BIN, pdfArgs, work, { ROSTER_JSON: playersPath });
       logger.info({ matchId, py: pyStdout.slice(-200) }, '[upload] pdf parsed');
@@ -235,36 +248,59 @@ export async function uploadRoutes(app: FastifyInstance) {
           if (r.number != null) rosterByNum.set(String(r.number).padStart(2, '0'), r);
         }
 
-        // From Excel
-        for (const ep of excelData?.players ?? []) {
-          if (!ep.number || !ep.name) continue;
-          const num = parseInt(ep.number, 10);
-          if (!num) continue;
-          const numStr = String(num).padStart(2, '0');
+        // PRIMARY: rich PDF data — все 17 игроков с radar + attack/defence/fitness stats
+        for (const [numStr, meta] of Object.entries(rich.overall_meta)) {
+          const radar = rich.radar[numStr] ?? {};
           const rosterRow = rosterByNum.get(numStr);
-          if (!rosterRow) continue;
+          const playerId = rosterRow?.id ?? `pdf-${teamId}-n${numStr}`;
+          if (!rosterRow) {
+            await conn.query(
+              `INSERT INTO players (id, tenant_id, team_id, full_name, number, position)
+               VALUES ($1, $2, $3, $4, $5, $6)
+               ON CONFLICT (id) DO NOTHING`,
+              [playerId, tenantSlug, teamId, meta.name, parseInt(numStr, 10), meta.position],
+            );
+          }
           combined.set(numStr, {
             number: numStr,
-            playerId: rosterRow.id,
-            minutes: ep.minutes,
-            position: rosterRow.position,
-            ratings: {},
-            radar: {},
-            stats: ep.stats,
+            playerId,
+            minutes: meta.minutes,
+            position: meta.position,
+            ratings: {
+              overall: Number(radar.overall ?? 0),
+              fitness: Number(radar.fitnessTotal ?? radar.fitnessRating ?? 0),
+              attack:  Number(radar.attackTotal  ?? radar.attackRating  ?? 0),
+              defence: Number(radar.defenceTotal ?? radar.defenceRating ?? 0),
+            },
+            radar,
+            stats: {
+              attack:  rich.attack[numStr]  ?? {},
+              defence: rich.defence[numStr] ?? {},
+              fitness: rich.fitness[numStr] ?? {},
+            },
             splits: {},
           });
         }
-        // From PDF (merge ratings/radar/splits)
+        // FALLBACK: Excel — добавить группы которых нет в PDF (passing/duels/pressing/dribbling)
+        for (const ep of excelData?.players ?? []) {
+          if (!ep.number) continue;
+          const numStr = String(parseInt(ep.number, 10)).padStart(2, '0');
+          const ex = combined.get(numStr);
+          if (!ex) continue;
+          const stats = ex.stats as Record<string, unknown>;
+          for (const [grp, vals] of Object.entries(ep.stats)) {
+            if (!stats[grp]) stats[grp] = vals;
+          }
+        }
+        // FROM old build_match — для splits только (1st/2nd half)
         for (const pp of pdfData.players ?? []) {
           if (pp.number == null) continue;
           const numStr = String(pp.number).padStart(2, '0');
           const existing = combined.get(numStr);
           const rosterRow = rosterByNum.get(numStr);
           if (existing) {
-            existing.ratings = pp.ratings ?? {};
-            existing.radar   = pp.radar   ?? {};
-            existing.splits  = pp.splits  ?? {};
-            existing.position = pp.position ?? existing.position ?? null;
+            // PDF rich уже дал ratings/radar/stats — оставляем. Берём только splits.
+            if (pp.splits) existing.splits = pp.splits;
           } else if (rosterRow) {
             combined.set(numStr, {
               number: numStr,
