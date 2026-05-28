@@ -138,7 +138,7 @@ export default function ClubOverview() {
                 <div className="match-summary__teams">
                   <div className="match-summary__team match-summary__team--home">
                     <span className="match-summary__shield-initials" aria-hidden>З</span>
-                    <span>{match.homeTeam?.name?.replace(/ 20\d{2}$/, '') || 'Команда'}</span>
+                    <span>{(match.homeTeam?.name || 'Команда').replace(/\s*[Uu]-?\s*\d{1,3}\s*/g, ' ').replace(/\s+20\d{2}\s*/g, ' ').replace(/\s+/g, ' ').trim()}</span>
                   </div>
                   <div className="match-summary__score">
                     <span className={match.score?.home > match.score?.away ? 'win' : ''}>{match.score?.home ?? '—'}</span>
@@ -146,7 +146,7 @@ export default function ClubOverview() {
                     <span className={match.score?.away > match.score?.home ? 'win' : ''}>{match.score?.away ?? '—'}</span>
                   </div>
                   <div className="match-summary__team match-summary__team--away">
-                    <span>{match.awayTeam?.name?.replace(/ 20\d{2}$/, '') || 'Соперник'}</span>
+                    <span>{(match.awayTeam?.name || 'Соперник').replace(/\s*[Uu]-?\s*\d{1,3}\s*/g, ' ').replace(/\s+20\d{2}\s*/g, ' ').replace(/\s+/g, ' ').trim()}</span>
                     <div className="match-summary__placeholder">?</div>
                   </div>
                 </div>

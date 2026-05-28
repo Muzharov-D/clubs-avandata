@@ -178,7 +178,7 @@ export default function MatchesDashboard() {
                     <span className={lastMatch.score?.away > lastMatch.score?.home ? 'win' : ''}>{lastMatch.score?.away}</span>
                   </div>
                   <div className="matches-dashboard__last-team away">
-                    <span>{lastMatch.awayTeam?.name?.replace(/ 20\d{2}$/, '') || 'Соперник'}</span>
+                    <span>{(lastMatch.awayTeam?.name || 'Соперник').replace(/\s*[Uu]-?\s*\d{1,3}\s*/g, ' ').replace(/\s+20\d{2}\s*/g, ' ').replace(/\s+/g, ' ').trim()}</span>
                     <div className="matches-dashboard__last-placeholder">?</div>
                   </div>
                 </div>
