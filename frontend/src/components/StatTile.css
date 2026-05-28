@@ -1,0 +1,91 @@
+/* ===== StatTile — glassmorphism KPI card ===== */
+.stat-tile {
+  position: relative;
+  padding: 18px 18px 16px;
+  border-radius: 16px;
+  background: linear-gradient(180deg, rgba(20,25,50,0.55), rgba(15,20,40,0.35));
+  border: 1px solid rgba(255,255,255,0.08);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  overflow: hidden;
+  transition: transform 180ms ease, border-color 180ms ease, box-shadow 220ms ease;
+  isolation: isolate;
+}
+.stat-tile:hover {
+  transform: translateY(-2px);
+  border-color: var(--st-accent-edge);
+  box-shadow: 0 18px 36px -18px rgba(0,0,0,0.7),
+              0 0 0 1px var(--st-accent-soft) inset;
+}
+
+/* Левый accent-glow */
+.stat-tile__glow {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at left center, var(--st-accent-soft) 0%, transparent 55%);
+  pointer-events: none;
+  z-index: -1;
+  opacity: 0.85;
+}
+.stat-tile::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; bottom: 0;
+  width: 3px;
+  background: linear-gradient(180deg, var(--st-accent-edge), transparent);
+  border-radius: 16px 0 0 16px;
+  z-index: -1;
+}
+
+.stat-tile__top {
+  display: flex; justify-content: space-between; align-items: center;
+  gap: 10px; margin-bottom: 10px;
+}
+.stat-tile__label {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.55);
+}
+.stat-tile__delta {
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+.stat-tile__delta--up      { background: rgba(34,197,94,0.15);  color: #4ade80; }
+.stat-tile__delta--down    { background: rgba(239,68,68,0.15);  color: #fca5a5; }
+.stat-tile__delta--neutral { background: rgba(148,163,184,0.15); color: #cbd5e1; }
+
+.stat-tile__value-row {
+  display: flex; align-items: baseline; gap: 6px;
+}
+.stat-tile__value {
+  font-size: 32px;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  color: var(--st-accent);
+  text-shadow: 0 0 32px var(--st-accent-soft);
+}
+.stat-tile__unit {
+  font-size: 14px;
+  font-weight: 600;
+  color: rgba(255,255,255,0.5);
+}
+.stat-tile__extra {
+  margin-top: 8px;
+  font-size: 12px;
+  color: rgba(255,255,255,0.55);
+  font-variant-numeric: tabular-nums;
+}
+
+.stat-tile--big .stat-tile__value { font-size: 44px; }
+.stat-tile--big { padding: 22px; }
+
+@media (max-width: 720px) {
+  .stat-tile__value { font-size: 26px; }
+  .stat-tile { padding: 14px; }
+}

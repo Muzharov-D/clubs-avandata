@@ -19,6 +19,8 @@ import {
 // @ts-ignore — legacy
 import { useAuth } from '../contexts/AuthContext';
 import { PlayerRadar } from '../components/PlayerRadar';
+import { StatTile } from '../components/StatTile';
+import { Sparkline } from '../components/Sparkline';
 import './ClubDashboard.css';
 
 type AnyObj = Record<string, any>;
@@ -200,14 +202,23 @@ export default function ClubDashboard() {
               </span>
             </div>
             <div className="cd__stats-grid">
-              <StatTile label="Владение"     value={String(our.possessionPct ?? '—')} suffix="%" extra={opp ? `vs ${opp.possessionPct}%` : undefined} />
-              <StatTile label="Удары"        value={String(our.shots?.total ?? '—')} extra={`в створ ${our.shots?.onTarget ?? 0} (${our.shots?.accuracy ?? 0}%)`} />
-              <StatTile label="xG"           value={our.expectedGoals != null ? String(our.expectedGoals) : '—'} />
-              <StatTile label="Передачи"     value={String(our.passes?.total ?? '—')} extra={`точн ${our.passes?.accuracy ?? 0}% (${our.passes?.successful ?? 0})`} />
-              <StatTile label="Угловые"      value={String(our.corners?.total ?? '—')} extra={our.corners?.accuracy != null ? `${our.corners.accuracy}% реализация` : undefined} />
-              <StatTile label="Штрафные с ударом" value={String(our.freeKickShots ?? '—')} />
-              <StatTile label="Нарушения"    value={String(our.fouls ?? '—')} extra={opp ? `vs ${opp.fouls ?? 0}` : undefined} />
-              <StatTile label="Офсайды"      value={String(our.offsides ?? '—')} />
+              <StatTile accent="cyan"   label="Владение"     value={our.possessionPct ?? '—'} unit="%"
+                extra={opp ? `соперник ${opp.possessionPct ?? '—'}%` : undefined}
+                delta={opp && our.possessionPct != null && opp.possessionPct != null
+                  ? { sign: our.possessionPct >= opp.possessionPct ? 'up' : 'down', text: `${Math.abs(our.possessionPct - opp.possessionPct)}%` }
+                  : undefined} />
+              <StatTile accent="gold"   label="Удары"        value={our.shots?.total ?? '—'}
+                extra={`в створ ${our.shots?.onTarget ?? 0} · ${our.shots?.accuracy ?? 0}%`} />
+              <StatTile accent="violet" label="xG"           value={our.expectedGoals != null ? Number(our.expectedGoals).toFixed(2) : '—'}
+                extra={opp?.expectedGoals != null ? `соперник ${Number(opp.expectedGoals).toFixed(2)}` : undefined} />
+              <StatTile accent="cyan"   label="Передачи"     value={our.passes?.total ?? '—'}
+                extra={`точность ${our.passes?.accuracy ?? 0}% (${our.passes?.successful ?? 0})`} />
+              <StatTile accent="green"  label="Угловые"      value={our.corners?.total ?? '—'}
+                extra={our.corners?.accuracy != null ? `${our.corners.accuracy}% реализация` : undefined} />
+              <StatTile accent="gold"   label="Штрафные с ударом" value={our.freeKickShots ?? '—'} />
+              <StatTile accent="red"    label="Нарушения"    value={our.fouls ?? '—'}
+                extra={opp ? `соперник ${opp.fouls ?? 0}` : undefined} />
+              <StatTile accent="muted"  label="Офсайды"      value={our.offsides ?? '—'} />
             </div>
             {latestMatch.teamAvgRatings && (
               <div className="cd__avg-row">
@@ -250,17 +261,27 @@ export default function ClubDashboard() {
             </div>
           ) : (
             <ol className="cd__top">
-              {topPlayers.map((p, i) => (
-                <li key={p.playerId} className="cd__top-row" onClick={() => navigate(`/players/${p.playerId}`)}>
-                  <span className="cd__top-rank">{i + 1}</span>
-                  <span className="cd__top-num">#{p.number ?? '—'}</span>
-                  <span className="cd__top-name">{p.fullName}</span>
-                  <span className="cd__top-pos">{p.position || ''}</span>
-                  <span className="cd__top-rating" style={{ background: ratingColor(p.ratings?.overall) }}>
-                    {p.ratings?.overall?.toFixed(1) ?? '—'}
-                  </span>
-                </li>
-              ))}
+              {(() => {
+                const maxRating = topPlayers.reduce((m, x) => Math.max(m, x.ratings?.overall ?? 0), 0) || 10;
+                return topPlayers.map((p, i) => {
+                  const r = p.ratings?.overall ?? 0;
+                  const pct = Math.min(100, (r / maxRating) * 100);
+                  return (
+                    <li key={p.playerId} className="cd__top-row" onClick={() => navigate(`/players/${p.playerId}`)}>
+                      <span className="cd__top-rank">{i + 1}</span>
+                      <span className="cd__top-num">#{p.number ?? '—'}</span>
+                      <span className="cd__top-name">{p.fullName}</span>
+                      <span className="cd__top-pos">{p.position || ''}</span>
+                      <span className="cd__top-bar" aria-hidden>
+                        <span className="cd__top-bar-fill" style={{ width: `${pct}%`, background: ratingColor(r) }} />
+                      </span>
+                      <span className="cd__top-rating" style={{ background: ratingColor(r) }}>
+                        {p.ratings?.overall?.toFixed(1) ?? '—'}
+                      </span>
+                    </li>
+                  );
+                });
+              })()}
             </ol>
           )}
         </div>
@@ -452,15 +473,7 @@ function formatDateShort(iso?: string): string {
   return d.toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' });
 }
 
-function StatTile({ label, value, suffix = '', extra }: { label: string; value: string; suffix?: string; extra?: string }) {
-  return (
-    <div className="cd__stat-tile">
-      <div className="cd__stat-label">{label}</div>
-      <div className="cd__stat-value">{value}{suffix && <span className="cd__stat-suffix">{suffix}</span>}</div>
-      {extra && <div className="cd__stat-extra">{extra}</div>}
-    </div>
-  );
-}
+// StatTile вынесен в components/StatTile.tsx (glassmorphism + accent + delta)
 
 function Countdown({ to }: { to: string }) {
   const [text, setText] = useState('');
