@@ -4,6 +4,7 @@ import { useApi } from '../hooks/useApi';
 import { fetchMatch, fetchMatches, fetchMetrics, fetchPlayer } from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
 import { useTeam } from '../contexts/TeamContext';
+import { useDocumentTitle } from '../hooks/useDocumentTitle';
 import PlayerPhoto from '../components/PlayerPhoto';
 import AttendanceBlock from '../components/AttendanceBlock';
 import RatingCard from '../components/RatingCard';
@@ -14,6 +15,15 @@ import { ratingColor } from '../utils/colors';
 import { num, percentileRank, formatRaw } from '../utils/num';
 import { POSITION_OPTIONS, PIZZA_VS_LABEL, TEMPLATES, getStatValue, positionGroup } from '../utils/pizzaTemplates';
 import './PlayerDetail.css';
+
+function fmtMatchShort(m) {
+  if (!m) return '';
+  const d = m.match_date || m.matchDate || m.date;
+  const dt = d ? new Date(d).toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' }) : '';
+  const opp = m.opponent || m.away || m.home || '';
+  const score = (m.scoreHome != null && m.scoreAway != null) ? ` ${m.scoreHome}:${m.scoreAway}` : '';
+  return `${dt}${score ? ' ·' + score : ''}${opp ? ' vs ' + opp : ''}`.trim();
+}
 
 // Ключевые метрики для бейджей "Лучший в команде" — топ-3 ранг по матчу.
 const RANK_METRICS = [
@@ -126,14 +136,22 @@ export default function PlayerDetail() {
     () => (effectiveTeamId ? fetchMatches(effectiveTeamId) : Promise.resolve({ matches: [] })),
     [effectiveTeamId]
   );
-  const lastMatchId = matchesRes.data?.matches?.[0]?.id;
-  const matchRes = useApi(() => (lastMatchId ? fetchMatch(lastMatchId) : Promise.resolve(null)), [lastMatchId]);
+  const allMatches = matchesRes.data?.matches || [];
+  // Селектор матча: дефолтно последний, юзер может переключать если матчей >1
+  const [selectedMatchId, setSelectedMatchId] = useState(null);
+  const currentMatchId = selectedMatchId || allMatches[0]?.id;
+  useEffect(() => { setSelectedMatchId(null); }, [playerId]);  // reset при смене игрока
+
+  const matchRes = useApi(() => (currentMatchId ? fetchMatch(currentMatchId) : Promise.resolve(null)), [currentMatchId]);
   const metricsRes = useApi(fetchMetrics, []);
 
   const match = matchRes.data;
   const metrics = metricsRes.data || {};
+  // eslint-disable-next-line no-unused-vars
   const radarAxes = metrics.radarAxes || [];
   const labels = metrics.metricLabels || {};
+
+  useDocumentTitle(lookedUpPlayer?.fullName ? `${lookedUpPlayer.fullName} — Игрок` : 'Профиль игрока');
 
   const player = useMemo(
     () => (match?.players || []).find((p) => p.id === playerId),
@@ -227,14 +245,35 @@ export default function PlayerDetail() {
     { value: 'fitness', label: 'Фитнес',  count: groupCounts.fitness },
   ];
 
+  const matchSubtitle = match ? `по матчу ${fmtMatchShort(match)}` : '';
+
   return (
     <div className="page player-detail">
+      {/* Селектор матча: только если их 2+ */}
+      {allMatches.length > 1 && (
+        <div className="player-detail__match-picker">
+          <label htmlFor="pd-match-select">Матч:</label>
+          <select
+            id="pd-match-select"
+            value={currentMatchId || ''}
+            onChange={(e) => setSelectedMatchId(e.target.value)}
+          >
+            {allMatches.map((m) => (
+              <option key={m.id} value={m.id}>
+                {fmtMatchShort(m) || `Матч ${m.id}`}
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
+
       {/* HEADER */}
       <div className="card player-detail__hero">
         <PlayerPhoto player={player} size={132} />
         <div className="player-detail__hero-info">
           <div className="player-detail__hero-pos">№{player.number} · {player.positionFull}</div>
           <h1 className="player-detail__hero-name">{player.fullName}</h1>
+          {matchSubtitle && <div className="player-detail__hero-match">{matchSubtitle}</div>}
           <div className="player-detail__hero-meta">
             <span>Минут на поле: <b>{player.minutes ?? '—'}</b></span>
             <span>Голы: <b>{num(player.stats?.attack4?.goal) ?? 0}</b></span>

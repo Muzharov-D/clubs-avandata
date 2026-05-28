@@ -258,9 +258,20 @@ export async function dataRoutes(app: FastifyInstance) {
   });
 
   app.get('/metrics', async () => {
-    // Русские названия метрик для splits-таблицы PlayerDetail.jsx
+    // Русские названия метрик для splits-таблицы PlayerDetail.jsx + radar-осей.
+    // radarAxes используется в ComparisonView (легаси) для пер-метрика
+    // визуализации игрок vs средний.
     return {
-      radarAxes: [],
+      radarAxes: [
+        { key: 'attack',   label: 'Атака'    },
+        { key: 'defence',  label: 'Защита'   },
+        { key: 'fitness',  label: 'Фитнес'   },
+        { key: 'overall',  label: 'Общий'    },
+        { key: 'passing',  label: 'Пасы'     },
+        { key: 'shooting', label: 'Удары'    },
+        { key: 'duels',    label: 'Дуэли'    },
+        { key: 'pressing', label: 'Прессинг' },
+      ],
       metricLabels: {
         Goal: 'Голы', Shot: 'Удары', 'Shot by head': 'Удары головой',
         'Free kick shot': 'Удары со штрафных', 'Free kick with shot': 'Штрафные с ударом',

@@ -270,6 +270,43 @@
 }
 .player-detail__line-self .badge__icon { font-size: 24px; }
 
+/* Match picker (если матчей > 1) */
+.player-detail__match-picker {
+  display: flex; align-items: center; gap: 10px;
+  margin-bottom: 12px;
+  font-size: 12px; color: rgba(255,255,255,0.55);
+  text-transform: uppercase; letter-spacing: 0.05em;
+}
+.player-detail__match-picker select {
+  flex: 1; max-width: 360px;
+  background: #1a1a3a url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'><path d='M1 1l4 4 4-4' stroke='%2394a3c8' stroke-width='1.5' fill='none'/></svg>") right 10px center / 10px no-repeat;
+  color: #fff;
+  border: 1px solid rgba(34,211,238,0.3);
+  border-radius: 8px;
+  padding: 7px 28px 7px 10px;
+  font-size: 13px;
+  font-family: inherit;
+  cursor: pointer;
+  outline: none;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+}
+.player-detail__match-picker select:focus-visible {
+  border-color: #22d3ee;
+  box-shadow: 0 0 0 2px rgba(34,211,238,0.2);
+}
+.player-detail__match-picker select option {
+  background: #14143c;
+  color: #fff;
+  text-transform: none;
+}
+.player-detail__hero-match {
+  font-size: 12px;
+  color: rgba(34,211,238,0.85);
+  margin-top: -2px;
+}
+
 /* HERO */
 .player-detail__hero {
   display: grid;
