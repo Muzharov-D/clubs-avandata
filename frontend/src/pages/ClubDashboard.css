@@ -268,22 +268,27 @@
 }
 .cd__player {
   display: grid;
-  grid-template-columns: 44px 1fr auto;
+  grid-template-columns: 40px 32px 1fr auto;
   gap: 10px; align-items: center;
   padding: 10px;
   background: rgba(255,255,255,0.02);
   border: 1px solid rgba(255,255,255,0.04);
   border-radius: 10px;
   cursor: pointer;
-  transition: border-color 150ms;
+  transition: border-color 150ms, transform 120ms;
 }
-.cd__player:hover { border-color: rgba(31,182,255,0.3); }
+.cd__player:hover { border-color: rgba(31,182,255,0.3); transform: translateY(-1px); }
+.cd__player-photo {
+  width: 40px; height: 40px;
+  flex-shrink: 0;
+}
 .cd__player-num {
-  width: 44px; height: 44px; border-radius: 10px;
+  width: 32px; height: 32px; border-radius: 8px;
   background: linear-gradient(135deg, rgba(31,182,255,0.18), rgba(37,99,235,0.10));
   border: 1.5px solid rgba(31,182,255,0.35);
   display: flex; align-items: center; justify-content: center;
-  font-weight: 800; font-size: 16px;
+  font-weight: 800; font-size: 13px;
+  font-variant-numeric: tabular-nums;
 }
 .cd__player-info { min-width: 0; }
 .cd__player-name {

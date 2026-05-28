@@ -22,6 +22,8 @@ import { useAuth } from '../contexts/AuthContext';
 import { useTeam } from '../contexts/TeamContext';
 import { PlayerRadar } from '../components/PlayerRadar';
 import { StatTile } from '../components/StatTile';
+// @ts-ignore — legacy .jsx
+import PlayerPhoto from '../components/PlayerPhoto';
 import { useDocumentTitle } from '../hooks/useDocumentTitle';
 import './ClubDashboard.css';
 
@@ -453,6 +455,9 @@ export default function ClubDashboard() {
               const mins = Number(p.minutes ?? 0);
               return (
                 <div key={p.playerId} className="cd__player" onClick={() => navigate(`/players/${p.playerId}`)}>
+                  <div className="cd__player-photo">
+                    <PlayerPhoto player={p} size={40} />
+                  </div>
                   <div className="cd__player-num">{p.number ?? '—'}</div>
                   <div className="cd__player-info">
                     <div className="cd__player-name">{p.fullName}</div>
