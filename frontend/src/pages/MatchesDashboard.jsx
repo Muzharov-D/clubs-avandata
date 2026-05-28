@@ -167,8 +167,10 @@ export default function MatchesDashboard() {
                 <div className="matches-dashboard__last-date">{fmtDate(lastMatch.date)}</div>
                 <div className="matches-dashboard__last-teams">
                   <div className="matches-dashboard__last-team">
-                    <img src="/icons/avandata.png" alt="" />
-                    <span>{lastMatch.homeTeam?.name?.replace(/ 20\d{2}$/, '') || 'Команда'}</span>
+                    <span className="matches-dashboard__last-shield" aria-hidden>
+                      {(lastMatch.homeTeam?.name || 'К')[0]}
+                    </span>
+                    <span>{lastMatch.homeTeam?.name?.replace(/\s*[Uu]-?\s*\d{1,3}\s*$/, '').replace(/\s+20\d{2}\s*$/, '') || 'Команда'}</span>
                   </div>
                   <div className="matches-dashboard__last-score">
                     <span className={lastMatch.score?.home > lastMatch.score?.away ? 'win' : ''}>{lastMatch.score?.home}</span>

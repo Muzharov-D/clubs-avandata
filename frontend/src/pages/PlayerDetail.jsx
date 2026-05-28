@@ -216,19 +216,25 @@ export default function PlayerDetail() {
   // inverse=true в шаблоне (Фолы, ЖК, потери) флипает percentile — меньше = лучше.
   const pizzaTemplate = TEMPLATES[pizzaPos];
   const peers = match.players || [];
-  const allSlices = pizzaTemplate
+  const allSlicesRaw = pizzaTemplate
     ? pizzaTemplate.slices.map((s) => {
         const myValue = getStatValue(player, s.key);
         const allValues = peers.map((p) => getStatValue(p, s.key));
         const pct = percentileRank(myValue, allValues, !!s.inverse);
+        const teamMax = Math.max(0, ...allValues.map((v) => Number(num(v) ?? 0)));
         return {
           axis: s.axis,
           group: s.group,
           value: pct ?? 0,
           displayValue: formatRaw(myValue),
+          _key: s.key,
+          _teamMax: teamMax,
         };
       })
     : [];
+  // Фильтруем метрики где у ВСЕЙ команды значение 0 (xG/xA для U-15, dribblePacking
+  // и т.п. не считаются SportVisor'ом). Без этого pizza заполнена пустыми слайсами.
+  const allSlices = allSlicesRaw.filter((s) => s._teamMax > 0);
   const pizzaSlices = pizzaGroup === 'all'
     ? allSlices
     : allSlices.filter((s) => s.group === pizzaGroup);

@@ -482,8 +482,10 @@ export function isOurName(matchTeam: unknown, ourLower: string): boolean {
   const me  = normalizeTeamName(ourLower);
   const her = normalizeTeamName(matchTeam as string);
   if (!me || !her) return false;
-  // Если МЫ — просто «зенит»/«фк зенит» — не должны матчиться с «сшор зенит»
+  // Edge: если МЫ — просто «зенит»/«фк зенит» — не должны матчиться с «сшор зенит»
   if ((me === 'зенит' || me === 'фк зенит') && her.includes('сшор')) return false;
+  // Edge: если МЫ «сшор зенит» — не должны матчиться с просто «зенит» без «сшор»
+  if (me.includes('сшор') && !her.includes('сшор')) return false;
   if (me === her) return true;
   return her.includes(me) || me.includes(her);
 }

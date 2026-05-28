@@ -109,8 +109,9 @@ export default function ClubOverview() {
                 <div className="team-info__title">Информация о команде</div>
               </div>
               <div className="team-info__body">
-                <div className="team-info__logo">
-                  <img src="/icons/avandata.png" alt={ourTeam?.name || 'Клуб'} />
+                <div className="team-info__logo team-info__logo--initials" aria-hidden>
+                  {/* Логотип-инициалы: первые 2 буквы названия команды. */}
+                  {(ourTeam?.name || 'К').split(/\s+/).slice(0, 2).map((w) => w[0]).join('').toUpperCase()}
                 </div>
                 <div className="team-info__data">
                   <div className="team-info__name">{(ourTeam?.name || 'Команда').toUpperCase()}</div>
@@ -124,7 +125,7 @@ export default function ClubOverview() {
                     Главный тренер: <span>{ourTeam?.headCoach || '—'}</span>
                   </div>
                   <div className="team-info__coach">
-                    Игроков в составе: <span>{players.length}</span>
+                    Игроков в последнем матче: <span>{players.length}</span>
                   </div>
                 </div>
               </div>
@@ -136,7 +137,7 @@ export default function ClubOverview() {
                 <div className="match-summary__date">{formatDate(match.date)}</div>
                 <div className="match-summary__teams">
                   <div className="match-summary__team match-summary__team--home">
-                    <img src="/icons/avandata.png" alt="" />
+                    <span className="match-summary__shield-initials" aria-hidden>З</span>
                     <span>{match.homeTeam?.name?.replace(/ 20\d{2}$/, '') || 'Команда'}</span>
                   </div>
                   <div className="match-summary__score">
