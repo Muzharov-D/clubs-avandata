@@ -37,3 +37,4 @@ backend/drizzle/meta/
 tmp/
 .tmp/
 *.scratch.*
+__pycache__/

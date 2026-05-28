@@ -334,9 +334,10 @@ export default function MatchDetail() {
         </div>
       </div>
 
-      {/* Командные карты — 8 секций */}
+      {/* Командные карты — рендерим всю секцию только если хотя бы 1 карта есть */}
+      {SECTION_MAPS.some((sec) => ta[sec.id]?.mapImage) && (
       <div className="card match-detail__maps-card">
-        <div className="page-section-title">Командные карты — 8 секций</div>
+        <div className="page-section-title">Командные тепловые карты</div>
         <div className="match-detail__maps-grid">
           {SECTION_MAPS.map((sec) => {
             const map = ta[sec.id]?.mapImage;
@@ -349,6 +350,7 @@ export default function MatchDetail() {
           })}
         </div>
       </div>
+      )}
     </div>
   );
 }

@@ -388,23 +388,29 @@ export default function PlayerDetail() {
       {/* RATINGS vs TEAM AVG — оставил, нагляднее по 4 общим осям */}
       {/* (радары удалены — pizza заменила и 14-осевой radar, и position-сравнение) */}
 
-      {/* MAPS */}
-      <div className="player-detail__maps">
-        <div className="card player-detail__map-card player-detail__map-card--attack">
-          <SoccerFieldImageMap
-            src={player.maps?.attackMap}
-            title="Карта пасов и ударов"
-            height={420}
-          />
+      {/* MAPS — рендерим только если есть хоть одна реальная карта */}
+      {(player.maps?.attackMap || player.maps?.fitnessHeatmap) && (
+        <div className="player-detail__maps">
+          {player.maps?.attackMap && (
+            <div className="card player-detail__map-card player-detail__map-card--attack">
+              <SoccerFieldImageMap
+                src={player.maps.attackMap}
+                title="Карта пасов и ударов"
+                height={420}
+              />
+            </div>
+          )}
+          {player.maps?.fitnessHeatmap && (
+            <div className="card player-detail__map-card player-detail__map-card--heat">
+              <SoccerFieldImageMap
+                src={player.maps.fitnessHeatmap}
+                title="Тепловая карта движения"
+                height={420}
+              />
+            </div>
+          )}
         </div>
-        <div className="card player-detail__map-card player-detail__map-card--heat">
-          <SoccerFieldImageMap
-            src={player.maps?.fitnessHeatmap}
-            title="Тепловая карта движения"
-            height={420}
-          />
-        </div>
-      </div>
+      )}
 
       {/* FITNESS */}
       <div className="card">
