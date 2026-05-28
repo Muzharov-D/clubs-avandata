@@ -1,6 +1,7 @@
 import { useNavigate, NavLink } from 'react-router-dom';
 import { useApi } from '../hooks/useApi';
 import { fetchMatch, fetchMatches } from '../services/api';
+import { useDocumentTitle } from '../hooks/useDocumentTitle';
 import LeaderMetricCard from '../components/LeaderMetricCard';
 import PlayerPhoto from '../components/PlayerPhoto';
 import RatingPill from '../components/RatingPill';
@@ -24,6 +25,7 @@ function maxBy(items, getter) {
 }
 
 export default function PlayersLeaders() {
+  useDocumentTitle('Лидеры команды');
   const navigate = useNavigate();
   const { canSeePlayer } = useAuth();
   const { selectedTeamId } = useTeam();

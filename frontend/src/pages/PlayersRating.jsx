@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import { useNavigate, NavLink } from 'react-router-dom';
 import { useApi } from '../hooks/useApi';
 import { fetchMatch, fetchMatches } from '../services/api';
+import { useDocumentTitle } from '../hooks/useDocumentTitle';
 import PlayerPhoto from '../components/PlayerPhoto';
 import RatingPill from '../components/RatingPill';
 import { useAuth } from '../contexts/AuthContext';
@@ -55,6 +56,7 @@ function fmt(value, digits, unit) {
 }
 
 export default function PlayersRating() {
+  useDocumentTitle('Рейтинг игроков');
   const navigate = useNavigate();
   const { canSeePlayer } = useAuth();
   const { selectedTeamId } = useTeam();

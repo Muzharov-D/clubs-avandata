@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useApi } from '../hooks/useApi';
 import { fetchMatch, fetchPlayers, fetchMatches } from '../services/api';
 import { useTeam } from '../contexts/TeamContext';
+import { useDocumentTitle } from '../hooks/useDocumentTitle';
 import FormationField from '../components/FormationField';
 import StatCompareBar from '../components/StatCompareBar';
 import DonutComparisonCard from '../components/DonutComparisonCard';
@@ -67,6 +68,11 @@ export default function MatchDetail() {
 
   const match = matchRes.data;
   const players = playersRes.data?.players || [];
+
+  const matchTitle = match
+    ? `${match.home || ''} ${match.scoreHome ?? ''}:${match.scoreAway ?? ''} ${match.away || ''}`.trim()
+    : 'Матч';
+  useDocumentTitle(matchTitle);
   const home = match?.teamSummaryStats?.home || {};
   const away = match?.teamSummaryStats?.away || {};
   const ta = match?.teamAggregates || {};

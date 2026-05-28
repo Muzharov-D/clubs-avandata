@@ -10,6 +10,7 @@ import { shortNameFromPlayer } from '../utils/players';
 import { useAuth } from '../contexts/AuthContext';
 import { useTeam } from '../contexts/TeamContext';
 import { useTournament } from '../contexts/TournamentContext';
+import { useDocumentTitle } from '../hooks/useDocumentTitle';
 import './MatchesDashboard.css';
 
 function num(v) {
@@ -30,6 +31,7 @@ function fmtDate(iso) {
 }
 
 export default function MatchesDashboard() {
+  useDocumentTitle('Матчи');
   const navigate = useNavigate();
   const { user, canSeePlayer } = useAuth();
   const { selectedTeamId, selectedTeam } = useTeam();
