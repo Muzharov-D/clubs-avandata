@@ -71,8 +71,26 @@ export default function FormationField({
   const navigate = useNavigate();
   // Defensive: backend может вернуть formation.starters не массивом если данные битые.
   // Без этого .forEach в buildLayout кидает TypeError и роняет всю MatchDetail.
-  const starters = Array.isArray(formation?.starters) ? formation.starters : [];
-  const subs = Array.isArray(formation?.substitutes) ? formation.substitutes : [];
+  // Парсер иногда возвращает 22 стартующих (дубликаты для разных половин) —
+  // ограничиваем до 11 уникальных по номеру/имени.
+  const rawStarters = Array.isArray(formation?.starters) ? formation.starters : [];
+  const seenStarters = new Set();
+  const starters = rawStarters
+    .filter((s) => {
+      const k = `${s?.number || ''}-${s?.shortName || s?.fullName || ''}`;
+      if (seenStarters.has(k)) return false;
+      seenStarters.add(k);
+      return true;
+    })
+    .slice(0, 11);
+  const rawSubs = Array.isArray(formation?.substitutes) ? formation.substitutes : [];
+  const seenSubs = new Set();
+  const subs = rawSubs.filter((s) => {
+    const k = `${s?.number || ''}-${s?.shortName || s?.fullName || ''}`;
+    if (seenSubs.has(k)) return false;
+    seenSubs.add(k);
+    return true;
+  });
 
   if (starters.length === 0 && imageSrc) {
     return (
