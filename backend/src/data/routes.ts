@@ -2,6 +2,7 @@ import type { FastifyInstance } from 'fastify';
 import { authenticate } from '../auth/middleware.js';
 import { withTenant } from '../db/tenantContext.js';
 import { UnauthorizedError, NotFoundError } from '../shared/errors.js';
+import { adaptPlayerForLegirus } from './legirusAdapter.js';
 
 /**
  * Tenant-scoped data API — для legacy frontend Легируса.
@@ -130,7 +131,8 @@ export async function dataRoutes(app: FastifyInstance) {
            WHERE mp.tenant_id = $1 AND mp.match_id = $2`,
         [slug, req.params.matchId],
       );
-      return { ...match, players: mp };
+      // Адаптер: rich PDF flat stats → Легирус-shape (attack1/2/3/4/5, defence1/2/3, fitness)
+      return { ...match, players: mp.map(adaptPlayerForLegirus) };
     });
   });
 
@@ -248,6 +250,38 @@ export async function dataRoutes(app: FastifyInstance) {
   });
 
   app.get('/metrics', async () => {
-    return {};
+    // Русские названия метрик для splits-таблицы PlayerDetail.jsx
+    return {
+      radarAxes: [],
+      metricLabels: {
+        Goal: 'Голы', Shot: 'Удары', 'Shot by head': 'Удары головой',
+        'Free kick shot': 'Удары со штрафных', 'Free kick with shot': 'Штрафные с ударом',
+        Assist: 'Ассисты', 'Second assist': 'Пред-ассисты', 'Third assist': 'Пре-пред-ассисты',
+        'Shot on target assist': 'Передачи в створ', 'Key pass': 'Ключевые передачи',
+        'Pass with packing': 'Прогрессивные пасы', 'Pass into pen. area': 'Передачи в штрафную',
+        Cross: 'Кроссы', 'Entries in box': 'Входы в штрафную', 'Sprint forward': 'Спринт вперёд',
+        'Progressive pass': 'Прогрессивные передачи', 'Pass to final third': 'Передачи в финальную треть',
+        Pass: 'Передачи', 'Pass forward': 'Передачи вперёд', 'Pass back': 'Передачи назад',
+        'Pass sideways': 'Передачи в сторону', 'Pass short': 'Короткие', 'Pass middle': 'Средние',
+        'Pass long': 'Длинные', 'Touches in pen. area': 'Касания в штрафной',
+        'Received pass': 'Принятые передачи', Dribble: 'Обводки', 'Dribble packing': 'Прогрессивный дриблинг',
+        'Goal actions': 'Голевые действия', Penalty: 'Пенальти', Throwing: 'Ауты',
+        'Direct free kick': 'Прямые штрафные', 'Lose on own half': 'Потери на своей',
+        'Dangerous loses on own half': 'Опасные потери', 'Lost ball': 'Потери мяча',
+        'Technical mistake': 'Технический брак', Autogoal: 'Автогол', Offside: 'Офсайды',
+        'Fouls suffered': 'Заработанные фолы',
+        Tackle: 'Отборы', 'Sliding tackles': 'Подкаты',
+        'Tackle & recovery': 'Отбор+возврат', 'Tackle & recovery on opp. half': 'Отбор на ½ соп.',
+        Interception: 'Перехваты', Recovery: 'Возвраты', 'Sprint back': 'Спринт назад',
+        Return: 'Возвраты', 'Return on opp. half': 'Возвраты на ½ соп.',
+        Clearance: 'Выносы', 'Blocked shot': 'Заблок. удары', Foul: 'Фолы',
+        'Yellow card': 'Жёлтые', 'Red card': 'Красные', Duel: 'Единоборства',
+        'Ariel duel': 'Воздух', Pressing: 'Прессинг', Contrpressing: 'Контр-прессинг',
+        'Dribble against': 'Обводки против', Save: 'Сейвы',
+        'Shots against': 'Удары по воротам', 'Goalkeeper exits': 'Выходы вратаря',
+        'Goal kick': 'От ворот', 'Short goal kicks': 'Короткие от ворот',
+        'Long goal kicks': 'Длинные от ворот',
+      },
+    };
   });
 }

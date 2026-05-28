@@ -120,8 +120,9 @@ export function App() {
                     <Route path="/trainings" element={<TrainingsPage />} />
                     <Route path="/players" element={<CoachOnly><PlayersLeaders /></CoachOnly>} />
                     <Route path="/players/rating" element={<CoachOnly><PlayersRating /></CoachOnly>} />
-                    <Route path="/players/:playerId" element={<OwnPlayerOnly><PlayerProfile /></OwnPlayerOnly>} />
-                    <Route path="/players/:playerId/legacy" element={<OwnPlayerOnly><PlayerDetail /></OwnPlayerOnly>} />
+                    {/* PlayerDetail.jsx — 1:1 копия Легируса с pizza-chart, фото, бейджами */}
+                    <Route path="/players/:playerId" element={<OwnPlayerOnly><PlayerDetail /></OwnPlayerOnly>} />
+                    <Route path="/players/:playerId/new" element={<OwnPlayerOnly><PlayerProfile /></OwnPlayerOnly>} />
                     <Route path="*" element={<Navigate to="/club" replace />} />
                   </Route>
                 </Routes>
