@@ -126,7 +126,16 @@ export async function fetchMe() {
 
 export function logout() {
   setToken(null);
-  try { localStorage.removeItem(USER_KEY); } catch (_) {}
+  // Чистим все клиентские ключи (старые legirus.* и наши avandata.*),
+  // чтобы при следующем login не было залипшего team_id и т.п.
+  try {
+    const keys = Object.keys(localStorage);
+    for (const k of keys) {
+      if (k.startsWith('legirus.') || k.startsWith('avandata.')) {
+        localStorage.removeItem(k);
+      }
+    }
+  } catch (_) {}
 }
 export const changePassword = (currentPassword, newPassword) =>
   fetchJson('/auth/change-password', {
