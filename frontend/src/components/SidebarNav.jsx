@@ -11,18 +11,20 @@ export default function SidebarNav() {
   // в командных топах, MOTM и pivot-аналитике, по контракту он видит
   // только себя).
   const navItems = [
-    { id: 'club',      label: 'Мой КЛУБ',  path: '/club',      icon: '🏆' },
+    { id: 'club',      label: 'Клуб',       path: '/club',      icon: '🏆' },
     isCoach
       ? { id: 'analytics', label: 'Аналитика', path: '/analytics', icon: '◉' }
       : null,
-    { id: 'matches',   label: 'Матч',      path: '/matches',   icon: '⚽' },
-    { id: 'calendar',  label: 'Календарь', path: '/calendar',  icon: '📅' },
+    { id: 'matches',   label: 'Матчи',      path: '/matches',   icon: '⚽' },
+    { id: 'calendar',  label: 'Календарь',  path: '/calendar',  icon: '📅' },
     isCoach
       ? { id: 'trainings', label: 'Тренировки', path: '/trainings', icon: '🎯' }
       : null,
     isPlayer && user?.playerId
       ? { id: 'me', label: 'Мой профиль', path: `/players/${user.playerId}`, icon: '👤' }
-      : { id: 'players', label: 'Игроки', path: '/players', icon: '👤' },
+      : isCoach
+        ? { id: 'players', label: 'Игроки', path: '/players', icon: '👤' }
+        : null,
   ].filter(Boolean);
 
   function isActive(item) {

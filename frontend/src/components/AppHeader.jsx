@@ -62,14 +62,13 @@ export default function AppHeader() {
           >Выход</button>
         )}
         <div className={'app-header__team-selector' + (canSwitch ? ' app-header__team-selector--switchable' : '')}>
-          {canSwitch ? (
+          {canSwitch && activeTeams.length > 1 ? (
             <select
               className="app-header__team-select"
               value={selectedTeamId || ''}
               onChange={(e) => { select(e.target.value); closeMenu(); }}
-              disabled={activeTeams.length === 0}
+              aria-label="Выбрать команду"
             >
-              {activeTeams.length === 0 && <option value="">Нет активных команд</option>}
               {activeTeams.map((t) => (
                 <option key={t.id} value={t.id}>
                   {t.name}{t.ageGroup ? ` · ${t.ageGroup}` : ''}
@@ -77,17 +76,19 @@ export default function AppHeader() {
               ))}
             </select>
           ) : (
-            <span className="app-header__team-name">
-              {selectedTeam?.name || '—'}
+            <span className="app-header__team-name" title="Текущая команда">
+              {selectedTeam?.name
+                ? selectedTeam.name + (selectedTeam.ageGroup ? ` · ${selectedTeam.ageGroup}` : '')
+                : (activeTeams.length === 0 ? 'Команды не созданы' : '—')}
             </span>
           )}
         </div>
         <PushOptInButton />
-        <button className="app-header__btn" disabled title="Язык">РУС</button>
         <button
           className="app-header__btn app-header__btn--refresh"
           onClick={() => window.location.reload()}
-          title="Обновить данные"
+          title="Перечитать данные с сервера"
+          aria-label="Обновить"
         >↻</button>
       </div>
 

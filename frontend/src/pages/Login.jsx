@@ -72,7 +72,16 @@ export default function Login() {
           </button>
         </form>
         <div className="login-help">
-          Нет учётной записи? Обратитесь к тренеру.
+          Нет доступа? Свяжитесь с администратором клуба или напишите в
+          {' '}
+          <a className="login-link" href="mailto:support@avandata.ru?subject=Доступ%20к%20кабинету">
+            поддержку Avandata
+          </a>.
+        </div>
+        <div className="login-help login-help--secondary">
+          <a className="login-link" href="mailto:support@avandata.ru?subject=Восстановление%20пароля">
+            Забыли пароль?
+          </a>
         </div>
       </div>
     </div>

@@ -9,9 +9,7 @@ import ProtectedRoute from './components/ProtectedRoute';
 import MainLayout from './layouts/MainLayout';
 import Login from './pages/Login';
 import ClubOverview from './pages/ClubOverview';
-import ClubPage from './pages/ClubPage';
 import ClubDashboard from './pages/ClubDashboard';
-import PlayerProfile from './pages/PlayerProfile';
 import MatchesDashboard from './pages/MatchesDashboard';
 import MatchDetail from './pages/MatchDetail';
 import ComparisonView from './pages/ComparisonView';
@@ -43,10 +41,15 @@ const queryClient = new QueryClient({
 // На `clubs.avandata.ru/` показываем Avandata-лендинг (бренд платформы).
 // Tenant-specific ClubLanding (Легирус и т.д.) — после login или на subdomain'e.
 function RootRoute() {
-  const { user } = useAuth() as { user: any };
+  const { user, loading } = useAuth() as { user: any; loading: boolean };
+  if (loading) return <AvandataLanding />;  // не блокируем лендинг, пока auth решается
   if (!user) return <AvandataLanding />;
   // platform_admin → в админку; обычный пользователь → в свой кабинет
   if (user.role === 'platform_admin') return <Navigate to="/admin" replace />;
+  // Игрок — сразу на свой профиль
+  if (user.role === 'player' && user.playerId) {
+    return <Navigate to={`/players/${user.playerId}`} replace />;
+  }
   return <Navigate to="/club" replace />;
 }
 
@@ -111,18 +114,16 @@ export function App() {
                   {/* Авторизованный кабинет клуба */}
                   <Route element={<ProtectedRoute roles={[]}><MainLayout /></ProtectedRoute>}>
                     <Route path="/club" element={<ClubDashboard />} />
-                    <Route path="/club/legacy" element={<ClubPage />} />
                     <Route path="/analytics" element={<CoachOnly><ClubOverview /></CoachOnly>} />
                     <Route path="/analytics/team" element={<CoachOnly><ComparisonView /></CoachOnly>} />
                     <Route path="/matches" element={<MatchesDashboard />} />
                     <Route path="/matches/:matchId" element={<MatchDetail />} />
                     <Route path="/calendar" element={<CalendarPage />} />
-                    <Route path="/trainings" element={<TrainingsPage />} />
+                    <Route path="/trainings" element={<CoachOnly><TrainingsPage /></CoachOnly>} />
                     <Route path="/players" element={<CoachOnly><PlayersLeaders /></CoachOnly>} />
                     <Route path="/players/rating" element={<CoachOnly><PlayersRating /></CoachOnly>} />
                     {/* PlayerDetail.jsx — 1:1 копия Легируса с pizza-chart, фото, бейджами */}
                     <Route path="/players/:playerId" element={<OwnPlayerOnly><PlayerDetail /></OwnPlayerOnly>} />
-                    <Route path="/players/:playerId/new" element={<OwnPlayerOnly><PlayerProfile /></OwnPlayerOnly>} />
                     <Route path="*" element={<Navigate to="/club" replace />} />
                   </Route>
                 </Routes>

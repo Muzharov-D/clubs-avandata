@@ -3,7 +3,17 @@ import { useAuth } from './AuthContext';
 import { fetchTeams } from '../services/api';
 
 const TeamCtx = createContext(null);
-const STORAGE_KEY = 'legirus.selectedTeamId';
+const STORAGE_KEY = 'avandata.selectedTeamId';
+const LEGACY_STORAGE_KEY = 'legirus.selectedTeamId';
+
+// Миграция со старого ключа (если юзер уже логинился под Легирус-эпохой)
+try {
+  const legacy = typeof localStorage !== 'undefined' ? localStorage.getItem(LEGACY_STORAGE_KEY) : null;
+  if (legacy && !localStorage.getItem(STORAGE_KEY)) {
+    localStorage.setItem(STORAGE_KEY, legacy);
+    localStorage.removeItem(LEGACY_STORAGE_KEY);
+  }
+} catch (_) {}
 
 export function TeamProvider({ children }) {
   const { user } = useAuth();
