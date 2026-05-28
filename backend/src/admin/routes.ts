@@ -58,12 +58,14 @@ export async function adminRoutes(app: FastifyInstance) {
       },
       ffspbProbe: null as unknown,
     };
+    const standingsUrl = new URL('https://stat.ffspb.org/api/standings');
+    standingsUrl.searchParams.set('tournament', '/api/tournaments/44333');
+    standingsUrl.searchParams.set('itemsPerPage', '5');
     const probes = [
-      { name: 'ffspb-base', url: 'https://stat.ffspb.org/', useAuth: false },
       { name: 'ffspb-api-base', url: 'https://stat.ffspb.org/api', useAuth: true },
       { name: 'ffspb-tournaments-list', url: 'https://stat.ffspb.org/api/tournaments?itemsPerPage=1', useAuth: true },
-      { name: 'ffspb-standings', url: 'https://stat.ffspb.org/api/standings?tournament=/api/tournaments/44333&itemsPerPage=1', useAuth: true },
-      { name: 'public-google', url: 'https://www.google.com/', useAuth: false },
+      { name: 'ffspb-standings-encoded', url: standingsUrl.toString(), useAuth: true },
+      { name: 'ffspb-matches-encoded', url: 'https://stat.ffspb.org/api/matches?tournament_id=44333&itemsPerPage=1', useAuth: true },
     ];
     const results: unknown[] = [];
     for (const p of probes) {
