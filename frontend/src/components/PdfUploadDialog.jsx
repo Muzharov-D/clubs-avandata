@@ -4,35 +4,26 @@ import { useTeam } from '../contexts/TeamContext';
 import './PdfUploadDialog.css';
 
 export default function PdfUploadDialog({ onClose, onSuccess }) {
-  const inputRef = useRef(null);
+  const pdfRef = useRef(null);
+  const xlsxRef = useRef(null);
   const { selectedTeamId, selectedTeam } = useTeam();
-  const [file, setFile] = useState(null);
+  const [pdf, setPdf] = useState(null);
+  const [xlsx, setXlsx] = useState(null);
   const [tournament, setTournament] = useState('league');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState(null);
   const [result, setResult] = useState(null);
 
-  function handlePick(e) {
-    const f = e.target.files?.[0];
-    setFile(f || null);
-    setError(null);
-    setResult(null);
-  }
+  function pickPdf(e)  { setPdf(e.target.files?.[0] || null);  setError(null); setResult(null); }
+  function pickXlsx(e) { setXlsx(e.target.files?.[0] || null); setError(null); setResult(null); }
 
   async function handleSubmit() {
-    if (!file) return;
-    if (!selectedTeamId) {
-      setError('Не выбрана команда. Выберите команду в шапке и попробуйте снова.');
-      return;
-    }
-    if (!tournament) {
-      setError('Выберите турнир (Турнир или Кубок).');
-      return;
-    }
+    if (!pdf) return;
+    if (!selectedTeamId) { setError('Не выбрана команда. Выберите в шапке.'); return; }
     setBusy(true);
     setError(null);
     try {
-      const res = await uploadPdf(file, selectedTeamId, tournament);
+      const res = await uploadPdf(pdf, selectedTeamId, tournament, xlsx);
       setResult(res);
       onSuccess?.(res?.matchId);
     } catch (e) {
@@ -46,12 +37,15 @@ export default function PdfUploadDialog({ onClose, onSuccess }) {
     <div className="upload-dialog__backdrop" onClick={onClose}>
       <div className="upload-dialog" onClick={(e) => e.stopPropagation()}>
         <div className="upload-dialog__head">
-          <span>Загрузка PDF Sportvisor</span>
+          <span>Загрузка отчёта Sportvisor</span>
           <button className="upload-dialog__x" onClick={onClose}>✕</button>
         </div>
         <div className="upload-dialog__body">
           <p className="upload-dialog__hint">
-            Принимается PDF-отчёт Sportvisor (35 страниц). После загрузки парсер автоматически извлечёт данные матча, командные дашборды и индивидуальные карты.
+            <b>PDF</b> — обязательный отчёт SportVisor (рейтинги, формация, командные итоги).
+            <br />
+            <b>Excel</b> — опционально, даёт детальные per-player stats (136 колонок: пасы 8 типов, удары, дриблинг, дистанции).
+            <br />Если загружаешь оба — данные сливаются автоматически.
           </p>
           {selectedTeam && (
             <p className="upload-dialog__hint">
@@ -62,43 +56,41 @@ export default function PdfUploadDialog({ onClose, onSuccess }) {
           <div className="upload-dialog__tournament">
             <div className="upload-dialog__tournament-label">Турнир:</div>
             <div className="upload-dialog__tournament-buttons">
-              {[
-                { id: 'league', label: 'Турнир' },
-                { id: 'cup',    label: 'Кубок' },
-              ].map((t) => (
+              {[{ id: 'league', label: 'Турнир' }, { id: 'cup', label: 'Кубок' }].map((t) => (
                 <button
                   key={t.id}
                   type="button"
                   className={'upload-dialog__tournament-btn' + (tournament === t.id ? ' upload-dialog__tournament-btn--active' : '')}
                   onClick={() => setTournament(t.id)}
                   disabled={busy}
-                >
-                  {t.label}
-                </button>
+                >{t.label}</button>
               ))}
             </div>
           </div>
 
+          <button className="upload-dialog__pick" onClick={() => pdfRef.current?.click()} disabled={busy}>
+            📄 {pdf ? pdf.name : 'Выбрать PDF…'}
+          </button>
+          <input ref={pdfRef} type="file" accept="application/pdf,.pdf"
+            style={{ display: 'none' }} onChange={pickPdf} />
+
           <button
             className="upload-dialog__pick"
-            onClick={() => inputRef.current?.click()}
+            onClick={() => xlsxRef.current?.click()}
             disabled={busy}
+            style={{ marginTop: 8, opacity: 0.85 }}
           >
-            {file ? file.name : 'Выбрать PDF…'}
+            📊 {xlsx ? xlsx.name : 'Excel (опционально, .xlsx)…'}
           </button>
-          <input
-            ref={inputRef}
-            type="file"
-            accept="application/pdf,.pdf"
-            style={{ display: 'none' }}
-            onChange={handlePick}
-          />
+          <input ref={xlsxRef} type="file"
+            accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+            style={{ display: 'none' }} onChange={pickXlsx} />
 
-          {busy && <div className="upload-dialog__progress">Парсинг… это может занять до минуты.</div>}
+          {busy && <div className="upload-dialog__progress">Парсинг… до минуты.</div>}
           {error && <div className="upload-dialog__error">Ошибка: {error}</div>}
           {result && (
             <div className="upload-dialog__success">
-              Матч {result.matchId} обработан. Перезагружаем страницу…
+              Матч {result.matchId} разобран — {result.playersProcessed} игроков{result.excelColumns ? `, ${result.excelColumns} колонок stats` : ''}. Перенаправляем…
             </div>
           )}
 
@@ -107,7 +99,7 @@ export default function PdfUploadDialog({ onClose, onSuccess }) {
             <button
               className="upload-dialog__submit"
               onClick={handleSubmit}
-              disabled={!file || busy || !selectedTeamId}
+              disabled={!pdf || busy || !selectedTeamId}
             >
               {busy ? 'Парсинг…' : 'Загрузить и разобрать'}
             </button>

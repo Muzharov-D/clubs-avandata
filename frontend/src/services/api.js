@@ -210,9 +210,10 @@ export const respondCallup = (age, extMatchId, status, note, playerId) =>
   fetchJson(`/callups/match/${encodeURIComponent(age)}/${encodeURIComponent(extMatchId)}/respond`,
             { method: 'POST', body: { status, note, playerId } });
 
-export async function uploadPdf(file, teamId, tournament) {
+export async function uploadPdf(file, teamId, tournament, excel) {
   const fd = new FormData();
   fd.append('file', file);
+  if (excel) fd.append('excel', excel);
   if (teamId) fd.append('teamId', teamId);
   if (tournament) fd.append('tournament', tournament);
   const headers = {};
