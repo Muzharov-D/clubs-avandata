@@ -45,6 +45,45 @@ export async function adminRoutes(app: FastifyInstance) {
   app.addHook('onRequest', authorize('platform_admin'));
 
   /**
+   * GET /api/v1/admin/diag — диагностика env + FFSPB connectivity.
+   */
+  app.get('/diag', async () => {
+    const diag: Record<string, unknown> = {
+      env: {
+        NODE_ENV: process.env.NODE_ENV,
+        START_CRONS: process.env.START_CRONS,
+        ffspbConfigured: isFfspbConfigured(),
+        ffspbKeyLength: (process.env.FFSPB_API_KEY ?? '').length,
+        ffspbEndpoint: process.env.FFSPB_ENDPOINT ?? 'default',
+      },
+      ffspbProbe: null as unknown,
+    };
+    // Пробный запрос к FFSPB (один tournament).
+    if (isFfspbConfigured()) {
+      try {
+        const t0 = Date.now();
+        const res = await fetch(`${process.env.FFSPB_ENDPOINT ?? 'https://stat.ffspb.org/api'}/standings?tournament=/api/tournaments/44333&itemsPerPage=1`, {
+          headers: {
+            Accept: 'application/ld+json',
+            'X-AUTH-TOKEN': process.env.FFSPB_API_KEY ?? '',
+          },
+          signal: AbortSignal.timeout(10_000),
+        });
+        const text = await res.text();
+        diag.ffspbProbe = {
+          status: res.status,
+          ok: res.ok,
+          tookMs: Date.now() - t0,
+          bodyPrefix: text.slice(0, 200),
+        };
+      } catch (e) {
+        diag.ffspbProbe = { error: e instanceof Error ? e.message : String(e) };
+      }
+    }
+    return diag;
+  });
+
+  /**
    * GET /api/v1/admin/tenants — список всех клубов.
    */
   app.get('/tenants', async () => {
