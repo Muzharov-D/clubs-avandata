@@ -213,7 +213,9 @@ export default function MatchDetail() {
         <div className="match-detail__left">
           <FormationField
             formation={match.formation}
-            players={players}
+            /* Передаём match.players (с adapter'ом и photoUrl) вместо team-wide,
+               чтобы PlayerPhoto в pitch получил реальные YFL-фото */
+            players={(match.players || []).length ? match.players : players}
             ourTeamName={trimAgeStr(match.homeTeam?.name)}
             imageSrc={match.formationImage}
             imageFullSrc={match.formationImageFull}
