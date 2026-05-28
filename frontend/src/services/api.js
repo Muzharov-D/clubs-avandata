@@ -99,7 +99,7 @@ export async function login(loginOrEmail, password, tenantSlug) {
   const data = JSON.parse(text);
   setToken(data.accessToken);
   try { localStorage.setItem(USER_KEY, JSON.stringify(data.user)); } catch (_) {}
-  return data.user;
+  return { user: data.user, tenant: data.tenant ?? null };
 }
 
 // /api/v1/auth/me возвращает только { user: AccessTokenPayload } — это id/role/
@@ -107,10 +107,18 @@ export async function login(loginOrEmail, password, tenantSlug) {
 // с fullName, который мы получили в login(). Поэтому fetchMe читает из
 // localStorage; backend-вариант с merge придёт в W5 (auth API port).
 export async function fetchMe() {
+  // Дёргаем backend (он же отдаёт tenant). Fallback на localStorage если offline.
+  try {
+    const res = await fetchJson('/auth/me');
+    if (res?.user) {
+      try { localStorage.setItem(USER_KEY, JSON.stringify(res.user)); } catch (_) {}
+      return res; // { user, tenant }
+    }
+  } catch (_) { /* fallthrough */ }
   try {
     const raw = localStorage.getItem(USER_KEY);
     if (!raw) throw new Error('not logged in');
-    return { user: JSON.parse(raw) };
+    return { user: JSON.parse(raw), tenant: null };
   } catch (e) {
     throw new Error('Не авторизован');
   }

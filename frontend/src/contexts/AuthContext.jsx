@@ -5,14 +5,36 @@ const AuthCtx = createContext(null);
 
 const COACH_ROLES = new Set(['head_coach', 'team_coach', 'coach']);
 
+const TENANT_KEY = 'avandata.auth.tenant';
+
+function storedTenant() {
+  try {
+    const raw = localStorage.getItem(TENANT_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch { return null; }
+}
+function saveTenant(t) {
+  try {
+    if (t) localStorage.setItem(TENANT_KEY, JSON.stringify(t));
+    else   localStorage.removeItem(TENANT_KEY);
+  } catch {}
+}
+
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
+  const [tenant, setTenant] = useState(storedTenant());
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (!getToken()) { setLoading(false); return; }
     fetchMe()
-      .then(({ user }) => setUser(user))
+      .then((res) => {
+        setUser(res.user);
+        if (res.tenant !== undefined) {
+          setTenant(res.tenant);
+          saveTenant(res.tenant);
+        }
+      })
       .catch(() => setUser(null))
       .finally(() => setLoading(false));
   }, []);
@@ -24,6 +46,7 @@ export function AuthProvider({ children }) {
 
   const value = {
     user,
+    tenant,
     loading,
     isAuthenticated: !!user,
     isCoach,
@@ -34,11 +57,13 @@ export function AuthProvider({ children }) {
       (user ? COACH_ROLES.has(user.role) : false) ||
       (user?.role === 'player' && user.playerId === playerId),
     login: async (u, p) => {
-      const usr = await apiLogin(u, p);
+      const { user: usr, tenant: t } = await apiLogin(u, p);
       setUser(usr);
+      setTenant(t ?? null);
+      saveTenant(t ?? null);
       return usr;
     },
-    logout: () => { apiLogout(); setUser(null); },
+    logout: () => { apiLogout(); saveTenant(null); setUser(null); setTenant(null); },
   };
   return <AuthCtx.Provider value={value}>{children}</AuthCtx.Provider>;
 }

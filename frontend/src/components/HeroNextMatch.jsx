@@ -70,12 +70,12 @@ export default function HeroNextMatch({ match, venue, onOpen }) {
       <div className="hero-next__matchup">
         <div className="hero-next__us">
           <img
-            src="/icons/legirus.png"
-            alt="ФК Легирус"
+            src="/icons/avandata.png"
+            alt="Клуб"
             className="hero-next__shield"
             onError={(e) => { e.currentTarget.style.visibility = 'hidden'; }}
           />
-          <span className="hero-next__us-name">Легирус</span>
+          <span className="hero-next__us-name">{usName || 'Наш клуб'}</span>
         </div>
         <div className="hero-next__vs">vs</div>
         <div className="hero-next__opp">

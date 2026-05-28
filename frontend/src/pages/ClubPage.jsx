@@ -53,7 +53,7 @@ const TOP_CATEGORIES = [
 export default function ClubPage() {
   const navigate = useNavigate();
   const { selectedTeam } = useTeam();
-  const { canSeePlayer } = useAuth();
+  const { canSeePlayer, tenant } = useAuth();
   const { tournament, setTournament } = useTournament();
 
   // Возраст для standings: пробуем year → парсим из id (legirus-2010 → 2010) → пустую строку
@@ -172,7 +172,7 @@ export default function ClubPage() {
       <div className="club-page__hero">
         <div className="club-page__hero-text">
           <div className="club-page__hero-eyebrow">Мой клуб</div>
-          <h1 className="club-page__hero-title">ФК Легирус</h1>
+          <h1 className="club-page__hero-title">{tenant?.displayName || tenant?.name || 'Клуб'}</h1>
           <div className="club-page__hero-sub">
             {selectedTeam?.name || 'Команда не выбрана'}
             {selectedTeam?.ageGroup && <> · {selectedTeam.ageGroup}</>}

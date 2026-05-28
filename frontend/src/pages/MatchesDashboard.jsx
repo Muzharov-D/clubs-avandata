@@ -165,8 +165,8 @@ export default function MatchesDashboard() {
                 <div className="matches-dashboard__last-date">{fmtDate(lastMatch.date)}</div>
                 <div className="matches-dashboard__last-teams">
                   <div className="matches-dashboard__last-team">
-                    <img src="/assets/logos/legirus.png" alt="" />
-                    <span>{lastMatch.homeTeam?.name?.replace(/ 20\d{2}$/, '') || 'Легирус'}</span>
+                    <img src="/icons/avandata.png" alt="" />
+                    <span>{lastMatch.homeTeam?.name?.replace(/ 20\d{2}$/, '') || 'Команда'}</span>
                   </div>
                   <div className="matches-dashboard__last-score">
                     <span className={lastMatch.score?.home > lastMatch.score?.away ? 'win' : ''}>{lastMatch.score?.home}</span>

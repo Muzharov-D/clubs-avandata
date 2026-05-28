@@ -108,10 +108,10 @@ export default function ClubOverview() {
               </div>
               <div className="team-info__body">
                 <div className="team-info__logo">
-                  <img src="/assets/logos/legirus.png" alt={ourTeam?.name || 'ФК Легирус'} />
+                  <img src="/icons/avandata.png" alt={ourTeam?.name || 'Клуб'} />
                 </div>
                 <div className="team-info__data">
-                  <div className="team-info__name">ФК {(ourTeam?.name || 'Легирус 2010').toUpperCase()}</div>
+                  <div className="team-info__name">{(ourTeam?.name || 'Команда').toUpperCase()}</div>
                   <div className="team-info__rating">
                     Средний рейтинг команды:&nbsp;
                     <span className="team-info__rating-val">
@@ -134,8 +134,8 @@ export default function ClubOverview() {
                 <div className="match-summary__date">{formatDate(match.date)}</div>
                 <div className="match-summary__teams">
                   <div className="match-summary__team match-summary__team--home">
-                    <img src="/assets/logos/legirus.png" alt="" />
-                    <span>{match.homeTeam?.name?.replace(/ 20\d{2}$/, '') || 'Легирус'}</span>
+                    <img src="/icons/avandata.png" alt="" />
+                    <span>{match.homeTeam?.name?.replace(/ 20\d{2}$/, '') || 'Команда'}</span>
                   </div>
                   <div className="match-summary__score">
                     <span className={match.score?.home > match.score?.away ? 'win' : ''}>{match.score?.home ?? '—'}</span>

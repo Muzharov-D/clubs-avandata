@@ -6,6 +6,7 @@ import { env } from '../env.js';
 import { db } from '../db/client.js';
 import { users } from '../db/schema/users.js';
 import { refreshTokens } from '../db/schema/refreshTokens.js';
+import { tenants } from '../db/schema/tenants.js';
 import {
   signAccessToken,
   generateRefreshToken,
@@ -100,8 +101,23 @@ export async function authRoutes(app: FastifyInstance) {
       maxAge: env.REFRESH_TOKEN_TTL_DAYS * 86_400,
     });
 
+    // Загружаем tenant info — фронт нуждается в displayName/brand для UI.
+    let tenant: { slug: string; name: string; displayName: string; brand: unknown } | null = null;
+    if (user.tenantId) {
+      const tenantRows = await withBypassRLS((tx) =>
+        tx.select({
+          slug: tenants.slug,
+          name: tenants.name,
+          displayName: tenants.displayName,
+          brand: tenants.brand,
+        }).from(tenants).where(eq(tenants.slug, user.tenantId!)).limit(1),
+      );
+      tenant = tenantRows[0] ?? null;
+    }
+
     return {
       accessToken,
+      tenant,
       user: {
         id: user.id,
         email: user.email,
@@ -204,7 +220,22 @@ export async function authRoutes(app: FastifyInstance) {
     );
     const u = userRows[0];
     if (!u) throw new UnauthorizedError('user not found');
+
+    let tenant: { slug: string; name: string; displayName: string; brand: unknown } | null = null;
+    if (u.tenantId) {
+      const tRows = await withBypassRLS((tx) =>
+        tx.select({
+          slug: tenants.slug,
+          name: tenants.name,
+          displayName: tenants.displayName,
+          brand: tenants.brand,
+        }).from(tenants).where(eq(tenants.slug, u.tenantId!)).limit(1),
+      );
+      tenant = tRows[0] ?? null;
+    }
+
     return {
+      tenant,
       user: {
         id: u.id,
         tenantId: u.tenantId,
