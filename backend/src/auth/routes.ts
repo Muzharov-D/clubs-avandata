@@ -177,10 +177,24 @@ export async function authRoutes(app: FastifyInstance) {
   });
 
   /**
-   * GET /api/v1/auth/me
+   * GET /api/v1/auth/me — полный профиль текущего пользователя (с email/fullName).
    */
   app.get('/me', { onRequest: [authenticate] }, async (req) => {
     if (!req.user) throw new BadRequestError('no user');
-    return { user: req.user };
+    const userRows = await db.select().from(users).where(eq(users.id, req.user.sub)).limit(1);
+    const u = userRows[0];
+    if (!u) throw new UnauthorizedError('user not found');
+    return {
+      user: {
+        id: u.id,
+        tenantId: u.tenantId,
+        email: u.email,
+        username: u.username,
+        fullName: u.fullName,
+        role: u.role,
+        teamId: u.teamId,
+        playerId: u.playerId,
+      },
+    };
   });
 }
