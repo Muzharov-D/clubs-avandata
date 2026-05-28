@@ -13,7 +13,8 @@ export function TeamProvider({ children }) {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    if (!user) {
+    // platform_admin не имеет tenant'a — пропускаем загрузку команд.
+    if (!user || user.role === 'platform_admin') {
       setTeams([]);
       setSelectedTeamId(null);
       return;

@@ -37,7 +37,8 @@ export async function dataRoutes(app: FastifyInstance) {
            FROM teams WHERE active = TRUE
            ORDER BY age_group`,
       );
-      return rows;
+      // Legacy frontend ожидает { teams: [...] } (destructures `({ teams: t })`)
+      return { teams: rows };
     });
   });
 
