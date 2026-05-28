@@ -44,6 +44,14 @@ function num(v) {
   return Number(v);
 }
 
+// Убирает «U15» / «U-15» / «2011» из названия команды для display
+function trimAgeStr(s) {
+  return String(s || '')
+    .replace(/\s*[Uu]-?\s*\d{1,3}\s*/g, ' ')
+    .replace(/\s+20\d{2}\s*/g, ' ')
+    .replace(/\s+/g, ' ').trim();
+}
+
 function bestPlayer(match) {
   if (!match?.players?.length) return null;
   // Только реально играшие с положительным рейтингом — иначе MotM = бенч с 0.0
@@ -161,7 +169,7 @@ export default function MatchDetail() {
               e.currentTarget.outerHTML = `<div class="match-detail__team-logo team-logo--home">${(match.homeTeam?.name || '?').charAt(0)}</div>`;
             }}
           />
-          <div className="match-detail__team-name">{match.homeTeam?.name}</div>
+          <div className="match-detail__team-name">{trimAgeStr(match.homeTeam?.name)}</div>
         </div>
         <div className="match-detail__score-block">
           <div className="match-detail__date">{fmtDate(match.date)}</div>
@@ -206,7 +214,7 @@ export default function MatchDetail() {
           <FormationField
             formation={match.formation}
             players={players}
-            ourTeamName={match.homeTeam?.name}
+            ourTeamName={trimAgeStr(match.homeTeam?.name)}
             imageSrc={match.formationImage}
             imageFullSrc={match.formationImageFull}
           />
@@ -247,14 +255,28 @@ export default function MatchDetail() {
             </div>
           </div>
 
-          <div className="match-detail__donuts">
-            <DonutComparisonCard label="Удары в створ" home={home.shots?.onTarget} away={away.shots?.onTarget} />
-            <DonutComparisonCard label="Прогрессивные передачи" home={ta.passes?.progressive} away={null} />
-            <DonutComparisonCard label="Отборы" home={ta.duels?.totalDuels} away={null} />
-            <DonutComparisonCard label="Перехваты" home={ta.positioning?.interceptions} away={null} />
-            <DonutComparisonCard label="Атаки с ударом" home={attackingActions} away={null} />
-            <DonutComparisonCard label="Кроссы" home={ta.passes?.crosses} away={null} />
-          </div>
+          {/* Donuts: рендерим только метрики с реальным значением > 0 у нас */}
+          {(() => {
+            const cards = [
+              { label: 'Удары в створ',         home: home.shots?.onTarget,        away: away.shots?.onTarget },
+              { label: 'Прогрессивные передачи', home: ta.passes?.progressive,      away: null },
+              { label: 'Отборы',                home: ta.duels?.totalDuels ?? ta.recoveriesAndTackling?.tackle, away: null },
+              { label: 'Перехваты',             home: ta.positioning?.interceptions ?? ta.recoveriesAndTackling?.interception, away: null },
+              { label: 'Атаки с ударом',        home: attackingActions,             away: null },
+              { label: 'Кроссы',                home: ta.passes?.crosses,           away: null },
+            ].filter((c) => {
+              const v = num(c.home);
+              return v != null && Number(v) > 0;
+            });
+            if (cards.length === 0) return null;
+            return (
+              <div className="match-detail__donuts">
+                {cards.map((c) => (
+                  <DonutComparisonCard key={c.label} label={c.label} home={c.home} away={c.away} />
+                ))}
+              </div>
+            );
+          })()}
         </div>
 
         <div className="match-detail__right">
@@ -271,13 +293,11 @@ export default function MatchDetail() {
               </div>
             </div>
           )}
-          {seasonAvg && (
+          {seasonAvg && Number(seasonAvg._games || 0) > 1 && (
             <div className="card mvs">
               <div className="page-section-title">
                 Этот матч vs средний по сезону
-                {seasonAvg._games > 1 && (
-                  <span className="mvs__hint"> · по {seasonAvg._games} матчам</span>
-                )}
+                <span className="mvs__hint"> · по {seasonAvg._games} матчам</span>
               </div>
               <div className="mvs__list">
                 {[
