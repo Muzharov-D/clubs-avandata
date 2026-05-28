@@ -4,6 +4,14 @@ const RAW_BASE = import.meta.env.VITE_API_BASE_URL || '';
 const API_BASE = String(RAW_BASE).replace(/\/+$/, '');
 // Clubs Avandata backend живёт под /api/v1/ (vs legacy Легируса /api/).
 const PREFIX = `${API_BASE}/api/v1`;
+
+// ── Direct Render URL для долгих запросов (PDF parsing ~3 мин)
+// Vercel proxy убивает rewrite через ~30 секунд (ROUTER_EXTERNAL_TARGET_ERROR).
+// Для upload-pdf идём напрямую к Render API, минуя Vercel rewrite.
+const DIRECT_API_BASE = import.meta.env.VITE_API_DIRECT_URL
+  || 'https://clubs-avandata-api.onrender.com';
+const DIRECT_PREFIX = `${DIRECT_API_BASE.replace(/\/+$/, '')}/api/v1`;
+
 const TOKEN_KEY = 'avandata.auth.token';
 const USER_KEY = 'avandata.auth.user';
 
@@ -246,7 +254,14 @@ export async function uploadPdf(file, teamId, tournament, excel) {
   const headers = {};
   const token = getToken();
   if (token) headers.Authorization = `Bearer ${token}`;
-  const res = await fetch(`${PREFIX}/upload-pdf`, { method: 'POST', body: fd, headers });
+  // Идём НАПРЯМУЮ к Render минуя Vercel proxy (rewrite убивает запрос через
+  // ~30s, а парсинг PDF — до 3 минут). CORS должен пускать наш Vercel-домен.
+  const res = await fetch(`${DIRECT_PREFIX}/upload-pdf`, {
+    method: 'POST',
+    body: fd,
+    headers,
+    credentials: 'include',
+  });
   if (res.status === 401) {
     setToken(null);
     window.location.href = '/login';
