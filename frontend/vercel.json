@@ -4,6 +4,10 @@
     {
       "source": "/api/:path*",
       "destination": "https://clubs-avandata-api.onrender.com/api/:path*"
+    },
+    {
+      "source": "/((?!api/|assets/|icons/|fonts/|.*\\.).*)",
+      "destination": "/index.html"
     }
   ]
 }
