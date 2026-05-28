@@ -38,23 +38,34 @@ export async function authRoutes(app: FastifyInstance) {
   app.post('/login', async (req, reply) => {
     const body = loginSchema.parse(req.body);
 
+    // Lookup стратегия:
+    //   1. Если tenantSlug передан — ищем в этом tenant'е
+    //   2. Если нет, по email/username — глобальный поиск
+    //      (по emaiil наша схема позволяет дубль между tenant'ами;
+    //       при множественном matche возвращаем ambiguous-ошибку)
     const targetTenant = body.tenantSlug ?? null;
 
-    // Login — особый контекст: ещё нет tenant context, RLS блокирует поиск
-    // юзеров tenant'a. Используем bypass (login сам по себе аутентификация).
-    const candidates = await withBypassRLS((tx) =>
-      tx
+    const candidates = await withBypassRLS((tx) => {
+      const identityCond = body.email
+        ? eq(users.email, body.email)
+        : eq(users.username, body.username!);
+      if (targetTenant === null) {
+        return tx.select().from(users).where(identityCond).limit(5);
+      }
+      return tx
         .select()
         .from(users)
-        .where(
-          and(
-            targetTenant === null ? isNull(users.tenantId) : eq(users.tenantId, targetTenant),
-            body.email ? eq(users.email, body.email) : eq(users.username, body.username!),
-          ),
-        )
-        .limit(1),
-    );
+        .where(and(eq(users.tenantId, targetTenant), identityCond))
+        .limit(1);
+    });
 
+    if (candidates.length === 0) {
+      throw new UnauthorizedError('invalid credentials');
+    }
+    if (targetTenant === null && candidates.length > 1) {
+      // Несколько совпадений — UI должен задать tenantSlug.
+      throw new UnauthorizedError('ambiguous: укажите клуб (tenantSlug)');
+    }
     const user = candidates[0];
     if (!user || !user.passwordHash) {
       throw new UnauthorizedError('invalid credentials');
