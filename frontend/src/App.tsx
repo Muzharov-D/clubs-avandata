@@ -11,6 +11,7 @@ import Login from './pages/Login';
 import ClubOverview from './pages/ClubOverview';
 import ClubPage from './pages/ClubPage';
 import ClubDashboard from './pages/ClubDashboard';
+import PlayerProfile from './pages/PlayerProfile';
 import MatchesDashboard from './pages/MatchesDashboard';
 import MatchDetail from './pages/MatchDetail';
 import ComparisonView from './pages/ComparisonView';
@@ -119,7 +120,8 @@ export function App() {
                     <Route path="/trainings" element={<TrainingsPage />} />
                     <Route path="/players" element={<CoachOnly><PlayersLeaders /></CoachOnly>} />
                     <Route path="/players/rating" element={<CoachOnly><PlayersRating /></CoachOnly>} />
-                    <Route path="/players/:playerId" element={<OwnPlayerOnly><PlayerDetail /></OwnPlayerOnly>} />
+                    <Route path="/players/:playerId" element={<OwnPlayerOnly><PlayerProfile /></OwnPlayerOnly>} />
+                    <Route path="/players/:playerId/legacy" element={<OwnPlayerOnly><PlayerDetail /></OwnPlayerOnly>} />
                     <Route path="*" element={<Navigate to="/club" replace />} />
                   </Route>
                 </Routes>
