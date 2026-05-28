@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import { fetchMe, login as apiLogin, logout as apiLogout, getToken } from '../services/api';
+import { applyTheme, resetTheme } from '../tenant/applyTheme';
 
 const AuthCtx = createContext(null);
 
@@ -38,6 +39,15 @@ export function AuthProvider({ children }) {
       .catch(() => setUser(null))
       .finally(() => setLoading(false));
   }, []);
+
+  // Применяем брендинг тенанта (CSS-переменные + favicon + title)
+  useEffect(() => {
+    if (tenant?.brand) {
+      applyTheme(tenant.brand, tenant.slug);
+    } else {
+      resetTheme();
+    }
+  }, [tenant]);
 
   const isCoach = user ? COACH_ROLES.has(user.role) : false;
   const isPlayer = user?.role === 'player';
