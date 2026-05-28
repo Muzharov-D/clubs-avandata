@@ -76,7 +76,7 @@ export default function PizzaChart({
   subjectMeta,
   vsLabel,
   slices = [],
-  centerLabel = 'ЛЕГИРУС',
+  centerLabel = '',
   size = 640,
 }) {
   if (!Array.isArray(slices) || slices.length === 0) {
@@ -167,11 +167,13 @@ export default function PizzaChart({
         {guides}
         {sliceElements}
         <circle cx={cx} cy={cy} r={innerR - 6} fill="rgba(7,7,28,0.92)" stroke={GROUP_COLORS.attack.fill} strokeWidth="1.5" />
-        <text x={cx} y={cy - 2} fontSize="11" fontWeight="700" textAnchor="middle" dominantBaseline="middle" fill={GROUP_COLORS.attack.fill}>
-          {centerLabel}
-        </text>
+        {centerLabel && (
+          <text x={cx} y={cy - 2} fontSize="11" fontWeight="700" textAnchor="middle" dominantBaseline="middle" fill={GROUP_COLORS.attack.fill}>
+            {centerLabel}
+          </text>
+        )}
         {vsLabel && (
-          <text x={cx} y={cy + 14} fontSize="9" fontWeight="500" textAnchor="middle" dominantBaseline="middle" fill="#94a3c8">
+          <text x={cx} y={centerLabel ? cy + 14 : cy + 4} fontSize="9" fontWeight="500" textAnchor="middle" dominantBaseline="middle" fill="#94a3c8">
             vs {vsLabel}
           </text>
         )}
