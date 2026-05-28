@@ -16,19 +16,16 @@ export function isLegirus(name) {
 }
 
 // Tenant-aware «наш» лого (устанавливается AuthContext.setOurLogo на login).
-// Если не задан — fallback на LEGIRUS_LOGO (старое поведение).
-let OUR_LOGO = LEGIRUS_LOGO;
-export function setOurLogo(url) {
-  OUR_LOGO = url || LEGIRUS_LOGO;
-}
-export function clearOurLogo() {
-  OUR_LOGO = LEGIRUS_LOGO;
-}
+// Если null — для не-Легируса fallback на щит из FFSPB/инициал, чтобы не
+// рисовать чужой лого Легируса в карточке Зенита.
+let OUR_LOGO = null;
+export function setOurLogo(url) { OUR_LOGO = url || null; }
+export function clearOurLogo() { OUR_LOGO = null; }
 
 // Подмена щита команды на наш локальный лого, если это «наш» клуб
 export function shieldFor(teamName, fallbackUrl) {
   if (isLegirus(teamName)) return LEGIRUS_LOGO;
-  if (isOurClub(teamName)) return OUR_LOGO;
+  if (OUR_LOGO && isOurClub(teamName)) return OUR_LOGO;
   return fallbackUrl || '';
 }
 
