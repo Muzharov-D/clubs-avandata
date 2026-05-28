@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useApi } from '../hooks/useApi';
 import { fetchMatch, fetchMatches } from '../services/api';
 import { useTeam } from '../contexts/TeamContext';
+import { useDocumentTitle } from '../hooks/useDocumentTitle';
 import SectionTabs from '../components/SectionTabs';
 import SoccerFieldImageMap from '../components/SoccerFieldImageMap';
 import './ComparisonView.css';
@@ -154,6 +155,7 @@ function prettyKey(k) {
 }
 
 export default function ComparisonView() {
+  useDocumentTitle('Сравнение игроков');
   const { selectedTeamId } = useTeam();
   const matchesRes = useApi(() => fetchMatches(selectedTeamId), [selectedTeamId]);
   const lastMatchId = matchesRes.data?.matches?.[0]?.id;

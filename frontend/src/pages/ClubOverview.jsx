@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import { useApi } from '../hooks/useApi';
 import { fetchTeams, fetchMatches, fetchMatch } from '../services/api';
 import { useTeam } from '../contexts/TeamContext';
+import { useDocumentTitle } from '../hooks/useDocumentTitle';
 import MatchList from '../components/MatchList';
 import RatingCard from '../components/RatingCard';
 import PlayerPhoto from '../components/PlayerPhoto';
@@ -49,6 +50,7 @@ function teamSplitSum(match, key, half) {
 }
 
 export default function ClubOverview() {
+  useDocumentTitle('Аналитика');
   const navigate = useNavigate();
   const { selectedTeamId, selectedTeam } = useTeam();
   const teamsRes = useApi(fetchTeams, []);

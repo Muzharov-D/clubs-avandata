@@ -13,6 +13,7 @@ import CalendarSubscribeModal from '../components/CalendarSubscribeModal';
 import StandingsModal from '../components/StandingsModal';
 import PublicTeamHeader from '../components/PublicTeamHeader';
 import OfflineBanner from '../components/OfflineBanner';
+import { useDocumentTitle } from '../hooks/useDocumentTitle';
 import UiIcon from '../components/UiIcon';
 import Skeleton from '../components/Skeleton';
 import EmptyState from '../components/EmptyState';
@@ -83,6 +84,7 @@ function nrmName(s) {
 
 export default function PublicTeamSchedule() {
   const { age } = useParams();
+  useDocumentTitle(age ? `Команда ${age} г.р. — Расписание` : 'Расписание команды');
   const navigate = useNavigate();
   const [cal, setCal] = useState(null);
   const [standings, setStandings] = useState(null);
