@@ -132,7 +132,15 @@ export async function dataRoutes(app: FastifyInstance) {
         [slug, req.params.matchId],
       );
       // Адаптер: rich PDF flat stats → Легирус-shape (attack1/2/3/4/5, defence1/2/3, fitness)
-      return { ...match, players: mp.map(adaptPlayerForLegirus) };
+      // + legacy-shape для ClubOverview/MatchDetail: homeTeam.name / awayTeam.name / score.{home,away}
+      return {
+        ...match,
+        homeTeam: { name: match.home, isOurTeam: undefined },
+        awayTeam: { name: match.away },
+        score:    { home: match.scoreHome ?? 0, away: match.scoreAway ?? 0 },
+        date:     match.date,
+        players:  mp.map(adaptPlayerForLegirus),
+      };
     });
   });
 
