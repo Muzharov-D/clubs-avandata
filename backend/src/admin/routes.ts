@@ -126,62 +126,90 @@ export async function adminRoutes(app: FastifyInstance) {
 
   /**
    * POST /api/v1/admin/sync/:slug — manual trigger всех ffspb-syncs для тенанта.
-   * Для (а) первого прогона данных и (б) дебага без ожидания cron tick.
+   *
+   * Query params:
+   *   ?age=2010       — sync только этот age (быстрый, ~5-15с)
+   *   ?wait=1         — дождаться полного завершения (по умолчанию fire-and-forget)
+   *
+   * Без age и без wait — запускает sync для всех возрастов в фоне,
+   * возвращает 202 моментально. Прогресс смотри в Render logs или PG.
    */
-  app.post<{ Params: { slug: string } }>('/sync/:slug', async (req) => {
-    const { slug } = req.params;
-    if (!isFfspbConfigured()) {
-      throw new BadRequestError('FFSPB_API_KEY not configured on server', 'FFSPB_NOT_CONFIGURED');
-    }
-    const rows = await withBypassRLS((tx) =>
-      tx.select().from(tenants).where(eq(tenants.slug, slug)).limit(1),
-    );
-    const tenant = rows[0];
-    if (!tenant) throw new BadRequestError('tenant not found', 'TENANT_NOT_FOUND');
-    if (tenant.dataProvider !== 'ffspb') {
-      throw new BadRequestError(`tenant has dataProvider='${tenant.dataProvider}'`, 'WRONG_PROVIDER');
-    }
+  app.post<{ Params: { slug: string }; Querystring: { age?: string; wait?: string } }>(
+    '/sync/:slug',
+    async (req, reply) => {
+      const { slug } = req.params;
+      const ageFilter = req.query.age;
+      const wait = req.query.wait === '1' || req.query.wait === 'true';
 
-    const cfg = (tenant.providerConfig ?? {}) as {
-      ourMatcher?: string;
-      season?: string;
-      tournaments?: Record<string, { leagueId?: string | number | null; cupId?: string | number | null }>;
-    };
-    const ourMatcher = cfg.ourMatcher ?? tenant.displayName;
-    const season = cfg.season ?? new Date().getFullYear().toString();
-    const tournaments = Object.entries(cfg.tournaments ?? {});
-
-    const standingsResults = [];
-    const calendarResults = [];
-
-    for (const [ageGroup, tids] of tournaments) {
-      if (tids.leagueId) {
-        standingsResults.push(
-          await syncTenantStandings({
-            tenantSlug: slug, ageGroup, tournamentId: tids.leagueId, season, ourMatcher,
-          }),
-        );
-        calendarResults.push(
-          await syncTenantCalendarTournament({
-            tenantSlug: slug, ageGroup, season,
-            tournamentId: tids.leagueId, tournament: 'league', ourMatcher,
-          }),
-        );
+      if (!isFfspbConfigured()) {
+        throw new BadRequestError('FFSPB_API_KEY not configured on server', 'FFSPB_NOT_CONFIGURED');
       }
-      if (tids.cupId) {
-        calendarResults.push(
-          await syncTenantCalendarTournament({
-            tenantSlug: slug, ageGroup, season,
-            tournamentId: tids.cupId, tournament: 'cup', ourMatcher,
-          }),
-        );
+      const rows = await withBypassRLS((tx) =>
+        tx.select().from(tenants).where(eq(tenants.slug, slug)).limit(1),
+      );
+      const tenant = rows[0];
+      if (!tenant) throw new BadRequestError('tenant not found', 'TENANT_NOT_FOUND');
+      if (tenant.dataProvider !== 'ffspb') {
+        throw new BadRequestError(`tenant has dataProvider='${tenant.dataProvider}'`, 'WRONG_PROVIDER');
       }
-    }
 
-    return {
-      tenant: slug,
-      standings: standingsResults,
-      calendar: calendarResults,
-    };
-  });
+      const cfg = (tenant.providerConfig ?? {}) as {
+        ourMatcher?: string;
+        season?: string;
+        tournaments?: Record<string, { leagueId?: string | number | null; cupId?: string | number | null }>;
+      };
+      const ourMatcher = cfg.ourMatcher ?? tenant.displayName;
+      const season = cfg.season ?? new Date().getFullYear().toString();
+      let tournaments = Object.entries(cfg.tournaments ?? {});
+      if (ageFilter) tournaments = tournaments.filter(([age]) => age === ageFilter);
+
+      const job = async () => {
+        const results = { standings: [] as unknown[], calendar: [] as unknown[] };
+        for (const [ageGroup, tids] of tournaments) {
+          if (tids.leagueId) {
+            results.standings.push(
+              await syncTenantStandings({
+                tenantSlug: slug, ageGroup, tournamentId: tids.leagueId, season, ourMatcher,
+              }),
+            );
+            results.calendar.push(
+              await syncTenantCalendarTournament({
+                tenantSlug: slug, ageGroup, season,
+                tournamentId: tids.leagueId, tournament: 'league', ourMatcher,
+              }),
+            );
+          }
+          if (tids.cupId) {
+            results.calendar.push(
+              await syncTenantCalendarTournament({
+                tenantSlug: slug, ageGroup, season,
+                tournamentId: tids.cupId, tournament: 'cup', ourMatcher,
+              }),
+            );
+          }
+        }
+        return results;
+      };
+
+      if (wait) {
+        const results = await job();
+        return { tenant: slug, ...results };
+      }
+
+      // Fire-and-forget — отвечаем сразу, sync продолжается в фоне.
+      void job().catch((err) => {
+        // лог уже пишут сами сервисы; здесь — последний рубеж
+        // eslint-disable-next-line no-console
+        console.error('[admin/sync] background job failed:', err);
+      });
+      reply.code(202);
+      return {
+        tenant: slug,
+        started: true,
+        ageFilter: ageFilter ?? null,
+        tournaments: tournaments.length,
+        note: 'sync runs in background. Check Render logs or PG for progress.',
+      };
+    },
+  );
 }
