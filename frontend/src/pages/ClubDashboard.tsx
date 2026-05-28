@@ -228,7 +228,7 @@ export default function ClubDashboard() {
             <div className="cd__panel-header">
               <h2 className="cd__panel-title">Командные показатели</h2>
               <span className="cd__panel-sub">
-                {latestMatch.home} {latestMatch.scoreHome}:{latestMatch.scoreAway} {latestMatch.away}
+                {trimAgeSuffix(latestMatch.home)} {latestMatch.scoreHome}:{latestMatch.scoreAway} {trimAgeSuffix(latestMatch.away)}
               </span>
             </div>
             <div className="cd__stats-grid">
@@ -289,20 +289,38 @@ export default function ClubDashboard() {
         );
       })()}
 
-      {/* teamAggregates — глубокая аналитика по 10 категориям */}
-      {latestMatch?.teamAggregates && Object.keys(latestMatch.teamAggregates).length > 0 && (
-        <section className="cd__panel">
-          <div className="cd__panel-header">
-            <h2 className="cd__panel-title">Детальная аналитика</h2>
-            <span className="cd__panel-sub">teamAggregates · {Object.keys(latestMatch.teamAggregates).length} категорий</span>
-          </div>
+      {/* teamAggregates — глубокая аналитика по 10 категориям. Считаем только
+          секции с хотя бы одной числовой записью (после фильтра нулей внутри
+          AggregateCard) — чтобы не показывать «9 категорий» из которых 6 пустые. */}
+      {latestMatch?.teamAggregates && (() => {
+        const ta = latestMatch.teamAggregates as Record<string, AnyObj>;
+        const meaningful = Object.entries(ta).filter(([, v]) => {
+          if (!v || typeof v !== 'object') return false;
+          return Object.entries(v).some(([k, x]) => {
+            if (k === 'mapImage') return false;
+            if (typeof x === 'number') return x > 0;
+            if (x && typeof x === 'object') {
+              const val = (x as AnyObj).value ?? (x as AnyObj).pct;
+              return typeof val === 'number' && val > 0;
+            }
+            return false;
+          });
+        });
+        if (meaningful.length === 0) return null;
+        return (
+          <section className="cd__panel">
+            <div className="cd__panel-header">
+              <h2 className="cd__panel-title">Детальная аналитика по секциям</h2>
+              <span className="cd__panel-sub">{meaningful.length} категорий с данными</span>
+            </div>
           <div className="cd__agg-grid">
-            {Object.entries(latestMatch.teamAggregates as Record<string, AnyObj>).map(([key, vals]) => (
-              <AggregateCard key={key} title={aggTitle(key)} data={vals} />
+            {meaningful.map(([key, vals]) => (
+              <AggregateCard key={key} title={aggTitle(key)} data={vals as AnyObj} />
             ))}
           </div>
         </section>
-      )}
+        );
+      })()}
 
       {/* Top 5 + standings */}
       <section className="cd__columns">
@@ -311,7 +329,7 @@ export default function ClubDashboard() {
             <h2 className="cd__panel-title">Топ-5 по рейтингу</h2>
             <span className="cd__panel-sub">
               {latestMatch
-                ? `по матчу ${formatDateShort(latestMatch.date)} · ${latestMatch.home} ${latestMatch.scoreHome}:${latestMatch.scoreAway} ${latestMatch.away}`
+                ? `по матчу ${formatDateShort(latestMatch.date)} · ${trimAgeSuffix(latestMatch.home)} ${latestMatch.scoreHome}:${latestMatch.scoreAway} ${trimAgeSuffix(latestMatch.away)}`
                 : 'нет загруженных разборов'}
             </span>
           </div>
@@ -470,9 +488,19 @@ export default function ClubDashboard() {
 function normalizeTeamName(s: string): string {
   return String(s || '')
     .toLowerCase()
-    .replace(/\bu-?\s*\d{1,3}\b/g, '')        // U-15, U15
+    .replace(/\bu-?\s*\d{1,3}\b/gi, '')        // U-15, U15
     .replace(/\b20\d{2}\b/g, '')               // 2011, 2010
     .replace(/[«»()\[\]]/g, '')                // кавычки/скобки
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+/** То же что normalizeTeamName, но сохраняет Capitalize — для display. */
+function trimAgeSuffix(s: unknown): string {
+  return String(s || '')
+    .replace(/\s*[Uu]-?\s*\d{1,3}\s*/g, ' ')   // " U15 " → " "
+    .replace(/\s+20\d{2}\s*/g, ' ')             // " 2011 "
+    .replace(/[«»]/g, '')
     .replace(/\s+/g, ' ')
     .trim();
 }
@@ -514,34 +542,83 @@ const AGG_TITLES: Record<string, string> = {
 };
 function aggTitle(k: string): string { return AGG_TITLES[k] || k; }
 
+// Русские названия полей агрегатов (что приходит из derivedAggregates + build_match)
+const FIELD_RU: Record<string, string> = {
+  // shooting
+  shots: 'Удары', onTarget: 'В створ', goals: 'Голы', byHead: 'Головой',
+  totalShots: 'Удары', shotsOnTarget: 'В створ', expectedGoals: 'xG',
+  avgShotDistance: 'Сред. дистанция удара',
+  // passes
+  total: 'Передачи', successful: 'Точные', progressive: 'Прогрессивные',
+  toFinalThird: 'В финальную треть', intoPenArea: 'В штрафную',
+  crosses: 'Кроссы', keyPass: 'Ключевые', back: 'Назад', long: 'Длинные',
+  short: 'Короткие', middle: 'Средние', oppda: 'PPDA',
+  // attacks
+  assists: 'Ассисты', goalActions: 'Голевые действия', dribble: 'Дриблинг',
+  touchesInBox: 'Касания в штрафной', entriesInBox: 'Входы в штрафную',
+  crossingMidfield: 'Переходы средней линии', defenceBreakthroughs: 'Прорывы обороны',
+  // possession
+  lostBall: 'Потери', technicalMistake: 'Брак', loseOnOwnHalf: 'Потери на своей',
+  losses: 'Потери всего', possessionsCount: 'Владения',
+  // recoveriesAndTackling
+  tackle: 'Отборы', interception: 'Перехваты', recovery: 'Возвраты',
+  tackleAndRecovery: 'Отбор+возврат', slidingTackles: 'Подкаты',
+  returns: 'Возвраты', tacklesLine: 'Отборы на линии',
+  inFirstThird: 'В 1-й трети', inSecondThird: 'В средней', inThirdThird: 'В фин. трети',
+  // duels
+  duel: 'Дуэли', aerialDuel: 'Воздух', totalDuels: 'Всего дуэлей',
+  aerialDuels: 'Воздушные дуэли',
+  // pressing
+  pressing: 'Прессинг', counterpressing: 'Контр-прессинг',
+  averagePpda: 'Сред. PPDA',
+  // positioning
+  clearance: 'Выносы', blockedShot: 'Блок-удары', positionPlay: 'Поз. игра',
+  fouls: 'Фолы', yellowCard: 'Жёлтые', redCard: 'Красные', shotsAgainst: 'Удары по воротам',
+  interceptions: 'Перехваты',
+  // setPieces
+  corner: 'Угловые', corners: 'Угловые', freeKick: 'Штрафные',
+  freeKickShot: 'Штр. с ударом', penalty: 'Пенальти', throwing: 'Ауты', throwIns: 'Ауты',
+  offsides: 'Офсайды', penaltyWithShot: 'Пенальти с ударом',
+};
+
+function fieldLabel(k: string): string {
+  if (FIELD_RU[k]) return FIELD_RU[k];
+  // camelCase → "Camel case"
+  return k.replace(/([a-z])([A-Z])/g, '$1 $2').replace(/^./, (c) => c.toUpperCase());
+}
+
 function AggregateCard({ title, data }: { title: string; data: AnyObj }) {
-  // Берём первые 6 числовых полей
-  const entries = Object.entries(data || {})
-    .filter(([, v]) => typeof v === 'number' || (v && typeof v === 'object' && (typeof (v as AnyObj).value === 'number' || typeof (v as AnyObj).pct === 'number')))
-    .slice(0, 6);
+  // Только записи с реальным числом > 0. Скрываем mapImage (это base64 строка).
+  type Entry = { k: string; val: number; suffix: string };
+  const entries: Entry[] = [];
+  for (const [k, v] of Object.entries(data || {})) {
+    if (k === 'mapImage') continue;
+    let val: number | null = null;
+    let suffix = '';
+    if (typeof v === 'number') val = v;
+    else if (v && typeof v === 'object') {
+      if (typeof (v as AnyObj).value === 'number') val = Number((v as AnyObj).value);
+      else if (typeof (v as AnyObj).pct === 'number') {
+        val = Number((v as AnyObj).pct);
+        suffix = '%';
+      }
+    }
+    if (val == null || val === 0) continue;  // Скрываем нули
+    entries.push({ k, val, suffix });
+  }
+  entries.sort((a, b) => b.val - a.val).splice(6);  // Топ-6 по значению
   if (entries.length === 0) return null;
   return (
     <div className="cd__agg-card">
       <div className="cd__agg-title">{title}</div>
-      {entries.map(([k, v]) => {
-        const isObj = v && typeof v === 'object';
-        const val = isObj ? ((v as AnyObj).value ?? (v as AnyObj).pct) : v;
-        const suffix = isObj && (v as AnyObj).pct != null ? '%' : '';
-        return (
-          <div key={k} className="cd__agg-row">
-            <span className="cd__agg-key">{humanize(k)}</span>
-            <span className="cd__agg-val">{typeof val === 'number' ? val.toLocaleString('ru-RU') : '—'}{suffix}</span>
-          </div>
-        );
-      })}
+      {entries.map(({ k, val, suffix }) => (
+        <div key={k} className="cd__agg-row">
+          <span className="cd__agg-key">{fieldLabel(k)}</span>
+          <span className="cd__agg-val">{val.toLocaleString('ru-RU')}{suffix}</span>
+        </div>
+      ))}
     </div>
   );
-}
-function humanize(k: string): string {
-  return k
-    .replace(/([a-z])([A-Z])/g, '$1 $2')
-    .replace(/_/g, ' ')
-    .replace(/^./, (c) => c.toUpperCase());
 }
 
 function num(v: any, digits = 0): string {
