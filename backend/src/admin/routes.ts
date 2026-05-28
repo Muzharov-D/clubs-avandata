@@ -58,28 +58,40 @@ export async function adminRoutes(app: FastifyInstance) {
       },
       ffspbProbe: null as unknown,
     };
-    // Пробный запрос к FFSPB (один tournament).
-    if (isFfspbConfigured()) {
+    const probes = [
+      { name: 'ffspb-base', url: 'https://stat.ffspb.org/', useAuth: false },
+      { name: 'ffspb-api-base', url: 'https://stat.ffspb.org/api', useAuth: true },
+      { name: 'ffspb-tournaments-list', url: 'https://stat.ffspb.org/api/tournaments?itemsPerPage=1', useAuth: true },
+      { name: 'ffspb-standings', url: 'https://stat.ffspb.org/api/standings?tournament=/api/tournaments/44333&itemsPerPage=1', useAuth: true },
+      { name: 'public-google', url: 'https://www.google.com/', useAuth: false },
+    ];
+    const results: unknown[] = [];
+    for (const p of probes) {
       try {
         const t0 = Date.now();
-        const res = await fetch(`${process.env.FFSPB_ENDPOINT ?? 'https://stat.ffspb.org/api'}/standings?tournament=/api/tournaments/44333&itemsPerPage=1`, {
-          headers: {
-            Accept: 'application/ld+json',
-            'X-AUTH-TOKEN': process.env.FFSPB_API_KEY ?? '',
-          },
-          signal: AbortSignal.timeout(10_000),
+        const headers: Record<string, string> = { Accept: '*/*' };
+        if (p.useAuth) {
+          headers['X-AUTH-TOKEN'] = process.env.FFSPB_API_KEY ?? '';
+          headers.Accept = 'application/ld+json';
+        }
+        const res = await fetch(p.url, {
+          headers,
+          signal: AbortSignal.timeout(30_000),
         });
         const text = await res.text();
-        diag.ffspbProbe = {
+        results.push({
+          name: p.name,
           status: res.status,
           ok: res.ok,
           tookMs: Date.now() - t0,
-          bodyPrefix: text.slice(0, 200),
-        };
+          bodyLen: text.length,
+          bodyPrefix: text.slice(0, 120),
+        });
       } catch (e) {
-        diag.ffspbProbe = { error: e instanceof Error ? e.message : String(e) };
+        results.push({ name: p.name, error: e instanceof Error ? e.message : String(e) });
       }
     }
+    diag.ffspbProbe = results;
     return diag;
   });
 
