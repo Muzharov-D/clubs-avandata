@@ -13,6 +13,7 @@ import {
 } from './jwt.js';
 import { BadRequestError, UnauthorizedError } from '../shared/errors.js';
 import { authenticate } from './middleware.js';
+import { withBypassRLS } from '../db/tenantContext.js';
 
 const REFRESH_COOKIE = 'rt';
 
@@ -39,16 +40,20 @@ export async function authRoutes(app: FastifyInstance) {
 
     const targetTenant = body.tenantSlug ?? null;
 
-    const candidates = await db
-      .select()
-      .from(users)
-      .where(
-        and(
-          targetTenant === null ? isNull(users.tenantId) : eq(users.tenantId, targetTenant),
-          body.email ? eq(users.email, body.email) : eq(users.username, body.username!),
-        ),
-      )
-      .limit(1);
+    // Login — особый контекст: ещё нет tenant context, RLS блокирует поиск
+    // юзеров tenant'a. Используем bypass (login сам по себе аутентификация).
+    const candidates = await withBypassRLS((tx) =>
+      tx
+        .select()
+        .from(users)
+        .where(
+          and(
+            targetTenant === null ? isNull(users.tenantId) : eq(users.tenantId, targetTenant),
+            body.email ? eq(users.email, body.email) : eq(users.username, body.username!),
+          ),
+        )
+        .limit(1),
+    );
 
     const user = candidates[0];
     if (!user || !user.passwordHash) {
@@ -124,7 +129,9 @@ export async function authRoutes(app: FastifyInstance) {
     }
     if (row.expiresAt < new Date()) throw new UnauthorizedError('refresh expired');
 
-    const userRows = await db.select().from(users).where(eq(users.id, row.userId)).limit(1);
+    const userRows = await withBypassRLS((tx) =>
+      tx.select().from(users).where(eq(users.id, row.userId)).limit(1),
+    );
     const user = userRows[0];
     if (!user) throw new UnauthorizedError('user not found');
 
@@ -181,7 +188,9 @@ export async function authRoutes(app: FastifyInstance) {
    */
   app.get('/me', { onRequest: [authenticate] }, async (req) => {
     if (!req.user) throw new BadRequestError('no user');
-    const userRows = await db.select().from(users).where(eq(users.id, req.user.sub)).limit(1);
+    const userRows = await withBypassRLS((tx) =>
+      tx.select().from(users).where(eq(users.id, req.user!.sub)).limit(1),
+    );
     const u = userRows[0];
     if (!u) throw new UnauthorizedError('user not found');
     return {
