@@ -554,7 +554,7 @@ const FIELD_RU: Record<string, string> = {
   totalShots: 'Удары', shotsOnTarget: 'В створ', expectedGoals: 'xG',
   avgShotDistance: 'Сред. дистанция удара',
   // passes
-  total: 'Передачи', successful: 'Точные', progressive: 'Прогрессивные',
+  total: 'Всего', successful: 'Точные', progressive: 'Прогрессивные',
   toFinalThird: 'В финальную треть', intoPenArea: 'В штрафную',
   crosses: 'Кроссы', keyPass: 'Ключевые', back: 'Назад', long: 'Длинные',
   short: 'Короткие', middle: 'Средние', oppda: 'PPDA',
@@ -594,8 +594,9 @@ function fieldLabel(k: string): string {
 
 function AggregateCard({ title, data }: { title: string; data: AnyObj }) {
   // Только записи с реальным числом > 0. Скрываем mapImage (это base64 строка).
-  type Entry = { k: string; val: number; suffix: string };
-  const entries: Entry[] = [];
+  // Дедуп по русскому лейблу — оставляем макс значение (interception vs interceptions).
+  type Entry = { k: string; label: string; val: number; suffix: string };
+  const bucket = new Map<string, Entry>();
   for (const [k, v] of Object.entries(data || {})) {
     if (k === 'mapImage') continue;
     let val: number | null = null;
@@ -609,16 +610,18 @@ function AggregateCard({ title, data }: { title: string; data: AnyObj }) {
       }
     }
     if (val == null || val === 0) continue;  // Скрываем нули
-    entries.push({ k, val, suffix });
+    const label = fieldLabel(k);
+    const prev = bucket.get(label);
+    if (!prev || prev.val < val) bucket.set(label, { k, label, val, suffix });
   }
-  entries.sort((a, b) => b.val - a.val).splice(6);  // Топ-6 по значению
+  const entries = Array.from(bucket.values()).sort((a, b) => b.val - a.val).slice(0, 6);
   if (entries.length === 0) return null;
   return (
     <div className="cd__agg-card">
       <div className="cd__agg-title">{title}</div>
-      {entries.map(({ k, val, suffix }) => (
+      {entries.map(({ k, label, val, suffix }) => (
         <div key={k} className="cd__agg-row">
-          <span className="cd__agg-key">{fieldLabel(k)}</span>
+          <span className="cd__agg-key">{label}</span>
           <span className="cd__agg-val">{val.toLocaleString('ru-RU')}{suffix}</span>
         </div>
       ))}
