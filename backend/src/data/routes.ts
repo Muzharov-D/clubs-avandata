@@ -94,7 +94,8 @@ export async function dataRoutes(app: FastifyInstance) {
              ORDER BY match_date DESC NULLS LAST`;
       const params: unknown[] = teamId ? [slug, teamId] : [slug];
       const { rows } = await conn.query(sql, params);
-      return rows;
+      // Legacy ClubOverview expects { matches: [...] }
+      return { matches: rows };
     });
   });
 
