@@ -1,9 +1,12 @@
 import { useState } from 'react';
 import { useNavigate, useLocation, Navigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { toast } from '../components/Toast';
+import { useDocumentTitle } from '../hooks/useDocumentTitle';
 import './Login.css';
 
 export default function Login() {
+  useDocumentTitle('Вход');
   const { login, user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -32,12 +35,18 @@ export default function Login() {
       let target;
       if (loggedUser?.role === 'platform_admin') {
         target = '/admin';
+      } else if (loggedUser?.role === 'player' && loggedUser?.playerId) {
+        target = `/players/${loggedUser.playerId}`;
       } else {
         target = location.state?.from?.pathname || '/club';
       }
+      const greeting = loggedUser?.fullName ? `Здравствуй, ${loggedUser.fullName}!` : 'Вход выполнен';
+      toast.success(greeting);
       navigate(target, { replace: true });
     } catch (err) {
-      setError(err.message || 'Ошибка входа');
+      const msg = err?.message || 'Ошибка входа';
+      setError(msg);
+      toast.error(msg);
     } finally { setBusy(false); }
   }
 

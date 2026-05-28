@@ -1,8 +1,10 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useTeam } from '../contexts/TeamContext';
 import PushOptInButton from './PushOptInButton';
 import ChangePasswordModal from './ChangePasswordModal';
+import { toast } from './Toast';
 import './AppHeader.css';
 
 const ROLE_LABELS = {
@@ -14,6 +16,13 @@ const ROLE_LABELS = {
 export default function AppHeader() {
   const { user, logout } = useAuth();
   const { teams, selectedTeam, selectedTeamId, select } = useTeam();
+  const navigate = useNavigate();
+
+  function handleLogout() {
+    logout();
+    toast.info('Вы вышли из системы');
+    navigate('/login', { replace: true });
+  }
   const canSwitch = user?.role === 'head_coach';
   const activeTeams = (teams || []).filter((t) => t.active && t.isOurTeam !== false);
 
@@ -57,7 +66,7 @@ export default function AppHeader() {
         {user && (
           <button
             className="app-header__btn app-header__btn--logout"
-            onClick={() => { closeMenu(); logout(); }}
+            onClick={() => { closeMenu(); handleLogout(); }}
             title="Выйти"
           >Выход</button>
         )}

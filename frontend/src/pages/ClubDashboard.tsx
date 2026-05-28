@@ -22,6 +22,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useTeam } from '../contexts/TeamContext';
 import { PlayerRadar } from '../components/PlayerRadar';
 import { StatTile } from '../components/StatTile';
+import { useDocumentTitle } from '../hooks/useDocumentTitle';
 import './ClubDashboard.css';
 
 type AnyObj = Record<string, any>;
@@ -38,6 +39,7 @@ export default function ClubDashboard() {
   const navigate = useNavigate();
   const { user } = useAuth() as { user: { tenantId?: string | null; fullName?: string } | null };
   const { selectedTeam, selectedTeamId } = useTeam() as { selectedTeam: Team | null; selectedTeamId: string | null };
+  useDocumentTitle(selectedTeam?.name ? `${selectedTeam.name} — Клуб` : 'Клуб');
 
   const [team, setTeam]               = useState<Team | null>(null);
   const [calendar, setCalendar]       = useState<AnyObj[]>([]);
