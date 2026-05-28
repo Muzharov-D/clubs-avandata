@@ -87,10 +87,10 @@ export async function publicRoutes(app: FastifyInstance) {
           [slug, age],
         ),
         conn.query(
-          `SELECT id, full_name AS "fullName", number, position, photo_url AS "photoUrl"
+          `SELECT p.id, p.full_name AS "fullName", p.number, p.position, p.photo_url AS "photoUrl"
              FROM players p JOIN teams t ON t.id = p.team_id
              WHERE p.tenant_id = $1 AND t.age_group = $2
-             ORDER BY number NULLS LAST, last_name`,
+             ORDER BY p.number NULLS LAST, p.last_name`,
           [slug, age],
         ),
         conn.query(
