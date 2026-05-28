@@ -7,6 +7,7 @@ import { AppError } from './shared/errors.js';
 import { authRoutes } from './auth/routes.js';
 import { tenantRoutes } from './tenants/routes.js';
 import { adminRoutes } from './admin/routes.js';
+import { publicRoutes } from './public/routes.js';
 import { dataRoutes } from './data/routes.js';
 import { closePool } from './db/client.js';
 import { startCrons, stopCrons } from './cron/runner.js';
@@ -42,6 +43,7 @@ async function buildServer() {
   await app.register(tenantRoutes, { prefix: '/api/v1/tenant' });
   await app.register(adminRoutes, { prefix: '/api/v1/admin' });
   await app.register(dataRoutes, { prefix: '/api/v1/data' });
+  await app.register(publicRoutes, { prefix: '/api/v1/public' });
 
   return app;
 }

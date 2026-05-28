@@ -158,7 +158,14 @@ export async function dataRoutes(app: FastifyInstance) {
            ORDER BY age_group, fetched_at DESC`,
         [slug],
       );
-      return rows.map((r) => ({ ...r, title: `${r.leagueName} · ${r.ageGroup} г.р.` }));
+      // Legacy ClubPage ожидает { ageGroups: string[], standings: Record<age, ...> }
+      const ageGroups: string[] = [];
+      const standings: Record<string, unknown> = {};
+      for (const r of rows) {
+        ageGroups.push(r.ageGroup);
+        standings[r.ageGroup] = { ...r, title: `${r.leagueName} · ${r.ageGroup} г.р.` };
+      }
+      return { ageGroups, standings };
     });
   });
 
@@ -172,8 +179,9 @@ export async function dataRoutes(app: FastifyInstance) {
            ORDER BY fetched_at DESC LIMIT 1`,
         [slug, req.params.ageGroup],
       );
-      if (rows.length === 0) throw new NotFoundError('cup not found');
-      return rows[0];
+      // Возвращаем null вместо 404 — у тенанта может ещё не быть кубка.
+      // Frontend graceful — рендерит «нет кубка».
+      return rows[0] ?? { ageGroup: req.params.ageGroup, rounds: [], cupName: null };
     });
   });
 
