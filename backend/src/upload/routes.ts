@@ -218,6 +218,22 @@ export async function uploadRoutes(app: FastifyInstance) {
         logger.warn({ matchId, err: (e as Error).message }, '[upload] maps crop failed — пустые карты');
       }
 
+      // ─── 4.55 Events timeline (хроника матча: голы / ЖК / замены) ──
+      // Best-effort: parse_events.py читает p1-p4, ищет минуты + тип события.
+      const eventsOutPath = join(work, 'events.json');
+      let events: Array<Record<string, unknown>> = [];
+      try {
+        await runPython(PYTHON_BIN,
+          [join(PARSERS_DIR, 'parse_events.py'), pdfPath, eventsOutPath], work);
+        if (existsSync(eventsOutPath)) {
+          const ev = JSON.parse(await readFile(eventsOutPath, 'utf-8'));
+          events = ev.events ?? [];
+          logger.info({ matchId, events: events.length }, '[upload] events parsed');
+        }
+      } catch (e) {
+        logger.warn({ matchId, err: (e as Error).message }, '[upload] events parse failed — пустой timeline');
+      }
+
       // ─── 4.6 Auto-derive teamAggregates из rich (если build_match вернул пустой)
       // Современный SportVisor U-15 PDF — parse_team_aggregates даёт {}.
       // Складываем per-player rich stats в командные секции, чтобы блок
@@ -364,6 +380,7 @@ export async function uploadRoutes(app: FastifyInstance) {
               formation: pdfData.formation ?? null,
               formationImage: maps.formationImage ?? null,
               teamMaps: maps.teamMaps ?? {},
+              events,
               excelMeta: excelData?.match ?? null,
               excelColumnsCount: excelData?.match.columnsCount ?? null,
             }),

@@ -160,6 +160,7 @@ export async function dataRoutes(app: FastifyInstance) {
         formation: metaObj.formation ?? null,
         formationImage: formationImg,
         formationImageFull: formationImg,
+        events: (metaObj.events as unknown[]) ?? [],
         players:  mp.map(adaptPlayerForLegirus),
       };
     });
