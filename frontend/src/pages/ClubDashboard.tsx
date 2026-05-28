@@ -18,9 +18,10 @@ import {
 } from '../services/api';
 // @ts-ignore — legacy
 import { useAuth } from '../contexts/AuthContext';
+// @ts-ignore — legacy
+import { useTeam } from '../contexts/TeamContext';
 import { PlayerRadar } from '../components/PlayerRadar';
 import { StatTile } from '../components/StatTile';
-import { Sparkline } from '../components/Sparkline';
 import './ClubDashboard.css';
 
 type AnyObj = Record<string, any>;
@@ -35,7 +36,8 @@ interface Team {
 
 export default function ClubDashboard() {
   const navigate = useNavigate();
-  const { user } = useAuth() as { user: { tenantId?: string | null } | null };
+  const { user } = useAuth() as { user: { tenantId?: string | null; fullName?: string } | null };
+  const { selectedTeam, selectedTeamId } = useTeam() as { selectedTeam: Team | null; selectedTeamId: string | null };
 
   const [team, setTeam]               = useState<Team | null>(null);
   const [calendar, setCalendar]       = useState<AnyObj[]>([]);
@@ -51,9 +53,19 @@ export default function ClubDashboard() {
     setLoading(true);
     (async () => {
       try {
-        const teamsRes = await fetchTeams();
-        const myTeam = (teamsRes?.teams ?? [])[0];
-        if (!myTeam) { setError('У клуба нет команд. Создай команду через /admin.'); setLoading(false); return; }
+        // Команду берём из TeamContext (он уже их подтянул и выбрал) —
+        // если контекст не успел, делаем fallback fetchTeams().
+        let myTeam: Team | null = selectedTeam;
+        if (!myTeam) {
+          const teamsRes = await fetchTeams();
+          const list = (teamsRes?.teams ?? []) as Team[];
+          myTeam = list.find((t) => t.id === selectedTeamId) || list[0] || null;
+        }
+        if (!myTeam) {
+          setError('У клуба пока нет команд. Создайте команду в админ-панели.');
+          setLoading(false);
+          return;
+        }
         if (cancelled) return;
         setTeam(myTeam);
 
@@ -80,7 +92,11 @@ export default function ClubDashboard() {
       }
     })();
     return () => { cancelled = true; };
-  }, [user]);
+  }, [user, selectedTeamId]);
+
+  // Имя нашей команды для сравнений «наш матч» / «наша строка таблицы».
+  // Берём из выбранной команды (а не хардкод «Зенит»), fallback на team из БД.
+  const ourName = (selectedTeam?.name || team?.name || '').toLowerCase().trim();
 
   const nextMatch = useMemo(() => {
     const now = Date.now();
@@ -104,14 +120,24 @@ export default function ClubDashboard() {
   }, [latestMatch]);
 
   const standingsTopRows = useMemo<AnyObj[]>(() => {
-    const t = (standings as AnyObj)?.table ?? [];
-    return t.slice(0, 8);
+    const t = ((standings as AnyObj)?.table ?? []) as AnyObj[];
+    const top = t.slice(0, 8);
+    const our = t.find((r) => r.isOurClub);
+    // Если наша команда вне топ-8 — добавляем её внизу с разделителем-флагом
+    if (our && !top.includes(our)) {
+      return [...top, { __divider: true }, our];
+    }
+    return top;
   }, [standings]);
 
   const ourRow = useMemo<AnyObj | null>(() => {
     const t = (standings as AnyObj)?.table ?? [];
     return t.find((r: AnyObj) => r.isOurClub) ?? null;
   }, [standings]);
+
+  const tournamentTitle = (standings as AnyObj)?.leagueName
+    ? `${(standings as AnyObj).leagueName} · ${(standings as AnyObj).ageGroup || ''} г.р.`
+    : 'Турнир';
 
   if (loading) return <div className="cd"><div className="cd__loading">Загрузка дашборда…</div></div>;
   if (error)   return <div className="cd"><div className="cd__error">{error}</div></div>;
@@ -130,7 +156,7 @@ export default function ClubDashboard() {
             {ourRow && (
               <span className="cd__pos">
                 {' · '}
-                <span className="cd__pos-num">{ourRow.pos} место</span> в ЮФЛ U-15
+                <span className="cd__pos-num">{ourRow.pos} место</span> в {tournamentTitle}
               </span>
             )}
           </div>
@@ -143,17 +169,17 @@ export default function ClubDashboard() {
           <div className="cd__hero-card cd__hero-card--next">
             <div className="cd__hero-eyebrow">Следующий матч · {nextMatch.round || ''}</div>
             <div className="cd__hero-matchup">
-              <span className={nextMatch.home === ourLabel(user) ? 'cd__hero-team--us' : 'cd__hero-team'}>
+              <span className={isOurName(nextMatch.home, ourName) ? 'cd__hero-team--us' : 'cd__hero-team'}>
                 {nextMatch.home}
               </span>
               <span className="cd__hero-vs">vs</span>
-              <span className={nextMatch.away === ourLabel(user) ? 'cd__hero-team--us' : 'cd__hero-team'}>
+              <span className={isOurName(nextMatch.away, ourName) ? 'cd__hero-team--us' : 'cd__hero-team'}>
                 {nextMatch.away}
               </span>
             </div>
             <div className="cd__hero-meta">
               <span>{formatDateLong(nextMatch.date)}</span>
-              {nextMatch.venue && <span> · {nextMatch.venue}</span>}
+              {nextMatch.venue && <span className="cd__hero-venue"> · {nextMatch.venue}</span>}
             </div>
             <Countdown to={nextMatch.date} />
           </div>
@@ -168,20 +194,20 @@ export default function ClubDashboard() {
           <div className="cd__hero-card cd__hero-card--last">
             <div className="cd__hero-eyebrow">Последний матч · {lastResult.round || ''}</div>
             <div className="cd__hero-matchup">
-              <span className={lastResult.home === ourLabel(user) ? 'cd__hero-team--us' : 'cd__hero-team'}>
+              <span className={isOurName(lastResult.home, ourName) ? 'cd__hero-team--us' : 'cd__hero-team'}>
                 {lastResult.home}
               </span>
               <span className="cd__hero-score">
                 {lastResult.scoreH}:{lastResult.scoreA}
               </span>
-              <span className={lastResult.away === ourLabel(user) ? 'cd__hero-team--us' : 'cd__hero-team'}>
+              <span className={isOurName(lastResult.away, ourName) ? 'cd__hero-team--us' : 'cd__hero-team'}>
                 {lastResult.away}
               </span>
             </div>
             <div className="cd__hero-meta">{formatDateShort(lastResult.date)}</div>
             {matches[0] && (
               <button className="cd__hero-action" onClick={() => navigate(`/matches/${matches[0].id}`)}>
-                Открыть SportVisor разбор →
+                Открыть подробный разбор →
               </button>
             )}
           </div>
@@ -190,8 +216,8 @@ export default function ClubDashboard() {
 
       {/* Stats from latest analyzed match — структура SportVisor: {home, away} */}
       {latestMatch?.teamSummaryStats && (() => {
-        const our = pickOurSide(latestMatch, user);
-        const opp = pickOppSide(latestMatch, user);
+        const our = pickOurSide(latestMatch, ourName);
+        const opp = pickOppSide(latestMatch, ourName);
         if (!our) return null;
         return (
           <section className="cd__panel">
@@ -221,12 +247,15 @@ export default function ClubDashboard() {
               <StatTile accent="muted"  label="Офсайды"      value={our.offsides ?? '—'} />
             </div>
             {latestMatch.teamAvgRatings && (
-              <div className="cd__avg-row">
-                <div className="cd__avg-item"><span className="cd__avg-label">Общий</span><span className="cd__avg-val">{Number(latestMatch.teamAvgRatings.overall ?? 0).toFixed(2)}</span></div>
-                <div className="cd__avg-item"><span className="cd__avg-label">Фитнес</span><span className="cd__avg-val">{Number(latestMatch.teamAvgRatings.fitness ?? 0).toFixed(2)}</span></div>
-                <div className="cd__avg-item"><span className="cd__avg-label">Атака</span><span className="cd__avg-val">{Number(latestMatch.teamAvgRatings.attack ?? 0).toFixed(2)}</span></div>
-                <div className="cd__avg-item"><span className="cd__avg-label">Защита</span><span className="cd__avg-val">{Number(latestMatch.teamAvgRatings.defence ?? 0).toFixed(2)}</span></div>
-              </div>
+              <>
+                <div className="cd__avg-caption">Средние Performance Index по команде</div>
+                <div className="cd__avg-row">
+                  <div className="cd__avg-item"><span className="cd__avg-label">Общий</span><span className="cd__avg-val">{Number(latestMatch.teamAvgRatings.overall ?? 0).toFixed(2)}</span></div>
+                  <div className="cd__avg-item"><span className="cd__avg-label">Фитнес</span><span className="cd__avg-val">{Number(latestMatch.teamAvgRatings.fitness ?? 0).toFixed(2)}</span></div>
+                  <div className="cd__avg-item"><span className="cd__avg-label">Атака</span><span className="cd__avg-val">{Number(latestMatch.teamAvgRatings.attack ?? 0).toFixed(2)}</span></div>
+                  <div className="cd__avg-item"><span className="cd__avg-label">Защита</span><span className="cd__avg-val">{Number(latestMatch.teamAvgRatings.defence ?? 0).toFixed(2)}</span></div>
+                </div>
+              </>
             )}
           </section>
         );
@@ -252,7 +281,11 @@ export default function ClubDashboard() {
         <div className="cd__panel">
           <div className="cd__panel-header">
             <h2 className="cd__panel-title">Топ-5 по рейтингу</h2>
-            <span className="cd__panel-sub">из последнего разбора</span>
+            <span className="cd__panel-sub">
+              {latestMatch
+                ? `по матчу ${formatDateShort(latestMatch.date)} · ${latestMatch.home} ${latestMatch.scoreHome}:${latestMatch.scoreAway} ${latestMatch.away}`
+                : 'нет загруженных разборов'}
+            </span>
           </div>
           {topPlayers.length === 0 ? (
             <div className="cd__empty">
@@ -289,7 +322,7 @@ export default function ClubDashboard() {
         <div className="cd__panel">
           <div className="cd__panel-header">
             <h2 className="cd__panel-title">Турнирная таблица</h2>
-            <span className="cd__panel-sub">{standings ? 'ЮФЛ U-15 · группа' : ''}</span>
+            <span className="cd__panel-sub">{standings ? tournamentTitle : ''}</span>
           </div>
           {standingsTopRows.length === 0 ? (
             <div className="cd__empty">
@@ -297,32 +330,38 @@ export default function ClubDashboard() {
               <div>Таблица турнира пока недоступна</div>
             </div>
           ) : (
-            <table className="cd__table">
-              <thead>
-                <tr><th>#</th><th>Команда</th><th>И</th><th>М</th><th>О</th></tr>
-              </thead>
-              <tbody>
-                {standingsTopRows.map((r) => (
-                  <tr key={r.pos} className={r.isOurClub ? 'cd__table-row--us' : ''}>
-                    <td>{r.pos}</td>
-                    <td className="cd__table-team">{r.team}</td>
-                    <td>{r.games}</td>
-                    <td>{r.scored}-{r.missed}</td>
-                    <td className="cd__table-pts">{r.points}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+            <div className="cd__table-wrap">
+              <table className="cd__table">
+                <thead>
+                  <tr><th>#</th><th>Команда</th><th title="Игр">И</th><th title="Мячи (забили-пропустили)">М</th><th title="Очки">О</th></tr>
+                </thead>
+                <tbody>
+                  {standingsTopRows.map((r, i) => r.__divider ? (
+                    <tr key={`div-${i}`} className="cd__table-divider">
+                      <td colSpan={5}>···</td>
+                    </tr>
+                  ) : (
+                    <tr key={`${r.pos}-${r.team}`} className={r.isOurClub ? 'cd__table-row--us' : ''}>
+                      <td>{r.pos}</td>
+                      <td className="cd__table-team">{r.team}</td>
+                      <td>{r.games}</td>
+                      <td>{r.scored}-{r.missed}</td>
+                      <td className="cd__table-pts">{r.points}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           )}
         </div>
       </section>
 
       {/* Top-3 profile radars */}
-      {topPlayers.length > 0 && (
+      {topPlayers.length >= 3 && (
         <section className="cd__panel">
           <div className="cd__panel-header">
             <h2 className="cd__panel-title">Профили топ-3</h2>
-            <span className="cd__panel-sub">проценты от лучшего в команде</span>
+            <span className="cd__panel-sub">Performance Index — % от лучшего в команде</span>
           </div>
           <div className="cd__radars-grid">
             {topPlayers.slice(0, 3).map((p) => (
@@ -344,8 +383,14 @@ export default function ClubDashboard() {
       {/* Roster */}
       <section className="cd__panel">
         <div className="cd__panel-header">
-          <h2 className="cd__panel-title">Состав ({latestMatch?.players?.length ?? '—'})</h2>
-          <span className="cd__panel-sub">из загруженного разбора</span>
+          <h2 className="cd__panel-title">
+            Состав{latestMatch?.players?.length ? ` (${latestMatch.players.length})` : ''}
+          </h2>
+          <span className="cd__panel-sub">
+            {latestMatch?.players?.length
+              ? `из матча ${formatDateShort(latestMatch.date)}`
+              : 'нет загруженных разборов'}
+          </span>
         </div>
         <div className="cd__roster">
           {(((latestMatch?.players ?? []) as AnyObj[])).map((p) => (
@@ -372,25 +417,43 @@ export default function ClubDashboard() {
 // Helpers
 // ============================================================================
 
-function ourLabel(user: { tenantId?: string | null } | null): string {
-  return user?.tenantId === 'zenit-fk' ? 'Зенит' : 'СШОР Зенит';
+/**
+ * Сравнение названий команд: «наше» имя из selectedTeam vs строка из API.
+ * Нормализация: lowercase + trim + убираем U-15/U15/2011 г.р./() — у API
+ * могут быть «Зенит U-15», «Зенит 2011», «ФК Зенит U-15» — все ОДНА команда.
+ * Edge-case: «Зенит» vs «СШОР Зенит» — для name='зенит' добавляем явное
+ * исключение, чтобы не словить ложноположительный матч.
+ */
+function normalizeTeamName(s: string): string {
+  return String(s || '')
+    .toLowerCase()
+    .replace(/\bu-?\s*\d{1,3}\b/g, '')        // U-15, U15
+    .replace(/\b20\d{2}\b/g, '')               // 2011, 2010
+    .replace(/[«»()\[\]]/g, '')                // кавычки/скобки
+    .replace(/\s+/g, ' ')
+    .trim();
 }
 
-function pickOurSide(m: AnyObj, user: { tenantId?: string | null } | null): AnyObj | null {
-  const ss = m.teamSummaryStats as { home?: AnyObj; away?: AnyObj } | null;
-  if (!ss) return null;
-  const ourName = ourLabel(user).toLowerCase();
-  const homeName = String(m.home || '').toLowerCase();
-  const homeMatches = homeName.includes(ourName) && (ourName === 'зенит' ? !homeName.includes('сшор') : true);
-  return homeMatches ? (ss.home ?? null) : (ss.away ?? null);
+export function isOurName(matchTeam: unknown, ourLower: string): boolean {
+  if (!ourLower) return false;
+  const me  = normalizeTeamName(ourLower);
+  const her = normalizeTeamName(matchTeam as string);
+  if (!me || !her) return false;
+  // Если МЫ — просто «зенит»/«фк зенит» — не должны матчиться с «сшор зенит»
+  if ((me === 'зенит' || me === 'фк зенит') && her.includes('сшор')) return false;
+  if (me === her) return true;
+  return her.includes(me) || me.includes(her);
 }
-function pickOppSide(m: AnyObj, user: { tenantId?: string | null } | null): AnyObj | null {
+
+function pickOurSide(m: AnyObj, ourLower: string): AnyObj | null {
   const ss = m.teamSummaryStats as { home?: AnyObj; away?: AnyObj } | null;
   if (!ss) return null;
-  const ourName = ourLabel(user).toLowerCase();
-  const homeName = String(m.home || '').toLowerCase();
-  const homeMatches = homeName.includes(ourName) && (ourName === 'зенит' ? !homeName.includes('сшор') : true);
-  return homeMatches ? (ss.away ?? null) : (ss.home ?? null);
+  return isOurName(m.home, ourLower) ? (ss.home ?? null) : (ss.away ?? null);
+}
+function pickOppSide(m: AnyObj, ourLower: string): AnyObj | null {
+  const ss = m.teamSummaryStats as { home?: AnyObj; away?: AnyObj } | null;
+  if (!ss) return null;
+  return isOurName(m.home, ourLower) ? (ss.away ?? null) : (ss.home ?? null);
 }
 
 const AGG_TITLES: Record<string, string> = {
@@ -478,19 +541,31 @@ function formatDateShort(iso?: string): string {
 function Countdown({ to }: { to: string }) {
   const [text, setText] = useState('');
   useEffect(() => {
+    let timer: ReturnType<typeof setInterval> | null = null;
     function tick() {
       const diff = new Date(to).getTime() - Date.now();
-      if (diff <= 0) { setText('началось'); return; }
+      if (diff <= -3 * 3600 * 1000) {
+        // Матч завершился больше 3 ч назад — countdown больше не нужен
+        setText('');
+        if (timer) clearInterval(timer);
+        return;
+      }
+      if (diff <= 0) {
+        setText('идёт сейчас');
+        return;
+      }
       const days  = Math.floor(diff / 86400000);
       const hours = Math.floor((diff % 86400000) / 3600000);
       const mins  = Math.floor((diff % 3600000) / 60000);
       if (days > 0)      setText(`через ${days} дн. ${hours} ч.`);
       else if (hours > 0) setText(`через ${hours} ч. ${mins} мин.`);
-      else                setText(`через ${mins} мин.`);
+      else if (mins > 0)  setText(`через ${mins} мин.`);
+      else                setText('начнётся через минуту');
     }
     tick();
-    const t = setInterval(tick, 60000);
-    return () => clearInterval(t);
+    timer = setInterval(tick, 60000);
+    return () => { if (timer) clearInterval(timer); };
   }, [to]);
+  if (!text) return null;
   return <div className="cd__countdown">{text}</div>;
 }

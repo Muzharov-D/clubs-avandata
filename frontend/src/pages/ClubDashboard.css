@@ -129,13 +129,36 @@
 .cd__stat-suffix { font-size: 16px; color: #94a3b8; margin-left: 2px; }
 .cd__stat-extra { font-size: 11px; color: #64748b; margin-top: 4px; }
 
+.cd__avg-caption {
+  margin-top: 14px;
+  padding-top: 12px;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #64748b;
+  border-top: 1px solid rgba(255,255,255,0.06);
+}
 .cd__avg-row {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 10px;
-  margin-top: 14px;
-  padding-top: 14px;
-  border-top: 1px solid rgba(255,255,255,0.06);
+  margin-top: 8px;
+}
+.cd__hero-venue {
+  display: inline-block;
+  max-width: 220px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  vertical-align: bottom;
+}
+.cd__table-wrap { overflow-x: auto; }
+.cd__table-divider td {
+  text-align: center;
+  color: #475569;
+  letter-spacing: 0.4em;
+  padding: 6px;
+  background: rgba(255,255,255,0.02);
 }
 .cd__avg-item {
   display: flex; flex-direction: column; align-items: center; gap: 4px;
