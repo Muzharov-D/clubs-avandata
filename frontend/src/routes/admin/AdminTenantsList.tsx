@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { api } from '../../api/client';
+import { useDocumentTitle } from '../../hooks/useDocumentTitle';
 
 const STATUS_LABELS: Record<string, string> = {
   active: 'активен',
@@ -33,6 +34,7 @@ interface TenantRow {
 }
 
 export function AdminTenantsList() {
+  useDocumentTitle('Клубы — Админ');
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'suspended' | 'archived'>('all');
 

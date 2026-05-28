@@ -2,6 +2,7 @@ import { useState, useEffect, type FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { api, ApiError } from '../../api/client';
+import { useDocumentTitle } from '../../hooks/useDocumentTitle';
 
 interface CreateTenantResponse {
   tenant: { slug: string; name: string };
@@ -24,6 +25,7 @@ function autoSlug(name: string): string {
 }
 
 export function AdminTenantNew() {
+  useDocumentTitle('Новый клуб — Админ');
   const nav = useNavigate();
   const qc = useQueryClient();
   const [form, setForm] = useState({
