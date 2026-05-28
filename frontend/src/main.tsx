@@ -1,14 +1,30 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
+import * as Sentry from '@sentry/react';
 import { App } from './App';
 
-// Базовая палитра Легируса (Montserrat + Xolonium + dark gradient)
+// Базовая палитра (Montserrat + Xolonium + dark gradient) — общая для всех тенантов
 import './styles/legirus-base.css';
 import './styles/legirus-app.css';
 import './styles/mobile.css';
 
 // Tenant-specific overrides (CSS vars, admin styles)
 import './styles/index.css';
+
+// Sentry — инициализируем только если в env прописан DSN. В development
+// без DSN остаёмся no-op (Sentry.captureException в ErrorBoundary ничего не отправит).
+const SENTRY_DSN = import.meta.env.VITE_SENTRY_DSN;
+if (SENTRY_DSN) {
+  Sentry.init({
+    dsn: SENTRY_DSN,
+    environment: import.meta.env.MODE,
+    tracesSampleRate: 0.1,
+    replaysSessionSampleRate: 0,
+    replaysOnErrorSampleRate: 1.0,
+    // Не отправляем ошибки из dev-режима, чтобы не засорять прод-инбокс
+    enabled: import.meta.env.PROD,
+  });
+}
 
 const root = document.getElementById('root');
 if (!root) throw new Error('Root element not found');

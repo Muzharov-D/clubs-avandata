@@ -7,7 +7,19 @@ import { createContext, useContext, useState, useEffect } from 'react';
 //   — топы игроков сезона (агрегаты считаются только по выбранному турниру)
 
 const Ctx = createContext(null);
-const STORAGE_KEY = 'legirus.tournament';
+const STORAGE_KEY = 'avandata.tournament';
+const LEGACY_STORAGE_KEY = 'legirus.tournament';
+
+// Миграция со старого ключа (без потери выбора турнира между релизами).
+try {
+  if (typeof localStorage !== 'undefined') {
+    const legacy = localStorage.getItem(LEGACY_STORAGE_KEY);
+    if (legacy && !localStorage.getItem(STORAGE_KEY)) {
+      localStorage.setItem(STORAGE_KEY, legacy);
+      localStorage.removeItem(LEGACY_STORAGE_KEY);
+    }
+  }
+} catch (_) {}
 
 export function TournamentProvider({ children }) {
   const [tournament, setTournamentState] = useState(() => {
