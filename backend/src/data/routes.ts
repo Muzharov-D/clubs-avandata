@@ -71,7 +71,8 @@ export async function dataRoutes(app: FastifyInstance) {
         [slug, req.params.playerId],
       );
       if (rows.length === 0) throw new NotFoundError('player not found');
-      return rows[0];
+      // Legacy PlayerDetail expects { player: {...} }
+      return { player: rows[0] };
     });
   });
 
@@ -116,7 +117,9 @@ export async function dataRoutes(app: FastifyInstance) {
       if (rows.length === 0) throw new NotFoundError('match not found');
       const match = rows[0];
       const { rows: mp } = await conn.query(
-        `SELECT mp.player_id AS "playerId",
+        `SELECT mp.player_id AS "id",
+                mp.player_id AS "playerId",
+                p.team_id AS "teamId",
                 p.full_name AS "fullName",
                 p.first_name AS "firstName", p.last_name AS "lastName",
                 p.photo_url AS "photoUrl",
