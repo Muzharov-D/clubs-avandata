@@ -23,6 +23,7 @@ import LeagueFixture from './pages/LeagueFixture';
 import PublicLanding from './pages/PublicLanding';
 import ClubLanding from './pages/ClubLanding';
 import { AvandataLanding } from './pages/AvandataLanding';
+import { PublicTenantTeam } from './pages/PublicTenantTeam';
 import ErrorBoundary from './components/ErrorBoundary';
 import { ToastHost } from './components/Toast';
 
@@ -85,10 +86,12 @@ export function App() {
                   <Route path="/login" element={<Login />} />
                   <Route path="/" element={<RootRoute />} />
 
-                  {/* Public родительский экран */}
+                  {/* Public родительский экран (без auth) */}
                   <Route path="/public" element={<PublicLanding />} />
                   <Route path="/public/team/:age" element={<PublicTeamSchedule />} />
                   <Route path="/public/team/:age/league" element={<LeagueFixture />} />
+                  {/* Multi-tenant public — главное для родителя */}
+                  <Route path="/m/:slug/team/:age" element={<PublicTenantTeam />} />
 
                   {/* Платформенный админ (Clubs Avandata) */}
                   <Route
