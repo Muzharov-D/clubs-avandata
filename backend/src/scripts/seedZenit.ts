@@ -49,7 +49,7 @@ const TENANTS = [
 // ============================================================================
 // Команды (U-15)
 // ============================================================================
-const AGE_GROUP = '2010';   // U-15 в 2026 → 2010 г.р. (приблизительно)
+const AGE_GROUP = '2011';   // ЮФЛ U-15 в сезоне 2026 → 2011 г.р.
 const SEASON = '2025-2026';
 const TOURNAMENT_NAME = 'ЮФЛ U-15';
 
@@ -197,12 +197,12 @@ async function upsertHeadCoach(tenantSlug: string, email: string, fullName: stri
 }
 
 async function upsertTeam(tenantSlug: string) {
-  const teamId = `${tenantSlug}-2010`;
+  const teamId = `${tenantSlug}-2011`;
   const teamDef = TEAMS_DEF[tenantSlug];
   if (!teamDef) throw new Error(`No team def for ${tenantSlug}`);
   await pool.query(
     `INSERT INTO teams (id, tenant_id, name, age_group, age_label, year, head_coach, is_our_team, active)
-     VALUES ($1, $2, $3, $4, 'U-15', 2010, $5, TRUE, TRUE)
+     VALUES ($1, $2, $3, $4, 'U-15', 2011, $5, TRUE, TRUE)
      ON CONFLICT (id) DO UPDATE SET name = EXCLUDED.name, head_coach = EXCLUDED.head_coach`,
     [teamId, tenantSlug, teamDef.name, AGE_GROUP, teamDef.headCoach],
   );
@@ -276,8 +276,20 @@ async function upsertCalendarMeta(tenantSlug: string) {
 // Main
 // ============================================================================
 
+async function cleanupOldSeed() {
+  // Удаляем старые 2010 данные (предыдущий seed). Cascade удалит players/calendar/standings.
+  for (const slug of ['zenit-fk', 'zenit-sshor']) {
+    await pool.query(`DELETE FROM teams WHERE id = $1`, [`${slug}-2010`]);
+    await pool.query(`DELETE FROM calendar WHERE tenant_id = $1 AND age_group = '2010'`, [slug]);
+    await pool.query(`DELETE FROM standings WHERE tenant_id = $1 AND age_group = '2010'`, [slug]);
+    await pool.query(`DELETE FROM calendar_meta WHERE tenant_id = $1 AND age_group = '2010'`, [slug]);
+  }
+  console.log('  → cleaned up old 2010 seed data');
+}
+
 async function main() {
   console.log('=== Seeding 2 Zenit tenants ===\n');
+  await cleanupOldSeed();
 
   for (const t of TENANTS) {
     console.log(`Tenant: ${t.slug} (${t.name})`);
