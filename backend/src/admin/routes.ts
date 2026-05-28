@@ -76,7 +76,7 @@ export async function adminRoutes(app: FastifyInstance) {
         }
         const res = await fetch(p.url, {
           headers,
-          signal: AbortSignal.timeout(30_000),
+          signal: AbortSignal.timeout(5_000),
         });
         const text = await res.text();
         results.push({
