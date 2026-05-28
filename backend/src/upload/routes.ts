@@ -174,7 +174,7 @@ export async function uploadRoutes(app: FastifyInstance) {
 
       // ─── 4. PDF parser ────────────────────────────────────────
       const pdfArgs = [join(PARSERS_DIR, 'build_match.py'), pdfPath, pdfOutPath, teamId!, matchId];
-      const pyStdout = await runPython(PYTHON_BIN, pdfArgs, work);
+      const pyStdout = await runPython(PYTHON_BIN, pdfArgs, work, { ROSTER_JSON: playersPath });
       logger.info({ matchId, py: pyStdout.slice(-200) }, '[upload] pdf parsed');
       const pdfData = existsSync(pdfOutPath)
         ? JSON.parse(await readFile(pdfOutPath, 'utf-8')) as PdfOutput
@@ -344,9 +344,9 @@ export async function uploadRoutes(app: FastifyInstance) {
   });
 }
 
-function runPython(bin: string, args: string[], cwd: string): Promise<string> {
+function runPython(bin: string, args: string[], cwd: string, extraEnv: Record<string, string> = {}): Promise<string> {
   return new Promise((resolve, reject) => {
-    const proc = spawn(bin, args, { cwd, env: { ...process.env, PYTHONIOENCODING: 'utf-8' } });
+    const proc = spawn(bin, args, { cwd, env: { ...process.env, PYTHONIOENCODING: 'utf-8', ...extraEnv } });
     let stdout = '';
     let stderr = '';
     proc.stdout.on('data', (d) => { stdout += d.toString('utf-8'); });

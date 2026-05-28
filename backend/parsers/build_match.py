@@ -38,14 +38,20 @@ import parse_player_splits
 
 LOG = logging.getLogger("parser.build")
 DATA_DIR = os.path.join(os.path.dirname(__file__), "..", "data")
-PLAYERS_JSON = os.path.join(DATA_DIR, "players.json")
+DEFAULT_PLAYERS_JSON = os.path.join(DATA_DIR, "players.json")
+
+
+def _players_json_path():
+    # ROSTER_JSON env override — для multi-tenant upload (tmp file)
+    return os.environ.get("ROSTER_JSON") or DEFAULT_PLAYERS_JSON
 
 
 def load_team_roster(team_id):
     """Return {number_str -> player_dict} for the given team."""
-    if not os.path.exists(PLAYERS_JSON):
-        raise FileNotFoundError(f"Roster file missing: {PLAYERS_JSON}")
-    data = json.load(open(PLAYERS_JSON, encoding="utf-8"))
+    pj = _players_json_path()
+    if not os.path.exists(pj):
+        raise FileNotFoundError(f"Roster file missing: {pj}")
+    data = json.load(open(pj, encoding="utf-8"))
     roster = {}
     for p in data.get("players", []):
         if p.get("teamId") != team_id:
