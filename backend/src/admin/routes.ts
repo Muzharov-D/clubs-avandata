@@ -58,14 +58,11 @@ export async function adminRoutes(app: FastifyInstance) {
       },
       ffspbProbe: null as unknown,
     };
-    const standingsUrl = new URL('https://stat.ffspb.org/api/standings');
-    standingsUrl.searchParams.set('tournament', '/api/tournaments/44333');
-    standingsUrl.searchParams.set('itemsPerPage', '5');
-    const probes = [
-      { name: 'ffspb-api-base', url: 'https://stat.ffspb.org/api', useAuth: true },
-      { name: 'ffspb-tournaments-list', url: 'https://stat.ffspb.org/api/tournaments?itemsPerPage=1', useAuth: true },
-      { name: 'ffspb-standings-encoded', url: standingsUrl.toString(), useAuth: true },
-      { name: 'ffspb-matches-encoded', url: 'https://stat.ffspb.org/api/matches?tournament_id=44333&itemsPerPage=1', useAuth: true },
+    const probes: Array<{ name: string; url: string; useAuth: boolean }> = [
+      { name: 'standings-iri',  url: 'https://stat.ffspb.org/api/standings?tournament=%2Fapi%2Ftournaments%2F44333&itemsPerPage=5', useAuth: true },
+      { name: 'standings-id',   url: 'https://stat.ffspb.org/api/standings?tournament_id=44333&itemsPerPage=5', useAuth: true },
+      { name: 'standings-dotid', url: 'https://stat.ffspb.org/api/standings?tournament.id=44333&itemsPerPage=5', useAuth: true },
+      { name: 'html-tournament', url: 'https://stat.ffspb.org/tournament44333', useAuth: false },
     ];
     const results: unknown[] = [];
     for (const p of probes) {
@@ -78,7 +75,7 @@ export async function adminRoutes(app: FastifyInstance) {
         }
         const res = await fetch(p.url, {
           headers,
-          signal: AbortSignal.timeout(5_000),
+          signal: AbortSignal.timeout(15_000),
         });
         const text = await res.text();
         results.push({
