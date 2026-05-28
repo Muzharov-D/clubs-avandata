@@ -179,22 +179,25 @@ export default function MatchDetail() {
           <div className="match-detail__status">МАТЧ РАЗОБРАН</div>
         </div>
         <div className="match-detail__team match-detail__team--away">
-          {match.awayTeam?.shield ? (
-            <img
-              src={match.awayTeam.shield}
-              alt={match.awayTeam.name || ''}
-              className="match-detail__team-logo-img"
-              onError={(e) => {
-                // Fallback на инициал клуба если щит не загрузился
-                e.currentTarget.outerHTML = `<div class="match-detail__team-logo team-logo--away">${(match.awayTeam?.name || '?').charAt(0)}</div>`;
-              }}
-            />
-          ) : (
-            <div className="match-detail__team-logo team-logo--away">
-              {(match.awayTeam?.name || '?').charAt(0)}
-            </div>
-          )}
-          <div className="match-detail__team-name">{match.awayTeam?.name}</div>
+          {(() => {
+            const src = shieldFor(match.awayTeam?.name, match.awayTeam?.shield);
+            return src ? (
+              <img
+                src={src}
+                alt={match.awayTeam?.name || ''}
+                className="match-detail__team-logo-img"
+                onError={(e) => {
+                  // Fallback на инициал клуба если щит не загрузился
+                  e.currentTarget.outerHTML = `<div class="match-detail__team-logo team-logo--away">${(match.awayTeam?.name || '?').charAt(0)}</div>`;
+                }}
+              />
+            ) : (
+              <div className="match-detail__team-logo team-logo--away">
+                {(match.awayTeam?.name || '?').charAt(0)}
+              </div>
+            );
+          })()}
+          <div className="match-detail__team-name">{trimAgeStr(match.awayTeam?.name)}</div>
         </div>
       </div>
 

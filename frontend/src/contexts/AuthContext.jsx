@@ -1,7 +1,7 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import { fetchMe, login as apiLogin, logout as apiLogout, getToken } from '../services/api';
 import { applyTheme, resetTheme } from '../tenant/applyTheme';
-import { setClubHints, clearClubHints } from '../utils/legirus';
+import { setClubHints, clearClubHints, setOurLogo, clearOurLogo } from '../utils/legirus';
 
 const AuthCtx = createContext(null);
 
@@ -50,8 +50,10 @@ export function AuthProvider({ children }) {
     if (tenant) {
       const names = [tenant.displayName, tenant.name].filter(Boolean);
       setClubHints(names);
+      setOurLogo(tenant.brand?.logoUrl);
     } else {
       clearClubHints();
+      clearOurLogo();
     }
   }, [tenant]);
 

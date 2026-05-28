@@ -15,9 +15,21 @@ export function isLegirus(name) {
   return String(name || '').toLowerCase().includes('легирус');
 }
 
-// Подмена щита команды на наш локальный лого, если это Легирус
+// Tenant-aware «наш» лого (устанавливается AuthContext.setOurLogo на login).
+// Если не задан — fallback на LEGIRUS_LOGO (старое поведение).
+let OUR_LOGO = LEGIRUS_LOGO;
+export function setOurLogo(url) {
+  OUR_LOGO = url || LEGIRUS_LOGO;
+}
+export function clearOurLogo() {
+  OUR_LOGO = LEGIRUS_LOGO;
+}
+
+// Подмена щита команды на наш локальный лого, если это «наш» клуб
 export function shieldFor(teamName, fallbackUrl) {
-  return isLegirus(teamName) ? LEGIRUS_LOGO : (fallbackUrl || '');
+  if (isLegirus(teamName)) return LEGIRUS_LOGO;
+  if (isOurClub(teamName)) return OUR_LOGO;
+  return fallbackUrl || '';
 }
 
 // ───────────────────────────────────────────────────────────────────────
