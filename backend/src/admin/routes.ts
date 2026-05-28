@@ -214,14 +214,11 @@ export async function adminRoutes(app: FastifyInstance) {
       if (ageFilter) tournaments = tournaments.filter(([age]) => age === ageFilter);
 
       const job = async () => {
-        const results = { standings: [] as unknown[], calendar: [] as unknown[] };
+        // Calendar первым (быстрый endpoint /api/matches), standings — после
+        // (часто медленный /api/standings, бывает timeout).
+        const results = { calendar: [] as unknown[], standings: [] as unknown[] };
         for (const [ageGroup, tids] of tournaments) {
           if (tids.leagueId) {
-            results.standings.push(
-              await syncTenantStandings({
-                tenantSlug: slug, ageGroup, tournamentId: tids.leagueId, season, ourMatcher,
-              }),
-            );
             results.calendar.push(
               await syncTenantCalendarTournament({
                 tenantSlug: slug, ageGroup, season,
@@ -234,6 +231,13 @@ export async function adminRoutes(app: FastifyInstance) {
               await syncTenantCalendarTournament({
                 tenantSlug: slug, ageGroup, season,
                 tournamentId: tids.cupId, tournament: 'cup', ourMatcher,
+              }),
+            );
+          }
+          if (tids.leagueId) {
+            results.standings.push(
+              await syncTenantStandings({
+                tenantSlug: slug, ageGroup, tournamentId: tids.leagueId, season, ourMatcher,
               }),
             );
           }

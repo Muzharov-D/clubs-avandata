@@ -30,6 +30,8 @@ interface HydraResponse<T> {
   view?: HydraView;
 }
 
+const FETCH_TIMEOUT_MS = 30_000;
+
 async function fetchWithRetry(url: string, opts: RequestInit = {}, attempt = 1): Promise<unknown> {
   const headers: Record<string, string> = {
     Accept: 'application/ld+json',
@@ -37,7 +39,7 @@ async function fetchWithRetry(url: string, opts: RequestInit = {}, attempt = 1):
     ...((opts.headers as Record<string, string>) ?? {}),
   };
   try {
-    const res = await fetch(url, { ...opts, headers });
+    const res = await fetch(url, { ...opts, headers, signal: AbortSignal.timeout(FETCH_TIMEOUT_MS) });
     if (res.status >= 500 && attempt < 3) {
       await new Promise((r) => setTimeout(r, 500 * attempt));
       return fetchWithRetry(url, opts, attempt + 1);
@@ -49,7 +51,7 @@ async function fetchWithRetry(url: string, opts: RequestInit = {}, attempt = 1):
     return res.json();
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);
-    if (attempt < 3 && /timeout|ECONNRESET|fetch failed/i.test(msg)) {
+    if (attempt < 3 && /timeout|ECONNRESET|fetch failed|aborted/i.test(msg)) {
       await new Promise((r) => setTimeout(r, 500 * attempt));
       return fetchWithRetry(url, opts, attempt + 1);
     }
