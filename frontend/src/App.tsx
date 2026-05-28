@@ -21,7 +21,6 @@ import TrainingsPage from './pages/TrainingsPage';
 import PublicTeamSchedule from './pages/PublicTeamSchedule';
 import LeagueFixture from './pages/LeagueFixture';
 import PublicLanding from './pages/PublicLanding';
-import ClubLanding from './pages/ClubLanding';
 import { AvandataLanding } from './pages/AvandataLanding';
 import { PublicTenantTeam } from './pages/PublicTenantTeam';
 import ErrorBoundary from './components/ErrorBoundary';
