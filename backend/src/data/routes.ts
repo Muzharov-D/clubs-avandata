@@ -140,7 +140,13 @@ export async function dataRoutes(app: FastifyInstance) {
       const formationImg = (metaObj.formationImage as string | null) ?? null;
       const taSrc = (match.teamAggregates as Record<string, unknown>) || {};
       const teamAggregates: Record<string, unknown> = { ...taSrc };
-      for (const [slug, dataUrl] of Object.entries(teamMaps)) {
+      // Маппинг slug'ов crop_all_b64 → SECTION_MAPS-id frontend'а
+      const SLUG_ALIAS: Record<string, string> = {
+        'set-pieces': 'setPieces',
+        'recoveries': 'recoveriesAndTackling',
+      };
+      for (const [pyslug, dataUrl] of Object.entries(teamMaps)) {
+        const slug = SLUG_ALIAS[pyslug] ?? pyslug;
         const existing = (teamAggregates[slug] as Record<string, unknown>) || {};
         teamAggregates[slug] = { ...existing, mapImage: dataUrl };
       }

@@ -91,8 +91,23 @@ export function adaptPlayerForLegirus(mp: AnyObj): AnyObj {
   const d  = (k: string) => unwrap(D[k]);
   const f  = (k: string) => unwrap(F[k]);
 
-  // Legirus-shape stats.
-  const stats = {
+  // Legirus-shape stats — Легирус ждёт attack1/2/3/4/5 + defence1/2/3 + fitness.
+  // ОДНОВРЕМЕННО сохраняем оригинальные группы (attack/defence из rich PDF) и
+  // Excel-fallback группы (passing/duels/pressing/dribbling/setpieces) — фронт
+  // может читать их напрямую если конкретная метрика отсутствует в Легирус-схеме.
+  const stats: AnyObj = {
+    // ── Raw rich-PDF groups (для нового PlayerProfile / direct access) ──
+    // attack/defence — 38+20 flat fields с compound {total,accuracy,successful}
+    // fitness НЕ дублируем: легирус-shape ниже даёт тот же superset с minutes
+    attack:   A,
+    defence:  D,
+    // ── Excel-fallback groups (passing/duels/pressing/dribbling/setpieces) ──
+    passing:   rawStats.passing   ?? {},
+    duels:     rawStats.duels     ?? {},
+    pressing:  rawStats.pressing  ?? {},
+    dribbling: rawStats.dribbling ?? {},
+    setpieces: rawStats.setpieces ?? {},
+    fouls:     rawStats.fouls     ?? {},
     // attack1 — главные показатели атаки
     attack1: {
       attackTotal:  Number((mp.ratings as AnyObj)?.attack ?? 0),

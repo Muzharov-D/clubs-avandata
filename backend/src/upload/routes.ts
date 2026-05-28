@@ -218,6 +218,97 @@ export async function uploadRoutes(app: FastifyInstance) {
         logger.warn({ matchId, err: (e as Error).message }, '[upload] maps crop failed — пустые карты');
       }
 
+      // ─── 4.6 Auto-derive teamAggregates из rich (если build_match вернул пустой)
+      // Современный SportVisor U-15 PDF — parse_team_aggregates даёт {}.
+      // Складываем per-player rich stats в командные секции, чтобы блок
+      // «Детальная аналитика» на ClubDashboard / MatchDetail имел контент.
+      type CompoundOrNum = number | { total?: number; successful?: number; accuracy?: number; value?: number };
+      const sumScalar = (key: string, grp: 'attack' | 'defence' | 'fitness'): number => {
+        let total = 0;
+        for (const numStr of Object.keys(rich.overall_meta)) {
+          const v = (rich as Record<string, Record<string, Record<string, CompoundOrNum>>>)[grp]?.[numStr]?.[key];
+          if (typeof v === 'number') total += v;
+          else if (v && typeof v === 'object') {
+            total += Number(v.successful ?? v.value ?? v.total ?? 0);
+          }
+        }
+        return total;
+      };
+      const sumTotal = (key: string, grp: 'attack' | 'defence' | 'fitness'): number => {
+        let total = 0;
+        for (const numStr of Object.keys(rich.overall_meta)) {
+          const v = (rich as Record<string, Record<string, Record<string, CompoundOrNum>>>)[grp]?.[numStr]?.[key];
+          if (typeof v === 'number') total += v;
+          else if (v && typeof v === 'object') {
+            total += Number(v.total ?? v.value ?? 0);
+          }
+        }
+        return total;
+      };
+      const derivedAggregates = {
+        shooting: {
+          shots:    { value: sumTotal('shot', 'attack') },
+          onTarget: { value: sumScalar('shot', 'attack') },
+          goals:    { value: sumScalar('goal', 'attack') },
+          byHead:   { value: sumScalar('byHead', 'attack') },
+        },
+        passes: {
+          total:           { value: sumTotal('pass', 'attack') },
+          successful:      { value: sumScalar('pass', 'attack') },
+          progressive:     { value: sumScalar('progressivePass', 'attack') },
+          toFinalThird:    { value: sumScalar('passToFinalThird', 'attack') },
+          intoPenArea:     { value: sumScalar('intoPenArea', 'attack') },
+          crosses:         { value: sumScalar('cross', 'attack') },
+          keyPass:         { value: sumScalar('keyPass', 'attack') },
+        },
+        attacks: {
+          assists:       { value: sumScalar('assist', 'attack') },
+          goalActions:   { value: sumScalar('goalActions', 'attack') },
+          dribble:       { value: sumScalar('dribble', 'attack') },
+          touchesInBox:  { value: sumScalar('touchesInPenArea', 'attack') },
+          entriesInBox:  { value: sumScalar('entriesInBox', 'attack') },
+        },
+        possession: {
+          lostBall:        { value: sumScalar('lostBall', 'attack') },
+          technicalMistake:{ value: sumScalar('technicalMistake', 'attack') },
+          loseOnOwnHalf:   { value: sumScalar('loseOnOwnHalf', 'attack') },
+        },
+        recoveriesAndTackling: {
+          tackle:       { value: sumScalar('tackle', 'defence') },
+          interception: { value: sumScalar('interception', 'defence') },
+          recovery:     { value: sumScalar('recovery', 'defence') },
+        },
+        duels: {
+          duel:       { value: sumScalar('duel', 'defence') },
+          aerialDuel: { value: sumScalar('aerialDuel', 'defence') },
+        },
+        pressing: {
+          pressing:        { value: sumScalar('pressing', 'defence') },
+          counterpressing: { value: sumScalar('counterpressing', 'defence') },
+        },
+        positioning: {
+          clearance:    { value: sumScalar('clearance', 'defence') },
+          blockedShot:  { value: sumScalar('blockedShot', 'defence') },
+          positionPlay: { value: sumScalar('positionPlay', 'defence') },
+        },
+        setPieces: {
+          corner:        { value: sumScalar('corner', 'attack') },
+          freeKickShot:  { value: sumScalar('freeKickShot', 'attack') },
+          freeKick:      { value: sumScalar('freeKick', 'attack') },
+          penalty:       { value: sumScalar('penalty', 'attack') },
+          throwing:      { value: sumScalar('throwing', 'attack') },
+        },
+      };
+      // Если build_match вернул что-то — обогащаем (его данные приоритетнее),
+      // иначе используем derived. teamMaps идут в meta отдельно.
+      const teamAggregatesMerged: Record<string, unknown> = {};
+      for (const [k, derived] of Object.entries(derivedAggregates)) {
+        const existing = (pdfData.teamAggregates as Record<string, unknown>)?.[k];
+        teamAggregatesMerged[k] = (existing && typeof existing === 'object' && Object.keys(existing).length > 0)
+          ? { ...derived, ...existing }
+          : derived;
+      }
+
       // ─── 5. Merge + insert ───────────────────────────────────────
       let matchDate = pdfData.date || excelData?.match.date || null;
       let homeName  = pdfData.homeTeam?.name || excelData?.match.homeTeam || '';
@@ -265,7 +356,7 @@ export async function uploadRoutes(app: FastifyInstance) {
             score?.home ?? null, score?.away ?? null,
             `upload://${pdfFilename}`,
             JSON.stringify(pdfData.teamSummaryStats ?? {}),
-            JSON.stringify(pdfData.teamAggregates ?? {}),
+            JSON.stringify(teamAggregatesMerged),
             JSON.stringify(pdfData.teamAvgRatings ?? {}),
             JSON.stringify({
               pdfFile: pdfFilename,
