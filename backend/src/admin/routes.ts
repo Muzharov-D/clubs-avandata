@@ -1,7 +1,6 @@
 import type { FastifyInstance } from 'fastify';
 import { z } from 'zod';
-import argon2 from 'argon2';
-import { randomBytes } from 'node:crypto';
+import { randomBytes, createHash } from 'node:crypto';
 import { eq } from 'drizzle-orm';
 import { db } from '../db/client.js';
 import { withBypassRLS } from '../db/tenantContext.js';
@@ -127,25 +126,31 @@ export async function adminRoutes(app: FastifyInstance) {
         brand: body.brand,
       });
 
-      const tempPassword = randomBytes(16).toString('base64url');
-      const passwordHash = await argon2.hash(tempPassword);
+      // Безопасный invite: НЕ возвращаем пароль в ответе (он оседал бы в логах
+      // прокси / истории браузера). Генерим одноразовый токен, храним только его
+      // sha256, отдаём ссылку на установку пароля. passwordHash = null → логин
+      // невозможен, пока тренер не задаст пароль по ссылке.
+      const inviteToken = randomBytes(32).toString('base64url');
+      const inviteTokenHash = createHash('sha256').update(inviteToken).digest('hex');
+      const inviteExpiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 дней
       const userId = `u-${body.slug}-hc-${randomBytes(4).toString('hex')}`;
 
       await tx.insert(users).values({
         id: userId,
         tenantId: body.slug,
         email: body.headCoach.email,
-        passwordHash,
+        passwordHash: null,
         fullName: body.headCoach.fullName,
         role: 'head_coach',
+        inviteTokenHash,
+        inviteExpiresAt,
       });
 
+      const setupUrl = `https://clubs.avandata.ru/set-password?token=${inviteToken}`;
       return {
         tenant: { slug: body.slug, name: body.name },
-        headCoach: {
-          email: body.headCoach.email,
-          tempPassword, // TODO: Phase 1 — отправить через Resend, не возвращать
-        },
+        headCoach: { email: body.headCoach.email },
+        invite: { setupUrl, expiresAt: inviteExpiresAt },
       };
     });
   });

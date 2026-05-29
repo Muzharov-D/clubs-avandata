@@ -1,6 +1,7 @@
 import type { FastifyInstance } from 'fastify';
 import { z } from 'zod';
 import argon2 from 'argon2';
+import { createHash } from 'node:crypto';
 import { eq, and, isNull } from 'drizzle-orm';
 import { env } from '../env.js';
 import { db } from '../db/client.js';
@@ -25,6 +26,11 @@ const loginSchema = z.object({
   tenantSlug: z.string().min(1).optional(),
 }).refine((d) => d.email ?? d.username, {
   message: 'email or username required',
+});
+
+const setPasswordSchema = z.object({
+  token: z.string().min(10),
+  password: z.string().min(8).max(200),
 });
 
 export async function authRoutes(app: FastifyInstance) {
@@ -128,6 +134,33 @@ export async function authRoutes(app: FastifyInstance) {
         playerId: user.playerId,
       },
     };
+  });
+
+  /**
+   * POST /api/v1/auth/set-password — установка пароля по invite-токену.
+   * Закрывает приглашение: находит юзера по sha256(token), проверяет срок,
+   * ставит пароль, гасит токен (одноразовый). Пароль НИКОГДА не передаётся
+   * сервером — только пользователь знает его.
+   */
+  app.post('/set-password', async (req) => {
+    const { token, password } = setPasswordSchema.parse(req.body);
+    const tokenHash = createHash('sha256').update(token).digest('hex');
+
+    const rows = await withBypassRLS((tx) =>
+      tx.select().from(users).where(eq(users.inviteTokenHash, tokenHash)).limit(1),
+    );
+    const user = rows[0];
+    if (!user || !user.inviteExpiresAt || user.inviteExpiresAt.getTime() < Date.now()) {
+      throw new BadRequestError('invite link invalid or expired', 'INVITE_INVALID');
+    }
+
+    const passwordHash = await argon2.hash(password);
+    await withBypassRLS((tx) =>
+      tx.update(users)
+        .set({ passwordHash, inviteTokenHash: null, inviteExpiresAt: null })
+        .where(eq(users.id, user.id)),
+    );
+    return { ok: true, email: user.email, tenantSlug: user.tenantId };
   });
 
   /**

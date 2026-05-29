@@ -16,6 +16,8 @@ export const users = pgTable(
     playerId: text('player_id'),
     emailVerifiedAt: timestamp('email_verified_at', { withTimezone: true }),
     invitedBy: text('invited_by'),
+    inviteTokenHash: text('invite_token_hash'),
+    inviteExpiresAt: timestamp('invite_expires_at', { withTimezone: true }),
     lastLogin: timestamp('last_login', { withTimezone: true }),
     createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
   },

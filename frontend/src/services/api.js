@@ -137,6 +137,27 @@ export async function login(loginOrEmail, password, tenantSlug) {
   return { user: data.user, tenant: data.tenant ?? null };
 }
 
+// Установка пароля по invite-ссылке (?token=...). Без авторизации.
+export async function setPassword(token, password) {
+  let res;
+  try {
+    res = await fetchWithTimeout(`${PREFIX}/auth/set-password`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token, password }),
+    });
+  } catch (e) {
+    throw new Error('Не удалось связаться с сервером. Проверьте интернет.');
+  }
+  const text = await res.text().catch(() => '');
+  if (!res.ok) {
+    let msg = `Ошибка (${res.status})`;
+    try { msg = JSON.parse(text).error || msg; } catch (_) { if (text) msg = text; }
+    throw new Error(msg);
+  }
+  return JSON.parse(text || '{}');
+}
+
 // /api/v1/auth/me возвращает только { user: AccessTokenPayload } — это id/role/
 // tenantId/teamId/playerId без email/fullName. На фронте нам нужен полный user
 // с fullName, который мы получили в login(). Поэтому fetchMe читает из

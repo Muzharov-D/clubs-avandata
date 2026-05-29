@@ -8,6 +8,8 @@ import { TournamentProvider } from './contexts/TournamentContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import MainLayout from './layouts/MainLayout';
 import Login from './pages/Login';
+// @ts-ignore — legacy .jsx
+import SetPassword from './pages/SetPassword';
 import ClubOverview from './pages/ClubOverview';
 import ClubDashboard from './pages/ClubDashboard';
 import MatchesDashboard from './pages/MatchesDashboard';
@@ -88,6 +90,7 @@ export function App() {
               <TournamentProvider>
                 <Routes>
                   <Route path="/login" element={<Login />} />
+                  <Route path="/set-password" element={<SetPassword />} />
                   <Route path="/" element={<RootRoute />} />
 
                   {/* Public родительский экран (без auth) */}
