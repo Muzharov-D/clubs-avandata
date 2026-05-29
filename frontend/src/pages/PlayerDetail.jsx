@@ -14,6 +14,7 @@ import PizzaChart from '../components/PizzaChart';
 import PlayerTrendCard from '../components/PlayerTrendCard';
 import HalfSplitChart from '../components/HalfSplitChart';
 import SpeedZones from '../components/SpeedZones';
+import PassProfile from '../components/PassProfile';
 import { ratingColor } from '../utils/colors';
 import { num, percentileRank, formatRaw } from '../utils/num';
 import { POSITION_OPTIONS, PIZZA_VS_LABEL, TEMPLATES, getStatValue, positionGroup } from '../utils/pizzaTemplates';
@@ -454,6 +455,24 @@ export default function PlayerDetail() {
               total={num(fitnessStats.totalDistance)}
               sprintDist={num(fitnessStats.sprintDistance)}
               sprints={num(fitnessStats.sprintsCount)}
+            />
+          </div>
+        );
+      })()}
+
+      {(() => {
+        const a3 = player.stats?.attack3 || {};
+        const a2 = player.stats?.attack2 || {};
+        const dirSum = num(a3.passForward) + num(a3.passSideways) + num(a3.passBack);
+        const lenSum = num(a3.passShort) + num(a3.passMiddle) + num(a3.passLong);
+        if ((dirSum || 0) + (lenSum || 0) <= 0) return null;
+        return (
+          <div className="card">
+            <div className="page-section-title">Профиль передач</div>
+            <PassProfile
+              forward={a3.passForward} sideways={a3.passSideways} back={a3.passBack}
+              short={a3.passShort} middle={a3.passMiddle} long={a3.passLong}
+              total={a2.pass}
             />
           </div>
         );

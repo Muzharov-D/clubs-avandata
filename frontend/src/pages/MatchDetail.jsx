@@ -18,6 +18,8 @@ import DataQualityBadge from '../components/DataQualityBadge';
 import HalfSplitChart from '../components/HalfSplitChart';
 import RatingBeeswarm from '../components/RatingBeeswarm';
 import SpeedZones from '../components/SpeedZones';
+import SquadHeatmap from '../components/SquadHeatmap';
+import TwoWayScatter from '../components/TwoWayScatter';
 import { shieldFor } from '../utils/legirus';
 import { shortNameFromPlayer } from '../utils/players';
 import { matchInsights } from '../utils/insights';
@@ -325,6 +327,14 @@ export default function MatchDetail() {
         </div>
       )}
 
+      {/* Роли игроков: атака vs оборона (StatsBomb-style scatter) */}
+      {(match.players || []).filter((p) => (p.minutes ?? 0) > 0 && ((p.ratings?.attack || 0) > 0 || (p.ratings?.defence || 0) > 0)).length >= 3 && (
+        <div className="card">
+          <div className="page-section-title">Роли — атака vs оборона</div>
+          <TwoWayScatter players={match.players} />
+        </div>
+      )}
+
       {/* Авто-инсайты по матчу (Phase 5) */}
       {insights.length > 0 && (
         <div className="card match-detail__insights">
@@ -368,6 +378,15 @@ export default function MatchDetail() {
             <span><i className="sz__sw sz__sw--2" />5.5–7 м/с</span>
             <span><i className="sz__sw sz__sw--3" />7+ м/с (спринт)</span>
           </div>
+        </div>
+      )}
+
+      {/* Хитмап состава — игрок × метрика (StatsBomb data-table) */}
+      {(match.players || []).filter((p) => (p.minutes ?? 0) > 0).length >= 3 && (
+        <div className="card">
+          <div className="page-section-title">Хитмап состава</div>
+          <SquadHeatmap players={match.players} />
+          <div className="md-insights__note" style={{ marginTop: 8 }}>Заливка ячейки — относительно лучшего в столбце. Рейтинг — по цветовой шкале оценки.</div>
         </div>
       )}
 

@@ -1,0 +1,6 @@
+.tws-wrap { width: 100%; overflow-x: auto; }
+.tws { width: 100%; max-width: 480px; height: auto; display: block; margin: 0 auto; }
+.tws__tick { fill: var(--text-faint, #64748b); font-size: 9px; }
+.tws__axis { fill: var(--text-muted, #94a3b8); font-size: 11px; font-weight: 600; }
+.tws__quad { fill: var(--text-faint, #64748b); font-size: 9px; text-transform: uppercase; letter-spacing: 0.03em; }
+.tws__lbl { fill: var(--text, #f1f5fb); font-size: 9px; font-weight: 600; }
