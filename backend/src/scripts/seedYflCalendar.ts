@@ -58,11 +58,14 @@ function computeStandings(ourLabel: string) {
     else if (f.scoreH < f.scoreA) { a.w++; a.p += 3; h.l++; }
     else { h.d++; a.d++; h.p++; a.p++; }
   }
-  const rows = teams.map((t) => ({
-    pos: 0, team: t, games: s[t].g, wins: s[t].w, draws: s[t].d, losses: s[t].l,
-    scored: s[t].sc, missed: s[t].ms, difference: s[t].sc - s[t].ms, points: s[t].p,
-    isOurClub: t === ourLabel, teamId: null, shield: null,
-  }));
+  const rows = teams.map((t) => {
+    const st = s[t]!;
+    return {
+      pos: 0, team: t, games: st.g, wins: st.w, draws: st.d, losses: st.l,
+      scored: st.sc, missed: st.ms, difference: st.sc - st.ms, points: st.p,
+      isOurClub: t === ourLabel, teamId: null, shield: null,
+    };
+  });
   rows.sort((x, y) => y.points - x.points || y.difference - x.difference || y.scored - x.scored);
   rows.forEach((r, i) => { r.pos = i + 1; });
   return rows;
