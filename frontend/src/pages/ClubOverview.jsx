@@ -329,23 +329,28 @@ export default function ClubOverview() {
             <div className="card">
               <div className="page-section-title">Атака</div>
               <AoBars items={[
-                ['Удары в створ',              num(us.shots?.onTarget),                       us.shots?.total],
-                ['xG',                         num(us.expectedGoals),                          5],
-                ['Прогрессивные передачи',     num(match?.teamAggregates?.passes?.progressive),  200],
-                ['Передачи в финальную треть', num(match?.teamAggregates?.passes?.toFinalThird), 120],
-                ['Угловые',                    num(us.corners?.total),                         16],
-                ['Кроссы',                     num(match?.teamAggregates?.passes?.crosses),      30],
+                // Только проверенные поля (passes.progressive/toFinalThird/crosses
+                // битые из-за 2-колоночного лейаута — не показываем).
+                ['Удары в створ',     num(us.shots?.onTarget),                                 us.shots?.total],
+                ['xG',                num(us.expectedGoals),                                    5],
+                ['Передачи',          num(match?.teamAggregates?.passes?.total),                450],
+                ['Угловые',           num(us.corners?.total),                                   16],
+                ['Позиционные атаки', num(match?.teamAggregates?.attacks?.positional?.count),   25],
+                ['Контратаки',        num(match?.teamAggregates?.attacks?.counterattacks?.count), 30],
               ]} colorFn={() => '#22d3ee'} />
             </div>
             <div className="card">
               <div className="page-section-title">Оборона</div>
               <AoBars items={[
-                ['Перехваты',     num(match?.teamAggregates?.positioning?.interceptions),         100],
-                ['Отборы',        num(match?.teamAggregates?.duels?.totalDuels),                  100],
-                ['Прессинг',      num(match?.teamAggregates?.pressing?.pressing),                 80],
-                ['Контрпрессинг', num(match?.teamAggregates?.pressing?.counterpressing),          40],
-                ['Сейвы',         num(match?.teamAggregates?.positioning?.shotsAgainst) || 0,     10],
-                ['Заблокированные удары', num(match?.teamAggregates?.positioning?.clearance),     20],
+                // Верные лейблы под реальные поля: «Отборы» был duels (единоборства),
+                // «Заблокированные» был clearance (выносы), «Сейвы» — нет командного
+                // поля, убран. Все поля ниже сверены с текстом PDF.
+                ['Перехваты',        num(match?.teamAggregates?.positioning?.interceptions),                  100],
+                ['Отборы и подборы', num(match?.teamAggregates?.recoveriesAndTackling?.recoveriesAndTackling), 120],
+                ['Единоборства',     num(match?.teamAggregates?.duels?.totalDuels),                           100],
+                ['Прессинг',         num(match?.teamAggregates?.pressing?.pressing),                          80],
+                ['Контрпрессинг',    num(match?.teamAggregates?.pressing?.counterpressing),                   40],
+                ['Выносы',           num(match?.teamAggregates?.positioning?.clearance),                      25],
               ]} colorFn={() => '#7cb342'} />
             </div>
           </div>
