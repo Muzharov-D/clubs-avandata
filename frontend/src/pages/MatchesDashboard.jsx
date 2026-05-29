@@ -51,12 +51,21 @@ export default function MatchesDashboard() {
   const lastMatch = lastMatchRes.data;
 
   const totalGames = matches.length;
+  // matches API возвращает {home, away, scoreHome, scoreAway} (имена, не teamId).
+  // Определяем «мы дома» по совпадению home name с teamId-постфиксом
+  // (zenit-fk-2011 → «зенит» / «фк зенит»), fallback — ourTeam.name.
+  const ourNameLower = (ourTeam?.name || selectedTeam?.name || '').toLowerCase().replace(/\s*u-?\d+\s*$/i, '').trim();
+  const isHomeOurs = (m) => {
+    const h = String(m.home || '').toLowerCase();
+    if (!ourNameLower) return false;
+    return h === ourNameLower || h.includes(ourNameLower);
+  };
   const goalsFor = matches.reduce((s, m) =>
-    s + (m.homeTeamId === ourTeam?.id ? m.score?.home || 0 : m.score?.away || 0), 0);
+    s + (isHomeOurs(m) ? Number(m.scoreHome || 0) : Number(m.scoreAway || 0)), 0);
   const goalsAgainst = matches.reduce((s, m) =>
-    s + (m.homeTeamId === ourTeam?.id ? m.score?.away || 0 : m.score?.home || 0), 0);
+    s + (isHomeOurs(m) ? Number(m.scoreAway || 0) : Number(m.scoreHome || 0)), 0);
   const cleanSheets = matches.filter((m) =>
-    (m.homeTeamId === ourTeam?.id ? m.score?.away : m.score?.home) === 0).length;
+    Number(isHomeOurs(m) ? m.scoreAway : m.scoreHome) === 0).length;
   const avgGoals = totalGames ? (goalsFor / totalGames).toFixed(2) : '—';
 
   // Сезон — показываем как «год окончания» (2025-2026 → 2026)
