@@ -74,18 +74,38 @@ export function shortName(first, last) {
   return initial ? `${ln} ${initial}.` : ln;
 }
 
+// Имя-заглушка, которое НЕЛЬЗЯ показывать как имя игрока: пусто, метка возраста
+// (U16 / U-15), голый номер (№8 / 8), «Игрок». Возникает, когда имя не распозналось
+// при загрузке (например, Excel пустой) и в full_name осело служебное значение.
+export function isPlaceholderName(s) {
+  const t = String(s || '').trim();
+  if (!t) return true;
+  if (/^u[-\s]?\d{1,3}$/i.test(t)) return true; // U16, U-15, U 14
+  if (/^№?\s*\d+$/.test(t)) return true;         // №8, 8
+  if (/^игрок\b/i.test(t)) return true;
+  return false;
+}
+
 // shortName из готового player-объекта или fullName-строки.
 // Удобно вызывать на готовом player без необходимости разносить first/last.
+// Никогда не возвращает мусор: если имени нет/заглушка — «№N».
 export function shortNameFromPlayer(player) {
   if (!player) return '';
+  let label = '';
   if (player.lastName || player.firstName) {
-    return shortName(player.firstName, player.lastName);
+    label = shortName(player.firstName, player.lastName);
+  } else {
+    const parts = String(player.fullName || '').trim().split(/\s+/).filter(Boolean);
+    if (parts.length === 1) label = parts[0];
+    else if (parts.length >= 2) label = shortName(parts[0], parts.slice(1).join(' '));
   }
-  // Fallback: парсим fullName «Артём Закусилов» → «Закусилов А.»
-  const parts = String(player.fullName || '').trim().split(/\s+/).filter(Boolean);
-  if (parts.length === 0) return '';
-  if (parts.length === 1) return parts[0];
-  const fn = parts[0];
-  const ln = parts.slice(1).join(' ');
-  return shortName(fn, ln);
+  if (isPlaceholderName(label)) {
+    return player.number != null ? `№${player.number}` : 'Без имени';
+  }
+  return label;
+}
+
+// Полная подпись для списков/дропдаунов — реальное имя или «№N» (без мусора).
+export function playerLabel(player) {
+  return shortNameFromPlayer(player) || (player?.number != null ? `№${player.number}` : 'Без имени');
 }

@@ -1,6 +1,7 @@
 import { useApi } from '../hooks/useApi';
 import { fetchPlayersSeason } from '../services/api';
 import { predictLineup } from '../utils/lineup';
+import { playerLabel } from '../utils/players';
 import './PredictedLineup.css';
 
 /**
@@ -23,7 +24,7 @@ export default function PredictedLineup({ teamId }) {
         {starters.map((p) => (
           <div className="pl-player" key={p.id} title={`${p.minutesPerMatch} мин/матч · рейтинг ${p.avgOverall}`}>
             <span className="pl-player__num">{p.number ?? '—'}</span>
-            <span className="pl-player__name">{p.fullName}</span>
+            <span className="pl-player__name">{playerLabel(p)}</span>
             <span className="pl-player__pos">{p.position || ''}</span>
           </div>
         ))}
@@ -32,7 +33,7 @@ export default function PredictedLineup({ teamId }) {
         <div className="predicted-lineup__bench">
           <span className="predicted-lineup__bench-label">Скамейка:</span>
           {bench.map((p) => (
-            <span className="pl-bench-chip" key={p.id}>{p.fullName}</span>
+            <span className="pl-bench-chip" key={p.id}>{playerLabel(p)}</span>
           ))}
         </div>
       )}
