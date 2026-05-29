@@ -25,13 +25,16 @@ function num(v) {
 
 function bestPlayer(match) {
   if (!match?.players?.length) return null;
-  return [...match.players].sort(
+  const eligible = match.players.filter((p) => Number(p.ratings?.overall ?? 0) > 0);
+  if (!eligible.length) return null;
+  return eligible.sort(
     (a, b) => (b.ratings?.overall ?? 0) - (a.ratings?.overall ?? 0)
   )[0];
 }
 
 function topN(players, n) {
-  return [...players]
+  return players
+    .filter((p) => Number(p.ratings?.overall ?? 0) > 0)
     .sort((a, b) => (b.ratings?.overall ?? 0) - (a.ratings?.overall ?? 0))
     .slice(0, n);
 }
@@ -118,7 +121,7 @@ export default function ClubOverview() {
                   <div className="team-info__rating">
                     Средний рейтинг команды:&nbsp;
                     <span className="team-info__rating-val">
-                      {ratings.overall ? Math.round(ratings.overall * 100) : '—'}
+                      {Number(ratings.overall) > 0 ? Number(ratings.overall).toFixed(1) : '—'}
                     </span>
                   </div>
                   <div className="team-info__coach">
@@ -137,7 +140,9 @@ export default function ClubOverview() {
                 <div className="match-summary__date">{formatDate(match.date)}</div>
                 <div className="match-summary__teams">
                   <div className="match-summary__team match-summary__team--home">
-                    <span className="match-summary__shield-initials" aria-hidden>З</span>
+                    <span className="match-summary__shield-initials" aria-hidden>
+                      {((match.homeTeam?.name || 'К').trim()[0] || 'К').toUpperCase()}
+                    </span>
                     <span>{(match.homeTeam?.name || 'Команда').replace(/\s*[Uu]-?\s*\d{1,3}\s*/g, ' ').replace(/\s+20\d{2}\s*/g, ' ').replace(/\s+/g, ' ').trim()}</span>
                   </div>
                   <div className="match-summary__score">

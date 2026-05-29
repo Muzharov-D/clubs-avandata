@@ -15,9 +15,12 @@ export function leadersByLine(players) {
   if (!players?.length) return [];
   return LINE_GROUPS.map((g) => {
     const ps = players.filter(g.match);
-    const leader = [...ps].sort((a, b) => (b.ratings?.overall ?? 0) - (a.ratings?.overall ?? 0))[0];
-    const ratings = ps.map((p) => p.ratings?.overall ?? 0).filter((v) => v);
+    // Лидер — только среди реально играшних с положительным overall.
+    // Иначе на линию защиты попадал случайный бенч с rating=null.
+    const eligible = ps.filter((p) => Number(p.ratings?.overall ?? 0) > 0);
+    const leader = eligible.sort((a, b) => (b.ratings?.overall ?? 0) - (a.ratings?.overall ?? 0))[0];
+    const ratings = eligible.map((p) => Number(p.ratings.overall));
     const avg = ratings.length ? ratings.reduce((a, b) => a + b, 0) / ratings.length : null;
-    return { group: g, leader, count: ps.length, avg };
+    return { group: g, leader, count: eligible.length, avg };
   }).filter((g) => g.leader);
 }
