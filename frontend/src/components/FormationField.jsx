@@ -6,35 +6,111 @@ import './FormationField.css';
 
 // Раскладка по группам (сверху — атака, снизу — оборона + ВР).
 // Координаты в нормализованной области 0..100 (x — поперёк, y — глубина поля).
+// Каждая группа матчится по нескольким сигналам:
+//  - russian: полное русское positionSlot (как в PDF formation)
+//  - short:   короткие коды (GK/CB/CDM/ST...) из players.position
+//  - re:      regex-шаблон для частичного совпадения (нап/защ/...)
 const POSITION_GROUPS = [
-  // Forwards
-  { match: ['Центральный нападающий'], y: 16 },
-  { match: ['Левый нападающий', 'Правый нападающий'], y: 22 },
-  // Attacking mids
-  { match: ['Центральный атакующий полузащитник'], y: 32 },
-  // Mids
-  { match: ['Левый полузащитник', 'Правый полузащитник', 'Центральный полузащитник', 'Опорный полузащитник'], y: 48 },
-  // Defenders
-  { match: ['Левый защитник', 'Правый защитник', 'Центральный защитник'], y: 72 },
-  // Goalkeeper
-  { match: ['Вратарь'], y: 90 },
+  // Forwards — y=16
+  {
+    y: 16,
+    russian: ['Центральный нападающий'],
+    short:   ['ST', 'CF'],
+    re: /\b(нап|fwd|forward)\b/i,
+  },
+  // Wide forwards — y=22
+  {
+    y: 22,
+    russian: ['Левый нападающий', 'Правый нападающий', 'Левый вингер', 'Правый вингер'],
+    short:   ['LW', 'RW', 'LF', 'RF'],
+    re: /\b(вингер|winger)\b/i,
+  },
+  // Attacking mids — y=32
+  {
+    y: 32,
+    russian: ['Центральный атакующий полузащитник'],
+    short:   ['CAM', 'AM'],
+    re: /\bатак.*полузащ/i,
+  },
+  // Mids — y=48
+  {
+    y: 48,
+    russian: ['Левый полузащитник', 'Правый полузащитник', 'Центральный полузащитник', 'Опорный полузащитник', 'Центральный опорный полузащитник'],
+    short:   ['CM', 'LM', 'RM', 'CDM', 'DM'],
+    re: /\b(полузащ|midfield|опорн)\b/i,
+  },
+  // Defenders — y=72
+  {
+    y: 72,
+    russian: ['Левый защитник', 'Правый защитник', 'Центральный защитник', 'Левый крайний защитник', 'Правый крайний защитник'],
+    short:   ['CB', 'LB', 'RB', 'LWB', 'RWB', 'DEF'],
+    re: /\b(защ|defender|back)\b/i,
+  },
+  // Goalkeeper — y=90
+  {
+    y: 90,
+    russian: ['Вратарь'],
+    short:   ['GK', 'ВР'],
+    re: /\b(врат|keeper|goalie)\b/i,
+  },
 ];
+
+// Определяем линию по любому доступному сигналу (positionSlot из PDF
+// formation, position/positionFull из роли игрока в players[]).
+function lineFor(p) {
+  const slot = String(p.positionSlot || '').toLowerCase().trim();
+  const posShort = String(p.position || '').toUpperCase().trim();
+  const posFull = String(p.positionFull || '').toLowerCase().trim();
+
+  for (let i = 0; i < POSITION_GROUPS.length; i++) {
+    const g = POSITION_GROUPS[i];
+    if (slot && g.russian.some((m) => slot === m.toLowerCase())) return i;
+    if (posShort && g.short.includes(posShort)) return i;
+    if (posFull && g.russian.some((m) => posFull === m.toLowerCase() || posFull.includes(m.toLowerCase()))) return i;
+    if (g.re && (g.re.test(slot) || g.re.test(posFull))) return i;
+  }
+  return -1;
+}
 
 function buildLayout(starters) {
   // Группируем стартеров по позиционным линиям.
   const lines = POSITION_GROUPS.map(() => []);
   const unassigned = [];
   starters.forEach((p) => {
-    const slot = p.positionSlot || '';
-    const lineIdx = POSITION_GROUPS.findIndex((g) =>
-      g.match.some((m) => slot.toLowerCase() === m.toLowerCase())
-    );
-    if (lineIdx >= 0) lines[lineIdx].push(p);
+    const idx = lineFor(p);
+    if (idx >= 0) lines[idx].push(p);
     else unassigned.push(p);
   });
-  // unassigned — допихнём в линию полузащиты
+  // unassigned — допихнём в линию полузащиты (но если их МНОГО — это сигнал
+  // что парсер не понял позиции вообще, тогда раскидаем равномерно: ВР → ЗАЩ
+  // → МИД → НАП по количеству unassigned, чтобы хотя бы не было кучи в центре)
   if (unassigned.length) {
-    lines[3] = lines[3].concat(unassigned);
+    // Если ВСЕ unassigned (типовой случай — positionSlot пустой) — раскидаем
+    // равномерно: 1 ВР внизу, ~4 защиты, ~3 полузащиты, ~3 нападения.
+    const total = starters.length;
+    if (unassigned.length === total && total >= 7) {
+      // Простая 1-4-3-3 (или 1-4-4-2 если 11): 1 GK, 4 DEF, 3-4 MID, 2-3 FWD
+      const buckets = [
+        { idx: 5, count: 1 },                                  // GK
+        { idx: 4, count: 4 },                                  // DEF
+        { idx: 3, count: total >= 11 ? 3 : Math.max(2, total - 6) }, // MID
+        { idx: 1, count: total >= 11 ? 3 : Math.max(0, total - 9) }, // WIDE FWD
+      ];
+      let cursor = 0;
+      for (const b of buckets) {
+        for (let i = 0; i < b.count && cursor < unassigned.length; i++, cursor++) {
+          lines[b.idx].push(unassigned[cursor]);
+        }
+      }
+      // остаток (если total != 11) → в полузащиту
+      while (cursor < unassigned.length) {
+        lines[3].push(unassigned[cursor]);
+        cursor++;
+      }
+    } else {
+      // Частично заполненный формейшен — остаток в полузащиту
+      lines[3] = lines[3].concat(unassigned);
+    }
   }
   // Раздаём X равномерно внутри линии. Для left/right/centre — отсортируем по подсказке.
   const placed = [];
@@ -91,6 +167,24 @@ export default function FormationField({
     });
   }
 
+  // Enrich starter с position/positionFull из роли в roster — нужно для
+  // lineFor() чтобы понять линию даже когда parser не вернул positionSlot.
+  function enrichWithRoster(s) {
+    const num = Number(s?.number);
+    const short = String(s?.shortName || s?.fullName || '').toLowerCase();
+    const matched = (players || []).find((p) => {
+      if (Number.isFinite(num) && Number(p?.number) === num) return true;
+      const ln = String(p?.lastName || '').toLowerCase();
+      return ln && short.includes(ln);
+    });
+    if (!matched) return s;
+    return {
+      ...s,
+      position: s.position || matched.position,
+      positionFull: s.positionFull || matched.positionFull,
+    };
+  }
+
   const rawStarters = Array.isArray(formation?.starters) ? formation.starters : [];
   const seenStarters = new Set();
   const starters = rawStarters
@@ -101,6 +195,7 @@ export default function FormationField({
       seenStarters.add(k);
       return true;
     })
+    .map(enrichWithRoster)
     .slice(0, 11);
   const rawSubs = Array.isArray(formation?.substitutes) ? formation.substitutes : [];
   const seenSubs = new Set();

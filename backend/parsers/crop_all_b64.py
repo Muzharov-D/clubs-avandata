@@ -83,11 +83,23 @@ def _crop_b64(page, bbox, dpi=THUMB_DPI):
 
 
 def _team_bbox(page):
-    """Same logic as crop_maps.heatmap_bbox — largest image на странице."""
-    if page.images:
-        img = max(page.images, key=lambda i: (i["x1"] - i["x0"]) * (i["bottom"] - i["top"]))
-        return _safe_bbox(img["x0"], img["top"], img["x1"], img["bottom"], page)
-    return (440, 130, page.width - 30, 460)
+    """Largest image на странице — но только если она достаточно большая,
+    чтобы быть реальной картой/диаграммой, а не логотипом или axis-tick'ом.
+    Возвращает None если ничего подходящего нет (вместо guess fallback'а,
+    который кропал случайный регион → пустые карточки на frontend).
+    """
+    if not page.images:
+        return None
+    # Кандидаты — только медиум+ изображения (не иконки/логотипы/axis-ticks).
+    # 180×120 — эмпирически достаточно чтобы захватить реальный chart canvas.
+    candidates = [
+        i for i in page.images
+        if (i["x1"] - i["x0"]) >= 180 and (i["bottom"] - i["top"]) >= 120
+    ]
+    if not candidates:
+        return None
+    img = max(candidates, key=lambda i: (i["x1"] - i["x0"]) * (i["bottom"] - i["top"]))
+    return _safe_bbox(img["x0"], img["top"], img["x1"], img["bottom"], page)
 
 
 def crop_team_maps(pdf):
@@ -98,6 +110,11 @@ def crop_team_maps(pdf):
         try:
             page = pdf.pages[pn - 1]
             bbox = _team_bbox(page)
+            if bbox is None:
+                # Страница без реального chart canvas — пропускаем, чтобы на
+                # frontend'е не появилась карточка с осями без данных.
+                print(f"  skip team map p{pn} ({slug}): no usable image", file=sys.stderr)
+                continue
             out[slug] = _crop_b64(page, bbox)
         except Exception as e:
             print(f"  WARN: team map p{pn} ({slug}) failed: {e}", file=sys.stderr)
