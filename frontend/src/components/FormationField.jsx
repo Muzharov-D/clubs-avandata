@@ -203,7 +203,7 @@ export default function FormationField({
                   className="formation__rating"
                   style={{ background: ratingColor(s.rating), color: ratingTextColor(s.rating) }}
                 >
-                  {s.rating?.toFixed(1) ?? '—'}
+                  {Number(s.rating) > 0 ? s.rating.toFixed(1) : '—'}
                 </span>
                 {s.goals > 0 && (
                   <span className="formation__goals">⚽{s.goals > 1 ? `×${s.goals}` : ''}</span>
@@ -234,7 +234,7 @@ export default function FormationField({
                       className="formation__rating formation__rating--sm"
                       style={{ background: ratingColor(s.rating), color: ratingTextColor(s.rating) }}
                     >
-                      {s.rating?.toFixed(1) ?? '—'}
+                      {Number(s.rating) > 0 ? s.rating.toFixed(1) : '—'}
                     </span>
                   </div>
                 </div>
