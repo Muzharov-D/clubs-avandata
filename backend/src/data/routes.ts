@@ -207,6 +207,24 @@ export async function dataRoutes(app: FastifyInstance) {
     });
   });
 
+  app.delete<{ Params: { matchId: string } }>('/match/:matchId', async (req) => {
+    const slug = tenantId(req);
+    const role = req.user?.role;
+    if (role !== 'head_coach' && role !== 'team_coach') {
+      throw new UnauthorizedError('only coaches can delete matches');
+    }
+    return withTenant(slug, async (_tx, conn) => {
+      // FK: сначала match_players, потом сам матч. Всё строго в рамках tenant.
+      await conn.query(`DELETE FROM match_players WHERE tenant_id = $1 AND match_id = $2`, [slug, req.params.matchId]);
+      const { rowCount } = await conn.query(
+        `DELETE FROM matches WHERE tenant_id = $1 AND id = $2`,
+        [slug, req.params.matchId],
+      );
+      if (!rowCount) throw new NotFoundError('match not found');
+      return { ok: true, deleted: req.params.matchId };
+    });
+  });
+
   app.get<{ Params: { ageGroup: string } }>('/standings/:ageGroup', async (req) => {
     const slug = tenantId(req);
     return withTenant(slug, async (_tx, conn) => {

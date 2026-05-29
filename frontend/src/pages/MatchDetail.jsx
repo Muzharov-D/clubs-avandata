@@ -1,8 +1,10 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useApi } from '../hooks/useApi';
-import { fetchMatch, fetchPlayers, fetchMatches } from '../services/api';
+import { fetchMatch, fetchPlayers, fetchMatches, deleteMatch } from '../services/api';
 import { useTeam } from '../contexts/TeamContext';
+import { useAuth } from '../contexts/AuthContext';
+import { toast } from '../components/Toast';
 import { useDocumentTitle } from '../hooks/useDocumentTitle';
 import FormationField from '../components/FormationField';
 import MatchTimeline from '../components/MatchTimeline';
@@ -81,6 +83,18 @@ export default function MatchDetail() {
   const navigate = useNavigate();
 
   const { selectedTeamId } = useTeam();
+  const { user } = useAuth();
+  const canDelete = user?.role === 'head_coach' || user?.role === 'team_coach';
+  async function handleDelete() {
+    if (!window.confirm('Удалить этот отчёт? Действие необратимо.')) return;
+    try {
+      await deleteMatch(matchId);
+      toast.success('Отчёт удалён');
+      navigate('/matches', { replace: true });
+    } catch (e) {
+      toast.error(e?.message || 'Не удалось удалить отчёт');
+    }
+  }
   const matchRes = useApi(() => fetchMatch(matchId), [matchId]);
   const playersRes = useApi(() => fetchPlayers(selectedTeamId), [selectedTeamId]);
 
@@ -154,8 +168,18 @@ export default function MatchDetail() {
 
   return (
     <div className="page match-detail">
-      <div className="match-detail__topbar">
+      <div className="match-detail__topbar" style={{ display: 'flex', alignItems: 'center' }}>
         <button className="match-detail__back" onClick={() => navigate('/matches')}>← К матчам</button>
+        {canDelete && (
+          <button
+            onClick={handleDelete}
+            title="Удалить загруженный отчёт"
+            style={{ marginLeft: 'auto', background: 'transparent', border: '1px solid var(--danger)',
+                     color: 'var(--danger)', borderRadius: 8, padding: '6px 12px', cursor: 'pointer', fontSize: 13 }}
+          >
+            🗑 Удалить отчёт
+          </button>
+        )}
       </div>
 
       {/* HERO: счёт и команды */}
