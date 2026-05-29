@@ -2,7 +2,9 @@ services:
   - type: web
     name: clubs-avandata-api
     env: docker
-    plan: free
+    # standard = 2ГБ RAM. free/starter = 512МБ — не хватало на рендер PDF-карт
+    # (crop_all_b64 рендерит страницы в PNG), инстанс падал по OOM при upload.
+    plan: standard
     region: frankfurt
     branch: main
     dockerContext: ./backend
