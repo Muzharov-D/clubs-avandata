@@ -21,6 +21,10 @@ function maxBy(items, getter) {
       bestVal = num; best = { item: it, value: num };
     }
   }
+  // Если лидер с нулём — это не лидер, а артефакт от бенча. Возвращаем null,
+  // карточка покажет пустое состояние, а не «лидер с 0 голов» (часто это
+  // первый игрок в сортировке).
+  if (!best || best.value <= 0) return null;
   return best;
 }
 
@@ -39,7 +43,10 @@ export default function PlayersLeaders() {
   if (matchesRes.loading || matchRes.loading) return <div className="empty-state">Загрузка…</div>;
   if (!match) return <div className="empty-state">Нет данных</div>;
 
-  const overall = [...all].sort((a, b) => (b.ratings?.overall ?? 0) - (a.ratings?.overall ?? 0))[0];
+  // Берём лидера ТОЛЬКО среди реально играшних с положительным overall —
+  // иначе на верх плитки попадал бенч с overall=null/0
+  const eligibleForOverall = all.filter((p) => Number(p.ratings?.overall ?? 0) > 0);
+  const overall = eligibleForOverall.sort((a, b) => (b.ratings?.overall ?? 0) - (a.ratings?.overall ?? 0))[0];
 
   const leaders = [
     ['Удары в створ',         maxBy(all, (p) => p.stats?.attack4?.shot)],
