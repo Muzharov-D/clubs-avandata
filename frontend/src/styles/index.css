@@ -13,6 +13,18 @@
   --text-muted:     #94a3b8;
   --text-faint:     #64748b;
   --danger:         #ef4444;
+  --success:        #22c55e;
+  --warning:        #f59e0b;
+
+  /* Шкала рейтинга (семантическая, не бренд): отлично → плохо + «не оценён». */
+  --rating-excellent: #2e7d32;
+  --rating-good:      #7cb342;
+  --rating-ok:        #fbc02d;
+  --rating-weak:      #fb8c00;
+  --rating-poor:      #d32f2f;
+  --rating-none:      #888;
+  --rating-text-dark:  #222;
+  --rating-text-light: #fff;
 
   --radius:         12px;
   --radius-sm:      8px;
