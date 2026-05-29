@@ -185,28 +185,38 @@ export default function FormationField({
     };
   }
 
-  const rawStarters = Array.isArray(formation?.starters) ? formation.starters : [];
-  const seenStarters = new Set();
-  const starters = rawStarters
-    .filter(isOurPlayer)
-    .filter((s) => {
-      const k = `${s?.number || ''}-${s?.shortName || s?.fullName || ''}`;
-      if (seenStarters.has(k)) return false;
-      seenStarters.add(k);
-      return true;
-    })
-    .map(enrichWithRoster)
-    .slice(0, 11);
-  const rawSubs = Array.isArray(formation?.substitutes) ? formation.substitutes : [];
-  const seenSubs = new Set();
-  const subs = rawSubs
-    .filter(isOurPlayer)
-    .filter((s) => {
-      const k = `${s?.number || ''}-${s?.shortName || s?.fullName || ''}`;
-      if (seenSubs.has(k)) return false;
-      seenSubs.add(k);
+  // Дедуп по СТАБИЛЬНОМУ ключу: номер на поле уникален, поэтому «В. Воронков №17»
+  // и «Воронков В. №17» (разное форматирование имени парсером) — это ОДИН игрок.
+  // Старый ключ `номер-имя` их НЕ схлопывал → два слота в одной точке (наложение
+  // фото на скриншоте). Без номера — ключ по фамилии (самая длинная часть имени).
+  function stableKey(s) {
+    const num = Number(s?.number);
+    if (Number.isFinite(num)) return `n:${num}`;
+    const parts = String(s?.shortName || s?.fullName || '')
+      .toLowerCase().replace(/\./g, '').split(/\s+/).filter(Boolean)
+      .sort((a, b) => b.length - a.length);
+    return `s:${parts[0] || ''}`;
+  }
+  function dedup(list) {
+    const seen = new Set();
+    return (Array.isArray(list) ? list : []).filter((s) => {
+      const k = stableKey(s);
+      if (seen.has(k)) return false;
+      seen.add(k);
       return true;
     });
+  }
+
+  const rawStarters = Array.isArray(formation?.starters) ? formation.starters : [];
+  const allStarters = dedup(rawStarters.filter(isOurPlayer)).map(enrichWithRoster);
+  if (allStarters.length > 11) {
+    // Парсер вернул >11 уникальных стартующих — данные противоречивы (обе команды
+    // или дубль по тайму без номера). Не молчим: режем до 11, но это сигнал данных.
+    console.warn(`[FormationField] >11 стартующих (${allStarters.length}) — обрезаю до 11`, ourTeamName);
+  }
+  const starters = allStarters.slice(0, 11);
+  const rawSubs = Array.isArray(formation?.substitutes) ? formation.substitutes : [];
+  const subs = dedup(rawSubs.filter(isOurPlayer));
 
   if (starters.length === 0 && imageSrc) {
     return (
