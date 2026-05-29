@@ -51,6 +51,48 @@ def _find_section_text(pages, markers):
     return None
 
 
+def _passes_directional(pdf_path):
+    """Координатный разбор НАПРАВЛЕННЫХ передач (страница «Attack 4/5»).
+
+    Лейаут 2-колоночный с переносом подписей, линейный текст путает: «прогрессивные»
+    он брал как «передачи вперёд» (147 вместо 62), «в фин. треть» — мимо (100 вместо 52).
+    Берём слова с координатами: якорь на слово-метку в правой колонке (x≥150) и
+    ближайшее по Y число в колонке значений (x∈[200,330] — не ось графика на x≈481)."""
+    try:
+        import pdfplumber
+        with pdfplumber.open(pdf_path) as pdf:
+            page = next((p for p in pdf.pages if "Attack 4/5" in (p.extract_text() or "")), None)
+            if page is None:
+                return {}
+            words = [(w["x0"], w["top"], w["text"]) for w in page.extract_words()]
+    except Exception:
+        return {}
+
+    def near(labels, y_tol=8):
+        anchors = [y for x, y, t in words if t in labels and x >= 150]
+        best = None
+        for ly in anchors:
+            for x, y, t in words:
+                if not (200 <= x <= 330) or "%" in t:
+                    continue
+                try:
+                    n = int(t)
+                except ValueError:
+                    continue
+                if abs(y - ly) <= y_tol and (best is None or x < best[0]):
+                    best = (x, n)
+        return best[1] if best else None
+
+    out = {}
+    prog = near(["ПРОГРЕССИВНЫЕ"])
+    fin = near(["ФИН.", "ТРЕТЬ"])
+    if prog is not None:
+        out["progressive"] = prog
+    if fin is not None:
+        out["toFinalThird"] = fin
+    return out
+
+
 def parse(pdf_path, match_id):
     prefix = os.environ.get("MAPS_PREFIX", "/assets/maps").rstrip("/")
     pages = extract_page_texts(pdf_path)            # [(1, text), (2, text), ...]
@@ -66,6 +108,9 @@ def parse(pdf_path, match_id):
             section = {}
         section["mapImage"] = f"{prefix}/{match_id}-team-{slug}-map.png"
         out[key] = section
+    # Координатный фикс направленных передач (линейный текст их путает).
+    if isinstance(out.get("passes"), dict):
+        out["passes"].update(_passes_directional(pdf_path))
     return out
 
 

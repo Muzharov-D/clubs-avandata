@@ -329,14 +329,13 @@ export default function ClubOverview() {
             <div className="card">
               <div className="page-section-title">Атака</div>
               <AoBars items={[
-                // Только проверенные поля (passes.progressive/toFinalThird/crosses
-                // битые из-за 2-колоночного лейаута — не показываем).
-                ['Удары в створ',     num(us.shots?.onTarget),                                 us.shots?.total],
-                ['xG',                num(us.expectedGoals),                                    5],
-                ['Передачи',          num(match?.teamAggregates?.passes?.total),                450],
-                ['Угловые',           num(us.corners?.total),                                   16],
-                ['Позиционные атаки', num(match?.teamAggregates?.attacks?.positional?.count),   25],
-                ['Контратаки',        num(match?.teamAggregates?.attacks?.counterattacks?.count), 30],
+                // progressive/toFinalThird теперь парсятся по координатам (верно: 62/52).
+                ['Удары в створ',              num(us.shots?.onTarget),                                   us.shots?.total],
+                ['xG',                         num(us.expectedGoals),                                      5],
+                ['Прогрессивные передачи',     num(match?.teamAggregates?.passes?.progressive),            90],
+                ['Передачи в финальную треть', num(match?.teamAggregates?.passes?.toFinalThird),           80],
+                ['Угловые',                    num(us.corners?.total),                                     16],
+                ['Контратаки',                 num(match?.teamAggregates?.attacks?.counterattacks?.count), 30],
               ]} colorFn={() => '#22d3ee'} />
             </div>
             <div className="card">
