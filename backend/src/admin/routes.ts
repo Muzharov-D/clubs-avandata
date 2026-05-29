@@ -1,12 +1,14 @@
 import type { FastifyInstance } from 'fastify';
 import { z } from 'zod';
 import { randomBytes, createHash } from 'node:crypto';
-import { eq } from 'drizzle-orm';
+import { eq, and } from 'drizzle-orm';
 import { db } from '../db/client.js';
 import { withBypassRLS } from '../db/tenantContext.js';
 import { tenants } from '../db/schema/tenants.js';
 import { users } from '../db/schema/users.js';
+import { teams } from '../db/schema/teams.js';
 import { authenticate, authorize } from '../auth/middleware.js';
+import { signAccessToken } from '../auth/jwt.js';
 import { BadRequestError } from '../shared/errors.js';
 import { syncTenantStandings } from '../services/standingsService.js';
 import { syncTenantCalendarTournament } from '../services/calendarService.js';
@@ -153,6 +155,53 @@ export async function adminRoutes(app: FastifyInstance) {
         invite: { setupUrl, expiresAt: inviteExpiresAt },
       };
     });
+  });
+
+  /**
+   * POST /api/v1/admin/tenants/:slug/enter — «войти в клуб» (view-as-tenant).
+   *
+   * platform_admin получает короткоживущий tenant-scoped токен на этот клуб
+   * (role=head_coach, без пароля клубного юзера). sub остаётся id админа, плюс
+   * claim imp=adminId — для аудита и чтобы /auth/me отдавал именно контекст
+   * просмотра, а не реального админа. Refresh-cookie админа НЕ трогаем — выход
+   * из просмотра делается через /auth/refresh (вернёт обычный админский токен).
+   */
+  app.post<{ Params: { slug: string } }>('/tenants/:slug/enter', async (req) => {
+    const slug = req.params.slug;
+    const rows = await withBypassRLS((tx) =>
+      tx.select().from(tenants).where(eq(tenants.slug, slug)).limit(1),
+    );
+    const tenant = rows[0];
+    if (!tenant) throw new BadRequestError('tenant not found', 'TENANT_NOT_FOUND');
+
+    // Дефолтный контекст кабинета — первая активная команда клуба.
+    const teamRows = await withBypassRLS((tx) =>
+      tx.select({ id: teams.id })
+        .from(teams)
+        .where(and(eq(teams.tenantId, slug), eq(teams.active, true)))
+        .orderBy(teams.ageGroup)
+        .limit(1),
+    );
+    const teamId = teamRows[0]?.id ?? null;
+
+    const adminId = req.user!.sub;
+    const accessToken = signAccessToken({
+      sub: adminId,
+      tenantId: slug,
+      role: 'head_coach',
+      teamId,
+      playerId: null,
+      imp: adminId,
+    });
+    return {
+      accessToken,
+      tenant: { slug: tenant.slug, name: tenant.name, displayName: tenant.displayName, brand: tenant.brand },
+      user: {
+        id: adminId, tenantId: slug, role: 'head_coach',
+        teamId, playerId: null,
+        fullName: `Просмотр: ${tenant.displayName}`, impersonating: true,
+      },
+    };
   });
 
   /**

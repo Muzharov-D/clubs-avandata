@@ -3,6 +3,8 @@ import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { api } from '../../api/client';
 import { useDocumentTitle } from '../../hooks/useDocumentTitle';
+// @ts-ignore — legacy .js
+import { enterTenant } from '../../services/api';
 
 const STATUS_LABELS: Record<string, string> = {
   active: 'активен',
@@ -173,6 +175,16 @@ export function AdminTenantsList() {
 }
 
 function TenantCard({ tenant }: { tenant: TenantRow }) {
+  const [entering, setEntering] = useState(false);
+  const enter = async () => {
+    setEntering(true);
+    try {
+      await enterTenant(tenant.slug);
+      window.location.href = '/club';
+    } catch {
+      setEntering(false);
+    }
+  };
   const brand = tenant.brand?.primary ?? '#2563eb';
   const initials = tenant.displayName
     .split(' ')
@@ -216,9 +228,15 @@ function TenantCard({ tenant }: { tenant: TenantRow }) {
         <Link to={`/admin/tenants/${tenant.slug}`} className="tenant-card__action" aria-disabled>
           Настройки
         </Link>
-        <Link to="/club" className="tenant-card__action">
-          В кабинет →
-        </Link>
+        <button
+          type="button"
+          className="tenant-card__action"
+          onClick={enter}
+          disabled={entering || tenant.status !== 'active'}
+          title={tenant.status !== 'active' ? 'Клуб не активен' : 'Войти в кабинет клуба как админ'}
+        >
+          {entering ? 'Вход…' : 'Войти в клуб →'}
+        </button>
       </div>
     </div>
   );

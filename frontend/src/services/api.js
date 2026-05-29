@@ -198,6 +198,26 @@ export const changePassword = (currentPassword, newPassword) =>
     method: 'POST', body: { currentPassword, newPassword },
   });
 
+// «Войти в клуб» — platform_admin получает tenant-scoped токен на просмотр клуба.
+export async function enterTenant(slug) {
+  const data = await fetchJson(`/admin/tenants/${encodeURIComponent(slug)}/enter`, { method: 'POST', body: {} });
+  setToken(data.accessToken);
+  try { localStorage.setItem(USER_KEY, JSON.stringify(data.user)); } catch (_) {}
+  try { localStorage.setItem('avandata.auth.tenant', JSON.stringify(data.tenant)); } catch (_) {}
+  return data;
+}
+
+// Выход из просмотра клуба обратно в админку: refresh по admin-cookie вернёт
+// обычный платформенный токен (impersonation-токен короткоживущий, cookie не трогали).
+export async function exitImpersonation() {
+  const res = await fetchWithTimeout(`${PREFIX}/auth/refresh`, { method: 'POST', credentials: 'include' });
+  if (!res.ok) throw new Error('exit failed');
+  const data = await res.json();
+  setToken(data.accessToken);
+  try { localStorage.removeItem('avandata.auth.tenant'); } catch (_) {}
+  return data;
+}
+
 // Data
 export const fetchTeams = () => fetchJson('/data/teams');
 export const fetchPlayers = (teamId) =>

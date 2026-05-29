@@ -8,6 +8,8 @@ export interface AccessTokenPayload {
   role: UserRole;
   teamId: string | null;
   playerId: string | null;
+  /** id платформенного админа, если это сессия «просмотр клуба» (impersonation). */
+  imp?: string | null;
 }
 
 interface JwtPayload extends AccessTokenPayload {
@@ -75,6 +77,7 @@ export function verifyAccessToken(token: string): AccessTokenPayload {
     role: body.role,
     teamId: body.teamId,
     playerId: body.playerId,
+    imp: body.imp ?? null,
   };
 }
 
