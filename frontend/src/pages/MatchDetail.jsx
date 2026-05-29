@@ -122,6 +122,29 @@ export default function MatchDetail() {
 
   const insights = useMemo(() => matchInsights(match), [match]);
 
+  // Хроника матча показывается ТОЛЬКО если голы в событиях сходятся с финальным
+  // счётом — иначе парсер поймал не всё (для победы 4:0 один гол вводит в
+  // заблуждение). И привязываем гол к команде по фамилии нашего состава.
+  const timeline = useMemo(() => {
+    const evs = match?.events || [];
+    if (!evs.length) return [];
+    const goalTypes = new Set(['goal', 'penalty', 'own_goal']);
+    const goalsInEvents = evs.filter((e) => goalTypes.has(e.type)).length;
+    const totalGoals = (match.score?.home || 0) + (match.score?.away || 0);
+    if (!totalGoals || goalsInEvents !== totalGoals) return []; // неполная/недостоверная — скрываем
+    const ourLast = (match.players || [])
+      .map((p) => (p.lastName || String(p.fullName || '').split(' ').slice(-1)[0] || '').toLowerCase())
+      .filter(Boolean);
+    return evs.map((e) => {
+      if (!goalTypes.has(e.type)) return e;
+      const who = String(e.player || '').toLowerCase();
+      const scoredByUs = ourLast.some((ln) => ln.length > 2 && who.includes(ln));
+      // автогол идёт в пользу соперника, поэтому сторона инвертируется
+      const side = e.type === 'own_goal' ? (scoredByUs ? 'opp' : 'our') : (scoredByUs ? 'our' : 'opp');
+      return { ...e, side };
+    });
+  }, [match]);
+
   // CSV-экспорт метрик матча по игрокам (для тренерского совета).
   function handleExport() {
     if (!match) return;
@@ -277,8 +300,8 @@ export default function MatchDetail() {
         </div>
       )}
 
-      {/* Хроника матча (best-effort из PDF) — рендерится только если events найдены */}
-      <MatchTimeline events={match.events || []} />
+      {/* Хроника матча — только если голы сходятся со счётом (см. timeline) */}
+      <MatchTimeline events={timeline} />
 
       <div className="match-detail__grid">
         <div className="match-detail__left">
