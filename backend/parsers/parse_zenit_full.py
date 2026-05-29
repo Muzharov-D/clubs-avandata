@@ -57,6 +57,36 @@ MINUTES_RE = re.compile(r"^\s*(\d{1,3})\s*['’ʹ`]?\s*$")
 TITLE_NAME_RE = re.compile(r'Player Stats\s*[–\-]\s*(.+?)\s*$')
 INITIAL_RE = re.compile(r'^[А-ЯЁA-Z]\.?$')
 
+# Группа сплит-метрики на per-player странице: «Name  Match  1time  2time».
+# Имя — латиница (англ. метрики SportVisor), значения — целое/дробь/процент.
+SPLIT_GROUP_RE = re.compile(
+    r"([A-Za-z][A-Za-z&.'/\- ]*?)\s+(\d+(?:\.\d+)?%?)\s+(\d+(?:\.\d+)?%?)\s+(\d+(?:\.\d+)?%?)"
+)
+
+
+def _split_num(s):
+    s = s.replace('%', '')
+    try:
+        return float(s) if '.' in s else int(s)
+    except ValueError:
+        return None
+
+
+def parse_player_splits(text):
+    """Per-player страница → {EnglishMetric: {match, first, second}}.
+    Каждая строка тела содержит до 3 групп «Метрика M 1тайм 2тайм»."""
+    splits = {}
+    for line in (text or '').splitlines():
+        for name, m, t1, t2 in SPLIT_GROUP_RE.findall(line):
+            key = re.sub(r'\s+', ' ', name).strip()
+            if not key or key in splits:
+                continue
+            vm, v1, v2 = _split_num(m), _split_num(t1), _split_num(t2)
+            if vm is None:
+                continue
+            splits[key] = {'match': vm, 'first': v1, 'second': v2}
+    return splits
+
 
 def parse_compound(s):
     """Парсит ячейку в структурированный dict или число."""
@@ -198,8 +228,9 @@ def match_full_name(short, fulls):
 
 
 def parse(pdf_path):
-    out = {'overall_meta': {}, 'radar': {}, 'fitness': {}, 'attack': {}, 'defence': {}}
-    full_names = set()  # полные имена со страниц per-player (из заголовка)
+    out = {'overall_meta': {}, 'radar': {}, 'fitness': {}, 'attack': {}, 'defence': {}, 'splits': {}}
+    full_names = set()       # полные имена со страниц per-player (из заголовка)
+    splits_by_name = {}      # fullName -> {metric: {match, first, second}}
 
     with pdfplumber.open(pdf_path) as pdf:
         last_rule, last_ncols = None, 0
@@ -210,7 +241,11 @@ def parse(pdf_path):
             # per-player страница: полное имя из заголовка «… Player Stats – Имя Фамилия»
             mt = TITLE_NAME_RE.search(first_line)
             if mt:
-                full_names.add(re.sub(r'\s+', ' ', mt.group(1).strip()))
+                full = re.sub(r'\s+', ' ', mt.group(1).strip())
+                full_names.add(full)
+                sp = parse_player_splits(text)
+                if sp:
+                    splits_by_name[full] = sp
                 continue
 
             rule = find_rule(text)
@@ -243,13 +278,15 @@ def parse(pdf_path):
     # Обогащаем реальными ФИО: сопоставляем короткое имя из таблицы («Долгодуш М.»)
     # с полным из заголовка per-player («Макар Долгодуш») по фамилии+инициалу.
     fulls = list(full_names)
-    for meta in out['overall_meta'].values():
+    for num, meta in out['overall_meta'].items():
         matched = match_full_name(meta.get('name', ''), fulls)
         if matched:
             full, first, last = matched
             meta['name'] = full
             meta['firstName'] = first
             meta['lastName'] = last
+            if full in splits_by_name:
+                out['splits'][num] = splits_by_name[full]
 
     return out
 
@@ -263,7 +300,7 @@ def main():
     with open(args.output_json, 'w', encoding='utf-8') as f:
         json.dump(data, f, ensure_ascii=False, indent=2)
     named = sum(1 for m in data['overall_meta'].values() if m.get('firstName'))
-    print(f"OK players={len(data['overall_meta'])} named={named} "
+    print(f"OK players={len(data['overall_meta'])} named={named} splits={len(data['splits'])} "
           f"radar={len(data['radar'])} fitness={len(data['fitness'])} "
           f"attack={len(data['attack'])} defence={len(data['defence'])}", file=sys.stderr)
 
