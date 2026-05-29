@@ -40,7 +40,7 @@ export default function PassProfile({ forward, sideways, back, short, middle, lo
   return (
     <div className="pp">
       <div className="pp__head">
-        <div><span className="pp__big">{t}</span><span className="pp__unit">передач</span></div>
+        <div><span className="pp__big">{t}</span><span className="pp__unit">точных передач</span></div>
         <div><span className="pp__big">{fwdPct}%</span><span className="pp__unit">вперёд</span></div>
       </div>
       {(f + s + b > 0) && (
@@ -63,11 +63,22 @@ export default function PassProfile({ forward, sideways, back, short, middle, lo
           ]} />
         </div>
       )}
-      <div className="pp__legend">
-        <span><i className="pp__sw pp__sw--fwd" />вперёд</span>
-        <span><i className="pp__sw pp__sw--side" />поперёк</span>
-        <span><i className="pp__sw pp__sw--back" />назад</span>
-      </div>
+      {(f + s + b > 0) && (
+        <div className="pp__legend">
+          <span className="pp__leg-cap">Направление:</span>
+          <span><i className="pp__sw pp__sw--fwd" />вперёд</span>
+          <span><i className="pp__sw pp__sw--side" />поперёк</span>
+          <span><i className="pp__sw pp__sw--back" />назад</span>
+        </div>
+      )}
+      {(sh + mi + lo > 0) && (
+        <div className="pp__legend">
+          <span className="pp__leg-cap">Длина:</span>
+          <span><i className="pp__sw pp__sw--short" />короткие</span>
+          <span><i className="pp__sw pp__sw--mid" />средние</span>
+          <span><i className="pp__sw pp__sw--long" />длинные</span>
+        </div>
+      )}
     </div>
   );
 }
