@@ -13,6 +13,7 @@ import SoccerFieldImageMap from '../components/SoccerFieldImageMap';
 import PizzaChart from '../components/PizzaChart';
 import PlayerTrendCard from '../components/PlayerTrendCard';
 import HalfSplitChart from '../components/HalfSplitChart';
+import SpeedZones from '../components/SpeedZones';
 import { ratingColor } from '../utils/colors';
 import { num, percentileRank, formatRaw } from '../utils/num';
 import { POSITION_OPTIONS, PIZZA_VS_LABEL, TEMPLATES, getStatValue, positionGroup } from '../utils/pizzaTemplates';
@@ -442,6 +443,22 @@ export default function PlayerDetail() {
       {/* ПОЛНАЯ ТАБЛИЦА МЕТРИК — свёрнута по умолчанию.
           Раскрывается по клику. Внутри — две большие сплит-таблицы.
           Если обе пустые (splits {} в БД) — не показываем accordion вообще. */}
+      {(() => {
+        const z1 = num(fitnessStats.speed_4_5_5), z2 = num(fitnessStats.speed_5_5_7), z3 = num(fitnessStats.speed_7plus);
+        if ((z1 || 0) + (z2 || 0) + (z3 || 0) <= 0 && (num(fitnessStats.totalDistance) || 0) <= 0) return null;
+        return (
+          <div className="card">
+            <div className="page-section-title">Зоны интенсивности</div>
+            <SpeedZones
+              z1={z1} z2={z2} z3={z3}
+              total={num(fitnessStats.totalDistance)}
+              sprintDist={num(fitnessStats.sprintDistance)}
+              sprints={num(fitnessStats.sprintsCount)}
+            />
+          </div>
+        );
+      })()}
+
       {halfRows.length > 0 && (
         <div className="card">
           <div className="page-section-title">По таймам — момент игры</div>

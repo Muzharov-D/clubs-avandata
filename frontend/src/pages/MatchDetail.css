@@ -417,3 +417,6 @@
   .card { break-inside: avoid; box-shadow: none !important; border-color: #ccc !important; }
   body, html, #root { background: #fff !important; color: #000 !important; }
 }
+
+/* Физическая нагрузка — список зон по игрокам */
+.md-intensity { display: flex; flex-direction: column; gap: 8px; }

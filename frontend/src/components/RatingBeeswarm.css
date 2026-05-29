@@ -1,0 +1,5 @@
+.bsw-wrap { width: 100%; overflow-x: auto; }
+.bsw { width: 100%; max-width: 620px; height: auto; display: block; }
+.bsw__tick { fill: var(--text-faint, #64748b); font-size: 10px; }
+.bsw__avg { fill: var(--accent-cyan, #22d3ee); font-size: 10px; font-weight: 700; }
+.bsw__top { fill: var(--text, #f1f5fb); font-size: 11px; font-weight: 700; }

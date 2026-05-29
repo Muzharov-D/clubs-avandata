@@ -1,0 +1,33 @@
+.sz { display: flex; flex-direction: column; gap: 10px; }
+.sz__top { display: flex; gap: 24px; flex-wrap: wrap; }
+.sz__metric { display: flex; flex-direction: column; }
+.sz__big { font-size: 22px; font-weight: 800; color: var(--text); font-variant-numeric: tabular-nums; }
+.sz__unit { font-size: 11px; color: var(--text-muted); }
+
+.sz__bar { display: flex; height: 14px; border-radius: 5px; overflow: hidden; background: rgba(255,255,255,0.05); }
+.sz__bar--lg { height: 22px; }
+.sz__seg {
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 700; color: #06283d; overflow: hidden;
+  transition: width 0.4s ease; min-width: 0;
+}
+/* интенсивность: жёлтый → оранжевый → красный (как в физ-отчётах) */
+.sz__seg--1 { background: var(--rating-ok, #fbc02d); }
+.sz__seg--2 { background: var(--rating-weak, #fb8c00); }
+.sz__seg--3 { background: var(--rating-poor, #d32f2f); color: #fff; }
+
+.sz__legend { display: flex; gap: 16px; flex-wrap: wrap; font-size: 11px; color: var(--text-muted); }
+.sz__legend span { display: inline-flex; align-items: center; gap: 6px; }
+.sz__sw { width: 12px; height: 12px; border-radius: 3px; }
+.sz__sw--1 { background: var(--rating-ok, #fbc02d); }
+.sz__sw--2 { background: var(--rating-weak, #fb8c00); }
+.sz__sw--3 { background: var(--rating-poor, #d32f2f); }
+
+/* compact (командный список) */
+.sz--compact { display: grid; grid-template-columns: 130px 1fr 64px; align-items: center; gap: 10px; }
+.sz__c-label { font-size: 12px; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sz__c-val { font-size: 12px; font-weight: 700; text-align: right; font-variant-numeric: tabular-nums; }
+
+@media (max-width: 600px) {
+  .sz--compact { grid-template-columns: 90px 1fr 54px; gap: 6px; }
+}
