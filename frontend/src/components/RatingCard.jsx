@@ -3,7 +3,9 @@ import './RatingCard.css';
 
 export default function RatingCard({ label, value, scaleMax = 10 }) {
   const v = Number(value);
-  const valid = !isNaN(v);
+  // 0 трактуем как «не оценён» (бенч / нет данных) — показываем «—»,
+  // а не «0.0» с красной заливкой во всю карточку.
+  const valid = !isNaN(v) && v > 0;
   const pct = valid ? Math.max(0, Math.min(100, (v / scaleMax) * 100)) : 0;
   const color = valid ? ratingColor(v) : '#666';
   return (

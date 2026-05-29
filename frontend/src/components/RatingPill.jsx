@@ -2,10 +2,11 @@ import { ratingColor, ratingTextColor } from '../utils/colors';
 import './RatingPill.css';
 
 export default function RatingPill({ value, size = 'md' }) {
-  if (value === null || value === undefined || isNaN(value)) {
+  const num = Number(value);
+  // 0 = «не оценён» → пустое состояние, а не красный пилл «0.0»
+  if (value === null || value === undefined || isNaN(num) || num <= 0) {
     return <span className={`rating-pill rating-pill--${size} rating-pill--empty`}>—</span>;
   }
-  const num = Number(value);
   return (
     <span
       className={`rating-pill rating-pill--${size}`}

@@ -418,20 +418,22 @@ export default function PlayerDetail() {
         </div>
       )}
 
-      {/* FITNESS */}
-      <div className="card">
-        <div className="page-section-title">Фитнес</div>
-        <div className="player-detail__fitness-grid">
-          {FITNESS_ROWS.map(([label, key]) => (
-            <div className="fitness-cell" key={key}>
-              <div className="fitness-cell__value">
-                {fmtNum(fitnessStats[key], key === 'averageSpeed' || key === 'intenseRunning' ? 2 : 0)}
+      {/* FITNESS — скрываем целиком если ни одна метрика не считалась (бенч) */}
+      {FITNESS_ROWS.some(([, k]) => Number(num(fitnessStats[k]) ?? 0) > 0) && (
+        <div className="card">
+          <div className="page-section-title">Фитнес</div>
+          <div className="player-detail__fitness-grid">
+            {FITNESS_ROWS.map(([label, key]) => (
+              <div className="fitness-cell" key={key}>
+                <div className="fitness-cell__value">
+                  {fmtNum(fitnessStats[key], key === 'averageSpeed' || key === 'intenseRunning' ? 2 : 0)}
+                </div>
+                <div className="fitness-cell__label">{label}</div>
               </div>
-              <div className="fitness-cell__label">{label}</div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
-      </div>
+      )}
 
       {/* ПОЛНАЯ ТАБЛИЦА МЕТРИК — свёрнута по умолчанию.
           Раскрывается по клику. Внутри — две большие сплит-таблицы.
