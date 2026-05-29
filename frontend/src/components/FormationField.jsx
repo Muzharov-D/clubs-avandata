@@ -10,40 +10,43 @@ import './FormationField.css';
 //  - russian: полное русское positionSlot (как в PDF formation)
 //  - short:   короткие коды (GK/CB/CDM/ST...) из players.position
 //  - re:      regex-шаблон для частичного совпадения (нап/защ/...)
+// `short` включает английские коды И русские аббревиатуры SportVisor из
+// match_players.position (ЦН/ПН/ЛН/ПЦП/ЛЦП/ЦОП/ЦЗ/ЛЗ/ПЗ/ВР) — без них lineFor
+// не распознавал позиции и раскидывал всех по жёсткой 1-4-3-3 (битый макет).
 const POSITION_GROUPS = [
   // Forwards — y=16
   {
     y: 16,
     russian: ['Центральный нападающий'],
-    short:   ['ST', 'CF'],
+    short:   ['ST', 'CF', 'ЦН', 'НП', 'Н', 'ФРВ'],
     re: /\b(нап|fwd|forward)\b/i,
   },
   // Wide forwards — y=22
   {
     y: 22,
     russian: ['Левый нападающий', 'Правый нападающий', 'Левый вингер', 'Правый вингер'],
-    short:   ['LW', 'RW', 'LF', 'RF'],
+    short:   ['LW', 'RW', 'LF', 'RF', 'ПН', 'ЛН', 'ПВ', 'ЛВ', 'ПФ', 'ЛФ'],
     re: /\b(вингер|winger)\b/i,
   },
   // Attacking mids — y=32
   {
     y: 32,
     russian: ['Центральный атакующий полузащитник'],
-    short:   ['CAM', 'AM'],
+    short:   ['CAM', 'AM', 'ЦАП', 'АП', 'ПАП', 'ЛАП'],
     re: /\bатак.*полузащ/i,
   },
   // Mids — y=48
   {
     y: 48,
     russian: ['Левый полузащитник', 'Правый полузащитник', 'Центральный полузащитник', 'Опорный полузащитник', 'Центральный опорный полузащитник'],
-    short:   ['CM', 'LM', 'RM', 'CDM', 'DM'],
+    short:   ['CM', 'LM', 'RM', 'CDM', 'DM', 'ЦОП', 'ОП', 'ЦП', 'ПЦП', 'ЛЦП', 'ПП', 'ЛП', 'ЦПЗ'],
     re: /\b(полузащ|midfield|опорн)\b/i,
   },
   // Defenders — y=72
   {
     y: 72,
     russian: ['Левый защитник', 'Правый защитник', 'Центральный защитник', 'Левый крайний защитник', 'Правый крайний защитник'],
-    short:   ['CB', 'LB', 'RB', 'LWB', 'RWB', 'DEF'],
+    short:   ['CB', 'LB', 'RB', 'LWB', 'RWB', 'DEF', 'ЦЗ', 'ЛЗ', 'ПЗ', 'ЛКЗ', 'ПКЗ', 'ЛФЗ', 'ПФЗ'],
     re: /\b(защ|defender|back)\b/i,
   },
   // Goalkeeper — y=90
@@ -130,10 +133,13 @@ function buildLayout(starters) {
 function positionOrder(p) {
   const s = (p.positionSlot || '').toLowerCase();
   if (s.includes('лев')) return 0;
-  if (s.includes('центр')) return 1;
-  if (s.includes('опорн')) return 1;
-  if (s.includes('атакующ')) return 1;
   if (s.includes('прав')) return 2;
+  if (s.includes('центр') || s.includes('опорн') || s.includes('атакующ')) return 1;
+  // Русские коды (ЛЗ/ПН/ЦОП…): первая буква Л=лево, П=право, Ц=центр.
+  const code = String(p.position || '').toUpperCase().trim();
+  if (code.startsWith('Л')) return 0;
+  if (code.startsWith('П')) return 2;
+  if (code.startsWith('Ц')) return 1;
   return 1;
 }
 
