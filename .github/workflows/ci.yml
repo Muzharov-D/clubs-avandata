@@ -45,6 +45,8 @@ jobs:
         run: npm run db:migrate
       - name: Schema-drift gate (код ⇄ миграция)
         run: node scripts/check-schema-drift.mjs
+      - name: RLS tenant-isolation test
+        run: node scripts/test-rls-isolation.mjs
 
   frontend:
     name: Frontend · typecheck + build

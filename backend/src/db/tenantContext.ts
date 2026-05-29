@@ -22,11 +22,16 @@ export async function withTenant<T>(
   try {
     await conn.query(`SET row_security = on`);
     await conn.query(`SELECT set_config('app.tenant_id', $1, false)`, [tenantId]);
+    // Явно гасим bypass-флаг: под FORCE RLS политика tenant_isolation пускает
+    // строки только если app.bypass_rls != 'on'. Connection из пула мог унаследовать
+    // 'on' от предыдущей admin-операции — сбрасываем.
+    await conn.query(`SELECT set_config('app.bypass_rls', 'off', false)`);
     const tx = drizzle(conn, { schema });
     return await fn(tx, conn);
   } finally {
     try {
       await conn.query(`SELECT set_config('app.tenant_id', '', false)`);
+      await conn.query(`SELECT set_config('app.bypass_rls', 'off', false)`);
     } catch { /* ignore */ }
     conn.release();
   }
@@ -36,19 +41,22 @@ export async function withTenant<T>(
  * Run as platform_admin (bypass RLS). Use only for admin operations.
  * Caller must ensure the requester is authenticated platform_admin.
  *
- * SET row_security=off + сбрасываем в finally (чтобы next user не унаследовал).
+ * Под FORCE RLS `SET row_security=off` владельцем игнорируется — поэтому bypass
+ * выражен явным флагом app.bypass_rls='on', который читает политика tenant_isolation.
+ * Сбрасываем в finally, чтобы переиспользованный из пула connection не унаследовал.
  */
 export async function withBypassRLS<T>(
   fn: (tx: NodePgDatabase<typeof schema>, conn: PoolClient) => Promise<T>,
 ): Promise<T> {
   const conn = await pool.connect();
   try {
-    await conn.query(`SET row_security = off`);
+    await conn.query(`SET row_security = on`);
+    await conn.query(`SELECT set_config('app.bypass_rls', 'on', false)`);
     const tx = drizzle(conn, { schema });
     return await fn(tx, conn);
   } finally {
     try {
-      await conn.query(`SET row_security = on`);
+      await conn.query(`SELECT set_config('app.bypass_rls', 'off', false)`);
     } catch { /* ignore */ }
     conn.release();
   }
