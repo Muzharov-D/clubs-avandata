@@ -229,8 +229,9 @@ export async function uploadRoutes(app: FastifyInstance) {
         fitness: Record<string, Record<string, unknown>>;
         attack:  Record<string, Record<string, unknown>>;
         defence: Record<string, Record<string, unknown>>;
+        splits?: Record<string, Record<string, { match: number; first: number | null; second: number | null }>>;
       };
-      logger.info({ matchId, richPlayers: Object.keys(rich.radar).length }, '[upload] rich PDF parsed');
+      logger.info({ matchId, richPlayers: Object.keys(rich.radar).length, richSplits: Object.keys(rich.splits ?? {}).length }, '[upload] rich PDF parsed');
 
       // Старый build_match — для page1 / teamSummary / teamAggregates / formation
       const pdfArgs = [join(PARSERS_DIR, 'build_match.py'), pdfPath, pdfOutPath, teamId!, matchId];
@@ -546,7 +547,8 @@ export async function uploadRoutes(app: FastifyInstance) {
               defence: rich.defence[numStr] ?? {},
               fitness: rich.fitness[numStr] ?? {},
             },
-            splits: {},
+            // Сплиты 1/2 тайм со страниц per-player (Phase: by-half stats).
+            splits: rich.splits?.[numStr] ?? {},
             maps: maps.playerMaps[playerId] ?? {},
           });
         }
@@ -577,8 +579,10 @@ export async function uploadRoutes(app: FastifyInstance) {
           const existing = combined.get(numStr);
           const rosterRow = rosterByNum.get(numStr);
           if (existing) {
-            // PDF rich уже дал ratings/radar/stats — оставляем. Берём только splits.
-            if (pp.splits) existing.splits = pp.splits;
+            // rich PDF дал ratings/radar/stats + сплиты (per-player страницы).
+            // build_match-сплиты берём ТОЛЬКО если rich их не дал.
+            const hasRich = existing.splits && typeof existing.splits === 'object' && Object.keys(existing.splits as object).length > 0;
+            if (pp.splits && !hasRich) existing.splits = pp.splits;
           } else if (rosterRow) {
             combined.set(numStr, {
               number: numStr,

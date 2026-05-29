@@ -15,6 +15,7 @@ import RatingPill from '../components/RatingPill';
 import RatingCard from '../components/RatingCard';
 import SoccerFieldImageMap from '../components/SoccerFieldImageMap';
 import DataQualityBadge from '../components/DataQualityBadge';
+import HalfSplitChart from '../components/HalfSplitChart';
 import { shieldFor } from '../utils/legirus';
 import { shortNameFromPlayer } from '../utils/players';
 import { matchInsights } from '../utils/insights';
@@ -121,6 +122,24 @@ export default function MatchDetail() {
   }, [ta]);
 
   const insights = useMemo(() => matchInsights(match), [match]);
+
+  // Командная динамика по таймам — суммируем сплиты игроков (1/2 тайм).
+  const teamHalf = useMemo(() => {
+    const TEAM_HALF = [
+      ['Shot', 'Удары'], ['Pass', 'Передачи'], ['Dribble', 'Обводки'], ['Cross', 'Кроссы'],
+      ['Tackle', 'Отборы'], ['Interception', 'Перехваты'], ['Recovery', 'Возвраты'],
+      ['Duel', 'Единоборства'], ['Pressing', 'Прессинг'],
+    ];
+    const ps = match?.players || [];
+    return TEAM_HALF.map(([k, label]) => {
+      let f = 0, s = 0, any = false;
+      for (const p of ps) {
+        const r = p.splits?.[k];
+        if (r) { f += Number(r.first) || 0; s += Number(r.second) || 0; any = true; }
+      }
+      return any ? { label, first: f, second: s } : null;
+    }).filter((r) => r && r.first + r.second > 0);
+  }, [match]);
 
   // Хроника матча показывается ТОЛЬКО если голы в событиях сходятся с финальным
   // счётом — иначе парсер поймал не всё (для победы 4:0 один гол вводит в
@@ -302,6 +321,14 @@ export default function MatchDetail() {
 
       {/* Хроника матча — только если голы сходятся со счётом (см. timeline) */}
       <MatchTimeline events={timeline} />
+
+      {/* Командная динамика по таймам (Phase: by-half) */}
+      {teamHalf.length > 0 && (
+        <div className="card">
+          <div className="page-section-title">Динамика по таймам — команда</div>
+          <HalfSplitChart rows={teamHalf} hint="Как команда распределила действия между таймами. ▲/▼ — изменение во 2-м тайме." />
+        </div>
+      )}
 
       <div className="match-detail__grid">
         <div className="match-detail__left">

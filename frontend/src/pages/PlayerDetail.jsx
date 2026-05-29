@@ -12,6 +12,7 @@ import RatingPill from '../components/RatingPill';
 import SoccerFieldImageMap from '../components/SoccerFieldImageMap';
 import PizzaChart from '../components/PizzaChart';
 import PlayerTrendCard from '../components/PlayerTrendCard';
+import HalfSplitChart from '../components/HalfSplitChart';
 import { ratingColor } from '../utils/colors';
 import { num, percentileRank, formatRaw } from '../utils/num';
 import { POSITION_OPTIONS, PIZZA_VS_LABEL, TEMPLATES, getStatValue, positionGroup } from '../utils/pizzaTemplates';
@@ -215,6 +216,16 @@ export default function PlayerDetail() {
 
   const attackRows = ATTACK_SPLIT_KEYS.filter((k) => splits[k]);
   const defenceRows = DEFENCE_SPLIT_KEYS.filter((k) => splits[k]);
+
+  // Ключевые метрики для визуала «по таймам» (момент игры).
+  const HALF_VIZ = [
+    ['Pass', 'Передачи'], ['Shot', 'Удары'], ['Dribble', 'Обводки'], ['Key pass', 'Ключевые пасы'],
+    ['Cross', 'Кроссы'], ['Entries in box', 'Входы в штрафную'], ['Touches in pen. area', 'Касания в штрафной'],
+    ['Tackle', 'Отборы'], ['Interception', 'Перехваты'], ['Recovery', 'Возвраты'], ['Duel', 'Единоборства'],
+  ];
+  const halfRows = HALF_VIZ
+    .map(([k, label]) => ({ label, first: splits[k]?.first, second: splits[k]?.second }))
+    .filter((r) => (Number(r.first) || 0) + (Number(r.second) || 0) > 0);
 
   // Pizza slices: для каждой метрики шаблона считаем percentile vs ВСЕЙ команды
   // (peer-pool = все игроки матча, не только позиционная подгруппа).
@@ -431,6 +442,13 @@ export default function PlayerDetail() {
       {/* ПОЛНАЯ ТАБЛИЦА МЕТРИК — свёрнута по умолчанию.
           Раскрывается по клику. Внутри — две большие сплит-таблицы.
           Если обе пустые (splits {} в БД) — не показываем accordion вообще. */}
+      {halfRows.length > 0 && (
+        <div className="card">
+          <div className="page-section-title">По таймам — момент игры</div>
+          <HalfSplitChart rows={halfRows} hint="Длина полос — доля действий в каждом тайме. ▲/▼ — изменение во 2-м тайме." />
+        </div>
+      )}
+
       {(attackRows.length > 0 || defenceRows.length > 0) && (
       <details className="card player-detail__splits-toggle">
         <summary className="player-detail__splits-summary">
