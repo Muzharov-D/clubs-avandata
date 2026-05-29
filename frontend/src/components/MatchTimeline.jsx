@@ -48,12 +48,17 @@ export default function MatchTimeline({ events }) {
       <ol className="match-timeline__list">
         {events.map((ev, i) => {
           const meta = TYPE_META[ev.type] || { icon: '•', label: ev.type, tone: 'neutral' };
+          // Гол соперника — приглушаем (не наш «позитив») и помечаем.
+          const isGoal = ev.type === 'goal' || ev.type === 'penalty' || ev.type === 'own_goal';
+          const oppGoal = isGoal && ev.side === 'opp';
+          const tone = oppGoal ? 'neutral' : meta.tone;
+          const label = oppGoal ? `${meta.label} · соперник` : meta.label;
           return (
-            <li key={i} className={`match-timeline__row match-timeline__row--${meta.tone}`}>
+            <li key={i} className={`match-timeline__row match-timeline__row--${tone}`}>
               <span className="match-timeline__minute">{formatMinute(ev)}</span>
               <span className="match-timeline__icon" aria-hidden>{meta.icon}</span>
               <span className="match-timeline__body">
-                <span className="match-timeline__type">{meta.label}</span>
+                <span className="match-timeline__type">{label}</span>
                 <span className="match-timeline__player">{describe(ev)}</span>
               </span>
             </li>
