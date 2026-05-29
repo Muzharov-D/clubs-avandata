@@ -103,7 +103,9 @@ export default function MatchesDashboard() {
     sorted.forEach((m) => {
       (m.players || []).forEach((p) => {
         const r = num(p.ratings?.overall);
-        if (r == null || isNaN(r)) return;
+        // 0 = «бенч / не оценён», не учитываем в накопленном среднем
+        // (иначе игрок 1 матч 8.0 + 4 бенча 0 → средний 1.6 — нонсенс)
+        if (r == null || isNaN(r) || r <= 0) return;
         const e = byPlayer.get(p.id) || { player: p, ratings: [] };
         e.player = p; // обновляем до самого свежего объекта
         e.ratings.push(r);
@@ -142,7 +144,7 @@ export default function MatchesDashboard() {
           <div className="matches-dashboard__hero-eyebrow">Сезон</div>
           <h1 className="matches-dashboard__hero-title">{season}</h1>
           <div className="matches-dashboard__hero-sub">
-            ФК {ourTeam?.name?.toUpperCase() || 'Легирус 2010'} · {totalGames} матч{totalGames === 1 ? '' : 'ей'} разобран{totalGames === 1 ? '' : 'о'}
+            {(ourTeam?.name || 'Команда').toUpperCase()} · {totalGames} матч{totalGames === 1 ? '' : 'ей'} разобран{totalGames === 1 ? '' : 'о'}
             {tournament === 'cup' && <> · Кубок</>}
           </div>
         </div>
@@ -200,7 +202,6 @@ export default function MatchesDashboard() {
               <SeasonStat label="Пропущенные голы"        value={goalsAgainst} />
               <SeasonStat label="Среднее голов за игру"   value={avgGoals} />
               <SeasonStat label="Сухие матчи"             value={cleanSheets} />
-              <SeasonStat label="Игроков на поле"         value={11} />
             </div>
           </div>
 
