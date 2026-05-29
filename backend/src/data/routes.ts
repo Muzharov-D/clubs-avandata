@@ -145,7 +145,13 @@ export async function dataRoutes(app: FastifyInstance) {
         'set-pieces': 'setPieces',
         'recoveries': 'recoveriesAndTackling',
       };
+      // Минимальный размер «нормальной» команды-карты. base64-PNG с реальным
+      // chart canvas — обычно 30KB+ (data:image/png;base64,XXXX = ~22 char per byte).
+      // Старый crop_all_b64 без size-threshold кропал axis-tick области в ~5-15KB,
+      // что давало пустые карточки с осями на frontend. Скрываем такие легаси-крошки.
+      const MIN_MAP_BYTES = 20_000;
       for (const [pyslug, dataUrl] of Object.entries(teamMaps)) {
+        if (typeof dataUrl !== 'string' || dataUrl.length < MIN_MAP_BYTES) continue;
         const slug = SLUG_ALIAS[pyslug] ?? pyslug;
         const existing = (teamAggregates[slug] as Record<string, unknown>) || {};
         teamAggregates[slug] = { ...existing, mapImage: dataUrl };
