@@ -11,6 +11,8 @@ import { withTenant } from '../db/tenantContext.js';
 import { BadRequestError, UnauthorizedError, AppError } from '../shared/errors.js';
 import { logger } from '../shared/logger.js';
 import { resolveOurSide } from '../shared/teamName.js';
+import { validateRich, assertSportVisor } from './validation.js';
+import { computeDataQuality } from '../data/dataQuality.js';
 
 /**
  * SportVisor upload — PDF (rating + radar + formation) + опциональный Excel
@@ -177,6 +179,9 @@ export async function uploadRoutes(app: FastifyInstance) {
       const richPath = join(work, 'rich.json');
       await runPython(PYTHON_BIN,
         [join(PARSERS_DIR, 'parse_zenit_full.py'), pdfPath, richPath], work);
+      // Валидация структуры вывода парсера (Phase 1) — ловим регрессии формата
+      // до записи в БД, а не пишем мусор.
+      validateRich(JSON.parse(await readFile(richPath, 'utf-8')));
       const rich = JSON.parse(await readFile(richPath, 'utf-8')) as {
         overall_meta: Record<string, { name: string; position: string; minutes: number | null }>;
         radar:   Record<string, Record<string, number>>;
@@ -193,6 +198,10 @@ export async function uploadRoutes(app: FastifyInstance) {
       const pdfData = existsSync(pdfOutPath)
         ? JSON.parse(await readFile(pdfOutPath, 'utf-8')) as PdfOutput
         : ({} as PdfOutput);
+
+      // Семантика: это вообще отчёт SportVisor? Если ни rich, ни legacy не нашли
+      // игроков — отклоняем (Phase 1), чтобы не создавать пустой матч.
+      assertSportVisor(Object.keys(rich.radar).length, (pdfData.players ?? []).length);
 
       // ─── 4.5 Maps (best-effort) — cropпим ВСЕ heatmap/pass-карты из PDF в base64.
       // 9 командных карт + formation + per-player attack/heatmap. Storage в DB
@@ -577,6 +586,31 @@ export async function uploadRoutes(app: FastifyInstance) {
             ],
           );
         }
+
+        // ─── Индикатор достоверности данных (Phase 1) — кешируем снапшот в matches.
+        const mpLike = [...combined.values()].map((e) => ({
+          ratings: e.ratings, minutes: e.minutes, stats: e.stats, splits: e.splits,
+        }));
+        const dq = computeDataQuality(
+          {
+            teamSummaryStats: pdfData.teamSummaryStats ?? {},
+            teamAggregates: teamAggregatesMerged,
+            teamAvgRatings: finalTeamAvgRatings ?? {},
+            meta: {
+              formation: pdfData.formation ?? null,
+              formationImage: maps.formationImage ?? null,
+              teamMaps: maps.teamMaps ?? {},
+              events,
+              xlsxFile: xlsxFilename,
+            },
+          },
+          mpLike,
+        );
+        await conn.query(
+          `UPDATE matches SET data_quality = $1::jsonb WHERE tenant_id = $2 AND id = $3`,
+          [JSON.stringify(dq), tenantSlug, matchId],
+        );
+        logger.info({ matchId, dataQuality: dq.score }, '[upload] data quality computed');
       });
 
       return {

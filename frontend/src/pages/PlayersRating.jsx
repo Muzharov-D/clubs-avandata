@@ -9,6 +9,8 @@ import { useAuth } from '../contexts/AuthContext';
 import { useTeam } from '../contexts/TeamContext';
 import { ratingColor } from '../utils/colors';
 import { shortNameFromPlayer } from '../utils/players';
+import { percentileRank, percentileColor } from '../utils/percentile';
+import { downloadCsv } from '../utils/exportCsv';
 import './PlayersRating.css';
 
 // Группы метрик: Общее + 3 модуля. Каждый модуль возглавляет его рейтинг (primary).
@@ -131,6 +133,25 @@ export default function PlayersRating() {
     return m;
   }, [rows]);
 
+  // Перцентиль внутри состава по выбранной метрике (бенчмарк без данных лиги).
+  const metricValues = useMemo(
+    () => rows.map((r) => Number(r.value)).filter((v) => Number.isFinite(v)),
+    [rows],
+  );
+
+  // CSV-экспорт всех метрик по всем игрокам матча (для тренерского штаба).
+  const handleExport = () => {
+    const columns = [
+      { label: 'Игрок', get: (p) => shortNameFromPlayer(p) },
+      { label: '№', get: (p) => p.number ?? '' },
+      { label: 'Позиция', get: (p) => p.positionFull || p.position || '' },
+      { label: 'Минуты', get: (p) => p.minutes ?? '' },
+      ...METRICS.map((m) => ({ label: m.label, get: (p) => { const v = m.path(p); return v == null || isNaN(v) ? '' : Number(v); } })),
+    ];
+    const opp = match.awayTeam?.isOurTeam ? match.home : match.away;
+    downloadCsv(`rating-${(opp || 'match').toString().slice(0, 20)}`, players, columns);
+  };
+
   if (matchesRes.loading || matchRes.loading) return <div className="empty-state">Загрузка…</div>;
   if (!match) return <div className="empty-state">Нет данных</div>;
 
@@ -139,6 +160,7 @@ export default function PlayersRating() {
       <div className="players-rating__subnav">
         <NavLink to="/players" end className={({ isActive }) => 'players-subnav__item' + (isActive ? ' active' : '')}>Лидеры</NavLink>
         <NavLink to="/players/rating" className={({ isActive }) => 'players-subnav__item' + (isActive ? ' active' : '')}>Рейтинг</NavLink>
+        <NavLink to="/players/compare" className={({ isActive }) => 'players-subnav__item' + (isActive ? ' active' : '')}>Сравнение</NavLink>
       </div>
 
       <div className="card players-rating__controls">
@@ -183,6 +205,13 @@ export default function PlayersRating() {
             title="Изменить направление сортировки"
           >
             {direction === 'desc' ? '↓ По убыванию' : '↑ По возрастанию'}
+          </button>
+          <button
+            className="players-rating__direction"
+            onClick={handleExport}
+            title="Скачать все метрики в CSV (для Excel)"
+          >
+            ⤓ CSV
           </button>
         </div>
       </div>
@@ -230,12 +259,26 @@ export default function PlayersRating() {
                       width: max > 0 && typeof value === 'number' && !isNaN(value)
                         ? `${Math.max(0, Math.min(100, (value / max) * 100))}%`
                         : '0%',
-                      background: isPrimary ? ratingColor(value) : 'linear-gradient(90deg, #2c66c7, #22d3ee)',
+                      background: isPrimary
+                        ? ratingColor(value)
+                        : 'linear-gradient(90deg, var(--brand-secondary), var(--brand-primary))',
                     }}
                   />
                 </div>
                 <span className="players-rating__metric-value">
                   {fmt(value, metric.digits, metric.unit)}
+                  {(() => {
+                    const pr = percentileRank(metricValues, Number(value));
+                    return pr != null ? (
+                      <span
+                        className="players-rating__pct"
+                        style={{ color: percentileColor(pr) }}
+                        title={`Лучше ${pr}% состава по этой метрике`}
+                      >
+                        П{pr}
+                      </span>
+                    ) : null;
+                  })()}
                 </span>
               </span>
             </div>

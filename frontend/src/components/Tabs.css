@@ -27,7 +27,7 @@
 }
 
 .tabs__item--active {
-  background: linear-gradient(135deg, #1a4ba0 0%, #2c66c7 100%);
+  background: var(--brand-gradient);
   color: #fff;
 }
 

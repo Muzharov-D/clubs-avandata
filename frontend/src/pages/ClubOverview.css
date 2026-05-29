@@ -224,7 +224,7 @@
 .match-summary__score-sep { color: rgba(255,255,255,0.3); }
 .match-summary__open {
   margin-top: 4px;
-  background: linear-gradient(135deg, #1a4ba0, #2c66c7);
+  background: var(--brand-gradient);
   border: none; color: #fff;
   padding: 8px 16px;
   border-radius: 8px;

@@ -1,8 +1,12 @@
 import type { FastifyInstance } from 'fastify';
 import { authenticate } from '../auth/middleware.js';
 import { withTenant } from '../db/tenantContext.js';
-import { UnauthorizedError, NotFoundError } from '../shared/errors.js';
+import { UnauthorizedError, NotFoundError, BadRequestError } from '../shared/errors.js';
 import { adaptPlayerForLegirus } from './legirusAdapter.js';
+import { computeDataQuality } from './dataQuality.js';
+import { statField } from '../shared/statValue.js';
+
+type AnyRow = Record<string, unknown>;
 
 /**
  * PNG из base64 data-URL — портрет (настоящая карта поля ≈520×728), а не широкий
@@ -107,14 +111,16 @@ export async function dataRoutes(app: FastifyInstance) {
                   home_team_id AS "homeTeamId", away_team_id AS "awayTeamId",
                   home_team_name AS "home", away_team_name AS "away",
                   match_date AS "date", season, tournament,
-                  score_home AS "scoreHome", score_away AS "scoreAway", meta
+                  score_home AS "scoreHome", score_away AS "scoreAway",
+                  data_quality AS "dataQuality", coach_note AS "coachNote", meta
              FROM matches WHERE tenant_id = $1 AND team_id = $2
              ORDER BY match_date DESC NULLS LAST`
         : `SELECT id, team_id AS "teamId", ext_match_id AS "extMatchId",
                   home_team_id AS "homeTeamId", away_team_id AS "awayTeamId",
                   home_team_name AS "home", away_team_name AS "away",
                   match_date AS "date", season, tournament,
-                  score_home AS "scoreHome", score_away AS "scoreAway", meta
+                  score_home AS "scoreHome", score_away AS "scoreAway",
+                  data_quality AS "dataQuality", coach_note AS "coachNote", meta
              FROM matches WHERE tenant_id = $1
              ORDER BY match_date DESC NULLS LAST`;
       const params: unknown[] = teamId ? [slug, teamId] : [slug];
@@ -135,7 +141,8 @@ export async function dataRoutes(app: FastifyInstance) {
                 score_home AS "scoreHome", score_away AS "scoreAway",
                 team_summary_stats AS "teamSummaryStats",
                 team_aggregates AS "teamAggregates",
-                team_avg_ratings AS "teamAvgRatings", meta
+                team_avg_ratings AS "teamAvgRatings",
+                data_quality AS "dataQuality", coach_note AS "coachNote", meta
            FROM matches WHERE tenant_id = $1 AND id = $2`,
         [slug, req.params.matchId],
       );
@@ -202,10 +209,35 @@ export async function dataRoutes(app: FastifyInstance) {
         formationImage: formationImg,
         formationImageFull: formationImg,
         events: (metaObj.events as unknown[]) ?? [],
+        // Индикатор достоверности (Phase 1): кешированный снапшот или расчёт на лету
+        // (для старых матчей до миграции 0006).
+        dataQuality: match.dataQuality ?? computeDataQuality(match, mp),
+        coachNote: match.coachNote ?? null,
         players:  mp.map(adaptPlayerForLegirus),
       };
     });
   });
+
+  // Заметка тренера к загруженному разбору (Phase 3). Только тренеры.
+  app.patch<{ Params: { matchId: string }; Body: { note?: string } }>(
+    '/match/:matchId/note',
+    async (req) => {
+      const slug = tenantId(req);
+      const role = req.user?.role;
+      if (role !== 'head_coach' && role !== 'team_coach') {
+        throw new UnauthorizedError('only coaches can edit notes');
+      }
+      const note = typeof req.body?.note === 'string' ? req.body.note.slice(0, 5000) : null;
+      return withTenant(slug, async (_tx, conn) => {
+        const { rowCount } = await conn.query(
+          `UPDATE matches SET coach_note = $1 WHERE tenant_id = $2 AND id = $3`,
+          [note, slug, req.params.matchId],
+        );
+        if (!rowCount) throw new NotFoundError('match not found');
+        return { ok: true, coachNote: note };
+      });
+    },
+  );
 
   app.delete<{ Params: { matchId: string } }>('/match/:matchId', async (req) => {
     const slug = tenantId(req);
@@ -222,6 +254,152 @@ export async function dataRoutes(app: FastifyInstance) {
       );
       if (!rowCount) throw new NotFoundError('match not found');
       return { ok: true, deleted: req.params.matchId };
+    });
+  });
+
+  // ─── Phase 2: тренды и сезонные агрегаты ──────────────────────────────
+  // Результат матча с НАШЕЙ стороны (ориентация по team_id, не по имени).
+  function ourResult(m: AnyRow): { result: 'W' | 'D' | 'L' | null; us: number | null; them: number | null; opponent: string } {
+    const sh = m.score_home as number | null;
+    const sa = m.score_away as number | null;
+    const ourHome = m.home_team_id === m.team_id;
+    const ourAway = m.away_team_id === m.team_id;
+    const opponent = String((ourHome ? m.away_team_name : ourAway ? m.home_team_name : m.away_team_name) ?? 'Соперник');
+    if (sh == null || sa == null || (!ourHome && !ourAway)) return { result: null, us: null, them: null, opponent };
+    const us = ourHome ? sh : sa;
+    const them = ourHome ? sa : sh;
+    return { result: us > them ? 'W' : us < them ? 'L' : 'D', us, them, opponent };
+  }
+
+  // Тренд одного игрока по матчам сезона (rating/минуты/голы по матчам).
+  app.get<{ Params: { playerId: string } }>('/player/:playerId/trend', async (req) => {
+    const slug = tenantId(req);
+    const pid = req.params.playerId;
+    // Игрок видит только себя; тренеры — всех.
+    if (req.user?.role === 'player' && req.user.playerId !== pid) {
+      throw new UnauthorizedError('players can only view their own trend');
+    }
+    return withTenant(slug, async (_tx, conn) => {
+      const { rows: prow } = await conn.query(
+        `SELECT id, full_name AS "fullName", number, position FROM players WHERE tenant_id = $1 AND id = $2`,
+        [slug, pid],
+      );
+      if (!prow[0]) throw new NotFoundError('player not found');
+      const { rows } = await conn.query<AnyRow>(
+        `SELECT m.id AS match_id, m.match_date, m.home_team_id, m.away_team_id, m.team_id,
+                m.home_team_name, m.away_team_name, m.score_home, m.score_away,
+                mp.minutes, mp.ratings, mp.stats
+           FROM match_players mp
+           JOIN matches m ON m.id = mp.match_id
+          WHERE mp.tenant_id = $1 AND mp.player_id = $2
+          ORDER BY m.match_date ASC NULLS LAST`,
+        [slug, pid],
+      );
+      const series = rows.map((m) => {
+        const r = (m.ratings as Record<string, unknown>) ?? {};
+        const res = ourResult(m);
+        return {
+          matchId: m.match_id,
+          date: m.match_date,
+          opponent: res.opponent,
+          result: res.result,
+          score: res.us != null ? `${res.us}:${res.them}` : null,
+          minutes: Number(m.minutes ?? 0),
+          overall: Number(r.overall ?? 0),
+          attack: Number(r.attack ?? 0),
+          defence: Number(r.defence ?? 0),
+          fitness: Number(r.fitness ?? 0),
+          goals: statField(m.stats, 'attack', 'goal'),
+          assists: statField(m.stats, 'attack', 'assist'),
+          distance: statField(m.stats, 'fitness', 'totalDistance'),
+        };
+      });
+      return { player: prow[0], series };
+    });
+  });
+
+  // Сезонные агрегаты по всем игрокам команды — основа рейтингов/перцентилей/
+  // сравнения/контроля нагрузки (Phase 2). Только тренеры.
+  app.get<{ Querystring: { teamId?: string } }>('/players/season', async (req) => {
+    const slug = tenantId(req);
+    const role = req.user?.role;
+    if (role !== 'head_coach' && role !== 'team_coach') {
+      throw new UnauthorizedError('coaches only');
+    }
+    const teamId = req.query.teamId;
+    if (!teamId) throw new BadRequestError('teamId is required', 'NO_TEAM');
+    return withTenant(slug, async (_tx, conn) => {
+      const { rows } = await conn.query<AnyRow>(
+        `SELECT mp.player_id, p.full_name AS "fullName", p.number, p.position, p.photo_url AS "photoUrl",
+                mp.minutes, mp.ratings, mp.stats, m.match_date
+           FROM match_players mp
+           JOIN matches m ON m.id = mp.match_id
+           JOIN players p ON p.id = mp.player_id
+          WHERE mp.tenant_id = $1 AND m.team_id = $2
+          ORDER BY m.match_date ASC NULLS LAST`,
+        [slug, teamId],
+      );
+      type Agg = {
+        id: string; fullName: string; number: number | null; position: string | null; photoUrl: string | null;
+        matches: number; minutes: number;
+        sumOverall: number; sumAttack: number; sumDefence: number; sumFitness: number; ratedMatches: number;
+        goals: number; assists: number; shots: number; keyPass: number; dribble: number;
+        tackle: number; interception: number; recovery: number; duel: number; pressing: number;
+        distance: number; sprintDistance: number;
+      };
+      const byId = new Map<string, Agg>();
+      for (const r of rows) {
+        const id = String(r.player_id);
+        let a = byId.get(id);
+        if (!a) {
+          a = {
+            id, fullName: String(r.fullName ?? ''), number: r.number as number | null,
+            position: r.position as string | null, photoUrl: (r.photoUrl as string | null) ?? null,
+            matches: 0, minutes: 0, sumOverall: 0, sumAttack: 0, sumDefence: 0, sumFitness: 0, ratedMatches: 0,
+            goals: 0, assists: 0, shots: 0, keyPass: 0, dribble: 0,
+            tackle: 0, interception: 0, recovery: 0, duel: 0, pressing: 0,
+            distance: 0, sprintDistance: 0,
+          };
+          byId.set(id, a);
+        }
+        a.matches += 1;
+        a.minutes += Number(r.minutes ?? 0);
+        const rt = (r.ratings as Record<string, unknown>) ?? {};
+        const ov = Number(rt.overall ?? 0);
+        if (ov > 0) {
+          a.ratedMatches += 1;
+          a.sumOverall += ov;
+          a.sumAttack += Number(rt.attack ?? 0);
+          a.sumDefence += Number(rt.defence ?? 0);
+          a.sumFitness += Number(rt.fitness ?? 0);
+        }
+        a.goals += statField(r.stats, 'attack', 'goal');
+        a.assists += statField(r.stats, 'attack', 'assist');
+        a.shots += statField(r.stats, 'attack', 'shot');
+        a.keyPass += statField(r.stats, 'attack', 'keyPass');
+        a.dribble += statField(r.stats, 'attack', 'dribble');
+        a.tackle += statField(r.stats, 'defence', 'tackle');
+        a.interception += statField(r.stats, 'defence', 'interception');
+        a.recovery += statField(r.stats, 'defence', 'recovery');
+        a.duel += statField(r.stats, 'defence', 'duel');
+        a.pressing += statField(r.stats, 'defence', 'pressing');
+        a.distance += statField(r.stats, 'fitness', 'totalDistance');
+        a.sprintDistance += statField(r.stats, 'fitness', 'sprintDistance');
+      }
+      const players = [...byId.values()].map((a) => ({
+        id: a.id, fullName: a.fullName, number: a.number, position: a.position, photoUrl: a.photoUrl,
+        matches: a.matches, minutes: a.minutes,
+        avgOverall: a.ratedMatches ? Number((a.sumOverall / a.ratedMatches).toFixed(2)) : 0,
+        avgAttack: a.ratedMatches ? Number((a.sumAttack / a.ratedMatches).toFixed(2)) : 0,
+        avgDefence: a.ratedMatches ? Number((a.sumDefence / a.ratedMatches).toFixed(2)) : 0,
+        avgFitness: a.ratedMatches ? Number((a.sumFitness / a.ratedMatches).toFixed(2)) : 0,
+        goals: a.goals, assists: a.assists, shots: a.shots, keyPass: a.keyPass, dribble: a.dribble,
+        tackle: a.tackle, interception: a.interception, recovery: a.recovery, duel: a.duel, pressing: a.pressing,
+        distance: Math.round(a.distance), sprintDistance: Math.round(a.sprintDistance),
+        // нагрузка: средние минуты за матч (для контроля перегруза в академии)
+        minutesPerMatch: a.matches ? Math.round(a.minutes / a.matches) : 0,
+      }));
+      return { teamId, players };
     });
   });
 

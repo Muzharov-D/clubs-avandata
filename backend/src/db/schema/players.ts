@@ -1,4 +1,4 @@
-import { pgTable, text, integer, date, jsonb, timestamp, index } from 'drizzle-orm/pg-core';
+import { pgTable, text, integer, date, jsonb, timestamp, boolean, index } from 'drizzle-orm/pg-core';
 import { sql } from 'drizzle-orm';
 import { tenants } from './tenants.js';
 import { teams } from './teams.js';
@@ -23,6 +23,7 @@ export const players = pgTable(
     photoUrl: text('photo_url'),
     extraTeams: text('extra_teams').array().notNull().default(sql`ARRAY[]::TEXT[]`),
     externalIds: jsonb('external_ids').notNull().default(sql`'{}'::jsonb`),
+    dataConsent: boolean('data_consent').notNull().default(false),
     meta: jsonb('meta').notNull().default(sql`'{}'::jsonb`),
     createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
   },

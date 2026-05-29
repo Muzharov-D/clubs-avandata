@@ -10,6 +10,8 @@ import MainLayout from './layouts/MainLayout';
 import Login from './pages/Login';
 // @ts-ignore — legacy .jsx
 import SetPassword from './pages/SetPassword';
+// @ts-ignore — legacy .jsx
+import PrivacyPolicy from './pages/PrivacyPolicy';
 import ClubOverview from './pages/ClubOverview';
 import ClubDashboard from './pages/ClubDashboard';
 import MatchesDashboard from './pages/MatchesDashboard';
@@ -18,6 +20,10 @@ import ComparisonView from './pages/ComparisonView';
 import PlayersLeaders from './pages/PlayersLeaders';
 import PlayersRating from './pages/PlayersRating';
 import PlayerDetail from './pages/PlayerDetail';
+// @ts-ignore — legacy .jsx
+import PlayerCompare from './pages/PlayerCompare';
+// @ts-ignore — legacy .jsx
+import LoadControl from './pages/LoadControl';
 import CalendarPage from './pages/CalendarPage';
 import TrainingsPage from './pages/TrainingsPage';
 import PublicTeamSchedule from './pages/PublicTeamSchedule';
@@ -91,6 +97,7 @@ export function App() {
                 <Routes>
                   <Route path="/login" element={<Login />} />
                   <Route path="/set-password" element={<SetPassword />} />
+                  <Route path="/privacy" element={<PrivacyPolicy />} />
                   <Route path="/" element={<RootRoute />} />
 
                   {/* Public родительский экран (без auth) */}
@@ -124,6 +131,8 @@ export function App() {
                     <Route path="/trainings" element={<CoachOnly><TrainingsPage /></CoachOnly>} />
                     <Route path="/players" element={<CoachOnly><PlayersLeaders /></CoachOnly>} />
                     <Route path="/players/rating" element={<CoachOnly><PlayersRating /></CoachOnly>} />
+                    <Route path="/players/compare" element={<CoachOnly><PlayerCompare /></CoachOnly>} />
+                    <Route path="/load" element={<CoachOnly><LoadControl /></CoachOnly>} />
                     {/* PlayerDetail.jsx — 1:1 копия Легируса с pizza-chart, фото, бейджами */}
                     <Route path="/players/:playerId" element={<OwnPlayerOnly><PlayerDetail /></OwnPlayerOnly>} />
                     <Route path="*" element={<Navigate to="/club" replace />} />

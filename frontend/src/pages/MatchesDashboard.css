@@ -124,7 +124,7 @@
 .matches-dashboard__last-score .sep { color: rgba(255, 255, 255, 0.3); }
 .matches-dashboard__last-btn {
   align-self: flex-start;
-  background: linear-gradient(135deg, #1a4ba0, #2c66c7);
+  background: var(--brand-gradient);
   border: none;
   color: #fff;
   padding: 10px 18px;

@@ -23,6 +23,8 @@ import { useTeam } from '../contexts/TeamContext';
 import { PlayerRadar } from '../components/PlayerRadar';
 import { StatTile } from '../components/StatTile';
 // @ts-ignore — legacy .jsx
+import PredictedLineup from '../components/PredictedLineup';
+// @ts-ignore — legacy .jsx
 import PlayerPhoto from '../components/PlayerPhoto';
 import { useDocumentTitle } from '../hooks/useDocumentTitle';
 import './ClubDashboard.css';
@@ -39,7 +41,7 @@ interface Team {
 
 export default function ClubDashboard() {
   const navigate = useNavigate();
-  const { user } = useAuth() as { user: { tenantId?: string | null; fullName?: string } | null };
+  const { user, isCoach } = useAuth() as { user: { tenantId?: string | null; fullName?: string } | null; isCoach: boolean };
   const { selectedTeam, selectedTeamId } = useTeam() as { selectedTeam: Team | null; selectedTeamId: string | null };
   useDocumentTitle(selectedTeam?.name ? `${selectedTeam.name} — Клуб` : 'Клуб');
 
@@ -231,6 +233,9 @@ export default function ClubDashboard() {
           </div>
         )}
       </section>
+
+      {/* Вероятный состав на следующий матч (Phase 5) — тренеру */}
+      {isCoach && selectedTeamId && <PredictedLineup teamId={selectedTeamId} />}
 
       {/* Stats from latest analyzed match — структура SportVisor: {home, away} */}
       {latestMatch?.teamSummaryStats && (() => {

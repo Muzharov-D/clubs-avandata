@@ -365,3 +365,55 @@
   .mvs-row__val { font-size: 15px; }
   .mvs-row__delta { font-size: 11px; padding: 2px 6px; min-width: 52px; }
 }
+
+/* ─── Phase 1/3/5: topbar tools, инсайты, заметка тренера, печать ─── */
+.match-detail__topbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.match-detail__tools { margin-left: auto; display: flex; gap: 8px; flex-wrap: wrap; }
+.md-tool-btn {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border);
+  color: var(--text);
+  border-radius: 8px;
+  padding: 6px 12px;
+  font-size: 13px;
+}
+.md-tool-btn:hover:not(:disabled) { background: rgba(255, 255, 255, 0.1); }
+.md-tool-btn--danger { border-color: var(--danger); color: var(--danger); background: transparent; }
+
+.match-detail__insights .md-insights { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.md-insight {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  font-size: 14px;
+  color: var(--text);
+  padding: 4px 0;
+}
+.md-insight__mark { font-size: 11px; flex-shrink: 0; }
+.md-insight--positive .md-insight__mark { color: var(--rating-good); }
+.md-insight--negative .md-insight__mark { color: var(--rating-poor); }
+.md-insight--neutral  .md-insight__mark { color: var(--text-muted); }
+.md-insights__note { margin-top: 8px; font-size: 11px; color: var(--text-faint); }
+
+.match-detail__note .md-note__area {
+  width: 100%;
+  resize: vertical;
+  font: inherit;
+  min-height: 80px;
+}
+.md-note__actions { display: flex; align-items: center; gap: 12px; margin-top: 10px; }
+.md-note__saved { color: var(--success); font-size: 13px; font-weight: 600; }
+
+/* Печать / сохранение разбора в PDF (Phase 3) — прячем хром, оставляем контент. */
+@media print {
+  .sidebar-nav, .app-header, .match-detail__back, .match-detail__tools,
+  .match-detail__note, .offline-banner { display: none !important; }
+  .page, .match-detail { padding: 0 !important; }
+  .card { break-inside: avoid; box-shadow: none !important; border-color: #ccc !important; }
+  body, html, #root { background: #fff !important; color: #000 !important; }
+}

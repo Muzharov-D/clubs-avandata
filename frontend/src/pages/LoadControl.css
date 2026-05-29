@@ -1,0 +1,47 @@
+.load-control { display: flex; flex-direction: column; gap: 14px; }
+.load-control__head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.load-control__title { font-size: 20px; font-weight: 800; margin: 0; }
+.load-control__sub { color: var(--text-muted); font-size: 13px; margin-top: 2px; }
+.load-control__export {
+  background: rgba(255,255,255,0.05); border: 1px solid var(--border);
+  color: var(--text); font-size: 13px; padding: 8px 14px; border-radius: 8px;
+}
+
+.load-control__table { padding: 0; overflow: hidden; }
+.load-control__row {
+  display: grid;
+  grid-template-columns: 1.4fr 60px 2fr 2fr 100px;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 16px;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+.load-control__row--head {
+  background: rgba(255,255,255,0.04);
+  font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em;
+  color: var(--text-muted); font-weight: 600;
+}
+.load-control__row:last-child { border-bottom: none; }
+
+.lc-name { display: flex; flex-direction: column; }
+.lc-name__main { font-weight: 700; color: #fff; }
+.lc-name__sub { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+.lc-num { text-align: center; font-weight: 700; }
+
+.lc-bar { display: flex; flex-direction: column; gap: 4px; }
+.lc-bar__track { height: 8px; background: rgba(255,255,255,0.06); border-radius: 4px; overflow: hidden; }
+.lc-bar__fill { display: block; height: 100%; border-radius: 4px; background: linear-gradient(90deg, var(--brand-secondary), var(--brand-primary)); }
+.lc-bar__fill--dist { background: linear-gradient(90deg, var(--rating-good), var(--rating-excellent)); }
+.lc-bar__val { font-size: 11px; color: var(--text-muted); font-variant-numeric: tabular-nums; }
+
+.lc-flag { text-align: center; font-size: 12px; font-weight: 700; border-radius: 12px; padding: 4px 6px; }
+.lc-flag--high   { color: var(--rating-text-light); background: var(--rating-poor); }
+.lc-flag--medium { color: var(--rating-text-dark);  background: var(--rating-ok); }
+.lc-flag--low    { color: var(--text-muted); background: rgba(255,255,255,0.05); }
+
+.load-control__legend { color: var(--text-faint); font-size: 12px; line-height: 1.5; padding: 0 4px; }
+
+@media (max-width: 768px) {
+  .load-control__row { grid-template-columns: 1.3fr 44px 1.6fr 70px; }
+  .load-control__row .lc-bar:nth-child(4) { display: none; }
+}
