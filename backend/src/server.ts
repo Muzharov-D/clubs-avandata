@@ -11,6 +11,7 @@ import { publicRoutes } from './public/routes.js';
 import { uploadRoutes } from './upload/routes.js';
 import { dataRoutes } from './data/routes.js';
 import { closePool } from './db/client.js';
+import { runMigrations } from './db/migrate.js';
 import { startCrons, stopCrons } from './cron/runner.js';
 
 async function buildServer() {
@@ -67,6 +68,16 @@ async function buildServer() {
 }
 
 async function start() {
+  // Самомиграция на старте — гарантирует, что схема БД соответствует коду,
+  // даже если хостинг запускает сервис в обход Dockerfile CMD (Render dashboard
+  // start command). Не стартуем сервер с рассинхроном схемы.
+  try {
+    await runMigrations();
+  } catch (err) {
+    logger.error({ err }, 'Startup migrations failed — refusing to start with schema drift');
+    process.exit(1);
+  }
+
   const app = await buildServer();
 
   const shutdown = async (signal: string) => {
