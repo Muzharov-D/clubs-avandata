@@ -5,6 +5,27 @@ import { UnauthorizedError, NotFoundError } from '../shared/errors.js';
 import { adaptPlayerForLegirus } from './legirusAdapter.js';
 
 /**
+ * PNG из base64 data-URL — портрет (настоящая карта поля ≈520×728), а не широкий
+ * обрезок таблицы (≈1036×916). crop_all_b64 иногда кропает не ту область; отличить
+ * по размеру в байтах нельзя (реальная карта бывает 15КБ, крошка 5.6КБ), а по
+ * пропорции PNG — надёжно. Читаем width/height из IHDR.
+ */
+function isPortraitPng(dataUrl: unknown): boolean {
+  if (typeof dataUrl !== 'string') return false;
+  const i = dataUrl.indexOf('base64,');
+  if (i < 0) return false;
+  try {
+    const buf = Buffer.from(dataUrl.slice(i + 7), 'base64');
+    if (buf.length < 24 || buf.toString('ascii', 12, 16) !== 'IHDR') return false;
+    const w = buf.readUInt32BE(16);
+    const h = buf.readUInt32BE(20);
+    return h > 0 && w / h < 0.9;
+  } catch {
+    return false;
+  }
+}
+
+/**
  * Tenant-scoped data API — для legacy frontend Легируса.
  *
  * Все endpoint'ы требуют валидный JWT и явно фильтруют запросы по tenant_id.
@@ -83,12 +104,14 @@ export async function dataRoutes(app: FastifyInstance) {
     return withTenant(slug, async (_tx, conn) => {
       const sql = teamId
         ? `SELECT id, team_id AS "teamId", ext_match_id AS "extMatchId",
+                  home_team_id AS "homeTeamId", away_team_id AS "awayTeamId",
                   home_team_name AS "home", away_team_name AS "away",
                   match_date AS "date", season, tournament,
                   score_home AS "scoreHome", score_away AS "scoreAway", meta
              FROM matches WHERE tenant_id = $1 AND team_id = $2
              ORDER BY match_date DESC NULLS LAST`
         : `SELECT id, team_id AS "teamId", ext_match_id AS "extMatchId",
+                  home_team_id AS "homeTeamId", away_team_id AS "awayTeamId",
                   home_team_name AS "home", away_team_name AS "away",
                   match_date AS "date", season, tournament,
                   score_home AS "scoreHome", score_away AS "scoreAway", meta
@@ -106,6 +129,7 @@ export async function dataRoutes(app: FastifyInstance) {
     return withTenant(slug, async (_tx, conn) => {
       const { rows } = await conn.query(
         `SELECT id, team_id AS "teamId", ext_match_id AS "extMatchId",
+                home_team_id AS "homeTeamId", away_team_id AS "awayTeamId",
                 home_team_name AS "home", away_team_name AS "away",
                 match_date AS "date", season, tournament,
                 score_home AS "scoreHome", score_away AS "scoreAway",
@@ -145,21 +169,32 @@ export async function dataRoutes(app: FastifyInstance) {
         'set-pieces': 'setPieces',
         'recoveries': 'recoveriesAndTackling',
       };
-      // Минимальный размер «нормальной» команды-карты. base64-PNG с реальным
-      // chart canvas — обычно 30KB+ (data:image/png;base64,XXXX = ~22 char per byte).
-      // Старый crop_all_b64 без size-threshold кропал axis-tick области в ~5-15KB,
-      // что давало пустые карточки с осями на frontend. Скрываем такие легаси-крошки.
-      const MIN_MAP_BYTES = 20_000;
+      // Лифтим в mapImage ТОЛЬКО портретные base64 (настоящие карты поля).
+      // Широкие обрезки таблиц (crop-мусор) отсеиваются по пропорции — см. isPortraitPng.
       for (const [pyslug, dataUrl] of Object.entries(teamMaps)) {
-        if (typeof dataUrl !== 'string' || dataUrl.length < MIN_MAP_BYTES) continue;
+        if (!isPortraitPng(dataUrl)) continue;
         const slug = SLUG_ALIAS[pyslug] ?? pyslug;
         const existing = (teamAggregates[slug] as Record<string, unknown>) || {};
         teamAggregates[slug] = { ...existing, mapImage: dataUrl };
       }
+      // Убираем битые ссылки на файлы: teamAggregates.<section>.mapImage из парсера —
+      // путь вида «/assets/maps/…png», но файлов на сервере нет → <img> 404 → белый
+      // прямоугольник. Оставляем только валидные data-URL (реальные карты выше),
+      // остальным ставим null — frontend (if (!map) return null) скроет карточку.
+      for (const slug of Object.keys(teamAggregates)) {
+        const sec = (teamAggregates[slug] as Record<string, unknown>) || {};
+        const img = sec.mapImage;
+        if (typeof img === 'string' && !img.startsWith('data:')) {
+          teamAggregates[slug] = { ...sec, mapImage: null };
+        }
+      }
+      // Ориентация «дом/гость» по ID: наша сторона та, чей team-id == match.teamId.
+      // homeTeamId/awayTeamId заполняются при upload (наша сторона) + backfill'ом;
+      // для незабэкфилленных legacy-строк оба null → фронт падает на fallback по имени.
       return {
         ...match,
-        homeTeam: { name: match.home, isOurTeam: undefined },
-        awayTeam: { name: match.away },
+        homeTeam: { id: match.homeTeamId, name: match.home, isOurTeam: match.homeTeamId === match.teamId },
+        awayTeam: { id: match.awayTeamId, name: match.away, isOurTeam: match.awayTeamId === match.teamId },
         score:    { home: match.scoreHome ?? 0, away: match.scoreAway ?? 0 },
         date:     match.date,
         teamAggregates,

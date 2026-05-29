@@ -98,7 +98,18 @@ def _team_bbox(page):
     ]
     if not candidates:
         return None
-    img = max(candidates, key=lambda i: (i["x1"] - i["x0"]) * (i["bottom"] - i["top"]))
+    # Карта поля — ПОРТРЕТ (выше, чем шире; реально ≈520×728px, AR w/h≈0.71).
+    # На страницах-дашбордах самый большой image — широкий bar-chart: по площади
+    # он выигрывал и давал landscape-«обрезок таблицы» (мусор, который frontend
+    # потом скрывал → пустая карточка). Берём только портретные кандидаты
+    # (h >= 1.15×w); если их нет — на странице нет карты поля, возвращаем None.
+    portrait = [
+        i for i in candidates
+        if (i["bottom"] - i["top"]) >= 1.15 * (i["x1"] - i["x0"])
+    ]
+    if not portrait:
+        return None
+    img = max(portrait, key=lambda i: (i["x1"] - i["x0"]) * (i["bottom"] - i["top"]))
     return _safe_bbox(img["x0"], img["top"], img["x1"], img["bottom"], page)
 
 

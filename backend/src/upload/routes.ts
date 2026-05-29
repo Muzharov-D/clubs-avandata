@@ -10,6 +10,7 @@ import { authenticate } from '../auth/middleware.js';
 import { withTenant } from '../db/tenantContext.js';
 import { BadRequestError, UnauthorizedError, AppError } from '../shared/errors.js';
 import { logger } from '../shared/logger.js';
+import { resolveOurSide } from '../shared/teamName.js';
 
 /**
  * SportVisor upload — PDF (rating + radar + formation) + опциональный Excel
@@ -389,15 +390,29 @@ export async function uploadRoutes(app: FastifyInstance) {
           if (!awayName) awayName = 'Соперник';
           logger.warn({ matchId, homeName, awayName }, '[upload] team names — last-resort fallback');
         }
+        // Ориентация дом/гость: пишем наш team_id в соответствующую колонку, чтобы
+        // фронт определял сторону по ID, а не по подстроке имени (порт §13.4 / задача #4).
+        const ourTeamRes = await conn.query<{ name: string }>(`SELECT name FROM teams WHERE id = $1`, [teamId]);
+        const ourSide = resolveOurSide(ourTeamRes.rows[0]?.name, homeName, awayName);
+        const homeTeamId = ourSide === 'home' ? teamId : null;
+        const awayTeamId = ourSide === 'away' ? teamId : null;
+        if (!ourSide) {
+          logger.warn(
+            { matchId, ourName: ourTeamRes.rows[0]?.name, homeName, awayName },
+            '[upload] orientation undetermined — home/away ids left null',
+          );
+        }
         await conn.query(
           `INSERT INTO matches (
              id, tenant_id, team_id, ext_match_id,
+             home_team_id, away_team_id,
              home_team_name, away_team_name, match_date, season, tournament,
              score_home, score_away, pdf_source,
              team_summary_stats, team_aggregates, team_avg_ratings, meta
-           ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13::jsonb, $14::jsonb, $15::jsonb, $16::jsonb)`,
+           ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15::jsonb, $16::jsonb, $17::jsonb, $18::jsonb)`,
           [
             matchId, tenantSlug, teamId, matchId,
+            homeTeamId, awayTeamId,
             homeName, awayName, matchDate, '2025-2026', tournament,
             score?.home ?? null, score?.away ?? null,
             `upload://${pdfFilename}`,

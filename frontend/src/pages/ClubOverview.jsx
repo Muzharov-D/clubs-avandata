@@ -10,6 +10,7 @@ import RatingPill from '../components/RatingPill';
 import { shortNameFromPlayer } from '../utils/players';
 import { ratingColor } from '../utils/colors';
 import { leadersByLine } from '../utils/lines';
+import { isOurClub } from '../utils/legirus';
 import { useNavigate } from 'react-router-dom';
 import './ClubOverview.css';
 
@@ -67,6 +68,16 @@ export default function ClubOverview() {
   const match = matchRes.data;
   const home = match?.teamSummaryStats?.home || {};
   const away = match?.teamSummaryStats?.away || {};
+  // teamSummaryStats и score кёюятся ПОЗИЦИОННО (home/away из PDF). «Наши» показатели
+  // берём со своей стороны: дома — home, в гостях — away. Иначе для гостевого матча
+  // KPI и «Забитые» показывали бы соперника (задача #4). Ориентация по ID
+  // (homeTeamId == нашей команде); для незабэкфилленных строк — fallback по имени.
+  const weAreHome = match
+    ? ((match.homeTeamId || match.awayTeamId) ? match.homeTeamId === match.teamId : isOurClub(match.home))
+    : true;
+  const us = weAreHome ? home : away;
+  const ourScore = weAreHome ? match?.score?.home : match?.score?.away;
+  const theirScore = weAreHome ? match?.score?.away : match?.score?.home;
   const ratings = match?.teamAvgRatings || {};
   const motm = bestPlayer(match);
   const players = match?.players || [];
@@ -226,23 +237,24 @@ export default function ClubOverview() {
           <div>
             <div className="page-section-title">Ключевые показатели матча</div>
             <div className="club-overview__kpi">
-              <KpiCell label="Забитые"        value={match?.score?.home} accent="gold" />
-              <KpiCell label="Пропущенные"    value={match?.score?.away} />
-              <KpiCell label="Владение, %"    value={home.possessionPct} />
-              <KpiCell label="Удары всего"    value={home.shots?.total} />
-              <KpiCell label="Удары в створ"  value={home.shots?.onTarget} />
-              <KpiCell label="xG"             value={home.expectedGoals} />
-              <KpiCell label="Передачи"       value={home.passes?.total} />
-              <KpiCell label="% точных"       value={home.passes?.accuracy} suffix="%" />
-              <KpiCell label="Угловые"        value={home.corners?.total} />
-              <KpiCell label="Штрафные удары" value={home.freeKickShots} />
-              <KpiCell label="Нарушения"      value={home.fouls} />
-              <KpiCell label="Офсайды"        value={home.offsides} />
+              <KpiCell label="Забитые"        value={ourScore} accent="gold" />
+              <KpiCell label="Пропущенные"    value={theirScore} />
+              <KpiCell label="Владение, %"    value={us.possessionPct} />
+              <KpiCell label="Удары всего"    value={us.shots?.total} />
+              <KpiCell label="Удары в створ"  value={us.shots?.onTarget} />
+              <KpiCell label="xG"             value={us.expectedGoals} />
+              <KpiCell label="Передачи"       value={us.passes?.total} />
+              <KpiCell label="% точных"       value={us.passes?.accuracy} suffix="%" />
+              <KpiCell label="Угловые"        value={us.corners?.total} />
+              <KpiCell label="Штрафные удары" value={us.freeKickShots} />
+              <KpiCell label="Нарушения"      value={us.fouls} />
+              <KpiCell label="Офсайды"        value={us.offsides} />
             </div>
           </div>
 
-          {/* Команда по таймам */}
-          {halfMetrics.length > 0 && (
+          {/* Команда по таймам — только если есть реальные данные полутаймов
+              (splits игроков). Иначе парсер не извлёк splits → все нули → секцию прячем. */}
+          {halfMetrics.some((m) => m.first > 0 || m.second > 0) && (
             <div className="card">
               <div className="page-section-title">1 тайм vs 2 тайм — командно</div>
               <div className="halftime-team">
@@ -317,11 +329,11 @@ export default function ClubOverview() {
             <div className="card">
               <div className="page-section-title">Атака</div>
               <AoBars items={[
-                ['Удары в створ',              num(home.shots?.onTarget),                       home.shots?.total],
-                ['xG',                         num(home.expectedGoals),                          5],
+                ['Удары в створ',              num(us.shots?.onTarget),                       us.shots?.total],
+                ['xG',                         num(us.expectedGoals),                          5],
                 ['Прогрессивные передачи',     num(match?.teamAggregates?.passes?.progressive),  100],
                 ['Передачи в финальную треть', num(match?.teamAggregates?.passes?.toFinalThird), 80],
-                ['Угловые',                    num(home.corners?.total),                         10],
+                ['Угловые',                    num(us.corners?.total),                         10],
                 ['Кроссы',                     num(match?.teamAggregates?.passes?.crosses),      30],
               ]} colorFn={() => '#22d3ee'} />
             </div>

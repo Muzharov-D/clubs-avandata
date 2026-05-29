@@ -7,6 +7,7 @@ import PdfUploadDialog from '../components/PdfUploadDialog';
 import PlayerPhoto from '../components/PlayerPhoto';
 import { ratingColor, ratingTextColor } from '../utils/colors';
 import { shortNameFromPlayer } from '../utils/players';
+import { isOurClub } from '../utils/legirus';
 import { useAuth } from '../contexts/AuthContext';
 import { useTeam } from '../contexts/TeamContext';
 import { useTournament } from '../contexts/TournamentContext';
@@ -51,14 +52,13 @@ export default function MatchesDashboard() {
   const lastMatch = lastMatchRes.data;
 
   const totalGames = matches.length;
-  // matches API возвращает {home, away, scoreHome, scoreAway} (имена, не teamId).
-  // Определяем «мы дома» по совпадению home name с teamId-постфиксом
-  // (zenit-fk-2011 → «зенит» / «фк зенит»), fallback — ourTeam.name.
-  const ourNameLower = (ourTeam?.name || selectedTeam?.name || '').toLowerCase().replace(/\s*u-?\d+\s*$/i, '').trim();
+  // «Мы дома?» — приоритет по ID (бэк заполняет home_team_id/away_team_id при upload
+  // + backfill, задача #4): наша сторона та, чей team-id == teamId матча. Для legacy-строк
+  // без id'шек (ещё не забэкфиллены) — tenant-aware fallback по нормализованному имени.
+  // Старая эвристика home.includes(ourName) переворачивала голы при непопадании имени.
   const isHomeOurs = (m) => {
-    const h = String(m.home || '').toLowerCase();
-    if (!ourNameLower) return false;
-    return h === ourNameLower || h.includes(ourNameLower);
+    if (m.homeTeamId || m.awayTeamId) return m.homeTeamId === m.teamId;
+    return isOurClub(m.home);
   };
   const goalsFor = matches.reduce((s, m) =>
     s + (isHomeOurs(m) ? Number(m.scoreHome || 0) : Number(m.scoreAway || 0)), 0);
