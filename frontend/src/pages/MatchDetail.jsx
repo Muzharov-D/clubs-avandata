@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useApi } from '../hooks/useApi';
-import { fetchMatch, fetchPlayers, fetchMatches, deleteMatch } from '../services/api';
+import { fetchMatch, fetchPlayers, fetchMatches, deleteMatch, updateMatchNote } from '../services/api';
 import { useTeam } from '../contexts/TeamContext';
 import { useAuth } from '../contexts/AuthContext';
 import { toast } from '../components/Toast';
@@ -14,8 +14,11 @@ import PlayerPhoto from '../components/PlayerPhoto';
 import RatingPill from '../components/RatingPill';
 import RatingCard from '../components/RatingCard';
 import SoccerFieldImageMap from '../components/SoccerFieldImageMap';
+import DataQualityBadge from '../components/DataQualityBadge';
 import { shieldFor } from '../utils/legirus';
 import { shortNameFromPlayer } from '../utils/players';
+import { matchInsights } from '../utils/insights';
+import { downloadCsv } from '../utils/exportCsv';
 import './MatchDetail.css';
 
 const SECTION_MAPS = [
@@ -117,6 +120,29 @@ export default function MatchDetail() {
     return pos + cnt;
   }, [ta]);
 
+  const insights = useMemo(() => matchInsights(match), [match]);
+
+  // CSV-экспорт метрик матча по игрокам (для тренерского совета).
+  function handleExport() {
+    if (!match) return;
+    const cols = [
+      { label: 'Игрок', get: (p) => shortNameFromPlayer(p) },
+      { label: '№', get: (p) => p.number ?? '' },
+      { label: 'Позиция', get: (p) => p.positionFull || p.position || '' },
+      { label: 'Минуты', get: (p) => p.minutes ?? '' },
+      { label: 'Общий', get: (p) => p.ratings?.overall ?? '' },
+      { label: 'Атака', get: (p) => p.ratings?.attack ?? '' },
+      { label: 'Защита', get: (p) => p.ratings?.defence ?? '' },
+      { label: 'Фитнес', get: (p) => p.ratings?.fitness ?? '' },
+      { label: 'Голы', get: (p) => num(p.stats?.attack4?.goal) ?? '' },
+      { label: 'Ассисты', get: (p) => num(p.stats?.attack1?.assist) ?? '' },
+      { label: 'Удары', get: (p) => num(p.stats?.attack4?.shot) ?? '' },
+      { label: 'Отборы', get: (p) => num(p.stats?.defence1?.tackle) ?? '' },
+      { label: 'Дистанция, м', get: (p) => num(p.stats?.fitness?.totalDistance) ?? '' },
+    ];
+    downloadCsv(`match-${(trimAgeStr(match.away) || matchId).slice(0, 24)}`, match.players || [], cols);
+  }
+
   const topGoals = useMemo(() => topByMetric(match?.players || [], (p) => p.stats?.attack4?.goal), [match]);
   const topAssists = useMemo(() => topByMetric(match?.players || [], (p) => p.stats?.attack1?.assist), [match]);
   const topTackles = useMemo(() => topByMetric(match?.players || [], (p) => p.stats?.defence1?.tackle), [match]);
@@ -168,18 +194,18 @@ export default function MatchDetail() {
 
   return (
     <div className="page match-detail">
-      <div className="match-detail__topbar" style={{ display: 'flex', alignItems: 'center' }}>
+      <div className="match-detail__topbar">
         <button className="match-detail__back" onClick={() => navigate('/matches')}>← К матчам</button>
-        {canDelete && (
-          <button
-            onClick={handleDelete}
-            title="Удалить загруженный отчёт"
-            style={{ marginLeft: 'auto', background: 'transparent', border: '1px solid var(--danger)',
-                     color: 'var(--danger)', borderRadius: 8, padding: '6px 12px', cursor: 'pointer', fontSize: 13 }}
-          >
-            🗑 Удалить отчёт
-          </button>
-        )}
+        {match.dataQuality && <DataQualityBadge dq={match.dataQuality} />}
+        <div className="match-detail__tools">
+          <button className="md-tool-btn" onClick={handleExport} title="Скачать метрики матча в CSV">⤓ CSV</button>
+          <button className="md-tool-btn" onClick={() => window.print()} title="Печать / сохранить в PDF">🖨 PDF</button>
+          {canDelete && (
+            <button className="md-tool-btn md-tool-btn--danger" onClick={handleDelete} title="Удалить загруженный отчёт">
+              🗑 Удалить
+            </button>
+          )}
+        </div>
       </div>
 
       {/* HERO: счёт и команды */}
@@ -232,6 +258,24 @@ export default function MatchDetail() {
         <RatingCard label="Атака" value={teamRatings.attack} />
         <RatingCard label="Защита" value={teamRatings.defence} />
       </div>
+
+      {/* Авто-инсайты по матчу (Phase 5) */}
+      {insights.length > 0 && (
+        <div className="card match-detail__insights">
+          <div className="page-section-title">Ключевые выводы</div>
+          <ul className="md-insights">
+            {insights.map((it, i) => (
+              <li key={i} className={`md-insight md-insight--${it.tone}`}>
+                <span className="md-insight__mark" aria-hidden="true">
+                  {it.tone === 'positive' ? '▲' : it.tone === 'negative' ? '▼' : '•'}
+                </span>
+                {it.text}
+              </li>
+            ))}
+          </ul>
+          <div className="md-insights__note">Автоматически по данным матча — не заменяет разбор тренера.</div>
+        </div>
+      )}
 
       {/* Хроника матча (best-effort из PDF) — рендерится только если events найдены */}
       <MatchTimeline events={match.events || []} />
@@ -383,6 +427,9 @@ export default function MatchDetail() {
         </div>
       </div>
 
+      {/* Заметка тренера к разбору (Phase 3) — только тренеры */}
+      {canDelete && <CoachNoteCard key={matchId} matchId={matchId} initial={match.coachNote} />}
+
       {/* Командные карты — рендерим всю секцию только если хотя бы 1 карта есть */}
       {SECTION_MAPS.some((sec) => ta[sec.id]?.mapImage) && (
       <div className="card match-detail__maps-card">
@@ -400,6 +447,42 @@ export default function MatchDetail() {
         </div>
       </div>
       )}
+    </div>
+  );
+}
+
+function CoachNoteCard({ matchId, initial }) {
+  const [note, setNote] = useState(initial || '');
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
+  async function save() {
+    setSaving(true);
+    try {
+      await updateMatchNote(matchId, note);
+      setSaved(true);
+      toast.success('Заметка сохранена');
+      setTimeout(() => setSaved(false), 2000);
+    } catch (e) {
+      toast.error(e?.message || 'Не удалось сохранить');
+    } finally {
+      setSaving(false);
+    }
+  }
+  return (
+    <div className="card match-detail__note">
+      <div className="page-section-title">Заметка тренера</div>
+      <textarea
+        className="md-note__area"
+        rows={4}
+        value={note}
+        onChange={(e) => setNote(e.target.value)}
+        placeholder="Выводы по матчу, что отработать на тренировке, на кого обратить внимание…"
+        aria-label="Заметка тренера к матчу"
+      />
+      <div className="md-note__actions">
+        <button onClick={save} disabled={saving}>{saving ? 'Сохранение…' : 'Сохранить'}</button>
+        {saved && <span className="md-note__saved">✓ сохранено</span>}
+      </div>
     </div>
   );
 }

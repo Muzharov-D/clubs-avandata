@@ -29,7 +29,7 @@
 }
 .players-subnav__item:hover { color: #fff; }
 .players-subnav__item.active {
-  background: linear-gradient(135deg, #1a4ba0 0%, #2c66c7 100%);
+  background: var(--brand-gradient);
   color: #fff;
 }
 
@@ -100,7 +100,7 @@
   color: #fff;
 }
 .chip--active {
-  background: linear-gradient(135deg, #1a4ba0, #2c66c7);
+  background: var(--brand-gradient);
   border-color: rgba(34, 211, 238, 0.5);
   color: #fff;
   font-weight: 600;
@@ -219,6 +219,15 @@
   color: #22d3ee;
   font-size: 14px;
   font-variant-numeric: tabular-nums;
+  display: inline-flex;
+  align-items: baseline;
+  justify-content: flex-end;
+  gap: 6px;
+}
+.players-rating__pct {
+  font-size: 10px;
+  font-weight: 700;
+  opacity: 0.85;
 }
 
 .players-rating__row--locked {

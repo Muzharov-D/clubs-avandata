@@ -58,9 +58,13 @@ export function PlayerRadar({ player, teamPlayers, brand = '#1FB6FF' }: Props) {
   // Уникальный id для градиента (несколько радаров на одной странице)
   const gradId = `prdr-grad-${player.playerId ?? player.number ?? Math.random().toString(36).slice(2)}`;
 
+  const ariaLabel =
+    'Радар Performance Index (0–10): ' +
+    values.map((v) => `${v.ax.label} ${v.my.toFixed(1)}`).join(', ');
+
   return (
     <div className="prdr">
-      <svg viewBox={`0 0 ${size} ${size}`} className="prdr__svg">
+      <svg viewBox={`0 0 ${size} ${size}`} className="prdr__svg" role="img" aria-label={ariaLabel}>
         <defs>
           <radialGradient id={gradId} cx="50%" cy="50%" r="50%">
             <stop offset="0%" stopColor={brand} stopOpacity="0.55" />
@@ -96,6 +100,7 @@ export function PlayerRadar({ player, teamPlayers, brand = '#1FB6FF' }: Props) {
           </div>
         ))}
       </div>
+      <div className="prdr__caption">Performance Index SportVisor (0–10), не количество действий</div>
     </div>
   );
 }

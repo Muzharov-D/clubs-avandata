@@ -30,6 +30,8 @@ export const matches = pgTable(
     teamSummaryStats: jsonb('team_summary_stats'),
     teamAggregates: jsonb('team_aggregates'),
     teamAvgRatings: jsonb('team_avg_ratings'),
+    dataQuality: jsonb('data_quality'),
+    coachNote: text('coach_note'),
     meta: jsonb('meta').notNull().default(sql`'{}'::jsonb`),
   },
   (t) => [

@@ -25,6 +25,9 @@ export default function SidebarNav() {
       : isCoach
         ? { id: 'players', label: 'Игроки', path: '/players', icon: '👤' }
         : null,
+    isCoach
+      ? { id: 'load', label: 'Нагрузка', path: '/load', icon: '🏃' }
+      : null,
   ].filter(Boolean);
 
   function isActive(item) {
@@ -35,6 +38,7 @@ export default function SidebarNav() {
     if (item.id === 'trainings') return pathname.startsWith('/trainings');
     if (item.id === 'me')        return pathname === item.path;
     if (item.id === 'players')   return pathname.startsWith('/players');
+    if (item.id === 'load')      return pathname.startsWith('/load');
     return false;
   }
 
@@ -47,6 +51,8 @@ export default function SidebarNav() {
           className={`sidebar-nav__item ${isActive(it) ? 'sidebar-nav__item--active' : ''}`}
           onClick={() => navigate(it.path)}
           title={it.label}
+          aria-label={it.label}
+          aria-current={isActive(it) ? 'page' : undefined}
         >
           <span className="sidebar-nav__icon">{it.icon}</span>
           <span className="sidebar-nav__label">{it.label}</span>

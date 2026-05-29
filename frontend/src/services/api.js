@@ -210,6 +210,13 @@ export const updateMatchCoachComment = (age, extMatchId, comment) =>
   fetchJson(`/data/match/${encodeURIComponent(age)}/${encodeURIComponent(extMatchId)}/comment`, {
     method: 'PATCH', body: { comment },
   });
+// Phase 2/3 — тренды, сезонные агрегаты, заметка тренера к разбору.
+export const fetchPlayerTrend = (playerId) =>
+  fetchJson(`/data/player/${encodeURIComponent(playerId)}/trend`);
+export const fetchPlayersSeason = (teamId) =>
+  fetchJson(`/data/players/season${teamId ? `?teamId=${encodeURIComponent(teamId)}` : ''}`);
+export const updateMatchNote = (matchId, note) =>
+  fetchJson(`/data/match/${encodeURIComponent(matchId)}/note`, { method: 'PATCH', body: { note } });
 export const fetchMetrics = () => fetchJson('/data/metrics');
 export const fetchStandings = (ageGroup) => fetchJson(`/data/standings/${encodeURIComponent(ageGroup)}`);
 export const fetchStandingsList = () => fetchJson('/data/standings');

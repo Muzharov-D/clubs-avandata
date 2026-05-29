@@ -4,6 +4,11 @@
   --brand-primary-hover: #1d4ed8;
   --brand-secondary:     #1e40af;
   --brand-accent:        #22c55e;
+  /* White-label: акцентный градиент и cyan вынесены в токены (Phase 4).
+     Дефолты = текущая палитра «Зенита» → визуал не меняется, но клуб может
+     переопределить через applyTheme(tenants.brand). */
+  --brand-gradient:      linear-gradient(135deg, #1a4ba0 0%, #2c66c7 100%);
+  --accent-cyan:         #22d3ee;
 
   --bg-page:        #0f1115;
   --bg-surface:     #16191f;

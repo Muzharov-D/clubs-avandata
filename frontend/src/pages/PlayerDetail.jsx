@@ -11,6 +11,7 @@ import RatingCard from '../components/RatingCard';
 import RatingPill from '../components/RatingPill';
 import SoccerFieldImageMap from '../components/SoccerFieldImageMap';
 import PizzaChart from '../components/PizzaChart';
+import PlayerTrendCard from '../components/PlayerTrendCard';
 import { ratingColor } from '../utils/colors';
 import { num, percentileRank, formatRaw } from '../utils/num';
 import { POSITION_OPTIONS, PIZZA_VS_LABEL, TEMPLATES, getStatValue, positionGroup } from '../utils/pizzaTemplates';
@@ -317,6 +318,9 @@ export default function PlayerDetail() {
         <RatingCard label="Атака" value={ratings.attack} />
         <RatingCard label="Защита" value={ratings.defence} />
       </div>
+
+      {/* Динамика по сезону (Phase 2) */}
+      <PlayerTrendCard playerId={playerId} />
 
       {/* RIBBON: Лучший в команде */}
       {badges.length > 0 && (
