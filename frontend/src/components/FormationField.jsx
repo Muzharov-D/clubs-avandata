@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { ratingColor, ratingTextColor } from '../utils/colors';
-import { findPlayerByShortName, findPlayerByNumber, shortNameFromPlayer } from '../utils/players';
+import { shortNameFromPlayer } from '../utils/players';
 import PlayerPhoto from './PlayerPhoto';
 import './FormationField.css';
 
@@ -151,78 +151,37 @@ export default function FormationField({
   imageFullSrc,
 }) {
   const navigate = useNavigate();
-  // Defensive: backend может вернуть formation.starters не массивом если данные битые.
-  // Без этого .forEach в buildLayout кидает TypeError и роняет всю MatchDetail.
-  // Парсер иногда возвращает 22 стартующих (дубликаты для разных половин) —
-  // ограничиваем до 11 уникальных по номеру/имени.
-  // PDF-парсер формации может вернуть игроков ОБЕИХ команд + дубликаты по
-  // тайму. Фильтруем: дедуп по (номер, имя) + оставляем только тех, кто
-  // есть в `players` (= наш ростер). Если матча по номеру/имени нет — это
-  // игрок соперника или дубль с другим номером — скипаем.
-  const ourPlayerNumbers = new Set(
-    (players || []).map((p) => Number(p?.number)).filter((n) => Number.isFinite(n)),
+  // ИСТОЧНИК СОСТАВА — ТОЛЬКО match.players (наша команда: tenant+match-scoped на
+  // backend). Чужой игрок сюда физически не попадает. formation.starters из PDF
+  // грязный (обе команды вперемешку, дубли номеров, без позиций) — НЕ источник
+  // игроков, а лишь подсказка «кто в старте» (по нашим номерам). Объекты игроков,
+  // позиции, рейтинги, фото — всегда из ourPlayers. ⇒ чужой в составе невозможен.
+  const numOr0 = (v) => {
+    const n = v && typeof v === 'object' ? Number(v.value) : Number(v);
+    return Number.isFinite(n) ? n : 0;
+  };
+  const ourPlayers = (Array.isArray(players) ? players : []).filter((p) => p && p.id);
+  const norm = (p) => ({
+    ...p,
+    rating: numOr0(p.ratings?.overall),
+    shortName: shortNameFromPlayer(p) || p.shortName || p.lastName || '',
+    goals: numOr0(p.stats?.attack4?.goal),
+  });
+
+  const starterNums = new Set(
+    (Array.isArray(formation?.starters) ? formation.starters : [])
+      .map((s) => Number(s?.number))
+      .filter((n) => Number.isFinite(n)),
   );
-  function isOurPlayer(s) {
-    const num = Number(s?.number);
-    if (Number.isFinite(num) && ourPlayerNumbers.has(num)) return true;
-    // Если нет номера — пробуем по имени
-    const short = s?.shortName || s?.fullName || '';
-    return (players || []).some((p) => {
-      const ln = (p?.lastName || '').toLowerCase();
-      return ln && short.toLowerCase().includes(ln);
-    });
-  }
+  const byMinutes = (a, b) => (Number(b?.minutes) || 0) - (Number(a?.minutes) || 0);
 
-  // Enrich starter с position/positionFull из роли в roster — нужно для
-  // lineFor() чтобы понять линию даже когда parser не вернул positionSlot.
-  function enrichWithRoster(s) {
-    const num = Number(s?.number);
-    const short = String(s?.shortName || s?.fullName || '').toLowerCase();
-    const matched = (players || []).find((p) => {
-      if (Number.isFinite(num) && Number(p?.number) === num) return true;
-      const ln = String(p?.lastName || '').toLowerCase();
-      return ln && short.includes(ln);
-    });
-    if (!matched) return s;
-    return {
-      ...s,
-      position: s.position || matched.position,
-      positionFull: s.positionFull || matched.positionFull,
-    };
-  }
-
-  // Дедуп по СТАБИЛЬНОМУ ключу: номер на поле уникален, поэтому «В. Воронков №17»
-  // и «Воронков В. №17» (разное форматирование имени парсером) — это ОДИН игрок.
-  // Старый ключ `номер-имя` их НЕ схлопывал → два слота в одной точке (наложение
-  // фото на скриншоте). Без номера — ключ по фамилии (самая длинная часть имени).
-  function stableKey(s) {
-    const num = Number(s?.number);
-    if (Number.isFinite(num)) return `n:${num}`;
-    const parts = String(s?.shortName || s?.fullName || '')
-      .toLowerCase().replace(/\./g, '').split(/\s+/).filter(Boolean)
-      .sort((a, b) => b.length - a.length);
-    return `s:${parts[0] || ''}`;
-  }
-  function dedup(list) {
-    const seen = new Set();
-    return (Array.isArray(list) ? list : []).filter((s) => {
-      const k = stableKey(s);
-      if (seen.has(k)) return false;
-      seen.add(k);
-      return true;
-    });
-  }
-
-  const rawStarters = Array.isArray(formation?.starters) ? formation.starters : [];
-  const allStarters = dedup(rawStarters.filter(isOurPlayer)).map(enrichWithRoster);
-  if (allStarters.length > 11) {
-    // Парсер вернул >11 уникальных стартующих — данные противоречивы (обе команды
-    // или дубль по тайму без номера). Не молчим: режем до 11, но это сигнал данных.
-    console.warn(`[FormationField] >11 стартующих (${allStarters.length}) — обрезаю до 11`, ourTeamName);
-  }
-  const starters = allStarters.slice(0, 11);
-  const rawSubs = Array.isArray(formation?.substitutes) ? formation.substitutes : [];
-  const subs = dedup(rawSubs.filter(isOurPlayer));
+  // Стартеры = наши игроки, чьи номера есть в подсказке formation. Если подсказка
+  // пустая/битая (<7) — топ-11 по сыгранным минутам (стартеры играют больше).
+  let startSet = ourPlayers.filter((p) => starterNums.has(Number(p.number)));
+  if (startSet.length < 7) startSet = [...ourPlayers];
+  const starters = [...startSet].sort(byMinutes).slice(0, 11).map(norm);
+  const starterIds = new Set(starters.map((p) => p.id));
+  const subs = ourPlayers.filter((p) => !starterIds.has(p.id)).sort(byMinutes).map(norm);
 
   if (starters.length === 0 && imageSrc) {
     return (
@@ -250,11 +209,9 @@ export default function FormationField({
 
   const placed = buildLayout(starters);
 
+  // s уже является нашим match.player (id, фото, позиция, рейтинг) — резолвить не нужно.
   function resolvePlayer(s) {
-    return (
-      findPlayerByNumber(s.number, players) ||
-      findPlayerByShortName(s.shortName, players)
-    );
+    return s;
   }
 
   function go(s) {
