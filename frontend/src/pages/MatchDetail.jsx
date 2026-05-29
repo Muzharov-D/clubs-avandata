@@ -16,6 +16,8 @@ import RatingCard from '../components/RatingCard';
 import SoccerFieldImageMap from '../components/SoccerFieldImageMap';
 import DataQualityBadge from '../components/DataQualityBadge';
 import HalfSplitChart from '../components/HalfSplitChart';
+import RatingBeeswarm from '../components/RatingBeeswarm';
+import SpeedZones from '../components/SpeedZones';
 import { shieldFor } from '../utils/legirus';
 import { shortNameFromPlayer } from '../utils/players';
 import { matchInsights } from '../utils/insights';
@@ -139,6 +141,20 @@ export default function MatchDetail() {
       }
       return any ? { label, first: f, second: s } : null;
     }).filter((r) => r && r.first + r.second > 0);
+  }, [match]);
+
+  // Физическая нагрузка: интенсивный бег по зонам скорости (сортировка по сумме HSR).
+  const intensity = useMemo(() => {
+    const f = (p, k) => num(p.stats?.fitness?.[k]) || 0;
+    const list = (match?.players || [])
+      .filter((p) => (p.minutes ?? 0) > 0)
+      .map((p) => {
+        const z1 = f(p, 'speed_4_5_5'), z2 = f(p, 'speed_5_5_7'), z3 = f(p, 'speed_7plus');
+        return { p, z1, z2, z3, hsr: z1 + z2 + z3 };
+      })
+      .filter((r) => r.hsr > 0)
+      .sort((a, b) => b.hsr - a.hsr);
+    return { list, max: Math.max(1, ...list.map((r) => r.hsr)) };
   }, [match]);
 
   // Хроника матча показывается ТОЛЬКО если голы в событиях сходятся с финальным
@@ -301,6 +317,14 @@ export default function MatchDetail() {
         <RatingCard label="Защита" value={teamRatings.defence} />
       </div>
 
+      {/* Beeswarm рейтингов состава (StatsBomb-style) */}
+      {(match.players || []).filter((p) => (p.minutes ?? 0) > 0 && (p.ratings?.overall ?? 0) > 0).length >= 3 && (
+        <div className="card">
+          <div className="page-section-title">Рейтинги состава — распределение</div>
+          <RatingBeeswarm players={match.players} />
+        </div>
+      )}
+
       {/* Авто-инсайты по матчу (Phase 5) */}
       {insights.length > 0 && (
         <div className="card match-detail__insights">
@@ -327,6 +351,23 @@ export default function MatchDetail() {
         <div className="card">
           <div className="page-section-title">Динамика по таймам — команда</div>
           <HalfSplitChart rows={teamHalf} hint="Как команда распределила действия между таймами. ▲/▼ — изменение во 2-м тайме." />
+        </div>
+      )}
+
+      {/* Физическая нагрузка: интенсивный бег по зонам скорости */}
+      {intensity.list.length > 0 && (
+        <div className="card">
+          <div className="page-section-title">Физическая нагрузка — интенсивный бег</div>
+          <div className="md-intensity">
+            {intensity.list.map((r) => (
+              <SpeedZones key={r.p.id} compact label={shortNameFromPlayer(r.p)} z1={r.z1} z2={r.z2} z3={r.z3} scaleMax={intensity.max} />
+            ))}
+          </div>
+          <div className="sz__legend" style={{ marginTop: 10 }}>
+            <span><i className="sz__sw sz__sw--1" />4–5.5 м/с</span>
+            <span><i className="sz__sw sz__sw--2" />5.5–7 м/с</span>
+            <span><i className="sz__sw sz__sw--3" />7+ м/с (спринт)</span>
+          </div>
         </div>
       )}
 
