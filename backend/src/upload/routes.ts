@@ -37,12 +37,22 @@ const PARSERS_DIR = join(process.cwd(), 'parsers');
  * пусто) — когда имя не распозналось (например, пустой Excel). Кладём «№NN»,
  * чтобы UI показывал аккуратный номер, а не «U16».
  */
+function isPlaceholderName(s: string | null | undefined): boolean {
+  const t = String(s ?? '').trim();
+  return !t || /^u[-\s]?\d{1,3}$/i.test(t) || /^№?\s*\d+$/.test(t) || /^игрок/i.test(t);
+}
+
 function cleanPlayerName(raw: string | null | undefined, num: number): string {
   const t = String(raw ?? '').trim();
-  if (!t || /^u[-\s]?\d{1,3}$/i.test(t) || /^№?\s*\d+$/.test(t)) {
-    return `№${String(num).padStart(2, '0')}`;
-  }
+  if (isPlaceholderName(t)) return `№${String(num).padStart(2, '0')}`;
   return t;
+}
+
+/** Разбивает «Фамилия И.» → {firstName, lastName} для записи в БД. */
+function splitName(full: string): { firstName: string | null; lastName: string } {
+  const parts = full.trim().split(/\s+/).filter(Boolean);
+  if (parts.length <= 1) return { firstName: null, lastName: full.trim() };
+  return { lastName: parts[0]!, firstName: parts.slice(1).join(' ') };
 }
 
 interface ExcelOutput {
@@ -491,6 +501,16 @@ export async function uploadRoutes(app: FastifyInstance) {
                ON CONFLICT (id) DO NOTHING`,
               [playerId, tenantSlug, teamId, cleanPlayerName(meta.name, parseInt(numStr, 10)), parseInt(numStr, 10), meta.position],
             );
+          } else if (meta.name && !isPlaceholderName(meta.name) && isPlaceholderName(rosterRow.fullName)) {
+            // Существующий игрок с именем-заглушкой («U16»/«№8») — подставляем
+            // реальное имя из PDF (Excel может быть пустым, а в PDF имена есть).
+            const { firstName, lastName } = splitName(meta.name.trim());
+            await conn.query(
+              `UPDATE players SET full_name = $1, first_name = $2, last_name = $3
+                 WHERE id = $4 AND tenant_id = $5`,
+              [meta.name.trim(), firstName, lastName, playerId, tenantSlug],
+            );
+            logger.info({ matchId, playerId, name: meta.name.trim() }, '[upload] backfilled real name from PDF');
           }
           combined.set(numStr, {
             number: numStr,
