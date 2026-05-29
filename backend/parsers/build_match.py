@@ -46,6 +46,46 @@ def _players_json_path():
     return os.environ.get("ROSTER_JSON") or DEFAULT_PLAYERS_JSON
 
 
+# ── Стратегия источников (по убыванию надёжности): ───────────────────────────
+#   1. КОМАНДНЫЙ дашборд PDF (teamAggregates, единый источник нашей команды) —
+#      самый надёжный для командных тоталов (xG, удары, угловые…).
+#   2. Сводка page1 (head-to-head) — у неё многоколоночный лейаут, часть значений
+#      нашей стороны теряется (xG=0). Берём как первичную, но дыры закрываем (1).
+#   3. Excel — per-player, командных тоталов нет; служит fallback'ом для значений
+#      ИГРОКОВ на этапе upload (см. merge в upload/routes.ts). Excel есть не всегда.
+# Здесь реализуем (2)←(1): заполняем сомнительные (0/нет) значения нашей стороны
+# сводки из командных агрегатов. Наша сторона — home (build_match: isOurTeam=home).
+def _agg_value(d):
+    return d.get("value") if isinstance(d, dict) else d
+
+
+def backfill_summary_from_aggregates(stats, agg):
+    """Заполнить 0/отсутствующие поля нашей стороны сводки из teamAggregates."""
+    if not isinstance(stats, dict) or not isinstance(agg, dict):
+        return
+    sh  = agg.get("shooting") or {}
+    sp  = agg.get("setPieces") or {}
+    pos = agg.get("positioning") or {}
+    # xG — главная дыра page1
+    if not stats.get("expectedGoals") and sh.get("expectedGoals"):
+        stats["expectedGoals"] = sh["expectedGoals"]
+    # Удары {total, accuracy, onTarget}
+    ts = sh.get("totalShots")
+    if isinstance(ts, dict) and ts.get("value") and not (stats.get("shots") or {}).get("total"):
+        stats["shots"] = {"total": ts.get("value", 0), "accuracy": ts.get("pct", 0), "onTarget": ts.get("onTarget", 0)}
+    # Угловые
+    co = sp.get("corners")
+    if isinstance(co, dict) and co.get("value") and not (stats.get("corners") or {}).get("total"):
+        stats["corners"] = {"total": co.get("value", 0), "accuracy": co.get("pct", 0), "successful": co.get("successful", 0)}
+    # Офсайды / нарушения / штрафные удары
+    if not stats.get("offsides") and _agg_value(sp.get("offsides")):
+        stats["offsides"] = _agg_value(sp.get("offsides"))
+    if not stats.get("fouls") and _agg_value(pos.get("fouls")):
+        stats["fouls"] = _agg_value(pos.get("fouls"))
+    if not stats.get("freeKickShots") and _agg_value(sp.get("freeKicks")):
+        stats["freeKickShots"] = _agg_value(sp.get("freeKicks"))
+
+
 def load_team_roster(team_id):
     """Return {number_str -> player_dict} for the given team."""
     pj = _players_json_path()
@@ -167,6 +207,10 @@ def main():
     except Exception as e:
         LOG.warning("aggregates failed: %s — using stub", e)
         aggregates = {}
+
+    # PDF-internal fallback: закрываем сомнительные нули НАШЕЙ стороны сводки
+    # (page1 head-to-head) значениями из надёжных командных дашбордов.
+    backfill_summary_from_aggregates(page1.get("homeStats", {}), aggregates)
 
     LOG.info("Stage 4/4: player splits (best-effort)")
     try:

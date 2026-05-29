@@ -490,7 +490,14 @@ export async function uploadRoutes(app: FastifyInstance) {
             maps: maps.playerMaps[playerId] ?? {},
           });
         }
-        // FALLBACK: Excel — добавить группы которых нет в PDF (passing/duels/pressing/dribbling)
+        // ── Стратегия источников per-player: PDF — основной, Excel — fallback. ──
+        // PDF (rich) даёт ratings/radar + attack/defence/fitness. Excel несёт
+        // ДРУГИЕ группы (passing/duels/pressing/dribbling/setpieces/fouls) — их в
+        // PDF нет. Поэтому Excel ДОБАВЛЯЕТ недостающие группы, не перетирая PDF.
+        // `excelData?.players ?? []` → если Excel не загружен, цикл просто пустой
+        // (Excel есть не всегда — деградируем gracefully, PDF самодостаточен).
+        // Доверие к значению = «есть группа». Группа из PDF приоритетна; пустую
+        // (которой PDF не дал) закрываем из Excel.
         for (const ep of excelData?.players ?? []) {
           if (!ep.number) continue;
           const numStr = String(parseInt(ep.number, 10)).padStart(2, '0');
@@ -498,7 +505,9 @@ export async function uploadRoutes(app: FastifyInstance) {
           if (!ex) continue;
           const stats = ex.stats as Record<string, unknown>;
           for (const [grp, vals] of Object.entries(ep.stats)) {
-            if (!stats[grp]) stats[grp] = vals;
+            const cur = stats[grp];
+            const pdfHasGroup = cur && typeof cur === 'object' && Object.keys(cur).length > 0;
+            if (!pdfHasGroup) stats[grp] = vals;  // PDF группу не дал → берём из Excel
           }
         }
         // FROM old build_match — для splits только (1st/2nd half)
