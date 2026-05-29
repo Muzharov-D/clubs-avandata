@@ -1,28 +1,36 @@
-"""Полный парсер SportVisor PDF (Zenit/современный формат).
+"""Полный парсер SportVisor PDF (современный формат, любой размер состава).
 
-Использует pdfplumber.extract_tables() — берёт вторую таблицу на странице
-(первая всегда заголовок). Decode'ит compound-значения:
-  "1233%4"   → {total: 12, accuracy: 33, successful: 4}
-  "5 | 27"   → {successful: 5, total: 27}
-  "10%0"     → {total: 10, accuracy: 0, successful: 0}
-  "0"        → {value: 0}
-  "5.2"      → {value: 5.2}
+Надёжность к 11..40 игрокам:
+  • страницы находятся по подзаголовку-категории ("Performance index All" и т.д.),
+    а НЕ по номеру страницы;
+  • парсятся ВСЕ строки-игроки на странице (не фиксированные 17);
+  • большой состав, разбитый на несколько страниц одной категории, собирается
+    через аккумуляцию + safety-net продолжения (страница без подзаголовка, но с
+    игровыми строками и тем же числом колонок → продолжение предыдущей категории);
+  • позиция не используется как жёсткий фильтр (строка — игрок, если col0 = «NN Имя»
+    и col2 ≈ минуты), поэтому необычные амплуа не теряются;
+  • реальные имена (Имя Фамилия) и полное амплуа берутся со страниц per-player
+    («8 Илья Храбрый | Центральный нападающий») и мерджатся по номеру.
+
+Использует pdfplumber.extract_tables() — она устойчиво режет колонки даже там,
+где extract_text() ломает многострочные заголовки.
 
 Output:
   {
-    "overall_meta": { '01': {name, position, minutes} },
-    "radar":  { '01': {16 radar fields} },
-    "fitness":{ '01': {totalDistance, sprints, ...} },
-    "attack": { '01': {goal, shot, assist, ..., 30+ fields} },
-    "defence":{ '01': {tackle, interception, save, ...} },
+    "overall_meta": { '08': {name, firstName, lastName, position, positionFull, minutes} },
+    "radar":  { '08': {overall, attackTotal, ...} },
+    "fitness":{ '08': {totalDistance, ...} },
+    "attack": { '08': {goal, shot, ...} },
+    "defence":{ '08': {tackle, save, ...} },
   }
 """
-import argparse, json, re
+import argparse, json, re, sys
 import pdfplumber
 
-POSITIONS = {'ВР','ЦЗ','ЛЗ','ПЗ','ЦОП','ЛЦП','ПЦП','ЦН','ЛН','ПН','ЛКЗ','ПКЗ','ВОП','КАП','ЛВ','ПВ','ОПЗ'}
+# Известные коды амплуа — ТОЛЬКО подсказка/нормализация, не фильтр.
+POSITIONS = {'ВР','ЦЗ','ЛЗ','ПЗ','ЦОП','ЛЦП','ПЦП','ЦН','ЛН','ПН','ЛКЗ','ПКЗ','ВОП','КАП','ЛВ','ПВ','ОПЗ','ОП'}
 
-# (header_substring_lowercase, target, columns_after_min_in_order)
+# (подстрока подзаголовка в lower, цель, колонки после «Мин» по порядку)
 PAGE_RULES = [
     {'h': 'performance index all',     't': 'radar',   'cols': ['overall','fitnessTotal','attackTotal','defenceTotal']},
     {'h': 'performance index fitness', 't': 'radar',   'cols': ['fitnessRating','distance','intensity']},
@@ -42,46 +50,43 @@ PAGE_RULES = [
     {'h': 'defence goalkeeping',       't': 'defence', 'cols': ['save','goalkeeperExits','shotsAgainst','goalKick','shortGoalKicks','longGoalKicks']},
 ]
 
+NUM_NAME_RE = re.compile(r'^\s*(\d{1,2})\s+(.+\S)\s*$')
+MINUTES_RE = re.compile(r"^\s*(\d{1,3})\s*['’ʹ`]?\s*$")
+# Заголовок per-player страницы: «… Player Stats – Макар Долгодуш».
+# Берём ПОЛНОЕ имя отсюда (надёжно при любой вёрстке тела страницы).
+TITLE_NAME_RE = re.compile(r'Player Stats\s*[–\-]\s*(.+?)\s*$')
+INITIAL_RE = re.compile(r'^[А-ЯЁA-Z]\.?$')
+
 
 def parse_compound(s):
-    """Parse one cell value into structured dict or simple number.
-
-    Examples:
-      "0"        → 0
-      "5.2"      → 5.2
-      "5 | 27"   → {value: 5, total: 27}
-      "1233%4"   → {total: 12, accuracy: 33, successful: 4}
-      "1100%1"   → {total: 1, accuracy: 100, successful: 1}
-      "10%0"     → {total: 1, accuracy: 0, successful: 0}  (best fit)
-    """
-    if s is None: return None
+    """Парсит ячейку в структурированный dict или число."""
+    if s is None:
+        return None
     s = str(s).strip()
-    if s == '' or s == '-': return None
+    if s == '' or s == '-':
+        return None
 
-    # "X | Y" — successful | total
     if '|' in s:
         parts = [p.strip() for p in s.split('|')]
         try:
             if len(parts) == 2:
-                left = float(parts[0])
-                right = float(parts[1])
+                left = float(parts[0]); right = float(parts[1])
                 return {'value': left, 'total': right,
                         'accuracy': round(left / right * 100) if right > 0 else 0}
         except ValueError:
             pass
 
-    # "TOTAL_ACC%SUCC" compound
     m = re.match(r'^(\d+)%(\d+)$', s)
     if m:
         left, succ = m.group(1), int(m.group(2))
         best = None
         for split in range(1, len(left)):
             try:
-                t = int(left[:split])
-                a = int(left[split:])
+                t = int(left[:split]); a = int(left[split:])
             except ValueError:
                 continue
-            if a > 100: continue
+            if a > 100:
+                continue
             expected = round(t * a / 100)
             diff = abs(expected - succ)
             score = diff + (0.1 if a == 0 and succ != 0 else 0)
@@ -89,88 +94,162 @@ def parse_compound(s):
                 best = (t, a, score)
         if best is not None:
             return {'total': best[0], 'accuracy': best[1], 'successful': succ}
-        # Edge: e.g. "0%0" — single digit left
         if len(left) == 1:
             return {'total': int(left), 'accuracy': 0, 'successful': succ}
 
-    # Plain integer or float
     s2 = s.replace(',', '.').replace('%', '')
     try:
-        if '.' in s2:
-            return float(s2)
-        return int(s2)
+        return float(s2) if '.' in s2 else int(s2)
     except ValueError:
         return None
 
 
-def find_rule(headers, page_text):
-    text_lower = page_text.lower()
+def find_rule(page_text):
+    text_lower = (page_text or '').lower()
     for r in PAGE_RULES:
         if r['h'] in text_lower:
             return r
     return None
 
 
-def parse_row(row, cols):
-    """row from extract_tables: ['01 Изюмский Р.', 'ВР', "83'", 'val1', ...]"""
-    if not row or len(row) < 4: return None
-    name_cell = row[0]
-    if not name_cell: return None
-    name_cell = str(name_cell).strip()
+def is_player_row(row):
+    """Строка таблицы — это игрок? col0=«NN Имя», col2≈минуты (или пусто)."""
+    if not row or len(row) < 4:
+        return False
+    c0 = str(row[0] or '').strip()
+    m = NUM_NAME_RE.match(c0)
+    if not m:
+        return False
+    # после номера должно идти имя (не только цифры)
+    rest = m.group(2)
+    if not re.search(r'[A-Za-zА-Яа-яЁё]', rest):
+        return False
+    c2 = str(row[2] or '').strip()
+    return c2 == '' or MINUTES_RE.match(c2) is not None
 
-    m = re.match(r'^\s*(\d{1,2})\s+(.+)$', name_cell)
-    if not m: return None
+
+def count_player_rows(table):
+    return sum(1 for r in table[1:] if is_player_row(r)) if table and len(table) > 1 else 0
+
+
+def pick_data_table(page):
+    """Лучшая таблица страницы = с максимумом игровых строк (>=5 колонок)."""
+    best, best_n = None, 0
+    for t in page.extract_tables() or []:
+        if not t or len(t) < 2 or len(t[0]) < 5:
+            continue
+        n = count_player_rows(t)
+        if n > best_n:
+            best, best_n = t, n
+    return best
+
+
+def parse_row(row, cols):
+    if not is_player_row(row):
+        return None
+    m = NUM_NAME_RE.match(str(row[0]).strip())
     num = m.group(1).zfill(2)
     name = m.group(2).strip()
 
-    pos = (row[1] or '').strip()
-    if pos not in POSITIONS: return None
-
-    mins_cell = (row[2] or '').strip()
-    mm = re.match(r"^(\d+)'?$", mins_cell)
+    pos = str(row[1] or '').strip()
+    mm = MINUTES_RE.match(str(row[2] or '').strip())
     minutes = int(mm.group(1)) if mm else None
 
-    # Values start at column 3. Map to cols list.
-    raw_vals = row[3:]
     fields = {}
-    for col_name, raw in zip(cols, raw_vals):
+    for col_name, raw in zip(cols, row[3:]):
         v = parse_compound(raw)
         if v is not None:
             fields[col_name] = v
-
     return {'num': num, 'name': name, 'position': pos, 'minutes': minutes, 'fields': fields}
+
+
+def split_short(short):
+    """«Долгодуш М.» → (surname='Долгодуш', initial='М'); «Абу Хаграс Р.» → ('Абу Хаграс','Р')."""
+    toks = (short or '').split()
+    if toks and INITIAL_RE.match(toks[-1]):
+        return ' '.join(toks[:-1]), toks[-1][0]
+    return short or '', ''
+
+
+def match_full_name(short, fulls):
+    """Сопоставляет короткое имя из таблицы с полным из заголовка per-player.
+    Возвращает (fullName, firstName, lastName) или None.
+    Рус. формат полного имени: «Имя Фамилия[ Фамилия2]»."""
+    surname, initial = split_short(short)
+    sl = surname.lower()
+    # 1) точное: фамилия совпадает + инициал имени совпадает
+    for full in fulls:
+        ft = full.split()
+        if len(ft) < 2:
+            continue
+        first, last = ft[0], ' '.join(ft[1:])
+        if last.lower() == sl and initial and first[:1].lower() == initial.lower():
+            return full, first, last
+    # 2) fallback: единственное совпадение по фамилии
+    cand = []
+    for full in fulls:
+        ft = full.split()
+        if len(ft) >= 2 and ' '.join(ft[1:]).lower() == sl:
+            cand.append(full)
+    if len(cand) == 1:
+        ft = cand[0].split()
+        return cand[0], ft[0], ' '.join(ft[1:])
+    return None
 
 
 def parse(pdf_path):
     out = {'overall_meta': {}, 'radar': {}, 'fitness': {}, 'attack': {}, 'defence': {}}
+    full_names = set()  # полные имена со страниц per-player (из заголовка)
 
     with pdfplumber.open(pdf_path) as pdf:
-        for page_idx, page in enumerate(pdf.pages):
+        last_rule, last_ncols = None, 0
+        for page in pdf.pages:
             text = page.extract_text() or ''
-            rule = find_rule(None, text)
-            if not rule: continue
+            first_line = text.splitlines()[0] if text else ''
 
-            tables = page.extract_tables()
-            if not tables: continue
-            # Берём ВТОРУЮ таблицу (первая — header), либо первую с >5 cols
-            data_table = None
-            for t in tables:
-                if t and len(t) > 1 and len(t[0]) >= 5:
-                    data_table = t
-                    break
-            if not data_table: continue
+            # per-player страница: полное имя из заголовка «… Player Stats – Имя Фамилия»
+            mt = TITLE_NAME_RE.search(first_line)
+            if mt:
+                full_names.add(re.sub(r'\s+', ' ', mt.group(1).strip()))
+                continue
 
-            # Skip header row
+            rule = find_rule(text)
+            data_table = pick_data_table(page)
+
+            if not rule:
+                # safety-net продолжения категории (большой состав на 2+ страницах):
+                # та же ширина таблицы + есть игровые строки → продолжаем предыдущую.
+                if (last_rule and data_table and count_player_rows(data_table) >= 1
+                        and abs(len(data_table[0]) - last_ncols) <= 1):
+                    rule = last_rule
+                else:
+                    continue
+            if not data_table:
+                continue
+
+            last_rule, last_ncols = rule, len(data_table[0])
             for row in data_table[1:]:
                 pr = parse_row(row, rule['cols'])
-                if not pr: continue
+                if not pr:
+                    continue
                 num = pr['num']
-                if num not in out['overall_meta']:
-                    out['overall_meta'][num] = {
-                        'name': pr['name'], 'position': pr['position'], 'minutes': pr['minutes'],
-                    }
-                target = rule['t']
-                out[target].setdefault(num, {}).update(pr['fields'])
+                meta = out['overall_meta'].setdefault(num, {'name': pr['name'], 'position': pr['position'], 'minutes': pr['minutes']})
+                if not meta.get('minutes') and pr['minutes']:
+                    meta['minutes'] = pr['minutes']
+                if pr['position'] and not meta.get('position'):
+                    meta['position'] = pr['position']
+                out[rule['t']].setdefault(num, {}).update(pr['fields'])
+
+    # Обогащаем реальными ФИО: сопоставляем короткое имя из таблицы («Долгодуш М.»)
+    # с полным из заголовка per-player («Макар Долгодуш») по фамилии+инициалу.
+    fulls = list(full_names)
+    for meta in out['overall_meta'].values():
+        matched = match_full_name(meta.get('name', ''), fulls)
+        if matched:
+            full, first, last = matched
+            meta['name'] = full
+            meta['firstName'] = first
+            meta['lastName'] = last
 
     return out
 
@@ -183,9 +262,10 @@ def main():
     data = parse(args.input_pdf)
     with open(args.output_json, 'w', encoding='utf-8') as f:
         json.dump(data, f, ensure_ascii=False, indent=2)
-    print(f"OK players={len(data['overall_meta'])} "
+    named = sum(1 for m in data['overall_meta'].values() if m.get('firstName'))
+    print(f"OK players={len(data['overall_meta'])} named={named} "
           f"radar={len(data['radar'])} fitness={len(data['fitness'])} "
-          f"attack={len(data['attack'])} defence={len(data['defence'])}")
+          f"attack={len(data['attack'])} defence={len(data['defence'])}", file=sys.stderr)
 
 
 if __name__ == '__main__':

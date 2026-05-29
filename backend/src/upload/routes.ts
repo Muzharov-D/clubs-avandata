@@ -55,6 +55,23 @@ function splitName(full: string): { firstName: string | null; lastName: string }
   return { lastName: parts[0]!, firstName: parts.slice(1).join(' ') };
 }
 
+/**
+ * Имя для записи в БД из meta парсера. Парсер даёт firstName/lastName (полное имя
+ * «Имя Фамилия»), либо только короткое «Фамилия И.» в name — обрабатываем оба.
+ */
+function nameParts(
+  meta: { name?: string; firstName?: string; lastName?: string },
+  num: number,
+): { full: string; firstName: string | null; lastName: string } {
+  const full = cleanPlayerName(meta.name, num);
+  if (isPlaceholderName(full)) return { full, firstName: null, lastName: full };
+  if (meta.firstName || meta.lastName) {
+    return { full, firstName: meta.firstName ?? null, lastName: meta.lastName ?? full };
+  }
+  const sp = splitName(full); // legacy «Фамилия И.»
+  return { full, firstName: sp.firstName, lastName: sp.lastName };
+}
+
 interface ExcelOutput {
   match: {
     homeTeam: string | null;
@@ -207,7 +224,7 @@ export async function uploadRoutes(app: FastifyInstance) {
       // до записи в БД, а не пишем мусор.
       validateRich(JSON.parse(await readFile(richPath, 'utf-8')));
       const rich = JSON.parse(await readFile(richPath, 'utf-8')) as {
-        overall_meta: Record<string, { name: string; position: string; minutes: number | null }>;
+        overall_meta: Record<string, { name: string; position: string; minutes: number | null; firstName?: string; lastName?: string; positionFull?: string }>;
         radar:   Record<string, Record<string, number>>;
         fitness: Record<string, Record<string, unknown>>;
         attack:  Record<string, Record<string, unknown>>;
@@ -494,23 +511,23 @@ export async function uploadRoutes(app: FastifyInstance) {
           const radar = rich.radar[numStr] ?? {};
           const rosterRow = rosterByNum.get(numStr);
           const playerId = rosterRow?.id ?? `pdf-${teamId}-n${numStr}`;
+          const np = nameParts(meta, parseInt(numStr, 10));
           if (!rosterRow) {
             await conn.query(
-              `INSERT INTO players (id, tenant_id, team_id, full_name, number, position)
-               VALUES ($1, $2, $3, $4, $5, $6)
+              `INSERT INTO players (id, tenant_id, team_id, full_name, first_name, last_name, number, position)
+               VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
                ON CONFLICT (id) DO NOTHING`,
-              [playerId, tenantSlug, teamId, cleanPlayerName(meta.name, parseInt(numStr, 10)), parseInt(numStr, 10), meta.position],
+              [playerId, tenantSlug, teamId, np.full, np.firstName, np.lastName, parseInt(numStr, 10), meta.position],
             );
-          } else if (meta.name && !isPlaceholderName(meta.name) && isPlaceholderName(rosterRow.fullName)) {
+          } else if (!isPlaceholderName(np.full) && isPlaceholderName(rosterRow.fullName)) {
             // Существующий игрок с именем-заглушкой («U16»/«№8») — подставляем
             // реальное имя из PDF (Excel может быть пустым, а в PDF имена есть).
-            const { firstName, lastName } = splitName(meta.name.trim());
             await conn.query(
               `UPDATE players SET full_name = $1, first_name = $2, last_name = $3
                  WHERE id = $4 AND tenant_id = $5`,
-              [meta.name.trim(), firstName, lastName, playerId, tenantSlug],
+              [np.full, np.firstName, np.lastName, playerId, tenantSlug],
             );
-            logger.info({ matchId, playerId, name: meta.name.trim() }, '[upload] backfilled real name from PDF');
+            logger.info({ matchId, playerId, name: np.full }, '[upload] backfilled real name from PDF');
           }
           combined.set(numStr, {
             number: numStr,
