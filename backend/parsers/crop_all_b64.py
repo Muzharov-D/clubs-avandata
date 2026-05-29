@@ -60,7 +60,10 @@ HEADER_RE = re.compile(r"Player\s+Stats\s*[–—\-]\s*(.+?)\s*$")
 
 MARGIN_X = 28
 MARGIN_Y = 28
-PLAYER_MARGIN = 20
+# Карты игрока кропаем ВПЛОТНУЮ к объекту-изображению (само поле ≈95×143pt). Большой
+# margin затягивал заголовок «Fitness», ось таблицы слева и куски соседних карточек
+# справа — heatmap получалась грязной. 2pt = чистое поле как в SportVisor.
+PLAYER_MARGIN = 2
 THUMB_DPI = 200
 
 
@@ -218,21 +221,14 @@ def crop_player_maps(pdf, team_id):
                 [i for i in page.images if (i["x1"] - i["x0"]) > 60],
                 key=lambda i: (i["top"], i["x0"]),
             )
-            attack_img = None
+            # Нижний ряд, ПРАВАЯ половина — тепловая карта движения. Левая половина —
+            # пас-карта; больше не извлекаем (по требованию оставляем только heatmap).
             heat_img = None
             for img in medium:
-                if img["top"] > 300:  # bottom row
-                    if img["x0"] < page.width / 2:
-                        attack_img = img
-                    else:
-                        heat_img = img
+                if img["top"] > 300 and img["x0"] >= page.width / 2:
+                    heat_img = img
 
             entry = {}
-            if attack_img:
-                bbox = _safe_bbox(attack_img["x0"], attack_img["top"],
-                                  attack_img["x1"], attack_img["bottom"],
-                                  page, mx=PLAYER_MARGIN, my=PLAYER_MARGIN)
-                entry["attackMap"] = _crop_b64(page, bbox)
             if heat_img:
                 bbox = _safe_bbox(heat_img["x0"], heat_img["top"],
                                   heat_img["x1"], heat_img["bottom"],
