@@ -248,6 +248,36 @@ export async function authRoutes(app: FastifyInstance) {
    */
   app.get('/me', { onRequest: [authenticate] }, async (req) => {
     if (!req.user) throw new BadRequestError('no user');
+
+    // Сессия «просмотр клуба» (platform_admin → view-as-tenant): контекст берём
+    // из токена, а не из БД-записи админа (иначе фронт «откатится» в админку).
+    if (req.user.imp) {
+      let tenant: { slug: string; name: string; displayName: string; brand: unknown } | null = null;
+      if (req.user.tenantId) {
+        const tRows = await withBypassRLS((tx) =>
+          tx.select({
+            slug: tenants.slug, name: tenants.name,
+            displayName: tenants.displayName, brand: tenants.brand,
+          }).from(tenants).where(eq(tenants.slug, req.user!.tenantId!)).limit(1),
+        );
+        tenant = tRows[0] ?? null;
+      }
+      return {
+        tenant,
+        user: {
+          id: req.user.sub,
+          tenantId: req.user.tenantId,
+          email: null,
+          username: null,
+          fullName: tenant ? `Просмотр: ${tenant.displayName}` : 'Просмотр клуба',
+          role: req.user.role,
+          teamId: req.user.teamId,
+          playerId: req.user.playerId,
+          impersonating: true,
+        },
+      };
+    }
+
     const userRows = await withBypassRLS((tx) =>
       tx.select().from(users).where(eq(users.id, req.user!.sub)).limit(1),
     );

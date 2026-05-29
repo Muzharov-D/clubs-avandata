@@ -1,6 +1,7 @@
 import { Outlet } from 'react-router-dom';
 import AppHeader from '../components/AppHeader';
 import SidebarNav from '../components/SidebarNav';
+import ImpersonationBanner from '../components/ImpersonationBanner';
 
 // ИИ-агент полностью удалён в Sprint 2 cleanup. Будет переписан под LLM
 // (Claude/GPT) с retrieval по матчам сезона — см. HANDOFF.md, Точки роста.
@@ -8,6 +9,7 @@ import SidebarNav from '../components/SidebarNav';
 export default function MainLayout() {
   return (
     <div className="app-layout">
+      <ImpersonationBanner />
       <AppHeader />
       <div className="app-body">
         <SidebarNav />
