@@ -115,6 +115,18 @@ export default function ClubDashboard() {
       .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())[0] ?? null;
   }, [calendar]);
 
+  // Разбор (загруженный отчёт) ИМЕННО для последнего матча — ищем отчёт с той же
+  // датой. Кнопка «Открыть разбор» нужна только если разбор для этого матча есть;
+  // иначе (есть отчёт для другого матча или вообще нет) — кнопку не показываем.
+  const dayKey = (d: unknown): string => {
+    try { return new Date(d as string).toISOString().slice(0, 10); } catch { return ''; }
+  };
+  const lastReport = useMemo(() => {
+    if (!lastResult?.date) return null;
+    const day = dayKey(lastResult.date);
+    return matches.find((m) => m.date && dayKey(m.date) === day) ?? null;
+  }, [matches, lastResult]);
+
   const topPlayers = useMemo<AnyObj[]>(() => {
     const players: AnyObj[] = (latestMatch?.players ?? []) as AnyObj[];
     // Фильтр > 0: бенч/не-вышедшие имеют overall=0 (placeholder) — в топ-5 их не должно быть.
@@ -211,8 +223,8 @@ export default function ClubDashboard() {
               </span>
             </div>
             <div className="cd__hero-meta">{formatDateShort(lastResult.date)}</div>
-            {matches[0] && (
-              <button className="cd__hero-action" onClick={() => navigate(`/matches/${matches[0].id}`)}>
+            {lastReport && (
+              <button className="cd__hero-action" onClick={() => navigate(`/matches/${lastReport.id}`)}>
                 Открыть подробный разбор →
               </button>
             )}
