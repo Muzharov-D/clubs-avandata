@@ -68,12 +68,14 @@ def _passes_directional(pdf_path):
     except Exception:
         return {}
 
-    def near(labels, y_tol=8):
-        anchors = [y for x, y, t in words if t in labels and x >= 150]
+    def val_near(labels, x_min, x_max, y_tol=8):
+        # Якорь на слово-метку; берём ближайшее по Y число (не %) в нужной колонке
+        # значений [x_min,x_max] (левая ≈[80,150], правая ≈[200,330]; ось графика x≈481).
+        anchors = [y for x, y, t in words if t in labels]
         best = None
         for ly in anchors:
             for x, y, t in words:
-                if not (200 <= x <= 330) or "%" in t:
+                if not (x_min <= x <= x_max) or "%" in t:
                     continue
                 try:
                     n = int(t)
@@ -84,12 +86,16 @@ def _passes_directional(pdf_path):
         return best[1] if best else None
 
     out = {}
-    prog = near(["ПРОГРЕССИВНЫЕ"])
-    fin = near(["ФИН.", "ТРЕТЬ"])
-    if prog is not None:
-        out["progressive"] = prog
-    if fin is not None:
-        out["toFinalThird"] = fin
+    fields = {
+        "progressive":  (["ПРОГРЕССИВНЫЕ"], 200, 330),
+        "toFinalThird": (["ФИН.", "ТРЕТЬ"], 200, 330),
+        "forward":      (["ВПЕРЁД"],         80, 150),
+        "crosses":      (["КРОССЫ"],        200, 330),  # в passes.py метка была НАВЕСЫ → 0
+    }
+    for key, (labels, x_min, x_max) in fields.items():
+        v = val_near(labels, x_min, x_max)
+        if v is not None:
+            out[key] = v
     return out
 
 

@@ -334,6 +334,7 @@ export default function ClubOverview() {
                 ['xG',                         num(us.expectedGoals),                                      5],
                 ['Прогрессивные передачи',     num(match?.teamAggregates?.passes?.progressive),            90],
                 ['Передачи в финальную треть', num(match?.teamAggregates?.passes?.toFinalThird),           80],
+                ['Кроссы',                     num(match?.teamAggregates?.passes?.crosses),                25],
                 ['Угловые',                    num(us.corners?.total),                                     16],
                 ['Контратаки',                 num(match?.teamAggregates?.attacks?.counterattacks?.count), 30],
               ]} colorFn={() => '#22d3ee'} />
