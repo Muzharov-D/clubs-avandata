@@ -2,7 +2,7 @@
   "master": {
     "tasks": [
       {
-        "id": 1,
+        "id": "1",
         "title": "Remove temporary password from HTTP response",
         "description": "Replace temporary password exposure in JSON response with secure invite token system",
         "details": "In backend/src/admin/routes.ts:147, replace direct password return with invite token generation. Implement token-based password setup flow using Resend for email delivery. Create invite token table with expiration, generate secure random tokens, and build password setup endpoint that validates tokens. Remove TODO comment and ensure passwords never leave server in plain text.",
@@ -13,7 +13,7 @@
         "subtasks": []
       },
       {
-        "id": 2,
+        "id": "2",
         "title": "Restore real tenant isolation at database level",
         "description": "Implement proper Row Level Security with dedicated app role to prevent data leakage between tenants",
         "details": "Create new app database role without BYPASSRLS privilege. Grant necessary permissions to this role on all tables. Revert backend/drizzle/0004_relax_rls.sql by restoring FORCE ROW LEVEL SECURITY on all 16 tenant-scoped tables and users table. Update connection pool configuration to use app role instead of owner. Ensure RLS policies are active and enforced.",
@@ -24,31 +24,32 @@
         "subtasks": []
       },
       {
-        "id": 3,
+        "id": "3",
         "title": "Implement repository layer with mandatory tenant_id",
         "description": "Create data access layer that makes tenant_id filtering impossible to forget",
         "details": "Design repository pattern or wrapper functions that require tenant_id as mandatory parameter. Replace raw conn.query() calls in backend/src/data/routes.ts with type-safe repository methods. Leverage Drizzle's type system to enforce tenant scoping. Create base repository class with tenant context injection and extend for specific entities.",
         "testStrategy": "Unit tests for repository methods, compile-time verification of tenant_id requirement, integration tests for data isolation",
         "priority": "high",
         "dependencies": [
-          2
+          "2"
         ],
         "status": "pending",
         "subtasks": []
       },
       {
-        "id": 4,
+        "id": "4",
         "title": "Return matches with team IDs instead of names",
         "description": "Fix match team identification by using stable IDs instead of error-prone name matching",
         "details": "Modify backend API to return homeTeamId/awayTeamId fields alongside team names. Update frontend/src/pages/MatchesDashboard.jsx:58-68 to determine home/away status using ID comparison instead of string includes(). Remove the fragile h.includes(ourNameLower) logic that breaks with similar team names like 'Зенит' vs 'Зенит-2'.",
         "testStrategy": "Unit tests for team identification logic, integration tests with similar team names, validation of goalsFor/goalsAgainst correctness",
         "priority": "high",
         "dependencies": [],
-        "status": "pending",
-        "subtasks": []
+        "status": "done",
+        "subtasks": [],
+        "updatedAt": "2026-05-29T14:55:28.228Z"
       },
       {
-        "id": 5,
+        "id": "5",
         "title": "Distinguish between 'not rated' and low rating 0",
         "description": "Use null for unrated players instead of 0 to preserve actual low ratings",
         "details": "Update rating system to use null for 'not evaluated' state. Modify frontend/src/utils/colors.js:4, MatchesDashboard.jsx:117, RatingCard, and RatingPill components to check for null instead of <= 0. Preserve existing average calculation logic but base exclusion on null values. Update database schema and API responses accordingly.",
@@ -59,7 +60,7 @@
         "subtasks": []
       },
       {
-        "id": 6,
+        "id": "6",
         "title": "Tokenize all colors through CSS variables",
         "description": "Replace hardcoded colors with semantic CSS custom properties for white-label theming",
         "details": "Audit 33+ files containing hardcoded hex/rgb values (#1FB6FF in ClubDashboard.css, cyan/#07071c in AppHeader.css, RGB palette in StatTile.tsx, gradients in AddTeamSheet.css). Create comprehensive CSS custom property system with semantic tokens: --brand-primary, --surface-primary, --danger, --success, --neutral-*, --rating-excellent through --rating-poor. Replace all hardcoded values with var() references. Update colors.js rating scale to use CSS custom properties.",
@@ -70,7 +71,7 @@
         "subtasks": []
       },
       {
-        "id": 7,
+        "id": "7",
         "title": "Normalize data at single point (upload/parser)",
         "description": "Move all data normalization from frontend batch fixes to upload/parsing stage",
         "details": "Consolidate 49 batch fixes (trimAge, null filtering, deduplication by label, logo substitution) into single normalization point during upload/parsing. Implement comprehensive data cleaning in backend/src/upload/routes.ts before database insertion. Add Zod validation schemas for Python parser output to replace unsafe JSON.parse(...) as ExcelOutput casting. Validate team names/IDs, ratings, and player data at ingestion.",
@@ -81,59 +82,60 @@
         "subtasks": []
       },
       {
-        "id": 8,
+        "id": "8",
         "title": "Eliminate duplicate pages and utilities",
         "description": "Consolidate duplicate dashboard components and utility functions",
         "details": "Merge ClubDashboard.tsx, ClubPage.jsx, ClubOverview.jsx, ClubLanding.jsx into unified components with shared logic. Extract normalizeClubName, topN, trimAge utilities that are redefined in 5+ files into single utility module. Create reusable components to eliminate code duplication and prevent future batch fixes from logic divergence.",
         "testStrategy": "Component integration tests, utility function unit tests, visual parity verification between old and new implementations",
         "priority": "medium",
         "dependencies": [
-          7
+          "7"
         ],
         "status": "pending",
         "subtasks": []
       },
       {
-        "id": 9,
+        "id": "9",
         "title": "Fix formation deduplication and overflow warnings",
         "description": "Implement robust player deduplication and overflow detection in formation display",
         "details": "Replace fragile 'number-surname' deduplication key in frontend/src/components/FormationField.jsx with stable player.id based deduplication. Add validation and user warnings when parser returns >11 starting players instead of silent truncation. Implement conflict detection for contradictory lineup data and provide clear feedback to users.",
         "testStrategy": "Unit tests for deduplication logic, edge case testing with duplicate surnames, overflow scenario validation, user feedback verification",
         "priority": "medium",
         "dependencies": [
-          4
+          "4"
         ],
-        "status": "pending",
-        "subtasks": []
+        "status": "done",
+        "subtasks": [],
+        "updatedAt": "2026-05-29T14:55:28.247Z"
       },
       {
-        "id": 10,
+        "id": "10",
         "title": "Improve accessibility - remove color-only meaning",
         "description": "Add redundant indicators beyond color for ratings and deltas to support colorblind users",
         "details": "Enhance StatTile accent red/green and rating hue scales with additional indicators: directional arrows (↑/↓), symbols (+/-), and descriptive text. Add role='img' and aria-label attributes to SVG graphics in PlayerRadar.tsx. Ensure all meaningful color distinctions have non-color alternatives following WCAG guidelines.",
         "testStrategy": "Accessibility audit with screen readers, colorblind simulation testing, WCAG compliance verification, user testing with assistive technologies",
         "priority": "medium",
         "dependencies": [
-          6
+          "6"
         ],
         "status": "pending",
         "subtasks": []
       },
       {
-        "id": 11,
+        "id": "11",
         "title": "Convert frontend to mobile-first responsive design",
         "description": "Redesign responsive breakpoints and remove fixed widths for better mobile experience",
         "details": "Convert desktop-first media queries (max-width) to mobile-first approach (min-width). Remove fixed min-width: 380px from PlayerDetail.css and other components causing horizontal scroll. Ensure touch targets meet 44px minimum size requirement. Implement fluid layouts with relative units instead of fixed pixel widths.",
         "testStrategy": "Cross-device testing, touch target size validation, responsive design verification, horizontal scroll detection tests",
         "priority": "medium",
         "dependencies": [
-          6
+          "6"
         ],
         "status": "pending",
         "subtasks": []
       },
       {
-        "id": 12,
+        "id": "12",
         "title": "Configure CORS by environment",
         "description": "Remove development origins from production CORS configuration",
         "details": "Clean up backend/src/server.ts CORS configuration by removing localhost:5173 from production allowed origins list. Implement environment-specific CORS configuration with separate origin lists for development, staging, and production environments. Use environment variables to manage allowed origins per deployment.",
@@ -144,7 +146,7 @@
         "subtasks": []
       },
       {
-        "id": 13,
+        "id": "13",
         "title": "Update CLAUDE.md documentation",
         "description": "Synchronize project documentation with actual implementation state",
         "details": "Update CLAUDE.md to reflect current project status: change from 'Phase 0 skeleton' to actual mature application state, document real TypeScript adoption level (90%+ .jsx files), create realistic migration plan from .jsx to .tsx, update coding standards to match current practices, and provide accurate project phase descriptions.",
@@ -155,27 +157,31 @@
         "subtasks": []
       },
       {
-        "id": 14,
+        "id": "14",
         "title": "Implement comprehensive integration testing suite",
         "description": "Create end-to-end tests validating tenant isolation, data integrity, and security measures",
         "details": "Develop comprehensive test suite covering: tenant data isolation verification, invite token flow validation, repository layer tenant scoping, match data accuracy with team IDs, rating system null handling, and theme switching functionality. Include security tests for RLS policies and data access patterns. Set up automated testing pipeline for continuous validation.",
         "testStrategy": "End-to-end test scenarios, security penetration testing, multi-tenant data isolation verification, automated CI/CD integration",
         "priority": "medium",
         "dependencies": [
-          1,
-          2,
-          3,
-          4,
-          5
+          "1",
+          "2",
+          "3",
+          "4",
+          "5"
         ],
         "status": "pending",
         "subtasks": []
       }
     ],
     "metadata": {
-      "created": "2026-05-29T06:54:58.147Z",
-      "updated": "2026-05-29T06:54:58.147Z",
-      "description": "Tasks for master context"
+      "version": "1.0.0",
+      "lastModified": "2026-05-29T14:55:28.248Z",
+      "taskCount": 14,
+      "completedCount": 2,
+      "tags": [
+        "master"
+      ]
     }
   }
 }
