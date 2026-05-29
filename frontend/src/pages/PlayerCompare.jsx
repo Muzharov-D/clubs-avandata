@@ -4,6 +4,7 @@ import { fetchPlayersSeason, fetchPlayerTrend } from '../services/api';
 import { useDocumentTitle } from '../hooks/useDocumentTitle';
 import { useTeam } from '../contexts/TeamContext';
 import { Sparkline } from '../components/Sparkline';
+import { playerLabel } from '../utils/players';
 import './PlayerCompare.css';
 
 // Метрики сравнения: рейтинги (0–10) + сезонные суммы действий.
@@ -76,14 +77,14 @@ export default function PlayerCompare() {
         <label className="pc-picker">
           <span>Игрок A</span>
           <select value={aId} onChange={(e) => setAId(e.target.value)}>
-            {players.map((p) => <option key={p.id} value={p.id}>{p.fullName} (№{p.number ?? '—'})</option>)}
+            {players.map((p) => <option key={p.id} value={p.id}>{playerLabel(p)}</option>)}
           </select>
         </label>
         <div className="pc-vs">VS</div>
         <label className="pc-picker">
           <span>Игрок B</span>
           <select value={bId} onChange={(e) => setBId(e.target.value)}>
-            {players.map((p) => <option key={p.id} value={p.id}>{p.fullName} (№{p.number ?? '—'})</option>)}
+            {players.map((p) => <option key={p.id} value={p.id}>{playerLabel(p)}</option>)}
           </select>
         </label>
       </div>
@@ -92,12 +93,12 @@ export default function PlayerCompare() {
         <>
           <div className="card player-compare__trend">
             <div className="pc-trend__col">
-              <div className="pc-trend__name">{a.fullName}</div>
+              <div className="pc-trend__name">{playerLabel(a)}</div>
               {serA.length ? <Sparkline values={serA} width={160} height={40} color="var(--brand-primary)" /> : <span className="pc-trend__none">нет тренда</span>}
               <div className="pc-trend__cap">тренд общего рейтинга по матчам</div>
             </div>
             <div className="pc-trend__col">
-              <div className="pc-trend__name">{b.fullName}</div>
+              <div className="pc-trend__name">{playerLabel(b)}</div>
               {serB.length ? <Sparkline values={serB} width={160} height={40} color="var(--rating-good)" /> : <span className="pc-trend__none">нет тренда</span>}
               <div className="pc-trend__cap">тренд общего рейтинга по матчам</div>
             </div>

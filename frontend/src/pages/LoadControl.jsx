@@ -4,6 +4,7 @@ import { fetchPlayersSeason } from '../services/api';
 import { useDocumentTitle } from '../hooks/useDocumentTitle';
 import { useTeam } from '../contexts/TeamContext';
 import { downloadCsv } from '../utils/exportCsv';
+import { playerLabel } from '../utils/players';
 import './LoadControl.css';
 
 // Молодёжный матч ≈ 2×40 = 80 минут. Порог «много» — стабильно почти весь матч.
@@ -31,7 +32,7 @@ export default function LoadControl() {
 
   const handleExport = () => {
     downloadCsv('load-control', players, [
-      { label: 'Игрок', key: 'fullName' },
+      { label: 'Игрок', get: (p) => playerLabel(p) },
       { label: '№', key: 'number' },
       { label: 'Позиция', key: 'position' },
       { label: 'Матчей', key: 'matches' },
@@ -72,7 +73,7 @@ export default function LoadControl() {
           return (
             <div className="load-control__row" key={p.id}>
               <span className="lc-name">
-                <span className="lc-name__main">{p.fullName}</span>
+                <span className="lc-name__main">{playerLabel(p)}</span>
                 <span className="lc-name__sub">№{p.number ?? '—'} · {p.position || '—'}</span>
               </span>
               <span className="lc-num">{p.matches}</span>

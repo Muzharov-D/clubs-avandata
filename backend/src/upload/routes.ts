@@ -32,6 +32,19 @@ import { computeDataQuality } from '../data/dataQuality.js';
 const PYTHON_BIN = process.env.PYTHON_BIN ?? 'python3';
 const PARSERS_DIR = join(process.cwd(), 'parsers');
 
+/**
+ * Не сохраняем в full_name служебный мусор (метку возраста «U16», голый номер,
+ * пусто) — когда имя не распозналось (например, пустой Excel). Кладём «№NN»,
+ * чтобы UI показывал аккуратный номер, а не «U16».
+ */
+function cleanPlayerName(raw: string | null | undefined, num: number): string {
+  const t = String(raw ?? '').trim();
+  if (!t || /^u[-\s]?\d{1,3}$/i.test(t) || /^№?\s*\d+$/.test(t)) {
+    return `№${String(num).padStart(2, '0')}`;
+  }
+  return t;
+}
+
 interface ExcelOutput {
   match: {
     homeTeam: string | null;
@@ -138,8 +151,9 @@ export async function uploadRoutes(app: FastifyInstance) {
           for (const ep of excelData.players) {
             const num = parseInt(ep.number, 10);
             if (!num || !ep.name) continue;
-            const lastName = ep.name.split(' ').pop() || '';
-            const firstName = ep.name.split(' ').slice(0, -1).join(' ') || '';
+            const cleaned = cleanPlayerName(ep.name, num);
+            const lastName = cleaned.split(' ').pop() || '';
+            const firstName = cleaned.split(' ').slice(0, -1).join(' ') || '';
             const pid = `sv-${teamId}-n${String(num).padStart(2, '0')}`;
             // Insert or update by id; also handle duplicate-number conflict.
             await conn.query(
@@ -150,7 +164,7 @@ export async function uploadRoutes(app: FastifyInstance) {
                  first_name = EXCLUDED.first_name,
                  last_name  = EXCLUDED.last_name,
                  number     = EXCLUDED.number`,
-              [pid, tenantSlug, teamId, ep.name, firstName, lastName, num],
+              [pid, tenantSlug, teamId, cleaned, firstName, lastName, num],
             );
           }
           logger.info({ matchId, upserted: excelData.players.length }, '[upload] players upserted from excel');
@@ -475,7 +489,7 @@ export async function uploadRoutes(app: FastifyInstance) {
               `INSERT INTO players (id, tenant_id, team_id, full_name, number, position)
                VALUES ($1, $2, $3, $4, $5, $6)
                ON CONFLICT (id) DO NOTHING`,
-              [playerId, tenantSlug, teamId, meta.name, parseInt(numStr, 10), meta.position],
+              [playerId, tenantSlug, teamId, cleanPlayerName(meta.name, parseInt(numStr, 10)), parseInt(numStr, 10), meta.position],
             );
           }
           combined.set(numStr, {
