@@ -331,17 +331,17 @@ export default function ClubOverview() {
               <AoBars items={[
                 ['Удары в створ',              num(us.shots?.onTarget),                       us.shots?.total],
                 ['xG',                         num(us.expectedGoals),                          5],
-                ['Прогрессивные передачи',     num(match?.teamAggregates?.passes?.progressive),  100],
-                ['Передачи в финальную треть', num(match?.teamAggregates?.passes?.toFinalThird), 80],
-                ['Угловые',                    num(us.corners?.total),                         10],
+                ['Прогрессивные передачи',     num(match?.teamAggregates?.passes?.progressive),  200],
+                ['Передачи в финальную треть', num(match?.teamAggregates?.passes?.toFinalThird), 120],
+                ['Угловые',                    num(us.corners?.total),                         16],
                 ['Кроссы',                     num(match?.teamAggregates?.passes?.crosses),      30],
               ]} colorFn={() => '#22d3ee'} />
             </div>
             <div className="card">
               <div className="page-section-title">Оборона</div>
               <AoBars items={[
-                ['Перехваты',     num(match?.teamAggregates?.positioning?.interceptions),         50],
-                ['Отборы',        num(match?.teamAggregates?.duels?.totalDuels),                  60],
+                ['Перехваты',     num(match?.teamAggregates?.positioning?.interceptions),         100],
+                ['Отборы',        num(match?.teamAggregates?.duels?.totalDuels),                  100],
                 ['Прессинг',      num(match?.teamAggregates?.pressing?.pressing),                 80],
                 ['Контрпрессинг', num(match?.teamAggregates?.pressing?.counterpressing),          40],
                 ['Сейвы',         num(match?.teamAggregates?.positioning?.shotsAgainst) || 0,     10],
@@ -370,15 +370,15 @@ function KpiCell({ label, value, accent, suffix }) {
 }
 
 function AoBars({ items, colorFn }) {
-  const max = items.reduce((m, [, v, suggestedMax]) => {
-    const n = typeof v === 'number' && !isNaN(v) ? v : 0;
-    return Math.max(m, n, suggestedMax || 0);
-  }, 0) || 1;
+  // Каждый бар масштабируется к СВОЕМУ макс (3-й элемент item) — метрики разной
+  // природы (xG ~2, передачи ~150) нельзя мерить одной шкалой, иначе у xG/угловых
+  // полоска пустая. Кап 100% чтобы не вылезать за трек.
   return (
     <div className="ao-bars">
-      {items.map(([label, val], i) => {
+      {items.map(([label, val, suggestedMax], i) => {
         const num = typeof val === 'number' && !isNaN(val) ? val : 0;
-        const pct = (num / max) * 100;
+        const denom = typeof suggestedMax === 'number' && suggestedMax > 0 ? suggestedMax : (num || 1);
+        const pct = Math.min(100, (num / denom) * 100);
         return (
           <div className="ao-bars__row" key={i}>
             <div className="ao-bars__label">{label}</div>
