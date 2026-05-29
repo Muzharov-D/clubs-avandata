@@ -11,30 +11,62 @@ import { ratingColor } from '../utils/colors';
 import { shortNameFromPlayer } from '../utils/players';
 import './PlayersRating.css';
 
-// Definition of metrics shown in the chip-selector.
-// `path` is a function that receives the player and returns a numeric (or null) value.
+// Группы метрик: Общее + 3 модуля. Каждый модуль возглавляет его рейтинг (primary).
+// Оценка (0–10, цветная) — только у primary-метрик (4 модуля). Остальные — счёт.
+const GROUPS = [
+  { id: 'general', label: 'Общее' },
+  { id: 'attack',  label: 'Атака' },
+  { id: 'defence', label: 'Защита' },
+  { id: 'fitness', label: 'Фитнес' },
+];
+
+// `path` принимает игрока → число (или null). Поля сверены с legirusAdapter
+// (attack1–5 / defence1–3 / fitness). primary=true → оценка модуля (цветная).
 const METRICS = [
-  { id: 'overall',      label: 'Общий рейтинг',     unit: '',   digits: 1, path: (p) => p.ratings?.overall, primary: true },
-  { id: 'fitness',      label: 'Фитнес рейтинг',    unit: '',   digits: 1, path: (p) => p.ratings?.fitness, primary: true },
-  { id: 'attack',       label: 'Атака рейтинг',     unit: '',   digits: 1, path: (p) => p.ratings?.attack,  primary: true },
-  { id: 'defence',      label: 'Защита рейтинг',    unit: '',   digits: 1, path: (p) => p.ratings?.defence, primary: true },
-  { id: 'goal',         label: 'Голы',              unit: '',   digits: 0, path: (p) => num(p.stats?.attack4?.goal) },
-  { id: 'shotOnTarget', label: 'Удары в створ',     unit: '',   digits: 0, path: (p) => num(p.stats?.attack4?.shot) },
-  { id: 'assist',       label: 'Голевые передачи',  unit: '',   digits: 0, path: (p) => num(p.stats?.attack1?.assist) },
-  { id: 'keyPass',      label: 'Ключевые пасы',     unit: '',   digits: 0, path: (p) => num(p.stats?.attack1?.keyPass) },
-  { id: 'xG',           label: 'xG',                unit: '',   digits: 2, path: (p) => num(p.stats?.attack1?.xG) },
-  { id: 'progPass',     label: 'Прогрессивные пасы', unit: '',  digits: 0, path: (p) => num(p.stats?.attack2?.progressivePass) },
-  { id: 'finalThird',   label: 'В финальную треть', unit: '',   digits: 0, path: (p) => num(p.stats?.attack2?.passToFinalThird) },
-  { id: 'cross',        label: 'Кроссы',            unit: '',   digits: 0, path: (p) => num(p.stats?.attack2?.cross) },
-  { id: 'tackle',       label: 'Отборы',            unit: '',   digits: 0, path: (p) => num(p.stats?.defence1?.tackle) },
-  { id: 'interception', label: 'Перехваты',         unit: '',   digits: 0, path: (p) => num(p.stats?.defence1?.interception) },
-  { id: 'pressing',     label: 'Прессинг',          unit: '',   digits: 0, path: (p) => num(p.stats?.defence2?.pressing) },
-  { id: 'counterpress', label: 'Контрпрессинг',     unit: '',   digits: 0, path: (p) => num(p.stats?.defence2?.counterpressing) },
-  { id: 'save',         label: 'Сейвы',             unit: '',   digits: 0, path: (p) => num(p.stats?.defence3?.save) },
-  { id: 'totalDist',    label: 'Дистанция',         unit: ' м', digits: 0, path: (p) => num(p.stats?.fitness?.totalDistance) },
-  { id: 'sprints',      label: 'Спринты',           unit: '',   digits: 0, path: (p) => num(p.stats?.fitness?.sprintsCount) },
-  { id: 'sprintDist',   label: 'Спринтерская дист.', unit: ' м', digits: 0, path: (p) => num(p.stats?.fitness?.sprintDistance) },
-  { id: 'minutes',      label: 'Минуты на поле',    unit: '',   digits: 0, path: (p) => p.minutes },
+  // ── Общее ──
+  { id: 'overall', group: 'general', label: 'Общий рейтинг',  unit: '', digits: 1, primary: true, path: (p) => p.ratings?.overall },
+  { id: 'minutes', group: 'general', label: 'Минуты на поле', unit: '', digits: 0, path: (p) => p.minutes },
+
+  // ── Атака (возглавляет рейтинг Атака) ──
+  { id: 'attack',      group: 'attack', label: 'Атака рейтинг',          unit: '', digits: 1, primary: true, path: (p) => p.ratings?.attack },
+  { id: 'goal',        group: 'attack', label: 'Голы',                   unit: '', digits: 0, path: (p) => num(p.stats?.attack4?.goal) },
+  { id: 'goalActions', group: 'attack', label: 'Голевые действия',       unit: '', digits: 0, path: (p) => num(p.stats?.attack1?.goalActions) },
+  { id: 'shot',        group: 'attack', label: 'Удары',                  unit: '', digits: 0, path: (p) => num(p.stats?.attack4?.shot) },
+  { id: 'byHead',      group: 'attack', label: 'Удары головой',          unit: '', digits: 0, path: (p) => num(p.stats?.attack5?.byHead) },
+  { id: 'assist',      group: 'attack', label: 'Голевые передачи',       unit: '', digits: 0, path: (p) => num(p.stats?.attack1?.assist) },
+  { id: 'keyPass',     group: 'attack', label: 'Ключевые пасы',          unit: '', digits: 0, path: (p) => num(p.stats?.attack1?.keyPass) },
+  { id: 'pass',        group: 'attack', label: 'Передачи',               unit: '', digits: 0, path: (p) => num(p.stats?.attack2?.pass) },
+  { id: 'progPass',    group: 'attack', label: 'Прогрессивные пасы',     unit: '', digits: 0, path: (p) => num(p.stats?.attack2?.progressivePass) },
+  { id: 'finalThird',  group: 'attack', label: 'Пасы в финальную треть', unit: '', digits: 0, path: (p) => num(p.stats?.attack2?.passToFinalThird) },
+  { id: 'intoPenArea', group: 'attack', label: 'Пасы в штрафную',        unit: '', digits: 0, path: (p) => num(p.stats?.attack2?.intoPenArea) },
+  { id: 'cross',       group: 'attack', label: 'Кроссы',                 unit: '', digits: 0, path: (p) => num(p.stats?.attack2?.cross) },
+  { id: 'dribble',     group: 'attack', label: 'Обводки',                unit: '', digits: 0, path: (p) => num(p.stats?.attack4?.dribble) },
+  { id: 'touchesBox',  group: 'attack', label: 'Касания в штрафной',     unit: '', digits: 0, path: (p) => num(p.stats?.attack3?.touchesInPenArea) },
+  { id: 'entriesBox',  group: 'attack', label: 'Входы в штрафную',       unit: '', digits: 0, path: (p) => num(p.stats?.attack5?.entriesInBox) },
+  { id: 'passFwd',     group: 'attack', label: 'Передачи вперёд',        unit: '', digits: 0, path: (p) => num(p.stats?.attack3?.passForward) },
+  { id: 'lostBall',    group: 'attack', label: 'Потери мяча',            unit: '', digits: 0, path: (p) => num(p.stats?.attack4?.lostBall) },
+
+  // ── Защита (возглавляет рейтинг Защита) ──
+  { id: 'defence',       group: 'defence', label: 'Защита рейтинг',         unit: '', digits: 1, primary: true, path: (p) => p.ratings?.defence },
+  { id: 'tackle',        group: 'defence', label: 'Отборы',                 unit: '', digits: 0, path: (p) => num(p.stats?.defence1?.tackle) },
+  { id: 'slidingTackle', group: 'defence', label: 'Подкаты',                unit: '', digits: 0, path: (p) => num(p.stats?.defence1?.slidingTackles) },
+  { id: 'interception',  group: 'defence', label: 'Перехваты',              unit: '', digits: 0, path: (p) => num(p.stats?.defence1?.interception) },
+  { id: 'recovery',      group: 'defence', label: 'Возвраты мяча',          unit: '', digits: 0, path: (p) => num(p.stats?.defence1?.recovery) },
+  { id: 'clearance',     group: 'defence', label: 'Выносы',                 unit: '', digits: 0, path: (p) => num(p.stats?.defence1?.clearance) },
+  { id: 'blockedShot',   group: 'defence', label: 'Блокированные удары',    unit: '', digits: 0, path: (p) => num(p.stats?.defence1?.blockedShot) },
+  { id: 'duel',          group: 'defence', label: 'Единоборства',           unit: '', digits: 0, path: (p) => num(p.stats?.defence2?.duel) },
+  { id: 'aerialDuel',    group: 'defence', label: 'Верховые единоборства',  unit: '', digits: 0, path: (p) => num(p.stats?.defence2?.aerialDuel) },
+  { id: 'pressing',      group: 'defence', label: 'Прессинг',               unit: '', digits: 0, path: (p) => num(p.stats?.defence2?.pressing) },
+  { id: 'counterpress',  group: 'defence', label: 'Контрпрессинг',          unit: '', digits: 0, path: (p) => num(p.stats?.defence2?.counterpressing) },
+  { id: 'dribbleAgainst',group: 'defence', label: 'Обводки против',         unit: '', digits: 0, path: (p) => num(p.stats?.defence2?.dribbleAgainst) },
+  { id: 'save',          group: 'defence', label: 'Сейвы',                  unit: '', digits: 0, path: (p) => num(p.stats?.defence3?.save) },
+  { id: 'shotsAgainst',  group: 'defence', label: 'Удары по воротам',       unit: '', digits: 0, path: (p) => num(p.stats?.defence3?.shotsAgainst) },
+
+  // ── Фитнес (возглавляет рейтинг Фитнес) ──
+  { id: 'fitness',     group: 'fitness', label: 'Фитнес рейтинг',     unit: '',    digits: 1, primary: true, path: (p) => p.ratings?.fitness },
+  { id: 'totalDist',   group: 'fitness', label: 'Дистанция',          unit: ' м',  digits: 0, path: (p) => num(p.stats?.fitness?.totalDistance) },
+  { id: 'sprintDist',  group: 'fitness', label: 'Спринт-дистанция',   unit: ' м',  digits: 0, path: (p) => num(p.stats?.fitness?.sprintDistance) },
+  { id: 'sprints',     group: 'fitness', label: 'Спринты',            unit: '',    digits: 0, path: (p) => num(p.stats?.fitness?.sprintsCount) },
 ];
 
 function num(v) {
@@ -110,17 +142,24 @@ export default function PlayersRating() {
       </div>
 
       <div className="card players-rating__controls">
-        <div className="players-rating__controls-row">
+        <div className="players-rating__controls-row players-rating__controls-row--metrics">
           <div className="players-rating__controls-label">Метрика</div>
-          <div className="players-rating__chips">
-            {METRICS.map((m) => (
-              <button
-                key={m.id}
-                className={'chip' + (m.id === metricId ? ' chip--active' : '') + (m.primary ? ' chip--primary' : '')}
-                onClick={() => setMetricId(m.id)}
-              >
-                {m.label}
-              </button>
+          <div className="players-rating__metric-groups">
+            {GROUPS.map((g) => (
+              <div className="players-rating__metric-group" key={g.id}>
+                <div className="players-rating__group-label">{g.label}</div>
+                <div className="players-rating__chips">
+                  {METRICS.filter((m) => m.group === g.id).map((m) => (
+                    <button
+                      key={m.id}
+                      className={'chip' + (m.id === metricId ? ' chip--active' : '') + (m.primary ? ' chip--primary' : '')}
+                      onClick={() => setMetricId(m.id)}
+                    >
+                      {m.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
             ))}
           </div>
         </div>

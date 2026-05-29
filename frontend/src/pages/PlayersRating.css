@@ -59,6 +59,30 @@
   flex-wrap: wrap;
   flex: 1;
 }
+/* Метрики сгруппированы по модулям: Общее / Атака / Защита / Фитнес */
+.players-rating__controls-row--metrics { align-items: flex-start; }
+.players-rating__metric-groups {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  flex: 1;
+}
+.players-rating__metric-group {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.players-rating__group-label {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--brand-primary, #4f7cff);
+  font-weight: 700;
+  min-width: 58px;
+  flex-shrink: 0;
+  padding-top: 6px;
+}
 .chip {
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.08);
