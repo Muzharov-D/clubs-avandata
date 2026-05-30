@@ -2,6 +2,8 @@ import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import * as Sentry from '@sentry/react';
 import { App } from './App';
+// @ts-ignore — legacy .jsx
+import { applyFxPref } from './components/EffectsToggle';
 
 // Базовая палитра (Montserrat + Xolonium + dark gradient) — общая для всех тенантов
 import './styles/legirus-base.css';
@@ -27,6 +29,9 @@ if (SENTRY_DSN) {
     enabled: import.meta.env.PROD,
   });
 }
+
+// Применяем сохранённый выбор «эффекты вкл/выкл» до рендера (без вспышки).
+applyFxPref();
 
 const root = document.getElementById('root');
 if (!root) throw new Error('Root element not found');

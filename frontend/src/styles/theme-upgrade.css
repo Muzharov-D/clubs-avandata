@@ -55,19 +55,41 @@ button {
 }
 button:active:not(:disabled) { transform: translateY(1px) scale(0.99); }
 
-/* ─── Появление секций при загрузке: мягкий fade-up со stagger ─── */
-.app-content > * { animation: tu-rise var(--dur-slow) var(--ease-out) both; }
-.app-content > *:nth-child(1) { animation-delay: 0ms; }
-.app-content > *:nth-child(2) { animation-delay: 40ms; }
-.app-content > *:nth-child(3) { animation-delay: 80ms; }
-.app-content > *:nth-child(4) { animation-delay: 120ms; }
-.app-content > *:nth-child(5) { animation-delay: 160ms; }
-.app-content > *:nth-child(6) { animation-delay: 200ms; }
-.app-content > *:nth-child(n+7) { animation-delay: 240ms; }
-@keyframes tu-rise {
-  from { opacity: 0; transform: translateY(10px); }
-  to   { opacity: 1; transform: translateY(0); }
+/* ─── Появление КАРТОЧЕК со stagger (заметный «вход», как лента инсайтов) ───
+   Раньше анимировался один враппер .app-content > * → визуально незаметно.
+   Теперь въезжает каждая карточка по очереди — это и даёт «вау» при заходе. */
+.app-content .card,
+.cd.kinetic .cd__panel,
+.cd.kinetic .cd__hero-card,
+.cd.kinetic .cd__head,
+.match-detail.kinetic .kin-hero,
+.matches-dashboard.kinetic .md-match-card {
+  animation: tu-rise 0.5s var(--ease-out) both;
 }
+/* stagger: каждый следующий чуть позже (через порядковый номер среди карточек) */
+.app-content .card:nth-of-type(1) { animation-delay: 30ms; }
+.app-content .card:nth-of-type(2) { animation-delay: 90ms; }
+.app-content .card:nth-of-type(3) { animation-delay: 150ms; }
+.app-content .card:nth-of-type(4) { animation-delay: 210ms; }
+.app-content .card:nth-of-type(5) { animation-delay: 270ms; }
+.app-content .card:nth-of-type(n+6) { animation-delay: 330ms; }
+@keyframes tu-rise {
+  from { opacity: 0; transform: translateY(18px) scale(0.985); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* ─── KILLSWITCH «чистый режим»: html.fx-off гасит ВСЁ движение/свечение ─── */
+html.fx-off .app-layout::after,
+html.fx-off .cd__head::before,
+html.fx-off .player-detail__hero::before,
+html.fx-off .kin-hero::before { animation: none !important; }
+html.fx-off *,
+html.fx-off *::before,
+html.fx-off *::after {
+  animation: none !important;
+  transition: none !important;
+}
+html.fx-off .pizza-core { animation: none !important; }
 
 /* ─── Премиальный скроллбар ─── */
 * { scrollbar-width: thin; scrollbar-color: var(--border-strong) transparent; }
