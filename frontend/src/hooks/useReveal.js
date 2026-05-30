@@ -38,10 +38,14 @@ export function useReveal(rootRef, deps = []) {
  * Уважает prefers-reduced-motion (сразу финальное).
  */
 import { useState, useEffect as useEffect2 } from 'react';
-export function useCountUp(value, ms = 900) {
+export function useCountUp(value, ms = 900, decimals = 0) {
   const [n, setN] = useState(0);
   useEffect2(() => {
     const target = Number(value) || 0;
+    const round = (x) => {
+      const f = Math.pow(10, decimals);
+      return Math.round(x * f) / f;
+    };
     const reduce = typeof window !== 'undefined'
       && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
     if (reduce || target === 0) { setN(target); return; }
@@ -50,11 +54,39 @@ export function useCountUp(value, ms = 900) {
       if (start == null) start = t;
       const p = Math.min(1, (t - start) / ms);
       const eased = 1 - Math.pow(1 - p, 3); // ease-out-cubic
-      setN(Math.round(target * eased));
+      setN(round(target * eased));
       if (p < 1) raf = requestAnimationFrame(tick);
     };
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
-  }, [value, ms]);
+  }, [value, ms, decimals]);
   return n;
+}
+
+/**
+ * Parallax-tilt: 3D-наклон элемента за курсором (как премиальные карточки).
+ * Навешивается на ref. Уважает prefers-reduced-motion (no-op).
+ */
+import { useEffect as useEffect3 } from 'react';
+export function useTilt(ref, max = 7) {
+  useEffect3(() => {
+    const el = ref.current;
+    if (!el) return;
+    if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return;
+    if (window.matchMedia?.('(hover: none)').matches) return; // не на тач
+    let raf = 0;
+    const onMove = (e) => {
+      const r = el.getBoundingClientRect();
+      const px = (e.clientX - r.left) / r.width - 0.5;
+      const py = (e.clientY - r.top) / r.height - 0.5;
+      cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(() => {
+        el.style.transform = `perspective(900px) rotateX(${(-py * max).toFixed(2)}deg) rotateY(${(px * max).toFixed(2)}deg) translateY(-3px)`;
+      });
+    };
+    const onLeave = () => { cancelAnimationFrame(raf); el.style.transform = ''; };
+    el.addEventListener('mousemove', onMove);
+    el.addEventListener('mouseleave', onLeave);
+    return () => { el.removeEventListener('mousemove', onMove); el.removeEventListener('mouseleave', onLeave); cancelAnimationFrame(raf); };
+  }, [ref, max]);
 }
