@@ -20,6 +20,9 @@
   --border-strong:  #343d4e;
   --text:           #f3f6fc;
   --text-muted:     #97a3b6;
+  /* Усиленный muted для подписей поверх светлых поверхностей (bg-surface-2/3),
+     где обычный --text-muted падает ниже WCAG AA 4.5:1. */
+  --text-muted-strong: #b4c0d2;
   --text-faint:     #647084;
   --danger:         #ef4444;
   --success:        #22c55e;
@@ -89,10 +92,18 @@ button {
   padding: 10px 16px;
   background: var(--brand-primary);
   color: #fff;
-  transition: background 120ms ease, transform 80ms ease;
+  transition: background var(--dur-fast) var(--ease-out),
+              transform var(--dur-fast) var(--ease-out),
+              box-shadow var(--dur-fast) var(--ease-out);
 }
 button:hover:not(:disabled)  { background: var(--brand-primary-hover); }
+/* Тактильный отклик нажатия — глобально на всех кнопках (Emil Kowalski). */
+button:active:not(:disabled) { transform: scale(0.97); }
 button:disabled              { opacity: 0.5; cursor: not-allowed; }
+
+@media (prefers-reduced-motion: reduce) {
+  button:active:not(:disabled) { transform: none; }
+}
 
 input, select, textarea {
   font: inherit;
@@ -106,6 +117,22 @@ input, select, textarea {
 input:focus, select:focus, textarea:focus {
   outline: none;
   border-color: var(--brand-primary);
+}
+input:disabled, select:disabled, textarea:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  background: rgba(255, 255, 255, 0.03);
+}
+/* Анти-белый автозаполнитель Chrome/Safari: держим тёмную тему полей.
+   Без этого autofill красит инпуты в белый (ломает премиальный тёмный UI). */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active {
+  -webkit-text-fill-color: var(--text);
+  caret-color: var(--text);
+  -webkit-box-shadow: 0 0 0 1000px var(--bg-surface-2) inset;
+  transition: background-color 9999s ease-out 0s;
 }
 
 label { display: block; font-size: 13px; color: var(--text-muted); margin-bottom: 6px; }
@@ -135,8 +162,19 @@ input:focus-visible,
 select:focus-visible,
 textarea:focus-visible,
 [role="button"]:focus-visible {
-  outline: 2px solid #22d3ee;
+  outline: 2px solid var(--accent-cyan, #22d3ee);
   outline-offset: 2px;
+}
+/* На тач-устройствах кольцо фокуса не должно прилипать к краю элемента. */
+@media (pointer: coarse) {
+  button:focus-visible,
+  a:focus-visible,
+  input:focus-visible,
+  select:focus-visible,
+  textarea:focus-visible,
+  [role="button"]:focus-visible {
+    outline-offset: 4px;
+  }
 }
 
 /* Touch-target минимум 44×44 на мобильном (Apple/Google a11y) */
