@@ -70,7 +70,7 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  transition: color 0.15s, border-color 0.15s;
+  transition: color 0.15s var(--ease-out, ease-out), border-color 0.15s var(--ease-out, ease-out);
 }
 .player-detail__pizza-tab:disabled { opacity: 0.35; cursor: default; }
 .player-detail__pizza-tab:hover:not(:disabled) { color: #fff; }
@@ -160,10 +160,17 @@
   cursor: pointer;
 }
 
+.player-detail__back {
+  transition: background 0.15s var(--ease-out, ease-out),
+              border-color 0.15s var(--ease-out, ease-out),
+              transform 0.12s var(--ease-out, ease-out);
+}
 .player-detail__back:hover {
   background: rgba(34, 211, 238, 0.15);
   border-color: rgba(34, 211, 238, 0.5);
 }
+.player-detail__back:active { transform: scale(0.97); }
+@media (prefers-reduced-motion: reduce) { .player-detail__back:active { transform: none; } }
 
 .player-detail__download {
   margin-left: auto;
@@ -249,7 +256,7 @@
 .player-detail__line-name { font-size: 14px; font-weight: 700; color: #fff; }
 .player-detail__line-pos {
   font-size: 11px;
-  color: rgba(255, 255, 255, 0.5);
+  color: rgba(255, 255, 255, 0.72);
   text-transform: uppercase;
   letter-spacing: 0.05em;
   margin-top: 2px;
