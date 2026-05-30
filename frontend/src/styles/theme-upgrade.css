@@ -85,3 +85,99 @@ button:active:not(:disabled) { transform: translateY(1px) scale(0.99); }
 @media (prefers-reduced-motion: reduce) {
   .app-content > * { animation: none; }
 }
+
+/* ============================================================================
+   ГЛОБАЛЬНЫЙ КИНЕТИК-ЯЗЫК — на ВСЕ экраны платформы (не только матч).
+   ============================================================================ */
+
+/* ─── Живой кинематографичный фон под всем приложением ─── */
+.app-layout::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(55% 45% at 15% 8%, color-mix(in srgb, var(--brand-primary) 22%, transparent), transparent 60%),
+    radial-gradient(50% 45% at 90% 12%, color-mix(in srgb, var(--accent-cyan) 14%, transparent), transparent 55%),
+    radial-gradient(60% 55% at 75% 100%, color-mix(in srgb, var(--brand-secondary) 20%, transparent), transparent 60%);
+  background-size: 200% 200%, 200% 200%, 200% 200%;
+  animation: tu-mesh 26s ease-in-out infinite alternate;
+}
+.app-layout > * { position: relative; z-index: 1; }
+@keyframes tu-mesh {
+  0%   { background-position: 0% 0%, 100% 0%, 50% 100%; }
+  100% { background-position: 25% 18%, 72% 28%, 42% 72%; }
+}
+
+/* ─── Шапка: стекло глубже + brand-подсветка снизу ─── */
+.app-header {
+  background: color-mix(in srgb, var(--bg-page) 72%, transparent) !important;
+  backdrop-filter: blur(16px) saturate(1.3) !important;
+  -webkit-backdrop-filter: blur(16px) saturate(1.3) !important;
+  border-bottom: 1px solid var(--border) !important;
+  box-shadow: 0 1px 0 color-mix(in srgb, var(--brand-primary) 22%, transparent);
+}
+.app-header__title { font-family: var(--font-display); letter-spacing: -0.01em; }
+
+/* ─── Сайдбар: стекло, активный пункт со свечением и акцент-полосой ─── */
+.sidebar-nav {
+  background: color-mix(in srgb, var(--bg-surface) 40%, transparent);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border-right: 1px solid var(--border) !important;
+}
+.sidebar-nav__item {
+  position: relative;
+  border-radius: var(--radius-sm) !important;
+  transition: background var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out), transform var(--dur-fast) var(--ease-out) !important;
+}
+.sidebar-nav__item:hover { transform: translateX(2px); }
+.sidebar-nav__item--active,
+.sidebar-nav__item--active:hover {
+  background: linear-gradient(135deg, color-mix(in srgb, var(--brand-primary) 90%, #000), var(--brand-secondary)) !important;
+  box-shadow: 0 6px 18px -6px color-mix(in srgb, var(--brand-primary) 70%, transparent),
+              inset 0 0 0 1px color-mix(in srgb, #fff 12%, transparent);
+}
+.sidebar-nav__item--active::before {
+  content: '';
+  position: absolute; left: 0; top: 18%; bottom: 18%;
+  width: 3px; border-radius: 0 3px 3px 0;
+  background: var(--accent-cyan);
+  box-shadow: 0 0 10px var(--accent-cyan);
+}
+
+/* ─── KPI / stat-плитки (дашборд, обзор клуба): глубина + дисплей-числа ─── */
+.stat-tile, .admin-stat-card, .cd__stat, .cd__kpi,
+.cd__panel-stat, [class*='__stat-card'], [class*='stat-tile'] {
+  border-radius: var(--radius) !important;
+}
+.stat-tile__value, .admin-stat-card__value, .cd__stat-value,
+.cd__kpi-value, [class*='stat'][class*='value'] {
+  font-family: var(--font-display) !important;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+}
+
+/* ─── Все крупные числа/рейтинги — дисплей-шрифт глобально ─── */
+.cd__hero-score, .cd__big, .league-table__pts, .standings__pts,
+.rank-delta, .streak-badge, .leader-metric-card__value {
+  font-family: var(--font-display);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ─── Заголовки страниц — кинетик ─── */
+.page-title, .admin-page-title, .cd__title, h1 {
+  font-family: var(--font-display) !important;
+  letter-spacing: -0.03em;
+  text-wrap: balance;
+}
+
+/* ─── Глобальный плавный reveal для карточек-секций на скролле ─── */
+.reveal { opacity: 0; transform: translateY(22px) scale(0.99); transition: opacity 0.55s var(--ease-out), transform 0.55s var(--ease-out); will-change: opacity, transform; }
+.reveal.is-in { opacity: 1; transform: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  .app-layout::after { animation: none; }
+  .reveal { opacity: 1; transform: none; transition: none; }
+}
