@@ -325,7 +325,7 @@ export default function PlayerDetail() {
       <AttendanceBlock teamId={player.teamId} playerId={player.id} />
 
       {/* 4 RATING CARDS */}
-      <div className="player-detail__ratings">
+      <div className="player-detail__ratings reveal">
         <RatingCard label="Общий" value={ratings.overall} />
         <RatingCard label="Фитнес" value={ratings.fitness} />
         <RatingCard label="Атака" value={ratings.attack} />
@@ -337,7 +337,7 @@ export default function PlayerDetail() {
 
       {/* RIBBON: Лучший в команде */}
       {badges.length > 0 && (
-        <div className="card player-detail__ribbon">
+        <div className="card player-detail__ribbon reveal">
           <div className="page-section-title">Лучший в команде</div>
           <div className="player-detail__ribbon-row">
             {badges.map((b, i) => (
@@ -448,7 +448,7 @@ export default function PlayerDetail() {
         const z1 = num(fitnessStats.speed_4_5_5), z2 = num(fitnessStats.speed_5_5_7), z3 = num(fitnessStats.speed_7plus);
         if ((z1 || 0) + (z2 || 0) + (z3 || 0) <= 0 && (num(fitnessStats.totalDistance) || 0) <= 0) return null;
         return (
-          <div className="card">
+          <div className="card reveal">
             <div className="page-section-title">Зоны интенсивности</div>
             <SpeedZones
               z1={z1} z2={z2} z3={z3}
@@ -467,7 +467,7 @@ export default function PlayerDetail() {
         const lenSum = num(a3.passShort) + num(a3.passMiddle) + num(a3.passLong);
         if ((dirSum || 0) + (lenSum || 0) <= 0) return null;
         return (
-          <div className="card">
+          <div className="card reveal">
             <div className="page-section-title">Профиль передач</div>
             <PassProfile
               forward={a3.passForward} sideways={a3.passSideways} back={a3.passBack}
