@@ -9,6 +9,8 @@
  *  - hover-эффект: scale + усиление glow
  */
 import './StatTile.css';
+// @ts-ignore — legacy .js hook
+import { useCountUp } from '../hooks/useReveal';
 
 export type AccentColor = 'cyan' | 'gold' | 'red' | 'green' | 'violet' | 'muted';
 export type DeltaSign = 'up' | 'down' | 'neutral';
@@ -21,6 +23,15 @@ interface Props {
   delta?: { sign: DeltaSign; text: string };
   accent?: AccentColor;
   big?: boolean;
+}
+
+/** Значение с count-up анимацией для числовых KPI (xG «2.20» → 2 знака). */
+function StatValue({ value }: { value: string | number }) {
+  const raw = String(value);
+  const isNumeric = /^-?\d+(\.\d+)?$/.test(raw);
+  const decimals = isNumeric && raw.includes('.') ? raw.split('.')[1].length : 0;
+  const animated = useCountUp(isNumeric ? Number(value) : 0, 900, decimals) as number;
+  return <span className="stat-tile__value">{isNumeric ? animated.toFixed(decimals) : value}</span>;
 }
 
 const ACCENT_RGB: Record<AccentColor, string> = {
@@ -53,7 +64,7 @@ export function StatTile({ label, value, unit, extra, delta, accent = 'cyan', bi
         )}
       </div>
       <div className="stat-tile__value-row">
-        <span className="stat-tile__value">{value}</span>
+        <StatValue value={value} />
         {unit && <span className="stat-tile__unit">{unit}</span>}
       </div>
       {extra && <div className="stat-tile__extra">{extra}</div>}
