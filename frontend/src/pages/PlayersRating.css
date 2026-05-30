@@ -155,12 +155,12 @@
 .players-rating__row {
   border-bottom: 1px solid rgba(255, 255, 255, 0.04);
   cursor: pointer;
-  transition: background 0.12s;
+  transition: background 0.12s var(--ease-out, ease-out);
   font-size: 13px;
   color: rgba(255, 255, 255, 0.85);
 }
 .players-rating__row:hover {
-  background: rgba(26, 75, 160, 0.18);
+  background: rgba(26, 75, 160, 0.35);
 }
 .players-rating__row:last-child {
   border-bottom: none;

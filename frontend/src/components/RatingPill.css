@@ -13,6 +13,6 @@
 .rating-pill--lg { padding: 8px 14px; font-size: 22px; min-width: 60px; }
 .rating-pill--xl { padding: 12px 20px; font-size: 36px; min-width: 88px; }
 .rating-pill--empty {
-  background: rgba(255,255,255,0.06);
-  color: rgba(255,255,255,0.4);
+  background: rgba(255,255,255,0.12);
+  color: rgba(255,255,255,0.65);
 }
