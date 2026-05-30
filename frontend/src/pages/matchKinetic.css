@@ -130,7 +130,8 @@
   font-family: var(--font-display);
   font-weight: 700;
   font-size: clamp(64px, 11vw, 128px);
-  line-height: 1;
+  /* line-height 0.95: при count-up большие цифры не прыгают по высоте строки. */
+  line-height: 0.95;
   letter-spacing: -0.04em;
   display: flex; align-items: center; gap: 10px;
   color: var(--text);

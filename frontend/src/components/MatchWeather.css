@@ -36,6 +36,7 @@
   color: #fff;
   line-height: 1;
   letter-spacing: 0;
+  font-variant-numeric: tabular-nums;
 }
 .match-weather__feels {
   font-size: 10px;
