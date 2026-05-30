@@ -487,3 +487,26 @@
 @media (max-width: 768px) {
   .md-secnav { overflow-x: auto; flex-wrap: nowrap; }
 }
+
+/* ─── Командный выхлоп vs сезон (замена бесполезных N-из-N бубликов) ─── */
+.md-output {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 10px;
+}
+.md-out {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 12px 14px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border);
+}
+.md-out__label { font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.03em; }
+.md-out__val { font-size: 26px; font-weight: 800; color: var(--text); font-variant-numeric: tabular-nums; line-height: 1.1; }
+.md-out__cmp { font-size: 12px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.md-out__cmp--up    { color: var(--rating-good, #7cb342); }
+.md-out__cmp--down  { color: var(--rating-weak, #fb8c00); }
+.md-out__cmp--flat  { color: var(--text-faint, #64748b); }
+.md-out__cmp--muted { color: var(--text-faint, #64748b); font-weight: 400; }
