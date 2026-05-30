@@ -10,6 +10,8 @@ import './styles/mobile.css';
 
 // Tenant-specific overrides (CSS vars, admin styles)
 import './styles/index.css';
+// Премиальная тёмная тема (редизайн) — последней, поверх базы
+import './styles/theme-upgrade.css';
 
 // Sentry — инициализируем только если в env прописан DSN. В development
 // без DSN остаёмся no-op (Sentry.captureException в ErrorBoundary ничего не отправит).
