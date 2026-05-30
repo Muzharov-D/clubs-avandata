@@ -75,7 +75,7 @@ export default function Login() {
             autoComplete="current-password"
             required
           />
-          {error && <div className="login-error">{error}</div>}
+          {error && <div className="login-error" role="alert" aria-live="assertive">{error}</div>}
           <button type="submit" disabled={busy}>
             {busy ? 'Проверка…' : 'Войти'}
           </button>

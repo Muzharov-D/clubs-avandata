@@ -115,7 +115,9 @@
   background-color: rgba(34, 211, 238, 0.08);
 }
 
-.app-header__team-select:focus {
+.app-header__team-select:focus-visible {
+  outline: 2px solid var(--accent-cyan, #22d3ee);
+  outline-offset: 2px;
   box-shadow: 0 0 0 2px rgba(34, 211, 238, 0.4);
 }
 
@@ -125,12 +127,15 @@
 .app-header__btn {
   background: rgba(255, 255, 255, 0.06);
   border: none;
-  color: rgba(255, 255, 255, 0.5);
+  color: rgba(255, 255, 255, 0.78);
   font-size: 13px;
   padding: 6px 12px;
   border-radius: 8px;
-  cursor: default;
+  cursor: pointer;
+  transition: background var(--dur-fast, 120ms) var(--ease-out),
+              color var(--dur-fast, 120ms) var(--ease-out);
 }
+.app-header__btn:hover { background: rgba(255, 255, 255, 0.1); color: #fff; }
 
 .app-header__btn--refresh {
   cursor: pointer;
@@ -168,13 +173,20 @@
 .app-header__burger {
   display: none;
   flex-direction: column;
-  justify-content: space-between;
-  width: 28px;
-  height: 22px;
-  padding: 0;
+  justify-content: center;
+  gap: 5px;
+  /* Тач-таргет 44×44 (Apple/Google a11y) — иконка внутри 22px высотой. */
+  width: 44px;
+  height: 44px;
+  padding: 11px 8px;
   background: transparent;
   border: none;
+  border-radius: 8px;
   cursor: pointer;
+}
+.app-header__burger:focus-visible {
+  outline: 2px solid var(--accent-cyan, #22d3ee);
+  outline-offset: 2px;
 }
 .app-header__burger span {
   display: block;
