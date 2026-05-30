@@ -111,9 +111,8 @@
 }
 .cd.kinetic .cd__player:hover { transform: translateY(-2px); border-color: color-mix(in srgb, var(--brand-primary) 45%, transparent) !important; }
 
-/* ─── Появление секций ─── */
-.cd.kinetic .reveal { opacity: 0; transform: translateY(22px) scale(0.99); transition: opacity 0.55s var(--ease-out), transform 0.55s var(--ease-out); }
-.cd.kinetic .reveal.is-in { opacity: 1; transform: none; }
+/* Reveal — глобальная самозапускающаяся анимация (theme-upgrade.css).
+   Локальный opacity:0-override убран (прятал контент без JS). */
 
 @media (prefers-reduced-motion: reduce) {
   .cd.kinetic .reveal { opacity: 1; transform: none; transition: none; }
