@@ -15,14 +15,16 @@
 // При деплое новой версии — обновить ОБА: CACHE_VERSION здесь
 // и EXPECTED_SW_VERSION в frontend/src/main.jsx.
 // Иначе self-heal механизм не сработает корректно.
-const CACHE_VERSION = 'v12-2026-05-26-fix-foreign-stats';
+const CACHE_VERSION = 'v13-2026-05-30-redesign-nocache-html';
 const STATIC_CACHE = `legirus-static-${CACHE_VERSION}`;
 const API_CACHE = `legirus-api-${CACHE_VERSION}`;
 
 // Минимальный набор для бута оффлайн. Vite-ассеты (с хешем) подтянутся cache-first
 // при первом онлайн-визите и останутся навсегда (пока не сменится hash).
 const STATIC_PRECACHE = [
-  '/',
+  // ВАЖНО: '/' НЕ прекэшируем — иначе SW застревал на старом app-shell, и даже
+  // hard-reload показывал старую версию (HTML отдавался из кэша). HTML теперь
+  // всегда из сети (см. networkFirstHTML без fallback-на-кэш при наличии сети).
   '/icons/legirus.png',
   '/icons/icon-192.png',
   '/icons/icon-512.png',
@@ -156,18 +158,17 @@ async function staleWhileRevalidate(req, cacheName) {
   });
 }
 
-async function networkFirstHTML(req, cacheName, timeoutMs) {
+async function networkFirstHTML(req, cacheName, _timeoutMs) {
   const cache = await caches.open(cacheName);
   try {
-    const fetchPromise = fetch(req);
-    const res = await Promise.race([
-      fetchPromise,
-      new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), timeoutMs)),
-    ]);
+    // БЕЗ гонки с таймаутом: ждём настоящий ответ сети. Иначе на медленном
+    // ответе (>2.5с) SW отдавал старый кэш и пользователь застревал на прошлой
+    // версии даже при живой сети. cache:'no-store' — мимо HTTP/edge-кэша.
+    const res = await fetch(req, { cache: 'no-store' });
     if (res && res.ok) cache.put(req, res.clone()).catch(() => {});
     return res;
   } catch (_) {
-    // Сеть отвалилась или таймаут — берём кеш этого URL, либо "/"
+    // Кэш HTML используем ТОЛЬКО при реальном офлайне (сеть упала).
     const cached = await cache.match(req);
     if (cached) return cached;
     const root = await cache.match('/');
