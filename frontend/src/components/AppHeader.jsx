@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useTeam } from '../contexts/TeamContext';
 import PushOptInButton from './PushOptInButton';
+import EffectsToggle from './EffectsToggle';
 import ChangePasswordModal from './ChangePasswordModal';
 import { toast } from './Toast';
 import './AppHeader.css';
@@ -93,6 +94,7 @@ export default function AppHeader() {
           )}
         </div>
         <PushOptInButton />
+        <EffectsToggle />
         <button
           className="app-header__btn app-header__btn--refresh"
           onClick={() => window.location.reload()}
