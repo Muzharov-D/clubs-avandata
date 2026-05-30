@@ -47,6 +47,20 @@ if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker
       .register('/sw.js', { scope: '/', updateViaCache: 'none' })
+      .then((reg) => {
+        // Принудительная проверка обновления SW при каждом старте — чтобы новый
+        // sw.js (с новой стратегией кэша) подхватывался сразу, а не «когда-нибудь».
+        reg.update().catch(() => {});
+        // Когда новый SW активировался и взял контроль — мягко перезагружаем
+        // страницу один раз, чтобы пользователь увидел свежую версию без ручного
+        // hard-reload. Однократно (флаг), чтобы не зациклить.
+        let reloaded = false;
+        navigator.serviceWorker.addEventListener('controllerchange', () => {
+          if (reloaded) return;
+          reloaded = true;
+          window.location.reload();
+        });
+      })
       .catch((err) => console.warn('[sw] регистрация не удалась:', err));
   });
 }
