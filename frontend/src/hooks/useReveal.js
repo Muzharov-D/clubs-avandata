@@ -2,33 +2,53 @@ import { useEffect } from 'react';
 
 /**
  * Scroll-reveal: всем .reveal внутри root добавляет .is-in при появлении
- * во вьюпорте (IntersectionObserver). Один раз навешивает на текущие узлы.
- * deps — пересканировать, когда контент дорисовался (например, после загрузки).
+ * во вьюпорте. Пуленепробиваемо: MutationObserver подхватывает блоки, которые
+ * отрисовались ПОЗЖЕ (асинхронные данные) — иначе они застряли бы невидимыми;
+ * элементы уже во вьюпорте показываются сразу; fallback-таймер раскрывает всё,
+ * если IntersectionObserver не сработал. Контент НИКОГДА не остаётся скрытым.
  */
 export function useReveal(rootRef, deps = []) {
   useEffect(() => {
     const root = rootRef.current;
     if (!root) return;
-    const nodes = root.querySelectorAll('.reveal:not(.is-in)');
-    if (!nodes.length) return;
+
+    const reveal = (n) => { n.classList.add('is-in'); };
 
     if (typeof IntersectionObserver === 'undefined') {
-      nodes.forEach((n) => n.classList.add('is-in'));
+      root.querySelectorAll('.reveal').forEach(reveal);
       return;
     }
+
     const io = new IntersectionObserver(
       (entries) => {
         for (const e of entries) {
-          if (e.isIntersecting) {
-            e.target.classList.add('is-in');
-            io.unobserve(e.target);
-          }
+          if (e.isIntersecting) { reveal(e.target); io.unobserve(e.target); }
         }
       },
-      { threshold: 0.12, rootMargin: '0px 0px -8% 0px' },
+      { threshold: 0.08, rootMargin: '0px 0px -6% 0px' },
     );
-    nodes.forEach((n) => io.observe(n));
-    return () => io.disconnect();
+
+    const arm = (node) => {
+      if (node.classList.contains('is-in')) return;
+      // Уже виден во вьюпорте — показываем сразу (не ждём скролла).
+      const r = node.getBoundingClientRect();
+      if (r.top < window.innerHeight && r.bottom > 0) reveal(node);
+      else io.observe(node);
+    };
+
+    const scan = () => root.querySelectorAll('.reveal:not(.is-in)').forEach(arm);
+    scan();
+
+    // Блоки, дорисованные после async-загрузки данных, ловим автоматически.
+    const mo = new MutationObserver(() => scan());
+    mo.observe(root, { childList: true, subtree: true });
+
+    // Safety-net: что бы ни случилось, через 1.5с всё видимо.
+    const safety = setTimeout(() => {
+      root.querySelectorAll('.reveal:not(.is-in)').forEach(reveal);
+    }, 1500);
+
+    return () => { io.disconnect(); mo.disconnect(); clearTimeout(safety); };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, deps);
 }
