@@ -1,0 +1,115 @@
+/* ============================================================================
+   KINETIC CLUB DASHBOARD — вау-язык на главном экране (Bold kinetic).
+   Scoped под .cd.kinetic. Переопределяет фактические .cd__* классы.
+   ============================================================================ */
+
+.cd.kinetic { font-family: var(--font); }
+
+/* ─── Заголовок клуба: гигантское кинетик-имя ─── */
+.cd.kinetic .cd__title {
+  font-family: var(--font-display) !important;
+  font-size: clamp(40px, 7vw, 88px) !important;
+  line-height: 0.92 !important;
+  letter-spacing: -0.04em !important;
+  text-transform: uppercase;
+  background: linear-gradient(180deg, #fff 28%, color-mix(in srgb, var(--accent-cyan) 78%, #fff)) !important;
+  -webkit-background-clip: text; background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-wrap: balance;
+}
+.cd.kinetic .cd__eyebrow { color: var(--accent-cyan); letter-spacing: 0.18em; font-weight: 700; }
+
+/* Усиленное фоновое свечение под заголовком */
+.cd.kinetic .cd__bg-glow {
+  background: radial-gradient(ellipse at center, color-mix(in srgb, var(--brand-primary) 30%, transparent) 0%, transparent 70%);
+  width: 72vw; height: 30rem; top: -10rem;
+}
+
+/* ─── Hero-карточки матчей: бродкаст ─── */
+.cd.kinetic .cd__hero-card {
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--brand-secondary) 26%, transparent), transparent 56%),
+    color-mix(in srgb, var(--bg-surface) 86%, transparent) !important;
+  border: 1px solid var(--border-strong) !important;
+  border-radius: var(--radius-lg, 20px) !important;
+  box-shadow: var(--shadow) !important;
+  transition: transform var(--dur) var(--ease-out), box-shadow var(--dur) var(--ease-out), border-color var(--dur) var(--ease-out);
+}
+.cd.kinetic .cd__hero-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg) !important;
+  border-color: color-mix(in srgb, var(--brand-primary) 50%, var(--border-strong)) !important;
+}
+.cd.kinetic .cd__hero-card::before {
+  height: 2px;
+  background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--brand-primary) 70%, transparent), transparent);
+}
+.cd.kinetic .cd__hero-eyebrow { color: var(--accent-cyan); letter-spacing: 0.14em; }
+.cd.kinetic .cd__hero-matchup { font-family: var(--font-display); font-size: 22px; }
+.cd.kinetic .cd__hero-team--us {
+  background: linear-gradient(180deg, #fff, color-mix(in srgb, var(--accent-cyan) 70%, #fff));
+  -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+}
+.cd.kinetic .cd__hero-score {
+  font-family: var(--font-display) !important;
+  font-size: 32px !important;
+  font-variant-numeric: tabular-nums;
+  text-shadow: 0 0 22px color-mix(in srgb, var(--accent-cyan) 45%, transparent);
+}
+.cd.kinetic .cd__hero-action {
+  background: var(--brand-gradient) !important;
+  color: #fff !important; border: none !important;
+  box-shadow: 0 8px 20px -8px color-mix(in srgb, var(--brand-primary) 70%, transparent);
+  transition: transform var(--dur-fast) var(--ease-out);
+}
+.cd.kinetic .cd__hero-action:hover { transform: translateY(-2px); }
+
+/* ─── Панели: глубина + дисплей-заголовки ─── */
+.cd.kinetic .cd__panel {
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--bg-surface) 92%, #fff 3%), var(--bg-surface)) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: var(--radius-lg, 20px) !important;
+  box-shadow: var(--shadow), var(--ring) !important;
+}
+.cd.kinetic .cd__panel-title { font-family: var(--font-display); letter-spacing: -0.01em; }
+
+/* ─── KPI-плитки: глубина, hover-подъём, акцент-грань, дисплей-числа ─── */
+.cd.kinetic .cd__stat-tile {
+  background: color-mix(in srgb, var(--bg-surface-2) 65%, transparent) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: var(--radius) !important;
+  position: relative; overflow: hidden;
+  transition: transform var(--dur-fast) var(--ease-out), border-color var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast) var(--ease-out);
+}
+.cd.kinetic .cd__stat-tile::after {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+  background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--brand-primary) 70%, transparent), transparent);
+  opacity: 0; transition: opacity var(--dur) var(--ease-out);
+}
+.cd.kinetic .cd__stat-tile:hover { transform: translateY(-3px); border-color: var(--border-strong) !important; box-shadow: var(--shadow); }
+.cd.kinetic .cd__stat-tile:hover::after { opacity: 1; }
+.cd.kinetic .cd__stat-value {
+  font-family: var(--font-display) !important;
+  font-size: 32px !important;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+}
+
+/* ─── Топ-игроки и таблица: акценты на дисплей-шрифте ─── */
+.cd.kinetic .cd__top-rating, .cd.kinetic .cd__player-rating,
+.cd.kinetic .cd__table-pts, .cd.kinetic .cd__avg-val, .cd.kinetic .cd__radar-rating {
+  font-family: var(--font-display); font-variant-numeric: tabular-nums;
+}
+.cd.kinetic .cd__player {
+  transition: transform var(--dur-fast) var(--ease-out), border-color var(--dur-fast) var(--ease-out);
+}
+.cd.kinetic .cd__player:hover { transform: translateY(-2px); border-color: color-mix(in srgb, var(--brand-primary) 45%, transparent) !important; }
+
+/* ─── Появление секций ─── */
+.cd.kinetic .reveal { opacity: 0; transform: translateY(22px) scale(0.99); transition: opacity 0.55s var(--ease-out), transform 0.55s var(--ease-out); }
+.cd.kinetic .reveal.is-in { opacity: 1; transform: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  .cd.kinetic .reveal { opacity: 1; transform: none; transition: none; }
+}

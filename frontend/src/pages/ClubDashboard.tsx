@@ -28,6 +28,7 @@ import PredictedLineup from '../components/PredictedLineup';
 import PlayerPhoto from '../components/PlayerPhoto';
 import { useDocumentTitle } from '../hooks/useDocumentTitle';
 import './ClubDashboard.css';
+import './clubKinetic.css';
 
 type AnyObj = Record<string, any>;
 
