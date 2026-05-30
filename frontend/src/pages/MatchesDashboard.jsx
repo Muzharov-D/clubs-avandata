@@ -146,7 +146,7 @@ export default function MatchesDashboard() {
   }, [allMatches]);
 
   return (
-    <div className="page matches-dashboard">
+    <div className="page matches-dashboard kinetic">
       {/* Season hero */}
       <div className="matches-dashboard__hero">
         <div className="matches-dashboard__hero-text">
