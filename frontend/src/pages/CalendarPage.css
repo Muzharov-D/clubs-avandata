@@ -363,6 +363,7 @@
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
 }
 .cal-month__event:disabled { cursor: default; }
+.cal-month__event:focus-visible { outline: 2px solid var(--accent-cyan, #22d3ee); outline-offset: 1px; }
 .cal-month__event-time {
   font-weight: 700; color: #22d3ee;
   font-variant-numeric: tabular-nums;
