@@ -11,8 +11,10 @@
  * Данные: /data/teams, /data/matches?teamId, /data/match/:id,
  *         /data/calendar/:age, /data/standings/:age
  */
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+// @ts-ignore — legacy .js hook
+import { useReveal } from '../hooks/useReveal';
 import {
   fetchTeams, fetchMatches, fetchMatch, fetchStandings, fetchCalendar,
 } from '../services/api';
@@ -45,6 +47,34 @@ export default function ClubDashboard() {
   const { user, isCoach } = useAuth() as { user: { tenantId?: string | null; fullName?: string } | null; isCoach: boolean };
   const { selectedTeam, selectedTeamId } = useTeam() as { selectedTeam: Team | null; selectedTeamId: string | null };
   useDocumentTitle(selectedTeam?.name ? `${selectedTeam.name} — Клуб` : 'Клуб');
+
+  // Kinetic-полировка: reveal секций при скролле + parallax-tilt hero-карточек.
+  const cdRef = useRef<HTMLDivElement>(null);
+  useReveal(cdRef, [selectedTeamId]);
+  useEffect(() => {
+    const root = cdRef.current;
+    if (!root) return;
+    if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return;
+    if (window.matchMedia?.('(hover: none)').matches) return;
+    const cards = Array.from(root.querySelectorAll<HTMLElement>('.cd__hero-card'));
+    const cleanups = cards.map((el) => {
+      let raf = 0;
+      const onMove = (e: MouseEvent) => {
+        const r = el.getBoundingClientRect();
+        const px = (e.clientX - r.left) / r.width - 0.5;
+        const py = (e.clientY - r.top) / r.height - 0.5;
+        cancelAnimationFrame(raf);
+        raf = requestAnimationFrame(() => {
+          el.style.transform = `perspective(1000px) rotateX(${(-py * 5).toFixed(2)}deg) rotateY(${(px * 5).toFixed(2)}deg) translateY(-4px)`;
+        });
+      };
+      const onLeave = () => { cancelAnimationFrame(raf); el.style.transform = ''; };
+      el.addEventListener('mousemove', onMove);
+      el.addEventListener('mouseleave', onLeave);
+      return () => { el.removeEventListener('mousemove', onMove); el.removeEventListener('mouseleave', onLeave); cancelAnimationFrame(raf); };
+    });
+    return () => cleanups.forEach((fn) => fn());
+  }, [selectedTeamId, selectedTeam]);
 
   const [team, setTeam]               = useState<Team | null>(null);
   const [calendar, setCalendar]       = useState<AnyObj[]>([]);
@@ -165,7 +195,7 @@ export default function ClubDashboard() {
   if (!team)   return <div className="cd"><div className="cd__error">Команда не найдена</div></div>;
 
   return (
-    <div className="cd kinetic">
+    <div className="cd kinetic" ref={cdRef}>
       <div className="cd__bg-glow" aria-hidden />
 
       <header className="cd__header">
@@ -244,7 +274,7 @@ export default function ClubDashboard() {
         const opp = pickOppSide(latestMatch, ourName);
         if (!our) return null;
         return (
-          <section className="cd__panel">
+          <section className="cd__panel reveal">
             <div className="cd__panel-header">
               <h2 className="cd__panel-title">Командные показатели</h2>
               <span className="cd__panel-sub">
@@ -328,7 +358,7 @@ export default function ClubDashboard() {
         });
         if (meaningful.length === 0) return null;
         return (
-          <section className="cd__panel">
+          <section className="cd__panel reveal">
             <div className="cd__panel-header">
               <h2 className="cd__panel-title">Детальная аналитика по секциям</h2>
               <span className="cd__panel-sub">{meaningful.length} категорий с данными</span>
@@ -344,7 +374,7 @@ export default function ClubDashboard() {
 
       {/* Top 5 + standings */}
       <section className="cd__columns">
-        <div className="cd__panel">
+        <div className="cd__panel reveal">
           <div className="cd__panel-header">
             <h2 className="cd__panel-title">Топ-5 по рейтингу</h2>
             <span className="cd__panel-sub">
@@ -385,7 +415,7 @@ export default function ClubDashboard() {
           )}
         </div>
 
-        <div className="cd__panel">
+        <div className="cd__panel reveal">
           <div className="cd__panel-header">
             <h2 className="cd__panel-title">Турнирная таблица</h2>
             <span className="cd__panel-sub">{standings ? tournamentTitle : ''}</span>
@@ -424,7 +454,7 @@ export default function ClubDashboard() {
 
       {/* Top-3 profile radars */}
       {topPlayers.length >= 3 && (
-        <section className="cd__panel">
+        <section className="cd__panel reveal">
           <div className="cd__panel-header">
             <h2 className="cd__panel-title">Профили топ-3</h2>
             <span className="cd__panel-sub">Performance Index — % от лучшего в команде</span>
@@ -447,7 +477,7 @@ export default function ClubDashboard() {
       )}
 
       {/* Roster */}
-      <section className="cd__panel">
+      <section className="cd__panel reveal">
         <div className="cd__panel-header">
           <h2 className="cd__panel-title">
             Состав{latestMatch?.players?.length ? ` (${latestMatch.players.length})` : ''}
