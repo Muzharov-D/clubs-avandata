@@ -1,0 +1,90 @@
+/* ============================================================================
+   KINETIC MATCHES LIST — премиальный список матчей (Bold kinetic).
+   Scoped под .matches-dashboard.kinetic.
+   ============================================================================ */
+
+.matches-dashboard.kinetic { font-family: var(--font); }
+
+/* ─── Заголовок ─── */
+.matches-dashboard.kinetic .md-head {
+  position: relative;
+  padding: 28px 28px 24px;
+  border-radius: var(--radius-lg, 20px);
+  overflow: hidden;
+  margin-bottom: 20px;
+  background:
+    linear-gradient(120deg, color-mix(in srgb, var(--brand-secondary) 30%, transparent), transparent 56%),
+    color-mix(in srgb, var(--bg-surface) 74%, transparent);
+  border: 1px solid var(--border-strong);
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(12px) saturate(1.2);
+  -webkit-backdrop-filter: blur(12px) saturate(1.2);
+}
+.matches-dashboard.kinetic .md-title {
+  font-family: var(--font-display);
+  font-size: clamp(28px, 4vw, 48px) !important;
+  letter-spacing: -0.03em;
+  text-transform: uppercase;
+  color: #fff;
+  text-shadow: 0 4px 24px color-mix(in srgb, var(--brand-primary) 40%, transparent);
+}
+.matches-dashboard.kinetic .md-sub { color: var(--text-muted); }
+.matches-dashboard.kinetic .md-upload-btn {
+  background: var(--brand-gradient) !important;
+  color: #fff !important; border: none !important;
+  font-family: var(--font-display);
+  border-radius: var(--radius-sm);
+  box-shadow: 0 8px 22px -8px color-mix(in srgb, var(--brand-primary) 70%, transparent);
+  transition: transform var(--dur-fast) var(--ease-out), filter var(--dur-fast) var(--ease-out);
+}
+.matches-dashboard.kinetic .md-upload-btn:hover { transform: translateY(-2px); filter: brightness(1.06); }
+
+/* ─── Карточки матчей: глубина, hover-подъём, цвет результата ─── */
+.matches-dashboard.kinetic .md-match-card {
+  position: relative;
+  overflow: hidden;
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--bg-surface) 92%, #fff 3%), var(--bg-surface)) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: var(--radius) !important;
+  box-shadow: var(--shadow), var(--ring);
+  transition: transform var(--dur) var(--ease-out), box-shadow var(--dur) var(--ease-out), border-color var(--dur) var(--ease-out);
+}
+.matches-dashboard.kinetic .md-match-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg);
+  border-color: var(--border-strong) !important;
+}
+/* Цветная грань-результат слева */
+.matches-dashboard.kinetic .md-match-card::before {
+  content: '';
+  position: absolute; left: 0; top: 0; bottom: 0; width: 3px;
+  background: var(--text-faint);
+}
+.matches-dashboard.kinetic .md-match-card:has(.md-match-card__result--win)::before  { background: var(--rating-good); box-shadow: 0 0 12px var(--rating-good); }
+.matches-dashboard.kinetic .md-match-card:has(.md-match-card__result--loss)::before { background: var(--rating-poor); }
+.matches-dashboard.kinetic .md-match-card:has(.md-match-card__result--draw)::before { background: var(--rating-ok); }
+
+.matches-dashboard.kinetic .md-match-card__date {
+  font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-faint);
+}
+.matches-dashboard.kinetic .md-match-card__team { font-family: var(--font); font-weight: 600; }
+.matches-dashboard.kinetic .md-match-card__score {
+  font-family: var(--font-display);
+  font-variant-numeric: tabular-nums;
+  font-size: 24px;
+  text-shadow: 0 0 18px color-mix(in srgb, var(--accent-cyan) 35%, transparent);
+}
+.matches-dashboard.kinetic .md-match-card__result--win  { color: var(--rating-good); }
+.matches-dashboard.kinetic .md-match-card__result--loss { color: var(--rating-poor); }
+.matches-dashboard.kinetic .md-match-card__result--draw { color: var(--rating-ok); }
+
+/* ─── Появление карточек ─── */
+.matches-dashboard.kinetic .md-grid > * { animation: reveal-in 0.5s var(--ease-out) both; }
+.matches-dashboard.kinetic .md-grid > *:nth-child(2) { animation-delay: 40ms; }
+.matches-dashboard.kinetic .md-grid > *:nth-child(3) { animation-delay: 80ms; }
+.matches-dashboard.kinetic .md-grid > *:nth-child(4) { animation-delay: 120ms; }
+.matches-dashboard.kinetic .md-grid > *:nth-child(n+5) { animation-delay: 160ms; }
+@media (prefers-reduced-motion: reduce) {
+  .matches-dashboard.kinetic .md-grid > * { animation: none; }
+}
