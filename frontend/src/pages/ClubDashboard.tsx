@@ -273,6 +273,14 @@ export default function ClubDashboard() {
         const our = pickOurSide(latestMatch, ourName);
         const opp = pickOppSide(latestMatch, ourName);
         if (!our) return null;
+        // Семантический цвет KPI: зелёный — лучше соперника, красный — хуже.
+        // higherBetter=false для «плохих» метрик (нарушения). Нет соперника → нейтраль.
+        const cmp = (a: unknown, b: unknown, higherBetter = true): 'green' | 'red' | 'muted' => {
+          const x = Number(a); const y = Number(b);
+          if (!Number.isFinite(x) || !Number.isFinite(y) || x === y) return 'muted';
+          const better = higherBetter ? x > y : x < y;
+          return better ? 'green' : 'red';
+        };
         return (
           <section className="cd__panel reveal">
             <div className="cd__panel-header">
@@ -282,36 +290,40 @@ export default function ClubDashboard() {
               </span>
             </div>
             <div className="cd__stats-grid">
-              <StatTile accent="cyan"   label="Владение"
+              <StatTile accent={cmp(our.possessionPct, opp?.possessionPct)} label="Владение"
                 value={our.possessionPct != null ? our.possessionPct : '—'}
                 unit={our.possessionPct != null ? '%' : undefined}
                 extra={opp?.possessionPct != null ? `соперник ${opp.possessionPct}%` : undefined}
                 delta={opp?.possessionPct != null && our.possessionPct != null && our.possessionPct !== opp.possessionPct
                   ? { sign: our.possessionPct > opp.possessionPct ? 'up' : 'down', text: `${Math.abs(our.possessionPct - opp.possessionPct)}%` }
                   : undefined} />
-              <StatTile accent="gold"   label="Удары"
+              <StatTile accent={cmp(our.shots?.total, opp?.shots?.total)} label="Удары"
                 value={our.shots?.total != null ? our.shots.total : '—'}
                 extra={our.shots?.total != null
                   ? `в створ ${our.shots?.onTarget ?? '—'} · ${our.shots?.accuracy ?? '—'}%`
+                  : undefined}
+                delta={opp?.shots?.total != null && our.shots?.total != null && our.shots.total !== opp.shots.total
+                  ? { sign: our.shots.total > opp.shots.total ? 'up' : 'down', text: `${Math.abs(our.shots.total - opp.shots.total)}` }
                   : undefined} />
-              <StatTile accent="violet" label="xG"
+              <StatTile accent={cmp(our.expectedGoals, opp?.expectedGoals)} label="xG"
                 value={our.expectedGoals != null ? Number(our.expectedGoals).toFixed(2) : '—'}
                 extra={opp?.expectedGoals != null ? `соперник ${Number(opp.expectedGoals).toFixed(2)}` : undefined} />
-              <StatTile accent="cyan"   label="Передачи"
+              <StatTile accent={cmp(our.passes?.total, opp?.passes?.total)} label="Передачи"
                 value={our.passes?.total != null ? our.passes.total : '—'}
                 extra={our.passes?.total != null
                   ? `точность ${our.passes?.accuracy ?? '—'}% (${our.passes?.successful ?? '—'})`
                   : undefined} />
-              <StatTile accent="green"  label="Угловые"
+              <StatTile accent={cmp(our.corners?.total, opp?.corners?.total)} label="Угловые"
                 value={our.corners?.total != null ? our.corners.total : '—'}
                 extra={our.corners?.accuracy != null ? `${our.corners.accuracy}% реализация` : undefined} />
               <StatTile accent="gold"   label="Штрафные с ударом"
                 value={our.freeKickShots != null ? our.freeKickShots : '—'} />
-              <StatTile accent="red"    label="Нарушения"
+              <StatTile accent={cmp(our.fouls, opp?.fouls, false)} label="Нарушения"
                 value={our.fouls != null ? our.fouls : '—'}
                 extra={opp?.fouls != null ? `соперник ${opp.fouls}` : undefined} />
-              <StatTile accent="muted"  label="Офсайды"
-                value={our.offsides != null ? our.offsides : '—'} />
+              <StatTile accent={cmp(our.offsides, opp?.offsides, false)} label="Офсайды"
+                value={our.offsides != null ? our.offsides : '—'}
+                extra={opp?.offsides != null ? `соперник ${opp.offsides}` : undefined} />
             </div>
             {latestMatch.teamAvgRatings && (() => {
               const tar = latestMatch.teamAvgRatings as Record<string, unknown>;
