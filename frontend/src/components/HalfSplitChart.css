@@ -45,3 +45,10 @@
   .hsc__row { grid-template-columns: 92px 1fr 30px 40px; gap: 6px; }
   .hsc__label { font-size: 11px; }
 }
+
+/* polish (impeccable/emil): «данные наполняются» + hover + reduced-motion */
+.hsc__bar { animation: hsc-grow .5s cubic-bezier(.22,1,.36,1) both; transform-origin: left center; }
+@keyframes hsc-grow { from { transform: scaleX(.82); opacity: 0; } to { transform: scaleX(1); opacity: 1; } }
+.hsc__row { border-radius: 6px; transition: background .15s ease; }
+.hsc__row:hover { background: rgba(255, 255, 255, 0.035); }
+@media (prefers-reduced-motion: reduce) { .hsc__bar { animation: none; } .hsc__seg { transition: none; } }

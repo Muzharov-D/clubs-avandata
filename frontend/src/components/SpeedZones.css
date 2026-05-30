@@ -31,3 +31,10 @@
 @media (max-width: 600px) {
   .sz--compact { grid-template-columns: 90px 1fr 54px; gap: 6px; }
 }
+
+/* polish: grow-in + hover + reduced-motion */
+.sz__bar { animation: sz-grow .5s cubic-bezier(.22,1,.36,1) both; transform-origin: left center; }
+@keyframes sz-grow { from { transform: scaleX(.82); opacity: 0; } to { transform: scaleX(1); opacity: 1; } }
+.sz--compact { border-radius: 6px; transition: background .15s ease; }
+.sz--compact:hover { background: rgba(255, 255, 255, 0.035); }
+@media (prefers-reduced-motion: reduce) { .sz__bar { animation: none; } .sz__seg { transition: none; } }
