@@ -22,3 +22,8 @@
 .pp__sw--short { background: var(--accent-cyan, #22d3ee); }
 .pp__sw--mid   { background: var(--brand-primary, #2563eb); }
 .pp__sw--long  { background: var(--brand-secondary, #1e40af); }
+
+/* polish: grow-in + reduced-motion */
+.pp__bar { animation: pp-grow .5s cubic-bezier(.22,1,.36,1) both; transform-origin: left center; }
+@keyframes pp-grow { from { transform: scaleX(.82); opacity: 0; } to { transform: scaleX(1); opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .pp__bar { animation: none; } .pp__seg { transition: none; } }

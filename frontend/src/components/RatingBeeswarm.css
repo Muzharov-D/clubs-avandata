@@ -3,3 +3,9 @@
 .bsw__tick { fill: var(--text-faint, #64748b); font-size: 10px; }
 .bsw__avg { fill: var(--accent-cyan, #22d3ee); font-size: 10px; font-weight: 700; }
 .bsw__top { fill: var(--text, #f1f5fb); font-size: 11px; font-weight: 700; }
+
+/* polish: точки «всплывают» + hover-выделение */
+.bsw circle { transform-box: fill-box; transform-origin: center; transition: transform .12s ease, filter .12s ease; animation: bsw-pop .45s ease-out both; }
+@keyframes bsw-pop { from { opacity: 0; transform: scale(.4); } to { opacity: 1; transform: scale(1); } }
+.bsw circle:hover { transform: scale(1.35); filter: brightness(1.15); cursor: pointer; }
+@media (prefers-reduced-motion: reduce) { .bsw circle { animation: none; } .bsw circle:hover { transform: none; } }

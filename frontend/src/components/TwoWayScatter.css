@@ -4,3 +4,8 @@
 .tws__axis { fill: var(--text-muted, #94a3b8); font-size: 11px; font-weight: 600; }
 .tws__quad { fill: var(--text-faint, #64748b); font-size: 9px; text-transform: uppercase; letter-spacing: 0.03em; }
 .tws__lbl { fill: var(--text, #f1f5fb); font-size: 9px; font-weight: 600; }
+
+/* polish: hover-выделение точки */
+.tws circle { transform-box: fill-box; transform-origin: center; transition: transform .12s ease, filter .12s ease; }
+.tws circle:hover { transform: scale(1.4); filter: brightness(1.15); cursor: pointer; }
+@media (prefers-reduced-motion: reduce) { .tws circle:hover { transform: none; } }
