@@ -129,7 +129,7 @@ export default function MatchDetail() {
     return pos + cnt;
   }, [ta]);
 
-  const insights = useMemo(() => matchInsights(match), [match]);
+  // insights считаем после seasonAvg (объявлен ниже) — пересчёт при его готовности.
 
   // Командная динамика по таймам — суммируем сплиты игроков (1/2 тайм).
   const teamHalf = useMemo(() => {
@@ -252,6 +252,13 @@ export default function MatchDetail() {
     out._games = allMatchData.length;
     return out;
   }, [allMatchData]);
+
+  // Аналитические выводы: учитываем сезонный средний (для «vs обычного») и
+  // короткие имена. Пересчитываются, когда дозагрузился сезонный контекст.
+  const insights = useMemo(
+    () => matchInsights(match, { seasonAvg, nameOf: shortNameFromPlayer }),
+    [match, seasonAvg],
+  );
 
   if (matchRes.error) return <div className="empty-state">Ошибка: {matchRes.error.message}</div>;
   if (!match) return (
@@ -382,10 +389,8 @@ export default function MatchDetail() {
           <ul className="md-insights">
             {insights.map((it, i) => (
               <li key={i} className={`md-insight md-insight--${it.tone}`}>
-                <span className="md-insight__mark" aria-hidden="true">
-                  {it.tone === 'positive' ? '▲' : it.tone === 'negative' ? '▼' : '•'}
-                </span>
-                {it.text}
+                <span className="md-insight__icon" aria-hidden="true">{it.icon || '•'}</span>
+                <span className="md-insight__text">{it.text}</span>
               </li>
             ))}
           </ul>
