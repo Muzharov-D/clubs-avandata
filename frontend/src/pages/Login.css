@@ -93,3 +93,95 @@
   .login-card { width: calc(100vw - 24px); padding: 22px 20px; }
   .login-title { font-size: 20px; margin-bottom: 16px; }
 }
+
+/* ============================================================================
+   KINETIC LOGIN — вау-вход (первый экран платформы). Переопределяет базу выше.
+   ============================================================================ */
+.login-page {
+  background: var(--bg-page, #0a0c10);
+}
+/* Живой mesh-фон с дрейфом */
+.login-page::before {
+  background:
+    radial-gradient(50% 45% at 18% 16%, color-mix(in srgb, var(--brand-primary) 32%, transparent), transparent 60%),
+    radial-gradient(45% 45% at 85% 22%, color-mix(in srgb, var(--accent-cyan) 22%, transparent), transparent 55%),
+    radial-gradient(60% 55% at 72% 92%, color-mix(in srgb, var(--brand-secondary) 30%, transparent), transparent 60%);
+  background-size: 200% 200%, 200% 200%, 200% 200%;
+  animation: login-mesh 24s ease-in-out infinite alternate;
+}
+@keyframes login-mesh {
+  0%   { background-position: 0% 0%, 100% 0%, 50% 100%; }
+  100% { background-position: 28% 18%, 70% 30%, 40% 70%; }
+}
+/* Сетка-сканлайн поверх фона */
+.login-page::after {
+  content: '';
+  position: absolute; inset: 0; z-index: 0; pointer-events: none;
+  background-image:
+    linear-gradient(color-mix(in srgb, var(--text) 5%, transparent) 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in srgb, var(--text) 5%, transparent) 1px, transparent 1px);
+  background-size: 48px 48px;
+  mask-image: radial-gradient(110% 80% at 50% 40%, #000 25%, transparent 72%);
+  opacity: 0.45;
+}
+
+/* Стеклокарта с brand-свечением + появление */
+.login-card {
+  max-width: 420px;
+  padding: 44px 36px;
+  background: color-mix(in srgb, var(--bg-surface, #141821) 72%, transparent);
+  border: 1px solid var(--border-strong, #343d4e);
+  border-radius: var(--radius-lg, 20px);
+  backdrop-filter: blur(22px) saturate(1.3);
+  -webkit-backdrop-filter: blur(22px) saturate(1.3);
+  box-shadow: var(--shadow-lg), 0 0 60px -20px color-mix(in srgb, var(--brand-primary) 60%, transparent);
+  animation: login-rise 0.6s var(--ease-out, cubic-bezier(.22,1,.36,1)) both;
+}
+@keyframes login-rise { from { opacity: 0; transform: translateY(18px) scale(0.98); } to { opacity: 1; transform: none; } }
+/* Тонкая акцентная грань сверху карты */
+.login-card::before {
+  content: ''; position: absolute; top: 0; left: 24px; right: 24px; height: 2px;
+  background: linear-gradient(90deg, transparent, var(--accent-cyan, #22d3ee), transparent);
+}
+
+.login-title {
+  font-family: var(--font-display, 'Space Grotesk', sans-serif);
+  font-size: 26px;
+  letter-spacing: -0.02em;
+  text-transform: uppercase;
+}
+
+/* Премиум-инпуты: тёмные, не белые «таблетки» */
+.login-field input {
+  background: color-mix(in srgb, var(--bg-surface-2, #1b212c) 85%, transparent);
+  border: 1px solid var(--border, #262d3a);
+  color: var(--text, #f3f6fc);
+  border-radius: var(--radius-sm, 9px);
+  transition: border-color var(--dur-fast, 120ms) var(--ease-out), box-shadow var(--dur-fast, 120ms) var(--ease-out);
+}
+.login-field input::placeholder { color: var(--text-faint, #647084); }
+.login-field input:focus {
+  border-color: var(--brand-primary, #2563eb);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--brand-primary) 28%, transparent);
+}
+.login-field label {
+  text-transform: uppercase; letter-spacing: 0.08em; font-size: 11px;
+  color: var(--text-muted, #97a3b6);
+}
+
+/* Кнопка: brand-градиент + объём + ховер-подъём */
+.login-submit {
+  background: var(--brand-gradient, linear-gradient(135deg, #1a4ba0, #2c66c7));
+  border-radius: var(--radius-sm, 9px);
+  font-family: var(--font-display, 'Space Grotesk', sans-serif);
+  letter-spacing: 0.02em;
+  box-shadow: 0 10px 26px -10px color-mix(in srgb, var(--brand-primary) 75%, transparent);
+  transition: transform var(--dur-fast, 120ms) var(--ease-out), box-shadow var(--dur-fast, 120ms) var(--ease-out), filter var(--dur-fast, 120ms) var(--ease-out);
+}
+.login-submit:hover:not(:disabled) { transform: translateY(-2px); filter: brightness(1.06); opacity: 1; }
+.login-submit:active:not(:disabled) { transform: translateY(0); }
+
+@media (prefers-reduced-motion: reduce) {
+  .login-page::before { animation: none; }
+  .login-card { animation: none; }
+}
