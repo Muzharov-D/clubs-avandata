@@ -175,7 +175,13 @@ button:active:not(:disabled) { transform: translateY(1px) scale(0.99); }
 
 /* ─── Глобальный плавный reveal для карточек-секций на скролле ─── */
 .reveal { opacity: 0; transform: translateY(22px) scale(0.99); transition: opacity 0.55s var(--ease-out), transform 0.55s var(--ease-out); will-change: opacity, transform; }
-.reveal.is-in { opacity: 1; transform: none; }
+/* is-in ОБЯЗАН перебивать любой .reveal{opacity:0} из page-CSS (порядок импорта
+   страничных файлов мог идти позже). !important — гарантия, что контент видим. */
+.reveal.is-in { opacity: 1 !important; transform: none !important; }
+/* Если JS не отработал по любой причине — контент всё равно показывается через
+   3с (страховка от невидимых секций). */
+@keyframes reveal-failsafe { to { opacity: 1; transform: none; } }
+.reveal { animation: reveal-failsafe 0.01s linear 3s forwards; }
 
 @media (prefers-reduced-motion: reduce) {
   .app-layout::after { animation: none; }
