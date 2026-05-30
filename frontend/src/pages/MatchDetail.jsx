@@ -93,13 +93,17 @@ export default function MatchDetail() {
   const { selectedTeamId } = useTeam();
   const { user } = useAuth();
   const canDelete = user?.role === 'head_coach' || user?.role === 'team_coach';
+  const [confirmingDelete, setConfirmingDelete] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   async function handleDelete() {
-    if (!window.confirm('Удалить этот отчёт? Действие необратимо.')) return;
+    setDeleting(true);
     try {
       await deleteMatch(matchId);
       toast.success('Отчёт удалён');
       navigate('/matches', { replace: true });
     } catch (e) {
+      setDeleting(false);
+      setConfirmingDelete(false);
       toast.error(e?.message || 'Не удалось удалить отчёт');
     }
   }
@@ -250,7 +254,16 @@ export default function MatchDetail() {
   }, [allMatchData]);
 
   if (matchRes.error) return <div className="empty-state">Ошибка: {matchRes.error.message}</div>;
-  if (!match) return <div className="empty-state">Загрузка матча…</div>;
+  if (!match) return (
+    <div className="page match-detail" role="status" aria-busy="true">
+      <div className="md-skel md-skel--bar" />
+      <div className="md-skel md-skel--hero" />
+      <div className="md-skel md-skel--ratings" />
+      <div className="md-skel md-skel--card" />
+      <div className="md-skel md-skel--card" />
+      <span className="md-sr-only">Загрузка разбора матча…</span>
+    </div>
+  );
 
   return (
     <div className="page match-detail">
@@ -260,10 +273,19 @@ export default function MatchDetail() {
         <div className="match-detail__tools">
           <button className="md-tool-btn" onClick={handleExport} title="Скачать метрики матча в CSV">⤓ CSV</button>
           <button className="md-tool-btn" onClick={() => window.print()} title="Печать / сохранить в PDF">🖨 PDF</button>
-          {canDelete && (
-            <button className="md-tool-btn md-tool-btn--danger" onClick={handleDelete} title="Удалить загруженный отчёт">
+          {canDelete && !confirmingDelete && (
+            <button className="md-tool-btn md-tool-btn--danger" onClick={() => setConfirmingDelete(true)} title="Удалить загруженный отчёт">
               🗑 Удалить
             </button>
+          )}
+          {canDelete && confirmingDelete && (
+            <span className="md-confirm" role="group" aria-label="Подтвердите удаление">
+              <span className="md-confirm__q">Удалить отчёт?</span>
+              <button className="md-tool-btn md-tool-btn--danger" onClick={handleDelete} disabled={deleting}>
+                {deleting ? 'Удаление…' : 'Да, удалить'}
+              </button>
+              <button className="md-tool-btn" onClick={() => setConfirmingDelete(false)} disabled={deleting}>Отмена</button>
+            </span>
           )}
         </div>
       </div>
@@ -311,8 +333,24 @@ export default function MatchDetail() {
         </div>
       </div>
 
+      {/* Внутристраничная навигация по разделам разбора */}
+      <nav className="md-secnav" aria-label="Разделы разбора">
+        {[
+          ['md-ratings', 'Рейтинги'],
+          ['md-roles', 'Состав и роли'],
+          ['md-insights', 'Выводы'],
+          ['md-half', 'По таймам'],
+          ['md-fitness', 'Физика'],
+          ['md-heatmap', 'Хитмап'],
+          ['md-detail', 'Детали'],
+          ['md-maps', 'Карты'],
+        ].map(([id, label]) => (
+          <a key={id} href={`#${id}`} className="md-secnav__link">{label}</a>
+        ))}
+      </nav>
+
       {/* 4 рейтинга команды */}
-      <div className="match-detail__ratings">
+      <div className="match-detail__ratings" id="md-ratings">
         <RatingCard label="Общий" value={teamRatings.overall} />
         <RatingCard label="Фитнес" value={teamRatings.fitness} />
         <RatingCard label="Атака" value={teamRatings.attack} />
@@ -321,9 +359,10 @@ export default function MatchDetail() {
 
       {/* Beeswarm рейтингов состава (StatsBomb-style) */}
       {(match.players || []).filter((p) => (p.minutes ?? 0) > 0 && (p.ratings?.overall ?? 0) > 0).length >= 3 && (
-        <div className="card">
+        <div className="card md-anchor" id="md-roles">
           <div className="page-section-title">Рейтинги состава — распределение</div>
           <RatingBeeswarm players={match.players} />
+          <div className="md-insights__note" style={{ marginTop: 8 }}>Точка — игрок; цвет по оценке, пунктир — средний по команде. Наведи для имени.</div>
         </div>
       )}
 
@@ -332,12 +371,13 @@ export default function MatchDetail() {
         <div className="card">
           <div className="page-section-title">Роли — атака vs оборона</div>
           <TwoWayScatter players={match.players} />
+          <div className="md-insights__note" style={{ marginTop: 8 }}>X — рейтинг атаки, Y — обороны. Правый-верхний квадрант — двусторонние игроки.</div>
         </div>
       )}
 
       {/* Авто-инсайты по матчу (Phase 5) */}
       {insights.length > 0 && (
-        <div className="card match-detail__insights">
+        <div className="card match-detail__insights md-anchor" id="md-insights">
           <div className="page-section-title">Ключевые выводы</div>
           <ul className="md-insights">
             {insights.map((it, i) => (
@@ -358,7 +398,7 @@ export default function MatchDetail() {
 
       {/* Командная динамика по таймам (Phase: by-half) */}
       {teamHalf.length > 0 && (
-        <div className="card">
+        <div className="card md-anchor" id="md-half">
           <div className="page-section-title">Динамика по таймам — команда</div>
           <HalfSplitChart rows={teamHalf} hint="Как команда распределила действия между таймами. ▲/▼ — изменение во 2-м тайме." />
         </div>
@@ -366,7 +406,7 @@ export default function MatchDetail() {
 
       {/* Физическая нагрузка: интенсивный бег по зонам скорости */}
       {intensity.list.length > 0 && (
-        <div className="card">
+        <div className="card md-anchor" id="md-fitness">
           <div className="page-section-title">Физическая нагрузка — интенсивный бег</div>
           <div className="md-intensity">
             {intensity.list.map((r) => (
@@ -383,14 +423,14 @@ export default function MatchDetail() {
 
       {/* Хитмап состава — игрок × метрика (StatsBomb data-table) */}
       {(match.players || []).filter((p) => (p.minutes ?? 0) > 0).length >= 3 && (
-        <div className="card">
+        <div className="card md-anchor" id="md-heatmap">
           <div className="page-section-title">Хитмап состава</div>
           <SquadHeatmap players={match.players} />
           <div className="md-insights__note" style={{ marginTop: 8 }}>Заливка ячейки — относительно лучшего в столбце. Рейтинг — по цветовой шкале оценки.</div>
         </div>
       )}
 
-      <div className="match-detail__grid">
+      <div className="match-detail__grid md-anchor" id="md-detail">
         <div className="match-detail__left">
           <FormationField
             formation={match.formation}
@@ -517,23 +557,6 @@ export default function MatchDetail() {
             </div>
           )}
 
-          <div className="card top-scorers">
-            <div className="page-section-title">Топ по рейтингу</div>
-            {(match.players || [])
-              .filter((p) => p.ratings?.overall != null)
-              .sort((a, b) => b.ratings.overall - a.ratings.overall)
-              .slice(0, 5)
-              .map((p) => (
-                <div key={p.id} className="top-scorers__row" onClick={() => navigate(`/players/${p.id}`)}>
-                  <PlayerPhoto player={p} size={36} />
-                  <div className="top-scorers__info">
-                    <div className="top-scorers__name">{shortNameFromPlayer(p)}</div>
-                    <div className="top-scorers__pos">{p.positionFull}</div>
-                  </div>
-                  <RatingPill value={p.ratings.overall} size="sm" />
-                </div>
-              ))}
-          </div>
         </div>
       </div>
 
@@ -542,7 +565,7 @@ export default function MatchDetail() {
 
       {/* Командные карты — рендерим всю секцию только если хотя бы 1 карта есть */}
       {SECTION_MAPS.some((sec) => ta[sec.id]?.mapImage) && (
-      <div className="card match-detail__maps-card">
+      <div className="card match-detail__maps-card md-anchor" id="md-maps">
         <div className="page-section-title">Командные тепловые карты</div>
         <div className="match-detail__maps-grid">
           {SECTION_MAPS.map((sec) => {
