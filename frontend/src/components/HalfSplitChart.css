@@ -29,7 +29,6 @@
   font-weight: 700;
   color: #fff;
   min-width: 0;
-  transition: width 0.4s ease;
   overflow: hidden;
 }
 .hsc__seg--1 { background: var(--brand-secondary, #1e40af); }
