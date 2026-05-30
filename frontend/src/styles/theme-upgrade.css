@@ -173,15 +173,23 @@ button:active:not(:disabled) { transform: translateY(1px) scale(0.99); }
   text-wrap: balance;
 }
 
-/* ─── Глобальный плавный reveal для карточек-секций на скролле ─── */
-.reveal { opacity: 0; transform: translateY(22px) scale(0.99); transition: opacity 0.55s var(--ease-out), transform 0.55s var(--ease-out); will-change: opacity, transform; }
-/* is-in ОБЯЗАН перебивать любой .reveal{opacity:0} из page-CSS (порядок импорта
-   страничных файлов мог идти позже). !important — гарантия, что контент видим. */
-.reveal.is-in { opacity: 1 !important; transform: none !important; }
-/* Если JS не отработал по любой причине — контент всё равно показывается через
-   3с (страховка от невидимых секций). */
-@keyframes reveal-failsafe { to { opacity: 1; transform: none; } }
-.reveal { animation: reveal-failsafe 0.01s linear 3s forwards; }
+/* ─── Reveal секций: вход через АНИМАЦИЮ, а не opacity:0-по-умолчанию ───
+   Урок регрессии: opacity:0 + JS-тогл = риск невидимого контента, если JS не
+   отработал/не успел. Теперь reveal — это самозапускающаяся CSS-анимация
+   появления (fade-up). Конечное состояние всегда видимо, JS не требуется.
+   .is-in (от observer) лишь стартует её чуть раньше; без JS она всё равно
+   проигрывается. Контент физически не может остаться скрытым. */
+@keyframes reveal-in {
+  from { opacity: 0; transform: translateY(20px) scale(0.99); }
+  to   { opacity: 1; transform: none; }
+}
+.reveal {
+  animation: reveal-in 0.55s var(--ease-out) both;
+  will-change: opacity, transform;
+}
+@media (prefers-reduced-motion: reduce) {
+  .reveal { animation: none; opacity: 1; transform: none; }
+}
 
 @media (prefers-reduced-motion: reduce) {
   .app-layout::after { animation: none; }
