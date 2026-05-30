@@ -6,6 +6,7 @@ import { useTeam } from '../contexts/TeamContext';
 import { downloadCsv } from '../utils/exportCsv';
 import { playerLabel } from '../utils/players';
 import './LoadControl.css';
+import './playersKinetic.css';
 
 // Молодёжный матч ≈ 2×40 = 80 минут. Порог «много» — стабильно почти весь матч.
 const FULL_MATCH = 80;
@@ -49,7 +50,7 @@ export default function LoadControl() {
   const overloaded = players.filter((p) => loadLevel(p) === 'high').length;
 
   return (
-    <div className="page load-control">
+    <div className="page load-control kinetic">
       <div className="load-control__head">
         <div>
           <h1 className="load-control__title">Контроль нагрузки</h1>

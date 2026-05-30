@@ -9,6 +9,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useTeam } from '../contexts/TeamContext';
 import { shortNameFromPlayer } from '../utils/players';
 import './PlayersLeaders.css';
+import './playersKinetic.css';
 import './PlayersRating.css';
 
 function maxBy(items, getter) {
@@ -62,7 +63,7 @@ export default function PlayersLeaders() {
   ];
 
   return (
-    <div className="page players-leaders">
+    <div className="page players-leaders kinetic">
       <div className="players-rating__subnav">
         <NavLink to="/players" end className={({ isActive }) => 'players-subnav__item' + (isActive ? ' active' : '')}>Лидеры</NavLink>
         <NavLink to="/players/rating" className={({ isActive }) => 'players-subnav__item' + (isActive ? ' active' : '')}>Рейтинг</NavLink>
