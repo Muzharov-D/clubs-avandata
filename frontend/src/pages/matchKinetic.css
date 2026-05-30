@@ -1,0 +1,188 @@
+/* ============================================================================
+   KINETIC MATCH SCREEN — эталон визуального языка (Bold kinetic / спорт-бренд).
+   Scoped под .match-detail.kinetic, чтобы не задеть остальное до раскатки.
+   ============================================================================ */
+
+.match-detail.kinetic {
+  position: relative;
+  isolation: isolate;
+}
+
+/* ─── Живой фон: mesh-градиент + дрейф + сетка-сканлайны ─── */
+.match-detail.kinetic::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -2;
+  background:
+    radial-gradient(60% 50% at 18% 12%, color-mix(in srgb, var(--brand-primary) 38%, transparent), transparent 60%),
+    radial-gradient(55% 50% at 88% 18%, color-mix(in srgb, var(--accent-cyan) 26%, transparent), transparent 55%),
+    radial-gradient(70% 60% at 70% 95%, color-mix(in srgb, var(--brand-secondary) 32%, transparent), transparent 60%),
+    var(--bg-page);
+  background-size: 200% 200%, 200% 200%, 200% 200%, 100% 100%;
+  animation: kin-mesh 22s ease-in-out infinite alternate;
+}
+.match-detail.kinetic::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background-image:
+    linear-gradient(color-mix(in srgb, var(--text) 5%, transparent) 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in srgb, var(--text) 5%, transparent) 1px, transparent 1px);
+  background-size: 46px 46px;
+  mask-image: radial-gradient(120% 80% at 50% 0%, #000 30%, transparent 75%);
+  opacity: 0.5;
+  pointer-events: none;
+}
+@keyframes kin-mesh {
+  0%   { background-position: 0% 0%, 100% 0%, 50% 100%, 0 0; }
+  100% { background-position: 30% 20%, 70% 30%, 40% 70%, 0 0; }
+}
+
+/* ─── HERO ─── */
+.kin-hero {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 24px;
+  padding: 54px 28px 48px;
+  border-radius: var(--radius-lg, 20px);
+  overflow: hidden;
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--brand-secondary) 30%, transparent), transparent 55%),
+    color-mix(in srgb, var(--bg-surface) 70%, transparent);
+  border: 1px solid var(--border-strong);
+  box-shadow: var(--shadow-lg);
+  backdrop-filter: blur(14px) saturate(1.2);
+  -webkit-backdrop-filter: blur(14px) saturate(1.2);
+}
+/* Диагональная фирменная полоса-засветка */
+.kin-hero::before {
+  content: '';
+  position: absolute;
+  top: -40%;
+  left: -10%;
+  width: 60%;
+  height: 180%;
+  background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--accent-cyan) 16%, transparent), transparent);
+  transform: rotate(18deg);
+  filter: blur(28px);
+  pointer-events: none;
+  animation: kin-sweep 7s var(--ease-out) infinite;
+}
+@keyframes kin-sweep {
+  0%, 100% { transform: translateX(-30%) rotate(18deg); opacity: 0.4; }
+  50%      { transform: translateX(60%)  rotate(18deg); opacity: 0.9; }
+}
+
+.kin-team {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  text-align: center;
+}
+.kin-team--home { align-items: flex-end; text-align: right; }
+.kin-team--away { align-items: flex-start; text-align: left; }
+.kin-team__logo {
+  width: 78px; height: 78px;
+  object-fit: contain;
+  filter: drop-shadow(0 6px 18px rgba(0,0,0,0.5));
+}
+.kin-team__badge {
+  width: 78px; height: 78px;
+  border-radius: 18px;
+  display: grid; place-items: center;
+  font-family: var(--font-display);
+  font-size: 34px; font-weight: 700; color: #fff;
+  background: linear-gradient(150deg, var(--brand-primary), var(--brand-secondary));
+  box-shadow: var(--shadow);
+}
+/* Кинетик-имя команды */
+.kin-team__name {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(22px, 4vw, 46px);
+  line-height: 0.95;
+  letter-spacing: -0.03em;
+  text-transform: uppercase;
+  color: var(--text);
+  text-wrap: balance;
+}
+.kin-team--us .kin-team__name {
+  background: linear-gradient(180deg, #fff, color-mix(in srgb, var(--accent-cyan) 70%, #fff));
+  -webkit-background-clip: text; background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.kin-team__tag {
+  font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase;
+  color: var(--text-faint); font-weight: 600;
+}
+
+.kin-score-block { display: flex; flex-direction: column; align-items: center; gap: 8px; min-width: 220px; }
+.kin-date {
+  font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--text-muted); font-weight: 600;
+}
+.kin-score {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(64px, 11vw, 128px);
+  line-height: 1;
+  letter-spacing: -0.04em;
+  display: flex; align-items: center; gap: 10px;
+  color: var(--text);
+  text-shadow: 0 0 38px color-mix(in srgb, var(--brand-primary) 55%, transparent);
+  font-variant-numeric: tabular-nums;
+}
+.kin-score__sep { color: var(--text-faint); font-weight: 500; }
+.kin-score__num--win { color: color-mix(in srgb, var(--accent-cyan) 60%, #fff); }
+.kin-status {
+  display: inline-flex; align-items: center; gap: 7px;
+  font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase;
+  color: var(--rating-good); font-weight: 700;
+  padding: 5px 12px; border-radius: 20px;
+  background: color-mix(in srgb, var(--rating-good) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--rating-good) 35%, transparent);
+}
+.kin-status__dot { width: 7px; height: 7px; border-radius: 50%; background: var(--rating-good); box-shadow: 0 0 8px var(--rating-good); }
+
+/* ─── Scroll-reveal секций ─── */
+.match-detail.kinetic .reveal {
+  opacity: 0;
+  transform: translateY(26px) scale(0.985);
+  transition: opacity 0.6s var(--ease-out), transform 0.6s var(--ease-out);
+  will-change: opacity, transform;
+}
+.match-detail.kinetic .reveal.is-in {
+  opacity: 1;
+  transform: none;
+}
+
+/* Парящие карточки + акцентная грань сверху */
+.match-detail.kinetic .card {
+  position: relative;
+  overflow: hidden;
+}
+.match-detail.kinetic .card::after {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0; height: 2px;
+  background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--brand-primary) 70%, transparent), transparent);
+  opacity: 0; transition: opacity var(--dur) var(--ease-out);
+}
+.match-detail.kinetic .card:hover { transform: translateY(-3px); }
+.match-detail.kinetic .card:hover::after { opacity: 1; }
+
+@media (max-width: 720px) {
+  .kin-hero { grid-template-columns: 1fr; gap: 16px; padding: 32px 16px; text-align: center; }
+  .kin-team, .kin-team--home, .kin-team--away { align-items: center; text-align: center; }
+  .kin-score-block { order: -1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .match-detail.kinetic::before { animation: none; }
+  .kin-hero::before { animation: none; }
+  .match-detail.kinetic .reveal { opacity: 1; transform: none; transition: none; }
+}

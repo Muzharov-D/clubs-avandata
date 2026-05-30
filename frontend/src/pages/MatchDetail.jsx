@@ -1,6 +1,8 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useApi } from '../hooks/useApi';
+import { useReveal, useCountUp } from '../hooks/useReveal';
+import './matchKinetic.css';
 import { fetchMatch, fetchPlayers, fetchMatches, deleteMatch, updateMatchNote } from '../services/api';
 import { useTeam } from '../contexts/TeamContext';
 import { useAuth } from '../contexts/AuthContext';
@@ -111,6 +113,12 @@ export default function MatchDetail() {
 
   const match = matchRes.data;
   const players = playersRes.data?.players || [];
+
+  // Kinetic-эталон: scroll-reveal секций + count-up счёта.
+  const pageRef = useRef(null);
+  useReveal(pageRef, [match?.id, players.length]);
+  const homeScore = useCountUp(match?.score?.home ?? 0, 850);
+  const awayScore = useCountUp(match?.score?.away ?? 0, 850);
 
   const matchTitle = match
     ? `${match.home || ''} ${match.scoreHome ?? ''}:${match.scoreAway ?? ''} ${match.away || ''}`.trim()
@@ -265,8 +273,13 @@ export default function MatchDetail() {
     </div>
   );
 
+  // Ориентация: какая сторона — наша (для подсветки кинетик-имени и счёта).
+  const homeIsUs = match.homeTeam?.isOurTeam ?? !match.awayTeam?.isOurTeam;
+  const usScore = homeIsUs ? (match.score?.home ?? 0) : (match.score?.away ?? 0);
+  const themScore = homeIsUs ? (match.score?.away ?? 0) : (match.score?.home ?? 0);
+
   return (
-    <div className="page match-detail">
+    <div className="page match-detail kinetic" ref={pageRef}>
       <div className="match-detail__topbar">
         <button className="match-detail__back" onClick={() => navigate('/matches')}>← К матчам</button>
         {match.dataQuality && <DataQualityBadge dq={match.dataQuality} />}
@@ -290,48 +303,38 @@ export default function MatchDetail() {
         </div>
       </div>
 
-      {/* HERO: счёт и команды */}
-      <div className="match-detail__hero">
-        <div className="match-detail__team match-detail__team--home">
-          <img
-            src={shieldFor(match.homeTeam?.name, match.homeTeam?.shield)}
-            alt={match.homeTeam?.name || ''}
-            className="match-detail__team-logo-img"
-            onError={(e) => {
-              e.currentTarget.outerHTML = `<div class="match-detail__team-logo team-logo--home">${(match.homeTeam?.name || '?').charAt(0)}</div>`;
-            }}
-          />
-          <div className="match-detail__team-name">{trimAgeStr(match.homeTeam?.name)}</div>
-        </div>
-        <div className="match-detail__score-block">
-          <div className="match-detail__date">{fmtDate(match.date)}</div>
-          <div className="match-detail__score">
-            {match.score?.home}:{match.score?.away}
-          </div>
-          <div className="match-detail__status">МАТЧ РАЗОБРАН</div>
-        </div>
-        <div className="match-detail__team match-detail__team--away">
-          {(() => {
-            const src = shieldFor(match.awayTeam?.name, match.awayTeam?.shield);
-            return src ? (
-              <img
-                src={src}
-                alt={match.awayTeam?.name || ''}
-                className="match-detail__team-logo-img"
-                onError={(e) => {
-                  // Fallback на инициал клуба если щит не загрузился
-                  e.currentTarget.outerHTML = `<div class="match-detail__team-logo team-logo--away">${(match.awayTeam?.name || '?').charAt(0)}</div>`;
-                }}
-              />
-            ) : (
-              <div className="match-detail__team-logo team-logo--away">
-                {(match.awayTeam?.name || '?').charAt(0)}
+      {/* HERO — kinetic: кинетик-имена, count-up счёт, mesh-фон */}
+      {(() => {
+        const Team = ({ side, team, isUs }) => {
+          const src = shieldFor(team?.name, team?.shield);
+          const initial = (team?.name || '?').charAt(0);
+          return (
+            <div className={`kin-team kin-team--${side}${isUs ? ' kin-team--us' : ''}`}>
+              {src
+                ? <img src={src} alt={team?.name || ''} className="kin-team__logo"
+                    onError={(e) => { e.currentTarget.outerHTML = `<div class="kin-team__badge">${initial}</div>`; }} />
+                : <div className="kin-team__badge">{initial}</div>}
+              <div className="kin-team__name">{trimAgeStr(team?.name)}</div>
+              <div className="kin-team__tag">{isUs ? 'наша команда' : 'соперник'}</div>
+            </div>
+          );
+        };
+        return (
+          <div className="kin-hero reveal is-in">
+            <Team side="home" team={match.homeTeam} isUs={homeIsUs} />
+            <div className="kin-score-block">
+              <div className="kin-date">{fmtDate(match.date)}</div>
+              <div className="kin-score">
+                <span className={`kin-score__num${usScore > themScore && homeIsUs ? ' kin-score__num--win' : ''}`}>{homeScore}</span>
+                <span className="kin-score__sep">:</span>
+                <span className={`kin-score__num${usScore > themScore && !homeIsUs ? ' kin-score__num--win' : ''}`}>{awayScore}</span>
               </div>
-            );
-          })()}
-          <div className="match-detail__team-name">{trimAgeStr(match.awayTeam?.name)}</div>
-        </div>
-      </div>
+              <span className="kin-status"><span className="kin-status__dot" />Матч разобран</span>
+            </div>
+            <Team side="away" team={match.awayTeam} isUs={!homeIsUs} />
+          </div>
+        );
+      })()}
 
       {/* Внутристраничная навигация по разделам разбора */}
       <nav className="md-secnav" aria-label="Разделы разбора">
@@ -359,7 +362,7 @@ export default function MatchDetail() {
 
       {/* Beeswarm рейтингов состава (StatsBomb-style) */}
       {(match.players || []).filter((p) => (p.minutes ?? 0) > 0 && (p.ratings?.overall ?? 0) > 0).length >= 3 && (
-        <div className="card md-anchor" id="md-roles">
+        <div className="card md-anchor reveal" id="md-roles">
           <div className="page-section-title">Рейтинги состава — распределение</div>
           <RatingBeeswarm players={match.players} />
           <div className="md-insights__note" style={{ marginTop: 8 }}>Точка — игрок; цвет по оценке, пунктир — средний по команде. Наведи для имени.</div>
@@ -377,7 +380,7 @@ export default function MatchDetail() {
 
       {/* Авто-инсайты по матчу (Phase 5) */}
       {insights.length > 0 && (
-        <div className="card match-detail__insights md-anchor" id="md-insights">
+        <div className="card match-detail__insights md-anchor reveal" id="md-insights">
           <div className="page-section-title">Ключевые выводы</div>
           <ul className="md-insights">
             {insights.map((it, i) => (
@@ -396,7 +399,7 @@ export default function MatchDetail() {
 
       {/* Командная динамика по таймам (Phase: by-half) */}
       {teamHalf.length > 0 && (
-        <div className="card md-anchor" id="md-half">
+        <div className="card md-anchor reveal" id="md-half">
           <div className="page-section-title">Динамика по таймам — команда</div>
           <HalfSplitChart rows={teamHalf} hint="Как команда распределила действия между таймами. ▲/▼ — изменение во 2-м тайме." />
         </div>
@@ -404,7 +407,7 @@ export default function MatchDetail() {
 
       {/* Физическая нагрузка: интенсивный бег по зонам скорости */}
       {intensity.list.length > 0 && (
-        <div className="card md-anchor" id="md-fitness">
+        <div className="card md-anchor reveal" id="md-fitness">
           <div className="page-section-title">Физическая нагрузка — интенсивный бег</div>
           <div className="md-intensity">
             {intensity.list.map((r) => (
@@ -421,14 +424,14 @@ export default function MatchDetail() {
 
       {/* Хитмап состава — игрок × метрика (StatsBomb data-table) */}
       {(match.players || []).filter((p) => (p.minutes ?? 0) > 0).length >= 3 && (
-        <div className="card md-anchor" id="md-heatmap">
+        <div className="card md-anchor reveal" id="md-heatmap">
           <div className="page-section-title">Хитмап состава</div>
           <SquadHeatmap players={match.players} />
           <div className="md-insights__note" style={{ marginTop: 8 }}>Заливка ячейки — относительно лучшего в столбце. Рейтинг — по цветовой шкале оценки.</div>
         </div>
       )}
 
-      <div className="match-detail__grid md-anchor" id="md-detail">
+      <div className="match-detail__grid md-anchor reveal" id="md-detail">
         <div className="match-detail__left">
           <FormationField
             formation={match.formation}
@@ -588,7 +591,7 @@ export default function MatchDetail() {
 
       {/* Командные карты — рендерим всю секцию только если хотя бы 1 карта есть */}
       {SECTION_MAPS.some((sec) => ta[sec.id]?.mapImage) && (
-      <div className="card match-detail__maps-card md-anchor" id="md-maps">
+      <div className="card match-detail__maps-card md-anchor reveal" id="md-maps">
         <div className="page-section-title">Командные тепловые карты</div>
         <div className="match-detail__maps-grid">
           {SECTION_MAPS.map((sec) => {
