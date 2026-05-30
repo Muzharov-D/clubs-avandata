@@ -9,7 +9,6 @@ import { useDocumentTitle } from '../hooks/useDocumentTitle';
 import FormationField from '../components/FormationField';
 import MatchTimeline from '../components/MatchTimeline';
 import StatCompareBar from '../components/StatCompareBar';
-import DonutComparisonCard from '../components/DonutComparisonCard';
 import PlayerPhoto from '../components/PlayerPhoto';
 import RatingPill from '../components/RatingPill';
 import RatingCard from '../components/RatingCard';
@@ -122,12 +121,6 @@ export default function MatchDetail() {
   const ta = match?.teamAggregates || {};
   const motm = bestPlayer(match);
   const teamRatings = match?.teamAvgRatings || {};
-
-  const attackingActions = useMemo(() => {
-    const pos = ta.attacks?.positional?.withShot || 0;
-    const cnt = ta.attacks?.counterattacks?.withShot || 0;
-    return pos + cnt;
-  }, [ta]);
 
   // insights считаем после seasonAvg (объявлен ниже) — пересчёт при его готовности.
 
@@ -483,25 +476,50 @@ export default function MatchDetail() {
             </div>
           </div>
 
-          {/* Donuts: рендерим только метрики с реальным значением > 0 у нас */}
+          {/* Командный выхлоп vs сезон: метрика этого матча против СРЕДНЕГО по
+              сезону (вместо бесполезных «N из N» бубликов без соперника). */}
           {(() => {
-            const cards = [
-              { label: 'Удары в створ',         home: home.shots?.onTarget,        away: away.shots?.onTarget },
-              { label: 'Прогрессивные передачи', home: ta.passes?.progressive,      away: null },
-              { label: 'Отборы',                home: ta.duels?.totalDuels ?? ta.recoveriesAndTackling?.tackle, away: null },
-              { label: 'Перехваты',             home: ta.positioning?.interceptions ?? ta.recoveriesAndTackling?.interception, away: null },
-              { label: 'Атаки с ударом',        home: attackingActions,             away: null },
-              { label: 'Кроссы',                home: ta.passes?.crosses,           away: null },
-            ].filter((c) => {
-              const v = num(c.home);
-              return v != null && Number(v) > 0;
-            });
-            if (cards.length === 0) return null;
+            const defs = [
+              { label: 'Удары в створ',          get: (m) => num(m?.teamSummaryStats?.home?.shots?.onTarget) },
+              { label: 'Прогрессивные передачи', get: (m) => num(m?.teamAggregates?.passes?.progressive) },
+              { label: 'Отборы',                 get: (m) => num(m?.teamAggregates?.duels?.totalDuels ?? m?.teamAggregates?.recoveriesAndTackling?.tackle) },
+              { label: 'Перехваты',              get: (m) => num(m?.teamAggregates?.positioning?.interceptions ?? m?.teamAggregates?.recoveriesAndTackling?.interception) },
+              { label: 'Атаки с ударом',         get: (m) => { const t = m?.teamAggregates || {}; return (t.attacks?.positional?.withShot || 0) + (t.attacks?.counterattacks?.withShot || 0); } },
+              { label: 'Кроссы',                 get: (m) => num(m?.teamAggregates?.passes?.crosses) },
+            ];
+            const rows = defs.map((d) => {
+              const cur = d.get(match);
+              if (!(cur > 0)) return null;
+              const vals = allMatchData.map(d.get).filter((v) => v > 0);
+              const avg = vals.length >= 2 ? vals.reduce((a, b) => a + b, 0) / vals.length : null;
+              return { label: d.label, cur, avg };
+            }).filter(Boolean);
+            if (!rows.length) return null;
             return (
-              <div className="match-detail__donuts">
-                {cards.map((c) => (
-                  <DonutComparisonCard key={c.label} label={c.label} home={c.home} away={c.away} />
-                ))}
+              <div className="card">
+                <div className="page-section-title">Командный выхлоп</div>
+                <div className="md-output">
+                  {rows.map((r) => {
+                    const pct = r.avg ? Math.round(((r.cur - r.avg) / r.avg) * 100) : null;
+                    const dir = pct == null ? 'flat' : pct >= 8 ? 'up' : pct <= -8 ? 'down' : 'flat';
+                    return (
+                      <div className="md-out" key={r.label}>
+                        <div className="md-out__label">{r.label}</div>
+                        <div className="md-out__val">{r.cur}</div>
+                        {r.avg != null ? (
+                          <div className={`md-out__cmp md-out__cmp--${dir}`}>
+                            {dir === 'up' ? '▲' : dir === 'down' ? '▼' : '='} {pct > 0 ? '+' : ''}{pct}% · ср {r.avg.toFixed(0)}
+                          </div>
+                        ) : (
+                          <div className="md-out__cmp md-out__cmp--muted">за матч</div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+                {rows.some((r) => r.avg != null) && (
+                  <div className="md-insights__note" style={{ marginTop: 10 }}>Сравнение со средним по сезону ({allMatchData.length} матчей). ▲/▼ — отклонение от обычного.</div>
+                )}
               </div>
             );
           })()}
