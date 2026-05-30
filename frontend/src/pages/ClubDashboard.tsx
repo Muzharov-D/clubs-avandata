@@ -308,16 +308,15 @@ export default function ClubDashboard() {
               <StatTile accent={cmp(our.expectedGoals, opp?.expectedGoals)} label="xG"
                 value={our.expectedGoals != null ? Number(our.expectedGoals).toFixed(2) : '—'}
                 extra={opp?.expectedGoals != null ? `соперник ${Number(opp.expectedGoals).toFixed(2)}` : undefined} />
-              <StatTile accent={cmp(our.passes?.total, opp?.passes?.total)} label="Передачи"
+              {/* Передачи/Угловые — объём (стиль игры), не «хуже/лучше»: нейтрально. */}
+              <StatTile accent="cyan"   label="Передачи"
                 value={our.passes?.total != null ? our.passes.total : '—'}
                 extra={our.passes?.total != null
                   ? `точность ${our.passes?.accuracy ?? '—'}% (${our.passes?.successful ?? '—'})`
                   : undefined} />
-              <StatTile accent={cmp(our.corners?.total, opp?.corners?.total)} label="Угловые"
+              <StatTile accent="cyan"   label="Угловые"
                 value={our.corners?.total != null ? our.corners.total : '—'}
                 extra={our.corners?.accuracy != null ? `${our.corners.accuracy}% реализация` : undefined} />
-              <StatTile accent="gold"   label="Штрафные с ударом"
-                value={our.freeKickShots != null ? our.freeKickShots : '—'} />
               <StatTile accent={cmp(our.fouls, opp?.fouls, false)} label="Нарушения"
                 value={our.fouls != null ? our.fouls : '—'}
                 extra={opp?.fouls != null ? `соперник ${opp.fouls}` : undefined} />
