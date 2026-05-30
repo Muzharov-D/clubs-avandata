@@ -112,9 +112,16 @@ export default function PizzaChart({
     const labelText = s.displayValue != null ? s.displayValue : String(Math.round(value));
 
     return (
-      <g key={i}>
+      <g key={i} className="pizza-slice" style={{ ['--i']: i, transformOrigin: `${cx}px ${cy}px` }}>
         <path d={trackPath} fill={conf.track} stroke="rgba(7,7,28,0.6)" strokeWidth="0.5" />
-        <path d={filledPath} fill={conf.fill} stroke="rgba(7,7,28,0.85)" strokeWidth="1">
+        <path
+          className="pizza-slice__fill"
+          d={filledPath}
+          fill={`url(#pz-grad-${s.group})`}
+          stroke="rgba(7,7,28,0.85)"
+          strokeWidth="1"
+          filter="url(#pz-glow)"
+        >
           <title>{`${s.axis}: ${labelText} (percentile ${Math.round(value)})`}</title>
         </path>
         <text
@@ -164,9 +171,38 @@ export default function PizzaChart({
         role="img"
         aria-label={`Pizza chart: ${subjectName}`}
       >
+        <defs>
+          {/* Радиальные градиенты заливок слайсов — глубина от центра к краю */}
+          <radialGradient id="pz-grad-attack" cx="50%" cy="50%" r="65%">
+            <stop offset="0%" stopColor="#ff6b6b" />
+            <stop offset="100%" stopColor="#b91c1c" />
+          </radialGradient>
+          <radialGradient id="pz-grad-defence" cx="50%" cy="50%" r="65%">
+            <stop offset="0%" stopColor="#ffffff" />
+            <stop offset="100%" stopColor="#b8c2d4" />
+          </radialGradient>
+          <radialGradient id="pz-grad-fitness" cx="50%" cy="50%" r="65%">
+            <stop offset="0%" stopColor="#c2410c" />
+            <stop offset="100%" stopColor="#6b2410" />
+          </radialGradient>
+          {/* Мягкое свечение слайсов */}
+          <filter id="pz-glow" x="-20%" y="-20%" width="140%" height="140%">
+            <feGaussianBlur stdDeviation="3" result="b" />
+            <feMerge>
+              <feMergeNode in="b" />
+              <feMergeNode in="SourceGraphic" />
+            </feMerge>
+          </filter>
+          {/* Свечение-ореол центра */}
+          <radialGradient id="pz-core" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stopColor="rgba(34,211,238,0.25)" />
+            <stop offset="100%" stopColor="rgba(7,7,28,0)" />
+          </radialGradient>
+        </defs>
+        <circle cx={cx} cy={cy} r={outerMax} fill="url(#pz-core)" opacity="0.6" />
         {guides}
         {sliceElements}
-        <circle cx={cx} cy={cy} r={innerR - 6} fill="rgba(7,7,28,0.92)" stroke={GROUP_COLORS.attack.fill} strokeWidth="1.5" />
+        <circle className="pizza-core" cx={cx} cy={cy} r={innerR - 6} fill="rgba(7,7,28,0.92)" stroke={GROUP_COLORS.attack.fill} strokeWidth="1.5" filter="url(#pz-glow)" />
         {centerLabel && (
           <text x={cx} y={cy - 2} fontSize="11" fontWeight="700" textAnchor="middle" dominantBaseline="middle" fill={GROUP_COLORS.attack.fill}>
             {centerLabel}
