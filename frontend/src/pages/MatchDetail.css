@@ -420,3 +420,53 @@
 
 /* Физическая нагрузка — список зон по игрокам */
 .md-intensity { display: flex; flex-direction: column; gap: 8px; }
+
+/* ─── 40/40 polish: section-nav · inline-confirm · skeleton ─── */
+.md-secnav {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  padding: 8px 0;
+  margin: -4px 0 2px;
+  background: var(--bg-page);
+}
+.md-secnav__link {
+  font-size: 12px;
+  color: var(--text-muted);
+  padding: 5px 11px;
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+.md-secnav__link:hover {
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.05);
+  border-color: var(--brand-primary);
+}
+[id^='md-'] { scroll-margin-top: 56px; }
+
+.md-confirm { display: inline-flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.md-confirm__q { font-size: 13px; color: var(--text-muted); }
+
+.md-sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.md-skel {
+  border-radius: var(--radius, 12px);
+  background: linear-gradient(90deg, rgba(255,255,255,0.04) 25%, rgba(255,255,255,0.09) 37%, rgba(255,255,255,0.04) 63%);
+  background-size: 400% 100%;
+  animation: md-shimmer 1.4s ease infinite;
+  margin-bottom: 12px;
+}
+.md-skel--bar { height: 34px; }
+.md-skel--hero { height: 118px; }
+.md-skel--ratings { height: 84px; }
+.md-skel--card { height: 220px; }
+@keyframes md-shimmer { from { background-position: 100% 0; } to { background-position: 0 0; } }
+@media (prefers-reduced-motion: reduce) { .md-skel { animation: none; } }
+@media (max-width: 768px) {
+  .md-secnav { overflow-x: auto; flex-wrap: nowrap; }
+}
