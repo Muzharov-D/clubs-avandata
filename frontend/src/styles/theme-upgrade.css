@@ -1,0 +1,87 @@
+/* ============================================================================
+   THEME UPGRADE — премиальная тёмная аналитика.
+   Импортируется ПОСЛЕ legirus-app.css → переопределяет базовые компоненты,
+   не трогая разметку. Только визуал. Пицца игрока (PizzaChart) не затрагивается.
+   ============================================================================ */
+
+/* ─── Типографика ─── */
+h1, h2, h3, .page-title, .match-detail__score,
+.match-detail__team-name, .cd__hero-team, .cd__hero-score {
+  font-family: var(--font-display);
+  letter-spacing: -0.02em;
+}
+.page-section-title {
+  font-family: var(--font-display);
+  font-size: 12px !important;
+  letter-spacing: 0.08em !important;
+  color: var(--text-muted) !important;
+  font-weight: 600 !important;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin-bottom: 14px !important;
+}
+/* Акцентная риска перед заголовком секции — фирменная деталь. */
+.page-section-title::before {
+  content: '';
+  width: 3px;
+  height: 13px;
+  border-radius: 2px;
+  background: var(--brand-primary);
+  flex-shrink: 0;
+}
+
+/* ─── Карточки: глубина, мягкая граница, ховер-подъём ─── */
+.card {
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--bg-surface) 92%, #fff 3%), var(--bg-surface)) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: var(--radius) !important;
+  box-shadow: var(--shadow), var(--ring) !important;
+  padding: 18px !important;
+  transition: border-color var(--dur) var(--ease-out), box-shadow var(--dur) var(--ease-out), transform var(--dur) var(--ease-out);
+}
+.card:hover {
+  border-color: var(--border-strong) !important;
+  box-shadow: var(--shadow-lg), var(--ring) !important;
+}
+
+/* ─── Кнопки: чёткие состояния, лёгкий объём ─── */
+button {
+  font-family: var(--font);
+  font-weight: 600;
+  border-radius: var(--radius-sm);
+  transition: background var(--dur-fast) var(--ease-out), transform var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast) var(--ease-out), filter var(--dur-fast) var(--ease-out);
+}
+button:active:not(:disabled) { transform: translateY(1px) scale(0.99); }
+
+/* ─── Появление секций при загрузке: мягкий fade-up со stagger ─── */
+.app-content > * { animation: tu-rise var(--dur-slow) var(--ease-out) both; }
+.app-content > *:nth-child(1) { animation-delay: 0ms; }
+.app-content > *:nth-child(2) { animation-delay: 40ms; }
+.app-content > *:nth-child(3) { animation-delay: 80ms; }
+.app-content > *:nth-child(4) { animation-delay: 120ms; }
+.app-content > *:nth-child(5) { animation-delay: 160ms; }
+.app-content > *:nth-child(6) { animation-delay: 200ms; }
+.app-content > *:nth-child(n+7) { animation-delay: 240ms; }
+@keyframes tu-rise {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ─── Премиальный скроллбар ─── */
+* { scrollbar-width: thin; scrollbar-color: var(--border-strong) transparent; }
+*::-webkit-scrollbar { width: 10px; height: 10px; }
+*::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 6px; border: 2px solid transparent; background-clip: content-box; }
+*::-webkit-scrollbar-thumb:hover { background: var(--text-faint); background-clip: content-box; }
+
+/* ─── Сетка крупных чисел/рейтингов — дисплей-шрифт + tabular ─── */
+.match-detail__score, .cd__hero-score, .md-out__val,
+.rating-pill, .rating-card__value, .bsw__top, .sz__big {
+  font-family: var(--font-display);
+  font-variant-numeric: tabular-nums;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .app-content > * { animation: none; }
+}
