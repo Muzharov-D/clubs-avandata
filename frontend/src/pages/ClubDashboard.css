@@ -28,7 +28,7 @@
   -webkit-background-clip: text; background-clip: text;
   -webkit-text-fill-color: transparent;
 }
-.cd__sub  { font-size: 14px; color: #94a3b8; }
+.cd__sub  { font-size: 14px; color: var(--text-muted-strong, #b4c0d2); }
 .cd__pos-num { color: #1FB6FF; font-weight: 700; }
 
 .cd__loading, .cd__error {
@@ -77,8 +77,8 @@
 .cd__hero-meta { font-size: 13px; color: #94a3b8; margin-bottom: 10px; }
 .cd__countdown {
   display: inline-block; padding: 6px 12px; margin-top: 6px;
-  background: rgba(31,182,255,0.12); color: #1FB6FF;
-  border-radius: 999px; font-size: 12px; font-weight: 600;
+  background: rgba(31,182,255,0.28); color: #7fe3ff;
+  border-radius: 999px; font-size: 12px; font-weight: 700;
 }
 .cd__hero-action {
   margin-top: 10px; padding: 8px 16px;
@@ -87,6 +87,8 @@
   cursor: pointer; transition: background 150ms;
 }
 .cd__hero-action:hover { background: rgba(31,182,255,0.12); }
+.cd__hero-action:active { transform: scale(0.97); }
+@media (prefers-reduced-motion: reduce) { .cd__hero-action:active { transform: none; } }
 
 /* ===== Panel base ===== */
 .cd__panel {
@@ -113,7 +115,7 @@
 .cd__stat-tile {
   background: rgba(255,255,255,0.03);
   border: 1px solid rgba(255,255,255,0.05);
-  border-radius: 12px;
+  border-radius: var(--radius, 14px);
   padding: 14px;
 }
 .cd__stat-label {
@@ -122,12 +124,13 @@
 }
 .cd__stat-value {
   font-size: 28px; font-weight: 800; letter-spacing: -0.01em;
-  background: linear-gradient(180deg, #fff, #1FB6FF);
-  -webkit-background-clip: text; background-clip: text;
-  -webkit-text-fill-color: transparent;
+  /* Раньше был background-clip:text → риск невидимого текста на слабом GPU.
+     Сплошной цвет + лёгкое свечение читается всегда. */
+  color: var(--accent-cyan, #22d3ee);
+  text-shadow: 0 0 14px rgba(34, 211, 238, 0.25);
 }
 .cd__stat-suffix { font-size: 16px; color: #94a3b8; margin-left: 2px; }
-.cd__stat-extra { font-size: 11px; color: #64748b; margin-top: 4px; }
+.cd__stat-extra { font-size: 11px; color: #94a3b8; margin-top: 4px; }
 
 .cd__avg-caption {
   margin-top: 14px;
@@ -277,7 +280,7 @@
   cursor: pointer;
   transition: border-color 150ms, transform 120ms;
 }
-.cd__player:hover { border-color: rgba(31,182,255,0.3); transform: translateY(-1px); }
+.cd__player:hover { border-color: rgba(31,182,255,0.4); transform: translateY(-2px); }
 .cd__player-photo {
   width: 40px; height: 40px;
   flex-shrink: 0;
@@ -307,9 +310,12 @@
 
 /* ===== Empty state ===== */
 .cd__empty {
-  padding: 40px 20px; text-align: center; color: #64748b;
+  padding: 40px 20px; text-align: center; color: #94a3b8;
 }
-.cd__empty-icon { font-size: 36px; margin-bottom: 10px; opacity: 0.6; }
+.cd__empty-icon {
+  display: flex; justify-content: center;
+  margin-bottom: 12px; color: #647084;
+}
 
 @media (max-width: 880px) {
   .cd { padding: 20px 16px 40px; }

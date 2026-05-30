@@ -309,12 +309,12 @@ export default function ClubDashboard() {
                 value={our.expectedGoals != null ? Number(our.expectedGoals).toFixed(2) : '—'}
                 extra={opp?.expectedGoals != null ? `соперник ${Number(opp.expectedGoals).toFixed(2)}` : undefined} />
               {/* Передачи/Угловые — объём (стиль игры), не «хуже/лучше»: нейтрально. */}
-              <StatTile accent="cyan"   label="Передачи"
+              <StatTile accent="muted"  label="Передачи"
                 value={our.passes?.total != null ? our.passes.total : '—'}
                 extra={our.passes?.total != null
                   ? `точность ${our.passes?.accuracy ?? '—'}% (${our.passes?.successful ?? '—'})`
                   : undefined} />
-              <StatTile accent="cyan"   label="Угловые"
+              <StatTile accent="muted"  label="Угловые"
                 value={our.corners?.total != null ? our.corners.total : '—'}
                 extra={our.corners?.accuracy != null ? `${our.corners.accuracy}% реализация` : undefined} />
               <StatTile accent={cmp(our.fouls, opp?.fouls, false)} label="Нарушения"
@@ -396,7 +396,7 @@ export default function ClubDashboard() {
           </div>
           {topPlayers.length === 0 ? (
             <div className="cd__empty">
-              <div className="cd__empty-icon">📊</div>
+              <EmptyIcon kind="chart" />
               <div>Загрузи PDF + Excel SportVisor, чтобы увидеть рейтинги игроков</div>
             </div>
           ) : (
@@ -433,7 +433,7 @@ export default function ClubDashboard() {
           </div>
           {standingsTopRows.length === 0 ? (
             <div className="cd__empty">
-              <div className="cd__empty-icon">🏆</div>
+              <EmptyIcon kind="trophy" />
               <div>Таблица турнира пока недоступна</div>
             </div>
           ) : (
@@ -688,24 +688,30 @@ function AggregateCard({ title, data }: { title: string; data: AnyObj }) {
   );
 }
 
-function num(v: any, digits = 0): string {
-  if (v == null) return '—';
-  const n = typeof v === 'object' ? (v.value ?? v.pct ?? null) : v;
-  if (n == null || isNaN(n)) return '—';
-  return digits === 0 ? Math.round(Number(n)).toLocaleString('ru-RU') : Number(n).toFixed(digits);
+/** Тонкая SVG-иконка пустого состояния (вместо эмодзи). */
+function EmptyIcon({ kind }: { kind: 'chart' | 'trophy' }) {
+  return (
+    <div className="cd__empty-icon" aria-hidden>
+      <svg width="40" height="40" viewBox="0 0 24 24" fill="none"
+        stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+        {kind === 'chart' ? (
+          <>
+            <path d="M3 3v18h18" />
+            <rect x="7" y="12" width="3" height="6" />
+            <rect x="12" y="8" width="3" height="10" />
+            <rect x="17" y="5" width="3" height="13" />
+          </>
+        ) : (
+          <>
+            <path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0V4Z" />
+            <path d="M17 5h3v2a3 3 0 0 1-3 3M7 5H4v2a3 3 0 0 0 3 3" />
+          </>
+        )}
+      </svg>
+    </div>
+  );
 }
-function pct(v: any): string {
-  if (v == null) return '—';
-  const n = typeof v === 'object' ? (v.pct ?? v.value ?? null) : v;
-  if (n == null || isNaN(n)) return '—';
-  return Math.round(Number(n)).toString();
-}
-function kmFromMeters(v: any): string {
-  if (v == null) return '—';
-  const n = typeof v === 'object' ? (v.value ?? null) : v;
-  if (n == null) return '—';
-  return (Number(n) / 1000).toFixed(1);
-}
+
 function ratingColor(r: number | null | undefined): string {
   if (r == null) return '#475569';
   if (r >= 8.5) return 'linear-gradient(135deg, #16a34a, #22c55e)';
