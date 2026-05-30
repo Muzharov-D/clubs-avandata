@@ -1,0 +1,93 @@
+/* ============================================================================
+   KINETIC PLAYERS PAGES — рейтинг / лидеры / сравнение / нагрузка (Bold kinetic).
+   Scoped под .players-rating.kinetic / .players-leaders.kinetic /
+   .player-compare.kinetic / .load-control.kinetic.
+   ============================================================================ */
+
+.players-rating.kinetic, .players-leaders.kinetic,
+.player-compare.kinetic, .load-control.kinetic { font-family: var(--font); }
+
+/* ─── Общий subnav (Лидеры/Рейтинг/Сравнение): премиальные таблетки ─── */
+.kinetic .players-rating__subnav {
+  background: color-mix(in srgb, var(--bg-surface) 60%, transparent);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 5px;
+  gap: 4px;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+.kinetic .players-subnav__item {
+  border-radius: 999px;
+  font-family: var(--font-display);
+  letter-spacing: 0.02em;
+  transition: background var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out);
+}
+.kinetic .players-subnav__item.active {
+  background: var(--brand-gradient) !important;
+  color: #fff !important;
+  box-shadow: 0 4px 14px -4px color-mix(in srgb, var(--brand-primary) 70%, transparent);
+}
+
+/* ─── Заголовки страниц ─── */
+.kinetic .load-control__title,
+.kinetic .player-compare__title,
+.kinetic .players-leaders__title {
+  font-family: var(--font-display);
+  font-size: clamp(24px, 3.5vw, 40px) !important;
+  letter-spacing: -0.03em;
+  text-transform: uppercase;
+  color: #fff;
+  text-shadow: 0 4px 22px color-mix(in srgb, var(--brand-primary) 35%, transparent);
+}
+
+/* ─── Таблица рейтинга: глубина + ряды с hover ─── */
+.players-rating.kinetic .players-rating__table {
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--bg-surface) 92%, #fff 3%), var(--bg-surface)) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: var(--radius-lg, 20px) !important;
+  box-shadow: var(--shadow), var(--ring);
+  overflow: hidden;
+}
+.players-rating.kinetic .players-rating__row {
+  transition: background var(--dur-fast) var(--ease-out), transform var(--dur-fast) var(--ease-out);
+}
+.players-rating.kinetic .players-rating__row:hover {
+  background: color-mix(in srgb, var(--brand-primary) 8%, transparent);
+}
+.players-rating.kinetic .players-rating__value,
+.players-rating.kinetic .col-rating,
+.players-rating.kinetic .players-rating__metric-value {
+  font-family: var(--font-display);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ─── Чипы метрик/позиций ─── */
+.kinetic .players-rating__chip,
+.kinetic .metric-chip {
+  transition: background var(--dur-fast) var(--ease-out), border-color var(--dur-fast) var(--ease-out), transform var(--dur-fast) var(--ease-out);
+}
+.kinetic .players-rating__chip:hover { transform: translateY(-1px); }
+
+/* ─── Карточки нагрузки/сравнения: уже из глобального слоя; числа дисплей ─── */
+.load-control.kinetic .lc-value,
+.player-compare.kinetic .pc-value,
+.players-leaders.kinetic .leader-metric-card__value {
+  font-family: var(--font-display);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ─── Появление основных блоков ─── */
+.kinetic .players-rating__table,
+.kinetic .load-control__table,
+.kinetic .player-compare__panel,
+.kinetic .leaders-grid {
+  animation: reveal-in 0.5s var(--ease-out) both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .kinetic .players-rating__table,
+  .kinetic .load-control__table,
+  .kinetic .player-compare__panel,
+  .kinetic .leaders-grid { animation: none; }
+}

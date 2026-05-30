@@ -12,6 +12,7 @@ import { shortNameFromPlayer } from '../utils/players';
 import { percentileRank, percentileColor } from '../utils/percentile';
 import { downloadCsv } from '../utils/exportCsv';
 import './PlayersRating.css';
+import './playersKinetic.css';
 
 // Группы метрик: Общее + 3 модуля. Каждый модуль возглавляет его рейтинг (primary).
 // Оценка (0–10, цветная) — только у primary-метрик (4 модуля). Остальные — счёт.
@@ -156,7 +157,7 @@ export default function PlayersRating() {
   if (!match) return <div className="empty-state">Нет данных</div>;
 
   return (
-    <div className="page players-rating">
+    <div className="page players-rating kinetic">
       <div className="players-rating__subnav">
         <NavLink to="/players" end className={({ isActive }) => 'players-subnav__item' + (isActive ? ' active' : '')}>Лидеры</NavLink>
         <NavLink to="/players/rating" className={({ isActive }) => 'players-subnav__item' + (isActive ? ' active' : '')}>Рейтинг</NavLink>

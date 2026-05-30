@@ -6,6 +6,7 @@ import { useTeam } from '../contexts/TeamContext';
 import { Sparkline } from '../components/Sparkline';
 import { playerLabel } from '../utils/players';
 import './PlayerCompare.css';
+import './playersKinetic.css';
 
 // Метрики сравнения: рейтинги (0–10) + сезонные суммы действий.
 const ROWS = [
@@ -70,7 +71,7 @@ export default function PlayerCompare() {
   const fmt = (r) => (v) => (v == null ? '—' : r.rating ? Number(v).toFixed(1) : Math.round(v));
 
   return (
-    <div className="page player-compare">
+    <div className="page player-compare kinetic">
       <h1 className="player-compare__title">Сравнение игроков</h1>
 
       <div className="card player-compare__pickers">
