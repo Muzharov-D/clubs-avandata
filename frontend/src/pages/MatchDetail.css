@@ -171,8 +171,9 @@
 .player-breakdown__rank {
   font-size: 13px;
   font-weight: 800;
-  color: #22d3ee;
+  color: #67e8f9;
   text-align: center;
+  font-variant-numeric: tabular-nums;
 }
 .player-breakdown__name { font-size: 13px; font-weight: 700; color: #fff; }
 .player-breakdown__pos { font-size: 11px; color: rgba(255, 255, 255, 0.5); }
@@ -402,8 +403,8 @@
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid var(--border);
 }
-.md-insight--positive { border-color: rgba(124, 179, 66, 0.35); }
-.md-insight--negative { border-color: rgba(211, 47, 47, 0.35); }
+.md-insight--positive { border-color: rgba(124, 179, 66, 0.6); }
+.md-insight--negative { border-color: rgba(211, 47, 47, 0.6); }
 .md-insight__icon {
   flex-shrink: 0;
   width: 26px; height: 26px;

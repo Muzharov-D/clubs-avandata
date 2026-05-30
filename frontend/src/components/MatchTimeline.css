@@ -54,13 +54,14 @@
 .match-timeline__player {
   font-size: 13px;
   color: #f1f5fb;
+  min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 @media (max-width: 480px) {
-  .match-timeline__row { grid-template-columns: 44px 22px 1fr; gap: 8px; padding: 6px 8px; }
+  .match-timeline__row { grid-template-columns: 40px 20px 1fr; gap: 6px; padding: 6px 8px; }
   .match-timeline__minute { font-size: 12px; }
   .match-timeline__icon { font-size: 16px; }
   .match-timeline__type { font-size: 10px; }
