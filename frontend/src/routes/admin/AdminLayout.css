@@ -73,12 +73,13 @@
   color: #94a3b8;
   font-size: 14px;
   font-weight: 500;
-  transition: background 150ms ease, color 150ms ease;
+  transition: background 150ms var(--ease-out, ease-out), color 150ms var(--ease-out, ease-out), transform 120ms var(--ease-out, ease-out);
 }
 .admin-sidebar__link:hover {
   background: rgba(255, 255, 255, 0.04);
   color: #f1f5fb;
 }
+.admin-sidebar__link:active { transform: scale(0.98); }
 .admin-sidebar__link--active {
   background: linear-gradient(135deg, rgba(37, 99, 235, 0.25) 0%, rgba(31, 182, 255, 0.15) 100%);
   color: #fff;
@@ -167,12 +168,13 @@
   font-size: 14px;
   border: none;
   cursor: pointer;
-  transition: transform 100ms ease, box-shadow 150ms ease;
+  transition: transform 120ms var(--ease-out, ease-out), box-shadow 150ms var(--ease-out, ease-out);
 }
 .admin-btn:hover {
   transform: translateY(-1px);
   box-shadow: 0 8px 24px rgba(31, 182, 255, 0.25);
 }
+.admin-btn:active { transform: scale(0.97); }
 
 /* ===== Stat cards strip ===== */
 .admin-stats {
@@ -208,11 +210,14 @@
   font-size: 32px;
   font-weight: 700;
   margin-top: 8px;
-  background: linear-gradient(180deg, #fff, #1FB6FF);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
+  /* solid вместо background-clip:text — нет риска невидимого текста на слабом GPU */
+  color: #7fe3ff;
+  font-variant-numeric: tabular-nums;
 }
+.admin-stat-card {
+  transition: border-color 150ms var(--ease-out, ease-out);
+}
+.admin-stat-card:hover { border-color: rgba(31, 182, 255, 0.22); }
 
 /* ===== Tenants grid ===== */
 .tenants-grid {
@@ -226,7 +231,7 @@
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 18px;
   padding: 24px;
-  transition: transform 200ms ease, border-color 200ms ease, box-shadow 200ms ease;
+  transition: transform 150ms var(--ease-out, ease-out), border-color 150ms var(--ease-out, ease-out), box-shadow 150ms var(--ease-out, ease-out);
   overflow: hidden;
 }
 .tenant-card::before {
@@ -340,12 +345,13 @@
   font-size: 12px;
   font-weight: 600;
   text-align: center;
-  transition: background 150ms ease;
+  transition: background 150ms var(--ease-out, ease-out), border-color 150ms var(--ease-out, ease-out), transform 120ms var(--ease-out, ease-out);
 }
 .tenant-card__action:hover {
   background: rgba(31, 182, 255, 0.1);
   border-color: rgba(31, 182, 255, 0.3);
 }
+.tenant-card__action:active { transform: scale(0.97); }
 
 /* ===== Empty state ===== */
 .admin-empty {
