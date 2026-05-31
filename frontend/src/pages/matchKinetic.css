@@ -178,3 +178,34 @@
   .kin-hero::before { animation: none; }
   .match-detail.kinetic .reveal { opacity: 1; transform: none; transition: none; }
 }
+
+/* ============================================================================
+   ВХОД БЛОКОВ РАЗБОРА — играет ВСЕГДА при открытии экрана.
+   Самозапускающаяся CSS-анимация на .kin-hero и .card: не зависит от JS,
+   скролла или IntersectionObserver (раньше блоки были статичны при первом
+   открытии, т.к. reveal-механика не успевала/не срабатывала).
+   fill-mode: backwards — во время задержки держит стартовый кадр, ПОСЛЕ входа
+   возвращает обычные стили (hover-подъём карточек продолжает работать, контент
+   физически не может остаться скрытым).
+   ============================================================================ */
+@keyframes md-enter {
+  from { opacity: 0; transform: translateY(16px) scale(0.992); }
+  to   { opacity: 1; transform: none; }
+}
+.match-detail.kinetic .kin-hero,
+.match-detail.kinetic .card {
+  animation: md-enter 0.5s var(--ease-out, cubic-bezier(0.22, 1, 0.36, 1)) backwards;
+}
+/* Лёгкий stagger — блоки въезжают по очереди (как лента инсайтов) */
+.match-detail.kinetic .kin-hero            { animation-delay: 20ms; }
+.match-detail.kinetic .card:nth-of-type(1) { animation-delay: 70ms; }
+.match-detail.kinetic .card:nth-of-type(2) { animation-delay: 120ms; }
+.match-detail.kinetic .card:nth-of-type(3) { animation-delay: 170ms; }
+.match-detail.kinetic .card:nth-of-type(4) { animation-delay: 220ms; }
+.match-detail.kinetic .card:nth-of-type(5) { animation-delay: 270ms; }
+.match-detail.kinetic .card:nth-of-type(n+6) { animation-delay: 320ms; }
+
+@media (prefers-reduced-motion: reduce) {
+  .match-detail.kinetic .kin-hero,
+  .match-detail.kinetic .card { animation: none; }
+}
