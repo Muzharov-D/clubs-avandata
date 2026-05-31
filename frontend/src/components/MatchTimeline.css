@@ -10,6 +10,8 @@
   flex-direction: column;
   gap: 2px;
 }
+/* impeccable: side-stripe border (border-left 3px) — Absolute ban.
+   Тон события несём полной рамкой + лёгким тинтом фона, а не боковой полосой. */
 .match-timeline__row {
   display: grid;
   grid-template-columns: 56px 28px 1fr;
@@ -17,15 +19,15 @@
   align-items: center;
   padding: 8px 10px;
   border-radius: 10px;
-  border-left: 3px solid transparent;
-  transition: background 120ms;
+  border: 1px solid transparent;
+  transition: background 120ms var(--ease-out, ease-out), border-color 120ms var(--ease-out, ease-out);
 }
 .match-timeline__row:hover { background: rgba(255,255,255,0.03); }
 
-.match-timeline__row--positive { border-left-color: #22c55e; }
-.match-timeline__row--negative { border-left-color: #ef4444; }
-.match-timeline__row--warning  { border-left-color: #facc15; }
-.match-timeline__row--neutral  { border-left-color: rgba(255,255,255,0.15); }
+.match-timeline__row--positive { background: rgba(34,197,94,0.08);  border-color: rgba(34,197,94,0.35); }
+.match-timeline__row--negative { background: rgba(239,68,68,0.08);  border-color: rgba(239,68,68,0.35); }
+.match-timeline__row--warning  { background: rgba(250,204,21,0.08); border-color: rgba(250,204,21,0.35); }
+.match-timeline__row--neutral  { border-color: rgba(255,255,255,0.1); }
 
 .match-timeline__minute {
   font-variant-numeric: tabular-nums;

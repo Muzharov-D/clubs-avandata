@@ -62,14 +62,15 @@
   margin-top: 3px;
 }
 
+/* impeccable: side-stripe border — Absolute ban. Полная рамка + тинт. */
 .match-weather__advice {
   display: flex;
   flex-direction: column;
   gap: 4px;
   padding: 9px 12px;
   background: rgba(220, 38, 38, 0.10);
-  border-left: 3px solid #dc2626;
-  border-radius: 6px;
+  border: 1px solid rgba(220, 38, 38, 0.4);
+  border-radius: 8px;
 }
 .match-weather__advice-text {
   font-size: 12px;
