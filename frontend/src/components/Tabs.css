@@ -19,15 +19,17 @@
   cursor: pointer;
   border-radius: 6px;
   text-transform: uppercase;
-  transition: background 0.15s, color 0.15s;
+  transition: background 0.15s var(--ease-out, ease-out), color 0.15s var(--ease-out, ease-out), transform 0.12s var(--ease-out, ease-out);
 }
 
 .tabs__item:hover:not(:disabled) {
   color: #fff;
 }
+.tabs__item:active:not(:disabled) { transform: scale(0.97); }
 
 .tabs__item--active {
-  background: var(--brand-gradient);
+  /* fallback: если бренд-градиент тенанта не задан — вкладка не станет невидимой */
+  background: var(--brand-gradient, linear-gradient(135deg, #1a4ba0, #2c66c7));
   color: #fff;
 }
 
