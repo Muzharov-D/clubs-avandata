@@ -189,28 +189,30 @@
    физически не может остаться скрытым).
    ============================================================================ */
 @keyframes md-enter {
-  from { opacity: 0; transform: translateY(16px) scale(0.992); }
-  to   { opacity: 1; transform: none; }
+  from { opacity: 0; transform: translateY(34px) scale(0.96); filter: blur(6px); }
+  60%  { filter: blur(0); }
+  to   { opacity: 1; transform: none; filter: blur(0); }
 }
 .match-detail.kinetic .kin-hero,
 .match-detail.kinetic .card {
-  animation: md-enter 0.5s var(--ease-out, cubic-bezier(0.22, 1, 0.36, 1)) backwards;
+  animation: md-enter 0.7s var(--ease-out, cubic-bezier(0.22, 1, 0.36, 1)) backwards;
 }
-/* Лёгкий stagger — блоки въезжают по очереди (как лента инсайтов) */
-.match-detail.kinetic .kin-hero            { animation-delay: 20ms; }
-.match-detail.kinetic .card:nth-of-type(1) { animation-delay: 70ms; }
-.match-detail.kinetic .card:nth-of-type(2) { animation-delay: 120ms; }
-.match-detail.kinetic .card:nth-of-type(3) { animation-delay: 170ms; }
-.match-detail.kinetic .card:nth-of-type(4) { animation-delay: 220ms; }
-.match-detail.kinetic .card:nth-of-type(5) { animation-delay: 270ms; }
-.match-detail.kinetic .card:nth-of-type(n+6) { animation-delay: 320ms; }
+/* Заметный stagger — блоки въезжают чёткой волной (как лента инсайтов) */
+.match-detail.kinetic .kin-hero            { animation-delay: 40ms; }
+.match-detail.kinetic .card:nth-of-type(1) { animation-delay: 140ms; }
+.match-detail.kinetic .card:nth-of-type(2) { animation-delay: 230ms; }
+.match-detail.kinetic .card:nth-of-type(3) { animation-delay: 320ms; }
+.match-detail.kinetic .card:nth-of-type(4) { animation-delay: 410ms; }
+.match-detail.kinetic .card:nth-of-type(5) { animation-delay: 500ms; }
+.match-detail.kinetic .card:nth-of-type(6) { animation-delay: 590ms; }
+.match-detail.kinetic .card:nth-of-type(n+7) { animation-delay: 680ms; }
 
 /* «Чистый режим» (тумблер ✦ выкл) гасит фоновое движение, но ВХОД блоков
    должен играть всегда — иначе экран выглядит мёртвым. Specificity (0,4,1) +
    !important перебивает глобальный killswitch html.fx-off * { animation:none }. */
 html.fx-off .match-detail.kinetic .kin-hero,
 html.fx-off .match-detail.kinetic .card {
-  animation: md-enter 0.5s var(--ease-out, cubic-bezier(0.22, 1, 0.36, 1)) backwards !important;
+  animation: md-enter 0.7s var(--ease-out, cubic-bezier(0.22, 1, 0.36, 1)) backwards !important;
 }
 
 /* Reduced-motion: убираем движение, но оставляем мягкое появление (opacity) —
