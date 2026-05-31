@@ -44,10 +44,17 @@ export default function ChangePasswordModal({ onClose }) {
 
   return (
     <div className="cpm-backdrop" onClick={onClose}>
-      <form className="cpm-sheet" onClick={(e) => e.stopPropagation()} onSubmit={submit}>
+      <form
+        className="cpm-sheet"
+        onClick={(e) => e.stopPropagation()}
+        onSubmit={submit}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="cpm-title"
+      >
         <button type="button" className="cpm-close" onClick={onClose} aria-label="Закрыть">✕</button>
 
-        <h3 className="cpm-title">Сменить пароль</h3>
+        <h3 className="cpm-title" id="cpm-title">Сменить пароль</h3>
         <div className="cpm-sub">После смены потребуется ввести новый пароль при следующем входе.</div>
 
         {ok ? (
