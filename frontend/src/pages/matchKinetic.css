@@ -229,3 +229,30 @@ html.fx-off .match-detail.kinetic .card {
   .match-detail.kinetic::before { animation: none !important; }
   .kin-hero::before { animation: none !important; }
 }
+
+/* ============================================================================
+   ВЕРТИКАЛЬНЫЙ РИТМ между верхнеуровневыми блоками разбора.
+   Раньше прямые дети контейнера матча (.card-секции: роли, выводы, тайм-сплит,
+   фитнес, хитмап, карты, заметка + .match-detail__grid) шли ВПЛОТНУЮ — без
+   gap/margin. Блоки слипались в одну стену, и раздельный вход карточек был
+   нечитаем. Дистанция между секциями делает и раскладку «дышащей», и вход
+   каждого блока отчётливым. Селектор `>` не трогает карточки внутри колонок
+   (__left/__center/__right) — там свой gap уже задан. */
+.match-detail.kinetic .card,
+.match-detail.kinetic .match-detail__grid,
+.match-detail.kinetic .match-detail__ratings,
+.match-detail.kinetic .match-detail__hero-wrap {
+  margin-bottom: 22px;
+}
+/* Карточки внутри 3-колоночной сетки имеют свой gap — лишний margin не нужен. */
+.match-detail.kinetic .match-detail__grid .card {
+  margin-bottom: 0;
+}
+@media (max-width: 768px) {
+  .match-detail.kinetic .card,
+  .match-detail.kinetic .match-detail__grid,
+  .match-detail.kinetic .match-detail__ratings,
+  .match-detail.kinetic .match-detail__hero-wrap {
+    margin-bottom: 16px;
+  }
+}
