@@ -215,14 +215,17 @@ html.fx-off .match-detail.kinetic .card {
   animation: md-enter 0.7s var(--ease-out, cubic-bezier(0.22, 1, 0.36, 1)) backwards !important;
 }
 
-/* Reduced-motion: убираем движение, но оставляем мягкое появление (opacity) —
-   доступно и всё равно «живо», а не статичный обрыв. */
-@keyframes md-enter-fade { from { opacity: 0; } to { opacity: 1; } }
+/* Вход блоков — продуктовое решение: играет ВСЕГДА в полную силу, даже при
+   системном prefers-reduced-motion и при «чистом режиме». Это ключевая
+   витрина платформы, поэтому осознанно не глушим вход. Фоновое «бесконечное»
+   движение (mesh/sweep) при reduced-motion всё же гасим (вестибулярка). */
 @media (prefers-reduced-motion: reduce) {
   .match-detail.kinetic .kin-hero,
   .match-detail.kinetic .card,
   html.fx-off .match-detail.kinetic .kin-hero,
   html.fx-off .match-detail.kinetic .card {
-    animation: md-enter-fade 0.4s ease both !important;
+    animation: md-enter 0.7s var(--ease-out, cubic-bezier(0.22, 1, 0.36, 1)) backwards !important;
   }
+  .match-detail.kinetic::before { animation: none !important; }
+  .kin-hero::before { animation: none !important; }
 }
