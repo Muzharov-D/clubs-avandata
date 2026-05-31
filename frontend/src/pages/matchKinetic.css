@@ -111,10 +111,10 @@
   color: var(--text);
   text-wrap: balance;
 }
+/* impeccable: gradient-text (background-clip:text) — Absolute ban. Нашу команду
+   выделяем сплошным акцентным цветом, а не градиентной заливкой текста. */
 .kin-team--us .kin-team__name {
-  background: linear-gradient(180deg, #fff, color-mix(in srgb, var(--accent-cyan) 70%, #fff));
-  -webkit-background-clip: text; background-clip: text;
-  -webkit-text-fill-color: transparent;
+  color: color-mix(in srgb, var(--accent-cyan) 55%, #fff);
 }
 .kin-team__tag {
   font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase;

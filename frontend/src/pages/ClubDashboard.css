@@ -24,9 +24,8 @@
 .cd__title {
   font-size: 36px; font-weight: 800; letter-spacing: -0.02em;
   margin: 0 0 6px;
-  background: linear-gradient(180deg, #fff, rgba(255,255,255,0.55));
-  -webkit-background-clip: text; background-clip: text;
-  -webkit-text-fill-color: transparent;
+  /* impeccable: gradient-text — Absolute ban. Сплошной цвет. */
+  color: #fff;
 }
 .cd__sub  { font-size: 14px; color: var(--text-muted-strong, #b4c0d2); }
 .cd__pos-num { color: #1FB6FF; font-weight: 700; }
