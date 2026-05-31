@@ -153,15 +153,19 @@
 }
 
 .av-hero__title {
+  font-family: var(--font-display, 'Space Grotesk', sans-serif);
   font-size: clamp(40px, 6vw, 72px);
-  line-height: 1;
+  line-height: 1.04;
   font-weight: 800;
   letter-spacing: -0.03em;
   margin: 0 0 24px;
+  text-wrap: balance;
   background: linear-gradient(180deg, #ffffff 0%, #ffffff 50%, rgba(255, 255, 255, 0.4) 100%);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 .av-hero__title-accent {
   background: linear-gradient(135deg, #1FB6FF 0%, #2563eb 100%);
