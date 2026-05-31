@@ -205,7 +205,22 @@
 .match-detail.kinetic .card:nth-of-type(5) { animation-delay: 270ms; }
 .match-detail.kinetic .card:nth-of-type(n+6) { animation-delay: 320ms; }
 
+/* «Чистый режим» (тумблер ✦ выкл) гасит фоновое движение, но ВХОД блоков
+   должен играть всегда — иначе экран выглядит мёртвым. Specificity (0,4,1) +
+   !important перебивает глобальный killswitch html.fx-off * { animation:none }. */
+html.fx-off .match-detail.kinetic .kin-hero,
+html.fx-off .match-detail.kinetic .card {
+  animation: md-enter 0.5s var(--ease-out, cubic-bezier(0.22, 1, 0.36, 1)) backwards !important;
+}
+
+/* Reduced-motion: убираем движение, но оставляем мягкое появление (opacity) —
+   доступно и всё равно «живо», а не статичный обрыв. */
+@keyframes md-enter-fade { from { opacity: 0; } to { opacity: 1; } }
 @media (prefers-reduced-motion: reduce) {
   .match-detail.kinetic .kin-hero,
-  .match-detail.kinetic .card { animation: none; }
+  .match-detail.kinetic .card,
+  html.fx-off .match-detail.kinetic .kin-hero,
+  html.fx-off .match-detail.kinetic .card {
+    animation: md-enter-fade 0.4s ease both !important;
+  }
 }
