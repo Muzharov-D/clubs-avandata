@@ -205,7 +205,11 @@
 .match-detail.kinetic .card:nth-of-type(4) { animation-delay: 410ms; }
 .match-detail.kinetic .card:nth-of-type(5) { animation-delay: 500ms; }
 .match-detail.kinetic .card:nth-of-type(6) { animation-delay: 590ms; }
-.match-detail.kinetic .card:nth-of-type(n+7) { animation-delay: 680ms; }
+.match-detail.kinetic .card:nth-of-type(7) { animation-delay: 680ms; }
+.match-detail.kinetic .card:nth-of-type(8) { animation-delay: 770ms; }
+/* за 8-й карточкой каскад уже за пределом первого экрана — фиксируем потолок,
+   чтобы дальние блоки не висели слишком долго на входе */
+.match-detail.kinetic .card:nth-of-type(n+9) { animation-delay: 840ms; }
 
 /* «Чистый режим» (тумблер ✦ выкл) гасит фоновое движение, но ВХОД блоков
    должен играть всегда — иначе экран выглядит мёртвым. Specificity (0,4,1) +

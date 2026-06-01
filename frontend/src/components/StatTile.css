@@ -36,8 +36,8 @@
   font-weight: 600;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  /* было .55 → ~3.9:1 на тёмном; поднял до читаемого по WCAG для мелкого текста */
-  color: rgba(255,255,255,0.7);
+  /* .8 → ~4.9:1 даже на осветлённом hover-фоне плитки (WCAG AA для мелкого) */
+  color: rgba(255,255,255,0.8);
 }
 .stat-tile__delta {
   font-size: 11px;

@@ -129,7 +129,8 @@
 
 .match-detail__ratings {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  /* auto-fit: 4 колонки на десктопе, плавно 2→1 на узких без отдельных брейкпоинтов */
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
   gap: 12px;
   margin-bottom: 16px;
 }
