@@ -24,7 +24,6 @@ import TwoWayScatter from '../components/TwoWayScatter';
 import { shieldFor } from '../utils/legirus';
 import { shortNameFromPlayer } from '../utils/players';
 import { matchInsights } from '../utils/insights';
-import { downloadCsv } from '../utils/exportCsv';
 import './MatchDetail.css';
 
 const SECTION_MAPS = [
@@ -187,27 +186,6 @@ export default function MatchDetail() {
     });
   }, [match]);
 
-  // CSV-экспорт метрик матча по игрокам (для тренерского совета).
-  function handleExport() {
-    if (!match) return;
-    const cols = [
-      { label: 'Игрок', get: (p) => shortNameFromPlayer(p) },
-      { label: '№', get: (p) => p.number ?? '' },
-      { label: 'Позиция', get: (p) => p.positionFull || p.position || '' },
-      { label: 'Минуты', get: (p) => p.minutes ?? '' },
-      { label: 'Общий', get: (p) => p.ratings?.overall ?? '' },
-      { label: 'Атака', get: (p) => p.ratings?.attack ?? '' },
-      { label: 'Защита', get: (p) => p.ratings?.defence ?? '' },
-      { label: 'Фитнес', get: (p) => p.ratings?.fitness ?? '' },
-      { label: 'Голы', get: (p) => num(p.stats?.attack4?.goal) ?? '' },
-      { label: 'Ассисты', get: (p) => num(p.stats?.attack1?.assist) ?? '' },
-      { label: 'Удары', get: (p) => num(p.stats?.attack4?.shot) ?? '' },
-      { label: 'Отборы', get: (p) => num(p.stats?.defence1?.tackle) ?? '' },
-      { label: 'Дистанция, м', get: (p) => num(p.stats?.fitness?.totalDistance) ?? '' },
-    ];
-    downloadCsv(`match-${(trimAgeStr(match.away) || matchId).slice(0, 24)}`, match.players || [], cols);
-  }
-
   const topGoals = useMemo(() => topByMetric(match?.players || [], (p) => p.stats?.attack4?.goal), [match]);
   const topAssists = useMemo(() => topByMetric(match?.players || [], (p) => p.stats?.attack1?.assist), [match]);
   const topTackles = useMemo(() => topByMetric(match?.players || [], (p) => p.stats?.defence1?.tackle), [match]);
@@ -284,8 +262,8 @@ export default function MatchDetail() {
         <button className="match-detail__back" onClick={() => navigate('/matches')}>← К матчам</button>
         {match.dataQuality && <DataQualityBadge dq={match.dataQuality} />}
         <div className="match-detail__tools">
-          <button className="md-tool-btn" onClick={handleExport} title="Скачать метрики матча в CSV">⤓ CSV</button>
-          <button className="md-tool-btn" onClick={() => window.print()} title="Печать / сохранить в PDF">🖨 PDF</button>
+          {/* Экспорт CSV/PDF убран намеренно: платформа — единственный источник
+              просмотра данных. Управление загрузкой (удаление) — остаётся. */}
           {canDelete && !confirmingDelete && (
             <button className="md-tool-btn md-tool-btn--danger" onClick={() => setConfirmingDelete(true)} title="Удалить загруженный отчёт">
               🗑 Удалить
