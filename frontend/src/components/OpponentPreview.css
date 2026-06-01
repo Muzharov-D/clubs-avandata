@@ -6,7 +6,7 @@
 .opp-preview {
   background: linear-gradient(135deg, rgba(255, 255, 255, 0.04) 0%, rgba(255, 255, 255, 0.01) 100%);
   border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 12px;
+  border-radius: var(--radius, 14px);
   padding: 14px 14px 12px;
   margin: 8px 0;
   display: flex;
