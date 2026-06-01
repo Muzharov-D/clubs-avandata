@@ -545,7 +545,8 @@
   font-size: 12px;
 }
 
-.pub-card--training { border-left: 3px solid #22c55e; }
+/* impeccable: side-stripe border — ban. Тип события несём полной рамкой + тинт. */
+.pub-card--training { border-color: rgba(34,197,94,0.4); background: linear-gradient(135deg, rgba(0,0,0,0.5) 0%, rgba(6,26,12,0.7) 100%); }
 .pub-card__training-row { display: flex; align-items: center; gap: 14px; padding: 4px 0; }
 .pub-card__training-info { flex: 1; }
 .pub-card__training-title { font-size: 16px; font-weight: 700; color: #fff; }
