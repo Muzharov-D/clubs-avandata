@@ -5,7 +5,7 @@ import { writeFile, mkdir, rm, readFile } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { randomBytes } from 'node:crypto';
+import { randomBytes, createHash } from 'node:crypto';
 import { authenticate } from '../auth/middleware.js';
 import { withTenantTx } from '../db/tenantContext.js';
 import { BadRequestError, UnauthorizedError, AppError } from '../shared/errors.js';
@@ -46,6 +46,27 @@ function cleanPlayerName(raw: string | null | undefined, num: number): string {
   const t = String(raw ?? '').trim();
   if (isPlaceholderName(t)) return `№${String(num).padStart(2, '0')}`;
   return t;
+}
+
+/**
+ * Канонический ключ игрока для объединения ПО ИМЕНИ, а не по номеру. Один
+ * человек = одна запись, даже если играл под разными номерами (напр. Ахмадов
+ * под 14 и 23 — это один игрок, не два). ё→е, нижний регистр, без точек/лишних
+ * пробелов. Имя в формате «Имя Фамилия» (так дают и CSV, и PDF SportVisor).
+ */
+function playerNameKey(fullName: string, firstName?: string | null, lastName?: string | null): string {
+  const base = firstName && lastName ? `${firstName} ${lastName}` : fullName || '';
+  return base.toLowerCase().replace(/ё/g, 'е').replace(/[.,]/g, '').replace(/\s+/g, ' ').trim();
+}
+
+/**
+ * Стабильный id игрока из имени. Детерминирован: один и тот же человек в разных
+ * матчах/под разными номерами получает один id → объединяется в одну строку.
+ * Возвращает null для заглушек (пустое имя / «№NN») — там остаётся id по номеру.
+ */
+function playerIdFromName(teamId: string, key: string): string | null {
+  if (!key) return null;
+  return `sv-${teamId}-${createHash('sha1').update(`${teamId}:${key}`).digest('hex').slice(0, 10)}`;
 }
 
 /** Разбивает «Фамилия И.» → {firstName, lastName} для записи в БД. */
@@ -197,7 +218,10 @@ export async function uploadRoutes(app: FastifyInstance) {
             const cleaned = cleanPlayerName(ep.name, num);
             const lastName = cleaned.split(' ').pop() || '';
             const firstName = cleaned.split(' ').slice(0, -1).join(' ') || '';
-            const pid = `sv-${teamId}-n${String(num).padStart(2, '0')}`;
+            // Объединение ПО ИМЕНИ, не по номеру: один человек = одна строка,
+            // даже под разными № в разных матчах. Заглушки («№NN») — по номеру.
+            const nameKey = playerNameKey(cleaned, firstName, lastName);
+            const pid = playerIdFromName(teamId, nameKey) ?? `sv-${teamId}-n${String(num).padStart(2, '0')}`;
             // Insert or update by id; also handle duplicate-number conflict.
             await conn.query(
               `INSERT INTO players (id, tenant_id, team_id, full_name, first_name, last_name, number)
@@ -521,13 +545,23 @@ export async function uploadRoutes(app: FastifyInstance) {
         for (const r of roster) {
           if (r.number != null) rosterByNum.set(String(r.number).padStart(2, '0'), r);
         }
+        // Поиск игрока в ростере ПО ИМЕНИ — приоритетнее номера, чтобы один
+        // человек под разными № резолвился в одну существующую запись.
+        const rosterByName = new Map<string, typeof roster[number]>();
+        for (const r of roster) {
+          const k = playerNameKey(r.fullName, r.firstName, r.lastName);
+          if (k) rosterByName.set(k, r);
+        }
 
         // PRIMARY: rich PDF data — все 17 игроков с radar + attack/defence/fitness stats
         for (const [numStr, meta] of Object.entries(rich.overall_meta)) {
           const radar = rich.radar[numStr] ?? {};
-          const rosterRow = rosterByNum.get(numStr);
-          const playerId = rosterRow?.id ?? `pdf-${teamId}-n${numStr}`;
           const np = nameParts(meta, parseInt(numStr, 10));
+          const nameKey = playerNameKey(np.full, np.firstName, np.lastName);
+          // По имени → существующая запись (даже под другим №); иначе детермин.
+          // id из имени; иначе (заглушка без имени) — по номеру.
+          const rosterRow = (nameKey ? rosterByName.get(nameKey) : undefined) ?? rosterByNum.get(numStr);
+          const playerId = rosterRow?.id ?? playerIdFromName(teamId, nameKey) ?? `pdf-${teamId}-n${numStr}`;
           if (!rosterRow) {
             await conn.query(
               `INSERT INTO players (id, tenant_id, team_id, full_name, first_name, last_name, number, position)
