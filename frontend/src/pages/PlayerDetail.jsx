@@ -1,7 +1,11 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useApi } from '../hooks/useApi';
-import { fetchMatch, fetchMatches, fetchMetrics, fetchPlayer } from '../services/api';
+import { fetchMatch, fetchMatches, fetchMetrics, fetchPlayer, fetchPlayersSeason } from '../services/api';
+import PlayerAdvancedCard from '../components/analytics/PlayerAdvancedCard';
+import SeasonPercentileCard from '../components/analytics/SeasonPercentileCard';
+import PlayerFormCard from '../components/analytics/PlayerFormCard';
+import RoleFitCard from '../components/analytics/RoleFitCard';
 import { useAuth } from '../contexts/AuthContext';
 import { useTeam } from '../contexts/TeamContext';
 import { useDocumentTitle } from '../hooks/useDocumentTitle';
@@ -149,6 +153,13 @@ export default function PlayerDetail() {
 
   const matchRes = useApi(() => (currentMatchId ? fetchMatch(currentMatchId) : Promise.resolve(null)), [currentMatchId]);
   const metricsRes = useApi(fetchMetrics, []);
+  // Сезонные агрегаты для перцентилей vs позиционный пул. Эндпоинт только для
+  // тренеров → defensively .catch(null), карточка деградирует (не показывается).
+  const seasonRes = useApi(
+    () => (effectiveTeamId ? fetchPlayersSeason(effectiveTeamId).catch(() => null) : Promise.resolve(null)),
+    [effectiveTeamId],
+  );
+  const seasonPlayers = seasonRes.data?.players || [];
 
   const match = matchRes.data;
   const metrics = metricsRes.data || {};
@@ -330,6 +341,15 @@ export default function PlayerDetail() {
       {/* Динамика по сезону (Phase 2) */}
       <PlayerTrendCard playerId={playerId} />
 
+      {/* Форма: индекс свежих матчей, vs своё среднее, серия, траектория */}
+      <PlayerFormCard playerId={playerId} />
+
+      {/* Продвинутые модельные метрики за матч (xG/xT/xA/packing/PAdj/win%) */}
+      <PlayerAdvancedCard player={player} squad={match.players} match={match} />
+
+      {/* Перцентиль vs сезонный позиционный пул (на 90′) */}
+      <SeasonPercentileCard subject={player} seasonPlayers={seasonPlayers} />
+
       {/* RIBBON: Лучший в команде */}
       {badges.length > 0 && (
         <div className="card player-detail__ribbon reveal">
@@ -402,6 +422,9 @@ export default function PlayerDetail() {
           />
         )}
       </div>
+
+      {/* Ролевой профиль — к какому архетипу ближе игрок */}
+      <RoleFitCard player={player} squad={match.players} />
 
       {/* RATINGS vs TEAM AVG — оставил, нагляднее по 4 общим осям */}
       {/* (радары удалены — pizza заменила и 14-осевой radar, и position-сравнение) */}

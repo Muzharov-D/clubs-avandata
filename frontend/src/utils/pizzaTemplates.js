@@ -35,6 +35,7 @@ export const POSITION_OPTIONS = [
   { value: 'FWD', label: 'Нападающий' },
   { value: 'MID', label: 'Полузащитник' },
   { value: 'DEF', label: 'Защитник' },
+  { value: 'GK', label: 'Вратарь' },
 ];
 export const PIZZA_VS_LABEL = 'игроков команды';
 
@@ -144,6 +145,30 @@ export const TEMPLATES = {
       { axis: 'Средняя скорость',           group: 'fitness', key: 'fitness.averageSpeed' },
     ],
   },
+  GK: {
+    slices: [
+      // ВРАТАРСКОЕ (defence3) — основной профиль голкипера
+      { axis: 'Сейвы',                      group: 'defence', key: 'defence3.save' },
+      { axis: 'Удары по воротам',           group: 'defence', key: 'defence3.shotsAgainst' },
+      { axis: 'Выходы вратаря',             group: 'defence', key: 'defence3.goalkeeperExits' },
+      { axis: 'От ворот',                   group: 'defence', key: 'defence3.goalKick' },
+      { axis: 'Короткие от ворот',          group: 'defence', key: 'defence3.shortGoalKicks' },
+      { axis: 'Длинные от ворот',           group: 'defence', key: 'defence3.longGoalKicks' },
+      // ОБОРОНА ПОЛЯ
+      { axis: 'Выносы',                     group: 'defence', key: 'defence1.clearance' },
+      { axis: 'Перехваты',                  group: 'defence', key: 'defence1.interception' },
+      { axis: 'Верховые единоборства',      group: 'defence', key: 'defence2.aerialDuel' },
+      // ИГРА НОГАМИ (attack)
+      { axis: 'Всего передач',              group: 'attack',  key: 'attack2.pass' },
+      { axis: 'Длинные передачи',           group: 'attack',  key: 'attack3.passLong' },
+      { axis: 'Передачи вперёд',            group: 'attack',  key: 'attack3.passForward' },
+      { axis: 'Передачи в фин. треть',      group: 'attack',  key: 'attack2.passToFinalThird' },
+      { axis: 'Принятые передачи',          group: 'attack',  key: 'attack3.receivedPass' },
+      // ФИТНЕС
+      { axis: 'Общая дистанция',            group: 'fitness', key: 'fitness.totalDistance' },
+      { axis: 'Средняя скорость',           group: 'fitness', key: 'fitness.averageSpeed' },
+    ],
+  },
 };
 
 // Достаём value по dotted-key из player.stats
@@ -166,13 +191,13 @@ export function positionGroup(player) {
   if (full.includes('напад')) return 'FWD';
   if (full.includes('полуз')) return 'MID';
   if (full.includes('защит')) return 'DEF';
-  if (full.includes('вратар')) return null; // GK — отдельный шаблон когда добавим
+  if (full.includes('вратар')) return 'GK';
 
   const code = (player?.position || '').toUpperCase();
   if (/^(ST|CF|SS|LW|RW)$/.test(code)) return 'FWD';
   if (/^(CM|CDM|CAM|DM|AM|LM|RM)$/.test(code)) return 'MID';
   if (/^(CB|LB|RB|LWB|RWB|SW)$/.test(code)) return 'DEF';
-  if (code === 'GK') return null;
+  if (code === 'GK' || code === 'ВР') return 'GK';
 
   return 'MID'; // дефолт — наименее искажающий
 }

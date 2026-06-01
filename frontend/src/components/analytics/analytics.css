@@ -112,6 +112,45 @@
 .an-motm__part { font-size: 11px; color: var(--an-muted); background: var(--bg-surface-2); border: 1px solid var(--border); border-radius: 6px; padding: 2px 7px; }
 .an-motm__part b { color: var(--text-muted-strong); font-variant-numeric: tabular-nums; }
 
+/* ── Сетка продвинутых метрик игрока ── */
+.an-metrics__grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; }
+.an-metric { background: var(--bg-surface-2, #1b212c); border: 1px solid var(--border, #262d3a); border-radius: 10px; padding: 10px 12px; }
+.an-metric__val { font-size: 21px; font-weight: 800; font-variant-numeric: tabular-nums; line-height: 1.1; }
+.an-metric__label { font-size: 12px; color: var(--an-muted); margin-top: 3px; display: flex; align-items: center; gap: 5px; flex-wrap: wrap; }
+.an-metric__sub { font-size: 11px; color: var(--text-faint, #828fa6); margin-top: 2px; }
+
+/* ── Перцентиль-бары ── */
+.an-pct__row { display: flex; align-items: center; gap: 10px; padding: 6px 0; }
+.an-pct__label { flex: 0 0 130px; font-size: 13px; color: var(--text-muted-strong, #b4c0d2); }
+.an-pct__track { flex: 1; height: 10px; border-radius: 5px; background: var(--bg-surface-3, #232b38); overflow: hidden; position: relative; }
+.an-pct__fill { height: 100%; border-radius: 5px; background: #64748b; }
+.an-pct__fill--hi { background: var(--an-pos); }
+.an-pct__fill--mid { background: var(--an-warn); }
+.an-pct__fill--lo { background: var(--an-neg); }
+.an-pct__num { flex: 0 0 64px; text-align: right; font-size: 13px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.an-pct__raw { color: var(--text-faint); font-weight: 400; font-size: 11px; }
+
+.an-callouts { display: flex; flex-direction: column; gap: 6px; margin-top: 10px; }
+.an-callout { font-size: 13px; padding: 6px 10px; border-radius: 8px; border: 1px solid var(--border); }
+.an-callout--positive { color: var(--an-pos); background: color-mix(in srgb, var(--an-pos) 10%, transparent); border-color: color-mix(in srgb, var(--an-pos) 30%, transparent); }
+.an-callout--negative { color: var(--an-neg); background: color-mix(in srgb, var(--an-neg) 10%, transparent); border-color: color-mix(in srgb, var(--an-neg) 30%, transparent); }
+
+/* ── Форма / role-fit ── */
+.an-form__row { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+.an-form__big { font-size: 30px; font-weight: 800; font-variant-numeric: tabular-nums; }
+.an-form__delta { font-size: 13px; font-weight: 700; }
+.an-form__delta--up { color: var(--an-pos); }
+.an-form__delta--down { color: var(--an-neg); }
+.an-rolefit { display: flex; flex-direction: column; gap: 8px; }
+.an-rolefit__row { display: flex; align-items: center; gap: 10px; }
+.an-rolefit__name { flex: 0 0 160px; font-size: 13px; }
+.an-rolefit__name--best { font-weight: 700; color: var(--text); }
+.an-rolefit__track { flex: 1; height: 8px; border-radius: 4px; background: var(--bg-surface-3); overflow: hidden; }
+.an-rolefit__fill { height: 100%; background: var(--brand-primary, #2563eb); }
+.an-rolefit__pct { flex: 0 0 44px; text-align: right; font-size: 13px; font-weight: 700; font-variant-numeric: tabular-nums; }
+
 @media (max-width: 560px) {
   .an-press__grid { grid-template-columns: 1fr; }
+  .an-pct__label { flex-basis: 96px; }
+  .an-rolefit__name { flex-basis: 120px; }
 }
