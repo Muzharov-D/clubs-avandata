@@ -2,7 +2,8 @@
 .predicted-lineup__grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-  gap: 8px;
+  column-gap: 14px;
+  row-gap: 14px;
 }
 .pl-player {
   display: flex;
@@ -35,7 +36,7 @@
 .pl-player__name { font-size: 13px; font-weight: 600; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .pl-player__pos { font-size: 11px; color: var(--text-muted); }
 
-.predicted-lineup__bench { margin-top: 12px; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.predicted-lineup__bench { margin-top: 16px; display: flex; flex-wrap: wrap; gap: 9px; align-items: center; }
 .predicted-lineup__bench-label { font-size: 12px; color: var(--text-muted); margin-right: 4px; }
 .pl-bench-chip {
   font-size: 12px;
