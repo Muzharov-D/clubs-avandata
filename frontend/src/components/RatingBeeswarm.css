@@ -1,7 +1,7 @@
 .bsw-wrap { width: 100%; overflow-x: auto; }
-/* max-width убран: график тянется на всю ширину своей колонки (раньше капался
-   на 620px и оставлял справа пустоту). */
-.bsw { width: 100%; height: auto; display: block; }
+/* Тянется на всю ширину колонки, но высота ограничена — иначе на широком
+   мониторе SVG раздувается по пропорции и точки висят в пустоте. */
+.bsw { width: 100%; height: auto; max-height: 190px; display: block; }
 .bsw__tick { fill: var(--text-faint, #64748b); font-size: 10px; }
 .bsw__avg { fill: var(--accent-cyan, #22d3ee); font-size: 10px; font-weight: 700; }
 .bsw__top { fill: var(--text, #f1f5fb); font-size: 11px; font-weight: 700; }

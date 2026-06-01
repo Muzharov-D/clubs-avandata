@@ -13,9 +13,18 @@ export default function RatingBeeswarm({ players }) {
     .map((p) => ({ p, v: Number(p.ratings.overall) }));
   if (pts.length < 3) return null;
 
-  const W = 560, H = 132, padL = 26, padR = 14, padT = 26, padB = 26;
+  const W = 560, H = 150, padL = 26, padR = 18, padT = 30, padB = 28;
   const R = 6, gap = 13;
-  const x = (v) => padL + (Math.max(0, Math.min(10, v)) / 10) * (W - padL - padR);
+  // Динамическая шкала: рейтинги обычно 5–9, на 0–10 левая половина пустует.
+  // Сужаем домен к реальному диапазону (с запасом ±0.5, минимум 3 единицы),
+  // чтобы точки распределились по всей ширине, а не кучковались справа.
+  const vmin = Math.min(...pts.map((p) => p.v));
+  const vmax = Math.max(...pts.map((p) => p.v));
+  let lo = Math.floor(vmin - 0.5);
+  let hi = Math.ceil(vmax + 0.5);
+  if (hi - lo < 3) hi = lo + 3;            // не слишком сжато
+  lo = Math.max(0, lo); hi = Math.min(10, hi);
+  const x = (v) => padL + ((Math.max(lo, Math.min(hi, v)) - lo) / (hi - lo)) * (W - padL - padR);
   const cy = (padT + (H - padB)) / 2;
   const laneOrder = [0, 1, -1, 2, -2, 3, -3, 4, -4, 5, -5, 6, -6];
 
@@ -28,11 +37,14 @@ export default function RatingBeeswarm({ players }) {
   }
   const top = placed.reduce((a, b) => (b.v > a.v ? b : a));
   const avg = pts.reduce((s, p) => s + p.v, 0) / pts.length;
+  // целые тики внутри домена
+  const ticks = [];
+  for (let t = lo; t <= hi; t++) ticks.push(t);
 
   return (
     <div className="bsw-wrap">
-      <svg viewBox={`0 0 ${W} ${H}`} className="bsw" role="img" aria-label={`Рейтинги состава: ${pts.length} игроков, средний ${avg.toFixed(1)}`}>
-        {[0, 2, 4, 6, 8, 10].map((t) => (
+      <svg viewBox={`0 0 ${W} ${H}`} className="bsw" preserveAspectRatio="xMidYMid meet" role="img" aria-label={`Рейтинги состава: ${pts.length} игроков, средний ${avg.toFixed(1)}`}>
+        {ticks.map((t) => (
           <g key={t}>
             <line x1={x(t)} y1={padT} x2={x(t)} y2={H - padB} stroke="rgba(255,255,255,0.06)" />
             <text x={x(t)} y={H - 8} textAnchor="middle" className="bsw__tick">{t}</text>
