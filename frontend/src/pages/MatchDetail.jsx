@@ -23,6 +23,12 @@ import TwoWayScatter from '../components/TwoWayScatter';
 import { shieldFor } from '../utils/legirus';
 import { shortNameFromPlayer } from '../utils/players';
 import { matchInsights } from '../utils/insights';
+import XgPanel from '../components/analytics/XgPanel';
+import PressingCard from '../components/analytics/PressingCard';
+import MomentumStrip from '../components/analytics/MomentumStrip';
+import ImpactMotm from '../components/analytics/ImpactMotm';
+import MatchLeaders from '../components/analytics/MatchLeaders';
+import { coachDigest } from '../utils/analytics';
 import './MatchDetail.css';
 
 const SECTION_MAPS = [
@@ -233,6 +239,20 @@ export default function MatchDetail() {
     [match, seasonAvg],
   );
 
+  // Объединяем rule-based выводы с модельным дайджестом (xG/PPDA/реализация/
+  // momentum/угроза) — дедуп по тексту, топ-9 (улучшения 28/46/77/99).
+  const allInsights = useMemo(() => {
+    const model = coachDigest(match, { nameOf: shortNameFromPlayer });
+    const seen = new Set();
+    const merged = [];
+    for (const it of [...insights, ...model]) {
+      if (!it?.text || seen.has(it.text)) continue;
+      seen.add(it.text);
+      merged.push(it);
+    }
+    return merged.slice(0, 9);
+  }, [insights, match]);
+
   if (matchRes.error) return <div className="empty-state">Ошибка: {matchRes.error.message}</div>;
   if (!match) return (
     <div className="page match-detail" role="status" aria-busy="true">
@@ -314,7 +334,10 @@ export default function MatchDetail() {
         {[
           ['md-ratings', 'Рейтинги'],
           ['md-roles', 'Состав и роли'],
+          ['md-xg', 'xG'],
+          ['md-press', 'Прессинг'],
           ['md-insights', 'Выводы'],
+          ['md-momentum', 'Momentum'],
           ['md-half', 'По таймам'],
           ['md-fitness', 'Физика'],
           ['md-heatmap', 'Хитмап'],
@@ -356,12 +379,18 @@ export default function MatchDetail() {
         )}
       </div>
 
-      {/* Авто-инсайты по матчу (Phase 5) */}
-      {insights.length > 0 && (
+      {/* xG-панель: командный xG + контекст, вероятность исхода, xPTS, заслуженный счёт */}
+      <div className="reveal" id="md-xg"><XgPanel match={match} /></div>
+
+      {/* Прессинг и PPDA */}
+      <div className="reveal" id="md-press"><PressingCard match={match} /></div>
+
+      {/* Авто-инсайты по матчу (rule-based + модельный дайджест) */}
+      {allInsights.length > 0 && (
         <div className="card match-detail__insights md-anchor reveal" id="md-insights">
           <div className="page-section-title">Ключевые выводы</div>
           <ul className="md-insights">
-            {insights.map((it, i) => (
+            {allInsights.map((it, i) => (
               <li key={i} className={`md-insight md-insight--${it.tone}`}>
                 <span className="md-insight__icon" aria-hidden="true">{it.icon || '•'}</span>
                 <span className="md-insight__text">{it.text}</span>
@@ -374,6 +403,9 @@ export default function MatchDetail() {
 
       {/* Хроника матча — только если голы сходятся со счётом (см. timeline) */}
       <MatchTimeline events={timeline} />
+
+      {/* Momentum по таймам + xG-гонка */}
+      <div className="reveal" id="md-momentum"><MomentumStrip match={match} /></div>
 
       {/* Командная динамика по таймам (Phase: by-half) */}
       {teamHalf.length > 0 && (
@@ -457,6 +489,9 @@ export default function MatchDetail() {
             </div>
           </div>
 
+          {/* Расширенные лидеры: угроза/прогрессия/дуэли/прессинг/бег + на 90′ */}
+          <MatchLeaders players={match.players} navigate={navigate} nameOf={shortNameFromPlayer} />
+
           {/* Командный выхлоп vs сезон: метрика этого матча против СРЕДНЕГО по
               сезону (вместо бесполезных «N из N» бубликов без соперника). */}
           {(() => {
@@ -507,19 +542,8 @@ export default function MatchDetail() {
         </div>
 
         <div className="match-detail__right">
-          {motm && motm.ratings?.overall != null && (
-            <div className="card best-player" onClick={() => navigate(`/players/${motm.id}`)}>
-              <div className="page-section-title">Игрок матча</div>
-              <div className="best-player__body">
-                <PlayerPhoto player={motm} size={80} />
-                <div className="best-player__info">
-                  <div className="best-player__name">{shortNameFromPlayer(motm)}</div>
-                  <div className="best-player__pos">№{motm.number} · {motm.positionFull}</div>
-                </div>
-                <RatingPill value={motm.ratings?.overall} size="xl" />
-              </div>
-            </div>
-          )}
+          {/* Игрок матча по модели вклада (рейтинг + голы/ассисты/угроза/реализация) */}
+          <ImpactMotm match={match} navigate={navigate} nameOf={shortNameFromPlayer} />
           {seasonAvg && Number(seasonAvg._games || 0) > 1 && (
             <div className="card mvs">
               <div className="page-section-title">

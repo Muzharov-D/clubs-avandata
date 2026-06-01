@@ -1,0 +1,117 @@
+/* Общие стили аналитического слоя (миссия «Погнали»).
+   Семантические цвета — токенами здесь, не хардкодом в JSX. */
+.an {
+  --an-pos: #22c55e;
+  --an-neg: #ef4444;
+  --an-warn: #f59e0b;
+  --an-info: #22d3ee;
+  --an-muted: var(--text-muted, #97a3b6);
+}
+
+/* Пометка «модель/оценка» */
+.an-model-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--an-info);
+  background: color-mix(in srgb, var(--an-info) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--an-info) 35%, transparent);
+  border-radius: 6px;
+  padding: 1px 6px;
+  vertical-align: middle;
+}
+
+.an-note {
+  font-size: 12px;
+  color: var(--text-faint, #828fa6);
+  margin-top: 8px;
+  line-height: 1.45;
+}
+
+/* ── xG-панель ── */
+.an-xg__head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.an-xg__big { display: flex; align-items: center; gap: 14px; margin: 6px 0 12px; }
+.an-xg__side { text-align: center; min-width: 76px; }
+.an-xg__val { font-size: 30px; font-weight: 800; line-height: 1; font-variant-numeric: tabular-nums; }
+.an-xg__val--us { color: var(--brand-accent, #22c55e); }
+.an-xg__val--them { color: var(--text-muted-strong, #b4c0d2); }
+.an-xg__cap { font-size: 11px; color: var(--an-muted); margin-top: 4px; text-transform: uppercase; letter-spacing: 0.04em; }
+.an-xg__sep { font-size: 18px; color: var(--text-faint); }
+
+.an-chips { display: flex; flex-wrap: wrap; gap: 8px; margin: 4px 0 10px; }
+.an-chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 13px; font-weight: 600;
+  background: var(--bg-surface-2, #1b212c);
+  border: 1px solid var(--border, #262d3a);
+  border-radius: 8px; padding: 6px 10px;
+}
+.an-chip__label { color: var(--an-muted); font-weight: 500; }
+.an-chip__val { font-variant-numeric: tabular-nums; }
+.an-chip--pos .an-chip__val { color: var(--an-pos); }
+.an-chip--neg .an-chip__val { color: var(--an-neg); }
+.an-chip--warn .an-chip__val { color: var(--an-warn); }
+
+/* Бар вероятности исхода */
+.an-prob { margin: 10px 0 4px; }
+.an-prob__bar { display: flex; height: 22px; border-radius: 7px; overflow: hidden; border: 1px solid var(--border); }
+.an-prob__seg { display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: #0a0c10; white-space: nowrap; min-width: 0; }
+.an-prob__seg--win { background: var(--an-pos); }
+.an-prob__seg--draw { background: #64748b; color: #e2e8f0; }
+.an-prob__seg--loss { background: var(--an-neg); }
+.an-prob__legend { display: flex; justify-content: space-between; font-size: 11px; color: var(--an-muted); margin-top: 6px; }
+
+.an-deserved { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-top: 6px; font-size: 13px; }
+.an-deserved__score { font-weight: 800; font-size: 16px; font-variant-numeric: tabular-nums; }
+.an-badge { font-size: 12px; font-weight: 700; border-radius: 6px; padding: 2px 8px; }
+.an-badge--pos { color: var(--an-pos); background: color-mix(in srgb, var(--an-pos) 14%, transparent); }
+.an-badge--neg { color: var(--an-neg); background: color-mix(in srgb, var(--an-neg) 14%, transparent); }
+.an-badge--neutral { color: var(--text-muted-strong); background: var(--bg-surface-2); }
+
+/* ── Прессинг / PPDA ── */
+.an-press__grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.an-press__cell { background: var(--bg-surface-2); border: 1px solid var(--border); border-radius: 10px; padding: 12px; }
+.an-press__num { font-size: 26px; font-weight: 800; font-variant-numeric: tabular-nums; }
+.an-press__lab { font-size: 12px; color: var(--an-muted); margin-top: 2px; }
+.an-press__level { font-size: 13px; font-weight: 700; margin-top: 8px; }
+.an-press__level--positive { color: var(--an-pos); }
+.an-press__level--neutral { color: var(--text-muted-strong); }
+.an-press__note { font-size: 12px; color: var(--text-faint); margin-top: 2px; }
+
+/* ── Momentum ── */
+.an-mom { margin-top: 4px; }
+.an-mom__bar { display: flex; height: 26px; border-radius: 7px; overflow: hidden; border: 1px solid var(--border); }
+.an-mom__half { display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; color: #0a0c10; }
+.an-mom__half--1 { background: #38bdf8; }
+.an-mom__half--2 { background: #818cf8; }
+.an-mom__legend { display: flex; justify-content: space-between; font-size: 11px; color: var(--an-muted); margin-top: 6px; }
+
+/* ── Лидеры с per-90 ── */
+.an-toggle { display: inline-flex; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+.an-toggle__btn { background: var(--bg-surface-2); color: var(--an-muted); font-size: 12px; font-weight: 600; padding: 4px 10px; border: none; cursor: pointer; }
+.an-toggle__btn.is-active { background: var(--brand-primary, #2563eb); color: #fff; }
+
+.an-leaders__tabs { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
+.an-leaders__tab { background: var(--bg-surface-2); border: 1px solid var(--border); border-radius: 7px; color: var(--an-muted); font-size: 12px; font-weight: 600; padding: 4px 10px; cursor: pointer; }
+.an-leaders__tab.is-active { background: var(--bg-surface-3); color: var(--text); border-color: var(--border-strong); }
+.an-leaders__row { display: flex; align-items: center; gap: 10px; padding: 7px 0; border-top: 1px solid var(--border); cursor: pointer; }
+.an-leaders__row:first-child { border-top: none; }
+.an-leaders__rank { width: 18px; text-align: center; color: var(--text-faint); font-weight: 700; font-size: 13px; }
+.an-leaders__name { flex: 1; font-size: 14px; font-weight: 600; }
+.an-leaders__sub { font-size: 11px; color: var(--an-muted); font-weight: 400; }
+.an-leaders__val { font-variant-numeric: tabular-nums; font-weight: 800; font-size: 15px; }
+.an-leaders__bar { flex: 0 0 64px; height: 6px; border-radius: 3px; background: var(--bg-surface-3); overflow: hidden; }
+.an-leaders__bar-fill { height: 100%; background: var(--brand-accent, #22c55e); }
+
+/* MotM impact */
+.an-motm__breakdown { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.an-motm__part { font-size: 11px; color: var(--an-muted); background: var(--bg-surface-2); border: 1px solid var(--border); border-radius: 6px; padding: 2px 7px; }
+.an-motm__part b { color: var(--text-muted-strong); font-variant-numeric: tabular-nums; }
+
+@media (max-width: 560px) {
+  .an-press__grid { grid-template-columns: 1fr; }
+}
