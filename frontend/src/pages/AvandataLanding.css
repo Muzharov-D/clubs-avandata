@@ -160,18 +160,14 @@
   letter-spacing: -0.03em;
   margin: 0 0 24px;
   text-wrap: balance;
-  background: linear-gradient(180deg, #ffffff 0%, #ffffff 50%, rgba(255, 255, 255, 0.4) 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
+  /* impeccable: gradient-text — Absolute ban. Сплошной белый. */
+  color: #fff;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
+/* Акцентное слово выделяем сплошным бренд-цветом, не градиент-заливкой текста. */
 .av-hero__title-accent {
-  background: linear-gradient(135deg, #1FB6FF 0%, #2563eb 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
+  color: #4db8ff;
 }
 
 .av-hero__lead {
@@ -235,10 +231,9 @@
 .av-stat__num {
   font-size: 36px;
   font-weight: 800;
-  background: linear-gradient(180deg, #ffffff, #1FB6FF);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
+  /* impeccable: gradient-text — ban. Сплошной акцент. */
+  color: #7fe3ff;
+  font-variant-numeric: tabular-nums;
   line-height: 1;
 }
 .av-stat__label {
@@ -264,10 +259,9 @@
   font-weight: 700;
   letter-spacing: -0.02em;
   margin-bottom: 16px;
-  background: linear-gradient(180deg, #fff, rgba(255, 255, 255, 0.5));
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
+  /* impeccable: gradient-text — ban. Сплошной белый. */
+  color: #fff;
+  text-wrap: balance;
 }
 .av-features__sub {
   text-align: center;
