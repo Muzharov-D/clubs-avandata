@@ -28,6 +28,10 @@ import { StatTile } from '../components/StatTile';
 import PredictedLineup from '../components/PredictedLineup';
 // @ts-ignore — legacy .jsx
 import PlayerPhoto from '../components/PlayerPhoto';
+// @ts-ignore — legacy .jsx
+import TeamSeasonAnalytics from '../components/analytics/TeamSeasonAnalytics';
+// @ts-ignore — legacy .jsx
+import TeamIdentityCard from '../components/analytics/TeamIdentityCard';
 import { useDocumentTitle } from '../hooks/useDocumentTitle';
 import './ClubDashboard.css';
 import './clubKinetic.css';
@@ -523,6 +527,12 @@ export default function ClubDashboard() {
         </section>
         );
       })()}
+
+      {/* xG-аналитика сезона: xPTS vs факт, реализация, форма, xG по матчам */}
+      {matches.length > 0 && <TeamSeasonAnalytics matches={matches} />}
+
+      {/* Идентичность команды по последнему матчу */}
+      {latestMatch && <TeamIdentityCard match={latestMatch} />}
 
       {/* Top 5 + standings */}
       <section className="cd__columns">

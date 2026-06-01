@@ -149,8 +149,34 @@
 .an-rolefit__fill { height: 100%; background: var(--brand-primary, #2563eb); }
 .an-rolefit__pct { flex: 0 0 44px; text-align: right; font-size: 13px; font-weight: 700; font-variant-numeric: tabular-nums; }
 
+/* ── Сезонная аналитика команды ── */
+.an-season__head { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px; margin-bottom: 12px; }
+.an-season__kpi { background: var(--bg-surface-2); border: 1px solid var(--border); border-radius: 10px; padding: 12px; }
+.an-season__kpi-val { font-size: 24px; font-weight: 800; font-variant-numeric: tabular-nums; }
+.an-season__kpi-lab { font-size: 12px; color: var(--an-muted); margin-top: 3px; }
+.an-season__kpi-sub { font-size: 11px; color: var(--text-faint); margin-top: 2px; }
+.an-season__list { display: flex; flex-direction: column; }
+.an-season__row { display: grid; grid-template-columns: 1fr auto auto; gap: 10px; align-items: center; padding: 7px 0; border-top: 1px solid var(--border); cursor: pointer; font-size: 13px; }
+.an-season__row:first-child { border-top: none; }
+.an-season__opp { color: var(--text-muted-strong); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.an-season__xg { font-variant-numeric: tabular-nums; color: var(--an-muted); }
+.an-season__res { width: 20px; height: 20px; border-radius: 6px; display: inline-flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 800; color: #0a0c10; }
+.an-season__res--W { background: var(--an-pos); }
+.an-season__res--D { background: #64748b; color: #e2e8f0; }
+.an-season__res--L { background: var(--an-neg); }
+.an-form-dots { display: inline-flex; gap: 4px; }
+.an-form-dots span { width: 16px; height: 16px; border-radius: 4px; font-size: 10px; font-weight: 800; color: #0a0c10; display: inline-flex; align-items: center; justify-content: center; }
+
+/* ── Identity fingerprint ── */
+.an-ident__row { display: flex; align-items: center; gap: 10px; padding: 6px 0; }
+.an-ident__lab { flex: 0 0 140px; font-size: 13px; color: var(--text-muted-strong); }
+.an-ident__track { flex: 1; height: 10px; border-radius: 5px; background: var(--bg-surface-3); overflow: hidden; }
+.an-ident__fill { height: 100%; background: var(--brand-primary, #2563eb); border-radius: 5px; }
+.an-ident__val { flex: 0 0 80px; text-align: right; font-size: 12px; color: var(--an-muted); font-variant-numeric: tabular-nums; }
+
 @media (max-width: 560px) {
   .an-press__grid { grid-template-columns: 1fr; }
   .an-pct__label { flex-basis: 96px; }
   .an-rolefit__name { flex-basis: 120px; }
+  .an-ident__lab { flex-basis: 104px; }
 }
