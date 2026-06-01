@@ -686,11 +686,12 @@
 }
 
 /* Комментарий тренера — таб «Комментарий» */
+/* impeccable: side-stripe border — ban. Полная рамка + тинт. */
 .mds-comment {
   padding: 12px 14px;
-  background: rgba(255, 255, 255, 0.03);
-  border-left: 3px solid #dc2626;
-  border-radius: 0 8px 8px 0;
+  background: color-mix(in srgb, var(--brand-primary, #2563eb) 8%, transparent);
+  border: 1px solid color-mix(in srgb, var(--brand-primary, #2563eb) 35%, transparent);
+  border-radius: 8px;
   margin: 6px 0 4px;
   max-width: 100%;
   min-width: 0;
