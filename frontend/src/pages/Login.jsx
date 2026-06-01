@@ -54,7 +54,7 @@ export default function Login() {
     <div className="login-page">
       <div className="login-card">
         <div className="login-brand">
-          <img src="/assets/logos/log-3_white.png" alt="АванDата" />
+          <img src="/icons/avandata.png" alt="АванDата" />
         </div>
         <h1 className="login-title">Вход в систему</h1>
         <form className="login-form" onSubmit={submit}>
