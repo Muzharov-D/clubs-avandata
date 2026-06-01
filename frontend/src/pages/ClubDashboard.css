@@ -36,6 +36,82 @@
 .cd__error { color: #ef9a9a; }
 
 /* ===== Hero row ===== */
+/* ===== Фрейм «Главное» (правки Зенита #5,#6,#9,#10) ===== */
+.cd__main {
+  position: relative; z-index: 1;
+  background: linear-gradient(180deg, rgba(20,25,50,0.55), rgba(15,20,40,0.35));
+  border: 1px solid var(--border-strong, #343d4e);
+  border-radius: var(--radius-lg, 20px);
+  padding: 18px 18px 20px;
+  margin-bottom: 22px;
+  overflow: hidden;
+}
+.cd__main::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+  background: linear-gradient(90deg, transparent, var(--accent-cyan, #22d3ee), transparent);
+}
+.cd__main-title {
+  font-family: var(--font-display, 'Space Grotesk', sans-serif);
+  font-size: 13px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--accent-cyan, #22d3ee); margin-bottom: 14px;
+}
+.cd__main-grid {
+  display: grid;
+  grid-template-columns: 1.6fr 1fr 1fr;
+  gap: 14px;
+  align-items: stretch;
+}
+.cd__main-matches { display: flex; flex-direction: column; gap: 12px; }
+.cd__mm {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: var(--radius, 14px);
+  padding: 14px 16px;
+}
+.cd__mm--empty { text-align: center; color: var(--text-faint); }
+.cd__mm-eyebrow {
+  font-size: 10px; color: var(--accent-cyan, #22d3ee); text-transform: uppercase;
+  letter-spacing: 0.1em; font-weight: 700; margin-bottom: 8px;
+}
+/* KPI-карточки «Средний рейтинг» и «Лучший игрок» */
+.cd__kpi-card {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: var(--radius, 14px);
+  padding: 16px;
+  display: flex; flex-direction: column; gap: 8px;
+}
+.cd__kpi-card--click { cursor: pointer; transition: border-color 150ms var(--ease-out, ease-out), transform 150ms var(--ease-out, ease-out); }
+.cd__kpi-card--click:hover { border-color: rgba(34,211,238,0.4); transform: translateY(-2px); }
+.cd__kpi-label {
+  font-size: 11px; color: var(--text-muted-strong, #b4c0d2);
+  text-transform: uppercase; letter-spacing: 0.07em; font-weight: 600;
+}
+.cd__kpi-big {
+  font-family: var(--font-display, 'Space Grotesk', sans-serif);
+  font-size: 38px; font-weight: 800; line-height: 1; letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums; margin-top: auto;
+}
+.cd__kpi-bar { display: block; height: 5px; margin-top: 10px; background: rgba(255,255,255,0.06); border-radius: 999px; overflow: hidden; }
+.cd__kpi-bar-fill { display: block; height: 100%; border-radius: 999px; }
+.cd__kpi-empty { font-size: 14px; color: var(--text-faint); margin-top: auto; }
+.cd__kpi-sub { font-size: 11px; color: var(--text-muted); }
+.cd__kpi-player { display: flex; align-items: center; gap: 10px; margin-top: auto; }
+.cd__kpi-rank {
+  flex-shrink: 0; min-width: 40px; padding: 6px 8px; border-radius: 9px;
+  color: #fff; font-weight: 800; font-size: 15px; text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+.cd__kpi-player-name { font-size: 15px; font-weight: 700; color: #fff; line-height: 1.2; }
+@media (max-width: 880px) {
+  .cd__main-grid { grid-template-columns: 1fr; }
+}
+@media (min-width: 881px) and (max-width: 1100px) {
+  .cd__main-grid { grid-template-columns: 1fr 1fr; }
+  .cd__main-matches { grid-column: 1 / -1; flex-direction: row; }
+  .cd__main-matches > .cd__mm { flex: 1; }
+}
+
 .cd__hero-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
