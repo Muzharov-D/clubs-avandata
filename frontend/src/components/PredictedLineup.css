@@ -1,3 +1,5 @@
+/* Разрыв до следующей секции («Командные показатели») — чтобы блоки не слипались. */
+.predicted-lineup { margin-bottom: 28px; }
 .predicted-lineup__sub { font-size: 12px; color: var(--text-muted); margin-bottom: 10px; margin-top: -4px; }
 .predicted-lineup__grid {
   display: grid;
