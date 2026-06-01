@@ -11,7 +11,10 @@ from lib.pdf_extract import extract_page_text
 
 LOG = logging.getLogger("parser.page1")
 
-_TITLE_RE = re.compile(r"^(.+?)\s+(\d+)\s*[:\-–—]\s*(\d+)\s+(.+)$")
+# Счёт — 1-2 цифры (детский футбол: 0..99), разделитель :/-/–/—. Числа жёстко
+# ограничены \d{1,2}, иначе 4-значные года в названиях команд («Выборжанин
+# 2010-2011») ловятся как счёт (2010-2011 → home=2010, away=2011).
+_TITLE_RE = re.compile(r"^(.+?)\s+(\d{1,2})\s*[:\-–—]\s*(\d{1,2})\s+(.+)$")
 # Fallback без счёта: "Команда A — Команда B" / " vs " / " - "
 _TITLE_NO_SCORE_RE = re.compile(r"^(.+?)\s+(?:[—–-]|vs\.?|VS|против)\s+(.+)$")
 _DATE_RE = re.compile(r"\b(\d{2}\.\d{2}\.\d{4})\b")
