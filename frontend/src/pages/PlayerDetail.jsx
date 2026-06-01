@@ -20,12 +20,7 @@ import { num, percentileRank, formatRaw } from '../utils/num';
 import { POSITION_OPTIONS, PIZZA_VS_LABEL, TEMPLATES, getStatValue, positionGroup } from '../utils/pizzaTemplates';
 import './PlayerDetail.css';
 
-function trimAge(s) {
-  return String(s || '')
-    .replace(/\s*[Uu]-?\s*\d{1,3}\s*/g, ' ')
-    .replace(/\s+20\d{2}\s*/g, ' ')
-    .replace(/\s+/g, ' ').trim();
-}
+import { trimAgeSuffix as trimAge } from '../utils/teamName';
 function fmtMatchShort(m) {
   if (!m) return '';
   const d = m.match_date || m.matchDate || m.date;

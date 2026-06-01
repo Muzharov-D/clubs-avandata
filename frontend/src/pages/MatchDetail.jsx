@@ -53,13 +53,8 @@ function num(v) {
   return Number(v);
 }
 
-// Убирает «U15» / «U-15» / «2011» из названия команды для display
-function trimAgeStr(s) {
-  return String(s || '')
-    .replace(/\s*[Uu]-?\s*\d{1,3}\s*/g, ' ')
-    .replace(/\s+20\d{2}\s*/g, ' ')
-    .replace(/\s+/g, ' ').trim();
-}
+// Единая обрезка возрастной группы — см. utils/teamName.
+import { trimAgeSuffix as trimAgeStr } from '../utils/teamName';
 
 function bestPlayer(match) {
   if (!match?.players?.length) return null;

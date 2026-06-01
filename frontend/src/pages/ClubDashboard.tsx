@@ -701,14 +701,7 @@ function normalizeTeamName(s: string): string {
 }
 
 /** То же что normalizeTeamName, но сохраняет Capitalize — для display. */
-function trimAgeSuffix(s: unknown): string {
-  return String(s || '')
-    .replace(/\s*[Uu]-?\s*\d{1,3}\s*/g, ' ')   // " U15 " → " "
-    .replace(/\s+20\d{2}\s*/g, ' ')             // " 2011 "
-    .replace(/[«»]/g, '')
-    .replace(/\s+/g, ' ')
-    .trim();
-}
+import { trimAgeSuffix } from '../utils/teamName';
 
 export function isOurName(matchTeam: unknown, ourLower: string): boolean {
   if (!ourLower) return false;

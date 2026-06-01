@@ -160,24 +160,31 @@ def parse(pdf_path, team_id, match_id):
     else:
         out["awayStats"]["shots"] = {"total": 0, "accuracy": 0, "onTarget": 0}
 
-    # --- xG: two layouts.
-    # 2010 EN: 'home_val\nОЖИДАЕМЫЕ\naway_val' (split above/below)
-    # 2011 RU: 'ОЖИДАЕМЫЕ\nhome_val away_val\nГОЛЫ (xG)' (both on next line)
+    # --- xG: всегда ДРОБНОЕ (1.5, 0.0). Layouts:
+    #   2010 EN: 'home_val\nОЖИДАЕМЫЕ\naway_val' (значение над/под меткой)
+    #   2011 RU: 'ОЖИДАЕМЫЕ\n<h> <a> <имена игроков…>\nГОЛЫ (xG)…'
+    # ВАЖНО: в RU-дашборде под меткой есть строки-«заливки» карты из длинных
+    # целых ('1111122222 1111199999'). Старый fullmatch отвергал реальную
+    # строку «1.5 1.3 Д. Бобин…» (из-за имён) и хватал целочисленный мусор.
+    # Теперь берём пару ВЕДУЩИХ дробных токенов (с десятичной точкой) — целые
+    # игнорируются.
+    XG_PAIR = re.compile(r"^\s*(\d+[.,]\d+)\s+(\d+[.,]\d+)\b")
+    XG_ONE = re.compile(r"^\s*(\d+[.,]\d+)\b")
     xg_idx = _find_label_line(lines, "ОЖИДАЕМЫЕ")
     h_val = a_val = None
     if xg_idx >= 0:
         for j in range(xg_idx+1, min(len(lines), xg_idx+4)):
-            line_j = lines[j].strip()
-            m_pair = re.fullmatch(r"(\d+(?:[\.,]\d+)?)\s+(\d+(?:[\.,]\d+)?)", line_j)
-            if m_pair:
-                h_val, a_val = m_pair.group(1), m_pair.group(2)
-                break
-            if line_j and re.fullmatch(r"\d+(?:[\.,]\d+)?", line_j):
-                a_val = line_j
+            mp = XG_PAIR.match(lines[j].strip())
+            if mp:
+                h_val, a_val = mp.group(1), mp.group(2)
                 break
         if h_val is None:
-            h_val = next((lines[i].strip() for i in range(xg_idx-1, max(-1, xg_idx-4), -1)
-                          if re.fullmatch(r"\d+(?:[\.,]\d+)?", lines[i].strip())), None)
+            # EN-вёрстка: одиночное дробное значение над меткой.
+            for i in range(xg_idx-1, max(-1, xg_idx-4), -1):
+                mo = XG_ONE.match(lines[i].strip())
+                if mo:
+                    h_val = mo.group(1)
+                    break
     out["homeStats"]["expectedGoals"] = _to_float(h_val)
     out["awayStats"]["expectedGoals"] = _to_float(a_val)
 
