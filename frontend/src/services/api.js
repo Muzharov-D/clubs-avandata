@@ -225,6 +225,9 @@ export const fetchPlayers = (teamId) =>
 export const fetchMatches = (teamId) =>
   fetchJson(`/data/matches${teamId ? `?teamId=${encodeURIComponent(teamId)}` : ''}`);
 export const fetchMatch = (id) => fetchJson(`/data/match/${id}`);
+// Агрегат командных показателей за период (правка Зенита #7): round1 | round2 | season
+export const fetchMatchAggregate = (teamId, period) =>
+  fetchJson(`/data/matches/aggregate?teamId=${encodeURIComponent(teamId)}&period=${encodeURIComponent(period)}`);
 export const deleteMatch = (id) => fetchJson(`/data/match/${encodeURIComponent(id)}`, { method: 'DELETE' });
 export const updateMatchCoachComment = (age, extMatchId, comment) =>
   fetchJson(`/data/match/${encodeURIComponent(age)}/${encodeURIComponent(extMatchId)}/comment`, {

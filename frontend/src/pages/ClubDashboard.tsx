@@ -16,7 +16,7 @@ import { useNavigate } from 'react-router-dom';
 // @ts-ignore — legacy .js hook
 import { useReveal } from '../hooks/useReveal';
 import {
-  fetchTeams, fetchMatches, fetchMatch, fetchStandings, fetchCalendar,
+  fetchTeams, fetchMatches, fetchMatch, fetchStandings, fetchCalendar, fetchMatchAggregate,
 } from '../services/api';
 // @ts-ignore — legacy
 import { useAuth } from '../contexts/AuthContext';
@@ -84,6 +84,15 @@ export default function ClubDashboard() {
   const [loading, setLoading]         = useState(true);
   const [error, setError]             = useState<string | null>(null);
 
+  // Фильтр периода блока «Командные показатели» (правка Зенита #7).
+  // 'match' — конкретный матч (по умолчанию последний, можно выбрать другой);
+  // round1/round2/season — усреднённые показатели за период (агрегат с backend).
+  const [statPeriod, setStatPeriod]       = useState<'match' | 'round1' | 'round2' | 'season'>('match');
+  const [statMatchId, setStatMatchId]     = useState<string | null>(null);
+  const [statMatchDetail, setStatMatchDetail] = useState<AnyObj | null>(null);
+  const [statAgg, setStatAgg]             = useState<AnyObj | null>(null);
+  const [statLoading, setStatLoading]     = useState(false);
+
   useEffect(() => {
     if (!user) return;
     let cancelled = false;
@@ -130,6 +139,35 @@ export default function ClubDashboard() {
     })();
     return () => { cancelled = true; };
   }, [user, selectedTeamId]);
+
+  // Режим «Матч»: если выбран НЕ последний матч — догружаем его детали.
+  // Последний (matches[0]) уже загружен как latestMatch — повторный fetch не нужен.
+  useEffect(() => {
+    if (statPeriod !== 'match') { setStatMatchDetail(null); return; }
+    const id = statMatchId ?? matches[0]?.id ?? null;
+    if (!id || id === matches[0]?.id) { setStatMatchDetail(null); return; }
+    let cancelled = false;
+    setStatLoading(true);
+    fetchMatch(id)
+      .then((d) => { if (!cancelled) setStatMatchDetail(d as AnyObj); })
+      .catch(() => { if (!cancelled) setStatMatchDetail(null); })
+      .finally(() => { if (!cancelled) setStatLoading(false); });
+    return () => { cancelled = true; };
+  }, [statPeriod, statMatchId, matches]);
+
+  // Режим «1 круг / 2 круг / сезон»: тянем агрегат с backend.
+  useEffect(() => {
+    if (statPeriod === 'match') { setStatAgg(null); return; }
+    const teamId = team?.id ?? selectedTeamId;
+    if (!teamId) return;
+    let cancelled = false;
+    setStatLoading(true);
+    fetchMatchAggregate(teamId, statPeriod)
+      .then((d) => { if (!cancelled) setStatAgg(d as AnyObj); })
+      .catch(() => { if (!cancelled) setStatAgg(null); })
+      .finally(() => { if (!cancelled) setStatLoading(false); });
+    return () => { cancelled = true; };
+  }, [statPeriod, team, selectedTeamId]);
 
   // Имя нашей команды для сравнений «наш матч» / «наша строка таблицы».
   // Берём из выбранной команды (а не хардкод «Зенит»), fallback на team из БД.
@@ -305,11 +343,28 @@ export default function ClubDashboard() {
       {/* Вероятный состав на следующий матч (Phase 5) — тренеру */}
       {isCoach && selectedTeamId && <PredictedLineup teamId={selectedTeamId} />}
 
-      {/* Stats from latest analyzed match — структура SportVisor: {home, away} */}
+      {/* Командные показатели за период (правка Зенита #7): матч / 1 круг / 2 круг / сезон.
+          В режиме «матч» — наша сторона teamSummaryStats {home, away} + сравнение с
+          соперником; в режиме периода — усреднённый агрегат с backend (opp = null). */}
       {latestMatch?.teamSummaryStats && (() => {
-        const our = pickOurSide(latestMatch, ourName);
-        const opp = pickOppSide(latestMatch, ourName);
-        if (!our) return null;
+        const isMatchMode = statPeriod === 'match';
+        const displayMatch = isMatchMode ? (statMatchDetail ?? latestMatch) : null;
+        const our = isMatchMode
+          ? pickOurSide(displayMatch as AnyObj, ourName)
+          : ((statAgg?.our ?? null) as AnyObj | null);
+        const opp = isMatchMode ? pickOppSide(displayMatch as AnyObj, ourName) : null;
+        const avgRatings = (isMatchMode
+          ? (displayMatch as AnyObj)?.teamAvgRatings
+          : statAgg?.teamAvgRatings) as Record<string, unknown> | undefined;
+
+        const seasonName = (matches.find((m) => m.season)?.season ?? '') as string;
+        const PERIODS: { key: typeof statPeriod; label: string }[] = [
+          { key: 'match',  label: 'Матч' },
+          { key: 'round1', label: '1 круг' },
+          { key: 'round2', label: '2 круг' },
+          { key: 'season', label: seasonName ? `Сезон ${seasonName}` : 'Сезон 2026' },
+        ];
+
         // Семантический цвет KPI: зелёный — лучше соперника, красный — хуже.
         // higherBetter=false для «плохих» метрик (нарушения). Нет соперника → нейтраль.
         const cmp = (a: unknown, b: unknown, higherBetter = true): 'green' | 'red' | 'muted' => {
@@ -318,14 +373,61 @@ export default function ClubDashboard() {
           const better = higherBetter ? x > y : x < y;
           return better ? 'green' : 'red';
         };
+
+        const sub = (() => {
+          if (isMatchMode) {
+            const m = displayMatch as AnyObj;
+            return `${trimAgeSuffix(m.home)} ${m.scoreHome}:${m.scoreAway} ${trimAgeSuffix(m.away)}`;
+          }
+          const n = Number(statAgg?.matchCount ?? 0);
+          const word = n % 10 === 1 && n % 100 !== 11 ? 'матч'
+            : [2, 3, 4].includes(n % 10) && ![12, 13, 14].includes(n % 100) ? 'матча' : 'матчей';
+          const label = PERIODS.find((p) => p.key === statPeriod)?.label ?? '';
+          return `${label} · ${n} ${word} · среднее за матч`;
+        })();
+
         return (
           <section className="cd__panel reveal">
             <div className="cd__panel-header">
               <h2 className="cd__panel-title">Командные показатели</h2>
-              <span className="cd__panel-sub">
-                {trimAgeSuffix(latestMatch.home)} {latestMatch.scoreHome}:{latestMatch.scoreAway} {trimAgeSuffix(latestMatch.away)}
-              </span>
+              <span className="cd__panel-sub">{sub}</span>
             </div>
+            <div className="cd__period-bar">
+              <div className="cd__seg" role="tablist" aria-label="Период показателей">
+                {PERIODS.map((p) => (
+                  <button
+                    key={p.key}
+                    type="button"
+                    role="tab"
+                    aria-selected={statPeriod === p.key}
+                    className={`cd__seg-btn${statPeriod === p.key ? ' is-active' : ''}`}
+                    onClick={() => setStatPeriod(p.key)}
+                  >
+                    {p.label}
+                  </button>
+                ))}
+              </div>
+              {isMatchMode && matches.length > 1 && (
+                <select
+                  className="cd__match-select"
+                  aria-label="Выбор матча"
+                  value={statMatchId ?? matches[0]?.id ?? ''}
+                  onChange={(e) => setStatMatchId(e.target.value)}
+                >
+                  {matches.map((m) => (
+                    <option key={m.id} value={m.id}>
+                      {trimAgeSuffix(m.home)} {m.scoreHome}:{m.scoreAway} {trimAgeSuffix(m.away)}
+                    </option>
+                  ))}
+                </select>
+              )}
+            </div>
+            {statLoading && !our ? (
+              <div className="cd__stats-empty">Загрузка…</div>
+            ) : !our ? (
+              <div className="cd__stats-empty">Нет разобранных матчей за выбранный период</div>
+            ) : (
+            <>
             <div className="cd__stats-grid">
               <StatTile accent={cmp(our.possessionPct, opp?.possessionPct)} label="Владение"
                 value={our.possessionPct != null ? our.possessionPct : '—'}
@@ -361,8 +463,8 @@ export default function ClubDashboard() {
                 value={our.offsides != null ? our.offsides : '—'}
                 extra={opp?.offsides != null ? `соперник ${opp.offsides}` : undefined} />
             </div>
-            {latestMatch.teamAvgRatings && (() => {
-              const tar = latestMatch.teamAvgRatings as Record<string, unknown>;
+            {avgRatings && (() => {
+              const tar = avgRatings as Record<string, unknown>;
               const fmt = (k: string) => {
                 const v = tar[k];
                 return v != null && Number(v) > 0 ? Number(v).toFixed(2) : '—';
@@ -383,6 +485,8 @@ export default function ClubDashboard() {
                 </>
               );
             })()}
+            </>
+            )}
           </section>
         );
       })()}

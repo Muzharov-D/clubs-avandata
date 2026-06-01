@@ -5,6 +5,12 @@ import { UnauthorizedError, NotFoundError, BadRequestError } from '../shared/err
 import { adaptPlayerForLegirus } from './legirusAdapter.js';
 import { computeDataQuality } from './dataQuality.js';
 import { statField } from '../shared/statValue.js';
+import {
+  aggregateTeamStats,
+  type AggregatePeriod,
+  type MatchStatsRow,
+  type CalendarRoundRow,
+} from './teamStatsAggregate.js';
 
 type AnyRow = Record<string, unknown>;
 
@@ -129,6 +135,57 @@ export async function dataRoutes(app: FastifyInstance) {
       return { matches: rows };
     });
   });
+
+  // Агрегат командных показателей за период (правка Зенита #7): 1 круг / 2 круг /
+  // сезон. Усредняет нашу сторону teamSummaryStats + рейтинги по матчам периода.
+  // Границы кругов — по турам календаря (см. teamStatsAggregate.ts).
+  app.get<{ Querystring: { teamId?: string; period?: string } }>(
+    '/matches/aggregate',
+    async (req) => {
+      const slug = tenantId(req);
+      const teamId = req.query.teamId;
+      const period = (req.query.period ?? 'season') as AggregatePeriod;
+      if (!teamId) throw new BadRequestError('teamId required');
+      if (!['round1', 'round2', 'season'].includes(period)) {
+        throw new BadRequestError('period must be round1 | round2 | season');
+      }
+      return withTenant(slug, async (_tx, conn) => {
+        const { rows: teamRows } = await conn.query(
+          `SELECT id, name, age_group AS "ageGroup"
+             FROM teams WHERE tenant_id = $1 AND id = $2`,
+          [slug, teamId],
+        );
+        if (teamRows.length === 0) throw new NotFoundError('team not found');
+        const team = teamRows[0] as { id: string; name: string | null; ageGroup: string };
+
+        const { rows: matchRows } = await conn.query(
+          `SELECT id, team_id AS "teamId",
+                  home_team_id AS "homeTeamId", away_team_id AS "awayTeamId",
+                  home_team_name AS "home", away_team_name AS "away",
+                  match_date AS "date",
+                  team_summary_stats AS "teamSummaryStats",
+                  team_avg_ratings AS "teamAvgRatings"
+             FROM matches
+            WHERE tenant_id = $1 AND team_id = $2 AND team_summary_stats IS NOT NULL`,
+          [slug, teamId],
+        );
+
+        const { rows: calRows } = await conn.query(
+          `SELECT match_date AS "date", round
+             FROM calendar
+            WHERE tenant_id = $1 AND age_group = $2 AND is_our_match = TRUE`,
+          [slug, team.ageGroup],
+        );
+
+        return aggregateTeamStats(
+          matchRows as MatchStatsRow[],
+          calRows as CalendarRoundRow[],
+          { id: team.id, name: team.name },
+          period,
+        );
+      });
+    },
+  );
 
   app.get<{ Params: { matchId: string } }>('/match/:matchId', async (req) => {
     const slug = tenantId(req);

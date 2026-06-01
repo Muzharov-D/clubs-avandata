@@ -181,6 +181,44 @@
 .cd__panel-title { font-size: 16px; margin: 0; font-weight: 700; }
 .cd__panel-sub   { font-size: 12px; color: #94a3b8; }
 
+/* ===== Период командных показателей (правка Зенита #7) ===== */
+.cd__period-bar {
+  display: flex; flex-wrap: wrap; align-items: center;
+  gap: 10px; margin-bottom: 14px;
+}
+.cd__seg {
+  display: inline-flex; padding: 3px; gap: 2px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 999px;
+}
+.cd__seg-btn {
+  appearance: none; cursor: pointer;
+  padding: 6px 14px; border: 0; border-radius: 999px;
+  background: transparent; color: var(--text-muted-strong, #b4c0d2);
+  font-size: 13px; font-weight: 600; line-height: 1;
+  transition: background 0.18s ease, color 0.18s ease;
+}
+.cd__seg-btn:hover { color: #fff; }
+.cd__seg-btn.is-active {
+  background: var(--brand-primary, #1FB6FF);
+  color: #fff;
+}
+.cd__match-select {
+  flex: 1 1 220px; min-width: 0; max-width: 360px;
+  padding: 7px 12px; border-radius: 10px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  color: #fff; font-size: 13px; font-weight: 600; cursor: pointer;
+}
+.cd__match-select:focus-visible {
+  outline: 2px solid var(--brand-primary, #1FB6FF); outline-offset: 1px;
+}
+.cd__stats-empty {
+  padding: 28px 14px; text-align: center;
+  color: var(--text-faint, #6b7689); font-size: 14px;
+}
+
 /* ===== Stats tiles ===== */
 .cd__stats-grid {
   display: grid;
