@@ -38,6 +38,32 @@ export async function withTenant<T>(
 }
 
 /**
+ * Как withTenant, но оборачивает callback в одну транзакцию (BEGIN/COMMIT, при
+ * ошибке ROLLBACK). Все записи внутри атомарны: либо весь набор, либо ничего —
+ * никаких частичных состояний при обрыве на середине цикла/между INSERT'ами.
+ *
+ * SET app.tenant_id ставится сессионно (is_local=false) ДО BEGIN, поэтому RLS
+ * действует и внутри транзакции, а ROLLBACK его не сбрасывает (reset в finally
+ * у withTenant отработает на чистом соединении).
+ */
+export async function withTenantTx<T>(
+  tenantId: string,
+  fn: (tx: NodePgDatabase<typeof schema>, conn: PoolClient) => Promise<T>,
+): Promise<T> {
+  return withTenant(tenantId, async (tx, conn) => {
+    await conn.query('BEGIN');
+    try {
+      const result = await fn(tx, conn);
+      await conn.query('COMMIT');
+      return result;
+    } catch (e) {
+      await conn.query('ROLLBACK');
+      throw e;
+    }
+  });
+}
+
+/**
  * Run as platform_admin (bypass RLS). Use only for admin operations.
  * Caller must ensure the requester is authenticated platform_admin.
  *

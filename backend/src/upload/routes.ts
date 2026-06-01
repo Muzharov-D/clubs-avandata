@@ -7,7 +7,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { randomBytes } from 'node:crypto';
 import { authenticate } from '../auth/middleware.js';
-import { withTenant } from '../db/tenantContext.js';
+import { withTenantTx } from '../db/tenantContext.js';
 import { BadRequestError, UnauthorizedError, AppError } from '../shared/errors.js';
 import { logger } from '../shared/logger.js';
 import { resolveOurSide } from '../shared/teamName.js';
@@ -185,8 +185,11 @@ export async function uploadRoutes(app: FastifyInstance) {
         logger.info({ matchId, kind: secondaryKind, players: excelData.players.length, cols: excelData.match.columnsCount }, '[upload] secondary stats parsed');
       }
 
-      // ─── 2. Upsert players из Excel (если был) ─ обновим существующие, добавим новые ───
-      await withTenant(tenantSlug, async (_tx, conn) => {
+      // ─── 2+3. Upsert players из Excel + дамп ростера для PDF parser ───
+      // Одна транзакция, одно соединение из пула: upsert атомарен (обрыв на
+      // середине цикла → ROLLBACK, без частично залитых игроков), а SELECT ростера
+      // читает только что вставленные строки (read-your-writes в той же tx).
+      const roster = await withTenantTx(tenantSlug, async (_tx, conn) => {
         if (excelData?.players?.length) {
           for (const ep of excelData.players) {
             const num = parseInt(ep.number, 10);
@@ -209,10 +212,6 @@ export async function uploadRoutes(app: FastifyInstance) {
           }
           logger.info({ matchId, upserted: excelData.players.length }, '[upload] players upserted from excel');
         }
-      });
-
-      // ─── 3. Dump roster (включая только что upsert-нутых) для PDF parser ───
-      const roster = await withTenant(tenantSlug, async (_tx, conn) => {
         const { rows } = await conn.query<{
           id: string; teamId: string; number: number | null;
           fullName: string; firstName: string | null; lastName: string | null;
@@ -426,7 +425,10 @@ export async function uploadRoutes(app: FastifyInstance) {
       let awayName  = pdfData.awayTeam?.name || excelData?.match.awayTeam || '';
       const score   = pdfData.score || excelData?.match.score || null;
 
-      await withTenant(tenantSlug, async (_tx, conn) => {
+      // Вся запись матча атомарна: match + match_players + data_quality +
+      // авто-открытие команды. Падение на любом шаге → ROLLBACK, без матча-огрызка
+      // (вставленный match без игроков / без data_quality).
+      await withTenantTx(tenantSlug, async (_tx, conn) => {
         // Fallback 1: если парсер не вытянул home/away — берём из ближайшей
         // фикстуры календаря текущего tenant'а (наш матч). Это закрывает кейс,
         // когда PDF без явной шапки или формат титула не распознан.
