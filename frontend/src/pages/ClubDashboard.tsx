@@ -56,7 +56,7 @@ export default function ClubDashboard() {
     if (!root) return;
     if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return;
     if (window.matchMedia?.('(hover: none)').matches) return;
-    const cards = Array.from(root.querySelectorAll<HTMLElement>('.cd__hero-card'));
+    const cards = Array.from(root.querySelectorAll<HTMLElement>('.cd__kpi-card'));
     const cleanups = cards.map((el) => {
       let raf = 0;
       const onMove = (e: MouseEvent) => {
@@ -214,55 +214,92 @@ export default function ClubDashboard() {
         </div>
       </header>
 
-      {/* Hero strip — next + last */}
-      <section className="cd__hero-row">
-        {nextMatch ? (
-          <div className="cd__hero-card cd__hero-card--next">
-            <div className="cd__hero-eyebrow">Следующий матч · {nextMatch.round || ''}</div>
-            <div className="cd__hero-matchup">
-              <span className={isOurName(nextMatch.home, ourName) ? 'cd__hero-team--us' : 'cd__hero-team'}>
-                {nextMatch.home}
-              </span>
-              <span className="cd__hero-vs">vs</span>
-              <span className={isOurName(nextMatch.away, ourName) ? 'cd__hero-team--us' : 'cd__hero-team'}>
-                {nextMatch.away}
-              </span>
-            </div>
-            <div className="cd__hero-meta">
-              <span>{formatDateLong(nextMatch.date)}</span>
-              {nextMatch.venue && <span className="cd__hero-venue"> · {nextMatch.venue}</span>}
-            </div>
-            <Countdown to={nextMatch.date} />
-          </div>
-        ) : (
-          <div className="cd__hero-card cd__hero-card--empty">
-            <div className="cd__hero-eyebrow">Следующий матч</div>
-            <div className="cd__hero-empty-text">Расписание на сезон закрыто</div>
-          </div>
-        )}
+      {/* ГЛАВНОЕ — единый фрейм: матчи + ключевые показатели команды (правки #5,#6,#9,#10) */}
+      <section className="cd__main">
+        <div className="cd__main-title">Главное</div>
+        <div className="cd__main-grid">
+          {/* Матчи: следующий + последний в одном блоке (#6) */}
+          <div className="cd__main-matches">
+            {nextMatch ? (
+              <div className="cd__mm cd__mm--next">
+                <div className="cd__mm-eyebrow">Следующий · {nextMatch.round || ''}</div>
+                <div className="cd__hero-matchup">
+                  <span className={isOurName(nextMatch.home, ourName) ? 'cd__hero-team--us' : 'cd__hero-team'}>{nextMatch.home}</span>
+                  <span className="cd__hero-vs">vs</span>
+                  <span className={isOurName(nextMatch.away, ourName) ? 'cd__hero-team--us' : 'cd__hero-team'}>{nextMatch.away}</span>
+                </div>
+                <div className="cd__hero-meta">
+                  <span>{formatDateLong(nextMatch.date)}</span>
+                  {nextMatch.venue && <span className="cd__hero-venue"> · {nextMatch.venue}</span>}
+                </div>
+                <Countdown to={nextMatch.date} />
+              </div>
+            ) : (
+              <div className="cd__mm cd__mm--empty">
+                <div className="cd__mm-eyebrow">Следующий матч</div>
+                <div className="cd__hero-empty-text">Расписание на сезон закрыто</div>
+              </div>
+            )}
 
-        {lastResult && (
-          <div className="cd__hero-card cd__hero-card--last">
-            <div className="cd__hero-eyebrow">Последний матч · {lastResult.round || ''}</div>
-            <div className="cd__hero-matchup">
-              <span className={isOurName(lastResult.home, ourName) ? 'cd__hero-team--us' : 'cd__hero-team'}>
-                {lastResult.home}
-              </span>
-              <span className="cd__hero-score">
-                {lastResult.scoreH}:{lastResult.scoreA}
-              </span>
-              <span className={isOurName(lastResult.away, ourName) ? 'cd__hero-team--us' : 'cd__hero-team'}>
-                {lastResult.away}
-              </span>
-            </div>
-            <div className="cd__hero-meta">{formatDateShort(lastResult.date)}</div>
-            {lastReport && (
-              <button className="cd__hero-action" onClick={() => navigate(`/matches/${lastReport.id}`)}>
-                Открыть подробный разбор →
-              </button>
+            {lastResult && (
+              <div className="cd__mm cd__mm--last">
+                <div className="cd__mm-eyebrow">Последний · {lastResult.round || ''}</div>
+                <div className="cd__hero-matchup">
+                  <span className={isOurName(lastResult.home, ourName) ? 'cd__hero-team--us' : 'cd__hero-team'}>{lastResult.home}</span>
+                  <span className="cd__hero-score">{lastResult.scoreH}:{lastResult.scoreA}</span>
+                  <span className={isOurName(lastResult.away, ourName) ? 'cd__hero-team--us' : 'cd__hero-team'}>{lastResult.away}</span>
+                </div>
+                <div className="cd__hero-meta">{formatDateShort(lastResult.date)}</div>
+                {lastReport && (
+                  <button className="cd__hero-action" onClick={() => navigate(`/matches/${lastReport.id}`)}>
+                    Открыть подробный разбор →
+                  </button>
+                )}
+              </div>
             )}
           </div>
-        )}
+
+          {/* Средний рейтинг команды (#9) */}
+          {(() => {
+            const ov = Number((latestMatch?.teamAvgRatings as AnyObj)?.overall ?? 0);
+            return (
+              <div className="cd__kpi-card">
+                <div className="cd__kpi-label">Средний рейтинг команды</div>
+                {ov > 0 ? (
+                  <div className="cd__kpi-big" style={{ color: '#fff' }}>
+                    {ov.toFixed(2)}
+                    <span className="cd__kpi-bar"><span className="cd__kpi-bar-fill" style={{ width: `${Math.min(100, ov * 10)}%`, background: ratingColor(ov) }} /></span>
+                  </div>
+                ) : <div className="cd__kpi-empty">нет разбора</div>}
+                <div className="cd__kpi-sub">по последнему матчу</div>
+              </div>
+            );
+          })()}
+
+          {/* Лучший игрок команды (#10) */}
+          {(() => {
+            const best = topPlayers[0];
+            return (
+              <div
+                className={`cd__kpi-card${best ? ' cd__kpi-card--click' : ''}`}
+                onClick={() => best && navigate(`/players/${best.playerId}`)}
+              >
+                <div className="cd__kpi-label">Лучший игрок</div>
+                {best ? (
+                  <>
+                    <div className="cd__kpi-player">
+                      <span className="cd__kpi-rank" style={{ background: ratingColor(best.ratings?.overall) }}>
+                        {Number(best.ratings?.overall ?? 0).toFixed(1)}
+                      </span>
+                      <span className="cd__kpi-player-name">{best.fullName}</span>
+                    </div>
+                    <div className="cd__kpi-sub">#{best.number ?? '—'} · {best.position || 'игрок'}</div>
+                  </>
+                ) : <div className="cd__kpi-empty">нет разбора</div>}
+              </div>
+            );
+          })()}
+        </div>
       </section>
 
       {/* Вероятный состав на следующий матч (Phase 5) — тренеру */}
