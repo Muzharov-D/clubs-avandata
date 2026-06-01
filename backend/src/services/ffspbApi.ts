@@ -30,7 +30,7 @@ interface HydraResponse<T> {
   view?: HydraView;
 }
 
-const FETCH_TIMEOUT_MS = 20_000;
+const FETCH_TIMEOUT_MS = 45_000;
 
 async function fetchWithRetry(url: string, opts: RequestInit = {}, attempt = 1): Promise<unknown> {
   const headers: Record<string, string> = {
@@ -121,7 +121,11 @@ export async function listMatches(tournamentId: string | number, opts: FfspbMatc
   if (opts.hasLineups != null) params.has_lineups = opts.hasLineups ? 1 : 0;
   if (opts.dateGte) params['date[gte]'] = Math.floor(new Date(opts.dateGte).getTime() / 1000);
   if (opts.dateLte) params['date[lte]'] = Math.floor(new Date(opts.dateLte).getTime() / 1000);
-  params['order[date]'] = opts.orderByDate ?? 'asc';
+  // НЕ шлём order[date] по умолчанию: серверная сортировка FFSPB по всей коллекции
+  // матчей турнира стабильно >20с (таймаут). Фильтр tournament_id отдаёт данные за
+  // ~0.5с без сортировки; порядок не важен — UPSERT идёт по ext_match_id, а UI
+  // сортирует по match_date сам. Передаём order только если явно запрошен.
+  if (opts.orderByDate) params['order[date]'] = opts.orderByDate;
   return listAll(`/matches`, params);
 }
 
