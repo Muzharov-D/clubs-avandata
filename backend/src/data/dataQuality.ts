@@ -67,28 +67,40 @@ export function computeDataQuality(match: AnyObj, mp: AnyObj[]): DataQuality {
     excel: !!(meta.xlsxFile || meta.excelMeta || meta.excelColumnsCount),
   };
 
-  // Скоринг: игроки 50% (рейтинги+минуты+детальные), команда 35%, доп 15%.
+  // Source-aware скоринг: балл считается ТОЛЬКО по «ядру» аналитики — то, что
+  // составляет суть отчёта SportVisor и есть в каждом нормальном разборе:
+  //   • per-player рейтинги + минуты + детальные действия (attack/defence) — 65%
+  //   • командные рейтинги (Performance Index) — 20%
+  //   • командные агрегаты (детальная аналитика по секциям) — 15%
+  // = 100% для полностью распознанного матча.
+  //
+  // Карты / события / разбивка по таймам / формация / teamSummary — это
+  // best-effort ВИЗУАЛ и производные: они зависят от верстки конкретного формата
+  // (напр. в новом RU-формате нет карты «Владение», нет картинки формации). Их
+  // отсутствие НЕ топит достоверность — они показываются информативными бейджами
+  // (sections.*), но в балл не входят. Иначе честно распознанный матч получал бы
+  // «95%» из-за того, что формат объективно не содержит какую-то картинку.
+  const PLAYER_WEIGHT = 65;
+  const TEAM_RATINGS_WEIGHT = 20;
+  const TEAM_AGGREGATES_WEIGHT = 15;
+
   const playerScore = total
-    ? ((withRatings + withMinutes + withDetailed) / (total * 3)) * 50
+    ? ((withRatings + withMinutes + withDetailed) / (total * 3)) * PLAYER_WEIGHT
     : 0;
   const teamScore =
-    (sections.teamRatings ? 15 : 0) +
-    (sections.teamAggregates ? 12 : 0) +
-    (sections.teamSummary ? 8 : 0);
-  const extraScore =
-    (sections.formation ? 5 : 0) +
-    (sections.maps > 0 ? 5 : 0) +
-    (sections.events > 0 ? 3 : 0) +
-    (sections.splits ? 2 : 0);
-  const score = Math.round(Math.min(100, playerScore + teamScore + extraScore));
+    (sections.teamRatings ? TEAM_RATINGS_WEIGHT : 0) +
+    (sections.teamAggregates ? TEAM_AGGREGATES_WEIGHT : 0);
+  const score = Math.round(Math.min(100, playerScore + teamScore));
 
+  // Предупреждения — только про РЕАЛЬНЫЕ пробелы в ядре (что снижает балл).
+  // Best-effort визуал в warnings не выносим, чтобы не пугать аналитика «Карты
+  // не распознаны», когда формат их попросту не содержит.
   const warnings: string[] = [];
   if (total === 0) warnings.push('Игроки не распознаны');
   if (!sections.teamRatings) warnings.push('Командные рейтинги отсутствуют');
+  if (!sections.teamAggregates) warnings.push('Командные агрегаты отсутствуют');
   if (total > 0 && withDetailed < total) warnings.push(`Детальные действия у ${withDetailed}/${total} игроков`);
-  if (!sections.splits) warnings.push('Нет разбивки по таймам');
-  if (sections.maps === 0) warnings.push('Карты не распознаны');
-  if (!sources.excel) warnings.push('Excel не загружен — часть передач/дуэлей может отсутствовать');
+  if (total > 0 && withRatings < total) warnings.push(`Рейтинги у ${withRatings}/${total} игроков`);
 
   const level: DataQuality['level'] = score >= 75 ? 'high' : score >= 45 ? 'medium' : 'low';
 

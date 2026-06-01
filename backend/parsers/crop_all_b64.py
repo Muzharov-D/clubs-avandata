@@ -39,7 +39,10 @@ Roster source: env var ROSTER_JSON (как у build_match.py) или fallback н
 import argparse, base64, io, json, os, re, sys
 import pdfplumber
 
-# Командные страницы — те же 9 что в crop_maps.py
+# Командные страницы СТАРОГО формата (англ. 2010 PDF) — fallback по номерам.
+# В НОВОМ RU-формате карты свёрстаны иначе (см. crop_team_maps_by_content):
+# детектятся по контенту, а не по номеру страницы. Этот список оставлен как
+# страховка для старого формата — он НЕ удалён, а дополнен.
 TEAM_PAGES = [
     (12, "shooting"),
     (13, "set-pieces"),
@@ -51,6 +54,34 @@ TEAM_PAGES = [
     (19, "pressing"),
     (20, "positioning"),
 ]
+
+# Сигнатура командной дашборд-страницы нового формата: строка вида «Attack 1/5»
+# или «Defence 2/4» (англ. метки даже в RU PDF). Это уникальный якорь — на
+# текстовых таблицах и per-player страницах его нет.
+SECTION_MARKER_RE = re.compile(r"^\s*(?:Attack|Defence)\s+\d\s*/\s*\d\s*$", re.I)
+
+# Заголовок секции (строка сразу после метки) → slug карты. Порядок —
+# специфичные многословные первыми, чтобы «удары» не перехватил «позиционную
+# оборону» (там тоже есть «УДАРЫ СОПЕРНИКА» ниже по странице).
+SECTION_TITLE_SLUGS = [
+    ("позиционная оборона", "positioning"),
+    ("отборы и подборы", "recoveries"),
+    ("стандартные положения", "set-pieces"),
+    ("единоборства", "duels"),
+    ("прессинг", "pressing"),
+    ("владение", "possession"),
+    ("передачи", "passes"),
+    ("атаки", "attacks"),
+    ("удары", "shooting"),
+]
+
+# Поле-карта нового формата мельче старой (реально 131–196 × 187–293pt). Порог
+# 180w (старый _team_bbox) их резал. Здесь смягчаем: ≥100w, ≥120h, портрет.
+TEAM_MAP_MIN_W = 100
+TEAM_MAP_MIN_H = 120
+# Карты нового формата уже с внутренним полем-рамкой — большой margin затягивает
+# заголовок секции и оси. 6pt = чистая карта.
+TEAM_MAP_MARGIN = 6
 
 # Формация — обычно страница 3 или 4 в Zenit-формате (надо найти эвристикой:
 # страница с одним большим image без таблицы рейтингов)
@@ -116,22 +147,85 @@ def _team_bbox(page):
     return _safe_bbox(img["x0"], img["top"], img["x1"], img["bottom"], page)
 
 
-def crop_team_maps(pdf):
+def _team_map_bbox(page):
+    """Карта поля нового формата: портретное изображение с мягким порогом
+    (≥100×120, h≥1.15·w). Возвращает bbox самого большого подходящего или None.
+    """
+    if not page.images:
+        return None
+    portrait = [
+        i for i in page.images
+        if (i["x1"] - i["x0"]) >= TEAM_MAP_MIN_W
+        and (i["bottom"] - i["top"]) >= TEAM_MAP_MIN_H
+        and (i["bottom"] - i["top"]) >= 1.15 * (i["x1"] - i["x0"])
+    ]
+    if not portrait:
+        return None
+    img = max(portrait, key=lambda i: (i["x1"] - i["x0"]) * (i["bottom"] - i["top"]))
+    return _safe_bbox(img["x0"], img["top"], img["x1"], img["bottom"],
+                      page, mx=TEAM_MAP_MARGIN, my=TEAM_MAP_MARGIN)
+
+
+def _section_slug(text):
+    """По тексту дашборд-страницы определяет slug секции (или None).
+
+    Сигнатура: строка-метка «Attack N/5»/«Defence N/4», заголовок секции —
+    следующая непустая строка. Slug — по ключевому слову заголовка.
+    """
+    lines = [l.strip() for l in (text or "").split("\n") if l.strip()]
+    for idx, line in enumerate(lines):
+        if not SECTION_MARKER_RE.match(line):
+            continue
+        title = lines[idx + 1].lower() if idx + 1 < len(lines) else ""
+        for kw, slug in SECTION_TITLE_SLUGS:
+            if kw in title:
+                return slug
+    return None
+
+
+def crop_team_maps_by_content(pdf):
+    """НОВЫЙ формат: детекция командных карт по контенту, без хардкод-страниц.
+
+    Сканирует все страницы, находит дашборд-секции по метке «Attack/Defence N/M»
+    и заголовку, кропит полевую карту. Страницы без изображения (напр. Владение)
+    пропускаются молча — честно, что карты там нет.
+    """
     out = {}
+    for page in pdf.pages:
+        try:
+            text = page.extract_text() or ""
+            slug = _section_slug(text)
+            if not slug or slug in out:
+                continue
+            bbox = _team_map_bbox(page)
+            if bbox is None:
+                continue
+            out[slug] = _crop_b64(page, bbox)
+        except Exception as e:
+            print(f"  WARN: team map (content) p{page.page_number} failed: {e}", file=sys.stderr)
+    return out
+
+
+def crop_team_maps(pdf):
+    """Командные карты: сначала детекция по контенту (новый RU-формат), затем
+    legacy-фоллбэк по жёстким страницам 12–20 для slug'ов, что не нашлись
+    (старый англ. формат). Детекция ДОПОЛНЯЕТ, а не заменяет — оба формата живы.
+    """
+    out = crop_team_maps_by_content(pdf)
+    found_by_content = len(out)
     for pn, slug in TEAM_PAGES:
-        if pn > len(pdf.pages):
+        if slug in out or pn > len(pdf.pages):
             continue
         try:
             page = pdf.pages[pn - 1]
             bbox = _team_bbox(page)
             if bbox is None:
-                # Страница без реального chart canvas — пропускаем, чтобы на
-                # frontend'е не появилась карточка с осями без данных.
-                print(f"  skip team map p{pn} ({slug}): no usable image", file=sys.stderr)
                 continue
             out[slug] = _crop_b64(page, bbox)
         except Exception as e:
             print(f"  WARN: team map p{pn} ({slug}) failed: {e}", file=sys.stderr)
+    print(f"  team maps: {found_by_content} by content + "
+          f"{len(out) - found_by_content} by legacy pages", file=sys.stderr)
     return out
 
 
@@ -193,8 +287,33 @@ def match_player_by_name(name, roster):
     return None
 
 
+def match_player_in_line(line, roster):
+    """Content-fallback: ищет в строке-заголовке любого игрока ростера по
+    полному имени или «Фамилия Имя» (перестановка). Нужно для форматов, где
+    англ. метки «Player Stats –» нет, но имя игрока есть в бегущем заголовке.
+    """
+    low = (line or "").lower()
+    if not low:
+        return None
+    for p in roster:
+        full = (p.get("fullName") or "").strip()
+        if full and full.lower() in low:
+            return p
+        parts = full.split()
+        if len(parts) == 2 and f"{parts[1]} {parts[0]}".lower() in low:
+            return p
+    return None
+
+
 def crop_player_maps(pdf, team_id):
-    """Per-player attack & heatmap crops от p21+."""
+    """Per-player heatmap crops от p21+.
+
+    Детекция игрока: сначала англ. метка «Player Stats – <Имя>» (HEADER_RE),
+    затем content-fallback — имя игрока из ростера прямо в бегущем заголовке
+    (новый RU-формат: «… Player Stats – Имя Фамилия» совпадает с HEADER_RE, но
+    fallback страхует форматы без метки). Командные дашборд-страницы (с меткой
+    «Attack/Defence N/M») пропускаем — там нет игрока.
+    """
     roster = load_roster(team_id)
     out = {}
     if not roster:
@@ -206,11 +325,14 @@ def crop_player_maps(pdf, team_id):
             page = pdf.pages[pn - 1]
             text = page.extract_text() or ""
             first = next((l for l in text.split("\n") if l.strip()), "")
-            m = HEADER_RE.search(first)
-            if not m:
+            # Командная дашборд-страница (Attack/Defence N/M) — не игрок, пропуск.
+            if _section_slug(text):
                 continue
-            name = m.group(1).strip()
-            player = match_player_by_name(name, roster)
+            m = HEADER_RE.search(first)
+            player = (
+                match_player_by_name(m.group(1).strip(), roster) if m
+                else match_player_in_line(first, roster)
+            )
             if not player:
                 continue
             pid = player["id"]
