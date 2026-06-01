@@ -39,13 +39,19 @@ PAGE_RULES = [
     {'h': 'fitness distance',          't': 'fitness', 'cols': ['totalDistance','speed_4_5_5','speed_5_5_7','speed_7plus']},
     {'h': 'fitness intensity',         't': 'fitness', 'cols': ['sprintDistance','sprintsCount','intenseRunning','averageSpeed']},
     {'h': 'attack forward play',       't': 'attack',  'cols': ['passProgressing','intoPenArea','progressivePass','passToFinalThird','keyPass','cross','entriesInBox','assist','secondAssist','thirdAssist','passOnTarget','offside']},
-    {'h': 'attack possession',         't': 'attack',  'cols': ['pass','passForward','passBack','passSideways','passShort','passMiddle','passLong','touchesInPenArea','receivedPass','foulsSuffered','loseOnOwnHalf','dangerousLosesOnOwnHalf','ownGoal','lostBall','technicalMistake']},
+    # Порядок колонок выверен по реальному PDF + CSV-эталону: последние две —
+    # «Технические ошибки», затем «Потеря мяча» (раньше были перепутаны местами).
+    {'h': 'attack possession',         't': 'attack',  'cols': ['pass','passForward','passBack','passSideways','passShort','passMiddle','passLong','touchesInPenArea','receivedPass','foulsSuffered','loseOnOwnHalf','dangerousLosesOnOwnHalf','ownGoal','technicalMistake','lostBall']},
     {'h': 'attack dribbling',          't': 'attack',  'cols': ['dribble','dribbleProgressing']},
     {'h': 'attack shooting',           't': 'attack',  'cols': ['goal','goalActions','shot','byHead']},
     {'h': 'attack set pieces',         't': 'attack',  'cols': ['freeKickShot','freeKick','directFreeKick','directFreeKickShot','penalty','corner','throwing']},
-    {'h': 'defence tackling',          't': 'defence', 'cols': ['tackle','slidingTackles','dribbleAgainst','recovery','recoveryOpp','interception']},
-    {'h': 'defence positioning',       't': 'defence', 'cols': ['positionPlay','dangerousLossOwn','clearance','blockedShot']},
-    {'h': 'defence duels',             't': 'defence', 'cols': ['duel','aerialDuel','duelWon']},
+    # 6-я колонка — «Отборы и подборы» (раньше ошибочно звалась interception).
+    {'h': 'defence tackling',          't': 'defence', 'cols': ['tackle','slidingTackles','dribbleAgainst','recovery','recoveryOpp','tacklesAndRecoveries']},
+    # Реальные колонки страницы: Вынос, Перехваты, Sprint back, Подборы мяча, Фолы,
+    # Жёлтые/Красные карточки. Старый маппинг (positionPlay/dangerousLossOwn/clearance/
+    # blockedShot) был полностью неверен — отсюда нулевой clearance и interception-мусор.
+    {'h': 'defence positioning',       't': 'defence', 'cols': ['clearance','interception','sprintBack','rebounds','fouls','yellowCards','redCards']},
+    {'h': 'defence duels',             't': 'defence', 'cols': ['duel','aerialDuel']},
     {'h': 'defence pressing',          't': 'defence', 'cols': ['pressing','counterpressing']},
     {'h': 'defence goalkeeping',       't': 'defence', 'cols': ['save','goalkeeperExits','shotsAgainst','goalKick','shortGoalKicks','longGoalKicks']},
 ]

@@ -72,13 +72,14 @@ function nameParts(
   return { full, firstName: sp.firstName, lastName: sp.lastName };
 }
 
-interface ExcelOutput {
+interface SecondaryOutput {
   match: {
     homeTeam: string | null;
     awayTeam: string | null;
     date: string | null;
     score: { home: number; away: number } | null;
-    sourceSheet: string;
+    sourceSheet?: string;
+    source?: string;
     columnsCount: number;
   };
   players: Array<{
@@ -130,15 +131,24 @@ export async function uploadRoutes(app: FastifyInstance) {
     let xlsxBuffer: Buffer | null = null;
     let pdfFilename = 'match.pdf';
     let xlsxFilename: string | null = null;
+    let secondaryKind: 'xlsx' | 'csv' = 'csv';
 
     for await (const part of req.parts()) {
       if (part.type === 'file') {
         if (part.fieldname === 'file' || part.fieldname === 'pdf') {
           pdfBuffer = await part.toBuffer();
           pdfFilename = part.filename ?? pdfFilename;
-        } else if (part.fieldname === 'excel' || part.fieldname === 'xlsx') {
+        } else if (['excel', 'xlsx', 'csv', 'stats'].includes(part.fieldname)) {
+          // Вторичный файл с детальной per-player статистикой: Excel (legacy) или
+          // CSV (SportVisor/Наградион). Тип — по расширению, фоллбэк на имя поля.
           xlsxBuffer = await part.toBuffer();
           xlsxFilename = part.filename ?? null;
+          const fn = (part.filename ?? '').toLowerCase();
+          secondaryKind = fn.endsWith('.csv') || part.fieldname === 'csv'
+            ? 'csv'
+            : fn.endsWith('.xlsx') || part.fieldname === 'excel' || part.fieldname === 'xlsx'
+              ? 'xlsx'
+              : 'csv';
         }
       } else if (part.type === 'field') {
         if (part.fieldname === 'teamId')     teamId = String(part.value);
@@ -163,13 +173,16 @@ export async function uploadRoutes(app: FastifyInstance) {
     if (xlsxBuffer) await writeFile(xlsxPath, xlsxBuffer);
 
     try {
-      // ─── 1. Excel parser (если есть) — даёт настоящие имена + детальные stats ───
-      let excelData: ExcelOutput | null = null;
+      // ─── 1. Вторичный парсер (если есть) — детальные per-player stats + имена.
+      // CSV (новый SportVisor/Наградион) → тот же неймспейс attack/defence/fitness,
+      // что и PDF → источник истины в мердже. Excel (legacy) → группы
+      // passing/attacking/... → доливает недостающее.
+      let excelData: SecondaryOutput | null = null;
       if (xlsxBuffer) {
-        await runPython(PYTHON_BIN,
-          [join(PARSERS_DIR, 'parse_excel.py'), xlsxPath, xlsxOutPath], work);
-        excelData = JSON.parse(await readFile(xlsxOutPath, 'utf-8')) as ExcelOutput;
-        logger.info({ matchId, players: excelData.players.length, cols: excelData.match.columnsCount }, '[upload] excel parsed');
+        const script = secondaryKind === 'csv' ? 'parse_csv.py' : 'parse_excel.py';
+        await runPython(PYTHON_BIN, [join(PARSERS_DIR, script), xlsxPath, xlsxOutPath], work);
+        excelData = JSON.parse(await readFile(xlsxOutPath, 'utf-8')) as SecondaryOutput;
+        logger.info({ matchId, kind: secondaryKind, players: excelData.players.length, cols: excelData.match.columnsCount }, '[upload] secondary stats parsed');
       }
 
       // ─── 2. Upsert players из Excel (если был) ─ обновим существующие, добавим новые ───
@@ -356,8 +369,8 @@ export async function uploadRoutes(app: FastifyInstance) {
         },
         positioning: {
           clearance:    { value: sumScalar('clearance', 'defence') },
+          rebounds:     { value: sumScalar('rebounds', 'defence') },
           blockedShot:  { value: sumScalar('blockedShot', 'defence') },
-          positionPlay: { value: sumScalar('positionPlay', 'defence') },
         },
         setPieces: {
           corner:        { value: sumScalar('corner', 'attack') },
@@ -560,16 +573,25 @@ export async function uploadRoutes(app: FastifyInstance) {
         // (Excel есть не всегда — деградируем gracefully, PDF самодостаточен).
         // Доверие к значению = «есть группа». Группа из PDF приоритетна; пустую
         // (которой PDF не дал) закрываем из Excel.
+        // CSV — тот же неймспейс (attack/defence/fitness), структурированный эталон
+        // → перетирает PDF по-ключу (источник истины, устойчив к сдвигам колонок PDF).
+        // Excel (legacy) — другие группы (passing/attacking/...) → доливаем
+        // недостающее, не трогая PDF-группы.
         for (const ep of excelData?.players ?? []) {
           if (!ep.number) continue;
           const numStr = String(parseInt(ep.number, 10)).padStart(2, '0');
           const ex = combined.get(numStr);
           if (!ex) continue;
-          const stats = ex.stats as Record<string, unknown>;
+          const stats = ex.stats as Record<string, Record<string, unknown>>;
           for (const [grp, vals] of Object.entries(ep.stats)) {
-            const cur = stats[grp];
-            const pdfHasGroup = cur && typeof cur === 'object' && Object.keys(cur).length > 0;
-            if (!pdfHasGroup) stats[grp] = vals;  // PDF группу не дал → берём из Excel
+            const groupVals = vals as Record<string, unknown>;
+            if (secondaryKind === 'csv') {
+              stats[grp] = { ...(stats[grp] ?? {}), ...groupVals }; // CSV wins per-key
+            } else {
+              const cur = stats[grp];
+              const pdfHasGroup = cur && typeof cur === 'object' && Object.keys(cur).length > 0;
+              if (!pdfHasGroup) stats[grp] = groupVals; // PDF группу не дал → из Excel
+            }
           }
         }
         // FROM old build_match — для splits только (1st/2nd half)
