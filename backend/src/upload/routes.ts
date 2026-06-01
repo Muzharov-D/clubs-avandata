@@ -688,6 +688,15 @@ export async function uploadRoutes(app: FastifyInstance) {
           [JSON.stringify(dq), tenantSlug, matchId],
         );
         logger.info({ matchId, dataQuality: dq.score }, '[upload] data quality computed');
+
+        // Авто-открытие команды: команда с загруженным разбором никогда не остаётся
+        // скрытой от клуба. Идемпотентно — если уже active=TRUE, no-op.
+        const opened = await conn.query(
+          `UPDATE teams SET active = TRUE
+             WHERE id = $1 AND tenant_id = $2 AND active = FALSE`,
+          [teamId, tenantSlug],
+        );
+        if (opened.rowCount) logger.info({ matchId, teamId }, '[upload] team auto-opened on first match');
       });
 
       return {

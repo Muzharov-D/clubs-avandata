@@ -225,8 +225,8 @@ function TenantCard({ tenant }: { tenant: TenantRow }) {
       </div>
 
       <div className="tenant-card__actions">
-        <Link to={`/admin/tenants/${tenant.slug}`} className="tenant-card__action" aria-disabled>
-          Настройки
+        <Link to={`/admin/tenants/${tenant.slug}`} className="tenant-card__action">
+          Команды
         </Link>
         <button
           type="button"

@@ -41,6 +41,45 @@ const createTenantSchema = z.object({
   }),
 });
 
+// Возраст команды: «2010», «U16», «2012-2» и т.п. Часть team.id, поэтому ограничен
+// безопасным алфавитом. Хранится как ageGroup; в id уходит в lower-case.
+const ageSchema = z
+  .string()
+  .min(1)
+  .max(12)
+  .regex(/^[a-zA-Z0-9-]+$/, 'age must be alphanumeric and dashes');
+
+const createTeamSchema = z.object({
+  age: ageSchema,
+  name: z.string().min(1).max(120).optional(),
+  ageLabel: z.string().min(1).max(40).optional(),
+});
+
+const patchTeamSchema = z
+  .object({
+    active: z.boolean().optional(),
+    name: z.string().min(1).max(120).optional(),
+    ageLabel: z.string().min(1).max(40).optional(),
+  })
+  .refine((d) => d.active !== undefined || d.name !== undefined || d.ageLabel !== undefined, {
+    message: 'at least one of active | name | ageLabel is required',
+  });
+
+/** team.id = `{slug}-{age}` (lower-case) — конвенция из CLAUDE.md (legirus-2010). */
+function teamIdFor(slug: string, age: string): string {
+  return `${slug}-${age.toLowerCase()}`;
+}
+
+/** Имя по умолчанию: «{displayName} {age}» (например «Зенит 2010»). */
+function defaultTeamName(displayName: string, age: string): string {
+  return `${displayName} ${age}`;
+}
+
+/** year-колонка заполняется только для «годовых» возрастов (4 цифры). */
+function ageToYear(age: string): number | null {
+  return /^\d{4}$/.test(age) ? parseInt(age, 10) : null;
+}
+
 export async function adminRoutes(app: FastifyInstance) {
   app.addHook('onRequest', authenticate);
   app.addHook('onRequest', authorize('platform_admin'));
@@ -317,6 +356,153 @@ export async function adminRoutes(app: FastifyInstance) {
         tournaments: tournaments.length,
         note: 'sync runs in background. Check Render logs or PG for progress.',
       };
+    },
+  );
+
+  /**
+   * GET /api/v1/admin/tenants/:slug/teams — ВСЕ команды клуба (вкл. скрытые)
+   * с числом загруженных матчей на команду. Клиентский /data/teams отдаёт только
+   * active=TRUE — здесь админ видит полную картину для управления видимостью.
+   */
+  app.get<{ Params: { slug: string } }>('/tenants/:slug/teams', async (req) => {
+    const { slug } = req.params;
+    return await withBypassRLS(async (tx, conn) => {
+      const tenantRows = await tx
+        .select({ slug: tenants.slug })
+        .from(tenants)
+        .where(eq(tenants.slug, slug))
+        .limit(1);
+      if (tenantRows.length === 0) throw new BadRequestError('tenant not found', 'TENANT_NOT_FOUND');
+
+      const { rows } = await conn.query(
+        `SELECT t.id, t.name, t.age_group AS "ageGroup", t.age_label AS "ageLabel",
+                t.year, t.is_our_team AS "isOurTeam", t.active,
+                COUNT(m.id)::int AS "matchCount"
+           FROM teams t
+           LEFT JOIN matches m ON m.team_id = t.id AND m.tenant_id = t.tenant_id
+          WHERE t.tenant_id = $1
+          GROUP BY t.id
+          ORDER BY t.age_group`,
+        [slug],
+      );
+      return { teams: rows };
+    });
+  });
+
+  /**
+   * POST /api/v1/admin/tenants/:slug/provision-teams — создать по команде на
+   * каждый возраст из providerConfig.tournaments. Скрытые (active=false) по
+   * умолчанию: незакупленные/без данных возрасты не маячат у клуба. Идемпотентно
+   * (ON CONFLICT DO NOTHING) — повтор не трогает уже открытые команды.
+   */
+  app.post<{ Params: { slug: string } }>('/tenants/:slug/provision-teams', async (req) => {
+    const { slug } = req.params;
+    return await withBypassRLS(async (tx) => {
+      const tenantRows = await tx
+        .select({ displayName: tenants.displayName, providerConfig: tenants.providerConfig })
+        .from(tenants)
+        .where(eq(tenants.slug, slug))
+        .limit(1);
+      const tenant = tenantRows[0];
+      if (!tenant) throw new BadRequestError('tenant not found', 'TENANT_NOT_FOUND');
+
+      const cfg = (tenant.providerConfig ?? {}) as { tournaments?: Record<string, unknown> };
+      const allKeys = Object.keys(cfg.tournaments ?? {});
+      if (allKeys.length === 0) {
+        throw new BadRequestError(
+          'providerConfig.tournaments is empty — nothing to provision',
+          'NO_TOURNAMENTS',
+        );
+      }
+      // tournaments хранится в JSONB как z.unknown() — ключи возрастов попадают в
+      // team.id, поэтому фильтруем тем же ageSchema, что и ручное создание. Кривые
+      // ключи (с `/`, `..`, пробелами) отбрасываем, не ломая весь провижн.
+      const ages = allKeys.filter((age) => ageSchema.safeParse(age).success);
+      const skipped = allKeys.filter((age) => !ageSchema.safeParse(age).success);
+
+      const created: string[] = [];
+      const existing: string[] = [];
+      for (const age of ages) {
+        const id = teamIdFor(slug, age);
+        const inserted = await tx
+          .insert(teams)
+          .values({
+            id,
+            tenantId: slug,
+            name: defaultTeamName(tenant.displayName, age),
+            ageGroup: age,
+            year: ageToYear(age),
+            active: false,
+          })
+          .onConflictDoNothing({ target: teams.id })
+          .returning({ id: teams.id });
+        if (inserted.length > 0) created.push(id);
+        else existing.push(id);
+      }
+      return { created, existing, skipped };
+    });
+  });
+
+  /**
+   * POST /api/v1/admin/tenants/:slug/teams — ручное создание команды (краевые
+   * случаи без турнира в конфиге). Скрытая по умолчанию.
+   */
+  app.post<{ Params: { slug: string } }>('/tenants/:slug/teams', async (req) => {
+    const { slug } = req.params;
+    const body = createTeamSchema.parse(req.body);
+    return await withBypassRLS(async (tx) => {
+      const tenantRows = await tx
+        .select({ displayName: tenants.displayName })
+        .from(tenants)
+        .where(eq(tenants.slug, slug))
+        .limit(1);
+      const tenant = tenantRows[0];
+      if (!tenant) throw new BadRequestError('tenant not found', 'TENANT_NOT_FOUND');
+
+      const id = teamIdFor(slug, body.age);
+      const inserted = await tx
+        .insert(teams)
+        .values({
+          id,
+          tenantId: slug,
+          name: body.name?.trim() || defaultTeamName(tenant.displayName, body.age),
+          ageGroup: body.age,
+          ageLabel: body.ageLabel ?? null,
+          year: ageToYear(body.age),
+          active: false,
+        })
+        .onConflictDoNothing({ target: teams.id })
+        .returning({ id: teams.id });
+      if (inserted.length === 0) {
+        throw new BadRequestError('team with this age already exists', 'TEAM_EXISTS');
+      }
+      return { team: { id, ageGroup: body.age } };
+    });
+  });
+
+  /**
+   * PATCH /api/v1/admin/tenants/:slug/teams/:teamId — открыть/закрыть (active),
+   * переименовать (name) или сменить ярлык возраста (ageLabel).
+   */
+  app.patch<{ Params: { slug: string; teamId: string } }>(
+    '/tenants/:slug/teams/:teamId',
+    async (req) => {
+      const { slug, teamId } = req.params;
+      const updates = patchTeamSchema.parse(req.body);
+      return await withBypassRLS(async (tx) => {
+        const set: Partial<{ active: boolean; name: string; ageLabel: string }> = {};
+        if (updates.active !== undefined) set.active = updates.active;
+        if (updates.name !== undefined) set.name = updates.name.trim();
+        if (updates.ageLabel !== undefined) set.ageLabel = updates.ageLabel;
+
+        const updated = await tx
+          .update(teams)
+          .set(set)
+          .where(and(eq(teams.tenantId, slug), eq(teams.id, teamId)))
+          .returning({ id: teams.id, active: teams.active });
+        if (updated.length === 0) throw new BadRequestError('team not found', 'TEAM_NOT_FOUND');
+        return { ok: true, team: updated[0] };
+      });
     },
   );
 }

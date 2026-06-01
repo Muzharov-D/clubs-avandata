@@ -38,6 +38,7 @@ import { ToastHost } from './components/Toast';
 import { AdminLayout } from './routes/admin/AdminLayout';
 import { AdminTenantsList } from './routes/admin/AdminTenantsList';
 import { AdminTenantNew } from './routes/admin/AdminTenantNew';
+import { AdminTenantDetail } from './routes/admin/AdminTenantDetail';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -118,6 +119,7 @@ export function App() {
                   >
                     <Route index element={<AdminTenantsList />} />
                     <Route path="tenants/new" element={<AdminTenantNew />} />
+                    <Route path="tenants/:slug" element={<AdminTenantDetail />} />
                   </Route>
 
                   {/* Авторизованный кабинет клуба */}

@@ -6,7 +6,20 @@ import { useDocumentTitle } from '../../hooks/useDocumentTitle';
 
 interface CreateTenantResponse {
   tenant: { slug: string; name: string };
-  headCoach: { email: string; tempPassword: string };
+  headCoach: { email: string };
+  invite: { setupUrl: string; expiresAt: string };
+}
+
+interface ProvisionResponse {
+  created: string[];
+  existing: string[];
+}
+
+/** Строка возраста в форме создания клуба. leagueId/cupId — только для FFSPB. */
+interface AgeRow {
+  age: string;
+  leagueId: string;
+  cupId: string;
 }
 
 /** Транслит «ФК Зенит» → "fk-zenit" — для авто-генерации slug. */
@@ -39,8 +52,20 @@ export function AdminTenantNew() {
     headCoachEmail: '',
     headCoachName: '',
   });
+  const [ages, setAges] = useState<AgeRow[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<CreateTenantResponse | null>(null);
+  const [provisioned, setProvisioned] = useState<ProvisionResponse | null>(null);
+
+  function addAge() {
+    setAges((rows) => [...rows, { age: '', leagueId: '', cupId: '' }]);
+  }
+  function removeAge(index: number) {
+    setAges((rows) => rows.filter((_, i) => i !== index));
+  }
+  function updateAge(index: number, patch: Partial<AgeRow>) {
+    setAges((rows) => rows.map((r, i) => (i === index ? { ...r, ...patch } : r)));
+  }
 
   // Авто-генерация slug из name пока пользователь сам его не исправил.
   useEffect(() => {
@@ -63,9 +88,23 @@ export function AdminTenantNew() {
   const create = useMutation({
     mutationFn: (body: Record<string, unknown>) =>
       api<CreateTenantResponse>('/admin/tenants', { method: 'POST', body }),
-    onSuccess: (data) => {
+    onSuccess: async (data) => {
       qc.invalidateQueries({ queryKey: ['admin', 'tenants'] });
       setResult(data);
+      // Если заданы возрасты — сразу провизионируем команды (скрытыми, active=false).
+      // Не блокируем результат: если провижн упал, клуб создан и команды можно
+      // завести на странице клуба.
+      const hasAges = ages.some((r) => r.age.trim());
+      if (!hasAges) return;
+      try {
+        const prov = await api<ProvisionResponse>(
+          `/admin/tenants/${data.tenant.slug}/provision-teams`,
+          { method: 'POST' },
+        );
+        setProvisioned(prov);
+      } catch {
+        setProvisioned({ created: [], existing: [] });
+      }
     },
     onError: (err) => {
       setError(err instanceof ApiError ? err.message : 'Не удалось создать клуб');
@@ -75,11 +114,24 @@ export function AdminTenantNew() {
   function onSubmit(e: FormEvent) {
     e.preventDefault();
     setError(null);
+    // providerConfig.tournaments — карта возраст → {leagueId, cupId}. Пустые id не
+    // пишем; для manual/yfl остаётся пустой объект {} (команда всё равно создаётся).
+    const tournaments: Record<string, { leagueId?: string; cupId?: string }> = {};
+    for (const r of ages) {
+      const age = r.age.trim();
+      if (!age) continue;
+      const t: { leagueId?: string; cupId?: string } = {};
+      if (r.leagueId.trim()) t.leagueId = r.leagueId.trim();
+      if (r.cupId.trim()) t.cupId = r.cupId.trim();
+      tournaments[age] = t;
+    }
+    const providerConfig = Object.keys(tournaments).length > 0 ? { tournaments } : {};
     create.mutate({
       slug: form.slug,
       name: form.name,
       displayName: form.displayName,
       dataProvider: form.dataProvider,
+      providerConfig,
       brand: { primary: form.primary, accent: form.accent },
       headCoach: { email: form.headCoachEmail, fullName: form.headCoachName },
     });
@@ -99,24 +151,44 @@ export function AdminTenantNew() {
             <div>{result.headCoach.email}</div>
           </div>
           <div>
-            <div style={{ color: 'var(--text-muted)', fontSize: 13 }}>Временный пароль</div>
+            <div style={{ color: 'var(--text-muted)', fontSize: 13 }}>Ссылка для установки пароля</div>
             <code
               style={{
                 background: 'var(--bg-surface-2)',
                 padding: '8px 12px',
                 borderRadius: 8,
-                display: 'inline-block',
+                display: 'block',
                 userSelect: 'all',
+                wordBreak: 'break-all',
+                fontSize: 13,
               }}
             >
-              {result.headCoach.tempPassword}
+              {result.invite.setupUrl}
             </code>
             <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 6 }}>
-              Передай этот пароль тренеру. В Фазе 1 — magic-link через Resend.
+              Передай ссылку тренеру — по ней он задаёт пароль (действует 7 дней).
             </div>
           </div>
+          {provisioned && (
+            <div>
+              <div style={{ color: 'var(--text-muted)', fontSize: 13 }}>Команды</div>
+              <div style={{ fontSize: 14 }}>
+                Создано <strong>{provisioned.created.length}</strong>
+                {provisioned.existing.length > 0 && <>, уже было {provisioned.existing.length}</>} —
+                все скрыты, откроются при первом разборе или вручную на странице клуба.
+              </div>
+            </div>
+          )}
           <div style={{ display: 'flex', gap: 12 }}>
-            <button onClick={() => nav('/admin')}>← К списку клубов</button>
+            <button onClick={() => nav(`/admin/tenants/${result.tenant.slug}`)}>
+              К управлению клубом →
+            </button>
+            <button
+              onClick={() => nav('/admin')}
+              style={{ background: 'transparent', border: '1px solid var(--border)' }}
+            >
+              К списку клубов
+            </button>
           </div>
         </div>
       </div>
@@ -213,6 +285,73 @@ export function AdminTenantNew() {
               <div style={{ fontSize: 10, color: '#94a3b8' }}>Рейтинг</div>
             </div>
           </div>
+        </div>
+
+        <hr style={{ border: 'none', borderTop: '1px solid var(--border)', margin: '8px 0' }} />
+
+        {/* Возрасты команд → провижн (скрытыми). Для FFSPB — ещё ID лиги/кубка. */}
+        <div>
+          <label>Команды (возрасты)</label>
+          <div style={{ fontSize: 12, color: '#94a3b8', marginBottom: 8 }}>
+            Создаются скрытыми. Открываются автоматически при первом разборе или вручную.
+            Можно оставить пусто и завести позже.
+          </div>
+          <div style={{ display: 'grid', gap: 8 }}>
+            {ages.map((row, i) => (
+              <div key={i} style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                <input
+                  value={row.age}
+                  onChange={(e) => updateAge(i, { age: e.target.value })}
+                  placeholder="2010"
+                  style={{ flex: form.dataProvider === 'ffspb' ? '0 0 90px' : 1 }}
+                  aria-label={`Возраст команды ${i + 1}`}
+                />
+                {form.dataProvider === 'ffspb' && (
+                  <>
+                    <input
+                      value={row.leagueId}
+                      onChange={(e) => updateAge(i, { leagueId: e.target.value })}
+                      placeholder="ID лиги"
+                      style={{ flex: 1 }}
+                      aria-label={`ID лиги ${i + 1}`}
+                    />
+                    <input
+                      value={row.cupId}
+                      onChange={(e) => updateAge(i, { cupId: e.target.value })}
+                      placeholder="ID кубка"
+                      style={{ flex: 1 }}
+                      aria-label={`ID кубка ${i + 1}`}
+                    />
+                  </>
+                )}
+                <button
+                  type="button"
+                  onClick={() => removeAge(i)}
+                  aria-label="Удалить возраст"
+                  style={{
+                    background: 'transparent',
+                    border: '1px solid var(--border)',
+                    color: '#f87171',
+                    padding: '8px 12px',
+                  }}
+                >
+                  ×
+                </button>
+              </div>
+            ))}
+          </div>
+          <button
+            type="button"
+            onClick={addAge}
+            style={{
+              marginTop: 8,
+              background: 'transparent',
+              border: '1px dashed var(--border)',
+              color: '#22d3ee',
+            }}
+          >
+            + Добавить возраст
+          </button>
         </div>
 
         <hr style={{ border: 'none', borderTop: '1px solid var(--border)', margin: '8px 0' }} />
