@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import { useDocumentTitle } from '../hooks/useDocumentTitle';
 import './AvandataLanding.css';
@@ -94,32 +95,32 @@ export function AvandataLanding() {
 
         <div className="av-features__grid">
           <Feature
-            icon="📊"
+            icon="analytics"
             title="Аналитика матчей"
             text="SportVisor-разборы, рейтинги игроков по 15 метрикам, формации, тепловые карты"
           />
           <Feature
-            icon="📅"
+            icon="calendar"
             title="Календарь и тренировки"
             text="Расписание лиги, отметка явки, RSVP игроком, ICS-подписка в Apple/Google Calendar"
           />
           <Feature
-            icon="🔔"
+            icon="push"
             title="Push родителям"
             text="За 24 часа до матча, при публикации состава, после финального свистка"
           />
           <Feature
-            icon="👨‍👩‍👧"
+            icon="parent"
             title="Экран родителя"
             text="Без логина — открой ссылку и подпишись на команду ребёнка. PWA + offline"
           />
           <Feature
-            icon="🏆"
+            icon="trophy"
             title="Турнирная таблица"
             text="Авто-синк FFSPB/ЮФЛ + история таблиц по дням, дельта позиции команды"
           />
           <Feature
-            icon="⚙️"
+            icon="multiclub"
             title="Мульти-клуб"
             text="Один кодбейс, любое количество клубов — каждый со своим брендом, ролями, данными"
           />
@@ -152,10 +153,45 @@ export function AvandataLanding() {
   );
 }
 
+/* Брендированные тонкие SVG-иконки фич (вместо эмодзи) — единый stroke-стиль,
+   наследуют цвет от .av-feature__icon-wrap (фирменный cyan). Правка #4. */
+const FEATURE_ICONS: Record<string, ReactNode> = {
+  analytics: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M3 3v18h18" /><rect x="7" y="12" width="3" height="6" /><rect x="12" y="8" width="3" height="10" /><rect x="17" y="5" width="3" height="13" />
+    </svg>
+  ),
+  calendar: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="3" y="4.5" width="18" height="16" rx="2" /><path d="M3 9h18M8 2.5v4M16 2.5v4M8 13h2M14 13h2M8 17h2M14 17h2" />
+    </svg>
+  ),
+  push: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M6 9a6 6 0 0 1 12 0c0 5 2 6 2 6H4s2-1 2-6Z" /><path d="M10 20a2 2 0 0 0 4 0" />
+    </svg>
+  ),
+  parent: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="9" cy="8" r="3" /><path d="M3.5 20a5.5 5.5 0 0 1 11 0" /><circle cx="17" cy="9.5" r="2.2" /><path d="M16 20a4.5 4.5 0 0 1 5-4.2" />
+    </svg>
+  ),
+  trophy: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0V4Z" /><path d="M17 5h3v2a3 3 0 0 1-3 3M7 5H4v2a3 3 0 0 0 3 3" />
+    </svg>
+  ),
+  multiclub: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="3" y="3" width="7" height="7" rx="1.5" /><rect x="14" y="3" width="7" height="7" rx="1.5" /><rect x="3" y="14" width="7" height="7" rx="1.5" /><rect x="14" y="14" width="7" height="7" rx="1.5" />
+    </svg>
+  ),
+};
+
 function Feature({ icon, title, text }: { icon: string; title: string; text: string }) {
   return (
     <div className="av-feature">
-      <div className="av-feature__icon-wrap">{icon}</div>
+      <div className="av-feature__icon-wrap" aria-hidden>{FEATURE_ICONS[icon] ?? null}</div>
       <div className="av-feature__title">{title}</div>
       <div className="av-feature__text">{text}</div>
     </div>

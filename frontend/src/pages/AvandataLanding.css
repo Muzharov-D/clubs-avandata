@@ -222,7 +222,8 @@
   display: flex;
   justify-content: center;
   gap: 64px;
-  margin-bottom: 100px;
+  /* было 100px → огромный пустой провал между статами и секцией фич (правка #3) */
+  margin-bottom: 16px;
   flex-wrap: wrap;
 }
 .av-stat {
@@ -304,14 +305,19 @@
 .av-feature__icon-wrap {
   width: 52px;
   height: 52px;
-  border-radius: 12px;
+  border-radius: 14px;
   background: linear-gradient(135deg, rgba(37, 99, 235, 0.25) 0%, rgba(31, 182, 255, 0.15) 100%);
-  border: 1px solid rgba(31, 182, 255, 0.2);
+  border: 1px solid rgba(31, 182, 255, 0.28);
   display: flex;
   align-items: center;
   justify-content: center;
   margin-bottom: 20px;
-  font-size: 26px;
+  /* брендированные SVG-иконки наследуют этот цвет через currentColor */
+  color: #7fe3ff;
+}
+.av-feature__icon-wrap svg {
+  width: 26px;
+  height: 26px;
 }
 .av-feature__title {
   font-size: 18px;

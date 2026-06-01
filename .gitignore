@@ -38,3 +38,5 @@ tmp/
 .tmp/
 *.scratch.*
 __pycache__/
+.tmp_icons/
+.tmp_pravki/
