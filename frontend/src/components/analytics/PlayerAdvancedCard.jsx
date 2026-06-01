@@ -53,6 +53,14 @@ export default function PlayerAdvancedCard({ player, squad, match }) {
   ];
   if (dWin != null) tiles.push({ label: 'Дуэли %', model: false, val: `${dWin}%`, sub: aWin != null ? `верх ${aWin}%` : 'выиграно' });
 
+  // Физический выхлоп: интенсивный бег на 90′ + доля спринта в HSR.
+  const hsr = M.hsr(player);
+  if (hsr > 0) {
+    tiles.push({ label: 'Интенс. бег', model: false, val: show(hsr, 0), sub: 'высокая скорость (4+ м/с)' });
+    const top = M.speedTop(player);
+    if (top > 0) tiles.push({ label: 'Спринт-доля', model: false, val: `${Math.round((top / hsr) * 100)}%`, sub: 'зона 7+ м/с в HSR' });
+  }
+
   return (
     <div className="card an">
       <div className="an-xg__head" style={{ marginBottom: 10 }}>

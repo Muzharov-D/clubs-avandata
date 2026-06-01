@@ -30,18 +30,20 @@ function Stack({ segs }) {
   );
 }
 
-export default function PassProfile({ forward, sideways, back, short, middle, long, total }) {
+export default function PassProfile({ forward, sideways, back, short, middle, long, total, accuracy }) {
   const f = n(forward), s = n(sideways), b = n(back);
   const sh = n(short), mi = n(middle), lo = n(long);
   const t = n(total) || f + s + b;
   if (f + s + b <= 0 && sh + mi + lo <= 0) return null;
   const fwdPct = f + s + b > 0 ? Math.round((f / (f + s + b)) * 100) : 0;
+  const acc = accuracy == null || isNaN(Number(accuracy)) ? null : Math.round(Number(accuracy));
 
   return (
     <div className="pp">
       <div className="pp__head">
         <div><span className="pp__big">{t}</span><span className="pp__unit">точных передач</span></div>
         <div><span className="pp__big">{fwdPct}%</span><span className="pp__unit">вперёд</span></div>
+        {acc != null && <div><span className="pp__big">{acc}%</span><span className="pp__unit">точность</span></div>}
       </div>
       {(f + s + b > 0) && (
         <div className="pp__row">

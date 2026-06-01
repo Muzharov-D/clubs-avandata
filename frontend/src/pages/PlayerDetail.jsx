@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useApi } from '../hooks/useApi';
 import { fetchMatch, fetchMatches, fetchMetrics, fetchPlayer, fetchPlayersSeason } from '../services/api';
+import { compoundAt } from '../utils/analytics';
 import PlayerAdvancedCard from '../components/analytics/PlayerAdvancedCard';
 import SeasonPercentileCard from '../components/analytics/SeasonPercentileCard';
 import PlayerFormCard from '../components/analytics/PlayerFormCard';
@@ -491,6 +492,7 @@ export default function PlayerDetail() {
               forward={a3.passForward} sideways={a3.passSideways} back={a3.passBack}
               short={a3.passShort} middle={a3.passMiddle} long={a3.passLong}
               total={a2.pass}
+              accuracy={compoundAt(player, 'attack', 'pass').accuracy}
             />
           </div>
         );

@@ -28,6 +28,7 @@ import PressingCard from '../components/analytics/PressingCard';
 import MomentumStrip from '../components/analytics/MomentumStrip';
 import ImpactMotm from '../components/analytics/ImpactMotm';
 import MatchLeaders from '../components/analytics/MatchLeaders';
+import SetPieceShotCard from '../components/analytics/SetPieceShotCard';
 import { coachDigest } from '../utils/analytics';
 import './MatchDetail.css';
 
@@ -384,6 +385,9 @@ export default function MatchDetail() {
 
       {/* Прессинг и PPDA */}
       <div className="reveal" id="md-press"><PressingCard match={match} /></div>
+
+      {/* Стандарты, качество ударов, переходная угроза */}
+      <div className="reveal"><SetPieceShotCard match={match} /></div>
 
       {/* Авто-инсайты по матчу (rule-based + модельный дайджест) */}
       {allInsights.length > 0 && (
