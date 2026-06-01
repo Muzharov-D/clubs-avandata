@@ -51,7 +51,7 @@ export default function PdfUploadDialog({ onClose, onSuccess }) {
   function setFromInput(file, kind) {
     const err = kind === 'pdf'
       ? validateFile(file, 'PDF', ['.pdf'])
-      : validateFile(file, 'Excel', ['.xlsx']);
+      : validateFile(file, 'Excel/CSV', ['.xlsx', '.csv']);
     if (err) {
       setError(err);
       if (kind === 'pdf') setPdf(null); else setXlsx(null);
@@ -136,8 +136,8 @@ export default function PdfUploadDialog({ onClose, onSuccess }) {
           <p className="upload-dialog__hint">
             <b>PDF</b> — обязательный отчёт SportVisor (рейтинги, формация, командные итоги).
             <br />
-            <b>Excel</b> — опционально, даёт детальные per-player stats (136 колонок: пасы 8 типов, удары, дриблинг, дистанции).
-            <br />Если загружаешь оба — данные сливаются автоматически.
+            <b>Excel или CSV</b> — опционально, даёт детальные per-player stats (130+ колонок: пасы 8 типов, удары, дриблинг, дистанции).
+            <br />Если загружаешь оба — данные сливаются автоматически (CSV — приоритетный источник).
           </p>
           {selectedTeam && (
             <p className="upload-dialog__hint">
@@ -191,16 +191,16 @@ export default function PdfUploadDialog({ onClose, onSuccess }) {
             disabled={busy}
             type="button"
             style={{ marginTop: 8 }}
-            aria-label="Выбрать Excel файл или перетащить сюда (опционально)"
+            aria-label="Выбрать Excel или CSV файл или перетащить сюда (опционально)"
           >
             <span className="upload-dialog__pick-icon">📊</span>
             <span className="upload-dialog__pick-text">
-              {xlsx ? xlsx.name : 'Excel (опционально) — выбрать или перетащить'}
+              {xlsx ? xlsx.name : 'Excel/CSV (опционально) — выбрать или перетащить'}
             </span>
             {xlsx && <span className="upload-dialog__pick-size">{(xlsx.size / 1024 / 1024).toFixed(1)} МБ</span>}
           </button>
           <input ref={xlsxRef} type="file"
-            accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+            accept=".xlsx,.csv,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
             style={{ display: 'none' }} onChange={pickXlsx} />
 
           {busy && (
