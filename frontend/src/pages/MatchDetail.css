@@ -135,6 +135,16 @@
   margin-bottom: 16px;
 }
 
+/* Два графика-распределения рядом (beeswarm + scatter), на узких — стек */
+.match-detail__charts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+  gap: 16px;
+  margin-bottom: 22px;
+}
+.match-detail__charts > .card { margin-bottom: 0; }
+@media (max-width: 768px) { .match-detail__charts { margin-bottom: 16px; } }
+
 .match-detail__breakdowns {
   display: grid;
   grid-template-columns: repeat(3, 1fr);

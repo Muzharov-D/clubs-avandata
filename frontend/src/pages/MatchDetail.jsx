@@ -360,23 +360,26 @@ export default function MatchDetail() {
         <RatingCard label="Защита" value={teamRatings.defence} />
       </div>
 
-      {/* Beeswarm рейтингов состава (StatsBomb-style) */}
-      {(match.players || []).filter((p) => (p.minutes ?? 0) > 0 && (p.ratings?.overall ?? 0) > 0).length >= 3 && (
-        <div className="card md-anchor reveal" id="md-roles">
-          <div className="page-section-title">Рейтинги состава — распределение</div>
-          <RatingBeeswarm players={match.players} />
-          <div className="md-insights__note" style={{ marginTop: 8 }}>Точка — игрок; цвет по оценке, пунктир — средний по команде. Наведи для имени.</div>
-        </div>
-      )}
+      {/* Два аналитических распределения рядом: beeswarm (распределение оценок)
+          + scatter (роли). Раньше шли стопкой во всю ширину, график занимал
+          только левую половину → правая пустовала. Теперь 2 колонки. */}
+      <div className="match-detail__charts md-anchor reveal" id="md-roles">
+        {(match.players || []).filter((p) => (p.minutes ?? 0) > 0 && (p.ratings?.overall ?? 0) > 0).length >= 3 && (
+          <div className="card">
+            <div className="page-section-title">Рейтинги состава — распределение</div>
+            <RatingBeeswarm players={match.players} />
+            <div className="md-insights__note" style={{ marginTop: 8 }}>Точка — игрок; цвет по оценке, пунктир — средний по команде. Наведи для имени.</div>
+          </div>
+        )}
 
-      {/* Роли игроков: атака vs оборона (StatsBomb-style scatter) */}
-      {(match.players || []).filter((p) => (p.minutes ?? 0) > 0 && ((p.ratings?.attack || 0) > 0 || (p.ratings?.defence || 0) > 0)).length >= 3 && (
-        <div className="card">
-          <div className="page-section-title">Роли — атака vs оборона</div>
-          <TwoWayScatter players={match.players} />
-          <div className="md-insights__note" style={{ marginTop: 8 }}>X — рейтинг атаки, Y — обороны. Правый-верхний квадрант — двусторонние игроки.</div>
-        </div>
-      )}
+        {(match.players || []).filter((p) => (p.minutes ?? 0) > 0 && ((p.ratings?.attack || 0) > 0 || (p.ratings?.defence || 0) > 0)).length >= 3 && (
+          <div className="card">
+            <div className="page-section-title">Роли — атака vs оборона</div>
+            <TwoWayScatter players={match.players} />
+            <div className="md-insights__note" style={{ marginTop: 8 }}>X — рейтинг атаки, Y — обороны. Правый-верхний квадрант — двусторонние игроки.</div>
+          </div>
+        )}
+      </div>
 
       {/* Авто-инсайты по матчу (Phase 5) */}
       {insights.length > 0 && (
