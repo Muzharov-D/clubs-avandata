@@ -15,7 +15,6 @@ import PlayerPhoto from '../components/PlayerPhoto';
 import RatingPill from '../components/RatingPill';
 import RatingCard from '../components/RatingCard';
 import SoccerFieldImageMap from '../components/SoccerFieldImageMap';
-import DataQualityBadge from '../components/DataQualityBadge';
 import HalfSplitChart from '../components/HalfSplitChart';
 import RatingBeeswarm from '../components/RatingBeeswarm';
 import SpeedZones from '../components/SpeedZones';
@@ -260,7 +259,8 @@ export default function MatchDetail() {
     <div className="page match-detail kinetic" ref={pageRef}>
       <div className="match-detail__topbar">
         <button className="match-detail__back" onClick={() => navigate('/matches')}>← К матчам</button>
-        {match.dataQuality && <DataQualityBadge dq={match.dataQuality} />}
+        {/* Бейдж «Достоверность» убран — внутренняя метрика, клиенту не показываем.
+            data_quality по-прежнему считается и хранится на бэкенде (admin/диагностика). */}
         <div className="match-detail__tools">
           {/* Экспорт CSV/PDF убран намеренно: платформа — единственный источник
               просмотра данных. Управление загрузкой (удаление) — остаётся. */}
@@ -324,7 +324,9 @@ export default function MatchDetail() {
           ['md-fitness', 'Физика'],
           ['md-heatmap', 'Хитмап'],
           ['md-detail', 'Детали'],
-          ['md-maps', 'Карты'],
+          // 'md-maps' (Командные карты) временно скрыт — пока выводим только
+          // тепловую карту игрока (на странице игрока). Командные карты добавим
+          // позже, когда определимся, какие из них показывать.
         ].map(([id, label]) => (
           <a key={id} href={`#${id}`} className="md-secnav__link">{label}</a>
         ))}
@@ -570,8 +572,12 @@ export default function MatchDetail() {
       {/* Заметка тренера к разбору (Phase 3) — только тренеры */}
       {canDelete && <CoachNoteCard key={matchId} matchId={matchId} initial={match.coachNote} />}
 
-      {/* Командные карты — рендерим всю секцию только если хотя бы 1 карта есть */}
-      {SECTION_MAPS.some((sec) => ta[sec.id]?.mapImage) && (
+      {/* Командные тепловые карты — ВРЕМЕННО СКРЫТЫ. Пока выводим только тепловую
+          карту игрока (на странице игрока). Парсер их по-прежнему извлекает и
+          хранит (meta.teamMaps → ta[sec].mapImage), так что для возврата секции
+          достаточно раскомментировать блок ниже — перезаливка не нужна.
+          Решим позже, какие именно карты показывать. */}
+      {false && SECTION_MAPS.some((sec) => ta[sec.id]?.mapImage) && (
       <div className="card match-detail__maps-card md-anchor reveal" id="md-maps">
         <div className="page-section-title">Командные тепловые карты</div>
         <div className="match-detail__maps-grid">
