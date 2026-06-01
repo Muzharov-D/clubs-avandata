@@ -117,10 +117,11 @@ export interface FfspbMatchListOpts {
 }
 
 export async function listMatches(tournamentId: string | number, opts: FfspbMatchListOpts = {}) {
-  // Фильтр по турниру — через IRI (как в listStandings/listPlayoffs). Параметр
-  // tournament_id FFSPB НЕ распознаёт: отдаёт всю коллекцию матчей платформы, и
-  // listAll уходит в пагинацию по тысячам записей (>100с). IRI-форма фильтрует.
-  const params: Record<string, string | number> = { tournament: `/api/tournaments/${tournamentId}` };
+  // Фильтр по турниру — tournament_id (подтверждено прямым тестом FFSPB: 252 матча
+  // за ~1.3с, корректно фильтрует по /api/tournaments/<id>). ВНИМАНИЕ: IRI-форма
+  // tournament=/api/tournaments/<id> для /matches даёт HTTP 400 (в отличие от
+  // /standings, где она рабочая) — НЕ использовать здесь.
+  const params: Record<string, string | number> = { tournament_id: tournamentId };
   if (opts.hasLineups != null) params.has_lineups = opts.hasLineups ? 1 : 0;
   if (opts.dateGte) params['date[gte]'] = Math.floor(new Date(opts.dateGte).getTime() / 1000);
   if (opts.dateLte) params['date[lte]'] = Math.floor(new Date(opts.dateLte).getTime() / 1000);
