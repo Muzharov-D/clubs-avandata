@@ -29,6 +29,10 @@ Thumbs.db
 
 # Claude / agents
 .claude/
+.github/skills/
+skills-lock.json
+setup-summary.md
+agentshield-cleanup.ps1
 
 # Drizzle
 backend/drizzle/meta/

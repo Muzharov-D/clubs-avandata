@@ -9,8 +9,9 @@
         "testStrategy": "Unit tests for token generation/validation, integration tests for invite flow, security audit to verify no password exposure in logs/responses",
         "priority": "high",
         "dependencies": [],
-        "status": "pending",
-        "subtasks": []
+        "status": "done",
+        "subtasks": [],
+        "updatedAt": "2026-05-29T15:26:08.807Z"
       },
       {
         "id": "2",
@@ -56,8 +57,9 @@
         "testStrategy": "Unit tests for rating display logic, validation of average calculations, edge case testing with null vs 0 ratings",
         "priority": "medium",
         "dependencies": [],
-        "status": "pending",
-        "subtasks": []
+        "status": "done",
+        "subtasks": [],
+        "updatedAt": "2026-05-29T15:26:08.817Z"
       },
       {
         "id": "6",
@@ -67,8 +69,9 @@
         "testStrategy": "Visual regression tests, theme switching validation, comprehensive color audit to ensure no hardcoded values remain",
         "priority": "medium",
         "dependencies": [],
-        "status": "pending",
-        "subtasks": []
+        "status": "deferred",
+        "subtasks": [],
+        "updatedAt": "2026-05-29T15:30:43.180Z"
       },
       {
         "id": "7",
@@ -131,8 +134,9 @@
         "dependencies": [
           "6"
         ],
-        "status": "pending",
-        "subtasks": []
+        "status": "deferred",
+        "subtasks": [],
+        "updatedAt": "2026-05-29T15:30:43.186Z"
       },
       {
         "id": "12",
@@ -176,9 +180,9 @@
     ],
     "metadata": {
       "version": "1.0.0",
-      "lastModified": "2026-05-29T14:55:28.248Z",
+      "lastModified": "2026-05-29T15:30:43.187Z",
       "taskCount": 14,
-      "completedCount": 2,
+      "completedCount": 4,
       "tags": [
         "master"
       ]
