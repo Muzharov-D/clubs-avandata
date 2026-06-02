@@ -856,15 +856,27 @@ function fieldLabel(k: string): string {
   return k.replace(/([a-z])([A-Z])/g, '$1 $2').replace(/^./, (c) => c.toUpperCase());
 }
 
-/** Классификатор позиции в группу для фильтра состава. «полузащит» раньше
- * «защит» — иначе «полузащитник» ложно попал бы в защиту. */
+/** Классификатор позиции в группу для фильтра состава.
+ * Поддерживает полные слова и короткие коды SportVisor (ЦЗ/ПН/ВР/ЛЦП…).
+ * «полузащит» раньше «защит» — иначе «полузащитник» ложно попал бы в защиту.
+ * Для кодов классифицируем по последней букве: Р→ВРТ, З→защита, П→полузащита,
+ * Н→нападение (ЦЗ/ЛЗ/ПЗ → def, ЦП/ЛЦП/ОП/ЦОП → mid, ЦН/ПН/ЛН → fwd, ВР → gk). */
 function posGroup(position?: string): string {
-  const p = String(position || '').toLowerCase();
+  const p = String(position || '').trim().toLowerCase();
   if (!p) return 'unknown';
-  if (p.includes('вратар') || p.includes('голк') || p === 'вр') return 'gk';
+  if (p.includes('вратар') || p.includes('голк')) return 'gk';
   if (p.includes('полузащит') || p.includes('хавбек') || p.includes('опорн') || p.includes('плеймейк')) return 'mid';
   if (p.includes('защит') || p.includes('бек') || p.includes('латераль')) return 'def';
   if (p.includes('напад') || p.includes('форвард')) return 'fwd';
+  const code = p.toUpperCase().replace(/[^А-ЯЁ]/g, '');
+  if (code && code.length <= 4) {
+    if (code === 'ВР' || code === 'ГК') return 'gk';
+    const last = code[code.length - 1];
+    if (last === 'Р') return 'gk';
+    if (last === 'З') return 'def';
+    if (last === 'П') return 'mid';
+    if (last === 'Н') return 'fwd';
+  }
   return 'unknown';
 }
 
