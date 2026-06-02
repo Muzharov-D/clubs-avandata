@@ -16,7 +16,7 @@ import './analytics.css';
 
 function f0(v) { return v == null ? '—' : Math.round(Number(v)).toLocaleString('ru-RU'); }
 
-export default function PlayerAdvancedCard({ player, squad, match }) {
+export default function PlayerAdvancedCard({ player, squad, match, basis = 90 }) {
   const [per90Mode, setPer90Mode] = useState(true);
   if (!player || !played(player)) return null;
 
@@ -36,7 +36,7 @@ export default function PlayerAdvancedCard({ player, squad, match }) {
   // value: для счётных — per-90 при включённом режиме (и достаточных минутах).
   const show = (raw, digits = 2) => {
     if (per90Mode) {
-      const p = per90(raw, minutes);
+      const p = per90(raw, minutes, 20, basis);
       return p == null ? `${fmtPer90(raw)}*` : fmtPer90(p);
     }
     return digits === 0 ? f0(raw) : fmtPer90(raw);
@@ -67,7 +67,7 @@ export default function PlayerAdvancedCard({ player, squad, match }) {
         <div className="page-section-title" style={{ margin: 0 }}>Продвинутые метрики <span className="an-model-tag">модель</span></div>
         <div className="an-toggle" role="group" aria-label="Режим значений">
           <button className={`an-toggle__btn${!per90Mode ? ' is-active' : ''}`} onClick={() => setPer90Mode(false)}>Σ</button>
-          <button className={`an-toggle__btn${per90Mode ? ' is-active' : ''}`} onClick={() => setPer90Mode(true)}>на 90′</button>
+          <button className={`an-toggle__btn${per90Mode ? ' is-active' : ''}`} onClick={() => setPer90Mode(true)}>за матч</button>
         </div>
       </div>
       <div className="an-metrics__grid">
@@ -82,7 +82,7 @@ export default function PlayerAdvancedCard({ player, squad, match }) {
       <div className="an-note">
         xG — командный xG из отчёта, распределённый по миксу ударов игрока. xT/xA/
         packing/креативность — прозрачные модели на реальных событиях продвижения.
-        {per90Mode && ' Значения на 90 минут; «*» — мало минут, показано сырое.'}
+        {per90Mode && ` Значения за матч (${basis}′); «*» — мало минут, показано сырое.`}
       </div>
     </div>
   );

@@ -26,7 +26,7 @@ function fmt(v, digits) {
   return fmtPer90(n);
 }
 
-export default function MatchLeaders({ players, navigate, nameOf }) {
+export default function MatchLeaders({ players, navigate, nameOf, basis = 90 }) {
   const [metricId, setMetricId] = useState('ga');
   const [per90Mode, setPer90Mode] = useState(false);
   const metric = METRICS.find((m) => m.id === metricId) || METRICS[0];
@@ -35,7 +35,7 @@ export default function MatchLeaders({ players, navigate, nameOf }) {
   const rows = squad
     .map((p) => {
       const raw = metric.get(p);
-      const value = per90Mode ? per90(raw, p.minutes) : raw;
+      const value = per90Mode ? per90(raw, p.minutes, 20, basis) : raw;
       return { p, raw, value };
     })
     .filter((r) => (per90Mode ? r.value != null : r.raw > 0))
@@ -52,7 +52,7 @@ export default function MatchLeaders({ players, navigate, nameOf }) {
         </div>
         <div className="an-toggle" role="group" aria-label="Режим значений">
           <button className={`an-toggle__btn${!per90Mode ? ' is-active' : ''}`} onClick={() => setPer90Mode(false)}>Σ</button>
-          <button className={`an-toggle__btn${per90Mode ? ' is-active' : ''}`} onClick={() => setPer90Mode(true)}>на 90′</button>
+          <button className={`an-toggle__btn${per90Mode ? ' is-active' : ''}`} onClick={() => setPer90Mode(true)}>за матч</button>
         </div>
       </div>
 
@@ -88,7 +88,7 @@ export default function MatchLeaders({ players, navigate, nameOf }) {
         ))
       )}
       {per90Mode && (
-        <div className="an-note">На 90 минут — честное сравнение вышедших на разное время. Игроки с &lt;20′ скрыты (мало данных).</div>
+        <div className="an-note">За матч ({basis}′) — честное сравнение вышедших на разное время. Игроки с &lt;20′ скрыты (мало данных).</div>
       )}
     </div>
   );

@@ -29,19 +29,19 @@ function fmt90(v) {
   return v.toFixed(v >= 10 ? 0 : 1);
 }
 
-export default function SeasonProfileCard({ subject, seasonPlayers }) {
+export default function SeasonProfileCard({ subject, seasonPlayers, basis = 90 }) {
   if (!subject || !Array.isArray(seasonPlayers) || seasonPlayers.length < 4) return null;
   const me = seasonPlayers.find((s) => s.id === subject.id);
   if (!me || !(me.minutes > 0)) return null;
 
-  const getP90 = (m) => (s) => per90(m.get(s), s.minutes, 1);
+  const getP90 = (m) => (s) => per90(m.get(s), s.minutes, 1, basis);
 
   // Слайс показываем только если в пуле хоть у кого-то метрика > 0 (иначе пустой
   // сектор: xG/xA для младших возрастов SportVisor не считает).
   const slices = SEASON_METRICS.map((m) => {
     const poolMax = Math.max(0, ...seasonPlayers.map((s) => Number(m.get(s)) || 0));
     if (poolMax <= 0) return null;
-    const my90 = per90(m.get(me), me.minutes, 1);
+    const my90 = per90(m.get(me), me.minutes, 1, basis);
     const res = seasonPercentile(subject, seasonPlayers, getP90(m), my90);
     if (res.pct == null) return null;
     return { axis: m.label, group: m.group, value: res.pct, displayValue: fmt90(my90), _scope: res.scope, _pool: res.poolSize };
@@ -56,12 +56,12 @@ export default function SeasonProfileCard({ subject, seasonPlayers }) {
     <div className="card player-detail__pizza">
       <div className="player-detail__pizza-head">
         <div className="page-section-title">
-          Профиль по сезону <span className="an-model-tag">на 90′ · vs {scope}</span>
+          Профиль по сезону <span className="an-model-tag">за матч ({basis}′) · vs {scope}</span>
         </div>
       </div>
       <PizzaChart
         subjectName={`${subject.fullName || ''} · сезон`}
-        subjectMeta={`Цифры — действия на 90 минут, длина слайса — перцентиль vs ${scope} (${poolSize} чел.)`}
+        subjectMeta={`Цифры — действия за матч (${basis}′), длина слайса — перцентиль vs ${scope} (${poolSize} чел.)`}
         vsLabel={scope}
         slices={slices}
       />

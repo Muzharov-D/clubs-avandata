@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useApi } from '../hooks/useApi';
 import { fetchMatch, fetchMatches, fetchMetrics, fetchPlayer, fetchPlayersSeason, fetchPlayerTrend } from '../services/api';
-import { compoundAt } from '../utils/analytics';
+import { compoundAt, matchMinutes, per90, seasonPercentile } from '../utils/analytics';
 import PlayerAdvancedCard from '../components/analytics/PlayerAdvancedCard';
 import SeasonPercentileCard from '../components/analytics/SeasonPercentileCard';
 import SeasonProfileCard from '../components/analytics/SeasonProfileCard';
@@ -202,6 +202,9 @@ export default function PlayerDetail() {
     return null;
   }, [meSeason, series]);
 
+  // Базис нормализации = длина матча по возрасту команды (U18/17→80, U16/15→70, U14→60).
+  const basis = matchMinutes(selectedTeam?.year);
+
   if (playerLookupRes.loading && matchesRes.loading) return <div className="empty-state">Загрузка…</div>;
   if (!identity && !matchesRes.loading && !matchRes.loading) return <div className="empty-state">Игрок не найден</div>;
   if (!identity) return <div className="empty-state">Загрузка…</div>;
@@ -233,6 +236,7 @@ export default function PlayerDetail() {
           seasonPlayers={seasonPlayers}
           series={series}
           seasonTotals={seasonTotals}
+          basis={basis}
         />
       ) : (
         <MatchTab
@@ -243,6 +247,7 @@ export default function PlayerDetail() {
           currentMatchId={currentMatchId}
           setSelectedMatchId={setSelectedMatchId}
           labels={labels}
+          basis={basis}
         />
       )}
     </div>
@@ -253,9 +258,12 @@ export default function PlayerDetail() {
    Общий профиль игрока в стиле скаут-овервью (референс TheAnalyst): компактная
    шапка, ряд из 3 карточек (инфо · статистика плитками · авто-биография),
    радар-витрина и сезонная динамика. */
-function SeasonTab({ identity, playerId, teamId, teamName, seasonPlayers, series, seasonTotals }) {
+function SeasonTab({ identity, playerId, teamId, teamName, seasonPlayers, series, seasonTotals, basis = 90 }) {
   const avg = seasonTotals?.avgOverall;
-  const bio = useMemo(() => seasonBio(identity, seasonTotals, series), [identity, seasonTotals, series]);
+  const bio = useMemo(
+    () => seasonBio(identity, seasonTotals, series, seasonPlayers, basis),
+    [identity, seasonTotals, series, seasonPlayers, basis],
+  );
 
   return (
     <>
@@ -291,8 +299,8 @@ function SeasonTab({ identity, playerId, teamId, teamName, seasonPlayers, series
       {/* Посещаемость тренировок — появляется только если есть данные */}
       <AttendanceBlock teamId={teamId} playerId={playerId} />
 
-      {/* Радар-витрина: сезонная пицца (per-90 vs позиционный пул) */}
-      <SeasonProfileCard subject={identity} seasonPlayers={seasonPlayers} />
+      {/* Радар-витрина: сезонная пицца (за матч vs позиционный пул) */}
+      <SeasonProfileCard subject={identity} seasonPlayers={seasonPlayers} basis={basis} />
 
       {/* Динамика по сезону — спарклайны рейтингов + лента матчей */}
       <PlayerTrendCard playerId={playerId} series={series} />
@@ -300,8 +308,8 @@ function SeasonTab({ identity, playerId, teamId, teamName, seasonPlayers, series
       {/* Форма: индекс свежих матчей, vs своё среднее, серия, траектория */}
       <PlayerFormCard playerId={playerId} series={series} />
 
-      {/* Перцентиль vs сезонный позиционный пул (на 90′) — детальные полосы */}
-      <SeasonPercentileCard subject={identity} seasonPlayers={seasonPlayers} />
+      {/* Перцентиль vs сезонный позиционный пул (за матч) — детальные полосы */}
+      <SeasonPercentileCard subject={identity} seasonPlayers={seasonPlayers} basis={basis} />
 
       {series.length < 2 && (!seasonPlayers || seasonPlayers.length < 4) && (
         <div className="empty-state">
@@ -388,23 +396,84 @@ function SeasonStatsCard({ totals }) {
   );
 }
 
-// Авто-биография по сезону (референс «Player Bio») — 2–4 предложения из данных.
-function seasonBio(identity, totals, series) {
+// Метрики для «сильных сторон» в био — те же, что в сезонном перцентиле.
+const BIO_METRICS = [
+  { label: 'гол+пас',             get: (s) => (s.goals || 0) + (s.assists || 0) },
+  { label: 'удары',               get: (s) => s.shots || 0 },
+  { label: 'ключевые передачи',   get: (s) => s.keyPass || 0 },
+  { label: 'обводки',             get: (s) => s.dribble || 0 },
+  { label: 'отборы',              get: (s) => s.tackle || 0 },
+  { label: 'перехваты',           get: (s) => s.interception || 0 },
+  { label: 'возвраты',            get: (s) => s.recovery || 0 },
+  { label: 'единоборства',        get: (s) => s.duel || 0 },
+  { label: 'прессинг',            get: (s) => s.pressing || 0 },
+  { label: 'дистанцию',           get: (s) => s.distance || 0 },
+];
+
+// Топ-2 сильные стороны: перцентиль ≥ 70 vs позиционный пул (за матч).
+function bioStrengths(subject, seasonPlayers, basis) {
+  if (!Array.isArray(seasonPlayers) || seasonPlayers.length < 4) return [];
+  const me = seasonPlayers.find((s) => s.id === subject.id);
+  if (!me || !(me.minutes > 0)) return [];
+  const out = [];
+  for (const m of BIO_METRICS) {
+    const poolMax = Math.max(0, ...seasonPlayers.map((s) => Number(m.get(s)) || 0));
+    if (poolMax <= 0) continue;
+    const my = per90(m.get(me), me.minutes, 1, basis);
+    const res = seasonPercentile(subject, seasonPlayers, (s) => per90(m.get(s), s.minutes, 1, basis), my);
+    if (res.pct != null && res.pct >= 70) out.push({ label: m.label, pct: res.pct });
+  }
+  out.sort((a, b) => b.pct - a.pct);
+  return out.slice(0, 2).map((s) => `${s.label} (${s.pct}-й перцентиль)`);
+}
+
+// Заметка о форме по серии тренда (последние vs своё среднее).
+function bioFormNote(series) {
+  const rated = (series || []).filter((s) => Number(s.overall) > 0).map((s) => Number(s.overall));
+  if (rated.length < 3) return null;
+  const mean = rated.reduce((a, b) => a + b, 0) / rated.length;
+  const recent = rated.slice(-3).reduce((a, b) => a + b, 0) / Math.min(3, rated.length);
+  const d = recent - mean;
+  if (d > 0.15) return 'Сейчас на ходу — форма выше своего сезонного среднего.';
+  if (d < -0.15) return 'Небольшой спад — форма ниже своего сезонного среднего.';
+  return 'Форма стабильная.';
+}
+
+// Авто-биография по сезону (референс «Player Bio») — скаут-абзац из данных:
+// кто игрок, объём, результативность, сильные стороны, форма, последний матч.
+function seasonBio(identity, totals, series, seasonPlayers, basis = 90) {
   if (!totals || !totals.matches) return null;
   const pos = (identity.positionFull || identity.position || 'игрок').toLowerCase();
+  const age = ageFrom(identity.birthDate);
   const parts = [];
+
   parts.push(
-    `${identity.fullName} — ${pos}. В сезоне сыграл ${totals.matches} ${plural(totals.matches, 'матч', 'матча', 'матчей')} ` +
+    age != null
+      ? `${identity.fullName} — ${pos}, ${age} ${plural(age, 'год', 'года', 'лет')}.`
+      : `${identity.fullName} — ${pos}.`,
+  );
+  parts.push(
+    `В сезоне — ${totals.matches} ${plural(totals.matches, 'матч', 'матча', 'матчей')} ` +
     `(${totals.minutes} ${plural(totals.minutes, 'минута', 'минуты', 'минут')} на поле).`,
   );
+
   const gi = (totals.goals || 0) + (totals.assists || 0);
   if (gi > 0) {
     parts.push(
-      `На счету ${totals.goals} ${plural(totals.goals, 'гол', 'гола', 'голов')} ` +
+      `${totals.goals} ${plural(totals.goals, 'гол', 'гола', 'голов')} ` +
       `и ${totals.assists} ${plural(totals.assists, 'ассист', 'ассиста', 'ассистов')} — ` +
       `${gi} ${plural(gi, 'результативное действие', 'результативных действия', 'результативных действий')}.`,
     );
+  } else {
+    parts.push('Результативными действиями в сезоне пока не отметился.');
   }
+
+  const strengths = bioStrengths(identity, seasonPlayers, basis);
+  if (strengths.length) parts.push(`Среди лучших в команде по: ${strengths.join(', ')}.`);
+
+  const form = bioFormNote(series);
+  if (form) parts.push(form);
+
   const last = Array.isArray(series) && series.length ? series[series.length - 1] : null;
   if (last && last.date) {
     const d = new Date(last.date).toLocaleDateString('ru-RU', { day: 'numeric', month: 'long' });
@@ -412,16 +481,15 @@ function seasonBio(identity, totals, series) {
     const opp = trimAge(last.opponent || 'соперника');
     parts.push(`Последний матч — ${d} против ${opp}${last.score ? ` (${last.score})` : ''}${res ? `, ${res}` : ''}.`);
   }
-  if (totals.avgOverall > 0) {
-    parts.push(`Средний рейтинг за сезон — ${totals.avgOverall.toFixed(1)}.`);
-  }
+  if (totals.avgOverall > 0) parts.push(`Средний рейтинг — ${totals.avgOverall.toFixed(1)}.`);
+
   return parts.join(' ');
 }
 
 /* ──────────────────────────── ВКЛАДКА «МАТЧИ» ──────────────────────────────
    Разбор конкретного матча: рейтинги, продвинутые метрики, пицца по составу,
    role-fit, фитнес, тепловая карта, сплиты по таймам. */
-function MatchTab({ playerId, match, loading, allMatches, currentMatchId, setSelectedMatchId, labels }) {
+function MatchTab({ playerId, match, loading, allMatches, currentMatchId, setSelectedMatchId, labels, basis = 90 }) {
   // Pizza chart: выбор позиционного шаблона и фильтр группы — состояние вкладки.
   const player = useMemo(
     () => (match?.players || []).find((p) => p.id === playerId),
@@ -552,7 +620,7 @@ function MatchTab({ playerId, match, loading, allMatches, currentMatchId, setSel
       </div>
 
       {/* Продвинутые модельные метрики за матч (xG/xT/xA/packing/PAdj/win%) */}
-      <PlayerAdvancedCard player={player} squad={match.players} match={match} />
+      <PlayerAdvancedCard player={player} squad={match.players} match={match} basis={basis} />
 
       {/* RIBBON: Лучший в команде (в этом матче) */}
       {badges.length > 0 && (

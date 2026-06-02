@@ -28,15 +28,15 @@ function bucket(pct) {
   return 'lo';
 }
 
-export default function SeasonPercentileCard({ subject, seasonPlayers }) {
+export default function SeasonPercentileCard({ subject, seasonPlayers, basis = 90 }) {
   if (!subject || !Array.isArray(seasonPlayers) || seasonPlayers.length < 4) return null;
   const me = seasonPlayers.find((s) => s.id === subject.id);
   if (!me || !(me.minutes > 0)) return null;
 
-  const getP90 = (m) => (s) => per90(m.get(s), s.minutes, 1);
+  const getP90 = (m) => (s) => per90(m.get(s), s.minutes, 1, basis);
 
   const rows = METRICS.map((m) => {
-    const myVal = per90(m.get(me), me.minutes, 1);
+    const myVal = per90(m.get(me), me.minutes, 1, basis);
     const res = seasonPercentile(subject, seasonPlayers, getP90(m), myVal);
     return { ...m, pct: res.pct, scope: res.scope, poolSize: res.poolSize, raw90: myVal };
   }).filter((r) => r.pct != null);
@@ -52,12 +52,12 @@ export default function SeasonPercentileCard({ subject, seasonPlayers }) {
 
   return (
     <div className="card an">
-      <div className="page-section-title">Перцентиль по сезону <span className="an-model-tag">на 90′ · vs {scope}</span></div>
+      <div className="page-section-title">Перцентиль по сезону <span className="an-model-tag">за матч ({basis}′) · vs {scope}</span></div>
       {rows.map((r) => (
         <div className="an-pct__row" key={r.key}>
           <span className="an-pct__label">{r.label}</span>
           <span className="an-pct__track"><span className={`an-pct__fill an-pct__fill--${bucket(r.pct)}`} style={{ width: `${r.pct}%` }} /></span>
-          <span className="an-pct__num">{r.pct}<span className="an-pct__raw"> · {r.raw90 != null ? r.raw90.toFixed(r.raw90 >= 10 ? 0 : 1) : '—'}/90</span></span>
+          <span className="an-pct__num">{r.pct}<span className="an-pct__raw"> · {r.raw90 != null ? r.raw90.toFixed(r.raw90 >= 10 ? 0 : 1) : '—'}/{basis}</span></span>
         </div>
       ))}
       {callouts.length > 0 && (
@@ -67,7 +67,7 @@ export default function SeasonPercentileCard({ subject, seasonPlayers }) {
           ))}
         </div>
       )}
-      <div className="an-note">Сравнение на 90 минут против {poolSize} игроков ({scope}) по всему сезону. Заливка — перцентиль (зелёный — топ, красный — отстаёт).</div>
+      <div className="an-note">Сравнение за матч ({basis}′) против {poolSize} игроков ({scope}) по всему сезону. Заливка — перцентиль (зелёный — топ, красный — отстаёт).</div>
     </div>
   );
 }

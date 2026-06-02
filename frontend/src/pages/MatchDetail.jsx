@@ -29,7 +29,7 @@ import MomentumStrip from '../components/analytics/MomentumStrip';
 import ImpactMotm from '../components/analytics/ImpactMotm';
 import MatchLeaders from '../components/analytics/MatchLeaders';
 import SetPieceShotCard from '../components/analytics/SetPieceShotCard';
-import { coachDigest } from '../utils/analytics';
+import { coachDigest, matchMinutes } from '../utils/analytics';
 import './MatchDetail.css';
 
 const SECTION_MAPS = [
@@ -494,7 +494,7 @@ export default function MatchDetail() {
           </div>
 
           {/* Расширенные лидеры: угроза/прогрессия/дуэли/прессинг/бег + на 90′ */}
-          <MatchLeaders players={match.players} navigate={navigate} nameOf={shortNameFromPlayer} />
+          <MatchLeaders players={match.players} navigate={navigate} nameOf={shortNameFromPlayer} basis={matchMinutes(Number((match.teamId || '').match(/(?:19|20)\d{2}/)?.[0]))} />
 
           {/* Командный выхлоп vs сезон: метрика этого матча против СРЕДНЕГО по
               сезону (вместо бесполезных «N из N» бубликов без соперника). */}
