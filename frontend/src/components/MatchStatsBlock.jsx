@@ -50,8 +50,14 @@ export default function MatchStatsBlock({ home, away, hostName, guestName, homeI
       </div>
 
       {METRICS.map((m) => {
-        const h = pick(home, m.key);
-        const a = pick(away, m.key);
+        let h = pick(home, m.key);
+        let a = pick(away, m.key);
+        // xG-guard: значение >6 — это битый рейтинг, схваченный парсером вместо
+        // xG (старые разборы). Не показываем мусор — лучше «—».
+        if (m.key === 'expectedGoals') {
+          if (h !== null && h > 6) h = null;
+          if (a !== null && a > 6) a = null;
+        }
         if (h === null && a === null) return null;
         const hN = h ?? 0;
         const aN = a ?? 0;

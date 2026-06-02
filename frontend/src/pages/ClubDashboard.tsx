@@ -457,9 +457,16 @@ export default function ClubDashboard() {
                 delta={opp?.shots?.total != null && our.shots?.total != null && our.shots.total !== opp.shots.total
                   ? { sign: our.shots.total > opp.shots.total ? 'up' : 'down', text: `${Math.abs(our.shots.total - opp.shots.total)}` }
                   : undefined} />
-              <StatTile accent={cmp(our.expectedGoals, opp?.expectedGoals)} label="xG"
-                value={our.expectedGoals != null ? Number(our.expectedGoals).toFixed(2) : '—'}
-                extra={opp?.expectedGoals != null ? `соперник ${Number(opp.expectedGoals).toFixed(2)}` : undefined} />
+              {(() => {
+                // xG-guard: >6 — битый рейтинг вместо xG (старые разборы) → не показываем.
+                const xg = (v: unknown) => { const n = Number(v); return (v != null && Number.isFinite(n) && n <= 6) ? n : null; };
+                const ourXg = xg(our.expectedGoals); const oppXg = xg(opp?.expectedGoals);
+                return (
+                  <StatTile accent={cmp(ourXg, oppXg)} label="xG"
+                    value={ourXg != null ? ourXg.toFixed(2) : '—'}
+                    extra={oppXg != null ? `соперник ${oppXg.toFixed(2)}` : undefined} />
+                );
+              })()}
               {/* Передачи/Угловые — объём (стиль игры), не «хуже/лучше»: нейтрально. */}
               <StatTile accent="muted"  label="Передачи"
                 value={our.passes?.total != null ? our.passes.total : '—'}
