@@ -266,9 +266,9 @@ export default function ClubDashboard() {
               <div className="cd__mm cd__mm--next">
                 <div className="cd__mm-eyebrow">Следующий · {nextMatch.round || ''}</div>
                 <div className="cd__hero-matchup">
-                  <span className={isOurName(nextMatch.home, ourName) ? 'cd__hero-team--us' : 'cd__hero-team'}>{nextMatch.home}</span>
+                  <MatchupTeam name={nextMatch.home} shield={nextMatch.homeShield} isOur={isOurName(nextMatch.home, ourName)} />
                   <span className="cd__hero-vs">vs</span>
-                  <span className={isOurName(nextMatch.away, ourName) ? 'cd__hero-team--us' : 'cd__hero-team'}>{nextMatch.away}</span>
+                  <MatchupTeam name={nextMatch.away} shield={nextMatch.awayShield} isOur={isOurName(nextMatch.away, ourName)} />
                 </div>
                 <div className="cd__hero-meta">
                   <span>{formatDateLong(nextMatch.date)}</span>
@@ -287,9 +287,9 @@ export default function ClubDashboard() {
               <div className="cd__mm cd__mm--last">
                 <div className="cd__mm-eyebrow">Последний · {lastResult.round || ''}</div>
                 <div className="cd__hero-matchup">
-                  <span className={isOurName(lastResult.home, ourName) ? 'cd__hero-team--us' : 'cd__hero-team'}>{lastResult.home}</span>
+                  <MatchupTeam name={lastResult.home} shield={lastResult.homeShield} isOur={isOurName(lastResult.home, ourName)} />
                   <span className="cd__hero-score">{lastResult.scoreH}:{lastResult.scoreA}</span>
-                  <span className={isOurName(lastResult.away, ourName) ? 'cd__hero-team--us' : 'cd__hero-team'}>{lastResult.away}</span>
+                  <MatchupTeam name={lastResult.away} shield={lastResult.awayShield} isOur={isOurName(lastResult.away, ourName)} />
                 </div>
                 <div className="cd__hero-meta">{formatDateShort(lastResult.date)}</div>
                 {lastReport && (
@@ -308,10 +308,15 @@ export default function ClubDashboard() {
               <div className="cd__kpi-card">
                 <div className="cd__kpi-label">Средний рейтинг команды</div>
                 {ov > 0 ? (
-                  <div className="cd__kpi-big" style={{ color: '#fff' }}>
-                    {ov.toFixed(2)}
+                  <>
+                    <div className="cd__kpi-big" style={{ color: '#fff' }}>
+                      {ov.toFixed(2)}
+                      <span className="cd__kpi-grade" style={{ color: ratingColor(ov).includes('gradient') ? '#fff' : ratingColor(ov) }}>
+                        {ratingGrade(ov)}
+                      </span>
+                    </div>
                     <span className="cd__kpi-bar"><span className="cd__kpi-bar-fill" style={{ width: `${Math.min(100, ov * 10)}%`, background: ratingColor(ov) }} /></span>
-                  </div>
+                  </>
                 ) : <div className="cd__kpi-empty">нет разбора</div>}
                 <div className="cd__kpi-sub">по последнему матчу</div>
               </div>
@@ -330,12 +335,15 @@ export default function ClubDashboard() {
                 {best ? (
                   <>
                     <div className="cd__kpi-player">
+                      <PlayerPhoto player={best} size={48} className="cd__kpi-photo" />
+                      <div className="cd__kpi-player-body">
+                        <span className="cd__kpi-player-name">{best.fullName}</span>
+                        <span className="cd__kpi-sub">#{best.number ?? '—'} · {best.position || 'игрок'}</span>
+                      </div>
                       <span className="cd__kpi-rank" style={{ background: ratingColor(best.ratings?.overall) }}>
                         {Number(best.ratings?.overall ?? 0).toFixed(1)}
                       </span>
-                      <span className="cd__kpi-player-name">{best.fullName}</span>
                     </div>
-                    <div className="cd__kpi-sub">#{best.number ?? '—'} · {best.position || 'игрок'}</div>
                   </>
                 ) : <div className="cd__kpi-empty">нет разбора</div>}
               </div>
@@ -601,7 +609,12 @@ export default function ClubDashboard() {
                   ) : (
                     <tr key={`${r.pos}-${r.team}`} className={r.isOurClub ? 'cd__table-row--us' : ''}>
                       <td>{r.pos}</td>
-                      <td className="cd__table-team">{r.team}</td>
+                      <td className="cd__table-team">
+                        <span className="cd__table-team-cell">
+                          <TeamCrest src={r.shield} name={r.team} size={20} />
+                          {r.team}
+                        </span>
+                      </td>
                       <td>{r.games}</td>
                       <td>{r.scored}-{r.missed}</td>
                       <td className="cd__table-pts">{r.points}</td>
@@ -854,6 +867,42 @@ function EmptyIcon({ kind }: { kind: 'chart' | 'trophy' }) {
       </svg>
     </div>
   );
+}
+
+/** Эмблема клуба: URL → <img>, иначе первая буква названия в кружке. */
+function TeamCrest({ src, name, size = 28 }: { src?: string | null; name?: string; size?: number }) {
+  const [errored, setErrored] = useState(false);
+  if (!src || errored) {
+    const letter = String(name || '').trim().charAt(0).toUpperCase() || '?';
+    return (
+      <span className="cd__crest cd__crest--fallback" style={{ width: size, height: size, fontSize: size * 0.46 }} aria-hidden>
+        {letter}
+      </span>
+    );
+  }
+  return (
+    <img className="cd__crest" src={src} alt="" width={size} height={size}
+         loading="lazy" onError={() => setErrored(true)} />
+  );
+}
+
+/** Сторона матча в блоке «Главное»: эмблема + название (подсветка нашей команды). */
+function MatchupTeam({ name, shield, isOur }: { name?: string; shield?: string | null; isOur: boolean }) {
+  return (
+    <span className={`cd__mt${isOur ? ' cd__mt--us' : ''}`}>
+      <TeamCrest src={shield} name={name} size={32} />
+      <span className="cd__mt-name">{name}</span>
+    </span>
+  );
+}
+
+/** Качественная метка среднего рейтинга команды. */
+function ratingGrade(r: number): string {
+  if (r >= 8.5) return 'отлично';
+  if (r >= 7.5) return 'сильно';
+  if (r >= 6.5) return 'уверенно';
+  if (r >= 5.5) return 'средне';
+  return 'слабо';
 }
 
 function ratingColor(r: number | null | undefined): string {
