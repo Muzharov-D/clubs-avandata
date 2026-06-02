@@ -4,5 +4,5 @@
     "sourceMap": false,
     "removeComments": true
   },
-  "exclude": ["node_modules", "dist", "**/*.test.ts", "drizzle.config.ts"]
+  "exclude": ["node_modules", "dist", "**/*.test.ts", "drizzle.config.ts", "src/scripts/**"]
 }
