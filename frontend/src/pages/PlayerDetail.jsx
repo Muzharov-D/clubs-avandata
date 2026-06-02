@@ -579,10 +579,37 @@ function MatchTab({ playerId, match, loading, allMatches, currentMatchId, setSel
     { value: 'fitness', label: 'Фитнес',  count: groupCounts.fitness },
   ];
 
+  // Присутствие секций — для sticky-навигации и условного рендера групп.
+  const hasHeatmap = !!player.maps?.fitnessHeatmap;
+  const hasFitness = FITNESS_ROWS.some(([, k]) => Number(num(fitnessStats[k]) ?? 0) > 0);
+  const zz1 = num(fitnessStats.speed_4_5_5), zz2 = num(fitnessStats.speed_5_5_7), zz3 = num(fitnessStats.speed_7plus);
+  const hasZones = (zz1 || 0) + (zz2 || 0) + (zz3 || 0) > 0 || (num(fitnessStats.totalDistance) || 0) > 0;
+  const pa3 = player.stats?.attack3 || {};
+  const dirSum = (num(pa3.passForward) || 0) + (num(pa3.passSideways) || 0) + (num(pa3.passBack) || 0);
+  const lenSum = (num(pa3.passShort) || 0) + (num(pa3.passMiddle) || 0) + (num(pa3.passLong) || 0);
+  const hasPass = dirSum + lenSum > 0;
+  const hasHalves = halfRows.length > 0;
+  const hasSplits = attackRows.length > 0 || defenceRows.length > 0;
+  const navSections = [
+    { id: 'pd-overview', label: 'Обзор',   show: true },
+    { id: 'pd-profile',  label: 'Профиль', show: peers.length >= 2 || badges.length > 0 },
+    { id: 'pd-physical', label: 'Физика',  show: hasHeatmap || hasFitness || hasZones },
+    { id: 'pd-passing',  label: 'Пас',     show: hasPass || hasHalves },
+    { id: 'pd-details',  label: 'Детали',  show: hasSplits },
+  ].filter((s) => s.show);
+
   return (
     <>
       {matchPicker}
+      {navSections.length > 1 && (
+        <nav className="pd-nav" aria-label="Разделы матча">
+          {navSections.map((s) => (
+            <a key={s.id} href={`#${s.id}`} className="pd-nav__link">{s.label}</a>
+          ))}
+        </nav>
+      )}
 
+      <section id="pd-overview" className="pd-section">
       {/* HEADER — игрок в контексте выбранного матча */}
       <div className="card player-detail__hero">
         <PlayerPhoto player={player} size={132} />
@@ -622,6 +649,9 @@ function MatchTab({ playerId, match, loading, allMatches, currentMatchId, setSel
       {/* Продвинутые модельные метрики за матч (xG/xT/xA/packing/PAdj/win%) */}
       <PlayerAdvancedCard player={player} squad={match.players} match={match} basis={basis} />
 
+      </section>
+
+      <section id="pd-profile" className="pd-section">
       {/* RIBBON: Лучший в команде (в этом матче) */}
       {badges.length > 0 && (
         <div className="card player-detail__ribbon reveal">
@@ -692,6 +722,9 @@ function MatchTab({ playerId, match, loading, allMatches, currentMatchId, setSel
       {/* Ролевой профиль — к какому архетипу ближе игрок */}
       <RoleFitCard player={player} squad={match.players} />
 
+      </section>
+
+      <section id="pd-physical" className="pd-section">
       {/* MAPS — тепловая карта движения */}
       {player.maps?.fitnessHeatmap && (
         <div className="player-detail__maps">
@@ -701,6 +734,7 @@ function MatchTab({ playerId, match, loading, allMatches, currentMatchId, setSel
         </div>
       )}
 
+      <div className="pd-grid-2">
       {/* FITNESS — скрываем целиком если ни одна метрика не считалась (бенч) */}
       {FITNESS_ROWS.some(([, k]) => Number(num(fitnessStats[k]) ?? 0) > 0) && (
         <div className="card">
@@ -735,6 +769,11 @@ function MatchTab({ playerId, match, loading, allMatches, currentMatchId, setSel
         );
       })()}
 
+      </div>
+      </section>
+
+      <section id="pd-passing" className="pd-section">
+      <div className="pd-grid-2">
       {/* Профиль передач */}
       {(() => {
         const a3 = player.stats?.attack3 || {};
@@ -762,6 +801,10 @@ function MatchTab({ playerId, match, loading, allMatches, currentMatchId, setSel
         </div>
       )}
 
+      </div>
+      </section>
+
+      <section id="pd-details" className="pd-section">
       {(attackRows.length > 0 || defenceRows.length > 0) && (
         <details className="card player-detail__splits-toggle">
           <summary className="player-detail__splits-summary">
@@ -776,6 +819,7 @@ function MatchTab({ playerId, match, loading, allMatches, currentMatchId, setSel
           </div>
         </details>
       )}
+      </section>
     </>
   );
 }

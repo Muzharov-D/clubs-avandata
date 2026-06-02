@@ -664,3 +664,53 @@
 @media (max-width: 900px) {
   .player-detail__overview { grid-template-columns: 1fr; }
 }
+
+/* ── Фаза B: секции вкладки «Матчи» + sticky-навигация ─────────────────────── */
+.pd-section {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  scroll-margin-top: 72px;
+}
+.pd-section:empty { display: none; }
+
+.pd-nav {
+  position: sticky;
+  top: 8px;
+  z-index: 20;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 6px;
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--bg-surface) 90%, transparent);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid var(--border);
+}
+.pd-nav__link {
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-decoration: none;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+.pd-nav__link:hover,
+.pd-nav__link:focus-visible {
+  color: var(--text);
+  background: color-mix(in srgb, var(--accent-cyan) 16%, transparent);
+}
+
+.pd-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  align-items: start;
+}
+.pd-grid-2:empty { display: none; }
+.pd-grid-2 > * { min-width: 0; }
+@media (max-width: 900px) {
+  .pd-grid-2 { grid-template-columns: 1fr; }
+}
