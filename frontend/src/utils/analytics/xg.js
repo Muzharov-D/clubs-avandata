@@ -8,9 +8,16 @@
 import { num } from '../num';
 import { M } from './metrics';
 
-/** Командный xG нужной стороны из teamSummaryStats. */
+// Защита от битого/устаревшего xG: значение из старых разборов могло содержать
+// мусор (схваченный рейтинг игрока ~8.3). xG команды за матч физически не бывает
+// выше ~6 даже у взрослых — такое значение считаем недостоверным.
+const MAX_PLAUSIBLE_TEAM_XG = 6;
+
+/** Командный xG нужной стороны из teamSummaryStats (битые значения → null). */
 export function teamXg(match, side /* 'home'|'away' */) {
-  return num(match?.teamSummaryStats?.[side]?.expectedGoals);
+  const v = num(match?.teamSummaryStats?.[side]?.expectedGoals);
+  if (v == null || v > MAX_PLAUSIBLE_TEAM_XG) return null;
+  return v;
 }
 
 /** Наша / соперника сторона по ориентации матча. */

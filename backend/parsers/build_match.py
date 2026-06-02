@@ -66,9 +66,13 @@ def backfill_summary_from_aggregates(stats, agg):
     sh  = agg.get("shooting") or {}
     sp  = agg.get("setPieces") or {}
     pos = agg.get("positioning") or {}
-    # xG — главная дыра page1
-    if not stats.get("expectedGoals") and sh.get("expectedGoals"):
-        stats["expectedGoals"] = sh["expectedGoals"]
+    # xG: агрегат (командный дашборд, стр.12) — надёжный источник нашего xG.
+    # Стр.1 (head-to-head) на части лейаутов хватает строку РЕЙТИНГОВ (6–9)
+    # вместо xG. Берём агрегат, если стр.1 пусто ИЛИ неправдоподобно (>5).
+    cur = stats.get("expectedGoals")
+    agg_xg = sh.get("expectedGoals")
+    if agg_xg and (not cur or (isinstance(cur, (int, float)) and cur > 5)):
+        stats["expectedGoals"] = agg_xg
     # Удары {total, accuracy, onTarget}
     ts = sh.get("totalShots")
     if isinstance(ts, dict) and ts.get("value") and not (stats.get("shots") or {}).get("total"):
