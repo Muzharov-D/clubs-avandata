@@ -2,6 +2,20 @@ import { defineConfig, devices } from '@playwright/test';
 import { BASE_URL } from './tests/e2e/fixtures/env';
 
 /**
+ * Если preview закрыт Vercel Deployment Protection — задай секрет
+ * VERCEL_AUTOMATION_BYPASS_SECRET (Vercel → Settings → Deployment Protection →
+ * Protection Bypass for Automation). Шлём его заголовком на каждый запрос +
+ * просим Vercel поставить bypass-cookie, чтобы и client-side навигации прошли.
+ */
+const bypassSecret = process.env.VERCEL_AUTOMATION_BYPASS_SECRET;
+const extraHTTPHeaders = bypassSecret
+  ? {
+      'x-vercel-protection-bypass': bypassSecret,
+      'x-vercel-set-bypass-cookie': 'true',
+    }
+  : undefined;
+
+/**
  * E2E против живого Vercel-деплоя (BASE_URL, по умолчанию
  * https://clubs-avandata.vercel.app). webServer НЕ поднимаем — тестируем
  * задеплоенный фронт + прод API. Учётки и override URL — в tests/e2e/.env.e2e
@@ -20,6 +34,7 @@ export default defineConfig({
   outputDir: 'test-results',
   use: {
     baseURL: BASE_URL,
+    extraHTTPHeaders,
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
     video: 'retain-on-failure',
