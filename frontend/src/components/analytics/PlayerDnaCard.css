@@ -1,0 +1,146 @@
+/* ДНК игрока — кинематографичная карта-личность (тёмное кино + точность). */
+.dna-card {
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--radius-lg, 20px);
+  padding: 26px 24px 22px;
+  margin-bottom: 18px;
+  background:
+    radial-gradient(120% 140% at 0% 0%, color-mix(in srgb, var(--brand-primary) 22%, transparent), transparent 55%),
+    radial-gradient(120% 140% at 100% 100%, color-mix(in srgb, var(--accent-cyan) 14%, transparent), transparent 55%),
+    var(--bg-surface);
+  border: 1px solid var(--border-strong);
+  box-shadow: var(--shadow-lg);
+}
+
+/* Дрейфующее свечение — «живой» фон. */
+.dna-card__glow {
+  position: absolute;
+  inset: -40% -10% auto -10%;
+  height: 70%;
+  background: radial-gradient(60% 60% at 50% 0%, color-mix(in srgb, var(--accent-cyan) 18%, transparent), transparent 70%);
+  filter: blur(20px);
+  pointer-events: none;
+  animation: dna-drift 14s var(--ease-reveal, ease-in-out) infinite alternate;
+}
+@keyframes dna-drift {
+  from { transform: translateX(-6%) translateY(-4%); opacity: 0.7; }
+  to   { transform: translateX(8%) translateY(2%);  opacity: 1; }
+}
+
+.dna-card__head { position: relative; }
+
+.dna-card__eyebrow {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--accent-cyan);
+}
+
+.dna-card__archetype {
+  margin: 6px 0 2px;
+  font-family: var(--font-display);
+  font-size: clamp(30px, 5vw, 46px);
+  font-weight: 800;
+  line-height: 1.02;
+  letter-spacing: -0.02em;
+  color: var(--text-strong, #fff);
+  text-shadow: 0 2px 24px color-mix(in srgb, var(--accent-cyan) 25%, transparent);
+}
+
+.dna-card__tagline {
+  font-size: 14px;
+  color: var(--text-muted-strong, var(--text-muted));
+}
+
+.dna-card__superline {
+  display: inline-block;
+  margin-top: 12px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text);
+  background: color-mix(in srgb, var(--accent-cyan) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent-cyan) 30%, transparent);
+}
+
+.dna-card__block { position: relative; margin-top: 20px; }
+
+.dna-card__block-title {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 12px;
+}
+.dna-card__block-title--muted { color: var(--text-faint); }
+
+.dna-card__bars { display: grid; gap: 12px; }
+
+.dna-bar__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 5px;
+}
+.dna-bar__label {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+  text-transform: capitalize;
+}
+.dna-bar__pct {
+  font-family: var(--font-display);
+  font-size: 15px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+.dna-bar__pct-suffix { font-size: 11px; font-weight: 600; color: var(--text-faint); }
+
+.dna-bar__track {
+  height: 8px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.06);
+  overflow: hidden;
+}
+.dna-bar__fill {
+  height: 100%;
+  border-radius: 999px;
+  box-shadow: 0 0 12px color-mix(in srgb, var(--accent-cyan) 25%, transparent);
+  animation: dna-grow 0.9s var(--ease-reveal, ease-out) both;
+  transform-origin: left center;
+}
+@keyframes dna-grow { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+
+.dna-card__growth { display: flex; flex-wrap: wrap; gap: 8px; }
+.dna-growth-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 5px 10px 5px 12px;
+  border-radius: 999px;
+  font-size: 13px;
+  color: var(--text-muted-strong, var(--text-muted));
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border);
+}
+.dna-growth-pill__pct {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 12px;
+  color: var(--text-faint);
+  font-variant-numeric: tabular-nums;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dna-card__glow,
+  .dna-bar__fill { animation: none; }
+}
+
+@media (max-width: 560px) {
+  .dna-card { padding: 20px 16px 18px; }
+}

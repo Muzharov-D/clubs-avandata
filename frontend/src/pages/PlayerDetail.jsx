@@ -6,6 +6,8 @@ import { compoundAt, matchMinutes, per90, seasonPercentile } from '../utils/anal
 import PlayerAdvancedCard from '../components/analytics/PlayerAdvancedCard';
 import SeasonPercentileCard from '../components/analytics/SeasonPercentileCard';
 import SeasonProfileCard from '../components/analytics/SeasonProfileCard';
+import PlayerDnaCard from '../components/analytics/PlayerDnaCard';
+import { SplitText, Reveal } from '../components/motion';
 import PlayerFormCard from '../components/analytics/PlayerFormCard';
 import RoleFitCard from '../components/analytics/RoleFitCard';
 import { useAuth } from '../contexts/AuthContext';
@@ -271,7 +273,7 @@ function SeasonTab({ identity, playerId, teamId, teamName, seasonPlayers, series
       <div className="card player-detail__hero player-detail__hero--season">
         <PlayerPhoto player={identity} size={96} />
         <div className="player-detail__hero-info">
-          <h1 className="player-detail__hero-name">{identity.fullName}</h1>
+          <h1 className="player-detail__hero-name"><SplitText text={identity.fullName} /></h1>
           <div className="player-detail__hero-pos">
             {[
               identity.number != null ? `№${identity.number}` : null,
@@ -285,6 +287,9 @@ function SeasonTab({ identity, playerId, teamId, teamName, seasonPlayers, series
           <div className="player-detail__hero-rating-100">средний за сезон</div>
         </div>
       </div>
+
+      {/* ДНК игрока — сигнатурная карта-личность (архетип + перцентильный нарратив) */}
+      <PlayerDnaCard subject={identity} seasonPlayers={seasonPlayers} basis={basis} />
 
       {/* ОВЕРВЬЮ: 3 карточки в ряд */}
       <div className="player-detail__overview">
@@ -300,16 +305,16 @@ function SeasonTab({ identity, playerId, teamId, teamName, seasonPlayers, series
       <AttendanceBlock teamId={teamId} playerId={playerId} />
 
       {/* Радар-витрина: сезонная пицца (за матч vs позиционный пул) */}
-      <SeasonProfileCard subject={identity} seasonPlayers={seasonPlayers} basis={basis} />
+      <Reveal variant="slide-up"><SeasonProfileCard subject={identity} seasonPlayers={seasonPlayers} basis={basis} /></Reveal>
 
       {/* Динамика по сезону — спарклайны рейтингов + лента матчей */}
-      <PlayerTrendCard playerId={playerId} series={series} />
+      <Reveal variant="slide-up"><PlayerTrendCard playerId={playerId} series={series} /></Reveal>
 
       {/* Форма: индекс свежих матчей, vs своё среднее, серия, траектория */}
-      <PlayerFormCard playerId={playerId} series={series} />
+      <Reveal variant="slide-up"><PlayerFormCard playerId={playerId} series={series} /></Reveal>
 
       {/* Перцентиль vs сезонный позиционный пул (за матч) — детальные полосы */}
-      <SeasonPercentileCard subject={identity} seasonPlayers={seasonPlayers} basis={basis} />
+      <Reveal variant="slide-up"><SeasonPercentileCard subject={identity} seasonPlayers={seasonPlayers} basis={basis} /></Reveal>
 
       {series.length < 2 && (!seasonPlayers || seasonPlayers.length < 4) && (
         <div className="empty-state">
