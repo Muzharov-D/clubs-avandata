@@ -26,6 +26,8 @@ import { PlayerRadar } from '../components/PlayerRadar';
 import { StatTile } from '../components/StatTile';
 // Единая шкала рейтинга (var(--rating-*)) — общий источник по всему UI.
 import { ratingColor, ratingTextColor } from '../utils/colors';
+// @ts-ignore — legacy .js
+import { shieldFor } from '../utils/legirus';
 // @ts-ignore — legacy .jsx
 import PredictedLineup from '../components/PredictedLineup';
 // @ts-ignore — legacy .jsx
@@ -951,7 +953,11 @@ function EmptyIcon({ kind }: { kind: 'chart' | 'trophy' }) {
 /** Эмблема клуба: URL → <img>, иначе первая буква названия в кружке. */
 function TeamCrest({ src, name, size = 28 }: { src?: string | null; name?: string; size?: number }) {
   const [errored, setErrored] = useState(false);
-  if (!src || errored) {
+  // Единая точка эмблем: shieldFor() даёт лого Легируса/нашего клуба, внешний
+  // FFSPB-щит — только fallback. Без этого наша команда теряла лого (FFSPB не
+  // отдаёт щит для своего клуба) и падала в букву-инициал.
+  const resolvedSrc = shieldFor(name ?? '', src ?? '') || src;
+  if (!resolvedSrc || errored) {
     const letter = String(name || '').trim().charAt(0).toUpperCase() || '?';
     return (
       <span className="cd__crest cd__crest--fallback" style={{ width: size, height: size, fontSize: size * 0.46 }} aria-hidden>
@@ -960,7 +966,7 @@ function TeamCrest({ src, name, size = 28 }: { src?: string | null; name?: strin
     );
   }
   return (
-    <img className="cd__crest" src={src} alt="" width={size} height={size}
+    <img className="cd__crest" src={resolvedSrc} alt="" width={size} height={size}
          loading="lazy" onError={() => setErrored(true)} />
   );
 }
