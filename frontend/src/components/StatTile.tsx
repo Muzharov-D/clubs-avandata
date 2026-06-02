@@ -45,14 +45,24 @@ const ACCENT_RGB: Record<AccentColor, string> = {
 
 export function StatTile({ label, value, unit, extra, delta, accent = 'cyan', big = false }: Props) {
   const rgb = ACCENT_RGB[accent];
-  return (
-    <div
-      className={`stat-tile${big ? ' stat-tile--big' : ''}`}
-      style={{
+  // «muted» (нейтраль без сравнения, напр. режим «Сезон») красим брендом клуба,
+  // а не серым — фирменный стиль держим везде, а не только в верхнем блоке.
+  const isBrand = accent === 'muted';
+  const accentVars = isBrand
+    ? {
+        ['--st-accent' as string]: 'var(--brand-primary)',
+        ['--st-accent-soft' as string]: 'color-mix(in srgb, var(--brand-primary) 18%, transparent)',
+        ['--st-accent-edge' as string]: 'color-mix(in srgb, var(--brand-primary) 50%, transparent)',
+      }
+    : {
         ['--st-accent' as string]: `rgb(${rgb})`,
         ['--st-accent-soft' as string]: `rgba(${rgb}, 0.18)`,
         ['--st-accent-edge' as string]: `rgba(${rgb}, 0.5)`,
-      }}
+      };
+  return (
+    <div
+      className={`stat-tile${big ? ' stat-tile--big' : ''}`}
+      style={accentVars}
     >
       <div className="stat-tile__glow" aria-hidden />
       <div className="stat-tile__top">
