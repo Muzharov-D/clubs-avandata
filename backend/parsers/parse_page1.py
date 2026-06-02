@@ -193,6 +193,25 @@ def parse(pdf_path, team_id, match_id):
                 if mo and _plausible_xg(mo.group(1)):
                     h_val = mo.group(1)
                     break
+    # Структурный инвариант (по наблюдению пользователя): xG ВСЕГДА стоит между
+    # УДАРЫ и ПЕРЕДАЧИ. Частый кейс «xG соперника не показывается» — split-вёрстка,
+    # где home и away не на одной строке после метки, и штатный разбор даёт только
+    # нашу сторону. Добираем дробные токены СТРОГО между этими якорями: на стр.1
+    # между ударами и передачами других дробных значений нет → первая дробь = наша,
+    # вторая = соперник. ТОЛЬКО дозаполняем пропуски, найденное не трогаем.
+    if h_val is None or a_val is None:
+        shots_idx = _find_label_line(lines, "УДАРЫ")
+        passes_idx = _find_label_line(lines, "ПЕРЕДАЧИ", "ПАСЫ")
+        if shots_idx >= 0 and passes_idx > shots_idx:
+            band = [
+                t for j in range(shots_idx + 1, passes_idx)
+                for t in re.findall(r"\d+[.,]\d+", lines[j])
+                if _plausible_xg(t)
+            ]
+            if h_val is None and band:
+                h_val = band[0]
+            if a_val is None and len(band) >= 2:
+                a_val = band[1]
     out["homeStats"]["expectedGoals"] = _to_float(h_val)
     out["awayStats"]["expectedGoals"] = _to_float(a_val)
 
