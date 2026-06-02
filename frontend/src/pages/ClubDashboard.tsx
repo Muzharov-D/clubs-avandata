@@ -81,10 +81,6 @@ export default function ClubDashboard() {
   const [seasonAgg, setSeasonAgg]         = useState<AnyObj | null>(null);
   const [loading, setLoading]         = useState(true);
   const [error, setError]             = useState<string | null>(null);
-  // Состав — smart-table: сортировка + фильтр по позиционной группе.
-  // Дефолт — по номеру (тренерский взгляд: состав как заявка на игру).
-  const [rosterSort, setRosterSort] = useState<'rating' | 'matches' | 'minutes' | 'number' | 'name'>('number');
-  const [rosterPos, setRosterPos]   = useState<string>('all');
 
   // Фильтр периода блока «Командные показатели» (правка Зенита #7).
   // 'match' — конкретный матч (по умолчанию последний, можно выбрать другой);
@@ -836,93 +832,76 @@ export default function ClubDashboard() {
           </span>
         </div>
         {(() => {
+          // Состав без кнопок-фильтров: показываем как заявку — по линиям
+          // (вратари → защита → полузащита → нападение), внутри линии лучшие
+          // по рейтингу сверху. Порядок осмысленный сам по себе, сортировки не нужны.
           const all = seasonRoster;
-          const POS_GROUPS = [
-            { id: 'all', label: 'Все' },
-            { id: 'gk',  label: 'ВРТ' },
+          const LINES: { id: string; label: string }[] = [
+            { id: 'gk',  label: 'Вратари' },
             { id: 'def', label: 'Защита' },
             { id: 'mid', label: 'Полузащита' },
             { id: 'fwd', label: 'Нападение' },
+            { id: 'unknown', label: 'Без позиции' },
           ];
-          // Тренеру нужны три осмысленных порядка: по номеру (заявка),
-          // по рейтингу (форма), по минутам (нагрузка/ротация в академии).
-          const SORTS: { id: typeof rosterSort; label: string }[] = [
-            { id: 'number',  label: 'Номер' },
-            { id: 'rating',  label: 'Рейтинг' },
-            { id: 'minutes', label: 'Минуты' },
-          ];
-          const present = new Set(all.map((p) => posGroup(p.position)));
-          const groups = POS_GROUPS.filter((g) => g.id === 'all' || present.has(g.id));
-          const filtered = all.filter((p) => rosterPos === 'all' || posGroup(p.position) === rosterPos);
-          const sorted = filtered.slice().sort((a, b) => {
-            if (rosterSort === 'rating')  return Number(b.ratings?.overall ?? 0) - Number(a.ratings?.overall ?? 0);
-            if (rosterSort === 'matches') return Number(b.matches ?? 0) - Number(a.matches ?? 0);
-            if (rosterSort === 'number')  return Number(a.number ?? 99) - Number(b.number ?? 99);
-            if (rosterSort === 'name')    return String(a.fullName ?? '').localeCompare(String(b.fullName ?? ''), 'ru');
-            const ma = Number(a.minutes ?? 0); const mb = Number(b.minutes ?? 0);   // minutes
-            if (ma !== mb) return mb - ma;
-            return Number(a.number ?? 99) - Number(b.number ?? 99);
-          });
-          return (
-            <>
-              {all.length > 0 && (
-                <div className="cd__roster-controls">
-                  <div className="cd__seg cd__seg--sm" role="tablist" aria-label="Сортировка состава">
-                    {SORTS.map((s) => (
-                      <button key={s.id} type="button" role="tab" aria-selected={rosterSort === s.id}
-                        className={`cd__seg-btn${rosterSort === s.id ? ' is-active' : ''}`}
-                        onClick={() => setRosterSort(s.id)}>{s.label}</button>
-                    ))}
-                  </div>
-                  {groups.length > 2 && (
-                    <div className="cd__chips" role="group" aria-label="Фильтр по позиции">
-                      {groups.map((g) => (
-                        <button key={g.id} type="button" aria-pressed={rosterPos === g.id}
-                          className={`cd__chip${rosterPos === g.id ? ' is-active' : ''}`}
-                          onClick={() => setRosterPos(g.id)}>{g.label}</button>
-                      ))}
-                    </div>
-                  )}
+          const byLine = (id: string) => all
+            .filter((p) => posGroup(p.position) === id)
+            .sort((a, b) => {
+              const ra = Number(a.ratings?.overall ?? 0); const rb = Number(b.ratings?.overall ?? 0);
+              if (rb !== ra) return rb - ra;
+              return Number(a.number ?? 99) - Number(b.number ?? 99);
+            });
+
+          const renderPlayer = (p: AnyObj) => {
+            const r = Number(p.ratings?.overall ?? 0);
+            const mins = Number(p.minutes ?? 0);
+            const gp = Number(p.matches ?? 0);
+            const load = gp > 0
+              ? `${gp} матч.${mins > 0 ? ` · ${mins}'` : ''}`
+              : (mins > 0 ? `${mins}'` : 'не выходил');
+            return (
+              <div
+                key={p.playerId}
+                className={`cd__player${r > 0 ? ' cd__player--rated' : ''}`}
+                style={r > 0 ? ({ '--rt-col': ratingColor(r) } as React.CSSProperties) : undefined}
+                onClick={() => navigate(`/players/${p.playerId}`)}
+              >
+                <div className="cd__player-photo">
+                  <PlayerPhoto player={p} size={44} />
                 </div>
-              )}
-              <div className="cd__roster">
-                {sorted.map((p) => {
-                  const r = Number(p.ratings?.overall ?? 0);
-                  const mins = Number(p.minutes ?? 0);
-                  const gp = Number(p.matches ?? 0);
-                  const load = gp > 0
-                    ? `${gp} матч.${mins > 0 ? ` · ${mins}'` : ''}`
-                    : (mins > 0 ? `${mins}'` : 'не выходил');
-                  return (
-                    <div
-                      key={p.playerId}
-                      className={`cd__player${r > 0 ? ' cd__player--rated' : ''}`}
-                      style={r > 0 ? ({ '--rt-col': ratingColor(r) } as React.CSSProperties) : undefined}
-                      onClick={() => navigate(`/players/${p.playerId}`)}
-                    >
-                      <div className="cd__player-photo">
-                        <PlayerPhoto player={p} size={44} />
-                      </div>
-                      <div className="cd__player-num">{p.number ?? '—'}</div>
-                      <div className="cd__player-info">
-                        <div className="cd__player-name">{p.fullName}</div>
-                        <div className="cd__player-meta">
-                          {p.position || 'игрок'}{` · ${load}`}
-                        </div>
-                      </div>
-                      {r > 0 && (
-                        <div className="cd__player-rating" style={{ background: ratingColor(r), color: ratingTextColor(r) }}>
-                          {r.toFixed(1)}
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
-                {all.length > 0 && sorted.length === 0 && (
-                  <div className="cd__roster-empty">Нет игроков в выбранной позиции</div>
+                <div className="cd__player-num">{p.number ?? '—'}</div>
+                <div className="cd__player-info">
+                  <div className="cd__player-name">{p.fullName}</div>
+                  <div className="cd__player-meta">
+                    {p.position || 'игрок'}{` · ${load}`}
+                  </div>
+                </div>
+                {r > 0 && (
+                  <div className="cd__player-rating" style={{ background: ratingColor(r), color: ratingTextColor(r) }}>
+                    {r.toFixed(1)}
+                  </div>
                 )}
               </div>
-            </>
+            );
+          };
+
+          return (
+            <div className="cd__roster-lines">
+              {LINES.map((line) => {
+                const players = byLine(line.id);
+                if (players.length === 0) return null;
+                return (
+                  <div key={line.id} className="cd__line">
+                    <div className="cd__line-head">
+                      <span className="cd__line-label">{line.label}</span>
+                      <span className="cd__line-count">{players.length}</span>
+                    </div>
+                    <div className="cd__roster">
+                      {players.map(renderPlayer)}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
           );
         })()}
       </section>
