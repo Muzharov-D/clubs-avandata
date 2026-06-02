@@ -73,7 +73,7 @@ export function AdminTenantsList() {
           <div className="admin-page-sub">Управление мульти-тенант инстансами</div>
         </div>
         <Link to="/admin/tenants/new">
-          <button className="admin-btn">
+          <button className="admin-btn" data-testid="admin-add-tenant">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
               <path d="M12 5v14M5 12h14" />
             </svg>
@@ -164,7 +164,7 @@ export function AdminTenantsList() {
       )}
 
       {data && tenants.length > 0 && (
-        <div className="tenants-grid">
+        <div className="tenants-grid" data-testid="tenants-grid">
           {tenants.map((t) => (
             <TenantCard key={t.slug} tenant={t} />
           ))}
@@ -193,7 +193,7 @@ function TenantCard({ tenant }: { tenant: TenantRow }) {
     .join('')
     .toUpperCase();
   return (
-    <div className="tenant-card" style={{ ['--card-brand' as string]: brand }}>
+    <div className="tenant-card" style={{ ['--card-brand' as string]: brand }} data-testid="tenant-card" data-slug={tenant.slug}>
       <div className="tenant-card__header">
         <div className="tenant-card__brand">
           <div className="tenant-card__logo" style={{ background: brand }}>
@@ -234,6 +234,7 @@ function TenantCard({ tenant }: { tenant: TenantRow }) {
           onClick={enter}
           disabled={entering || tenant.status !== 'active'}
           title={tenant.status !== 'active' ? 'Клуб не активен' : 'Войти в кабинет клуба как админ'}
+          data-testid="tenant-enter"
         >
           {entering ? 'Вход…' : 'Войти в клуб →'}
         </button>

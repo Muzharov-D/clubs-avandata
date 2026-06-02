@@ -267,6 +267,41 @@ export async function adminRoutes(app: FastifyInstance) {
   });
 
   /**
+   * DELETE /api/v1/admin/tenants/:slug?confirm=:slug — жёсткое удаление клуба.
+   *
+   * Каскадит на ВСЕ tenant-scoped таблицы (users, teams, players, matches,
+   * calendar, standings, trainings, push…) через FK `onDelete: 'cascade'` на
+   * `tenants.slug` — достаточно удалить строку tenant.
+   *
+   * Footgun-guard: обязателен query `?confirm=<slug>`, совпадающий с путём. Без
+   * него (или при опечатке) — 400. Используется для teardown e2e-тестов и ручной
+   * чистки. platform_admin-only (хук authorize выше).
+   */
+  app.delete<{ Params: { slug: string }; Querystring: { confirm?: string } }>(
+    '/tenants/:slug',
+    async (req) => {
+      const { slug } = req.params;
+      if (req.query.confirm !== slug) {
+        throw new BadRequestError(
+          'confirm query must equal the tenant slug',
+          'CONFIRM_MISMATCH',
+        );
+      }
+      return await withBypassRLS(async (tx) => {
+        const deleted = await tx
+          .delete(tenants)
+          .where(eq(tenants.slug, slug))
+          .returning({ slug: tenants.slug });
+        const row = deleted[0];
+        if (!row) {
+          throw new BadRequestError('tenant not found', 'TENANT_NOT_FOUND');
+        }
+        return { ok: true, deleted: row.slug };
+      });
+    },
+  );
+
+  /**
    * POST /api/v1/admin/sync/:slug — manual trigger всех ffspb-syncs для тенанта.
    *
    * Query params:

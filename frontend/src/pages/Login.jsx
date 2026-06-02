@@ -66,6 +66,7 @@ export default function Login() {
             autoComplete="username"
             autoFocus
             required
+            data-testid="login-username"
           />
           <label>Пароль</label>
           <input
@@ -74,9 +75,10 @@ export default function Login() {
             onChange={(e) => setP(e.target.value)}
             autoComplete="current-password"
             required
+            data-testid="login-password"
           />
-          {error && <div className="login-error" role="alert" aria-live="assertive">{error}</div>}
-          <button type="submit" disabled={busy}>
+          {error && <div className="login-error" role="alert" aria-live="assertive" data-testid="login-error">{error}</div>}
+          <button type="submit" disabled={busy} data-testid="login-submit">
             {busy ? 'Проверка…' : 'Войти'}
           </button>
         </form>

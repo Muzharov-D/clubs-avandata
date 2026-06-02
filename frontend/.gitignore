@@ -1,0 +1,8 @@
+# E2E (Playwright)
+tests/e2e/.env.e2e
+playwright-report/
+test-results/
+artifacts/
+blob-report/
+.cache/
+playwright/.auth/
