@@ -29,7 +29,6 @@ import {
 import { useAuth } from '../contexts/AuthContext';
 // @ts-ignore — legacy
 import { useTeam } from '../contexts/TeamContext';
-import { PlayerRadar } from '../components/PlayerRadar';
 // Единая шкала рейтинга (var(--rating-*)) — общий источник по всему UI.
 import { ratingColor, ratingTextColor } from '../utils/colors';
 // @ts-ignore — legacy .js
@@ -307,7 +306,6 @@ export default function ClubDashboard() {
       <nav className="cd__anchors" aria-label="Разделы дашборда">
         {[
           { id: 'sec-main', label: 'Главное' },
-          ...((seasonAgg?.teamAggregates ?? latestMatch?.teamAggregates) ? [{ id: 'sec-detail', label: 'Аналитика' }] : []),
           { id: 'sec-top', label: 'Топ-игроки' },
           { id: 'sec-roster', label: 'Состав' },
         ].map((a) => (
@@ -479,42 +477,6 @@ export default function ClubDashboard() {
       {/* Вероятный состав на следующий матч (Phase 5) — тренеру */}
       {isCoach && selectedTeamId && <PredictedLineup teamId={selectedTeamId} />}
 
-      {/* teamAggregates — глубокая аналитика по секциям ЗА СЕЗОН (усреднённые
-          командные агрегаты). Считаем только секции с хотя бы одной числовой
-          записью — чтобы не показывать пустые категории. */}
-      {(seasonAgg?.teamAggregates ?? latestMatch?.teamAggregates) && (() => {
-        const ta = (seasonAgg?.teamAggregates ?? latestMatch?.teamAggregates) as Record<string, AnyObj>;
-        const meaningful = Object.entries(ta).filter(([, v]) => {
-          if (!v || typeof v !== 'object') return false;
-          return Object.entries(v).some(([k, x]) => {
-            if (k === 'mapImage') return false;
-            if (typeof x === 'number') return x > 0;
-            if (x && typeof x === 'object') {
-              const val = (x as AnyObj).value ?? (x as AnyObj).pct;
-              return typeof val === 'number' && val > 0;
-            }
-            return false;
-          });
-        });
-        if (meaningful.length === 0) return null;
-        const isSeason = !!seasonAgg?.teamAggregates;
-        return (
-          <section className="cd__panel reveal" id="sec-detail">
-            <div className="cd__panel-header">
-              <h2 className="cd__panel-title">Детальная аналитика по секциям</h2>
-              <span className="cd__panel-sub">
-                {isSeason && seasonMatchCount > 0 ? `количество действий · среднее за сезон, ${seasonMatchCount} матч.` : `количество действий · ${meaningful.length} категорий с данными`}
-              </span>
-            </div>
-          <div className="cd__agg-grid">
-            {meaningful.map(([key, vals]) => (
-              <AggregateCard key={key} title={aggTitle(key)} data={vals as AnyObj} />
-            ))}
-          </div>
-        </section>
-        );
-      })()}
-
       {/* Top 5 + standings */}
       <section className="cd__columns" id="sec-top">
         <div className="cd__panel reveal">
@@ -603,32 +565,6 @@ export default function ClubDashboard() {
           )}
         </div>
       </section>
-
-      {/* Top-3 profile radars */}
-      {topPlayers.length >= 3 && (
-        <section className="cd__panel reveal">
-          <div className="cd__panel-header">
-            <h2 className="cd__panel-title">Профили топ-3</h2>
-            <span className="cd__panel-sub">Индекс эффективности за сезон — % от лучшего в команде</span>
-          </div>
-          <div className="cd__radars-grid">
-            {topPlayers.slice(0, 3).map((p) => (
-              <div key={p.playerId} className="cd__radar-card" role="button" tabIndex={0}
-                onClick={() => navigate(`/players/${p.playerId}`)}
-                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); navigate(`/players/${p.playerId}`); } }}>
-                <div className="cd__radar-head">
-                  <span className="cd__radar-num">#{p.number}</span>
-                  <span className="cd__radar-name">{p.fullName}</span>
-                  <span className="cd__radar-rating" style={{ background: ratingColor(p.ratings?.overall), color: ratingTextColor(p.ratings?.overall) }}>
-                    {Number(p.ratings?.overall ?? 0).toFixed(1)}
-                  </span>
-                </div>
-                <PlayerRadar player={p} teamPlayers={seasonRoster as any[]} />
-              </div>
-            ))}
-          </div>
-        </section>
-      )}
 
       {/* Roster */}
       <section className="cd__panel reveal" id="sec-roster">
@@ -764,66 +700,6 @@ export function isOurName(matchTeam: unknown, ourLower: string): boolean {
   return her.includes(me) || me.includes(her);
 }
 
-const AGG_TITLES: Record<string, string> = {
-  shooting: 'Удары и реализация',
-  passes:   'Передачи',
-  possession: 'Владение мячом',
-  attacks:  'Атаки',
-  pressing: 'Прессинг',
-  recoveriesAndTackling: 'Отборы и перехваты',
-  duels:    'Единоборства',
-  positioning: 'Позиционная игра',
-  setPieces: 'Стандарты',
-};
-function aggTitle(k: string): string { return AGG_TITLES[k] || k; }
-
-// Русские названия полей агрегатов (что приходит из derivedAggregates + build_match)
-const FIELD_RU: Record<string, string> = {
-  // shooting
-  shots: 'Удары', onTarget: 'В створ', goals: 'Голы', byHead: 'Головой',
-  totalShots: 'Удары', shotsOnTarget: 'В створ', expectedGoals: 'xG',
-  avgShotDistance: 'Сред. дистанция удара',
-  // passes
-  total: 'Всего', successful: 'Точные', progressive: 'Прогрессивные',
-  toFinalThird: 'В финальную треть', intoPenArea: 'В штрафную',
-  crosses: 'Кроссы', keyPass: 'Ключевые', back: 'Назад', long: 'Длинные',
-  short: 'Короткие', middle: 'Средние', oppda: 'PPDA',
-  forward: 'Вперёд', sideways: 'Поперечные',
-  // attacks
-  assists: 'Ассисты', goalActions: 'Голевые действия', dribble: 'Дриблинг',
-  touchesInBox: 'Касания в штрафной', entriesInBox: 'Входы в штрафную',
-  crossingMidfield: 'Переходы средней линии', defenceBreakthroughs: 'Прорывы обороны',
-  // possession
-  lostBall: 'Потери', technicalMistake: 'Брак', loseOnOwnHalf: 'Потери на своей',
-  losses: 'Потери всего', possessionsCount: 'Владения',
-  // recoveriesAndTackling
-  tackle: 'Отборы', interception: 'Перехваты', recovery: 'Возвраты',
-  tackleAndRecovery: 'Отбор+возврат', slidingTackles: 'Подкаты',
-  returns: 'Возвраты', tacklesLine: 'Отборы на линии',
-  recoveriesAndTackling: 'Возвраты и отборы', rebounds: 'Подборы',
-  inFirstThird: 'В 1-й трети', inSecondThird: 'В средней', inThirdThird: 'В фин. трети',
-  // duels
-  duel: 'Выиграно дуэлей', aerialDuel: 'Выиграно воздушных', totalDuels: 'Всего дуэлей',
-  aerialDuels: 'Воздушные дуэли',
-  // pressing
-  pressing: 'Прессинг', counterpressing: 'Контр-прессинг',
-  averagePpda: 'Сред. PPDA',
-  // positioning
-  clearance: 'Выносы', blockedShot: 'Блок-удары', positionPlay: 'Поз. игра',
-  fouls: 'Фолы', yellowCard: 'Жёлтые', redCard: 'Красные', shotsAgainst: 'Удары по воротам',
-  interceptions: 'Перехваты',
-  // setPieces
-  corner: 'Угловые', corners: 'Угловые', freeKick: 'Штрафные', freeKicks: 'Штрафные',
-  freeKickShot: 'Штр. с ударом', penalty: 'Пенальти', throwing: 'Ауты', throwIns: 'Ауты',
-  offsides: 'Офсайды', penaltyWithShot: 'Пенальти с ударом',
-};
-
-function fieldLabel(k: string): string {
-  if (FIELD_RU[k]) return FIELD_RU[k];
-  // camelCase → "Camel case"
-  return k.replace(/([a-z])([A-Z])/g, '$1 $2').replace(/^./, (c) => c.toUpperCase());
-}
-
 /** Классификатор позиции в группу для фильтра состава.
  * Поддерживает полные слова и короткие коды SportVisor (ЦЗ/ПН/ВР/ЛЦП…).
  * «полузащит» раньше «защит» — иначе «полузащитник» ложно попал бы в защиту.
@@ -846,53 +722,6 @@ function posGroup(position?: string): string {
     if (last === 'Н') return 'fwd';
   }
   return 'unknown';
-}
-
-function AggregateCard({ title, data }: { title: string; data: AnyObj }) {
-  // Только записи с реальным числом > 0. Скрываем mapImage (это base64 строка).
-  // Дедуп по русскому лейблу — оставляем макс значение (interception vs interceptions).
-  type Entry = { k: string; label: string; val: number; suffix: string };
-  const bucket = new Map<string, Entry>();
-  for (const [k, v] of Object.entries(data || {})) {
-    if (k === 'mapImage') continue;
-    let val: number | null = null;
-    let suffix = '';
-    if (typeof v === 'number') val = v;
-    else if (v && typeof v === 'object') {
-      if (typeof (v as AnyObj).value === 'number') val = Number((v as AnyObj).value);
-      else if (typeof (v as AnyObj).pct === 'number') {
-        val = Number((v as AnyObj).pct);
-        suffix = '%';
-      }
-    }
-    if (val == null || val === 0) continue;  // Скрываем нули
-    const label = fieldLabel(k);
-    const prev = bucket.get(label);
-    if (!prev || prev.val < val) bucket.set(label, { k, label, val, suffix });
-  }
-  const entries = Array.from(bucket.values()).sort((a, b) => b.val - a.val).slice(0, 6);
-  if (entries.length === 0) return null;
-  // Полоса величины относительно максимума в карточке — чтобы блок «считывался»
-  // взглядом, а не был серой колонкой чисел. Проценты (suffix '%') — по 100.
-  // Бар укоренён в 0: длина = честная доля от max, без искусственного «пола».
-  const max = entries.reduce((m, e) => Math.max(m, e.suffix === '%' ? 100 : e.val), 0) || 1;
-  return (
-    <div className="cd__agg-card">
-      <div className="cd__agg-title">{title}</div>
-      {entries.map(({ k, label, val, suffix }) => {
-        const pct = Math.min(100, Math.round((val / max) * 100));
-        return (
-          <div key={k} className="cd__agg-row">
-            <div className="cd__agg-row-head">
-              <span className="cd__agg-key">{label}</span>
-              <span className="cd__agg-val">{val.toLocaleString('ru-RU')}{suffix}</span>
-            </div>
-            <span className="cd__agg-bar" aria-hidden><span className="cd__agg-bar-fill" style={{ width: `${pct}%` }} /></span>
-          </div>
-        );
-      })}
-    </div>
-  );
 }
 
 /** Тонкая SVG-иконка пустого состояния (вместо эмодзи). */

@@ -1,0 +1,75 @@
+/* Детальная аналитика по секциям — самодостаточные стили (перенос с /club). */
+.tag { margin-top: 8px; }
+
+.tag__sub {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-faint);
+  margin-left: 8px;
+}
+
+.tag__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 14px;
+}
+
+.tag-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px 16px 14px;
+}
+
+.tag-card__title {
+  font-family: var(--font-display);
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 12px;
+  letter-spacing: -0.01em;
+}
+
+.tag-row { margin-bottom: 10px; }
+.tag-row:last-child { margin-bottom: 0; }
+
+.tag-row__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.tag-row__key {
+  font-size: 13px;
+  color: var(--text-muted-strong, var(--text-muted));
+}
+
+.tag-row__val {
+  font-family: var(--font-display);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+
+.tag-row__bar {
+  display: block;
+  height: 5px;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.06);
+  overflow: hidden;
+}
+
+.tag-row__bar-fill {
+  display: block;
+  height: 100%;
+  border-radius: 3px;
+  background: linear-gradient(90deg, var(--brand-primary), var(--accent-cyan));
+  transition: width var(--dur) var(--ease-out);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tag-row__bar-fill { transition: none; }
+}
