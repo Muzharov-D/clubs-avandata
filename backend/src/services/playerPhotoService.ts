@@ -174,3 +174,207 @@ export async function enrichTenantPhotos(
   }
   return { filled, rosterSize, sampleKeys, withPhoto };
 }
+
+// ============================================================================
+// Профиль игрока: позиция + дата рождения из того же ростера FFSPB.
+//
+// Имена полей позиции/ДР в ответе FFSPB НЕ подтверждены (нет локальных creds) —
+// та же ситуация, что была с фото. Поэтому извлечение АВТО-ДЕТЕКТОМ (перебор
+// вероятных полей + нормализация значения), а скрипт печатает sampleKeys и
+// sampleValues для одно-прогонной диагностики формата.
+// ============================================================================
+
+export interface ProfileEntry {
+  position: string | null;
+  positionFull: string | null;
+  birthDate: string | null; // нормализованный YYYY-MM-DD
+}
+
+// Достать строковое значение из поля, которое может быть строкой ИЛИ объектом
+// ({name|title|fullName|label}) — FFSPB/Hydra иногда отдаёт вложенный ресурс.
+function fieldString(v: unknown): string | null {
+  if (typeof v === 'string') {
+    const s = v.trim();
+    // Пропускаем IRI-ссылки вида "/api/positions/3".
+    return s && !/^\/api\//.test(s) ? s : null;
+  }
+  if (v && typeof v === 'object') {
+    const o = v as Record<string, unknown>;
+    for (const k of ['name', 'title', 'fullName', 'label', 'value']) {
+      if (typeof o[k] === 'string' && (o[k] as string).trim()) return (o[k] as string).trim();
+    }
+  }
+  return null;
+}
+
+const POSITION_FIELDS = [
+  'positionName', 'positionFull', 'position', 'role', 'roleName', 'amplua',
+  'playerPosition', 'gamePosition', 'positionTitle', 'post',
+];
+
+/** Полное название позиции игрока FFSPB (например «Левый защитник»). */
+export function extractPositionFull(p: Record<string, unknown>): string | null {
+  for (const k of POSITION_FIELDS) {
+    const s = fieldString(p[k]);
+    if (s) return s;
+  }
+  return null;
+}
+
+/** Короткий код позиции из полного названия (best-effort, RU). */
+export function shortPosition(full: string | null): string | null {
+  if (!full) return null;
+  const f = full.toLowerCase();
+  if (/вратар|голкип/.test(f)) return 'ВРТ';
+  if (/защит|латер|фланг.*обор/.test(f)) return 'ЗАЩ';
+  if (/полузащит|опорн|плеймейк|инсайд|вингер/.test(f)) return 'ПЗ';
+  if (/напада|форвард|бомбардир/.test(f)) return 'НАП';
+  // Уже короткое (ЛЗ/ЦЗ/ЦН и т.п.) — берём как код.
+  return full.length <= 4 ? full.toUpperCase() : null;
+}
+
+const BIRTH_FIELDS = [
+  'birthDate', 'birthday', 'dateOfBirth', 'dob', 'born', 'birth', 'dateBirth', 'birthdate',
+];
+
+/** Нормализация даты рождения к YYYY-MM-DD из строки/таймстампа. null если не дата. */
+export function normalizeBirthDate(v: unknown): string | null {
+  if (v == null) return null;
+  // Unix timestamp (FFSPB отдаёт даты матчей как unix-секунды).
+  if (typeof v === 'number' || (typeof v === 'string' && /^\d{9,13}$/.test(v))) {
+    const n = Number(v);
+    const ms = String(v).length >= 13 ? n : n * 1000;
+    const d = new Date(ms);
+    return plausibleBirth(d) ? iso(d) : null;
+  }
+  if (typeof v === 'string') {
+    const s = v.trim();
+    // ISO «1999-01-14...» или «1999-01-14»
+    const isoM = s.match(/^(\d{4})-(\d{2})-(\d{2})/);
+    if (isoM) { const d = new Date(`${isoM[1]}-${isoM[2]}-${isoM[3]}T00:00:00Z`); return plausibleBirth(d) ? iso(d) : null; }
+    // «DD.MM.YYYY» / «DD/MM/YYYY»
+    const ru = s.match(/^(\d{1,2})[./](\d{1,2})[./](\d{4})$/);
+    if (ru) { const d = new Date(Date.UTC(+ru[3]!, +ru[2]! - 1, +ru[1]!)); return plausibleBirth(d) ? iso(d) : null; }
+  }
+  if (v && typeof v === 'object') {
+    // Вложенный ресурс { date: '...' } или Hydra-обёртка.
+    const inner = (v as Record<string, unknown>).date ?? (v as Record<string, unknown>).value;
+    if (inner != null) return normalizeBirthDate(inner);
+  }
+  return null;
+}
+
+function plausibleBirth(d: Date): boolean {
+  if (isNaN(d.getTime())) return false;
+  const y = d.getUTCFullYear();
+  return y >= 1980 && y <= 2025; // академия — юноши, но запас широкий
+}
+function iso(d: Date): string { return d.toISOString().slice(0, 10); }
+
+/** Извлечь дату рождения игрока FFSPB (авто-детект поля). */
+export function extractBirthDate(p: Record<string, unknown>): string | null {
+  for (const k of BIRTH_FIELDS) {
+    const d = normalizeBirthDate(p[k]);
+    if (d) return d;
+  }
+  return null;
+}
+
+/** Кандидаты-значения для диагностики формата (печатает скрипт при 0 совпадений). */
+function profileSampleValues(p: Record<string, unknown>): Record<string, unknown> {
+  const out: Record<string, unknown> = {};
+  for (const k of [...POSITION_FIELDS, ...BIRTH_FIELDS]) {
+    if (p[k] !== undefined) out[k] = p[k];
+  }
+  return out;
+}
+
+/**
+ * Заполняет players.position / position_full / birth_date (только NULL-поля) по
+ * ростерам FFSPB. Сопоставление игроков — как у фото (точное имя → фамилия).
+ * Возвращает диагностику для само-проверки формата.
+ */
+export async function enrichTenantProfiles(
+  conn: Queryable,
+  tenantSlug: string,
+  extTeamIds: Array<string | number>,
+): Promise<{
+  filledPos: number; filledDob: number; rosterSize: number;
+  withPos: number; withDob: number; sampleKeys: string[]; sampleValues: Record<string, unknown>;
+}> {
+  const byName = new Map<string, ProfileEntry>();
+  const byLast = new Map<string, ProfileEntry>();
+  let rosterSize = 0, withPos = 0, withDob = 0;
+  let sampleKeys: string[] = [];
+  let sampleValues: Record<string, unknown> = {};
+
+  for (const id of [...new Set(extTeamIds.map(String))]) {
+    let players: Array<Record<string, unknown>> = [];
+    try {
+      players = (await listTeamPlayers(id)) as Array<Record<string, unknown>>;
+    } catch (e) {
+      logger.warn({ extTeamId: id, err: e instanceof Error ? e.message : String(e) }, '[profiles] roster fetch failed');
+      continue;
+    }
+    rosterSize += players.length;
+    if (!sampleKeys.length && players[0]) {
+      sampleKeys = Object.keys(players[0]);
+      sampleValues = profileSampleValues(players[0]);
+    }
+    for (const p of players) {
+      const full = ffspbFullName(p);
+      if (!full) continue;
+      const positionFull = extractPositionFull(p);
+      const birthDate = extractBirthDate(p);
+      const entry: ProfileEntry = { positionFull, position: shortPosition(positionFull), birthDate };
+      if (positionFull) withPos++;
+      if (birthDate) withDob++;
+      const nk = playerNameKey(full);
+      if (nk) byName.set(nk, entry);
+      for (const lt of lastTokens(full)) if (lt) byLast.set(lt, entry);
+      if (typeof p.surname === 'string') byLast.set(playerNameKey(p.surname), entry);
+      else if (typeof p.lastName === 'string') byLast.set(playerNameKey(p.lastName), entry);
+    }
+  }
+
+  if (!byName.size) return { filledPos: 0, filledDob: 0, rosterSize, withPos, withDob, sampleKeys, sampleValues };
+
+  const resolve = (fullName: unknown): ProfileEntry | null => {
+    const exact = byName.get(playerNameKey(fullName));
+    if (exact) return exact;
+    for (const lt of lastTokens(fullName)) {
+      const hit = byLast.get(lt);
+      if (hit) return hit;
+    }
+    return null;
+  };
+
+  const { rows } = await conn.query(
+    `SELECT id, full_name AS "fullName", position, position_full AS "positionFull", birth_date AS "birthDate"
+       FROM players
+      WHERE tenant_id = $1 AND (position IS NULL OR position_full IS NULL OR birth_date IS NULL)`,
+    [tenantSlug],
+  );
+
+  let filledPos = 0, filledDob = 0;
+  for (const r of rows) {
+    const hit = resolve(r.fullName);
+    if (!hit) continue;
+    const sets: string[] = [];
+    const vals: unknown[] = [];
+    let i = 1;
+    if (r.position == null && hit.position) { sets.push(`position = $${i++}`); vals.push(hit.position); }
+    if (r.positionFull == null && hit.positionFull) { sets.push(`position_full = $${i++}`); vals.push(hit.positionFull); }
+    if (r.birthDate == null && hit.birthDate) { sets.push(`birth_date = $${i++}`); vals.push(hit.birthDate); }
+    if (!sets.length) continue;
+    vals.push(r.id, tenantSlug);
+    await conn.query(
+      `UPDATE players SET ${sets.join(', ')} WHERE id = $${i++} AND tenant_id = $${i}`,
+      vals,
+    );
+    if (hit.positionFull || hit.position) filledPos++;
+    if (r.birthDate == null && hit.birthDate) filledDob++;
+  }
+
+  return { filledPos, filledDob, rosterSize, withPos, withDob, sampleKeys, sampleValues };
+}
