@@ -174,9 +174,21 @@
 .an-ident__fill { height: 100%; background: var(--brand-primary, #2563eb); border-radius: 5px; }
 .an-ident__val { flex: 0 0 80px; text-align: right; font-size: 12px; color: var(--an-muted); font-variant-numeric: tabular-nums; }
 
+/* ── Стиль игры (тренерский профиль) ── */
+.an-style { display: grid; grid-template-columns: 1fr 1fr; gap: 18px 28px; margin-top: 4px; }
+.an-style__row { display: flex; flex-direction: column; gap: 6px; }
+.an-style__head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
+.an-style__lab { font-size: 12px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--an-muted); }
+.an-style__word { font-size: 15px; font-weight: 700; color: var(--text-strong, #fff); text-align: right; }
+.an-style__track { height: 8px; border-radius: 4px; background: var(--bg-surface-3); overflow: hidden; }
+.an-style__fill { display: block; height: 100%; border-radius: 4px;
+  background: linear-gradient(90deg, var(--brand-primary, #2563eb), var(--brand-accent, #38bdf8)); }
+.an-style__hint { font-size: 12px; color: var(--an-muted); line-height: 1.4; }
+
 @media (max-width: 560px) {
   .an-press__grid { grid-template-columns: 1fr; }
   .an-pct__label { flex-basis: 96px; }
   .an-rolefit__name { flex-basis: 120px; }
   .an-ident__lab { flex-basis: 104px; }
+  .an-style { grid-template-columns: 1fr; gap: 14px; }
 }

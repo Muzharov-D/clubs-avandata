@@ -1,15 +1,20 @@
 /**
  * Главный дашборд клуба — заменяет legacy ClubPage с Легирус-моками.
  *
+ * ЯКОРЬ — СЕЗОН, не «последний матч»: рейтинги/топ-5/профили/состав/идентичность
+ * считаются по сезонному агрегату. На последнем матче остаётся только Hero
+ * (ближайший + последний результат) и опция «Матч» в переключателе показателей.
+ *
  * Секции:
  *  - Hero: ближайший матч (countdown + venue) + последний результат
- *  - Турнирная таблица (топ-8 с подсветкой нашей строки + полный модал)
- *  - Топ-5 игроков по рейтингу из последнего разобранного матча
- *  - Командные итоги последнего матча (possession/xG/shots/passes/distance)
- *  - Состав команды (17 игроков)
+ *  - Командные показатели за период (Матч / 1 круг / 2 круг / Сезон, по умолч. сезон)
+ *  - Детальная аналитика по секциям (среднее за сезон)
+ *  - Как команда играет (стиль за сезон, тренерским языком)
+ *  - Топ-5 игроков по среднему рейтингу за сезон + турнирная таблица
+ *  - Профили топ-3 (сезонный радар) + состав за сезон
  *
- * Данные: /data/teams, /data/matches?teamId, /data/match/:id,
- *         /data/calendar/:age, /data/standings/:age
+ * Данные: /data/teams, /data/matches?teamId, /data/match/:id, /data/calendar/:age,
+ *         /data/standings/:age, /data/players/season, /data/matches/aggregate
  */
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -17,6 +22,7 @@ import { useNavigate } from 'react-router-dom';
 import { useReveal } from '../hooks/useReveal';
 import {
   fetchTeams, fetchMatches, fetchMatch, fetchStandings, fetchCalendar, fetchMatchAggregate,
+  fetchPlayersSeason,
 } from '../services/api';
 // @ts-ignore — legacy
 import { useAuth } from '../contexts/AuthContext';
@@ -68,16 +74,21 @@ export default function ClubDashboard() {
   const [standings, setStandings]     = useState<AnyObj | null>(null);
   const [latestMatch, setLatestMatch] = useState<AnyObj | null>(null);
   const [matches, setMatches]         = useState<AnyObj[]>([]);
+  // Сезонные данные — основной якорь дашборда (не «последний матч»):
+  //  seasonPlayers — агрегат по игрокам (avg-рейтинги + сезонный радар);
+  //  seasonAgg     — командные показатели + агрегаты за весь сезон.
+  const [seasonPlayers, setSeasonPlayers] = useState<AnyObj[]>([]);
+  const [seasonAgg, setSeasonAgg]         = useState<AnyObj | null>(null);
   const [loading, setLoading]         = useState(true);
   const [error, setError]             = useState<string | null>(null);
   // Состав — smart-table: сортировка + фильтр по позиционной группе.
-  const [rosterSort, setRosterSort] = useState<'minutes' | 'rating' | 'number' | 'name'>('minutes');
+  const [rosterSort, setRosterSort] = useState<'rating' | 'matches' | 'minutes' | 'number' | 'name'>('rating');
   const [rosterPos, setRosterPos]   = useState<string>('all');
 
   // Фильтр периода блока «Командные показатели» (правка Зенита #7).
   // 'match' — конкретный матч (по умолчанию последний, можно выбрать другой);
   // round1/round2/season — усреднённые показатели за период (агрегат с backend).
-  const [statPeriod, setStatPeriod]       = useState<'match' | 'round1' | 'round2' | 'season'>('match');
+  const [statPeriod, setStatPeriod]       = useState<'match' | 'round1' | 'round2' | 'season'>('season');
   const [statMatchId, setStatMatchId]     = useState<string | null>(null);
   const [statMatchDetail, setStatMatchDetail] = useState<AnyObj | null>(null);
   const [statAgg, setStatAgg]             = useState<AnyObj | null>(null);
@@ -116,6 +127,17 @@ export default function ClubDashboard() {
         setMatches(matchesList);
         setCalendar(((calRes as AnyObj)?.matches ?? []) as AnyObj[]);
         setStandings(standRes as AnyObj | null);
+
+        // Сезонные агрегаты (игроки + командные показатели за весь сезон) —
+        // якорь блоков «Топ-5 / Профили / Состав / Средний рейтинг / Идентичность».
+        const [seasonRes, aggRes] = await Promise.all([
+          fetchPlayersSeason(myTeam.id).catch(() => ({ players: [] })),
+          fetchMatchAggregate(myTeam.id, 'season').catch(() => null),
+        ]);
+        if (!cancelled) {
+          setSeasonPlayers(((seasonRes as AnyObj)?.players ?? []) as AnyObj[]);
+          setSeasonAgg(aggRes as AnyObj | null);
+        }
 
         if (matchesList.length > 0) {
           const detail = await fetchMatch(matchesList[0].id).catch(() => null);
@@ -188,14 +210,53 @@ export default function ClubDashboard() {
     return matches.find((m) => m.date && dayKey(m.date) === day) ?? null;
   }, [matches, lastResult]);
 
+  // Сезонный состав в форме «match-player» (ratings.overall = avg, radar = сезонный),
+  // чтобы Топ-5/KPI/радары/состав работали без переписывания. Fallback — игроки
+  // последнего матча (когда сезонный агрегат пуст, напр. первый разбор).
+  const seasonRoster = useMemo<AnyObj[]>(() => {
+    if (seasonPlayers.length === 0) return (latestMatch?.players ?? []) as AnyObj[];
+    return seasonPlayers.map((p) => {
+      const name = String(p.fullName ?? '');
+      const sp = name.split(' ');
+      return {
+        playerId: p.id,
+        fullName: name,
+        firstName: sp[0] ?? '',
+        lastName: sp.slice(1).join(' '),
+        number: p.number,
+        position: p.position,
+        photoUrl: p.photoUrl,
+        minutes: p.minutes,
+        matches: p.matches,
+        ratings: { overall: p.avgOverall, attack: p.avgAttack, defence: p.avgDefence, fitness: p.avgFitness },
+        radar: p.radar ?? {},
+      };
+    });
+  }, [seasonPlayers, latestMatch]);
+
+  // Сколько матчей в основе сезонного агрегата (для подписей блоков).
+  const seasonMatchCount = useMemo<number>(() => {
+    if (Number(seasonAgg?.matchCount)) return Number(seasonAgg!.matchCount);
+    return seasonPlayers.reduce((m, p) => Math.max(m, Number(p.matches ?? 0)), 0);
+  }, [seasonAgg, seasonPlayers]);
+
   const topPlayers = useMemo<AnyObj[]>(() => {
-    const players: AnyObj[] = (latestMatch?.players ?? []) as AnyObj[];
-    // Фильтр > 0: бенч/не-вышедшие имеют overall=0 (placeholder) — в топ-5 их не должно быть.
-    return [...players]
+    // Фильтр > 0: не игравшие/без рейтинга — в топ-5 их не должно быть.
+    return [...seasonRoster]
       .filter((p) => p.ratings?.overall != null && Number(p.ratings.overall) > 0)
       .sort((a, b) => (b.ratings?.overall ?? 0) - (a.ratings?.overall ?? 0))
       .slice(0, 5);
-  }, [latestMatch]);
+  }, [seasonRoster]);
+
+  // Средний рейтинг команды за сезон: из агрегата, иначе среднее по составу.
+  const avgTeamRating = useMemo<number>(() => {
+    const fromAgg = Number((seasonAgg?.teamAvgRatings as AnyObj)?.overall ?? 0);
+    if (fromAgg > 0) return fromAgg;
+    const rated = seasonRoster
+      .map((p) => Number(p.ratings?.overall ?? 0))
+      .filter((x) => x > 0);
+    return rated.length ? rated.reduce((a, b) => a + b, 0) / rated.length : 0;
+  }, [seasonAgg, seasonRoster]);
 
   const standingsTopRows = useMemo<AnyObj[]>(() => {
     const t = ((standings as AnyObj)?.table ?? []) as AnyObj[];
@@ -218,6 +279,18 @@ export default function ClubDashboard() {
   // tournamentTitle — там показываем «ЮФЛ U-15 · сезон» без 2011 г.р.
   const tournamentTitle = (standings as AnyObj)?.leagueName ?? 'Турнир';
 
+  // Сезон показываем по году окончания (2025-2026 → 2026). Источник — season
+  // из разбора, затем из standings, иначе дефолт текущего сезона.
+  const seasonLabel = useMemo<string>(() => {
+    const raw = String(
+      matches.find((m) => m.season)?.season
+      ?? (standings as AnyObj)?.season
+      ?? '2026',
+    );
+    const m = raw.match(/(\d{4})\s*[-–—/]\s*(\d{4})/);
+    return m ? m[2]! : raw;
+  }, [matches, standings]);
+
   if (loading) return <div className="cd"><div className="cd__loading">Загрузка дашборда…</div></div>;
   if (error)   return <div className="cd"><div className="cd__error">{error}</div></div>;
   if (!team)   return <div className="cd"><div className="cd__error">Команда не найдена</div></div>;
@@ -228,7 +301,7 @@ export default function ClubDashboard() {
 
       <header className="cd__header">
         <div>
-          <div className="cd__eyebrow">{team.ageLabel || `U-${team.ageGroup}`} · Сезон 2025-2026</div>
+          <div className="cd__eyebrow">{team.ageLabel || `U-${team.ageGroup}`} · Сезон {seasonLabel}</div>
           <h1 className="cd__title">{team.name}</h1>
           <div className="cd__sub">
             Главный тренер: <b>{team.headCoach || '—'}</b>
@@ -248,7 +321,7 @@ export default function ClubDashboard() {
         {[
           { id: 'sec-main', label: 'Главное' },
           ...(latestMatch?.teamSummaryStats ? [{ id: 'sec-stats', label: 'Показатели' }] : []),
-          ...(latestMatch?.teamAggregates ? [{ id: 'sec-detail', label: 'Аналитика' }] : []),
+          ...((seasonAgg?.teamAggregates ?? latestMatch?.teamAggregates) ? [{ id: 'sec-detail', label: 'Аналитика' }] : []),
           { id: 'sec-top', label: 'Топ-игроки' },
           { id: 'sec-roster', label: 'Состав' },
         ].map((a) => (
@@ -270,7 +343,7 @@ export default function ClubDashboard() {
                 <div className="cd__mm-eyebrow">Следующий · {nextMatch.round || ''}</div>
                 <div className="cd__hero-matchup">
                   <MatchupTeam name={nextMatch.home} shield={nextMatch.homeShield} isOur={isOurName(nextMatch.home, ourName)} />
-                  <span className="cd__hero-vs">vs</span>
+                  <span className="cd__hero-vs">—</span>
                   <MatchupTeam name={nextMatch.away} shield={nextMatch.awayShield} isOur={isOurName(nextMatch.away, ourName)} />
                 </div>
                 <div className="cd__hero-meta">
@@ -304,9 +377,9 @@ export default function ClubDashboard() {
             )}
           </div>
 
-          {/* Средний рейтинг команды (#9) */}
+          {/* Средний рейтинг команды за сезон (#9) */}
           {(() => {
-            const ov = Number((latestMatch?.teamAvgRatings as AnyObj)?.overall ?? 0);
+            const ov = Number(avgTeamRating ?? 0);
             return (
               <div className="cd__kpi-card">
                 <div className="cd__kpi-label">Средний рейтинг команды</div>
@@ -321,7 +394,7 @@ export default function ClubDashboard() {
                     <span className="cd__kpi-bar"><span className="cd__kpi-bar-fill" style={{ width: `${Math.min(100, ov * 10)}%`, background: ratingColor(ov) }} /></span>
                   </>
                 ) : <div className="cd__kpi-empty">нет разбора</div>}
-                <div className="cd__kpi-sub">по последнему матчу</div>
+                <div className="cd__kpi-sub">{seasonMatchCount > 0 ? `за сезон · ${seasonMatchCount} матч.` : 'за сезон'}</div>
               </div>
             );
           })()}
@@ -372,12 +445,11 @@ export default function ClubDashboard() {
           ? (displayMatch as AnyObj)?.teamAvgRatings
           : statAgg?.teamAvgRatings) as Record<string, unknown> | undefined;
 
-        const seasonName = (matches.find((m) => m.season)?.season ?? '') as string;
         const PERIODS: { key: typeof statPeriod; label: string }[] = [
           { key: 'match',  label: 'Матч' },
           { key: 'round1', label: '1 круг' },
           { key: 'round2', label: '2 круг' },
-          { key: 'season', label: seasonName ? `Сезон ${seasonName}` : 'Сезон 2026' },
+          { key: 'season', label: `Сезон ${seasonLabel}` },
         ];
 
         // Семантический цвет KPI: зелёный — лучше соперника, красный — хуже.
@@ -497,10 +569,10 @@ export default function ClubDashboard() {
               if (!anyValue) return null;
               return (
                 <>
-                  <div className="cd__avg-caption">Средние Performance Index по команде</div>
+                  <div className="cd__avg-caption">Средний индекс эффективности по команде</div>
                   <div className="cd__avg-row">
                     <div className="cd__avg-item"><span className="cd__avg-label">Общий</span><span className="cd__avg-val">{fmt('overall')}</span></div>
-                    <div className="cd__avg-item"><span className="cd__avg-label">Фитнес</span><span className="cd__avg-val">{fmt('fitness')}</span></div>
+                    <div className="cd__avg-item"><span className="cd__avg-label">Физика</span><span className="cd__avg-val">{fmt('fitness')}</span></div>
                     <div className="cd__avg-item"><span className="cd__avg-label">Атака</span><span className="cd__avg-val">{fmt('attack')}</span></div>
                     <div className="cd__avg-item"><span className="cd__avg-label">Защита</span><span className="cd__avg-val">{fmt('defence')}</span></div>
                   </div>
@@ -513,11 +585,11 @@ export default function ClubDashboard() {
         );
       })()}
 
-      {/* teamAggregates — глубокая аналитика по 10 категориям. Считаем только
-          секции с хотя бы одной числовой записью (после фильтра нулей внутри
-          AggregateCard) — чтобы не показывать «9 категорий» из которых 6 пустые. */}
-      {latestMatch?.teamAggregates && (() => {
-        const ta = latestMatch.teamAggregates as Record<string, AnyObj>;
+      {/* teamAggregates — глубокая аналитика по секциям ЗА СЕЗОН (усреднённые
+          командные агрегаты). Считаем только секции с хотя бы одной числовой
+          записью — чтобы не показывать пустые категории. */}
+      {(seasonAgg?.teamAggregates ?? latestMatch?.teamAggregates) && (() => {
+        const ta = (seasonAgg?.teamAggregates ?? latestMatch?.teamAggregates) as Record<string, AnyObj>;
         const meaningful = Object.entries(ta).filter(([, v]) => {
           if (!v || typeof v !== 'object') return false;
           return Object.entries(v).some(([k, x]) => {
@@ -531,11 +603,14 @@ export default function ClubDashboard() {
           });
         });
         if (meaningful.length === 0) return null;
+        const isSeason = !!seasonAgg?.teamAggregates;
         return (
           <section className="cd__panel reveal" id="sec-detail">
             <div className="cd__panel-header">
               <h2 className="cd__panel-title">Детальная аналитика по секциям</h2>
-              <span className="cd__panel-sub">{meaningful.length} категорий с данными</span>
+              <span className="cd__panel-sub">
+                {isSeason && seasonMatchCount > 0 ? `среднее за сезон · ${seasonMatchCount} матч.` : `${meaningful.length} категорий с данными`}
+              </span>
             </div>
           <div className="cd__agg-grid">
             {meaningful.map(([key, vals]) => (
@@ -549,8 +624,8 @@ export default function ClubDashboard() {
       {/* xG-аналитика сезона: xPTS vs факт, реализация, форма, xG по матчам */}
       {matches.length > 0 && <TeamSeasonAnalytics matches={matches} />}
 
-      {/* Идентичность команды по последнему матчу */}
-      {latestMatch && <TeamIdentityCard match={latestMatch} />}
+      {/* Как команда играет — стиль за сезон (тренерским языком) */}
+      {seasonAgg && <TeamIdentityCard aggregate={seasonAgg} />}
 
       {/* Top 5 + standings */}
       <section className="cd__columns" id="sec-top">
@@ -558,8 +633,8 @@ export default function ClubDashboard() {
           <div className="cd__panel-header">
             <h2 className="cd__panel-title">Топ-5 по рейтингу</h2>
             <span className="cd__panel-sub">
-              {latestMatch
-                ? `по матчу ${formatDateShort(latestMatch.date)} · ${trimAgeSuffix(latestMatch.home)} ${latestMatch.scoreHome}:${latestMatch.scoreAway} ${trimAgeSuffix(latestMatch.away)}`
+              {topPlayers.length > 0
+                ? (seasonMatchCount > 0 ? `средний рейтинг за сезон · ${seasonMatchCount} матч.` : 'средний рейтинг за сезон')
                 : 'нет загруженных разборов'}
             </span>
           </div>
@@ -642,7 +717,7 @@ export default function ClubDashboard() {
         <section className="cd__panel reveal">
           <div className="cd__panel-header">
             <h2 className="cd__panel-title">Профили топ-3</h2>
-            <span className="cd__panel-sub">Performance Index — % от лучшего в команде</span>
+            <span className="cd__panel-sub">Индекс эффективности за сезон — % от лучшего в команде</span>
           </div>
           <div className="cd__radars-grid">
             {topPlayers.slice(0, 3).map((p) => (
@@ -654,7 +729,7 @@ export default function ClubDashboard() {
                     {Number(p.ratings?.overall ?? 0).toFixed(1)}
                   </span>
                 </div>
-                <PlayerRadar player={p} teamPlayers={(latestMatch?.players ?? []) as any[]} />
+                <PlayerRadar player={p} teamPlayers={seasonRoster as any[]} />
               </div>
             ))}
           </div>
@@ -665,16 +740,16 @@ export default function ClubDashboard() {
       <section className="cd__panel reveal" id="sec-roster">
         <div className="cd__panel-header">
           <h2 className="cd__panel-title">
-            Состав{latestMatch?.players?.length ? ` (${latestMatch.players.length})` : ''}
+            Состав{seasonRoster.length ? ` (${seasonRoster.length})` : ''}
           </h2>
           <span className="cd__panel-sub">
-            {latestMatch?.players?.length
-              ? `из матча ${formatDateShort(latestMatch.date)}`
+            {seasonRoster.length
+              ? (seasonMatchCount > 0 ? `за сезон · ${seasonMatchCount} матч.` : 'за сезон')
               : 'нет загруженных разборов'}
           </span>
         </div>
         {(() => {
-          const all = (latestMatch?.players ?? []) as AnyObj[];
+          const all = seasonRoster;
           const POS_GROUPS = [
             { id: 'all', label: 'Все' },
             { id: 'gk',  label: 'ВРТ' },
@@ -683,8 +758,9 @@ export default function ClubDashboard() {
             { id: 'fwd', label: 'Нападение' },
           ];
           const SORTS: { id: typeof rosterSort; label: string }[] = [
-            { id: 'minutes', label: 'Минуты' },
             { id: 'rating',  label: 'Рейтинг' },
+            { id: 'matches', label: 'Матчей' },
+            { id: 'minutes', label: 'Минуты' },
             { id: 'number',  label: 'Номер' },
             { id: 'name',    label: 'Имя' },
           ];
@@ -692,9 +768,10 @@ export default function ClubDashboard() {
           const groups = POS_GROUPS.filter((g) => g.id === 'all' || present.has(g.id));
           const filtered = all.filter((p) => rosterPos === 'all' || posGroup(p.position) === rosterPos);
           const sorted = filtered.slice().sort((a, b) => {
-            if (rosterSort === 'rating') return Number(b.ratings?.overall ?? 0) - Number(a.ratings?.overall ?? 0);
-            if (rosterSort === 'number') return Number(a.number ?? 99) - Number(b.number ?? 99);
-            if (rosterSort === 'name')   return String(a.fullName ?? '').localeCompare(String(b.fullName ?? ''), 'ru');
+            if (rosterSort === 'rating')  return Number(b.ratings?.overall ?? 0) - Number(a.ratings?.overall ?? 0);
+            if (rosterSort === 'matches') return Number(b.matches ?? 0) - Number(a.matches ?? 0);
+            if (rosterSort === 'number')  return Number(a.number ?? 99) - Number(b.number ?? 99);
+            if (rosterSort === 'name')    return String(a.fullName ?? '').localeCompare(String(b.fullName ?? ''), 'ru');
             const ma = Number(a.minutes ?? 0); const mb = Number(b.minutes ?? 0);   // minutes
             if (ma !== mb) return mb - ma;
             return Number(a.number ?? 99) - Number(b.number ?? 99);
@@ -725,6 +802,10 @@ export default function ClubDashboard() {
                 {sorted.map((p) => {
                   const r = Number(p.ratings?.overall ?? 0);
                   const mins = Number(p.minutes ?? 0);
+                  const gp = Number(p.matches ?? 0);
+                  const load = gp > 0
+                    ? `${gp} матч.${mins > 0 ? ` · ${mins}'` : ''}`
+                    : (mins > 0 ? `${mins}'` : 'не выходил');
                   return (
                     <div key={p.playerId} className="cd__player" onClick={() => navigate(`/players/${p.playerId}`)}>
                       <div className="cd__player-photo">
@@ -734,7 +815,7 @@ export default function ClubDashboard() {
                       <div className="cd__player-info">
                         <div className="cd__player-name">{p.fullName}</div>
                         <div className="cd__player-meta">
-                          {p.position || ''}{mins > 0 ? ` · ${mins}'` : ' · не выходил'}
+                          {p.position || ''}{` · ${load}`}
                         </div>
                       </div>
                       {r > 0 && (

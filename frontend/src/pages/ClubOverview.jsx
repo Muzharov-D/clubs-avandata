@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { useApi } from '../hooks/useApi';
-import { fetchTeams, fetchMatches, fetchMatch, fetchMatchAggregate, fetchPlayersSeason } from '../services/api';
+import { fetchTeams, fetchMatches, fetchMatchAggregate, fetchPlayersSeason } from '../services/api';
 import { useTeam } from '../contexts/TeamContext';
 import { useDocumentTitle } from '../hooks/useDocumentTitle';
 import MatchList from '../components/MatchList';
@@ -73,10 +73,6 @@ export default function ClubOverview() {
     () => (selectedTeamId ? fetchPlayersSeason(selectedTeamId).catch(() => null) : Promise.resolve(null)),
     [selectedTeamId],
   );
-  // Идентичность стиля — по последнему матчу (один лёгкий запрос).
-  const lastMatchId = matchesRes.data?.matches?.[0]?.id;
-  const lastMatchRes = useApi(() => (lastMatchId ? fetchMatch(lastMatchId).catch(() => null) : Promise.resolve(null)), [lastMatchId]);
-
   const teams = teamsRes.data?.teams || [];
   const ourTeam = selectedTeam || teams.find((t) => t.id === selectedTeamId) || teams.find((t) => t.isOurTeam);
   const matches = matchesRes.data?.matches || [];
@@ -183,7 +179,7 @@ export default function ClubOverview() {
                 <div className="page-section-title">Сводные рейтинги · {periodLabel} <span className="club-overview__sub">{matchCount} матч.</span></div>
                 <div className="club-overview__ratings">
                   <RatingCard label="Общий" value={ratings.overall} />
-                  <RatingCard label="Фитнес" value={ratings.fitness} />
+                  <RatingCard label="Физика" value={ratings.fitness} />
                   <RatingCard label="Атака" value={ratings.attack} />
                   <RatingCard label="Защита" value={ratings.defence} />
                 </div>
@@ -211,8 +207,8 @@ export default function ClubOverview() {
           {/* xG-аналитика сезона (модель, по всем матчам) */}
           <TeamSeasonAnalytics matches={matches} />
 
-          {/* Идентичность стиля по последнему матчу */}
-          {lastMatchRes.data && <TeamIdentityCard match={lastMatchRes.data} />}
+          {/* Как команда играет — стиль за выбранный период (тренерским языком) */}
+          {agg && <TeamIdentityCard aggregate={agg} periodLabel={`за ${periodLabel}`} />}
 
           {/* Сезонные лидеры — бомбардиры / ассистенты / рейтинг */}
           {leaders && (

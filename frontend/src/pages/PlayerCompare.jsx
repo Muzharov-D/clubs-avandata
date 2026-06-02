@@ -13,7 +13,7 @@ const ROWS = [
   { key: 'avgOverall', label: 'Общий рейтинг', rating: true },
   { key: 'avgAttack', label: 'Атака', rating: true },
   { key: 'avgDefence', label: 'Защита', rating: true },
-  { key: 'avgFitness', label: 'Фитнес', rating: true },
+  { key: 'avgFitness', label: 'Физика', rating: true },
   { key: 'matches', label: 'Матчей' },
   { key: 'minutes', label: 'Минут всего' },
   { key: 'goals', label: 'Голы' },

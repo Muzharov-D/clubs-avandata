@@ -354,7 +354,7 @@ export default function MatchDetail() {
       {/* 4 рейтинга команды */}
       <div className="match-detail__ratings" id="md-ratings">
         <RatingCard label="Общий" value={teamRatings.overall} />
-        <RatingCard label="Фитнес" value={teamRatings.fitness} />
+        <RatingCard label="Физика" value={teamRatings.fitness} />
         <RatingCard label="Атака" value={teamRatings.attack} />
         <RatingCard label="Защита" value={teamRatings.defence} />
       </div>
@@ -557,7 +557,7 @@ export default function MatchDetail() {
               <div className="mvs__list">
                 {[
                   ['Общий', 'overall'],
-                  ['Фитнес', 'fitness'],
+                  ['Физика', 'fitness'],
                   ['Атака', 'attack'],
                   ['Защита', 'defence'],
                 ].map(([label, key]) => {

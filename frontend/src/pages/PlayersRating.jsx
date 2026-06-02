@@ -20,7 +20,7 @@ const GROUPS = [
   { id: 'general', label: 'Общее' },
   { id: 'attack',  label: 'Атака' },
   { id: 'defence', label: 'Защита' },
-  { id: 'fitness', label: 'Фитнес' },
+  { id: 'fitness', label: 'Физика' },
 ];
 
 // `path` принимает игрока → число (или null). Поля сверены с legirusAdapter
@@ -65,8 +65,8 @@ const METRICS = [
   { id: 'save',          group: 'defence', label: 'Сейвы',                  unit: '', digits: 0, path: (p) => num(p.stats?.defence3?.save) },
   { id: 'shotsAgainst',  group: 'defence', label: 'Удары по воротам',       unit: '', digits: 0, path: (p) => num(p.stats?.defence3?.shotsAgainst) },
 
-  // ── Фитнес (возглавляет рейтинг Фитнес) ──
-  { id: 'fitness',     group: 'fitness', label: 'Фитнес рейтинг',     unit: '',    digits: 1, primary: true, path: (p) => p.ratings?.fitness },
+  // ── Физика (возглавляет рейтинг физической готовности) ──
+  { id: 'fitness',     group: 'fitness', label: 'Физика рейтинг',     unit: '',    digits: 1, primary: true, path: (p) => p.ratings?.fitness },
   { id: 'totalDist',   group: 'fitness', label: 'Дистанция',          unit: ' м',  digits: 0, path: (p) => num(p.stats?.fitness?.totalDistance) },
   { id: 'sprintDist',  group: 'fitness', label: 'Спринт-дистанция',   unit: ' м',  digits: 0, path: (p) => num(p.stats?.fitness?.sprintDistance) },
   { id: 'sprints',     group: 'fitness', label: 'Спринты',            unit: '',    digits: 0, path: (p) => num(p.stats?.fitness?.sprintsCount) },

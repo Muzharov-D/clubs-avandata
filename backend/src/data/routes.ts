@@ -145,9 +145,9 @@ export async function dataRoutes(app: FastifyInstance) {
     });
   });
 
-  // Агрегат командных показателей за период (правка Зенита #7): 1 круг / 2 круг /
-  // сезон. Усредняет нашу сторону teamSummaryStats + рейтинги по матчам периода.
-  // Границы кругов — по турам календаря (см. teamStatsAggregate.ts).
+  // Агрегат командных показателей за период: 1 круг / 2 круг / сезон. Усредняет
+  // нашу сторону teamSummaryStats + рейтинги + командные агрегаты по матчам периода.
+  // Границы кругов — по дате матча (1 круг = до 25 июля, см. teamStatsAggregate.ts).
   app.get<{ Querystring: { teamId?: string; period?: string } }>(
     '/matches/aggregate',
     async (req) => {
@@ -173,7 +173,8 @@ export async function dataRoutes(app: FastifyInstance) {
                   home_team_name AS "home", away_team_name AS "away",
                   match_date AS "date",
                   team_summary_stats AS "teamSummaryStats",
-                  team_avg_ratings AS "teamAvgRatings"
+                  team_avg_ratings AS "teamAvgRatings",
+                  team_aggregates AS "teamAggregates"
              FROM matches
             WHERE tenant_id = $1 AND team_id = $2 AND team_summary_stats IS NOT NULL`,
           [slug, teamId],
@@ -387,19 +388,17 @@ export async function dataRoutes(app: FastifyInstance) {
   });
 
   // Сезонные агрегаты по всем игрокам команды — основа рейтингов/перцентилей/
-  // сравнения/контроля нагрузки (Phase 2). Только тренеры.
+  // сравнения/контроля нагрузки (Phase 2), а также сезонного дашборда /club
+  // (топ-5, профили, состав, средний рейтинг). Доступно всем участникам клуба —
+  // те же рейтинги уже показываются на /club по последнему матчу.
   app.get<{ Querystring: { teamId?: string } }>('/players/season', async (req) => {
     const slug = tenantId(req);
-    const role = req.user?.role;
-    if (role !== 'head_coach' && role !== 'team_coach') {
-      throw new UnauthorizedError('coaches only');
-    }
     const teamId = req.query.teamId;
     if (!teamId) throw new BadRequestError('teamId is required', 'NO_TEAM');
     return withTenant(slug, async (_tx, conn) => {
       const { rows } = await conn.query<AnyRow>(
         `SELECT mp.player_id, p.full_name AS "fullName", p.number, p.position, p.photo_url AS "photoUrl",
-                mp.minutes, mp.ratings, mp.stats, m.match_date
+                mp.minutes, mp.ratings, mp.stats, mp.radar, m.match_date
            FROM match_players mp
            JOIN matches m ON m.id = mp.match_id
            JOIN players p ON p.id = mp.player_id
@@ -414,6 +413,7 @@ export async function dataRoutes(app: FastifyInstance) {
         goals: number; assists: number; shots: number; keyPass: number; dribble: number;
         tackle: number; interception: number; recovery: number; duel: number; pressing: number;
         distance: number; sprintDistance: number;
+        radarAcc: Map<string, { sum: number; count: number }>;
       };
       const byId = new Map<string, Agg>();
       for (const r of rows) {
@@ -427,6 +427,7 @@ export async function dataRoutes(app: FastifyInstance) {
             goals: 0, assists: 0, shots: 0, keyPass: 0, dribble: 0,
             tackle: 0, interception: 0, recovery: 0, duel: 0, pressing: 0,
             distance: 0, sprintDistance: 0,
+            radarAcc: new Map(),
           };
           byId.set(id, a);
         }
@@ -440,6 +441,15 @@ export async function dataRoutes(app: FastifyInstance) {
           a.sumAttack += Number(rt.attack ?? 0);
           a.sumDefence += Number(rt.defence ?? 0);
           a.sumFitness += Number(rt.fitness ?? 0);
+        }
+        // Сезонный радар (8 осей) — среднее по матчам, где ось присутствует.
+        const radar = (r.radar as Record<string, unknown>) ?? {};
+        for (const [k, v] of Object.entries(radar)) {
+          const n = Number(typeof v === 'object' && v ? (v as AnyRow).value : v);
+          if (!Number.isFinite(n) || n <= 0) continue;
+          const acc = a.radarAcc.get(k) ?? { sum: 0, count: 0 };
+          acc.sum += n; acc.count += 1;
+          a.radarAcc.set(k, acc);
         }
         a.goals += statField(r.stats, 'attack', 'goal');
         a.assists += statField(r.stats, 'attack', 'assist');
@@ -466,6 +476,10 @@ export async function dataRoutes(app: FastifyInstance) {
         distance: Math.round(a.distance), sprintDistance: Math.round(a.sprintDistance),
         // нагрузка: средние минуты за матч (для контроля перегруза в академии)
         minutesPerMatch: a.matches ? Math.round(a.minutes / a.matches) : 0,
+        // сезонный радар (8 осей) — среднее по сыгранным матчам, для профилей на /club
+        radar: Object.fromEntries(
+          [...a.radarAcc.entries()].map(([k, { sum, count }]) => [k, Number((sum / count).toFixed(2))]),
+        ),
       }));
       return { teamId, players };
     });

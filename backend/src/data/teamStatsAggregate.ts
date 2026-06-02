@@ -8,8 +8,8 @@
  * среднее по матчам периода (среднее ЗА МАТЧ — так показатели сопоставимы между
  * периодами с разным числом игр). Соперник в агрегате не показывается.
  *
- * Границы кругов — по турам календаря: 1 круг = туры ≤ середины сезона,
- * 2 круг = туры > середины. Матч маппится на тур по дню матча.
+ * Границы кругов — по дате матча: 1 круг = матчи ДО 25 июля, 2 круг = 25 июля и
+ * позже (правило проекта). Сезон называется по году окончания (2026).
  */
 
 type AnyObj = Record<string, unknown>;
@@ -26,6 +26,7 @@ export interface MatchStatsRow {
   date: string | Date | null;
   teamSummaryStats: { home?: AnyObj; away?: AnyObj } | null;
   teamAvgRatings: AnyObj | null;
+  teamAggregates: AnyObj | null;
 }
 
 export interface CalendarRoundRow {
@@ -43,21 +44,11 @@ export interface AggregateResult {
   matchCount: number;
   /** Усреднённые показатели нашей стороны (форма как teamSummaryStats.home/away). */
   our: AnyObj | null;
-  /** Усреднённые средние Performance Index по команде. */
+  /** Усреднённые средние рейтинги (индекс эффективности) по команде. */
   teamAvgRatings: AnyObj | null;
-  /** Граница кругов (макс. тур / середина) — для подписи на фронте. */
-  maxRound: number;
-  midpoint: number;
+  /** Усреднённые командные агрегаты (для блока «Идентичность команды»). */
+  teamAggregates: AnyObj | null;
 }
-
-const dayKey = (d: unknown): string => {
-  if (!d) return '';
-  try {
-    return new Date(d as string).toISOString().slice(0, 10);
-  } catch {
-    return '';
-  }
-};
 
 const normName = (s: unknown): string => String(s ?? '').toLowerCase().trim();
 
@@ -111,35 +102,30 @@ function deepAverage(objs: AnyObj[]): AnyObj {
  * @param team     Наша команда (id + name) — для выбора стороны.
  * @param period   round1 | round2 | season.
  */
+/**
+ * Круг матча по дате (правило проекта): 1 круг = ДО 25 июля, 2 круг = с 25 июля.
+ * Сравниваем по (месяц, день) — сезон укладывается в один календарный год.
+ * null — нет даты (попадёт только в «сезон»).
+ */
+function matchRound(date: unknown): 1 | 2 | null {
+  if (!date) return null;
+  const d = new Date(date as string);
+  if (Number.isNaN(d.getTime())) return null;
+  const monthDay = (d.getUTCMonth() + 1) * 100 + d.getUTCDate(); // июль=7 → 0725
+  return monthDay < 725 ? 1 : 2;
+}
+
 export function aggregateTeamStats(
   matches: MatchStatsRow[],
-  calendar: CalendarRoundRow[],
+  _calendar: CalendarRoundRow[],
   team: TeamRef,
   period: AggregatePeriod,
 ): AggregateResult {
-  // День матча → номер тура (по календарю).
-  const dayToRound = new Map<string, number>();
-  let maxRound = 0;
-  for (const c of calendar) {
-    if (c.round == null) continue;
-    // calendar.round хранится как текстовый ярлык («Тур 9», «Тур 12 · ДЕРБИ»),
-    // а не число — Number() даёт NaN и round1/round2 оставались пустыми.
-    // Достаём номер тура из строки.
-    const matchNum = String(c.round).match(/\d+/);
-    if (!matchNum) continue;
-    const r = Number(matchNum[0]);
-    if (!Number.isFinite(r)) continue;
-    maxRound = Math.max(maxRound, r);
-    const day = dayKey(c.date);
-    if (day) dayToRound.set(day, r);
-  }
-  const midpoint = Math.ceil(maxRound / 2);
-
   const inPeriod = (m: MatchStatsRow): boolean => {
     if (period === 'season') return true;
-    const r = dayToRound.get(dayKey(m.date));
-    if (r == null) return false; // матч не сматчился с туром — только в «сезон»
-    return period === 'round1' ? r <= midpoint : r > midpoint;
+    const r = matchRound(m.date);
+    if (r == null) return false; // нет даты — только в «сезон»
+    return period === 'round1' ? r === 1 : r === 2;
   };
 
   const ourLower = normName(team.name);
@@ -151,13 +137,15 @@ export function aggregateTeamStats(
   const ratings = selected
     .map((m) => m.teamAvgRatings)
     .filter((r): r is AnyObj => isPlainObj(r));
+  const aggregates = selected
+    .map((m) => m.teamAggregates)
+    .filter((a): a is AnyObj => isPlainObj(a));
 
   return {
     period,
     matchCount: selected.length,
     our: sides.length > 0 ? deepAverage(sides) : null,
     teamAvgRatings: ratings.length > 0 ? deepAverage(ratings) : null,
-    maxRound,
-    midpoint,
+    teamAggregates: aggregates.length > 0 ? deepAverage(aggregates) : null,
   };
 }

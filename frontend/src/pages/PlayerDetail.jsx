@@ -576,7 +576,7 @@ function MatchTab({ playerId, match, loading, allMatches, currentMatchId, setSel
     { value: 'all',     label: 'Все',     count: allSlices.length },
     { value: 'attack',  label: 'Атака',   count: groupCounts.attack },
     { value: 'defence', label: 'Оборона', count: groupCounts.defence },
-    { value: 'fitness', label: 'Фитнес',  count: groupCounts.fitness },
+    { value: 'fitness', label: 'Физика',  count: groupCounts.fitness },
   ];
 
   // Присутствие секций — для sticky-навигации и условного рендера групп.
@@ -641,7 +641,7 @@ function MatchTab({ playerId, match, loading, allMatches, currentMatchId, setSel
       {/* 4 RATING CARDS */}
       <div className="player-detail__ratings reveal">
         <RatingCard label="Общий" value={ratings.overall} />
-        <RatingCard label="Фитнес" value={ratings.fitness} />
+        <RatingCard label="Физика" value={ratings.fitness} />
         <RatingCard label="Атака" value={ratings.attack} />
         <RatingCard label="Защита" value={ratings.defence} />
       </div>
@@ -738,7 +738,7 @@ function MatchTab({ playerId, match, loading, allMatches, currentMatchId, setSel
       {/* FITNESS — скрываем целиком если ни одна метрика не считалась (бенч) */}
       {FITNESS_ROWS.some(([, k]) => Number(num(fitnessStats[k]) ?? 0) > 0) && (
         <div className="card">
-          <div className="page-section-title">Фитнес</div>
+          <div className="page-section-title">Физика</div>
           <div className="player-detail__fitness-grid">
             {FITNESS_ROWS.map(([label, key]) => (
               <div className="fitness-cell" key={key}>

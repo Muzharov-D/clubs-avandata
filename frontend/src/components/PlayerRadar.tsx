@@ -9,7 +9,7 @@ interface Props {
 }
 
 /**
- * 8-осевая радар-диаграмма по SportVisor Performance Index (0-10).
+ * 8-осевая радар-диаграмма по индексу эффективности SportVisor (0-10).
  *
  * Источник — `player.radar` из rich PDF parser:
  *   forwardPlay, possession, dribbling, shooting       (attack)
@@ -59,7 +59,7 @@ export function PlayerRadar({ player, teamPlayers, brand = '#1FB6FF' }: Props) {
   const gradId = `prdr-grad-${player.playerId ?? player.number ?? Math.random().toString(36).slice(2)}`;
 
   const ariaLabel =
-    'Радар Performance Index (0–10): ' +
+    'Радар: индекс эффективности (0–10): ' +
     values.map((v) => `${v.ax.label} ${v.my.toFixed(1)}`).join(', ');
 
   return (
@@ -100,7 +100,7 @@ export function PlayerRadar({ player, teamPlayers, brand = '#1FB6FF' }: Props) {
           </div>
         ))}
       </div>
-      <div className="prdr__caption">Performance Index SportVisor (0–10), не количество действий</div>
+      <div className="prdr__caption">Индекс эффективности SportVisor (0–10), не количество действий</div>
     </div>
   );
 }
