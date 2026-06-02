@@ -48,6 +48,46 @@
 }
 
 /* Табы фильтра группы метрик: Все / Атака / Оборона / Фитнес */
+/* Главные вкладки профиля: Сезон / Матчи */
+.player-detail__tabs {
+  display: flex;
+  gap: 4px;
+  margin: 0 0 16px;
+  padding: 4px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+}
+.player-detail__tab {
+  flex: 1 1 0;
+  padding: 10px 14px;
+  background: transparent;
+  border: none;
+  border-radius: 9px;
+  color: #94a3c8;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: background 0.15s var(--ease-out, ease-out), color 0.15s var(--ease-out, ease-out);
+}
+.player-detail__tab:hover { color: #fff; }
+.player-detail__tab.is-active {
+  color: #fff;
+  background: var(--brand-primary, #dc2626);
+}
+.player-detail__tab-count {
+  font-size: 11px;
+  font-weight: 700;
+  color: inherit;
+  background: rgba(0, 0, 0, 0.22);
+  border-radius: 8px;
+  padding: 1px 7px;
+}
+
 .player-detail__pizza-tabs {
   display: flex;
   flex-wrap: wrap;

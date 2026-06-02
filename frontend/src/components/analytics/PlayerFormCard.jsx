@@ -8,8 +8,12 @@ import { fetchPlayerTrend } from '../../services/api';
 import { formIndex, seasonMean, trajectorySlope, streak } from '../../utils/analytics';
 import './analytics.css';
 
-export default function PlayerFormCard({ playerId }) {
-  const res = useApi(() => fetchPlayerTrend(playerId), [playerId]);
+export default function PlayerFormCard({ playerId, series: propSeries }) {
+  // Переиспользуем серию, если родитель её уже загрузил (см. PlayerTrendCard).
+  const res = useApi(
+    () => (propSeries ? Promise.resolve({ series: propSeries }) : fetchPlayerTrend(playerId)),
+    [playerId, propSeries],
+  );
   const series = res.data?.series || [];
   const rated = series.filter((s) => Number(s?.overall) > 0);
   if (rated.length < 3) return null;

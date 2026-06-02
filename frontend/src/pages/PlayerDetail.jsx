@@ -1,10 +1,11 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useApi } from '../hooks/useApi';
-import { fetchMatch, fetchMatches, fetchMetrics, fetchPlayer, fetchPlayersSeason } from '../services/api';
+import { fetchMatch, fetchMatches, fetchMetrics, fetchPlayer, fetchPlayersSeason, fetchPlayerTrend } from '../services/api';
 import { compoundAt } from '../utils/analytics';
 import PlayerAdvancedCard from '../components/analytics/PlayerAdvancedCard';
 import SeasonPercentileCard from '../components/analytics/SeasonPercentileCard';
+import SeasonProfileCard from '../components/analytics/SeasonProfileCard';
 import PlayerFormCard from '../components/analytics/PlayerFormCard';
 import RoleFitCard from '../components/analytics/RoleFitCard';
 import { useAuth } from '../contexts/AuthContext';
@@ -20,7 +21,6 @@ import PlayerTrendCard from '../components/PlayerTrendCard';
 import HalfSplitChart from '../components/HalfSplitChart';
 import SpeedZones from '../components/SpeedZones';
 import PassProfile from '../components/PassProfile';
-import { ratingColor } from '../utils/colors';
 import { num, percentileRank, formatRaw } from '../utils/num';
 import { POSITION_OPTIONS, PIZZA_VS_LABEL, TEMPLATES, getStatValue, positionGroup } from '../utils/pizzaTemplates';
 import './PlayerDetail.css';
@@ -90,15 +90,6 @@ const FITNESS_ROWS = [
   ['Средняя скорость, м/с',        'averageSpeed'],
 ];
 
-// Ключи splits для блока «1 тайм vs 2 тайм» внутри PlayerDetail.
-// (компонент HalfTimeBars удалён в Sprint 2 — рендер теперь inline).
-const HALFTIME_KEYS = [
-  'Pass', 'Shot', 'Tackle', 'Pressing',
-  'Sprint forward', 'Recovery', 'Goal actions', 'Interception', 'Cross', 'Duel',
-];
-
-const RADAR_PALETTE = ['#22d3ee', '#7cb342', '#42a5f5', '#ef5350', '#ab47bc', '#26a69a', '#ff9800', '#03a9f4'];
-
 function fmtNum(v, digits = 0) {
   const n = num(v);
   if (n === null || isNaN(n)) return '—';
@@ -147,77 +138,209 @@ export default function PlayerDetail() {
     [effectiveTeamId]
   );
   const allMatches = matchesRes.data?.matches || [];
-  // Селектор матча: дефолтно последний, юзер может переключать если матчей >1
+
+  // Селектор матча: дефолтно последний, юзер может переключать (вкладка «Матчи»).
   const [selectedMatchId, setSelectedMatchId] = useState(null);
   const currentMatchId = selectedMatchId || allMatches[0]?.id;
-  useEffect(() => { setSelectedMatchId(null); }, [playerId]);  // reset при смене игрока
-
   const matchRes = useApi(() => (currentMatchId ? fetchMatch(currentMatchId) : Promise.resolve(null)), [currentMatchId]);
   const metricsRes = useApi(fetchMetrics, []);
-  // Сезонные агрегаты для перцентилей vs позиционный пул. Эндпоинт только для
-  // тренеров → defensively .catch(null), карточка деградирует (не показывается).
+
+  // Сезонные агрегаты по всем игрокам — основа сезонного профиля/перцентилей.
+  // Эндпоинт только для тренеров → defensively .catch(null), сезонные карточки
+  // (профиль/перцентиль) деградируют, тренд/форма работают и для игрока.
   const seasonRes = useApi(
     () => (effectiveTeamId ? fetchPlayersSeason(effectiveTeamId).catch(() => null) : Promise.resolve(null)),
     [effectiveTeamId],
   );
   const seasonPlayers = seasonRes.data?.players || [];
 
-  const match = matchRes.data;
+  // Тренд игрока за сезон — на уровне страницы, чтобы посчитать сезонные итоги в
+  // шапке и переиспользовать в карточках тренда/формы (без второго запроса).
+  const trendRes = useApi(() => (playerId ? fetchPlayerTrend(playerId).catch(() => null) : Promise.resolve(null)), [playerId]);
+  const series = trendRes.data?.series || [];
+
+  // Вкладки: «Сезон» (общий профиль) по умолчанию · «Матчи» (разбор конкретного матча).
+  const [tab, setTab] = useState('season');
+  useEffect(() => { setSelectedMatchId(null); setTab('season'); }, [playerId]);
+
   const metrics = metricsRes.data || {};
-  // eslint-disable-next-line no-unused-vars
-  const radarAxes = metrics.radarAxes || [];
   const labels = metrics.metricLabels || {};
+  const match = matchRes.data;
 
-  useDocumentTitle(lookedUpPlayer?.fullName ? `${lookedUpPlayer.fullName} — Игрок` : 'Профиль игрока');
+  // Личность игрока для сезонной шапки: приоритет fetchPlayer (работает для всех
+  // ролей), затем запись из состава матча.
+  const matchPlayer = useMemo(
+    () => (match?.players || []).find((p) => p.id === playerId),
+    [match, playerId]
+  );
+  const identity = lookedUpPlayer || matchPlayer || null;
 
+  useDocumentTitle(identity?.fullName ? `${identity.fullName} — Игрок` : 'Профиль игрока');
+
+  // Сезонные итоги: из агрегата (тренеры) либо из серии тренда (игрок видит свою).
+  const meSeason = useMemo(
+    () => seasonPlayers.find((s) => s.id === playerId) || null,
+    [seasonPlayers, playerId]
+  );
+  const seasonTotals = useMemo(() => {
+    if (meSeason) {
+      return {
+        matches: meSeason.matches, minutes: meSeason.minutes,
+        goals: meSeason.goals, assists: meSeason.assists, avgOverall: meSeason.avgOverall,
+      };
+    }
+    if (series.length) {
+      const rated = series.filter((s) => Number(s.overall) > 0).map((s) => Number(s.overall));
+      return {
+        matches: series.length,
+        minutes: series.reduce((a, s) => a + (Number(s.minutes) || 0), 0),
+        goals: series.reduce((a, s) => a + (Number(s.goals) || 0), 0),
+        assists: series.reduce((a, s) => a + (Number(s.assists) || 0), 0),
+        avgOverall: rated.length ? Number((rated.reduce((a, b) => a + b, 0) / rated.length).toFixed(2)) : 0,
+      };
+    }
+    return null;
+  }, [meSeason, series]);
+
+  if (playerLookupRes.loading && matchesRes.loading) return <div className="empty-state">Загрузка…</div>;
+  if (!identity && !matchesRes.loading && !matchRes.loading) return <div className="empty-state">Игрок не найден</div>;
+  if (!identity) return <div className="empty-state">Загрузка…</div>;
+
+  return (
+    <div className="page player-detail">
+      {/* Вкладки: Сезон / Матчи */}
+      <div className="player-detail__tabs" role="tablist">
+        <button
+          type="button" role="tab"
+          aria-selected={tab === 'season'}
+          className={`player-detail__tab${tab === 'season' ? ' is-active' : ''}`}
+          onClick={() => setTab('season')}
+        >Сезон</button>
+        <button
+          type="button" role="tab"
+          aria-selected={tab === 'matches'}
+          className={`player-detail__tab${tab === 'matches' ? ' is-active' : ''}`}
+          onClick={() => setTab('matches')}
+        >Матчи{allMatches.length ? <span className="player-detail__tab-count">{allMatches.length}</span> : null}</button>
+      </div>
+
+      {tab === 'season' ? (
+        <SeasonTab
+          identity={identity}
+          playerId={playerId}
+          teamId={identity.teamId || effectiveTeamId}
+          seasonPlayers={seasonPlayers}
+          series={series}
+          seasonTotals={seasonTotals}
+        />
+      ) : (
+        <MatchTab
+          playerId={playerId}
+          match={match}
+          loading={matchRes.loading || matchesRes.loading}
+          allMatches={allMatches}
+          currentMatchId={currentMatchId}
+          setSelectedMatchId={setSelectedMatchId}
+          labels={labels}
+        />
+      )}
+    </div>
+  );
+}
+
+/* ───────────────────────────── ВКЛАДКА «СЕЗОН» ─────────────────────────────
+   Общий профиль игрока: кто он по всему сезону, а не в одном матче. */
+function SeasonTab({ identity, playerId, teamId, seasonPlayers, series, seasonTotals }) {
+  const avg = seasonTotals?.avgOverall;
+  return (
+    <>
+      {/* HEADER — сезонная личность */}
+      <div className="card player-detail__hero">
+        <PlayerPhoto player={identity} size={132} />
+        <div className="player-detail__hero-info">
+          <div className="player-detail__hero-pos">№{identity.number} · {identity.positionFull || identity.position}</div>
+          <h1 className="player-detail__hero-name">{identity.fullName}</h1>
+          <div className="player-detail__hero-match">
+            {seasonTotals ? `Сезон · ${seasonTotals.matches} ${plural(seasonTotals.matches, 'матч', 'матча', 'матчей')}` : 'Сезон'}
+          </div>
+          {seasonTotals ? (
+            <div className="player-detail__hero-meta">
+              <span>Минут: <b>{seasonTotals.minutes}</b></span>
+              <span>Голы: <b>{seasonTotals.goals}</b></span>
+              <span>Ассисты: <b>{seasonTotals.assists}</b></span>
+            </div>
+          ) : (
+            <div className="player-detail__hero-meta">
+              <span style={{ color: '#94a3c8' }}>Нет сыгранных матчей в сезоне</span>
+            </div>
+          )}
+        </div>
+        <div className="player-detail__hero-rating">
+          <RatingPill value={avg} size="xl" />
+          <div className="player-detail__hero-rating-100">средний за сезон</div>
+        </div>
+      </div>
+
+      {/* Посещаемость тренировок — появляется только если есть данные */}
+      <AttendanceBlock teamId={teamId} playerId={playerId} />
+
+      {/* Динамика по сезону — спарклайны рейтингов + лента матчей */}
+      <PlayerTrendCard playerId={playerId} series={series} />
+
+      {/* Форма: индекс свежих матчей, vs своё среднее, серия, траектория */}
+      <PlayerFormCard playerId={playerId} series={series} />
+
+      {/* Сезонная пицца — витрина общего профиля (per-90 vs позиционный пул) */}
+      <SeasonProfileCard subject={identity} seasonPlayers={seasonPlayers} />
+
+      {/* Перцентиль vs сезонный позиционный пул (на 90′) — детальные полосы */}
+      <SeasonPercentileCard subject={identity} seasonPlayers={seasonPlayers} />
+
+      {series.length < 2 && (!seasonPlayers || seasonPlayers.length < 4) && (
+        <div className="empty-state">
+          Сезонная статистика появится после разбора 2+ матчей.
+          Перейдите во вкладку «Матчи», чтобы посмотреть разбор конкретной игры.
+        </div>
+      )}
+    </>
+  );
+}
+
+/* ──────────────────────────── ВКЛАДКА «МАТЧИ» ──────────────────────────────
+   Разбор конкретного матча: рейтинги, продвинутые метрики, пицца по составу,
+   role-fit, фитнес, тепловая карта, сплиты по таймам. */
+function MatchTab({ playerId, match, loading, allMatches, currentMatchId, setSelectedMatchId, labels }) {
+  // Pizza chart: выбор позиционного шаблона и фильтр группы — состояние вкладки.
   const player = useMemo(
     () => (match?.players || []).find((p) => p.id === playerId),
     [match, playerId]
   );
-
-  const samePos = useMemo(() => {
-    if (!match || !player) return [];
-    return match.players.filter((p) => p.position === player.position);
-  }, [match, player]);
-
-  const badges = useMemo(() => {
-    if (!match || !player) return [];
-    const all = match.players;
-    const out = [];
-    for (const m of RANK_METRICS) {
-      const ranked = [...all]
-        .map((p) => ({ p, v: num(m.getter(p)) }))
-        .filter((r) => r.v !== null && !isNaN(r.v) && r.v > 0)
-        .sort((a, b) => b.v - a.v);
-      const idx = ranked.findIndex((r) => r.p.id === player.id);
-      if (idx >= 0 && idx < 3) {
-        const my = ranked[idx];
-        out.push({
-          rank: idx + 1,
-          label: m.label,
-          value: my.v,
-          icon: RANK_ICONS[idx],
-        });
-      }
-    }
-    return out.sort((a, b) => a.rank - b.rank);
-  }, [match, player]);
-
-  // Pizza chart: выбор позиционного шаблона.
-  // Дефолт — позиция самого игрока. Если он не классифицирован — MID.
-  const [pizzaPos, setPizzaPos] = useState(() => positionGroup(player) || 'MID');
-  // Фильтр группы: 'all' | 'attack' | 'defence' | 'fitness'.
+  const [pizzaPos, setPizzaPos] = useState('MID');
   const [pizzaGroup, setPizzaGroup] = useState('all');
   useEffect(() => {
-    const next = positionGroup(player) || 'MID';
-    setPizzaPos(next);
+    setPizzaPos(positionGroup(player) || 'MID');
     setPizzaGroup('all');
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [playerId]);
+  }, [playerId, player?.position]);
 
-  if (matchesRes.loading || matchRes.loading) return <div className="empty-state">Загрузка…</div>;
-  if (!match) return <div className="empty-state">Нет данных о матче</div>;
-  if (!player) return <div className="empty-state">Игрок не найден</div>;
+  const matchPicker = allMatches.length > 1 && (
+    <div className="player-detail__match-picker">
+      <label htmlFor="pd-match-select">Матч:</label>
+      <select
+        id="pd-match-select"
+        value={currentMatchId || ''}
+        onChange={(e) => setSelectedMatchId(e.target.value)}
+      >
+        {allMatches.map((m) => (
+          <option key={m.id} value={m.id}>{fmtMatchShort(m) || `Матч ${m.id}`}</option>
+        ))}
+      </select>
+    </div>
+  );
+
+  if (loading) return <>{matchPicker}<div className="empty-state">Загрузка…</div></>;
+  if (!match) return <>{matchPicker}<div className="empty-state">Нет данных о матче</div></>;
+  if (!player) return <>{matchPicker}<div className="empty-state">Игрок не выходил на поле в этом матче</div></>;
 
   const ratings = player.ratings || {};
   const splits = player.splits || {};
@@ -225,6 +348,21 @@ export default function PlayerDetail() {
 
   const attackRows = ATTACK_SPLIT_KEYS.filter((k) => splits[k]);
   const defenceRows = DEFENCE_SPLIT_KEYS.filter((k) => splits[k]);
+
+  // Бейджи «Лучший в команде» — топ-3 ранг по матчу.
+  const all = match.players;
+  const badges = [];
+  for (const m of RANK_METRICS) {
+    const ranked = [...all]
+      .map((p) => ({ p, v: num(m.getter(p)) }))
+      .filter((r) => r.v !== null && !isNaN(r.v) && r.v > 0)
+      .sort((a, b) => b.v - a.v);
+    const idx = ranked.findIndex((r) => r.p.id === player.id);
+    if (idx >= 0 && idx < 3) {
+      badges.push({ rank: idx + 1, label: m.label, value: ranked[idx].v, icon: RANK_ICONS[idx] });
+    }
+  }
+  badges.sort((a, b) => a.rank - b.rank);
 
   // Ключевые метрики для визуала «по таймам» (момент игры).
   const HALF_VIZ = [
@@ -236,11 +374,7 @@ export default function PlayerDetail() {
     .map(([k, label]) => ({ label, first: splits[k]?.first, second: splits[k]?.second }))
     .filter((r) => (Number(r.first) || 0) + (Number(r.second) || 0) > 0);
 
-  // Pizza slices: для каждой метрики шаблона считаем percentile vs ВСЕЙ команды
-  // (peer-pool = все игроки матча, не только позиционная подгруппа).
-  // - длина слайса = percentile (0–100, насколько игрок впереди команды)
-  // - подпись = реальное «сырое» значение метрики (голы, отборы, xG…)
-  // inverse=true в шаблоне (Фолы, ЖК, потери) флипает percentile — меньше = лучше.
+  // Pizza slices: для каждой метрики шаблона percentile vs ВСЕЙ команды матча.
   const pizzaTemplate = TEMPLATES[pizzaPos];
   const peers = match.players || [];
   const allSlicesRaw = pizzaTemplate
@@ -249,24 +383,11 @@ export default function PlayerDetail() {
         const allValues = peers.map((p) => getStatValue(p, s.key));
         const pct = percentileRank(myValue, allValues, !!s.inverse);
         const teamMax = Math.max(0, ...allValues.map((v) => Number(num(v) ?? 0)));
-        return {
-          axis: s.axis,
-          group: s.group,
-          value: pct ?? 0,
-          displayValue: formatRaw(myValue),
-          _key: s.key,
-          _teamMax: teamMax,
-        };
+        return { axis: s.axis, group: s.group, value: pct ?? 0, displayValue: formatRaw(myValue), _key: s.key, _teamMax: teamMax };
       })
     : [];
-  // Фильтруем метрики где у ВСЕЙ команды значение 0 (xG/xA для U-15, dribblePacking
-  // и т.п. не считаются SportVisor'ом). Без этого pizza заполнена пустыми слайсами.
   const allSlices = allSlicesRaw.filter((s) => s._teamMax > 0);
-  const pizzaSlices = pizzaGroup === 'all'
-    ? allSlices
-    : allSlices.filter((s) => s.group === pizzaGroup);
-
-  // Количество слайсов на каждую группу — для бейджей на табах.
+  const pizzaSlices = pizzaGroup === 'all' ? allSlices : allSlices.filter((s) => s.group === pizzaGroup);
   const groupCounts = allSlices.reduce(
     (acc, s) => { acc[s.group] = (acc[s.group] || 0) + 1; return acc; },
     { attack: 0, defence: 0, fitness: 0 },
@@ -278,35 +399,17 @@ export default function PlayerDetail() {
     { value: 'fitness', label: 'Фитнес',  count: groupCounts.fitness },
   ];
 
-  const matchSubtitle = match ? `по матчу ${fmtMatchShort(match)}` : '';
-
   return (
-    <div className="page player-detail">
-      {/* Селектор матча: только если их 2+ */}
-      {allMatches.length > 1 && (
-        <div className="player-detail__match-picker">
-          <label htmlFor="pd-match-select">Матч:</label>
-          <select
-            id="pd-match-select"
-            value={currentMatchId || ''}
-            onChange={(e) => setSelectedMatchId(e.target.value)}
-          >
-            {allMatches.map((m) => (
-              <option key={m.id} value={m.id}>
-                {fmtMatchShort(m) || `Матч ${m.id}`}
-              </option>
-            ))}
-          </select>
-        </div>
-      )}
+    <>
+      {matchPicker}
 
-      {/* HEADER */}
+      {/* HEADER — игрок в контексте выбранного матча */}
       <div className="card player-detail__hero">
         <PlayerPhoto player={player} size={132} />
         <div className="player-detail__hero-info">
           <div className="player-detail__hero-pos">№{player.number} · {player.positionFull}</div>
           <h1 className="player-detail__hero-name">{player.fullName}</h1>
-          {matchSubtitle && <div className="player-detail__hero-match">{matchSubtitle}</div>}
+          {match && <div className="player-detail__hero-match">по матчу {fmtMatchShort(match)}</div>}
           <div className="player-detail__hero-meta">
             {Number(player.minutes ?? 0) === 0 ? (
               <span style={{ color: '#94a3c8' }}>Не выходил на поле в этом матче</span>
@@ -328,9 +431,6 @@ export default function PlayerDetail() {
         </div>
       </div>
 
-      {/* Блок посещаемости тренировок (Sprint 5.E) — появляется только если есть данные */}
-      <AttendanceBlock teamId={player.teamId} playerId={player.id} />
-
       {/* 4 RATING CARDS */}
       <div className="player-detail__ratings reveal">
         <RatingCard label="Общий" value={ratings.overall} />
@@ -339,30 +439,19 @@ export default function PlayerDetail() {
         <RatingCard label="Защита" value={ratings.defence} />
       </div>
 
-      {/* Динамика по сезону (Phase 2) */}
-      <PlayerTrendCard playerId={playerId} />
-
-      {/* Форма: индекс свежих матчей, vs своё среднее, серия, траектория */}
-      <PlayerFormCard playerId={playerId} />
-
       {/* Продвинутые модельные метрики за матч (xG/xT/xA/packing/PAdj/win%) */}
       <PlayerAdvancedCard player={player} squad={match.players} match={match} />
 
-      {/* Перцентиль vs сезонный позиционный пул (на 90′) */}
-      <SeasonPercentileCard subject={player} seasonPlayers={seasonPlayers} />
-
-      {/* RIBBON: Лучший в команде */}
+      {/* RIBBON: Лучший в команде (в этом матче) */}
       {badges.length > 0 && (
         <div className="card player-detail__ribbon reveal">
-          <div className="page-section-title">Лучший в команде</div>
+          <div className="page-section-title">Лучший в команде <span className="an-model-tag">в этом матче</span></div>
           <div className="player-detail__ribbon-row">
             {badges.map((b, i) => (
               <div className={`badge badge--rank-${b.rank}`} key={i}>
                 <span className="badge__icon">{b.icon}</span>
                 <div className="badge__body">
-                  <div className="badge__rank">
-                    {b.rank === 1 ? 'Лучший по' : `#${b.rank} по`}
-                  </div>
+                  <div className="badge__rank">{b.rank === 1 ? 'Лучший по' : `#${b.rank} по`}</div>
                   <div className="badge__label">{b.label}</div>
                 </div>
                 <div className="badge__value">{Number.isInteger(b.value) ? b.value : b.value.toFixed(1)}</div>
@@ -372,10 +461,10 @@ export default function PlayerDetail() {
         </div>
       )}
 
-      {/* PIZZA CHART — фронт-витрина профиля игрока */}
+      {/* PIZZA CHART — профиль по составу матча */}
       <div className="card player-detail__pizza">
         <div className="player-detail__pizza-head">
-          <div className="page-section-title">Профиль игрока</div>
+          <div className="page-section-title">Профиль в матче</div>
           <div className="player-detail__pizza-pos">
             <label htmlFor="pizza-pos">Шаблон:</label>
             <select
@@ -390,7 +479,6 @@ export default function PlayerDetail() {
           </div>
         </div>
 
-        {/* Табы: фильтр по группе метрик. Все | Атака | Оборона | Фитнес. */}
         <div className="player-detail__pizza-tabs" role="tablist">
           {GROUP_TABS.map((t) => (
             <button
@@ -408,11 +496,8 @@ export default function PlayerDetail() {
         </div>
 
         {peers.length < 2 ? (
-          // Если в матче меньше 2 игроков — percentile бессмысленен.
-          // Не показываем диаграмму, объясняем причину.
           <div className="empty-state">
-            Недостаточно данных для сравнения с командой (нужны рейтинги
-            хотя бы 2 игроков матча).
+            Недостаточно данных для сравнения с командой (нужны рейтинги хотя бы 2 игроков матча).
           </div>
         ) : (
           <PizzaChart
@@ -427,18 +512,11 @@ export default function PlayerDetail() {
       {/* Ролевой профиль — к какому архетипу ближе игрок */}
       <RoleFitCard player={player} squad={match.players} />
 
-      {/* RATINGS vs TEAM AVG — оставил, нагляднее по 4 общим осям */}
-      {/* (радары удалены — pizza заменила и 14-осевой radar, и position-сравнение) */}
-
-      {/* MAPS — только тепловая карта движения (пас-карта убрана) */}
+      {/* MAPS — тепловая карта движения */}
       {player.maps?.fitnessHeatmap && (
         <div className="player-detail__maps">
           <div className="card player-detail__map-card player-detail__map-card--heat">
-            <SoccerFieldImageMap
-              src={player.maps.fitnessHeatmap}
-              title="Тепловая карта движения"
-              height={420}
-            />
+            <SoccerFieldImageMap src={player.maps.fitnessHeatmap} title="Тепловая карта движения" height={420} />
           </div>
         </div>
       )}
@@ -460,9 +538,7 @@ export default function PlayerDetail() {
         </div>
       )}
 
-      {/* ПОЛНАЯ ТАБЛИЦА МЕТРИК — свёрнута по умолчанию.
-          Раскрывается по клику. Внутри — две большие сплит-таблицы.
-          Если обе пустые (splits {} в БД) — не показываем accordion вообще. */}
+      {/* Зоны интенсивности */}
       {(() => {
         const z1 = num(fitnessStats.speed_4_5_5), z2 = num(fitnessStats.speed_5_5_7), z3 = num(fitnessStats.speed_7plus);
         if ((z1 || 0) + (z2 || 0) + (z3 || 0) <= 0 && (num(fitnessStats.totalDistance) || 0) <= 0) return null;
@@ -479,6 +555,7 @@ export default function PlayerDetail() {
         );
       })()}
 
+      {/* Профиль передач */}
       {(() => {
         const a3 = player.stats?.attack3 || {};
         const a2 = player.stats?.attack2 || {};
@@ -506,31 +583,29 @@ export default function PlayerDetail() {
       )}
 
       {(attackRows.length > 0 || defenceRows.length > 0) && (
-      <details className="card player-detail__splits-toggle">
-        <summary className="player-detail__splits-summary">
-          <span>Раскрыть полную таблицу метрик</span>
-          <span className="player-detail__splits-summary-meta">
-            {attackRows.length} атака · {defenceRows.length} защита · по таймам
-          </span>
-        </summary>
-        <div className="player-detail__splits-body">
-          <SplitsTable
-            title="Атака — раскладка по таймам"
-            keys={attackRows}
-            splits={splits}
-            labels={labels}
-          />
-          <SplitsTable
-            title="Защита — раскладка по таймам"
-            keys={defenceRows}
-            splits={splits}
-            labels={labels}
-          />
-        </div>
-      </details>
+        <details className="card player-detail__splits-toggle">
+          <summary className="player-detail__splits-summary">
+            <span>Раскрыть полную таблицу метрик</span>
+            <span className="player-detail__splits-summary-meta">
+              {attackRows.length} атака · {defenceRows.length} защита · по таймам
+            </span>
+          </summary>
+          <div className="player-detail__splits-body">
+            <SplitsTable title="Атака — раскладка по таймам" keys={attackRows} splits={splits} labels={labels} />
+            <SplitsTable title="Защита — раскладка по таймам" keys={defenceRows} splits={splits} labels={labels} />
+          </div>
+        </details>
       )}
-    </div>
+    </>
   );
+}
+
+function plural(n, one, few, many) {
+  const m10 = n % 10;
+  const m100 = n % 100;
+  if (m10 === 1 && m100 !== 11) return one;
+  if (m10 >= 2 && m10 <= 4 && (m100 < 10 || m100 >= 20)) return few;
+  return many;
 }
 
 function SplitsTable({ title, keys, splits, labels }) {

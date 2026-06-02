@@ -14,8 +14,13 @@ const LINES = [
   { key: 'defence', label: 'Защита', color: 'var(--rating-good)' },
 ];
 
-export default function PlayerTrendCard({ playerId }) {
-  const trendRes = useApi(() => (playerId ? fetchPlayerTrend(playerId) : Promise.resolve(null)), [playerId]);
+export default function PlayerTrendCard({ playerId, series: propSeries }) {
+  // Если родитель уже загрузил серию (PlayerDetail тянет trend на уровне страницы),
+  // переиспользуем её и не делаем второй сетевой запрос.
+  const trendRes = useApi(
+    () => (propSeries ? Promise.resolve({ series: propSeries }) : playerId ? fetchPlayerTrend(playerId) : Promise.resolve(null)),
+    [playerId, propSeries],
+  );
   const series = trendRes.data?.series || [];
   if (trendRes.loading) return null;
   if (series.length < 2) return null; // тренд имеет смысл от 2 матчей
