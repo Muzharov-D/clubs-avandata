@@ -57,28 +57,38 @@ export default function Login() {
           <img src="/icons/avandata.png" alt="АванDата" />
         </div>
         <h1 className="login-title">Вход в систему</h1>
-        <form className="login-form" onSubmit={submit}>
-          <label>Логин</label>
-          <input
-            type="text"
-            value={u}
-            onChange={(e) => setU(e.target.value)}
-            autoComplete="username"
-            autoFocus
-            required
-            data-testid="login-username"
-          />
-          <label>Пароль</label>
-          <input
-            type="password"
-            value={p}
-            onChange={(e) => setP(e.target.value)}
-            autoComplete="current-password"
-            required
-            data-testid="login-password"
-          />
+        <form className={`login-form${busy ? ' login-form--busy' : ''}`} onSubmit={submit} aria-busy={busy}>
+          <div className="login-field">
+            <label htmlFor="login-username">Логин</label>
+            <input
+              id="login-username"
+              type="text"
+              value={u}
+              onChange={(e) => setU(e.target.value)}
+              autoComplete="username"
+              spellCheck={false}
+              autoFocus
+              required
+              disabled={busy}
+              data-testid="login-username"
+            />
+          </div>
+          <div className="login-field">
+            <label htmlFor="login-password">Пароль</label>
+            <input
+              id="login-password"
+              type="password"
+              value={p}
+              onChange={(e) => setP(e.target.value)}
+              autoComplete="current-password"
+              required
+              disabled={busy}
+              data-testid="login-password"
+            />
+          </div>
           {error && <div className="login-error" role="alert" aria-live="assertive" data-testid="login-error">{error}</div>}
-          <button type="submit" disabled={busy} data-testid="login-submit">
+          <button type="submit" className="login-submit" disabled={busy} data-testid="login-submit">
+            {busy && <span className="login-spinner" aria-hidden="true" />}
             {busy ? 'Проверка…' : 'Войти'}
           </button>
         </form>

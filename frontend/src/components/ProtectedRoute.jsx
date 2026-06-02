@@ -28,7 +28,7 @@ export default function ProtectedRoute({ children, roles }) {
             onClick={() => { localStorage.clear(); window.location.href = '/login'; }}
             style={{
               padding: '10px 20px', borderRadius: 8, border: 'none',
-              background: '#22d3ee', color: '#0a1020', fontWeight: 700, cursor: 'pointer',
+              background: 'var(--accent-cyan, #22d3ee)', color: '#0a1020', fontWeight: 700, cursor: 'pointer',
             }}
           >
             Сбросить сессию и войти заново

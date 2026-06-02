@@ -65,7 +65,9 @@
 .login-form button {
   margin-top: 14px;
   background: linear-gradient(135deg, var(--accent-cyan) 0%, #3b82f6 100%);
-  color: #0e0e2a;
+  /* Текст белый: .login-submit ниже перекрывает фон на тёмно-синий бренд-градиент,
+     где прежний near-black #0e0e2a проваливался по контрасту (WCAG fail). */
+  color: #fff;
   border: none;
   font-weight: 800;
   font-size: 14px;
@@ -74,6 +76,10 @@
   cursor: pointer;
   transition: filter 0.15s;
   font-family: inherit;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
 }
 .login-form button:hover:not(:disabled) { filter: brightness(1.1); }
 .login-form button:disabled {
@@ -207,8 +213,26 @@
 }
 .login-submit:hover:not(:disabled) { transform: translateY(-2px); filter: brightness(1.06); opacity: 1; }
 .login-submit:active:not(:disabled) { transform: translateY(0); }
+.login-submit:disabled { cursor: wait; }
+
+/* Спиннер в кнопке во время проверки логина (#20). */
+.login-spinner {
+  width: 15px; height: 15px; flex-shrink: 0;
+  border: 2px solid rgba(255, 255, 255, 0.35);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: login-spin 0.7s linear infinite;
+}
+@keyframes login-spin { to { transform: rotate(360deg); } }
+
+/* Во время отправки форма визуально «заперта» (#26): поля гаснут и не кликаются. */
+.login-form--busy .login-field input {
+  opacity: 0.6;
+  pointer-events: none;
+}
 
 @media (prefers-reduced-motion: reduce) {
   .login-page::before { animation: none; }
   .login-card { animation: none; }
+  .login-spinner { animation-duration: 1.4s; }
 }

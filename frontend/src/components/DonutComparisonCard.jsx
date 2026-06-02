@@ -25,7 +25,7 @@ export default function DonutComparisonCard({ label, home, away }) {
           <circle cx="50" cy="50" r={radius} stroke="rgba(255,255,255,0.1)" strokeWidth="10" fill="none"/>
           <circle
             cx="50" cy="50" r={radius}
-            stroke="#22d3ee"
+            style={{ stroke: 'var(--accent-cyan, #22d3ee)' }}
             strokeWidth="10"
             fill="none"
             strokeDasharray={`${homeArc} ${circumference - homeArc}`}

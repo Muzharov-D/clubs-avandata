@@ -45,10 +45,12 @@
   --radius:         14px;
   --radius-sm:      9px;
   --radius-lg:      20px;
-  /* Многослойные тени (ambient + key) — глубина без «грязи». */
-  --shadow-sm:      0 1px 2px rgba(0,0,0,0.3);
-  --shadow:         0 2px 6px rgba(0,0,0,0.35), 0 12px 32px -8px rgba(0,0,0,0.45);
-  --shadow-lg:      0 8px 24px rgba(0,0,0,0.4), 0 24px 64px -16px rgba(0,0,0,0.55);
+  /* Многослойные тени (ambient + key) — глубина без «грязи».
+     Тинтованы к синевато-чёрному (6,11,22), а не чистый чёрный — на тёмном
+     premium-фоне это читается как «глубина», а чистый #000 даёт грязный ореол. */
+  --shadow-sm:      0 1px 2px rgba(6,11,22,0.35);
+  --shadow:         0 2px 6px rgba(6,11,22,0.4), 0 12px 32px -8px rgba(6,11,22,0.5);
+  --shadow-lg:      0 8px 24px rgba(6,11,22,0.45), 0 24px 64px -16px rgba(6,11,22,0.6);
   --ring:           0 0 0 1px rgba(255,255,255,0.04);
 
   /* Типографика: Space Grotesk — дисплей/цифры, Inter — тело. */
@@ -57,6 +59,10 @@
 
   /* Моушн-токены. */
   --ease-out:       cubic-bezier(0.22, 1, 0.36, 1);
+  /* Пружина для «живых» элементов (бейджи, появление карточек) — лёгкий перелёт. */
+  --ease-spring:    cubic-bezier(0.34, 1.56, 0.64, 1);
+  /* Шторки/выезжающие панели: быстрый старт, мягкая посадка. */
+  --ease-drawer:    cubic-bezier(0.32, 0.72, 0, 1);
   --dur-fast:       120ms;
   --dur:            220ms;
   --dur-slow:       360ms;
@@ -86,7 +92,10 @@ body {
 }
 
 a { color: var(--brand-primary); text-decoration: none; }
-a:hover { color: var(--brand-primary-hover); }
+/* hover-эффекты только для указателя с реальным ховером — иначе на тач залипают. */
+@media (hover: hover) {
+  a:hover { color: var(--brand-primary-hover); }
+}
 
 button {
   font: inherit;
@@ -100,7 +109,9 @@ button {
               transform var(--dur-fast) var(--ease-out),
               box-shadow var(--dur-fast) var(--ease-out);
 }
-button:hover:not(:disabled)  { background: var(--brand-primary-hover); }
+@media (hover: hover) {
+  button:hover:not(:disabled) { background: var(--brand-primary-hover); }
+}
 /* Тактильный отклик нажатия — глобально на всех кнопках (Emil Kowalski). */
 button:active:not(:disabled) { transform: scale(0.97); }
 button:disabled              { opacity: 0.5; cursor: not-allowed; }
@@ -205,4 +216,17 @@ textarea:focus-visible,
 .fitness-cell__value,
 .cd__avg-val {
   font-variant-numeric: tabular-nums;
+}
+
+/* ===== Глобальная страховка prefers-reduced-motion =====
+   Часть файлов с @keyframes не имеет собственного guard'а (модалки, лендинг,
+   playerKinetic). Этот фундаментальный сброс гасит анимации/переходы для всех,
+   кто просил «меньше движения», даже если в компоненте guard забыли. */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

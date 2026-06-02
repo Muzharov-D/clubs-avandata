@@ -103,6 +103,17 @@ async function fetchJson(path, opts = {}) {
 // Публичный helper для модулей, которым нужен авторизованный fetch (push.js и т.п.)
 export const apiFetch = (path, opts) => fetchJson(path, opts);
 
+// Человекочитаемое сообщение по HTTP-коду логина. Сырой «Ошибка входа (405)»
+// пугает пользователя и ничего не подсказывает — маппим коды на понятный текст.
+// Для 400/422 уважаем серверное сообщение (валидация), для остального — общий текст.
+function loginErrorMessage(status, serverMsg) {
+  if (status === 401 || status === 403) return 'Неверный логин или пароль';
+  if (status === 429) return 'Слишком много попыток входа. Подождите минуту и попробуйте снова.';
+  if (status === 400 || status === 422) return serverMsg || 'Проверьте правильность введённых данных';
+  if (status >= 500 || status === 0) return 'Сервис временно недоступен, попробуйте позже';
+  return serverMsg || 'Не удалось войти. Попробуйте ещё раз.';
+}
+
 // Auth — Clubs Avandata.
 // Поле «Логин» в форме = email (для platform_admin) или username (для legacy
 // клубных пользователей). Если содержит '@' — отправляем как email, иначе как
@@ -128,9 +139,9 @@ export async function login(loginOrEmail, password, tenantSlug) {
   }
   const text = await res.text().catch(() => '');
   if (!res.ok) {
-    let msg = `Ошибка входа (${res.status})`;
-    try { msg = JSON.parse(text).error || msg; } catch (_) { if (text) msg = text; }
-    throw new Error(msg);
+    let serverMsg = '';
+    try { serverMsg = JSON.parse(text).error || ''; } catch (_) { /* not JSON */ }
+    throw new Error(loginErrorMessage(res.status, serverMsg));
   }
   const data = JSON.parse(text);
   setToken(data.accessToken);

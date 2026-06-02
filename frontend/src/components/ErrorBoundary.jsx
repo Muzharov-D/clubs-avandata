@@ -31,7 +31,7 @@ export default class ErrorBoundary extends Component {
             {String(this.state.error?.stack || this.state.error)}
           </pre>
           <button
-            style={{ marginTop: 16, padding: '8px 14px', background: '#22d3ee', border: 'none', borderRadius: 6, cursor: 'pointer' }}
+            style={{ marginTop: 16, padding: '8px 14px', background: 'var(--accent-cyan, #22d3ee)', border: 'none', borderRadius: 6, cursor: 'pointer' }}
             onClick={() => window.location.reload()}
           >
             Перезагрузить

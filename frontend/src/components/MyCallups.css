@@ -84,7 +84,7 @@
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
-  transition: all 120ms;
+  transition: background-color 120ms var(--ease-out), border-color 120ms var(--ease-out), color 120ms var(--ease-out), transform 120ms var(--ease-out), box-shadow 120ms var(--ease-out);
 }
 .my-callup__btn:hover { background: rgba(255, 255, 255, 0.08); color: #f1f5fb; }
 .my-callup__btn:disabled { opacity: 0.5; cursor: not-allowed; }
@@ -138,7 +138,7 @@
   border-radius: 8px;
   color: #f1f5fb;
   cursor: pointer;
-  transition: all 120ms;
+  transition: background-color 120ms var(--ease-out), border-color 120ms var(--ease-out), color 120ms var(--ease-out), transform 120ms var(--ease-out), box-shadow 120ms var(--ease-out);
 }
 .my-callup__expand-btn:hover { background: rgba(255, 255, 255, 0.08); }
 .my-callup__expand-btn b {
