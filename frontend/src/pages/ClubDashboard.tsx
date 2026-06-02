@@ -82,7 +82,8 @@ export default function ClubDashboard() {
   const [loading, setLoading]         = useState(true);
   const [error, setError]             = useState<string | null>(null);
   // Состав — smart-table: сортировка + фильтр по позиционной группе.
-  const [rosterSort, setRosterSort] = useState<'rating' | 'matches' | 'minutes' | 'number' | 'name'>('rating');
+  // Дефолт — по номеру (тренерский взгляд: состав как заявка на игру).
+  const [rosterSort, setRosterSort] = useState<'rating' | 'matches' | 'minutes' | 'number' | 'name'>('number');
   const [rosterPos, setRosterPos]   = useState<string>('all');
 
   // Фильтр периода блока «Командные показатели» (правка Зенита #7).
@@ -843,12 +844,12 @@ export default function ClubDashboard() {
             { id: 'mid', label: 'Полузащита' },
             { id: 'fwd', label: 'Нападение' },
           ];
+          // Тренеру нужны три осмысленных порядка: по номеру (заявка),
+          // по рейтингу (форма), по минутам (нагрузка/ротация в академии).
           const SORTS: { id: typeof rosterSort; label: string }[] = [
-            { id: 'rating',  label: 'Рейтинг' },
-            { id: 'matches', label: 'Матчей' },
-            { id: 'minutes', label: 'Минуты' },
             { id: 'number',  label: 'Номер' },
-            { id: 'name',    label: 'Имя' },
+            { id: 'rating',  label: 'Рейтинг' },
+            { id: 'minutes', label: 'Минуты' },
           ];
           const present = new Set(all.map((p) => posGroup(p.position)));
           const groups = POS_GROUPS.filter((g) => g.id === 'all' || present.has(g.id));
@@ -893,15 +894,20 @@ export default function ClubDashboard() {
                     ? `${gp} матч.${mins > 0 ? ` · ${mins}'` : ''}`
                     : (mins > 0 ? `${mins}'` : 'не выходил');
                   return (
-                    <div key={p.playerId} className="cd__player" onClick={() => navigate(`/players/${p.playerId}`)}>
+                    <div
+                      key={p.playerId}
+                      className={`cd__player${r > 0 ? ' cd__player--rated' : ''}`}
+                      style={r > 0 ? ({ '--rt-col': ratingColor(r) } as React.CSSProperties) : undefined}
+                      onClick={() => navigate(`/players/${p.playerId}`)}
+                    >
                       <div className="cd__player-photo">
-                        <PlayerPhoto player={p} size={40} />
+                        <PlayerPhoto player={p} size={44} />
                       </div>
                       <div className="cd__player-num">{p.number ?? '—'}</div>
                       <div className="cd__player-info">
                         <div className="cd__player-name">{p.fullName}</div>
                         <div className="cd__player-meta">
-                          {p.position || ''}{` · ${load}`}
+                          {p.position || 'игрок'}{` · ${load}`}
                         </div>
                       </div>
                       {r > 0 && (
