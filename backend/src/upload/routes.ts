@@ -5,7 +5,7 @@ import { writeFile, mkdir, rm, readFile } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { randomBytes, createHash } from 'node:crypto';
+import { randomBytes } from 'node:crypto';
 import { authenticate } from '../auth/middleware.js';
 import { withTenantTx, withTenant } from '../db/tenantContext.js';
 import { BadRequestError, UnauthorizedError, AppError } from '../shared/errors.js';
@@ -14,6 +14,13 @@ import { enrichTenantPhotos } from '../services/playerPhotoService.js';
 import { resolveOurSide } from '../shared/teamName.js';
 import { validateRich, assertSportVisor } from './validation.js';
 import { computeDataQuality } from '../data/dataQuality.js';
+import {
+  buildRosterIndex,
+  indexAdd,
+  resolvePlayerId,
+  type RosterEntry,
+  type RosterIndex,
+} from './playerResolve.js';
 
 /**
  * SportVisor upload — PDF (rating + radar + formation) + опциональный Excel
@@ -47,27 +54,6 @@ function cleanPlayerName(raw: string | null | undefined, num: number): string {
   const t = String(raw ?? '').trim();
   if (isPlaceholderName(t)) return `№${String(num).padStart(2, '0')}`;
   return t;
-}
-
-/**
- * Канонический ключ игрока для объединения ПО ИМЕНИ, а не по номеру. Один
- * человек = одна запись, даже если играл под разными номерами (напр. Ахмадов
- * под 14 и 23 — это один игрок, не два). ё→е, нижний регистр, без точек/лишних
- * пробелов. Имя в формате «Имя Фамилия» (так дают и CSV, и PDF SportVisor).
- */
-function playerNameKey(fullName: string, firstName?: string | null, lastName?: string | null): string {
-  const base = firstName && lastName ? `${firstName} ${lastName}` : fullName || '';
-  return base.toLowerCase().replace(/ё/g, 'е').replace(/[.,]/g, '').replace(/\s+/g, ' ').trim();
-}
-
-/**
- * Стабильный id игрока из имени. Детерминирован: один и тот же человек в разных
- * матчах/под разными номерами получает один id → объединяется в одну строку.
- * Возвращает null для заглушек (пустое имя / «№NN») — там остаётся id по номеру.
- */
-function playerIdFromName(teamId: string, key: string): string | null {
-  if (!key) return null;
-  return `sv-${teamId}-${createHash('sha1').update(`${teamId}:${key}`).digest('hex').slice(0, 10)}`;
 }
 
 /** Разбивает «Фамилия И.» → {firstName, lastName} для записи в БД. */
@@ -212,18 +198,30 @@ export async function uploadRoutes(app: FastifyInstance) {
       // середине цикла → ROLLBACK, без частично залитых игроков), а SELECT ростера
       // читает только что вставленные строки (read-your-writes в той же tx).
       const roster = await withTenantTx(tenantSlug, async (_tx, conn) => {
+        // Существующая база команды (на первой загрузке — пустая). Матчим
+        // игроков отчёта к ней по номер+фамилия → один человек = одна строка,
+        // перезаливы цепляются к той же записи, дублей нет.
+        const existing = await conn.query<RosterEntry & { teamId: string }>(
+          `SELECT id, team_id AS "teamId", number,
+                  full_name AS "fullName", first_name AS "firstName",
+                  last_name AS "lastName", position
+             FROM players WHERE tenant_id = $1 AND team_id = $2`,
+          [tenantSlug, teamId!],
+        );
+        const index = buildRosterIndex(existing.rows);
+
         if (excelData?.players?.length) {
+          let added = 0;
           for (const ep of excelData.players) {
             const num = parseInt(ep.number, 10);
             if (!num || !ep.name) continue;
             const cleaned = cleanPlayerName(ep.name, num);
             const lastName = cleaned.split(' ').pop() || '';
             const firstName = cleaned.split(' ').slice(0, -1).join(' ') || '';
-            // Объединение ПО ИМЕНИ, не по номеру: один человек = одна строка,
-            // даже под разными № в разных матчах. Заглушки («№NN») — по номеру.
-            const nameKey = playerNameKey(cleaned, firstName, lastName);
-            const pid = playerIdFromName(teamId, nameKey) ?? `sv-${teamId}-n${String(num).padStart(2, '0')}`;
-            // Insert or update by id; also handle duplicate-number conflict.
+            // Резолв к существующей записи; иначе детерминир. id по фамилии+номеру
+            // (заглушки «№NN» без фамилии → id по номеру).
+            const resolved = resolvePlayerId(teamId!, index, { number: num, fullName: cleaned, firstName, lastName });
+            const pid = resolved.id ?? `sv-${teamId}-n${String(num).padStart(2, '0')}`;
             await conn.query(
               `INSERT INTO players (id, tenant_id, team_id, full_name, first_name, last_name, number)
                VALUES ($1, $2, $3, $4, $5, $6, $7)
@@ -234,8 +232,14 @@ export async function uploadRoutes(app: FastifyInstance) {
                  number     = EXCLUDED.number`,
               [pid, tenantSlug, teamId, cleaned, firstName, lastName, num],
             );
+            // Держим индекс свежим: новый игрок виден следующим строкам отчёта
+            // (исключаем повторное создание при дубле номера/имени внутри файла).
+            if (!resolved.matched) {
+              indexAdd(index, { id: pid, number: num, fullName: cleaned, firstName, lastName });
+              added++;
+            }
           }
-          logger.info({ matchId, upserted: excelData.players.length }, '[upload] players upserted from excel');
+          logger.info({ matchId, fromExcel: excelData.players.length, added }, '[upload] players resolved from excel');
         }
         const { rows } = await conn.query<{
           id: string; teamId: string; number: number | null;
@@ -546,30 +550,28 @@ export async function uploadRoutes(app: FastifyInstance) {
         for (const r of roster) {
           if (r.number != null) rosterByNum.set(String(r.number).padStart(2, '0'), r);
         }
-        // Поиск игрока в ростере ПО ИМЕНИ — приоритетнее номера, чтобы один
-        // человек под разными № резолвился в одну существующую запись.
-        const rosterByName = new Map<string, typeof roster[number]>();
-        for (const r of roster) {
-          const k = playerNameKey(r.fullName, r.firstName, r.lastName);
-          if (k) rosterByName.set(k, r);
-        }
+        // Единый индекс для резолва игрока к существующей записи (номер+фамилия →
+        // уникальная фамилия → полное имя). Один человек = одна строка.
+        const rosterIndex: RosterIndex = buildRosterIndex(roster);
 
         // PRIMARY: rich PDF data — все 17 игроков с radar + attack/defence/fitness stats
         for (const [numStr, meta] of Object.entries(rich.overall_meta)) {
           const radar = rich.radar[numStr] ?? {};
           const np = nameParts(meta, parseInt(numStr, 10));
-          const nameKey = playerNameKey(np.full, np.firstName, np.lastName);
-          // По имени → существующая запись (даже под другим №); иначе детермин.
-          // id из имени; иначе (заглушка без имени) — по номеру.
-          const rosterRow = (nameKey ? rosterByName.get(nameKey) : undefined) ?? rosterByNum.get(numStr);
-          const playerId = rosterRow?.id ?? playerIdFromName(teamId, nameKey) ?? `pdf-${teamId}-n${numStr}`;
+          const num = parseInt(numStr, 10);
+          // Резолв к существующей записи (даже под другим №); иначе детерминир.
+          // id по фамилии+номеру; заглушка без фамилии → по номеру.
+          const resolved = resolvePlayerId(teamId!, rosterIndex, { number: num, fullName: np.full, firstName: np.firstName, lastName: np.lastName });
+          const playerId = resolved.id ?? `pdf-${teamId}-n${numStr}`;
+          const rosterRow = resolved.matched ? rosterIndex.entries.find((e) => e.id === playerId) : undefined;
           if (!rosterRow) {
             await conn.query(
               `INSERT INTO players (id, tenant_id, team_id, full_name, first_name, last_name, number, position)
                VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
                ON CONFLICT (id) DO NOTHING`,
-              [playerId, tenantSlug, teamId, np.full, np.firstName, np.lastName, parseInt(numStr, 10), meta.position],
+              [playerId, tenantSlug, teamId, np.full, np.firstName, np.lastName, num, meta.position],
             );
+            indexAdd(rosterIndex, { id: playerId, number: num, fullName: np.full, firstName: np.firstName, lastName: np.lastName, position: meta.position });
           } else if (!isPlaceholderName(np.full) && isPlaceholderName(rosterRow.fullName)) {
             // Существующий игрок с именем-заглушкой («U16»/«№8») — подставляем
             // реальное имя из PDF (Excel может быть пустым, а в PDF имена есть).
