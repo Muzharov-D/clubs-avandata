@@ -5,6 +5,7 @@ import { UnauthorizedError, NotFoundError, BadRequestError } from '../shared/err
 import { adaptPlayerForLegirus } from './legirusAdapter.js';
 import { computeDataQuality } from './dataQuality.js';
 import { statField } from '../shared/statValue.js';
+import { applyFixtureDates, type DatedMatchRow } from './matchDate.js';
 import {
   aggregateTeamStats,
   type AggregatePeriod,
@@ -131,6 +132,14 @@ export async function dataRoutes(app: FastifyInstance) {
              ORDER BY match_date DESC NULLS LAST`;
       const params: unknown[] = teamId ? [slug, teamId] : [slug];
       const { rows } = await conn.query(sql, params);
+      // Реальная дата матча из календаря Наградиона (по сопернику + возрасту):
+      // парсер нового RU-формата дату не отдаёт, match_date был неверным.
+      await applyFixtureDates(conn, slug, rows as DatedMatchRow[]);
+      rows.sort((a, b) => {
+        const ad = a.date ? new Date(a.date as string).getTime() : -Infinity;
+        const bd = b.date ? new Date(b.date as string).getTime() : -Infinity;
+        return bd - ad;
+      });
       // Legacy ClubOverview expects { matches: [...] }
       return { matches: rows };
     });
@@ -255,6 +264,8 @@ export async function dataRoutes(app: FastifyInstance) {
       // Ориентация «дом/гость» по ID: наша сторона та, чей team-id == match.teamId.
       // homeTeamId/awayTeamId заполняются при upload (наша сторона) + backfill'ом;
       // для незабэкфилленных legacy-строк оба null → фронт падает на fallback по имени.
+      // Реальная дата из календаря Наградиона (по сопернику + возрасту команды).
+      await applyFixtureDates(conn, slug, [match as DatedMatchRow]);
       return {
         ...match,
         homeTeam: { id: match.homeTeamId, name: match.home, isOurTeam: match.homeTeamId === match.teamId },
