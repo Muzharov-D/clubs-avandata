@@ -77,6 +77,8 @@ export default function ClubOverview() {
   const ourTeam = selectedTeam || teams.find((t) => t.id === selectedTeamId) || teams.find((t) => t.isOurTeam);
   const matches = matchesRes.data?.matches || [];
   const seasonPlayers = seasonRes.data?.players || [];
+  // Подсветка последнего матча в списке (без отдельного fetch — берём из списка).
+  const lastMatchId = matches[0]?.id;
 
   const record = useMemo(() => seasonRecord(matches), [matches]);
 
