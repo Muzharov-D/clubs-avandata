@@ -117,7 +117,7 @@ export default function PlayerDetail() {
     }
   }, [isPlayer, user, playerId, navigate]);
 
-  const { selectedTeamId, select } = useTeam();
+  const { selectedTeamId, selectedTeam, select } = useTeam();
 
   // Сначала тянем самого игрока (по нему узнаём teamId), потом синхронизируем
   // выбранную команду в шапке. Это чинит навигацию head_coach'а с КЛУБА на игрока
@@ -229,6 +229,7 @@ export default function PlayerDetail() {
           identity={identity}
           playerId={playerId}
           teamId={identity.teamId || effectiveTeamId}
+          teamName={selectedTeam?.name || ''}
           seasonPlayers={seasonPlayers}
           series={series}
           seasonTotals={seasonTotals}
@@ -249,31 +250,23 @@ export default function PlayerDetail() {
 }
 
 /* ───────────────────────────── ВКЛАДКА «СЕЗОН» ─────────────────────────────
-   Общий профиль игрока: кто он по всему сезону, а не в одном матче. */
-function SeasonTab({ identity, playerId, teamId, seasonPlayers, series, seasonTotals }) {
+   Общий профиль игрока в стиле скаут-овервью (референс TheAnalyst): компактная
+   шапка, ряд из 3 карточек (инфо · статистика плитками · авто-биография),
+   радар-витрина и сезонная динамика. */
+function SeasonTab({ identity, playerId, teamId, teamName, seasonPlayers, series, seasonTotals }) {
   const avg = seasonTotals?.avgOverall;
+  const bio = useMemo(() => seasonBio(identity, seasonTotals, series), [identity, seasonTotals, series]);
+
   return (
     <>
-      {/* HEADER — сезонная личность */}
-      <div className="card player-detail__hero">
-        <PlayerPhoto player={identity} size={132} />
+      {/* Компактная шапка: фото · имя · позиция/команда · средний рейтинг */}
+      <div className="card player-detail__hero player-detail__hero--season">
+        <PlayerPhoto player={identity} size={96} />
         <div className="player-detail__hero-info">
-          <div className="player-detail__hero-pos">№{identity.number} · {identity.positionFull || identity.position}</div>
           <h1 className="player-detail__hero-name">{identity.fullName}</h1>
-          <div className="player-detail__hero-match">
-            {seasonTotals ? `Сезон · ${seasonTotals.matches} ${plural(seasonTotals.matches, 'матч', 'матча', 'матчей')}` : 'Сезон'}
+          <div className="player-detail__hero-pos">
+            №{identity.number} · {identity.positionFull || identity.position}{teamName ? ` · ${trimAge(teamName)}` : ''}
           </div>
-          {seasonTotals ? (
-            <div className="player-detail__hero-meta">
-              <span>Минут: <b>{seasonTotals.minutes}</b></span>
-              <span>Голы: <b>{seasonTotals.goals}</b></span>
-              <span>Ассисты: <b>{seasonTotals.assists}</b></span>
-            </div>
-          ) : (
-            <div className="player-detail__hero-meta">
-              <span style={{ color: '#94a3c8' }}>Нет сыгранных матчей в сезоне</span>
-            </div>
-          )}
         </div>
         <div className="player-detail__hero-rating">
           <RatingPill value={avg} size="xl" />
@@ -281,17 +274,27 @@ function SeasonTab({ identity, playerId, teamId, seasonPlayers, series, seasonTo
         </div>
       </div>
 
+      {/* ОВЕРВЬЮ: 3 карточки в ряд */}
+      <div className="player-detail__overview">
+        <PlayerInfoCard identity={identity} teamName={teamName} />
+        <SeasonStatsCard totals={seasonTotals} />
+        <div className="card pd-bio">
+          <div className="page-section-title">Профиль</div>
+          {bio ? <p className="pd-bio__text">{bio}</p> : <div className="pd-bio__empty">Сезонная сводка появится после разбора матчей.</div>}
+        </div>
+      </div>
+
       {/* Посещаемость тренировок — появляется только если есть данные */}
       <AttendanceBlock teamId={teamId} playerId={playerId} />
+
+      {/* Радар-витрина: сезонная пицца (per-90 vs позиционный пул) */}
+      <SeasonProfileCard subject={identity} seasonPlayers={seasonPlayers} />
 
       {/* Динамика по сезону — спарклайны рейтингов + лента матчей */}
       <PlayerTrendCard playerId={playerId} series={series} />
 
       {/* Форма: индекс свежих матчей, vs своё среднее, серия, траектория */}
       <PlayerFormCard playerId={playerId} series={series} />
-
-      {/* Сезонная пицца — витрина общего профиля (per-90 vs позиционный пул) */}
-      <SeasonProfileCard subject={identity} seasonPlayers={seasonPlayers} />
 
       {/* Перцентиль vs сезонный позиционный пул (на 90′) — детальные полосы */}
       <SeasonPercentileCard subject={identity} seasonPlayers={seasonPlayers} />
@@ -304,6 +307,111 @@ function SeasonTab({ identity, playerId, teamId, seasonPlayers, series, seasonTo
       )}
     </>
   );
+}
+
+// Возраст из даты рождения (академия — юноши; в браузере new Date() допустим).
+function ageFrom(birthDate) {
+  if (!birthDate) return null;
+  const b = new Date(birthDate);
+  if (isNaN(b.getTime())) return null;
+  const now = new Date();
+  let age = now.getFullYear() - b.getFullYear();
+  const m = now.getMonth() - b.getMonth();
+  if (m < 0 || (m === 0 && now.getDate() < b.getDate())) age--;
+  return age >= 0 && age < 100 ? age : null;
+}
+
+function fmtDate(iso) {
+  if (!iso) return null;
+  const d = new Date(iso);
+  if (isNaN(d.getTime())) return null;
+  return d.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' });
+}
+
+// Карточка-идентичность игрока (референс «Player Information»).
+function PlayerInfoCard({ identity, teamName }) {
+  const age = ageFrom(identity.birthDate);
+  const dob = fmtDate(identity.birthDate);
+  const rows = [
+    ['Имя', identity.fullName],
+    ['Дата рождения', dob],
+    ['Возраст', age != null ? `${age} ${plural(age, 'год', 'года', 'лет')}` : null],
+    ['Команда', teamName ? trimAge(teamName) : null],
+    ['Позиция', identity.positionFull || identity.position],
+    ['Номер', identity.number != null ? `№${identity.number}` : null],
+  ].filter(([, v]) => v != null && v !== '');
+  return (
+    <div className="card pd-info">
+      <div className="page-section-title">Информация об игроке</div>
+      <div className="pd-info__rows">
+        {rows.map(([label, val]) => (
+          <div className="pd-info__row" key={label}>
+            <span className="pd-info__label">{label}</span>
+            <span className="pd-info__val">{val}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// Карточка статистики сезона крупными плитками (референс «2025/2026 Stats»).
+function SeasonStatsCard({ totals }) {
+  const gi = totals ? (totals.goals || 0) + (totals.assists || 0) : 0;
+  const tiles = [
+    { label: 'Матчи',   value: totals?.matches },
+    { label: 'Минуты',  value: totals?.minutes },
+    { label: 'Голы',    value: totals?.goals },
+    { label: 'Ассисты', value: totals?.assists },
+    { label: 'Гол+пас', value: totals ? gi : null, wide: true },
+  ];
+  return (
+    <div className="card pd-stats">
+      <div className="page-section-title">Статистика сезона</div>
+      {totals ? (
+        <div className="pd-stats__grid">
+          {tiles.map((t) => (
+            <div className={`pd-stats__tile${t.wide ? ' pd-stats__tile--wide' : ''}`} key={t.label}>
+              <div className="pd-stats__val">{t.value ?? '—'}</div>
+              <div className="pd-stats__lab">{t.label}</div>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div className="pd-bio__empty">Нет сыгранных матчей в сезоне.</div>
+      )}
+    </div>
+  );
+}
+
+// Авто-биография по сезону (референс «Player Bio») — 2–4 предложения из данных.
+function seasonBio(identity, totals, series) {
+  if (!totals || !totals.matches) return null;
+  const pos = (identity.positionFull || identity.position || 'игрок').toLowerCase();
+  const parts = [];
+  parts.push(
+    `${identity.fullName} — ${pos}. В сезоне сыграл ${totals.matches} ${plural(totals.matches, 'матч', 'матча', 'матчей')} ` +
+    `(${totals.minutes} ${plural(totals.minutes, 'минута', 'минуты', 'минут')} на поле).`,
+  );
+  const gi = (totals.goals || 0) + (totals.assists || 0);
+  if (gi > 0) {
+    parts.push(
+      `На счету ${totals.goals} ${plural(totals.goals, 'гол', 'гола', 'голов')} ` +
+      `и ${totals.assists} ${plural(totals.assists, 'ассист', 'ассиста', 'ассистов')} — ` +
+      `${gi} ${plural(gi, 'результативное действие', 'результативных действия', 'результативных действий')}.`,
+    );
+  }
+  const last = Array.isArray(series) && series.length ? series[series.length - 1] : null;
+  if (last && last.date) {
+    const d = new Date(last.date).toLocaleDateString('ru-RU', { day: 'numeric', month: 'long' });
+    const res = last.result === 'W' ? 'победа' : last.result === 'L' ? 'поражение' : last.result === 'D' ? 'ничья' : null;
+    const opp = trimAge(last.opponent || 'соперника');
+    parts.push(`Последний матч — ${d} против ${opp}${last.score ? ` (${last.score})` : ''}${res ? `, ${res}` : ''}.`);
+  }
+  if (totals.avgOverall > 0) {
+    parts.push(`Средний рейтинг за сезон — ${totals.avgOverall.toFixed(1)}.`);
+  }
+  return parts.join(' ');
 }
 
 /* ──────────────────────────── ВКЛАДКА «МАТЧИ» ──────────────────────────────

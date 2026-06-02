@@ -596,3 +596,71 @@
      margin=2), спец-обрезка/зум на мобильном больше не нужны. */
   .player-detail__maps { grid-template-columns: 1fr !important; }
 }
+
+/* ───────── Сезонный овервью (референс TheAnalyst): инфо · статы · био ───────── */
+
+/* Компактная сезонная шапка */
+.player-detail__hero--season { align-items: center; }
+.player-detail__hero--season .player-detail__hero-name { margin-bottom: 4px; }
+
+.player-detail__overview {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.player-detail__overview > .card { margin: 0; }
+
+/* Player Information */
+.pd-info__rows { display: flex; flex-direction: column; gap: 2px; }
+.pd-info__row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  padding: 9px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+.pd-info__row:last-child { border-bottom: none; }
+.pd-info__label { font-size: 12px; color: #94a3c8; white-space: nowrap; }
+.pd-info__val { font-size: 13px; font-weight: 600; color: #fff; text-align: right; }
+
+/* Season Stats tiles */
+.pd-stats__grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.pd-stats__tile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 14px 8px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+.pd-stats__tile--wide { grid-column: 1 / -1; }
+.pd-stats__val {
+  font-size: 26px;
+  font-weight: 800;
+  line-height: 1;
+  color: var(--brand-primary, #dc2626);
+}
+.pd-stats__tile--wide .pd-stats__val { color: #fff; }
+.pd-stats__lab {
+  font-size: 10px;
+  color: #94a3c8;
+  margin-top: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+/* Player Bio */
+.pd-bio__text { font-size: 13px; line-height: 1.6; color: #cbd5e1; margin: 0; }
+.pd-bio__empty { font-size: 13px; color: #64748b; }
+
+@media (max-width: 900px) {
+  .player-detail__overview { grid-template-columns: 1fr; }
+}
