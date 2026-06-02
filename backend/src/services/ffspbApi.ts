@@ -150,7 +150,9 @@ export async function getTeamWithPlayers(teamId: string | number) {
 }
 
 export async function listTeamPlayers(teamId: string | number) {
-  return listAll(`/players`, { 'currentTeam.id': teamId });
+  // API требует фильтр `team` в IRI-форме (currentTeam.id даёт ошибку
+  // "Query parameter team is required" — подтверждено прямым вызовом).
+  return listAll(`/players`, { team: `/api/teams/${teamId}` });
 }
 
 export async function listMatchEvents(matchId: string | number) {
