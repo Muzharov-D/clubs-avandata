@@ -42,6 +42,19 @@ async function main(): Promise<void> {
         return;
       }
 
+      // Коррекция уже сохранённых URL со старой (битой) базой → normal/m/.
+      // photo_url с placeholder-базой не NULL, поэтому обычный fill их не трогает.
+      const fix = await conn.query(
+        `UPDATE players
+            SET photo_url = replace(photo_url,
+              'https://img.nagradion.ru/images/', 'https://img.nagradion.ru/images/normal/m/')
+          WHERE tenant_id = $1
+            AND photo_url LIKE 'https://img.nagradion.ru/images/%'
+            AND photo_url NOT LIKE 'https://img.nagradion.ru/images/normal/m/%'`,
+        [slug],
+      );
+      if (fix.rowCount) console.log(`[${slug}] исправлено старых URL: ${fix.rowCount}`);
+
       const { rows: cal } = await conn.query(
         `SELECT home_team AS "home", away_team AS "away",
                 ext_home_team_id AS "extHome", ext_away_team_id AS "extAway"

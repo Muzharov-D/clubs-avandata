@@ -45,9 +45,10 @@ function lastTokens(fullName: unknown): string[] {
   return out;
 }
 
-// Хост изображений Наградиона: поле player.photo — это имя файла (person….jpg),
-// а не URL. Прямой HEAD подтвердил, что файл отдаётся по этому базовому пути.
-const NAGRADION_IMG_BASE = 'https://img.nagradion.ru/images/';
+// Хост изображений Наградиона: поле player.photo — имя файла (person….jpg).
+// Реальное фото лежит по пути images/normal/m/<file> (JPEG); без сегмента
+// normal/m/ сервер отдаёт placeholder «изображение не найдено» (5КБ PNG, но 200).
+const NAGRADION_IMG_BASE = 'https://img.nagradion.ru/images/normal/m/';
 
 function isUrl(v: unknown): v is string {
   return typeof v === 'string' && /^https?:\/\//i.test(v);
