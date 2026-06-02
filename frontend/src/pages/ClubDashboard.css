@@ -94,8 +94,8 @@
 .cd__kpi-card--click:hover { border-color: color-mix(in srgb, var(--accent-cyan) 45%, transparent); transform: translateY(-2px); }
 .cd__kpi-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; position: relative; z-index: 1; }
 .cd__kpi-label {
-  font-size: 11px; color: var(--text-muted-strong, #b4c0d2);
-  text-transform: uppercase; letter-spacing: 0.07em; font-weight: 600;
+  font-size: 13px; color: var(--text-muted-strong, #b4c0d2);
+  text-transform: uppercase; letter-spacing: 0.05em; font-weight: 600;
 }
 .cd__kpi-hero {
   flex: 1; min-height: 0; display: flex; flex-direction: column;
@@ -117,7 +117,7 @@
 .cd__kpi-bar { display: block; height: 8px; background: rgba(255,255,255,0.06); border-radius: 999px; overflow: hidden; }
 .cd__kpi-bar-fill { display: block; height: 100%; border-radius: 999px; transition: width 400ms var(--ease-out, ease-out); }
 .cd__kpi-empty { font-size: 14px; color: var(--text-faint); }
-.cd__kpi-sub { font-size: 12px; color: var(--text-muted); }
+.cd__kpi-sub { font-size: 13.5px; color: var(--text-muted-strong, #b4c0d2); }
 .cd__kpi-rank {
   flex-shrink: 0; min-width: 44px; padding: 7px 11px; border-radius: 11px;
   font-weight: 800; font-size: 17px; text-align: center;
@@ -132,30 +132,30 @@
 .cd__rt-form { display: flex; flex-direction: column; align-items: flex-end; gap: 5px; }
 .cd__rt-dots { display: flex; gap: 4px; }
 .cd__dot {
-  width: 20px; height: 20px; border-radius: 6px;
+  width: 23px; height: 23px; border-radius: 7px;
   display: inline-flex; align-items: center; justify-content: center;
-  font-size: 10px; font-weight: 800; font-variant-numeric: tabular-nums;
+  font-size: 12px; font-weight: 800; font-variant-numeric: tabular-nums;
 }
 .cd__dot--W { background: color-mix(in srgb, var(--success) 22%, transparent); color: var(--success); }
 .cd__dot--D { background: rgba(255,255,255,0.08); color: var(--text-muted-strong, #b4c0d2); }
 .cd__dot--L { background: color-mix(in srgb, var(--danger) 22%, transparent); color: var(--danger); }
-.cd__rt-form-cap { font-size: 9px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-faint); font-weight: 600; }
-.cd__rt-lines { display: flex; flex-direction: column; gap: 7px; }
-.cd__rt-line { display: grid; grid-template-columns: 48px 1fr 30px; align-items: center; gap: 9px; }
-.cd__rt-line-lab { font-size: 11px; color: var(--text-muted); font-weight: 600; }
-.cd__rt-line-bar { height: 6px; background: rgba(255,255,255,0.06); border-radius: 999px; overflow: hidden; }
+.cd__rt-form-cap { font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.07em; color: var(--text-faint); font-weight: 600; }
+.cd__rt-lines { display: flex; flex-direction: column; gap: 9px; }
+.cd__rt-line { display: grid; grid-template-columns: 60px 1fr 38px; align-items: center; gap: 10px; }
+.cd__rt-line-lab { font-size: 13px; color: var(--text-muted-strong, #b4c0d2); font-weight: 600; }
+.cd__rt-line-bar { height: 7px; background: rgba(255,255,255,0.06); border-radius: 999px; overflow: hidden; }
 .cd__rt-line-fill { display: block; height: 100%; border-radius: 999px; transition: width 500ms var(--ease-out, ease-out); }
-.cd__rt-line-val { font-size: 12px; font-weight: 800; text-align: right; font-variant-numeric: tabular-nums; }
+.cd__rt-line-val { font-size: 15px; font-weight: 800; text-align: right; font-variant-numeric: tabular-nums; }
 
 /* ── Карточка «Лучший игрок сезона»: персона + авто-инсайты ── */
 .cd__bp { flex: 1; display: flex; flex-direction: column; gap: 14px; position: relative; z-index: 1; }
 .cd__bp-id { display: flex; align-items: center; gap: 13px; }
 .cd__bp-photo { flex-shrink: 0; border-radius: 50%; }
 .cd__bp-body { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
-.cd__bp-name { font-size: 18px; font-weight: 800; color: #fff; line-height: 1.15; letter-spacing: -0.01em; }
-.cd__bp-insights { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
-.cd__bp-insight { display: flex; align-items: flex-start; gap: 9px; font-size: 12.5px; color: var(--text-muted-strong, #b4c0d2); line-height: 1.3; }
-.cd__bp-dot { flex-shrink: 0; margin-top: 1px; display: inline-flex; }
+.cd__bp-name { font-size: 20px; font-weight: 800; color: #fff; line-height: 1.15; letter-spacing: -0.01em; }
+.cd__bp-insights { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+.cd__bp-insight { display: flex; align-items: flex-start; gap: 10px; font-size: 14.5px; color: var(--text-muted-strong, #b4c0d2); line-height: 1.35; }
+.cd__bp-dot { flex-shrink: 0; margin-top: 2px; display: inline-flex; }
 .cd__bp-insight-lead { color: #fff; font-weight: 700; }
 .cd__bp-insight-text { min-width: 0; }
 
@@ -438,11 +438,11 @@
   display: flex; align-items: center; gap: 9px; margin-bottom: 9px;
 }
 .cd__line-label {
-  font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.09em;
+  font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em;
   color: var(--accent-cyan);
 }
 .cd__line-count {
-  font-size: 11px; font-weight: 700; color: var(--text-faint);
+  font-size: 12px; font-weight: 700; color: var(--text-faint);
   background: rgba(255,255,255,0.05); border-radius: 999px;
   min-width: 20px; height: 18px; padding: 0 6px;
   display: inline-flex; align-items: center; justify-content: center;
@@ -492,13 +492,13 @@
 }
 .cd__player-info { min-width: 0; }
 .cd__player-name {
-  font-size: 13.5px; font-weight: 700; color: var(--text); line-height: 1.2;
+  font-size: 15px; font-weight: 700; color: var(--text); line-height: 1.25;
   display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
   overflow: hidden; word-break: break-word;
 }
 .cd__player-meta {
-  font-size: 10.5px; color: var(--text-faint);
-  text-transform: uppercase; letter-spacing: 0.04em; margin-top: 3px;
+  font-size: 12px; color: var(--text-muted);
+  text-transform: uppercase; letter-spacing: 0.03em; margin-top: 3px;
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 .cd__player-rating {
