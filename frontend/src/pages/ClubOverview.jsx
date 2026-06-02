@@ -1,15 +1,14 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useApi } from '../hooks/useApi';
-import { fetchTeams, fetchMatches, fetchMatch } from '../services/api';
+import { fetchTeams, fetchMatches, fetchMatch, fetchMatchAggregate, fetchPlayersSeason } from '../services/api';
 import { useTeam } from '../contexts/TeamContext';
 import { useDocumentTitle } from '../hooks/useDocumentTitle';
 import MatchList from '../components/MatchList';
 import RatingCard from '../components/RatingCard';
 import PlayerPhoto from '../components/PlayerPhoto';
 import RatingPill from '../components/RatingPill';
-import { shortNameFromPlayer } from '../utils/players';
-import { ratingColor } from '../utils/colors';
-import { leadersByLine } from '../utils/lines';
+import TeamSeasonAnalytics from '../components/analytics/TeamSeasonAnalytics';
+import TeamIdentityCard from '../components/analytics/TeamIdentityCard';
 import { isOurClub } from '../utils/legirus';
 import { useNavigate } from 'react-router-dom';
 import './ClubOverview.css';
@@ -24,89 +23,76 @@ function num(v) {
   return Number(v);
 }
 
-function bestPlayer(match) {
-  if (!match?.players?.length) return null;
-  const eligible = match.players.filter((p) => Number(p.ratings?.overall ?? 0) > 0);
-  if (!eligible.length) return null;
-  return eligible.sort(
-    (a, b) => (b.ratings?.overall ?? 0) - (a.ratings?.overall ?? 0)
-  )[0];
+// Наша сторона матча: по ID (надёжно), fallback — по имени.
+function weAreHome(m) {
+  if (m.homeTeamId || m.awayTeamId) return m.homeTeamId === m.teamId;
+  return isOurClub(m.home);
 }
 
-function topN(players, n) {
-  return players
-    .filter((p) => Number(p.ratings?.overall ?? 0) > 0)
-    .sort((a, b) => (b.ratings?.overall ?? 0) - (a.ratings?.overall ?? 0))
-    .slice(0, n);
-}
-
-function teamSplitSum(match, key, half) {
-  // half: 'first' | 'second' | 'match'
-  if (!match?.players) return 0;
-  let s = 0;
-  for (const p of match.players) {
-    const row = p.splits?.[key];
-    if (!row) continue;
-    const v = num(row[half]);
-    if (typeof v === 'number' && !isNaN(v)) s += v;
+// Сезонная сводка из списка матчей: сыграно, В-Н-П, голы за/против, очки, форма.
+function seasonRecord(matches) {
+  let w = 0, d = 0, l = 0, gf = 0, ga = 0;
+  const results = [];
+  for (const m of matches) {
+    const sh = m.scoreHome, sa = m.scoreAway;
+    if (sh == null || sa == null) continue;
+    const home = weAreHome(m);
+    const us = home ? Number(sh) : Number(sa);
+    const them = home ? Number(sa) : Number(sh);
+    if (isNaN(us) || isNaN(them)) continue;
+    gf += us; ga += them;
+    const r = us > them ? 'W' : us === them ? 'D' : 'L';
+    if (r === 'W') w++; else if (r === 'D') d++; else l++;
+    results.push({ id: m.id, r });
   }
-  return Math.round(s);
+  // matches приходят отсортированными по дате DESC → форма = первые 5, развернуть.
+  const form = results.slice(0, 5).reverse();
+  return { played: w + d + l, w, d, l, gf, ga, points: w * 3 + d, form };
 }
+
+const PERIODS = [
+  { value: 'season', label: 'Сезон' },
+  { value: 'round1', label: '1 круг' },
+  { value: 'round2', label: '2 круг' },
+];
 
 export default function ClubOverview() {
-  useDocumentTitle('Аналитика');
+  useDocumentTitle('Аналитика сезона');
   const navigate = useNavigate();
   const { selectedTeamId, selectedTeam } = useTeam();
+
+  const [period, setPeriod] = useState('season');
+
   const teamsRes = useApi(fetchTeams, []);
   const matchesRes = useApi(() => fetchMatches(selectedTeamId), [selectedTeamId]);
+  const aggRes = useApi(
+    () => (selectedTeamId ? fetchMatchAggregate(selectedTeamId, period).catch(() => null) : Promise.resolve(null)),
+    [selectedTeamId, period],
+  );
+  const seasonRes = useApi(
+    () => (selectedTeamId ? fetchPlayersSeason(selectedTeamId).catch(() => null) : Promise.resolve(null)),
+    [selectedTeamId],
+  );
+  // Идентичность стиля — по последнему матчу (один лёгкий запрос).
   const lastMatchId = matchesRes.data?.matches?.[0]?.id;
-  const matchRes = useApi(() => (lastMatchId ? fetchMatch(lastMatchId) : Promise.resolve(null)), [lastMatchId]);
+  const lastMatchRes = useApi(() => (lastMatchId ? fetchMatch(lastMatchId).catch(() => null) : Promise.resolve(null)), [lastMatchId]);
 
   const teams = teamsRes.data?.teams || [];
   const ourTeam = selectedTeam || teams.find((t) => t.id === selectedTeamId) || teams.find((t) => t.isOurTeam);
   const matches = matchesRes.data?.matches || [];
-  const match = matchRes.data;
-  const home = match?.teamSummaryStats?.home || {};
-  const away = match?.teamSummaryStats?.away || {};
-  // teamSummaryStats и score кёюятся ПОЗИЦИОННО (home/away из PDF). «Наши» показатели
-  // берём со своей стороны: дома — home, в гостях — away. Иначе для гостевого матча
-  // KPI и «Забитые» показывали бы соперника (задача #4). Ориентация по ID
-  // (homeTeamId == нашей команде); для незабэкфилленных строк — fallback по имени.
-  const weAreHome = match
-    ? ((match.homeTeamId || match.awayTeamId) ? match.homeTeamId === match.teamId : isOurClub(match.home))
-    : true;
-  const us = weAreHome ? home : away;
-  const ourScore = weAreHome ? match?.score?.home : match?.score?.away;
-  const theirScore = weAreHome ? match?.score?.away : match?.score?.home;
-  const ratings = match?.teamAvgRatings || {};
-  const motm = bestPlayer(match);
-  const players = match?.players || [];
+  const seasonPlayers = seasonRes.data?.players || [];
 
-  const top5 = useMemo(() => topN(players, 5), [players]);
+  const record = useMemo(() => seasonRecord(matches), [matches]);
 
-  const lineLeaders = useMemo(() => leadersByLine(players), [players]);
+  const agg = aggRes.data;
+  const our = agg?.our || {};
+  const ratings = agg?.teamAvgRatings || {};
+  const matchCount = agg?.matchCount ?? 0;
 
-  const halfMetrics = useMemo(() => {
-    if (!match) return [];
-    return [
-      { label: 'Удары',         key: 'Shot' },
-      { label: 'Передачи',      key: 'Pass' },
-      { label: 'Отборы',        key: 'Tackle' },
-      { label: 'Перехваты',     key: 'Interception' },
-      { label: 'Прессинг',      key: 'Pressing' },
-      { label: 'Голы',          key: 'Goal' },
-    ].map((m) => ({
-      ...m,
-      first: teamSplitSum(match, m.key, 'first'),
-      second: teamSplitSum(match, m.key, 'second'),
-    }));
-  }, [match]);
+  // Сезонные лидеры из агрегатов игроков (per-season суммы).
+  const leaders = useMemo(() => buildLeaders(seasonPlayers), [seasonPlayers]);
 
-  const formatDate = (iso) => {
-    if (!iso) return '—';
-    const d = new Date(iso);
-    return d.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' });
-  };
+  const periodLabel = PERIODS.find((p) => p.value === period)?.label.toLowerCase() || 'сезон';
 
   return (
     <div className="page club-overview">
@@ -116,21 +102,20 @@ export default function ClubOverview() {
         </aside>
 
         <section className="club-overview__col-right">
-          {/* HERO: Информация о команде + Сводка матча */}
+          {/* HERO: команда + сезонная запись */}
           <div className="club-overview__hero">
             <div className="card team-info">
               <div className="team-info__head">
-                <div className="team-info__title">Информация о команде</div>
+                <div className="team-info__title">Команда</div>
               </div>
               <div className="team-info__body">
                 <div className="team-info__logo team-info__logo--initials" aria-hidden>
-                  {/* Логотип-инициалы: первые 2 буквы названия команды. */}
                   {(ourTeam?.name || 'К').split(/\s+/).slice(0, 2).map((w) => w[0]).join('').toUpperCase()}
                 </div>
                 <div className="team-info__data">
                   <div className="team-info__name">{(ourTeam?.name || 'Команда').toUpperCase()}</div>
                   <div className="team-info__rating">
-                    Средний рейтинг команды:&nbsp;
+                    Средний рейтинг за {periodLabel}:&nbsp;
                     <span className="team-info__rating-val">
                       {Number(ratings.overall) > 0 ? Number(ratings.overall).toFixed(1) : '—'}
                     </span>
@@ -139,263 +124,174 @@ export default function ClubOverview() {
                     Главный тренер: <span>{ourTeam?.headCoach || '—'}</span>
                   </div>
                   <div className="team-info__coach">
-                    Игроков в последнем матче: <span>{players.length}</span>
+                    Разобрано матчей: <span>{record.played}</span>
                   </div>
                 </div>
               </div>
             </div>
 
-            {match && (
-              <div className="card match-summary">
-                <div className="team-info__title">Последний матч</div>
-                <div className="match-summary__date">{formatDate(match.date)}</div>
-                <div className="match-summary__teams">
-                  <div className="match-summary__team match-summary__team--home">
-                    <span className="match-summary__shield-initials" aria-hidden>
-                      {((match.homeTeam?.name || 'К').trim()[0] || 'К').toUpperCase()}
-                    </span>
-                    <span>{(match.homeTeam?.name || 'Команда').replace(/\s*[Uu]-?\s*\d{1,3}\s*/g, ' ').replace(/\s+20\d{2}\s*/g, ' ').replace(/\s+/g, ' ').trim()}</span>
-                  </div>
-                  <div className="match-summary__score">
-                    <span className={match.score?.home > match.score?.away ? 'win' : ''}>{match.score?.home ?? '—'}</span>
-                    <span className="match-summary__score-sep">:</span>
-                    <span className={match.score?.away > match.score?.home ? 'win' : ''}>{match.score?.away ?? '—'}</span>
-                  </div>
-                  <div className="match-summary__team match-summary__team--away">
-                    <span>{(match.awayTeam?.name || 'Соперник').replace(/\s*[Uu]-?\s*\d{1,3}\s*/g, ' ').replace(/\s+20\d{2}\s*/g, ' ').replace(/\s+/g, ' ').trim()}</span>
-                    <div className="match-summary__placeholder">?</div>
-                  </div>
-                </div>
-                <button className="match-summary__open" onClick={() => navigate(`/matches/${match.id}`)}>
-                  Открыть матч →
-                </button>
+            {/* Сезонная запись: В-Н-П, голы, форма */}
+            <div className="card season-record">
+              <div className="team-info__title">Итоги сезона</div>
+              <div className="season-record__wdl">
+                <div className="season-record__cell season-record__cell--w"><b>{record.w}</b><span>побед</span></div>
+                <div className="season-record__cell season-record__cell--d"><b>{record.d}</b><span>ничьих</span></div>
+                <div className="season-record__cell season-record__cell--l"><b>{record.l}</b><span>пораж.</span></div>
               </div>
-            )}
+              <div className="season-record__meta">
+                <span>Очки: <b>{record.points}</b></span>
+                <span>Мячи: <b>{record.gf}–{record.ga}</b></span>
+                <span className={`season-record__gd ${record.gf - record.ga >= 0 ? 'pos' : 'neg'}`}>
+                  {record.gf - record.ga >= 0 ? '+' : ''}{record.gf - record.ga}
+                </span>
+              </div>
+              {record.form.length > 0 && (
+                <div className="season-record__form">
+                  <span className="season-record__form-lab">Форма</span>
+                  {record.form.map((r, i) => (
+                    <span key={r.id + i} className={`season-record__res season-record__res--${r.r}`}>{r.r}</span>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
 
-          {/* Лучший игрок — рендерим только если у него реально есть рейтинг.
-              Без проверки bestPlayer() возвращал первого игрока даже когда у
-              всех rating=null → карточка показывала «—/100». */}
-          {motm && motm.ratings?.overall != null && (
-            <div className="card best-player" onClick={() => navigate(`/players/${motm.id}`)}>
-              <div className="best-player__head">Лучший игрок матча</div>
-              <div className="best-player__body">
-                <PlayerPhoto player={motm} size={84} />
-                <div className="best-player__info">
-                  <div className="best-player__name">{shortNameFromPlayer(motm)}</div>
-                  <div className="best-player__pos">№{motm.number} · {motm.positionFull}</div>
-                  <div className="best-player__stats">
-                    <span>Голы: <b>{num(motm.stats?.attack4?.goal) ?? 0}</b></span>
-                    <span>Ассисты: <b>{num(motm.stats?.attack1?.assist) ?? 0}</b></span>
-                    <span>Перехваты: <b>{num(motm.stats?.defence1?.interception) ?? 0}</b></span>
-                    <span>Минуты: <b>{motm.minutes ?? 0}</b></span>
-                  </div>
-                </div>
-                <div className="best-player__rating">
-                  <RatingPill value={motm.ratings?.overall} size="xl" />
+          {/* Переключатель периода */}
+          <div className="club-overview__period" role="tablist">
+            {PERIODS.map((p) => (
+              <button
+                key={p.value}
+                type="button"
+                role="tab"
+                aria-selected={period === p.value}
+                className={`club-overview__period-btn${period === p.value ? ' is-active' : ''}`}
+                onClick={() => setPeriod(p.value)}
+              >{p.label}</button>
+            ))}
+          </div>
+
+          {matchCount === 0 ? (
+            <div className="empty-state">
+              {period === 'season'
+                ? 'Нет разобранных матчей с командной статистикой.'
+                : 'В этом круге пока нет разобранных матчей. Переключите период.'}
+            </div>
+          ) : (
+            <>
+              {/* Сводные рейтинги за период */}
+              <div>
+                <div className="page-section-title">Сводные рейтинги · {periodLabel} <span className="club-overview__sub">{matchCount} матч.</span></div>
+                <div className="club-overview__ratings">
+                  <RatingCard label="Общий" value={ratings.overall} />
+                  <RatingCard label="Фитнес" value={ratings.fitness} />
+                  <RatingCard label="Атака" value={ratings.attack} />
+                  <RatingCard label="Защита" value={ratings.defence} />
                 </div>
               </div>
-            </div>
+
+              {/* Ключевые показатели — в среднем за матч */}
+              <div>
+                <div className="page-section-title">Показатели · в среднем за матч</div>
+                <div className="club-overview__kpi">
+                  <KpiCell label="Голы за матч"   value={record.played ? (record.gf / record.played).toFixed(1) : '—'} accent="gold" />
+                  <KpiCell label="Пропуск/матч"   value={record.played ? (record.ga / record.played).toFixed(1) : '—'} />
+                  <KpiCell label="Владение, %"    value={fmtAvg(our.possessionPct)} />
+                  <KpiCell label="Удары"          value={fmtAvg(num(our.shots?.total))} />
+                  <KpiCell label="Удары в створ"  value={fmtAvg(num(our.shots?.onTarget))} />
+                  <KpiCell label="xG"             value={fmtAvg(num(our.expectedGoals), 2)} />
+                  <KpiCell label="Передачи"       value={fmtAvg(num(our.passes?.total))} />
+                  <KpiCell label="% точных"       value={fmtAvg(num(our.passes?.accuracy))} suffix="%" />
+                  <KpiCell label="Угловые"        value={fmtAvg(num(our.corners?.total))} />
+                  <KpiCell label="Нарушения"      value={fmtAvg(num(our.fouls))} />
+                </div>
+              </div>
+            </>
           )}
 
-          {/* Top-5 рейтинг */}
-          {top5.length > 0 && (
+          {/* xG-аналитика сезона (модель, по всем матчам) */}
+          <TeamSeasonAnalytics matches={matches} />
+
+          {/* Идентичность стиля по последнему матчу */}
+          {lastMatchRes.data && <TeamIdentityCard match={lastMatchRes.data} />}
+
+          {/* Сезонные лидеры — бомбардиры / ассистенты / рейтинг */}
+          {leaders && (
             <div>
-              <div className="page-section-title">Топ-5 игроков матча</div>
-              <div className="club-overview__top5">
-                {top5.map((p, i) => (
-                  <div
-                    key={p.id}
-                    className="top5-card"
-                    onClick={() => navigate(`/players/${p.id}`)}
-                  >
-                    <div className="top5-card__rank">{i + 1}</div>
-                    <PlayerPhoto player={p} size={56} />
-                    <div className="top5-card__info">
-                      <div className="top5-card__name">{p.lastName} {p.firstName?.[0]}.</div>
-                      <div className="top5-card__pos">№{p.number} · {p.position}</div>
-                    </div>
-                    <RatingPill value={p.ratings?.overall} size="md" />
-                  </div>
-                ))}
+              <div className="page-section-title">Лидеры сезона</div>
+              <div className="club-overview__leaders">
+                <LeaderColumn title="Бомбардиры" rows={leaders.scorers} unit="гол." navigate={navigate} />
+                <LeaderColumn title="Ассистенты" rows={leaders.assistants} unit="пас." navigate={navigate} />
+                <LeaderColumn title="По рейтингу" rows={leaders.rated} unit="" rating navigate={navigate} />
               </div>
             </div>
           )}
-
-          {/* Сводные рейтинги */}
-          <div>
-            <div className="page-section-title">Сводные рейтинги команды</div>
-            <div className="club-overview__ratings">
-              <RatingCard label="Общий" value={ratings.overall} />
-              <RatingCard label="Фитнес" value={ratings.fitness} />
-              <RatingCard label="Атака" value={ratings.attack} />
-              <RatingCard label="Защита" value={ratings.defence} />
-            </div>
-          </div>
-
-          {/* Ключевые показатели — расширенные */}
-          <div>
-            <div className="page-section-title">Ключевые показатели матча</div>
-            <div className="club-overview__kpi">
-              <KpiCell label="Забитые"        value={ourScore} accent="gold" />
-              <KpiCell label="Пропущенные"    value={theirScore} />
-              <KpiCell label="Владение, %"    value={us.possessionPct} />
-              <KpiCell label="Удары всего"    value={us.shots?.total} />
-              <KpiCell label="Удары в створ"  value={us.shots?.onTarget} />
-              <KpiCell label="xG"             value={us.expectedGoals} />
-              <KpiCell label="Передачи"       value={us.passes?.total} />
-              <KpiCell label="% точных"       value={us.passes?.accuracy} suffix="%" />
-              <KpiCell label="Угловые"        value={us.corners?.total} />
-              <KpiCell label="Штрафные удары" value={us.freeKickShots} />
-              <KpiCell label="Нарушения"      value={us.fouls} />
-              <KpiCell label="Офсайды"        value={us.offsides} />
-            </div>
-          </div>
-
-          {/* Команда по таймам — только если есть реальные данные полутаймов
-              (splits игроков). Иначе парсер не извлёк splits → все нули → секцию прячем. */}
-          {halfMetrics.some((m) => m.first > 0 || m.second > 0) && (
-            <div className="card">
-              <div className="page-section-title">1 тайм vs 2 тайм — командно</div>
-              <div className="halftime-team">
-                {halfMetrics.map((m) => {
-                  const max = Math.max(m.first, m.second, 1);
-                  return (
-                    <div className="halftime-team__row" key={m.key}>
-                      <span className="halftime-team__label">{m.label}</span>
-                      <div className="halftime-team__bars">
-                        <div className="halftime-team__bar halftime-team__bar--first">
-                          <div className="halftime-team__bar-fill" style={{ width: `${(m.first / max) * 100}%` }} />
-                          <span className="halftime-team__bar-val">{m.first}</span>
-                        </div>
-                        <div className="halftime-team__bar halftime-team__bar--second">
-                          <div className="halftime-team__bar-fill" style={{ width: `${(m.second / max) * 100}%` }} />
-                          <span className="halftime-team__bar-val">{m.second}</span>
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
-                <div className="halftime-team__legend">
-                  <span><i className="dot dot--first" /> 1 тайм</span>
-                  <span><i className="dot dot--second" /> 2 тайм</span>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Лидеры по линиям */}
-          {lineLeaders.length > 0 && (
-            <div className="card">
-              <div className="page-section-title">Лидеры по линиям</div>
-              <div className="club-overview__lines">
-                {lineLeaders.map(({ group, leader, count, avg: a }) => (
-                  <div
-                    className="line-card"
-                    key={group.id}
-                    onClick={() => navigate(`/players/${leader.id}`)}
-                  >
-                    <div className="line-card__group">{group.label}</div>
-                    <div className="line-card__count">{count} игр.</div>
-                    <div className="line-card__player">
-                      <PlayerPhoto player={leader} size={44} />
-                      <div>
-                        <div className="line-card__name">{leader.lastName} {leader.firstName?.[0]}.</div>
-                        <div className="line-card__pos">№{leader.number}</div>
-                      </div>
-                    </div>
-                    <div className="line-card__metrics">
-                      <div>
-                        <div className="line-card__metric-label">Рейтинг</div>
-                        <div className="line-card__metric-val" style={{ color: ratingColor(leader.ratings?.overall) }}>
-                          {leader.ratings?.overall?.toFixed(1) ?? '—'}
-                        </div>
-                      </div>
-                      <div>
-                        <div className="line-card__metric-label">Ср. линии</div>
-                        <div className="line-card__metric-val line-card__metric-val--muted">
-                          {a ? a.toFixed(1) : '—'}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Атака / Оборона */}
-          <div className="club-overview__ao">
-            <div className="card">
-              <div className="page-section-title">Атака</div>
-              <AoBars items={[
-                // progressive/toFinalThird теперь парсятся по координатам (верно: 62/52).
-                ['Удары в створ',              num(us.shots?.onTarget),                                   us.shots?.total],
-                ['xG',                         num(us.expectedGoals),                                      5],
-                ['Прогрессивные передачи',     num(match?.teamAggregates?.passes?.progressive),            90],
-                ['Передачи в финальную треть', num(match?.teamAggregates?.passes?.toFinalThird),           80],
-                ['Кроссы',                     num(match?.teamAggregates?.passes?.crosses),                25],
-                ['Угловые',                    num(us.corners?.total),                                     16],
-                ['Контратаки',                 num(match?.teamAggregates?.attacks?.counterattacks?.count), 30],
-              ]} colorFn={() => '#22d3ee'} />
-            </div>
-            <div className="card">
-              <div className="page-section-title">Оборона</div>
-              <AoBars items={[
-                // Верные лейблы под реальные поля: «Отборы» был duels (единоборства),
-                // «Заблокированные» был clearance (выносы), «Сейвы» — нет командного
-                // поля, убран. Все поля ниже сверены с текстом PDF.
-                ['Перехваты',        num(match?.teamAggregates?.positioning?.interceptions),                  100],
-                ['Отборы и подборы', num(match?.teamAggregates?.recoveriesAndTackling?.recoveriesAndTackling), 120],
-                ['Единоборства',     num(match?.teamAggregates?.duels?.totalDuels),                           100],
-                ['Прессинг',         num(match?.teamAggregates?.pressing?.pressing),                          80],
-                ['Контрпрессинг',    num(match?.teamAggregates?.pressing?.counterpressing),                   40],
-                ['Выносы',           num(match?.teamAggregates?.positioning?.clearance),                      25],
-              ]} colorFn={() => '#7cb342'} />
-            </div>
-          </div>
         </section>
       </div>
 
-      {(teamsRes.loading || matchesRes.loading || matchRes.loading) && (
+      {(teamsRes.loading || matchesRes.loading || aggRes.loading) && (
         <div className="empty-state">Загрузка данных…</div>
       )}
     </div>
   );
 }
 
-function KpiCell({ label, value, accent, suffix }) {
-  const display = value === null || value === undefined ? '—' : `${value}${suffix || ''}`;
+function fmtAvg(v, digits = 1) {
+  const n = Number(v);
+  if (v == null || isNaN(n)) return '—';
+  if (Number.isInteger(n) && digits <= 1) return n.toFixed(1);
+  return n.toFixed(digits);
+}
+
+// Сезонные лидеры из /players/season. Каждый — топ-3 с минимумом активности.
+function buildLeaders(seasonPlayers) {
+  if (!Array.isArray(seasonPlayers) || seasonPlayers.length === 0) return null;
+  const topBy = (getVal, { min = 1, ratingMin = 0 } = {}) =>
+    [...seasonPlayers]
+      .map((p) => ({ p, v: getVal(p) }))
+      .filter((r) => (r.v ?? 0) >= min && (ratingMin ? (r.p.matches ?? 0) >= ratingMin : true))
+      .sort((a, b) => b.v - a.v)
+      .slice(0, 3);
+  const scorers = topBy((p) => p.goals || 0);
+  const assistants = topBy((p) => p.assists || 0);
+  // Рейтинг: минимум 2 матча, чтобы случайный одиночный всплеск не лидировал.
+  const rated = topBy((p) => p.avgOverall || 0, { min: 0.1, ratingMin: 2 });
+  if (!scorers.length && !assistants.length && !rated.length) return null;
+  return { scorers, assistants, rated };
+}
+
+function LeaderColumn({ title, rows, unit, rating, navigate }) {
   return (
-    <div className={`kpi-cell ${accent ? `kpi-cell--${accent}` : ''}`}>
-      <div className="kpi-cell__value">{display}</div>
-      <div className="kpi-cell__label">{label}</div>
+    <div className="card leader-col">
+      <div className="leader-col__title">{title}</div>
+      {rows.length === 0 ? (
+        <div className="leader-col__empty">—</div>
+      ) : (
+        rows.map((r, i) => (
+          <div className="leader-col__row" key={r.p.id} onClick={() => navigate(`/players/${r.p.id}`)}>
+            <span className="leader-col__rank">{i + 1}</span>
+            <PlayerPhoto player={r.p} size={40} />
+            <div className="leader-col__info">
+              <div className="leader-col__name">{r.p.fullName}</div>
+              <div className="leader-col__pos">№{r.p.number ?? '—'} · {r.p.matches} матч.</div>
+            </div>
+            {rating ? (
+              <RatingPill value={r.v} size="md" />
+            ) : (
+              <span className="leader-col__val">{r.v}<span className="leader-col__unit"> {unit}</span></span>
+            )}
+          </div>
+        ))
+      )}
     </div>
   );
 }
 
-function AoBars({ items, colorFn }) {
-  // Каждый бар масштабируется к СВОЕМУ макс (3-й элемент item) — метрики разной
-  // природы (xG ~2, передачи ~150) нельзя мерить одной шкалой, иначе у xG/угловых
-  // полоска пустая. Кап 100% чтобы не вылезать за трек.
+function KpiCell({ label, value, accent, suffix }) {
+  const display = value === null || value === undefined || value === '—' ? '—' : `${value}${suffix || ''}`;
   return (
-    <div className="ao-bars">
-      {items.map(([label, val, suggestedMax], i) => {
-        const num = typeof val === 'number' && !isNaN(val) ? val : 0;
-        const denom = typeof suggestedMax === 'number' && suggestedMax > 0 ? suggestedMax : (num || 1);
-        const pct = Math.min(100, (num / denom) * 100);
-        return (
-          <div className="ao-bars__row" key={i}>
-            <div className="ao-bars__label">{label}</div>
-            <div className="ao-bars__track">
-              <div className="ao-bars__fill" style={{ width: `${pct}%`, background: colorFn() }} />
-            </div>
-            <div className="ao-bars__val">
-              {val === null || val === undefined ? '—' : val}
-            </div>
-          </div>
-        );
-      })}
+    <div className={`kpi-cell ${accent ? `kpi-cell--${accent}` : ''}`}>
+      <div className="kpi-cell__value">{display}</div>
+      <div className="kpi-cell__label">{label}</div>
     </div>
   );
 }

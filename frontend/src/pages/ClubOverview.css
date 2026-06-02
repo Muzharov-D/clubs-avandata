@@ -540,3 +540,126 @@
 /* Этот блок был дублем @media (max-width: 768px) выше (строки 402-538) —
    идентичные правила, удвоенный cascade weight и риск разойтись при правках.
    Удалён, оригинал остаётся источником истины. */
+/* ───────────── Сезонный дашборд: период / запись / лидеры ───────────── */
+
+.club-overview__sub {
+  font-size: 11px;
+  font-weight: 600;
+  color: #94a3c8;
+  margin-left: 6px;
+}
+
+/* Сезонная запись (В-Н-П + голы + форма) */
+.season-record__wdl {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin: 10px 0;
+}
+.season-record__cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 8px 4px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.04);
+}
+.season-record__cell b { font-size: 24px; font-weight: 800; line-height: 1; }
+.season-record__cell span { font-size: 10px; color: #94a3c8; margin-top: 4px; text-transform: uppercase; letter-spacing: 0.03em; }
+.season-record__cell--w b { color: #34d399; }
+.season-record__cell--d b { color: #fbbf24; }
+.season-record__cell--l b { color: #f87171; }
+.season-record__meta {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  font-size: 13px;
+  color: #cbd5e1;
+  padding: 4px 2px;
+}
+.season-record__meta b { color: #fff; }
+.season-record__gd.pos { color: #34d399; font-weight: 700; }
+.season-record__gd.neg { color: #f87171; font-weight: 700; }
+.season-record__form {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 10px;
+}
+.season-record__form-lab { font-size: 11px; color: #94a3c8; margin-right: 4px; }
+.season-record__res {
+  width: 24px; height: 24px;
+  display: inline-flex; align-items: center; justify-content: center;
+  border-radius: 7px;
+  font-size: 12px; font-weight: 800; color: #fff;
+}
+.season-record__res--W { background: #16a34a; }
+.season-record__res--D { background: #ca8a04; }
+.season-record__res--L { background: #dc2626; }
+
+/* Переключатель периода */
+.club-overview__period {
+  display: inline-flex;
+  gap: 4px;
+  padding: 4px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 11px;
+  align-self: flex-start;
+}
+.club-overview__period-btn {
+  padding: 8px 18px;
+  background: transparent;
+  border: none;
+  border-radius: 8px;
+  color: #94a3c8;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+.club-overview__period-btn:hover { color: #fff; }
+.club-overview__period-btn.is-active {
+  color: #fff;
+  background: var(--brand-primary, #dc2626);
+}
+
+/* Сезонные лидеры */
+.club-overview__leaders {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+.leader-col__title {
+  font-size: 13px;
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 10px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+.leader-col__empty { color: #64748b; font-size: 13px; }
+.leader-col__row {
+  display: grid;
+  grid-template-columns: 18px 40px 1fr auto;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 0;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: background 0.12s ease;
+}
+.leader-col__row:hover { background: rgba(255, 255, 255, 0.04); }
+.leader-col__rank { font-size: 13px; font-weight: 800; color: #94a3c8; text-align: center; }
+.leader-col__info { min-width: 0; }
+.leader-col__name {
+  font-size: 13px; font-weight: 600; color: #fff;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.leader-col__pos { font-size: 10px; color: #94a3c8; }
+.leader-col__val { font-size: 16px; font-weight: 800; color: #fff; white-space: nowrap; }
+.leader-col__unit { font-size: 10px; font-weight: 600; color: #94a3c8; }
+
+@media (max-width: 768px) {
+  .club-overview__leaders { grid-template-columns: 1fr; }
+}
