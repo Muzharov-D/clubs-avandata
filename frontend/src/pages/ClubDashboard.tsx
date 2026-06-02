@@ -660,10 +660,15 @@ export default function ClubDashboard() {
                 <>
                   <div className="cd__avg-caption">Средний индекс эффективности по команде</div>
                   <div className="cd__avg-row">
-                    <div className="cd__avg-item"><span className="cd__avg-label">Общий</span><span className="cd__avg-val">{fmt('overall')}</span></div>
-                    <div className="cd__avg-item"><span className="cd__avg-label">Фитнес</span><span className="cd__avg-val">{fmt('fitness')}</span></div>
-                    <div className="cd__avg-item"><span className="cd__avg-label">Атака</span><span className="cd__avg-val">{fmt('attack')}</span></div>
-                    <div className="cd__avg-item"><span className="cd__avg-label">Защита</span><span className="cd__avg-val">{fmt('defence')}</span></div>
+                    {([['overall', 'Общий'], ['fitness', 'Фитнес'], ['attack', 'Атака'], ['defence', 'Защита']] as const).map(([k, label]) => {
+                      const n = Number(tar[k] ?? 0);
+                      return (
+                        <div className="cd__avg-item" key={k}>
+                          <span className="cd__avg-label">{label}</span>
+                          <span className="cd__avg-val" style={n > 0 ? { color: ratingColor(n) } : undefined}>{fmt(k)}</span>
+                        </div>
+                      );
+                    })}
                   </div>
                 </>
               );
@@ -890,23 +895,28 @@ export default function ClubDashboard() {
             );
           };
 
+          const nonEmpty = LINES
+            .map((line) => ({ ...line, players: byLine(line.id) }))
+            .filter((g) => g.players.length > 0);
+          // Заголовки линий показываем только когда позиции реально размечены
+          // (есть ≥2 группы). Если все «без позиции» (частый случай ФФСПБ) —
+          // просто состав без бессмысленной подписи «Без позиции».
+          const showHeaders = nonEmpty.length > 1;
           return (
             <div className="cd__roster-lines">
-              {LINES.map((line) => {
-                const players = byLine(line.id);
-                if (players.length === 0) return null;
-                return (
-                  <div key={line.id} className="cd__line">
+              {nonEmpty.map((g) => (
+                <div key={g.id} className="cd__line">
+                  {showHeaders && (
                     <div className="cd__line-head">
-                      <span className="cd__line-label">{line.label}</span>
-                      <span className="cd__line-count">{players.length}</span>
+                      <span className="cd__line-label">{g.label}</span>
+                      <span className="cd__line-count">{g.players.length}</span>
                     </div>
-                    <div className="cd__roster">
-                      {players.map(renderPlayer)}
-                    </div>
+                  )}
+                  <div className="cd__roster">
+                    {g.players.map(renderPlayer)}
                   </div>
-                );
-              })}
+                </div>
+              ))}
             </div>
           );
         })()}
@@ -1071,15 +1081,24 @@ function AggregateCard({ title, data }: { title: string; data: AnyObj }) {
   }
   const entries = Array.from(bucket.values()).sort((a, b) => b.val - a.val).slice(0, 6);
   if (entries.length === 0) return null;
+  // Полоса величины относительно максимума в карточке — чтобы блок «считывался»
+  // взглядом, а не был серой колонкой чисел. Проценты (suffix '%') — по 100.
+  const max = entries.reduce((m, e) => Math.max(m, e.suffix === '%' ? 100 : e.val), 0) || 1;
   return (
     <div className="cd__agg-card">
       <div className="cd__agg-title">{title}</div>
-      {entries.map(({ k, label, val, suffix }) => (
-        <div key={k} className="cd__agg-row">
-          <span className="cd__agg-key">{label}</span>
-          <span className="cd__agg-val">{val.toLocaleString('ru-RU')}{suffix}</span>
-        </div>
-      ))}
+      {entries.map(({ k, label, val, suffix }) => {
+        const pct = Math.max(7, Math.round(((suffix === '%' ? val : val) / max) * 100));
+        return (
+          <div key={k} className="cd__agg-row">
+            <div className="cd__agg-row-head">
+              <span className="cd__agg-key">{label}</span>
+              <span className="cd__agg-val">{val.toLocaleString('ru-RU')}{suffix}</span>
+            </div>
+            <span className="cd__agg-bar" aria-hidden><span className="cd__agg-bar-fill" style={{ width: `${pct}%` }} /></span>
+          </div>
+        );
+      })}
     </div>
   );
 }
