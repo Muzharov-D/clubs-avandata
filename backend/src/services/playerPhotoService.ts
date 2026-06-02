@@ -45,6 +45,10 @@ function lastTokens(fullName: unknown): string[] {
   return out;
 }
 
+// Хост изображений Наградиона: поле player.photo — это имя файла (person….jpg),
+// а не URL. Прямой HEAD подтвердил, что файл отдаётся по этому базовому пути.
+const NAGRADION_IMG_BASE = 'https://img.nagradion.ru/images/';
+
 function isUrl(v: unknown): v is string {
   return typeof v === 'string' && /^https?:\/\//i.test(v);
 }
@@ -53,11 +57,16 @@ function isImageUrl(v: unknown): v is string {
 }
 
 /**
- * Авто-детект URL фото в произвольном объекте игрока FFSPB.
- * Поле не подтверждено → перебираем вероятные имена, объекты-миниатюры и
- * в последнюю очередь любой image-URL.
+ * URL фото игрока FFSPB. Основной кейс — поле `photo` = имя файла Наградиона
+ * (строим полный URL). Плюс авто-детект на случай других форм ответа.
  */
 export function extractPhoto(p: Record<string, unknown>): string | null {
+  // 1) Наградион: photo = «person….jpg» → полный URL.
+  const photoFile = p.photo;
+  if (typeof photoFile === 'string' && photoFile.trim() && !/^https?:/i.test(photoFile)) {
+    return NAGRADION_IMG_BASE + photoFile.trim();
+  }
+  // 2) Прямые URL-поля (если формат изменится).
   const DIRECT = ['photoSrc', 'photo', 'photoUrl', 'avatar', 'avatarSrc', 'image', 'imageSrc', 'picture', 'pictureSrc'];
   for (const k of DIRECT) if (isUrl(p[k])) return p[k] as string;
 
@@ -76,11 +85,13 @@ export function extractPhoto(p: Record<string, unknown>): string | null {
   return null;
 }
 
-/** Имя игрока из объекта FFSPB (name | firstName+lastName). */
+/** Имя игрока из объекта FFSPB: name | firstName + (surname|lastName). */
 function ffspbFullName(p: Record<string, unknown>): string | null {
   if (typeof p.name === 'string' && p.name.trim()) return p.name;
   const fn = typeof p.firstName === 'string' ? p.firstName : '';
-  const ln = typeof p.lastName === 'string' ? p.lastName : '';
+  // FFSPB отдаёт фамилию как `surname` (не `lastName`).
+  const ln = typeof p.surname === 'string' ? p.surname
+    : typeof p.lastName === 'string' ? p.lastName : '';
   const joined = [fn, ln].filter(Boolean).join(' ').trim();
   return joined || null;
 }
