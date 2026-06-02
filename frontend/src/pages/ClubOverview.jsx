@@ -179,7 +179,7 @@ export default function ClubOverview() {
                 <div className="page-section-title">Сводные рейтинги · {periodLabel} <span className="club-overview__sub">{matchCount} матч.</span></div>
                 <div className="club-overview__ratings">
                   <RatingCard label="Общий" value={ratings.overall} />
-                  <RatingCard label="Физика" value={ratings.fitness} />
+                  <RatingCard label="Фитнес" value={ratings.fitness} />
                   <RatingCard label="Атака" value={ratings.attack} />
                   <RatingCard label="Защита" value={ratings.defence} />
                 </div>

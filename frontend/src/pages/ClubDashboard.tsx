@@ -572,7 +572,7 @@ export default function ClubDashboard() {
                   <div className="cd__avg-caption">Средний индекс эффективности по команде</div>
                   <div className="cd__avg-row">
                     <div className="cd__avg-item"><span className="cd__avg-label">Общий</span><span className="cd__avg-val">{fmt('overall')}</span></div>
-                    <div className="cd__avg-item"><span className="cd__avg-label">Физика</span><span className="cd__avg-val">{fmt('fitness')}</span></div>
+                    <div className="cd__avg-item"><span className="cd__avg-label">Фитнес</span><span className="cd__avg-val">{fmt('fitness')}</span></div>
                     <div className="cd__avg-item"><span className="cd__avg-label">Атака</span><span className="cd__avg-val">{fmt('attack')}</span></div>
                     <div className="cd__avg-item"><span className="cd__avg-label">Защита</span><span className="cd__avg-val">{fmt('defence')}</span></div>
                   </div>

@@ -9,7 +9,7 @@ import './PizzaChart.css';
 const GROUP_COLORS = {
   attack:  { fill: '#dc2626', track: 'rgba(220, 38, 38, 0.16)', text: '#fff', label: 'Атака' },
   defence: { fill: '#ffffff', track: 'rgba(255, 255, 255, 0.10)', text: '#0d1424', label: 'Оборона' },
-  fitness: { fill: '#7c2d12', track: 'rgba(124, 45, 18, 0.22)',  text: '#fff', label: 'Физика' },
+  fitness: { fill: '#7c2d12', track: 'rgba(124, 45, 18, 0.22)',  text: '#fff', label: 'Фитнес' },
 };
 
 function polar(cx, cy, r, angle) {

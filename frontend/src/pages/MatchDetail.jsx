@@ -340,7 +340,7 @@ export default function MatchDetail() {
           ['md-insights', 'Выводы'],
           ['md-momentum', 'Momentum'],
           ['md-half', 'По таймам'],
-          ['md-fitness', 'Физика'],
+          ['md-fitness', 'Фитнес'],
           ['md-heatmap', 'Хитмап'],
           ['md-detail', 'Детали'],
           // 'md-maps' (Командные карты) временно скрыт — пока выводим только
@@ -354,7 +354,7 @@ export default function MatchDetail() {
       {/* 4 рейтинга команды */}
       <div className="match-detail__ratings" id="md-ratings">
         <RatingCard label="Общий" value={teamRatings.overall} />
-        <RatingCard label="Физика" value={teamRatings.fitness} />
+        <RatingCard label="Фитнес" value={teamRatings.fitness} />
         <RatingCard label="Атака" value={teamRatings.attack} />
         <RatingCard label="Защита" value={teamRatings.defence} />
       </div>
@@ -557,7 +557,7 @@ export default function MatchDetail() {
               <div className="mvs__list">
                 {[
                   ['Общий', 'overall'],
-                  ['Физика', 'fitness'],
+                  ['Фитнес', 'fitness'],
                   ['Атака', 'attack'],
                   ['Защита', 'defence'],
                 ].map(([label, key]) => {
