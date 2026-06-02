@@ -7,9 +7,10 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { randomBytes, createHash } from 'node:crypto';
 import { authenticate } from '../auth/middleware.js';
-import { withTenantTx } from '../db/tenantContext.js';
+import { withTenantTx, withTenant } from '../db/tenantContext.js';
 import { BadRequestError, UnauthorizedError, AppError } from '../shared/errors.js';
 import { logger } from '../shared/logger.js';
+import { enrichTenantPhotos } from '../services/playerPhotoService.js';
 import { resolveOurSide } from '../shared/teamName.js';
 import { validateRich, assertSportVisor } from './validation.js';
 import { computeDataQuality } from '../data/dataQuality.js';
@@ -734,6 +735,39 @@ export async function uploadRoutes(app: FastifyInstance) {
         );
         if (opened.rowCount) logger.info({ matchId, teamId }, '[upload] team auto-opened on first match');
       });
+
+      // ─── Фото: повторная загрузка отчёта могла создать/пересоздать строки
+      // игроков (новый sv-хэш по имени, воскрешённый дубль и т.п.) с photo_url
+      // = NULL → на дашборде у них пропадает фото. enrichTenantPhotos заполняет
+      // ТОЛЬКО NULL по ростеру FFSPB — идемпотентно, существующие фото не трогает.
+      // Ext-id нашей команды берём из календаря: это id, который встречается во
+      // ВСЕХ наших матчах данного возраста (соперники меняются — мы постоянны).
+      // Запускаем ПОСЛЕ коммита матча, отдельной транзакцией (сетевой вызов к
+      // FFSPB не держит основную tx). Best-effort: ошибка не валит загрузку.
+      try {
+        await withTenant(tenantSlug, async (_tx, conn) => {
+          const { rows } = await conn.query<{ extId: string }>(
+            `SELECT ext_id AS "extId" FROM (
+               SELECT ext_home_team_id AS ext_id FROM calendar
+                 WHERE tenant_id = $1 AND is_our_match = TRUE
+                   AND age_group = (SELECT age_group FROM teams WHERE id = $2 AND tenant_id = $1)
+               UNION ALL
+               SELECT ext_away_team_id AS ext_id FROM calendar
+                 WHERE tenant_id = $1 AND is_our_match = TRUE
+                   AND age_group = (SELECT age_group FROM teams WHERE id = $2 AND tenant_id = $1)
+             ) t
+             WHERE ext_id IS NOT NULL
+             GROUP BY ext_id ORDER BY COUNT(*) DESC LIMIT 1`,
+            [tenantSlug, teamId],
+          );
+          const ourExtId = rows[0]?.extId;
+          if (!ourExtId) return;
+          const res = await enrichTenantPhotos(conn, tenantSlug, [ourExtId]);
+          if (res.filled) logger.info({ matchId, teamId, ...res }, '[upload] photos re-enriched after report upload');
+        });
+      } catch (e) {
+        logger.warn({ matchId, err: e instanceof Error ? e.message : String(e) }, '[upload] photo re-enrich skipped');
+      }
 
       return {
         ok: true,
