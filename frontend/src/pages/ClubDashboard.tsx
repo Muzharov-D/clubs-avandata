@@ -776,6 +776,7 @@ const FIELD_RU: Record<string, string> = {
   toFinalThird: 'В финальную треть', intoPenArea: 'В штрафную',
   crosses: 'Кроссы', keyPass: 'Ключевые', back: 'Назад', long: 'Длинные',
   short: 'Короткие', middle: 'Средние', oppda: 'PPDA',
+  forward: 'Вперёд', sideways: 'Поперечные',
   // attacks
   assists: 'Ассисты', goalActions: 'Голевые действия', dribble: 'Дриблинг',
   touchesInBox: 'Касания в штрафной', entriesInBox: 'Входы в штрафную',
@@ -787,6 +788,7 @@ const FIELD_RU: Record<string, string> = {
   tackle: 'Отборы', interception: 'Перехваты', recovery: 'Возвраты',
   tackleAndRecovery: 'Отбор+возврат', slidingTackles: 'Подкаты',
   returns: 'Возвраты', tacklesLine: 'Отборы на линии',
+  recoveriesAndTackling: 'Возвраты и отборы', rebounds: 'Подборы',
   inFirstThird: 'В 1-й трети', inSecondThird: 'В средней', inThirdThird: 'В фин. трети',
   // duels
   duel: 'Дуэли', aerialDuel: 'Воздух', totalDuels: 'Всего дуэлей',
@@ -799,7 +801,7 @@ const FIELD_RU: Record<string, string> = {
   fouls: 'Фолы', yellowCard: 'Жёлтые', redCard: 'Красные', shotsAgainst: 'Удары по воротам',
   interceptions: 'Перехваты',
   // setPieces
-  corner: 'Угловые', corners: 'Угловые', freeKick: 'Штрафные',
+  corner: 'Угловые', corners: 'Угловые', freeKick: 'Штрафные', freeKicks: 'Штрафные',
   freeKickShot: 'Штр. с ударом', penalty: 'Пенальти', throwing: 'Ауты', throwIns: 'Ауты',
   offsides: 'Офсайды', penaltyWithShot: 'Пенальти с ударом',
 };
