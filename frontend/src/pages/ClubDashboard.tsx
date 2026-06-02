@@ -182,6 +182,12 @@ export default function ClubDashboard() {
   // Берём из выбранной команды (а не хардкод «Зенит»), fallback на team из БД.
   const ourName = (selectedTeam?.name || team?.name || '').toLowerCase().trim();
 
+  // Унификация имени команды для отображения. Для НАШЕЙ команды берём
+  // каноническое имя из загруженных данных (team.name) вместо «грязной» строки
+  // календаря; для любой — чистим (юр-форма/скобки/возраст). См. cleanTeamName.
+  const teamDisplay = (raw: unknown, isOur: boolean): string =>
+    cleanTeamName(isOur ? (selectedTeam?.name || team?.name || raw) : raw);
+
   const nextMatch = useMemo(() => {
     const now = Date.now();
     return calendar.find((m) =>
@@ -266,7 +272,7 @@ export default function ClubDashboard() {
       const our = Number(ourHome ? m.scoreH : m.scoreA);
       const opp = Number(ourHome ? m.scoreA : m.scoreH);
       const result: 'W' | 'D' | 'L' = our > opp ? 'W' : our === opp ? 'D' : 'L';
-      return { result, opp: trimAgeSuffix(ourHome ? m.away : m.home), score: `${our}:${opp}`, date: m.date as string };
+      return { result, opp: cleanTeamName(ourHome ? m.away : m.home), score: `${our}:${opp}`, date: m.date as string };
     });
     return mapped.reverse(); // хронологический порядок слева-направо
   }, [calendar, ourName]);
@@ -365,9 +371,9 @@ export default function ClubDashboard() {
               <div className="cd__mm cd__mm--next">
                 <div className="cd__mm-eyebrow">Следующий · {nextMatch.round || ''}</div>
                 <div className="cd__hero-matchup">
-                  <MatchupTeam name={nextMatch.home} shield={nextMatch.homeShield} isOur={isOurName(nextMatch.home, ourName)} />
+                  <MatchupTeam name={teamDisplay(nextMatch.home, isOurName(nextMatch.home, ourName))} shield={nextMatch.homeShield} isOur={isOurName(nextMatch.home, ourName)} />
                   <span className="cd__hero-vs">—</span>
-                  <MatchupTeam name={nextMatch.away} shield={nextMatch.awayShield} isOur={isOurName(nextMatch.away, ourName)} />
+                  <MatchupTeam name={teamDisplay(nextMatch.away, isOurName(nextMatch.away, ourName))} shield={nextMatch.awayShield} isOur={isOurName(nextMatch.away, ourName)} />
                 </div>
                 <div className="cd__hero-meta">
                   <span>{formatDateLong(nextMatch.date)}</span>
@@ -386,9 +392,9 @@ export default function ClubDashboard() {
               <div className="cd__mm cd__mm--last">
                 <div className="cd__mm-eyebrow">Последний · {lastResult.round || ''}</div>
                 <div className="cd__hero-matchup">
-                  <MatchupTeam name={lastResult.home} shield={lastResult.homeShield} isOur={isOurName(lastResult.home, ourName)} />
+                  <MatchupTeam name={teamDisplay(lastResult.home, isOurName(lastResult.home, ourName))} shield={lastResult.homeShield} isOur={isOurName(lastResult.home, ourName)} />
                   <span className="cd__hero-score">{lastResult.scoreH}:{lastResult.scoreA}</span>
-                  <MatchupTeam name={lastResult.away} shield={lastResult.awayShield} isOur={isOurName(lastResult.away, ourName)} />
+                  <MatchupTeam name={teamDisplay(lastResult.away, isOurName(lastResult.away, ourName))} shield={lastResult.awayShield} isOur={isOurName(lastResult.away, ourName)} />
                 </div>
                 <div className="cd__hero-meta">{formatDateShort(lastResult.date)}</div>
                 {lastReport && (
@@ -547,7 +553,7 @@ export default function ClubDashboard() {
         const sub = (() => {
           if (isMatchMode) {
             const m = displayMatch as AnyObj;
-            return `${trimAgeSuffix(m.home)} ${m.scoreHome}:${m.scoreAway} ${trimAgeSuffix(m.away)}`;
+            return `${cleanTeamName(m.home)} ${m.scoreHome}:${m.scoreAway} ${cleanTeamName(m.away)}`;
           }
           const n = Number(statAgg?.matchCount ?? 0);
           const word = n % 10 === 1 && n % 100 !== 11 ? 'матч'
@@ -586,7 +592,7 @@ export default function ClubDashboard() {
                 >
                   {matches.map((m) => (
                     <option key={m.id} value={m.id}>
-                      {trimAgeSuffix(m.home)} {m.scoreHome}:{m.scoreAway} {trimAgeSuffix(m.away)}
+                      {cleanTeamName(m.home)} {m.scoreHome}:{m.scoreAway} {cleanTeamName(m.away)}
                     </option>
                   ))}
                 </select>
@@ -780,7 +786,7 @@ export default function ClubDashboard() {
                       <td className="cd__table-team">
                         <span className="cd__table-team-cell">
                           <TeamCrest src={r.shield} name={r.team} size={20} />
-                          {r.team}
+                          {cleanTeamName(r.team)}
                         </span>
                       </td>
                       <td>{r.games}</td>
@@ -931,7 +937,7 @@ function normalizeTeamName(s: string): string {
 }
 
 /** То же что normalizeTeamName, но сохраняет Capitalize — для display. */
-import { trimAgeSuffix } from '../utils/teamName';
+import { cleanTeamName } from '../utils/teamName';
 
 export function isOurName(matchTeam: unknown, ourLower: string): boolean {
   if (!ourLower) return false;
