@@ -80,7 +80,10 @@ function OwnPlayerOnly({ children }: { children: React.ReactNode }) {
 }
 
 function PlatformAdminOnly({ children }: { children: React.ReactNode }) {
-  const { user } = useAuth() as { user: any };
+  const { user, loading } = useAuth() as { user: any; loading: boolean };
+  // Пока auth резолвится (fetchMe), НЕ редиректим — иначе прямой переход на
+  // глубокий admin-маршрут (/admin/tenants/new) роняет реального админа на /login.
+  if (loading) return null;
   if (!user) return <Navigate to="/login" replace />;
   if (user.role !== 'platform_admin') return <Navigate to="/club" replace />;
   return <>{children}</>;

@@ -26,7 +26,10 @@ export default defineConfig({
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 1,
-  workers: process.env.CI ? 1 : undefined,
+  // Serial: каждый тест логинится через UI, а прод-бэк (Render, argon2) не тянет
+  // параллельные логины одним пользователем — конкурентные входы упираются в
+  // таймаут/рейт-лимит. Один воркер = входы по очереди, стабильно.
+  workers: 1,
   reporter: [
     ['html', { outputFolder: 'playwright-report', open: 'never' }],
     ['list'],
@@ -42,7 +45,17 @@ export default defineConfig({
     navigationTimeout: 30_000,
   },
   projects: [
-    { name: 'chromium', use: { ...devices['Desktop Chrome'] } },
-    { name: 'mobile-chrome', use: { ...devices['Pixel 5'] } },
+    // Одноразовый логин → storageState (см. auth.setup.ts).
+    { name: 'setup', testMatch: /.*\.setup\.ts/ },
+    {
+      name: 'chromium',
+      use: { ...devices['Desktop Chrome'] },
+      dependencies: ['setup'],
+    },
+    {
+      name: 'mobile-chrome',
+      use: { ...devices['Pixel 5'] },
+      dependencies: ['setup'],
+    },
   ],
 });

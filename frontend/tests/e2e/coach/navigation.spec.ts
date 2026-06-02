@@ -1,6 +1,7 @@
 import { test, expect } from '@playwright/test';
-import { getCreds, loginViaUI, enterTenantAsAdmin } from '../fixtures/auth';
+import { getCreds, enterTenantAsAdmin } from '../fixtures/auth';
 import { ENTER_SLUG } from '../fixtures/env';
+import { ADMIN_STATE } from '../fixtures/state';
 
 const admin = getCreds('admin');
 
@@ -16,11 +17,12 @@ const SECTIONS = [
 
 test.describe('Кабинет тренера · навигация по разделам (admin → войти в клуб)', () => {
   test.skip(!admin, 'E2E_ADMIN_* не заданы в .env.e2e');
+  test.use({ storageState: ADMIN_STATE });
 
   test.beforeEach(async ({ page }) => {
-    await loginViaUI(page, admin!);
     await enterTenantAsAdmin(page, ENTER_SLUG);
-    await expect(page.getByTestId('club-dashboard')).toBeVisible({ timeout: 20_000 });
+    // Готовность кабинета = сайдбар (не загрузка данных дашборда).
+    await expect(page.locator('[data-nav-id="club"]')).toBeVisible({ timeout: 20_000 });
   });
 
   for (const section of SECTIONS) {

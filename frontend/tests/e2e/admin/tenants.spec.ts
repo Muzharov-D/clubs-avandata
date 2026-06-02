@@ -1,5 +1,6 @@
 import { test, expect, type APIRequestContext } from '@playwright/test';
-import { getCreds, loginViaUI, readAccessToken } from '../fixtures/auth';
+import { getCreds, readAccessToken, gotoSafe } from '../fixtures/auth';
+import { ADMIN_STATE } from '../fixtures/state';
 
 const admin = getCreds('admin');
 
@@ -34,6 +35,7 @@ async function teardownTenant(
 
 test.describe('Платформа · admin клубы (write-флоу)', () => {
   test.skip(!admin, 'E2E_ADMIN_* не заданы в .env.e2e');
+  test.use({ storageState: ADMIN_STATE }); // переиспользуем сессию из auth.setup
 
   let createdSlug: string | null = null;
   let adminToken: string | null = null;
@@ -46,22 +48,23 @@ test.describe('Платформа · admin клубы (write-флоу)', () => {
   });
 
   test('список клубов рендерится', async ({ page }) => {
-    await loginViaUI(page, admin!);
-    await page.goto('/admin');
+    await gotoSafe(page, '/admin');
     const grid = page.getByTestId('tenants-grid');
     const empty = page.locator('.admin-empty');
     await expect(grid.or(empty)).toBeVisible({ timeout: 15_000 });
   });
 
   test('создать клуб → появляется в списке → войти как тенант → удалить', async ({ page }) => {
-    await loginViaUI(page, admin!);
+    await gotoSafe(page, '/admin');
     adminToken = await readAccessToken(page);
     expect(adminToken, 'access-токен не найден в localStorage').toBeTruthy();
 
     const slug = `e2e-${Math.random().toString(36).slice(2, 8)}`;
 
-    // 1. Создание
-    await page.goto('/admin/tenants/new');
+    // 1. Создание — клиентская навигация (без полного reload: иначе на проде
+    // PlatformAdminOnly мог бы мигнуть редиректом на /login во время fetchMe).
+    await page.getByTestId('admin-add-tenant').click();
+    await expect(page).toHaveURL(/\/admin\/tenants\/new/);
     await page.getByTestId('tenant-name').fill(`E2E Тест ${slug}`);
     await page.getByTestId('tenant-displayname').fill(`E2E ${slug}`);
     await page.getByTestId('tenant-slug').fill(slug);
@@ -73,8 +76,9 @@ test.describe('Платформа · admin клубы (write-флоу)', () => {
     await expect(page.getByTestId('created-slug')).toHaveText(slug, { timeout: 20_000 });
     createdSlug = slug;
 
-    // 2. Появился в списке клубов
-    await page.goto('/admin');
+    // 2. Появился в списке клубов — возвращаемся клиентской навигацией.
+    await page.getByRole('button', { name: 'К списку клубов' }).click();
+    await expect(page).toHaveURL(/\/admin$/);
     const card = page.locator(`[data-testid="tenant-card"][data-slug="${slug}"]`);
     await expect(card).toBeVisible({ timeout: 15_000 });
 

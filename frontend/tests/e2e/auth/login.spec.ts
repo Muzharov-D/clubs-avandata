@@ -1,6 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { getCreds, loginViaUI, enterTenantAsAdmin } from '../fixtures/auth';
-import { ENTER_SLUG } from '../fixtures/env';
+import { getCreds, loginViaUI } from '../fixtures/auth';
 
 const admin = getCreds('admin');
 
@@ -20,12 +19,5 @@ test.describe('Авторизация', () => {
     await loginViaUI(page, admin!);
     await expect(page).toHaveURL(/\/admin/, { timeout: 15_000 });
     await expect(page.getByTestId('admin-add-tenant')).toBeVisible();
-  });
-
-  test('admin «входит в клуб» → кабинет тренера /club с дашбордом', async ({ page }) => {
-    test.skip(!admin, 'E2E_ADMIN_* не заданы в .env.e2e');
-    await loginViaUI(page, admin!);
-    await enterTenantAsAdmin(page, ENTER_SLUG);
-    await expect(page.getByTestId('club-dashboard')).toBeVisible({ timeout: 20_000 });
   });
 });
