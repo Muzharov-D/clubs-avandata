@@ -259,7 +259,10 @@ export const fetchTrainingsByTeam = (teamId, params = {}) => {
   if (params.to)    q.set('to', params.to);
   if (params.limit) q.set('limit', params.limit);
   const qs = q.toString();
-  return fetchJson(`/trainings/team/${encodeURIComponent(teamId)}${qs ? `?${qs}` : ''}`);
+  // silent: backend-модуль тренировок ещё не построен (Фаза 2) → штатный 404.
+  // Календарь и TrainingsPage оверлеят тренировки опционально — деградируем в
+  // пустой список без тоста «Not Found». CRUD-эндпоинты ниже тостят как обычно.
+  return fetchJson(`/trainings/team/${encodeURIComponent(teamId)}${qs ? `?${qs}` : ''}`, { silent: true });
 };
 export const fetchTraining = (id) => fetchJson(`/trainings/${encodeURIComponent(id)}`);
 export const createTraining = (body) => fetchJson('/trainings', { method: 'POST', body });
