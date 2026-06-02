@@ -66,6 +66,37 @@
   --dur-fast:       120ms;
   --dur:            220ms;
   --dur-slow:       360ms;
+
+  /* === Язык движения «тёмное кино + точность» (дизайн-система Авандаты) === */
+  /* Easing: кинематографичная тяжесть + энергичная выразительность. */
+  --ease-standard:   cubic-bezier(0.2, 0, 0.38, 0.9);
+  --ease-expressive: cubic-bezier(0.4, 0.14, 0.3, 1);
+  --ease-entrance:   cubic-bezier(0, 0, 0.38, 0.9);
+  --ease-exit:       cubic-bezier(0.2, 0, 1, 0.9);
+  --ease-reveal:     cubic-bezier(0.32, 0.72, 0, 1);
+  /* Длительности по назначению. */
+  --dur-micro:       140ms;
+  --dur-transition:  280ms;
+  --dur-modal:       320ms;
+  --dur-pageshift:   480ms;
+  /* Каскад (stagger) появления списков. */
+  --stagger-tight:   0.04s;
+  --stagger-normal:  0.08s;
+  --stagger-loose:   0.12s;
+  /* Глубина параллакса (слои scroll-сцен). */
+  --parallax-far:    0.2;
+  --parallax-mid:    0.6;
+  --parallax-near:   1.0;
+  /* Сияние (вместо чёрных теней) для «живых»/фокусных элементов. */
+  --glow-subtle:     0 0 12px color-mix(in srgb, var(--accent-cyan) 8%, transparent);
+  --glow-active:     0 0 24px color-mix(in srgb, var(--accent-cyan) 15%, transparent);
+  --glow-danger:     0 0 16px color-mix(in srgb, var(--danger) 12%, transparent);
+}
+
+/* Signature-пульс брендового свечения (живые/важные элементы). */
+@keyframes cyan-pulse {
+  0%, 100% { box-shadow: 0 0 12px color-mix(in srgb, var(--accent-cyan) 30%, transparent); }
+  50%      { box-shadow: 0 0 24px color-mix(in srgb, var(--accent-cyan) 60%, transparent); }
 }
 
 *, *::before, *::after { box-sizing: border-box; }
