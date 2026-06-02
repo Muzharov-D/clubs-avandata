@@ -64,7 +64,10 @@ export function PlayerRadar({ player, teamPlayers, brand = '#1FB6FF' }: Props) {
 
   return (
     <div className="prdr">
-      <svg viewBox={`0 0 ${size} ${size}`} className="prdr__svg" role="img" aria-label={ariaLabel}>
+      {/* viewBox шире холста по горизонтали (−44…+44): боковые подписи осей
+          («ВЛАДЕНИЕ», «ПРЕССИНГ», «ДРИБЛИНГ», «ДУЭЛИ») выходят за 0…size и иначе
+          обрезались краем SVG. preserveAspectRatio сохраняет круглую форму. */}
+      <svg viewBox={`-44 0 ${size + 88} ${size}`} className="prdr__svg" role="img" aria-label={ariaLabel}>
         <defs>
           <radialGradient id={gradId} cx="50%" cy="50%" r="50%">
             <stop offset="0%" stopColor={brand} stopOpacity="0.55" />

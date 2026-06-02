@@ -1,5 +1,5 @@
 .prdr { display: flex; flex-direction: column; align-items: center; gap: 14px; }
-.prdr__svg { width: 100%; max-width: 280px; height: auto; }
+.prdr__svg { width: 100%; max-width: 320px; height: auto; }
 .prdr__label {
   font-size: 9px; font-weight: 600; fill: #94a3b8;
   text-transform: uppercase; letter-spacing: 0.04em;
