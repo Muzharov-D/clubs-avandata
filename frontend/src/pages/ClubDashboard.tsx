@@ -383,18 +383,20 @@ export default function ClubDashboard() {
             return (
               <div className="cd__kpi-card">
                 <div className="cd__kpi-label">Средний рейтинг команды</div>
-                {ov > 0 ? (
-                  <>
-                    <div className="cd__kpi-big" style={{ color: '#fff' }}>
-                      {ov.toFixed(2)}
-                      <span className="cd__kpi-grade" style={{ color: ratingColor(ov) }}>
-                        {ratingGrade(ov)}
-                      </span>
-                    </div>
-                    <span className="cd__kpi-bar"><span className="cd__kpi-bar-fill" style={{ width: `${Math.min(100, ov * 10)}%`, background: ratingColor(ov) }} /></span>
-                  </>
-                ) : <div className="cd__kpi-empty">нет разбора</div>}
-                <div className="cd__kpi-sub">{seasonMatchCount > 0 ? `за сезон · ${seasonMatchCount} матч.` : 'за сезон'}</div>
+                <div className="cd__kpi-body">
+                  {ov > 0 ? (
+                    <>
+                      <div className="cd__kpi-big" style={{ color: '#fff' }}>
+                        {ov.toFixed(2)}
+                        <span className="cd__kpi-grade" style={{ color: ratingColor(ov) }}>
+                          {ratingGrade(ov)}
+                        </span>
+                      </div>
+                      <span className="cd__kpi-bar"><span className="cd__kpi-bar-fill" style={{ width: `${Math.min(100, ov * 10)}%`, background: ratingColor(ov) }} /></span>
+                    </>
+                  ) : <div className="cd__kpi-empty">нет разбора</div>}
+                  <div className="cd__kpi-sub">{seasonMatchCount > 0 ? `за сезон · ${seasonMatchCount} матч.` : 'за сезон'}</div>
+                </div>
               </div>
             );
           })()}
@@ -408,10 +410,10 @@ export default function ClubDashboard() {
                 onClick={() => best && navigate(`/players/${best.playerId}`)}
               >
                 <div className="cd__kpi-label">Лучший игрок</div>
-                {best ? (
-                  <>
+                <div className="cd__kpi-body">
+                  {best ? (
                     <div className="cd__kpi-player">
-                      <PlayerPhoto player={best} size={48} className="cd__kpi-photo" />
+                      <PlayerPhoto player={best} size={56} className="cd__kpi-photo" />
                       <div className="cd__kpi-player-body">
                         <span className="cd__kpi-player-name">{best.fullName}</span>
                         <span className="cd__kpi-sub">#{best.number ?? '—'} · {best.position || 'игрок'}</span>
@@ -420,8 +422,8 @@ export default function ClubDashboard() {
                         {Number(best.ratings?.overall ?? 0).toFixed(1)}
                       </span>
                     </div>
-                  </>
-                ) : <div className="cd__kpi-empty">нет разбора</div>}
+                  ) : <div className="cd__kpi-empty">нет разбора</div>}
+                </div>
               </div>
             );
           })()}
