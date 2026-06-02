@@ -2,6 +2,7 @@ import { sql } from 'drizzle-orm';
 import { withTenant } from '../db/tenantContext.js';
 import { logger } from '../shared/logger.js';
 import { listMatches as apiListMatches, isFfspbConfigured } from './ffspbApi.js';
+import { enrichTenantPhotos } from './playerPhotoService.js';
 
 /**
  * Sync calendar из FFSPB для одного (tenant × age × tournament).
@@ -159,6 +160,25 @@ export async function syncTenantCalendarTournament(args: {
           JSON.stringify([{ tournament, tournamentId: String(tournamentId), found: rows.length }]),
         ],
       );
+
+      // Best-effort: подтянуть фото игроков из ростеров FFSPB наших команд.
+      // У SportVisor-отчёта фото нет; это единственный авто-источник. Любая
+      // ошибка проглатывается — синк календаря не должен падать из-за фото.
+      try {
+        const matcherLower = ourMatcher.toLowerCase();
+        const ourExtIds = [...new Set(
+          rows
+            .filter((r) => r.isOurMatch)
+            .map((r) => ((r.homeTeam ?? '').toLowerCase().includes(matcherLower) ? r.extHomeTeamId : r.extAwayTeamId))
+            .filter((x): x is string => !!x),
+        )];
+        if (ourExtIds.length) {
+          const res = await enrichTenantPhotos(conn, tenantSlug, ourExtIds);
+          if (res.filled) logger.info({ tenantSlug, ageGroup, ...res }, '[photos] backfilled from FFSPB roster');
+        }
+      } catch (e) {
+        logger.warn({ tenantSlug, err: e instanceof Error ? e.message : String(e) }, '[photos] enrich skipped');
+      }
     });
 
     logger.info({ tenantSlug, ageGroup, tournament, count: rows.length }, '[calendar] synced');
