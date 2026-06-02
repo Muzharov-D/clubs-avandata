@@ -48,12 +48,12 @@
 }
 .cd__main::before {
   content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
-  background: linear-gradient(90deg, transparent, var(--accent-cyan, #22d3ee), transparent);
+  background: linear-gradient(90deg, transparent, var(--accent-cyan), transparent);
 }
 .cd__main-title {
   font-family: var(--font-display, 'Space Grotesk', sans-serif);
   font-size: 13px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
-  color: var(--accent-cyan, #22d3ee); margin-bottom: 14px;
+  color: var(--accent-cyan); margin-bottom: 14px;
 }
 .cd__main-grid {
   display: grid;
@@ -70,7 +70,7 @@
 }
 .cd__mm--empty { text-align: center; color: var(--text-faint); }
 .cd__mm-eyebrow {
-  font-size: 10px; color: var(--accent-cyan, #22d3ee); text-transform: uppercase;
+  font-size: 10px; color: var(--accent-cyan); text-transform: uppercase;
   letter-spacing: 0.1em; font-weight: 700; margin-bottom: 8px;
 }
 /* KPI-карточки «Средний рейтинг» и «Лучший игрок» */
@@ -239,7 +239,7 @@
   font-size: 28px; font-weight: 800; letter-spacing: -0.01em;
   /* Раньше был background-clip:text → риск невидимого текста на слабом GPU.
      Сплошной цвет + лёгкое свечение читается всегда. */
-  color: var(--accent-cyan, #22d3ee);
+  color: var(--accent-cyan);
   text-shadow: 0 0 14px rgba(34, 211, 238, 0.25);
 }
 .cd__stat-suffix { font-size: 16px; color: #94a3b8; margin-left: 2px; }

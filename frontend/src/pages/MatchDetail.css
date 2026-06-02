@@ -40,7 +40,7 @@
   width: 56px; height: 56px;
   border-radius: 50%;
   background: linear-gradient(135deg, #1a4ba0, #0a2860);
-  color: #22d3ee;
+  color: var(--accent-cyan);
   font-weight: 800;
   font-size: 24px;
   display: flex;
@@ -69,7 +69,7 @@
 .match-detail__score {
   font-size: 48px;
   font-weight: 800;
-  color: #22d3ee;
+  color: var(--accent-cyan);
   line-height: 1;
 }
 .match-detail__status {
@@ -191,7 +191,7 @@
 .player-breakdown__val {
   font-size: 18px;
   font-weight: 800;
-  color: #22d3ee;
+  color: var(--accent-cyan);
   font-variant-numeric: tabular-nums;
 }
 
@@ -228,7 +228,7 @@
   gap: 10px;
 }
 .team-aggregates-cta__arrow {
-  color: #22d3ee;
+  color: var(--accent-cyan);
   font-size: 18px;
 }
 
@@ -281,7 +281,7 @@
   font-weight: 800;
   font-variant-numeric: tabular-nums;
 }
-.mvs-row__val--match  { color: #22d3ee; }
+.mvs-row__val--match  { color: var(--accent-cyan); }
 .mvs-row__val--season { color: rgba(255, 255, 255, 0.65); }
 .mvs-row__delta {
   display: inline-flex;

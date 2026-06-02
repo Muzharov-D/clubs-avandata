@@ -31,7 +31,7 @@
 
 .match-timeline__minute {
   font-variant-numeric: tabular-nums;
-  color: #22d3ee;
+  color: var(--accent-cyan);
   font-weight: 700;
   font-size: 14px;
   text-align: right;

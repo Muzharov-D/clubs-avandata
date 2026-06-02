@@ -73,7 +73,7 @@
 }
 .tournament-switch__btn:hover { color: #fff; }
 .tournament-switch__btn--active {
-  background: linear-gradient(135deg, #22d3ee, #3b82f6);
+  background: linear-gradient(135deg, var(--accent-cyan), #3b82f6);
   color: #0e0e2a;
 }
 .tournament-switch__btn--active:hover { color: #0e0e2a; }
@@ -120,7 +120,7 @@
   color: rgba(255, 255, 255, 0.85);
   font-variant-numeric: tabular-nums;
 }
-.matches-dashboard__last-score .win { color: #22d3ee; }
+.matches-dashboard__last-score .win { color: var(--accent-cyan); }
 .matches-dashboard__last-score .sep { color: rgba(255, 255, 255, 0.3); }
 .matches-dashboard__last-btn {
   align-self: flex-start;
@@ -166,7 +166,7 @@
 .scorer-row__rank {
   font-size: 14px;
   font-weight: 800;
-  color: #22d3ee;
+  color: var(--accent-cyan);
   text-align: center;
 }
 .scorer-row__name { font-size: 14px; font-weight: 700; color: #fff; }
@@ -178,13 +178,13 @@
   color: rgba(255, 255, 255, 0.6);
 }
 .scorer-row__stats b {
-  color: #22d3ee;
+  color: var(--accent-cyan);
   font-weight: 800;
   font-size: 16px;
 }
 
 .matches-dashboard__upload {
-  background: linear-gradient(135deg, #22d3ee, #3b82f6);
+  background: linear-gradient(135deg, var(--accent-cyan), #3b82f6);
   color: #0e0e2a;
   border: none;
   font-weight: 700;
@@ -229,7 +229,7 @@
 .season-stat__value {
   font-size: 32px;
   font-weight: 800;
-  color: #22d3ee;
+  color: var(--accent-cyan);
 }
 .season-stat__label {
   font-size: 11px;
@@ -244,7 +244,7 @@
   line-height: 1.55;
   color: rgba(255,255,255,0.7);
 }
-.matches-dashboard__hint b { color: #22d3ee; }
+.matches-dashboard__hint b { color: var(--accent-cyan); }
 
 .scorer-row--locked {
   cursor: default;
@@ -318,7 +318,7 @@
   left: 12px;
   font-size: 11px;
   font-weight: 800;
-  color: #22d3ee;
+  color: var(--accent-cyan);
   letter-spacing: 0.05em;
 }
 
@@ -374,7 +374,7 @@
   margin-top: 2px;
 }
 .topr-card__last b {
-  color: #22d3ee;
+  color: var(--accent-cyan);
   font-weight: 700;
   font-variant-numeric: tabular-nums;
 }

@@ -68,7 +68,7 @@
 }
 .standings-tabs__btn:hover { color: #fff; }
 .standings-tabs__btn--active {
-  background: linear-gradient(135deg, #22d3ee, #3b82f6);
+  background: linear-gradient(135deg, var(--accent-cyan), #3b82f6);
   color: #0e0e2a;
 }
 .standings-tabs__btn--active:hover { color: #0e0e2a; }
@@ -129,7 +129,7 @@
 .club-standings__gd { color: rgba(255, 255, 255, 0.6); font-size: 12px; }
 .club-standings__pts {
   font-weight: 800;
-  color: #22d3ee;
+  color: var(--accent-cyan);
   font-size: 15px;
 }
 .club-standings__team {
@@ -156,7 +156,7 @@
   background: linear-gradient(90deg, rgba(34, 211, 238, 0.12), rgba(26, 75, 160, 0.18));
 }
 .club-standings__row--ours td { color: #fff; }
-.club-standings__row--ours .club-standings__pos { color: #22d3ee; }
+.club-standings__row--ours .club-standings__pos { color: var(--accent-cyan); }
 
 .club-standings__updated {
   margin-top: 8px;
@@ -232,7 +232,7 @@
 .club-top-row__rank {
   font-size: 13px;
   font-weight: 800;
-  color: #22d3ee;
+  color: var(--accent-cyan);
   text-align: center;
 }
 .club-top-row__info { min-width: 0; }
@@ -254,7 +254,7 @@
 .club-top-row__value {
   font-size: 16px;
   font-weight: 800;
-  color: #22d3ee;
+  color: var(--accent-cyan);
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }

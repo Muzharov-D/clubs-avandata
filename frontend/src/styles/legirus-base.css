@@ -78,7 +78,7 @@ select option {
 select option:checked,
 select option:hover,
 select option:focus {
-  background-color: #22d3ee;
+  background-color: var(--accent-cyan);
   color: #07071c;
   font-weight: 600;
 }

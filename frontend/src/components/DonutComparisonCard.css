@@ -26,4 +26,4 @@
   gap: 2px;
   color: rgba(255,255,255,0.7);
 }
-.donut-card__home b { color: #22d3ee; }
+.donut-card__home b { color: var(--accent-cyan); }

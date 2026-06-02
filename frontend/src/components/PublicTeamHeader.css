@@ -254,7 +254,7 @@
 }
 .public-header__addbtn:hover {
   background: linear-gradient(135deg, rgba(34, 211, 238, 0.32) 0%, rgba(0, 0, 0, 0.55) 100%);
-  border-color: #22d3ee;
+  border-color: var(--accent-cyan);
   color: #fff;
 }
 .public-header__addbtn:active { transform: scale(0.94); }

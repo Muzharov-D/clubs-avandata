@@ -14,7 +14,7 @@
 }
 
 .stat-compare__home {
-  color: #22d3ee;
+  color: var(--accent-cyan);
   text-align: left;
 }
 
@@ -40,7 +40,7 @@
 }
 
 .stat-compare__bar-home {
-  background: linear-gradient(90deg, #22d3ee, #2bc8ff);
+  background: linear-gradient(90deg, var(--accent-cyan), #2bc8ff);
   height: 100%;
 }
 

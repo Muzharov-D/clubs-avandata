@@ -41,7 +41,7 @@
 .leader-card__value {
   font-size: 22px;
   font-weight: 800;
-  color: #22d3ee;
+  color: var(--accent-cyan);
 }
 .leader-card__empty {
   flex: 1;

@@ -70,7 +70,7 @@
   margin-bottom: 4px;
 }
 .team-info__rating-val {
-  color: #22d3ee;
+  color: var(--accent-cyan);
   font-weight: 700;
   font-size: 16px;
 }
@@ -141,7 +141,7 @@
 .kpi-cell__value {
   font-size: 22px;
   font-weight: 700;
-  color: #22d3ee;
+  color: var(--accent-cyan);
 }
 .kpi-cell__label {
   font-size: 10px;
@@ -167,7 +167,7 @@
   border-bottom: 1px solid rgba(255,255,255,0.05);
 }
 .ao-list__val {
-  color: #22d3ee;
+  color: var(--accent-cyan);
   font-weight: 700;
 }
 
@@ -220,7 +220,7 @@
   color: rgba(255,255,255,0.85);
   font-variant-numeric: tabular-nums;
 }
-.match-summary__score .win { color: #22d3ee; }
+.match-summary__score .win { color: var(--accent-cyan); }
 .match-summary__score-sep { color: rgba(255,255,255,0.3); }
 .match-summary__open {
   margin-top: 4px;
@@ -264,14 +264,14 @@
 }
 .top5-card__rank {
   font-size: 16px; font-weight: 800;
-  color: #22d3ee;
+  color: var(--accent-cyan);
   text-align: center;
 }
 .top5-card__name { font-weight: 700; font-size: 13px; color: #fff; }
 .top5-card__pos { font-size: 11px; color: rgba(255,255,255,0.55); margin-top: 2px; }
 
 /* KPI gold accent */
-.kpi-cell--gold .kpi-cell__value { color: #22d3ee; }
+.kpi-cell--gold .kpi-cell__value { color: var(--accent-cyan); }
 .kpi-cell--gold {
   border-color: rgba(34, 211, 238, 0.25);
   background: linear-gradient(135deg, rgba(34, 211, 238, 0.08), rgba(20,20,60,0.7));
@@ -303,7 +303,7 @@
   border-radius: 4px;
   transition: width 0.3s;
 }
-.halftime-team__bar--first .halftime-team__bar-fill { background: linear-gradient(90deg, #ffb74d, #22d3ee); }
+.halftime-team__bar--first .halftime-team__bar-fill { background: linear-gradient(90deg, #ffb74d, var(--accent-cyan)); }
 .halftime-team__bar--second .halftime-team__bar-fill { background: linear-gradient(90deg, #5e7cff, #2c66c7); }
 .halftime-team__bar-val {
   position: absolute;
@@ -324,7 +324,7 @@
 }
 .halftime-team__legend i { font-style: normal; }
 .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; vertical-align: middle; }
-.dot--first { background: #22d3ee; }
+.dot--first { background: var(--accent-cyan); }
 .dot--second { background: #2c66c7; }
 
 /* LINE LEADERS */
@@ -394,7 +394,7 @@
 .ao-bars__val {
   text-align: right;
   font-weight: 700;
-  color: #22d3ee;
+  color: var(--accent-cyan);
   font-size: 14px;
   font-variant-numeric: tabular-nums;
 }

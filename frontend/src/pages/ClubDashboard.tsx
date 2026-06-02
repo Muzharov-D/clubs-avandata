@@ -24,6 +24,8 @@ import { useAuth } from '../contexts/AuthContext';
 import { useTeam } from '../contexts/TeamContext';
 import { PlayerRadar } from '../components/PlayerRadar';
 import { StatTile } from '../components/StatTile';
+// Единая шкала рейтинга (var(--rating-*)) — общий источник по всему UI.
+import { ratingColor, ratingTextColor } from '../utils/colors';
 // @ts-ignore — legacy .jsx
 import PredictedLineup from '../components/PredictedLineup';
 // @ts-ignore — legacy .jsx
@@ -311,7 +313,7 @@ export default function ClubDashboard() {
                   <>
                     <div className="cd__kpi-big" style={{ color: '#fff' }}>
                       {ov.toFixed(2)}
-                      <span className="cd__kpi-grade" style={{ color: ratingColor(ov).includes('gradient') ? '#fff' : ratingColor(ov) }}>
+                      <span className="cd__kpi-grade" style={{ color: ratingColor(ov) }}>
                         {ratingGrade(ov)}
                       </span>
                     </div>
@@ -340,7 +342,7 @@ export default function ClubDashboard() {
                         <span className="cd__kpi-player-name">{best.fullName}</span>
                         <span className="cd__kpi-sub">#{best.number ?? '—'} · {best.position || 'игрок'}</span>
                       </div>
-                      <span className="cd__kpi-rank" style={{ background: ratingColor(best.ratings?.overall) }}>
+                      <span className="cd__kpi-rank" style={{ background: ratingColor(best.ratings?.overall), color: ratingTextColor(best.ratings?.overall) }}>
                         {Number(best.ratings?.overall ?? 0).toFixed(1)}
                       </span>
                     </div>
@@ -574,7 +576,7 @@ export default function ClubDashboard() {
                       <span className="cd__top-bar" aria-hidden>
                         <span className="cd__top-bar-fill" style={{ width: `${pct}%`, background: ratingColor(r) }} />
                       </span>
-                      <span className="cd__top-rating" style={{ background: ratingColor(r) }}>
+                      <span className="cd__top-rating" style={{ background: ratingColor(r), color: ratingTextColor(r) }}>
                         {p.ratings?.overall?.toFixed(1) ?? '—'}
                       </span>
                     </li>
@@ -640,7 +642,7 @@ export default function ClubDashboard() {
                 <div className="cd__radar-head">
                   <span className="cd__radar-num">#{p.number}</span>
                   <span className="cd__radar-name">{p.fullName}</span>
-                  <span className="cd__radar-rating" style={{ background: ratingColor(p.ratings?.overall) }}>
+                  <span className="cd__radar-rating" style={{ background: ratingColor(p.ratings?.overall), color: ratingTextColor(p.ratings?.overall) }}>
                     {Number(p.ratings?.overall ?? 0).toFixed(1)}
                   </span>
                 </div>
@@ -689,7 +691,7 @@ export default function ClubDashboard() {
                     </div>
                   </div>
                   {r > 0 && (
-                    <div className="cd__player-rating" style={{ background: ratingColor(r) }}>
+                    <div className="cd__player-rating" style={{ background: ratingColor(r), color: ratingTextColor(r) }}>
                       {r.toFixed(1)}
                     </div>
                   )}
@@ -905,14 +907,8 @@ function ratingGrade(r: number): string {
   return 'слабо';
 }
 
-function ratingColor(r: number | null | undefined): string {
-  if (r == null) return '#475569';
-  if (r >= 8.5) return 'linear-gradient(135deg, #16a34a, #22c55e)';
-  if (r >= 7.5) return 'linear-gradient(135deg, #22c55e, #84cc16)';
-  if (r >= 6.5) return 'linear-gradient(135deg, #84cc16, #facc15)';
-  if (r >= 5.5) return 'linear-gradient(135deg, #facc15, #f97316)';
-  return 'linear-gradient(135deg, #ef4444, #f97316)';
-}
+// ratingColor / ratingTextColor — единый источник в ../utils/colors (импорт выше).
+// Локальная градиентная копия удалена ради одной семантической шкалы var(--rating-*).
 function formatDateLong(iso?: string): string {
   if (!iso) return '';
   const d = new Date(iso);

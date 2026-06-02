@@ -116,7 +116,7 @@
 }
 
 .app-header__team-select:focus-visible {
-  outline: 2px solid var(--accent-cyan, #22d3ee);
+  outline: 2px solid var(--accent-cyan);
   outline-offset: 2px;
   box-shadow: 0 0 0 2px rgba(34, 211, 238, 0.4);
 }
@@ -144,7 +144,7 @@
 }
 
 .app-header__btn--refresh:hover {
-  color: #22d3ee;
+  color: var(--accent-cyan);
   background: rgba(34, 211, 238, 0.12);
   box-shadow: 0 0 6px rgba(34, 211, 238, 0.25);
 }
@@ -168,7 +168,7 @@
   cursor: pointer;
   color: rgba(255, 255, 255, 0.85);
 }
-.app-header__btn--logout:hover { color: #22d3ee; background: rgba(34, 211, 238, 0.1); }
+.app-header__btn--logout:hover { color: var(--accent-cyan); background: rgba(34, 211, 238, 0.1); }
 
 .app-header__burger {
   display: none;
@@ -185,7 +185,7 @@
   cursor: pointer;
 }
 .app-header__burger:focus-visible {
-  outline: 2px solid var(--accent-cyan, #22d3ee);
+  outline: 2px solid var(--accent-cyan);
   outline-offset: 2px;
 }
 .app-header__burger span {

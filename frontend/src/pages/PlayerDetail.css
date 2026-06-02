@@ -263,7 +263,7 @@
 .badge__value {
   font-size: 16px;
   font-weight: 800;
-  color: #22d3ee;
+  color: var(--accent-cyan);
   font-variant-numeric: tabular-nums;
 }
 
@@ -340,7 +340,7 @@
   -moz-appearance: none;
 }
 .player-detail__match-picker select:focus-visible {
-  border-color: #22d3ee;
+  border-color: var(--accent-cyan);
   box-shadow: 0 0 0 2px rgba(34,211,238,0.2);
 }
 .player-detail__match-picker select option {
@@ -389,7 +389,7 @@
   color: rgba(255, 255, 255, 0.7);
 }
 
-.player-detail__hero-meta b { color: #22d3ee; font-weight: 700; }
+.player-detail__hero-meta b { color: var(--accent-cyan); font-weight: 700; }
 
 .player-detail__hero-rating {
   display: flex;
@@ -467,7 +467,7 @@
 .fitness-cell__value {
   font-size: 22px;
   font-weight: 700;
-  color: #22d3ee;
+  color: var(--accent-cyan);
 }
 
 .fitness-cell__label {
@@ -522,7 +522,7 @@
 }
 
 .splits-table__val--match {
-  color: #22d3ee;
+  color: var(--accent-cyan);
   font-weight: 600;
 }
 

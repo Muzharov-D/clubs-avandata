@@ -89,7 +89,7 @@
   border-color: rgba(34, 211, 238, 0.5);
 }
 .clublanding__card--parent:hover {
-  border-color: #22d3ee;
+  border-color: var(--accent-cyan);
   background: linear-gradient(135deg, rgba(34, 211, 238, 0.32) 0%, rgba(0, 0, 0, 0.6) 100%);
   box-shadow: 0 12px 28px rgba(34, 211, 238, 0.35);
 }

@@ -4,7 +4,7 @@
   --an-pos: #22c55e;
   --an-neg: #ef4444;
   --an-warn: #f59e0b;
-  --an-info: #22d3ee;
+  --an-info: var(--accent-cyan);
   --an-muted: var(--text-muted, #97a3b6);
 }
 

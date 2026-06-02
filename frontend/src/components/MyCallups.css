@@ -16,7 +16,7 @@
 }
 .my-callups__head span {
   background: rgba(34, 211, 238, 0.18);
-  color: #22d3ee;
+  color: var(--accent-cyan);
   padding: 2px 10px;
   border-radius: 12px;
   font-size: 12px;

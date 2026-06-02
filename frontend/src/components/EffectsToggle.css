@@ -11,7 +11,7 @@
 }
 .fx-toggle:hover { border-color: var(--border-strong, #343d4e); }
 .fx-toggle__icon { font-size: 13px; color: var(--text-faint, #647084); line-height: 1; }
-.fx-toggle--on .fx-toggle__icon { color: var(--accent-cyan, #22d3ee); }
+.fx-toggle--on .fx-toggle__icon { color: var(--accent-cyan); }
 
 .fx-toggle__track {
   position: relative;

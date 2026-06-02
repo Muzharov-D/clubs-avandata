@@ -59,12 +59,12 @@
 }
 .login-form input::placeholder { color: var(--text-muted, #97a3b6); }
 .login-form input:focus {
-  border-color: var(--accent-cyan, #22d3ee);
+  border-color: var(--accent-cyan);
   box-shadow: 0 0 0 3px rgba(34, 211, 238, 0.18);
 }
 .login-form button {
   margin-top: 14px;
-  background: linear-gradient(135deg, #22d3ee 0%, #3b82f6 100%);
+  background: linear-gradient(135deg, var(--accent-cyan) 0%, #3b82f6 100%);
   color: #0e0e2a;
   border: none;
   font-weight: 800;
@@ -168,7 +168,7 @@
 /* Тонкая акцентная грань сверху карты */
 .login-card::before {
   content: ''; position: absolute; top: 0; left: 24px; right: 24px; height: 2px;
-  background: linear-gradient(90deg, transparent, var(--accent-cyan, #22d3ee), transparent);
+  background: linear-gradient(90deg, transparent, var(--accent-cyan), transparent);
 }
 
 .login-title {

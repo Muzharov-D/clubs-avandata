@@ -43,7 +43,7 @@
   font-size: 13px;
   color: rgba(255,255,255,0.7);
 }
-.players-leaders__top-stats b { color: #22d3ee; }
+.players-leaders__top-stats b { color: var(--accent-cyan); }
 
 .players-leaders__top-rating {
   text-align: center;

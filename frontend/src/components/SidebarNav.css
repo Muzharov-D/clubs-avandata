@@ -41,7 +41,7 @@
 
 .sidebar-nav__item--active {
   background: rgba(26, 75, 160, 0.5);
-  color: #22d3ee;
+  color: var(--accent-cyan);
   border-color: rgba(34, 211, 238, 0.4);
 }
 

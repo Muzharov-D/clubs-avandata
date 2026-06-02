@@ -32,7 +32,7 @@
 .comparison-metric__value {
   font-weight: 700;
 }
-.comparison-metric__value--positive { color: #22d3ee; }
+.comparison-metric__value--positive { color: var(--accent-cyan); }
 .comparison-metric__value--negative { color: #ff8080; }
 
 .comparison-view__sections-title {
@@ -53,7 +53,7 @@
 .comparison-section__title {
   font-size: 14px;
   font-weight: 700;
-  color: #22d3ee;
+  color: var(--accent-cyan);
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }

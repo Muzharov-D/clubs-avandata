@@ -92,7 +92,7 @@
 .cr-call-all {
   width: 100%;
   padding: 12px;
-  background: linear-gradient(135deg, #22d3ee 0%, #3b82f6 100%);
+  background: linear-gradient(135deg, var(--accent-cyan) 0%, #3b82f6 100%);
   color: #07071c;
   border: none;
   border-radius: 10px;
@@ -133,7 +133,7 @@
   color: #94a3c8;
   line-height: 1.5;
 }
-.cr-helper b { color: #22d3ee; }
+.cr-helper b { color: var(--accent-cyan); }
 
 /* Раздел «На год младше» */
 .cr-younger-toggle {
@@ -216,7 +216,7 @@
 }
 .cr-player b {
   background: rgba(34, 211, 238, 0.15);
-  color: #22d3ee;
+  color: var(--accent-cyan);
   padding: 2px 6px;
   border-radius: 4px;
   font-size: 11px;
