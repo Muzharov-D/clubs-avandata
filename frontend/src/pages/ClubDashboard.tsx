@@ -54,33 +54,12 @@ export default function ClubDashboard() {
   const { selectedTeam, selectedTeamId } = useTeam() as { selectedTeam: Team | null; selectedTeamId: string | null };
   useDocumentTitle(selectedTeam?.name ? `${selectedTeam.name} — Клуб` : 'Клуб');
 
-  // Kinetic-полировка: reveal секций при скролле + parallax-tilt hero-карточек.
+  // Kinetic-полировка: reveal секций при скролле. 3D parallax-tilt KPI-карточек
+  // убран — для аналитического дашборда важнее читаемость и спокойствие, чем
+  // «игрушечный» наклон (плюс он не работал на тач). Сдержанный hover-lift —
+  // в CSS (.cd__kpi-card--click:hover).
   const cdRef = useRef<HTMLDivElement>(null);
   useReveal(cdRef, [selectedTeamId]);
-  useEffect(() => {
-    const root = cdRef.current;
-    if (!root) return;
-    if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return;
-    if (window.matchMedia?.('(hover: none)').matches) return;
-    const cards = Array.from(root.querySelectorAll<HTMLElement>('.cd__kpi-card'));
-    const cleanups = cards.map((el) => {
-      let raf = 0;
-      const onMove = (e: MouseEvent) => {
-        const r = el.getBoundingClientRect();
-        const px = (e.clientX - r.left) / r.width - 0.5;
-        const py = (e.clientY - r.top) / r.height - 0.5;
-        cancelAnimationFrame(raf);
-        raf = requestAnimationFrame(() => {
-          el.style.transform = `perspective(1000px) rotateX(${(-py * 5).toFixed(2)}deg) rotateY(${(px * 5).toFixed(2)}deg) translateY(-4px)`;
-        });
-      };
-      const onLeave = () => { cancelAnimationFrame(raf); el.style.transform = ''; };
-      el.addEventListener('mousemove', onMove);
-      el.addEventListener('mouseleave', onLeave);
-      return () => { el.removeEventListener('mousemove', onMove); el.removeEventListener('mouseleave', onLeave); cancelAnimationFrame(raf); };
-    });
-    return () => cleanups.forEach((fn) => fn());
-  }, [selectedTeamId, selectedTeam]);
 
   const [team, setTeam]               = useState<Team | null>(null);
   const [calendar, setCalendar]       = useState<AnyObj[]>([]);
@@ -89,6 +68,9 @@ export default function ClubDashboard() {
   const [matches, setMatches]         = useState<AnyObj[]>([]);
   const [loading, setLoading]         = useState(true);
   const [error, setError]             = useState<string | null>(null);
+  // Состав — smart-table: сортировка + фильтр по позиционной группе.
+  const [rosterSort, setRosterSort] = useState<'minutes' | 'rating' | 'number' | 'name'>('minutes');
+  const [rosterPos, setRosterPos]   = useState<string>('all');
 
   // Фильтр периода блока «Командные показатели» (правка Зенита #7).
   // 'match' — конкретный матч (по умолчанию последний, можно выбрать другой);
@@ -258,8 +240,25 @@ export default function ClubDashboard() {
         </div>
       </header>
 
+      {/* Якорная навигация — разбивает «стену карточек», даёт быстрый переход.
+          Перечисляем только реально отрисованные секции. */}
+      <nav className="cd__anchors" aria-label="Разделы дашборда">
+        {[
+          { id: 'sec-main', label: 'Главное' },
+          ...(latestMatch?.teamSummaryStats ? [{ id: 'sec-stats', label: 'Показатели' }] : []),
+          ...(latestMatch?.teamAggregates ? [{ id: 'sec-detail', label: 'Аналитика' }] : []),
+          { id: 'sec-top', label: 'Топ-игроки' },
+          { id: 'sec-roster', label: 'Состав' },
+        ].map((a) => (
+          <button key={a.id} type="button" className="cd__anchor"
+            onClick={() => document.getElementById(a.id)?.scrollIntoView({ behavior: 'smooth', block: 'start' })}>
+            {a.label}
+          </button>
+        ))}
+      </nav>
+
       {/* ГЛАВНОЕ — единый фрейм: матчи + ключевые показатели команды (правки #5,#6,#9,#10) */}
-      <section className="cd__main">
+      <section className="cd__main" id="sec-main">
         <div className="cd__main-title">Главное</div>
         <div className="cd__main-grid">
           {/* Матчи: следующий + последний в одном блоке (#6) */}
@@ -401,7 +400,7 @@ export default function ClubDashboard() {
         })();
 
         return (
-          <section className="cd__panel reveal">
+          <section className="cd__panel reveal" id="sec-stats">
             <div className="cd__panel-header">
               <h2 className="cd__panel-title">Командные показатели</h2>
               <span className="cd__panel-sub">{sub}</span>
@@ -524,7 +523,7 @@ export default function ClubDashboard() {
         });
         if (meaningful.length === 0) return null;
         return (
-          <section className="cd__panel reveal">
+          <section className="cd__panel reveal" id="sec-detail">
             <div className="cd__panel-header">
               <h2 className="cd__panel-title">Детальная аналитика по секциям</h2>
               <span className="cd__panel-sub">{meaningful.length} категорий с данными</span>
@@ -545,7 +544,7 @@ export default function ClubDashboard() {
       {latestMatch && <TeamIdentityCard match={latestMatch} />}
 
       {/* Top 5 + standings */}
-      <section className="cd__columns">
+      <section className="cd__columns" id="sec-top">
         <div className="cd__panel reveal">
           <div className="cd__panel-header">
             <h2 className="cd__panel-title">Топ-5 по рейтингу</h2>
@@ -654,7 +653,7 @@ export default function ClubDashboard() {
       )}
 
       {/* Roster */}
-      <section className="cd__panel reveal">
+      <section className="cd__panel reveal" id="sec-roster">
         <div className="cd__panel-header">
           <h2 className="cd__panel-title">
             Состав{latestMatch?.players?.length ? ` (${latestMatch.players.length})` : ''}
@@ -665,40 +664,85 @@ export default function ClubDashboard() {
               : 'нет загруженных разборов'}
           </span>
         </div>
-        <div className="cd__roster">
-          {(((latestMatch?.players ?? []) as AnyObj[]))
-            // Сортировка: по минутам убыванию, потом по номеру — стартовый
-            // состав сверху, бенч ниже
-            .slice()
-            .sort((a, b) => {
-              const ma = Number(a.minutes ?? 0); const mb = Number(b.minutes ?? 0);
-              if (ma !== mb) return mb - ma;
-              return Number(a.number ?? 99) - Number(b.number ?? 99);
-            })
-            .map((p) => {
-              const r = Number(p.ratings?.overall ?? 0);
-              const mins = Number(p.minutes ?? 0);
-              return (
-                <div key={p.playerId} className="cd__player" onClick={() => navigate(`/players/${p.playerId}`)}>
-                  <div className="cd__player-photo">
-                    <PlayerPhoto player={p} size={40} />
+        {(() => {
+          const all = (latestMatch?.players ?? []) as AnyObj[];
+          const POS_GROUPS = [
+            { id: 'all', label: 'Все' },
+            { id: 'gk',  label: 'ВРТ' },
+            { id: 'def', label: 'Защита' },
+            { id: 'mid', label: 'Полузащита' },
+            { id: 'fwd', label: 'Нападение' },
+          ];
+          const SORTS: { id: typeof rosterSort; label: string }[] = [
+            { id: 'minutes', label: 'Минуты' },
+            { id: 'rating',  label: 'Рейтинг' },
+            { id: 'number',  label: 'Номер' },
+            { id: 'name',    label: 'Имя' },
+          ];
+          const present = new Set(all.map((p) => posGroup(p.position)));
+          const groups = POS_GROUPS.filter((g) => g.id === 'all' || present.has(g.id));
+          const filtered = all.filter((p) => rosterPos === 'all' || posGroup(p.position) === rosterPos);
+          const sorted = filtered.slice().sort((a, b) => {
+            if (rosterSort === 'rating') return Number(b.ratings?.overall ?? 0) - Number(a.ratings?.overall ?? 0);
+            if (rosterSort === 'number') return Number(a.number ?? 99) - Number(b.number ?? 99);
+            if (rosterSort === 'name')   return String(a.fullName ?? '').localeCompare(String(b.fullName ?? ''), 'ru');
+            const ma = Number(a.minutes ?? 0); const mb = Number(b.minutes ?? 0);   // minutes
+            if (ma !== mb) return mb - ma;
+            return Number(a.number ?? 99) - Number(b.number ?? 99);
+          });
+          return (
+            <>
+              {all.length > 0 && (
+                <div className="cd__roster-controls">
+                  <div className="cd__seg cd__seg--sm" role="tablist" aria-label="Сортировка состава">
+                    {SORTS.map((s) => (
+                      <button key={s.id} type="button" role="tab" aria-selected={rosterSort === s.id}
+                        className={`cd__seg-btn${rosterSort === s.id ? ' is-active' : ''}`}
+                        onClick={() => setRosterSort(s.id)}>{s.label}</button>
+                    ))}
                   </div>
-                  <div className="cd__player-num">{p.number ?? '—'}</div>
-                  <div className="cd__player-info">
-                    <div className="cd__player-name">{p.fullName}</div>
-                    <div className="cd__player-meta">
-                      {p.position || ''}{mins > 0 ? ` · ${mins}'` : ' · не выходил'}
-                    </div>
-                  </div>
-                  {r > 0 && (
-                    <div className="cd__player-rating" style={{ background: ratingColor(r), color: ratingTextColor(r) }}>
-                      {r.toFixed(1)}
+                  {groups.length > 2 && (
+                    <div className="cd__chips" role="group" aria-label="Фильтр по позиции">
+                      {groups.map((g) => (
+                        <button key={g.id} type="button" aria-pressed={rosterPos === g.id}
+                          className={`cd__chip${rosterPos === g.id ? ' is-active' : ''}`}
+                          onClick={() => setRosterPos(g.id)}>{g.label}</button>
+                      ))}
                     </div>
                   )}
                 </div>
-              );
-            })}
-        </div>
+              )}
+              <div className="cd__roster">
+                {sorted.map((p) => {
+                  const r = Number(p.ratings?.overall ?? 0);
+                  const mins = Number(p.minutes ?? 0);
+                  return (
+                    <div key={p.playerId} className="cd__player" onClick={() => navigate(`/players/${p.playerId}`)}>
+                      <div className="cd__player-photo">
+                        <PlayerPhoto player={p} size={40} />
+                      </div>
+                      <div className="cd__player-num">{p.number ?? '—'}</div>
+                      <div className="cd__player-info">
+                        <div className="cd__player-name">{p.fullName}</div>
+                        <div className="cd__player-meta">
+                          {p.position || ''}{mins > 0 ? ` · ${mins}'` : ' · не выходил'}
+                        </div>
+                      </div>
+                      {r > 0 && (
+                        <div className="cd__player-rating" style={{ background: ratingColor(r), color: ratingTextColor(r) }}>
+                          {r.toFixed(1)}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+                {all.length > 0 && sorted.length === 0 && (
+                  <div className="cd__roster-empty">Нет игроков в выбранной позиции</div>
+                )}
+              </div>
+            </>
+          );
+        })()}
       </section>
     </div>
   );
@@ -810,6 +854,18 @@ function fieldLabel(k: string): string {
   if (FIELD_RU[k]) return FIELD_RU[k];
   // camelCase → "Camel case"
   return k.replace(/([a-z])([A-Z])/g, '$1 $2').replace(/^./, (c) => c.toUpperCase());
+}
+
+/** Классификатор позиции в группу для фильтра состава. «полузащит» раньше
+ * «защит» — иначе «полузащитник» ложно попал бы в защиту. */
+function posGroup(position?: string): string {
+  const p = String(position || '').toLowerCase();
+  if (!p) return 'unknown';
+  if (p.includes('вратар') || p.includes('голк') || p === 'вр') return 'gk';
+  if (p.includes('полузащит') || p.includes('хавбек') || p.includes('опорн') || p.includes('плеймейк')) return 'mid';
+  if (p.includes('защит') || p.includes('бек') || p.includes('латераль')) return 'def';
+  if (p.includes('напад') || p.includes('форвард')) return 'fwd';
+  return 'unknown';
 }
 
 function AggregateCard({ title, data }: { title: string; data: AnyObj }) {

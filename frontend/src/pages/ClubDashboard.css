@@ -3,14 +3,14 @@
   padding: 28px 32px 60px;
   max-width: 1280px;
   margin: 0 auto;
-  color: #f1f5fb;
+  color: var(--text);
   font-family: 'Montserrat', system-ui, sans-serif;
 }
 .cd__bg-glow {
   position: absolute; top: -8rem; left: 50%;
   transform: translateX(-50%);
   width: 60vw; height: 24rem;
-  background: radial-gradient(ellipse at center, rgba(31,182,255,0.20) 0%, transparent 70%);
+  background: radial-gradient(ellipse at center, color-mix(in srgb, var(--accent-cyan) 20%, transparent) 0%, transparent 70%);
   filter: blur(60px);
   pointer-events: none;
   z-index: 0;
@@ -18,7 +18,7 @@
 
 .cd__header { position: relative; z-index: 1; margin-bottom: 24px; }
 .cd__eyebrow {
-  font-size: 12px; color: #1FB6FF; text-transform: uppercase;
+  font-size: 12px; color: var(--accent-cyan); text-transform: uppercase;
   letter-spacing: 0.1em; margin-bottom: 6px;
 }
 .cd__title {
@@ -28,12 +28,12 @@
   color: #fff;
 }
 .cd__sub  { font-size: 14px; color: var(--text-muted-strong, #b4c0d2); }
-.cd__pos-num { color: #1FB6FF; font-weight: 700; }
+.cd__pos-num { color: var(--accent-cyan); font-weight: 700; }
 
 .cd__loading, .cd__error {
-  padding: 80px 24px; text-align: center; color: #94a3b8;
+  padding: 80px 24px; text-align: center; color: var(--text-muted);
 }
-.cd__error { color: #ef9a9a; }
+.cd__error { color: var(--danger); }
 
 /* ===== Hero row ===== */
 /* ===== Фрейм «Главное» (правки Зенита #5,#6,#9,#10) ===== */
@@ -82,7 +82,7 @@
   display: flex; flex-direction: column; gap: 8px;
 }
 .cd__kpi-card--click { cursor: pointer; transition: border-color 150ms var(--ease-out, ease-out), transform 150ms var(--ease-out, ease-out); }
-.cd__kpi-card--click:hover { border-color: rgba(34,211,238,0.4); transform: translateY(-2px); }
+.cd__kpi-card--click:hover { border-color: color-mix(in srgb, var(--accent-cyan) 40%, transparent); transform: translateY(-2px); }
 .cd__kpi-label {
   font-size: 11px; color: var(--text-muted-strong, #b4c0d2);
   text-transform: uppercase; letter-spacing: 0.07em; font-weight: 600;
@@ -128,12 +128,12 @@
 }
 .cd__hero-card::before {
   content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(31,182,255,0.5), transparent);
+  background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--accent-cyan) 50%, transparent), transparent);
 }
-.cd__hero-card--empty { text-align: center; color: #64748b; }
+.cd__hero-card--empty { text-align: center; color: var(--text-faint); }
 .cd__hero-empty-text { padding: 30px 0; }
 .cd__hero-eyebrow {
-  font-size: 11px; color: #1FB6FF; text-transform: uppercase;
+  font-size: 11px; color: var(--accent-cyan); text-transform: uppercase;
   letter-spacing: 0.1em; margin-bottom: 14px;
 }
 .cd__hero-matchup {
@@ -143,25 +143,25 @@
   margin-bottom: 10px;
 }
 .cd__hero-team, .cd__hero-team--us { text-align: center; }
-.cd__hero-team--us { color: #1FB6FF; font-weight: 800; }
+.cd__hero-team--us { color: var(--accent-cyan); font-weight: 800; }
 .cd__hero-vs, .cd__hero-score {
-  font-size: 13px; color: #64748b; font-weight: 500;
+  font-size: 13px; color: var(--text-faint); font-weight: 500;
   text-transform: uppercase; letter-spacing: 0.06em;
 }
 .cd__hero-score { font-size: 24px; color: #fff; font-weight: 800; }
-.cd__hero-meta { font-size: 13px; color: #94a3b8; margin-bottom: 10px; }
+.cd__hero-meta { font-size: 13px; color: var(--text-muted); margin-bottom: 10px; }
 .cd__countdown {
   display: inline-block; padding: 6px 12px; margin-top: 6px;
-  background: rgba(31,182,255,0.28); color: #7fe3ff;
+  background: color-mix(in srgb, var(--accent-cyan) 28%, transparent); color: #7fe3ff;
   border-radius: 999px; font-size: 12px; font-weight: 700;
 }
 .cd__hero-action {
   margin-top: 10px; padding: 8px 16px;
-  background: transparent; border: 1px solid rgba(31,182,255,0.4);
-  color: #1FB6FF; border-radius: 8px; font-size: 13px; font-weight: 600;
+  background: transparent; border: 1px solid color-mix(in srgb, var(--accent-cyan) 40%, transparent);
+  color: var(--accent-cyan); border-radius: 8px; font-size: 13px; font-weight: 600;
   cursor: pointer; transition: background 150ms;
 }
-.cd__hero-action:hover { background: rgba(31,182,255,0.12); }
+.cd__hero-action:hover { background: color-mix(in srgb, var(--accent-cyan) 12%, transparent); }
 .cd__hero-action:active { transform: scale(0.97); }
 @media (prefers-reduced-motion: reduce) { .cd__hero-action:active { transform: none; } }
 
@@ -179,7 +179,7 @@
   gap: 12px; margin-bottom: 14px;
 }
 .cd__panel-title { font-size: 16px; margin: 0; font-weight: 700; }
-.cd__panel-sub   { font-size: 12px; color: #94a3b8; }
+.cd__panel-sub   { font-size: 12px; color: var(--text-muted); }
 
 /* ===== Период командных показателей (правка Зенита #7) ===== */
 .cd__period-bar {
@@ -201,7 +201,7 @@
 }
 .cd__seg-btn:hover { color: #fff; }
 .cd__seg-btn.is-active {
-  background: var(--brand-primary, #1FB6FF);
+  background: var(--brand-primary, var(--accent-cyan));
   color: #fff;
 }
 .cd__match-select {
@@ -212,7 +212,7 @@
   color: #fff; font-size: 13px; font-weight: 600; cursor: pointer;
 }
 .cd__match-select:focus-visible {
-  outline: 2px solid var(--brand-primary, #1FB6FF); outline-offset: 1px;
+  outline: 2px solid var(--brand-primary, var(--accent-cyan)); outline-offset: 1px;
 }
 .cd__stats-empty {
   padding: 28px 14px; text-align: center;
@@ -232,7 +232,7 @@
   padding: 14px;
 }
 .cd__stat-label {
-  font-size: 11px; color: #64748b;
+  font-size: 11px; color: var(--text-faint);
   text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 6px;
 }
 .cd__stat-value {
@@ -240,10 +240,10 @@
   /* Раньше был background-clip:text → риск невидимого текста на слабом GPU.
      Сплошной цвет + лёгкое свечение читается всегда. */
   color: var(--accent-cyan);
-  text-shadow: 0 0 14px rgba(34, 211, 238, 0.25);
+  text-shadow: 0 0 14px color-mix(in srgb, var(--accent-cyan) 25%, transparent);
 }
-.cd__stat-suffix { font-size: 16px; color: #94a3b8; margin-left: 2px; }
-.cd__stat-extra { font-size: 11px; color: #94a3b8; margin-top: 4px; }
+.cd__stat-suffix { font-size: 16px; color: var(--text-muted); margin-left: 2px; }
+.cd__stat-extra { font-size: 11px; color: var(--text-muted); margin-top: 4px; }
 
 .cd__avg-caption {
   margin-top: 14px;
@@ -251,7 +251,7 @@
   font-size: 11px;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: #64748b;
+  color: var(--text-faint);
   border-top: 1px solid rgba(255,255,255,0.06);
 }
 .cd__avg-row {
@@ -271,7 +271,7 @@
 .cd__table-wrap { overflow-x: auto; }
 .cd__table-divider td {
   text-align: center;
-  color: #475569;
+  color: var(--rating-none);
   letter-spacing: 0.4em;
   padding: 6px;
   background: rgba(255,255,255,0.02);
@@ -279,11 +279,11 @@
 .cd__avg-item {
   display: flex; flex-direction: column; align-items: center; gap: 4px;
   padding: 10px;
-  background: rgba(31,182,255,0.06);
+  background: color-mix(in srgb, var(--accent-cyan) 6%, transparent);
   border-radius: 10px;
 }
-.cd__avg-label { font-size: 10px; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.06em; }
-.cd__avg-val   { font-size: 22px; font-weight: 800; color: #1FB6FF; }
+.cd__avg-label { font-size: 10px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em; }
+.cd__avg-val   { font-size: 22px; font-weight: 800; color: var(--accent-cyan); }
 
 .cd__agg-grid {
   display: grid;
@@ -297,7 +297,7 @@
   padding: 14px;
 }
 .cd__agg-title {
-  font-size: 12px; color: #1FB6FF;
+  font-size: 12px; color: var(--accent-cyan);
   text-transform: uppercase; letter-spacing: 0.06em;
   margin-bottom: 10px;
 }
@@ -307,7 +307,7 @@
   border-bottom: 1px solid rgba(255,255,255,0.03);
 }
 .cd__agg-row:last-child { border-bottom: none; }
-.cd__agg-key { color: #cbd5e1; }
+.cd__agg-key { color: var(--text-muted-strong); }
 .cd__agg-val { font-weight: 700; color: #fff; }
 
 /* ===== Two-column row ===== */
@@ -330,10 +330,10 @@
   transition: background 120ms;
 }
 .cd__top-row:hover { background: rgba(255,255,255,0.04); }
-.cd__top-rank { color: #64748b; font-weight: 700; }
-.cd__top-num  { color: #94a3b8; font-size: 13px; }
+.cd__top-rank { color: var(--text-faint); font-weight: 700; }
+.cd__top-num  { color: var(--text-muted); font-size: 13px; }
 .cd__top-name { font-weight: 600; font-size: 14px; }
-.cd__top-pos  { font-size: 11px; color: #64748b; text-transform: uppercase; }
+.cd__top-pos  { font-size: 11px; color: var(--text-faint); text-transform: uppercase; }
 .cd__top-bar {
   display: block; height: 6px;
   background: rgba(255,255,255,0.06);
@@ -344,7 +344,7 @@
   display: block; height: 100%;
   border-radius: 999px;
   transition: width 380ms ease;
-  box-shadow: 0 0 12px rgba(34,211,238,0.4);
+  box-shadow: 0 0 12px color-mix(in srgb, var(--accent-cyan) 40%, transparent);
 }
 .cd__top-rating {
   padding: 4px 10px; border-radius: 8px;
@@ -359,7 +359,7 @@
 /* ===== Standings table ===== */
 .cd__table { width: 100%; border-collapse: collapse; font-size: 13px; }
 .cd__table th {
-  padding: 8px 6px; color: #64748b; font-weight: 500;
+  padding: 8px 6px; color: var(--text-faint); font-weight: 500;
   text-align: center; font-size: 10px; text-transform: uppercase;
   letter-spacing: 0.04em; border-bottom: 1px solid rgba(255,255,255,0.06);
 }
@@ -371,10 +371,10 @@
 .cd__table-team { text-align: left; font-weight: 500; }
 .cd__table-pts  { font-weight: 700; }
 .cd__table-row--us {
-  background: linear-gradient(90deg, rgba(31,182,255,0.15), transparent);
+  background: linear-gradient(90deg, color-mix(in srgb, var(--accent-cyan) 15%, transparent), transparent);
 }
 .cd__table-row--us td { color: #fff; font-weight: 700; }
-.cd__table-row--us td:first-child { color: #1FB6FF; }
+.cd__table-row--us td:first-child { color: var(--accent-cyan); }
 
 /* ===== Roster ===== */
 .cd__roster {
@@ -393,15 +393,15 @@
   cursor: pointer;
   transition: border-color 150ms, transform 120ms;
 }
-.cd__player:hover { border-color: rgba(31,182,255,0.4); transform: translateY(-2px); }
+.cd__player:hover { border-color: color-mix(in srgb, var(--accent-cyan) 40%, transparent); transform: translateY(-2px); }
 .cd__player-photo {
   width: 40px; height: 40px;
   flex-shrink: 0;
 }
 .cd__player-num {
   width: 32px; height: 32px; border-radius: 8px;
-  background: linear-gradient(135deg, rgba(31,182,255,0.18), rgba(37,99,235,0.10));
-  border: 1.5px solid rgba(31,182,255,0.35);
+  background: linear-gradient(135deg, color-mix(in srgb, var(--accent-cyan) 18%, transparent), color-mix(in srgb, var(--brand-primary) 10%, transparent));
+  border: 1.5px solid color-mix(in srgb, var(--accent-cyan) 35%, transparent);
   display: flex; align-items: center; justify-content: center;
   font-weight: 800; font-size: 13px;
   font-variant-numeric: tabular-nums;
@@ -412,7 +412,7 @@
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 .cd__player-meta {
-  font-size: 11px; color: #64748b;
+  font-size: 11px; color: var(--text-faint);
   text-transform: uppercase; letter-spacing: 0.04em; margin-top: 2px;
 }
 .cd__player-rating {
@@ -423,11 +423,11 @@
 
 /* ===== Empty state ===== */
 .cd__empty {
-  padding: 40px 20px; text-align: center; color: #94a3b8;
+  padding: 40px 20px; text-align: center; color: var(--text-muted);
 }
 .cd__empty-icon {
   display: flex; justify-content: center;
-  margin-bottom: 12px; color: #647084;
+  margin-bottom: 12px; color: var(--text-faint);
 }
 
 @media (max-width: 880px) {
@@ -451,7 +451,7 @@
   transition: border-color 200ms, transform 150ms;
 }
 .cd__radar-card:hover {
-  border-color: rgba(31,182,255,0.3);
+  border-color: color-mix(in srgb, var(--accent-cyan) 30%, transparent);
   transform: translateY(-2px);
 }
 .cd__radar-head {
@@ -463,7 +463,7 @@
 }
 .cd__radar-num {
   font-size: 12px;
-  color: #64748b;
+  color: var(--text-faint);
   font-weight: 700;
 }
 .cd__radar-name {
@@ -485,7 +485,7 @@
 }
 .cd__crest--fallback {
   display: inline-flex; align-items: center; justify-content: center;
-  border-radius: 7px; font-weight: 800; color: #cbd5e1;
+  border-radius: 7px; font-weight: 800; color: var(--text-muted-strong);
   background: rgba(255,255,255,0.08);
 }
 
@@ -495,10 +495,10 @@
   min-width: 0;
 }
 .cd__mt-name {
-  text-align: center; font-size: 15px; font-weight: 600; color: #e2e8f0;
+  text-align: center; font-size: 15px; font-weight: 600; color: var(--text);
   line-height: 1.2;
 }
-.cd__mt--us .cd__mt-name { color: #1FB6FF; font-weight: 800; }
+.cd__mt--us .cd__mt-name { color: var(--accent-cyan); font-weight: 800; }
 
 /* Лучший игрок: фото + имя/мета + рейтинг-бейдж */
 .cd__kpi-photo { flex-shrink: 0; border-radius: 10px; overflow: hidden; }
@@ -518,3 +518,44 @@
 
 /* Эмблема в строке турнирной таблицы */
 .cd__table-team-cell { display: inline-flex; align-items: center; gap: 8px; }
+
+/* Якорная навигация по разделам — sticky-пилюля, разбивает «стену карточек» */
+.cd__anchors {
+  position: sticky; top: 8px; z-index: 5;
+  display: flex; flex-wrap: wrap; gap: 4px; margin: 0 0 8px;
+  padding: 5px; border-radius: 999px; width: fit-content; max-width: 100%;
+  background: color-mix(in srgb, var(--bg-surface) 82%, transparent);
+  border: 1px solid rgba(255,255,255,0.06);
+  backdrop-filter: blur(8px);
+  box-shadow: var(--shadow-sm);
+}
+.cd__anchor {
+  padding: 6px 14px; border-radius: 999px; border: none; background: transparent;
+  color: var(--text-muted-strong, #b4c0d2); font-size: 13px; font-weight: 600;
+  white-space: nowrap; cursor: pointer;
+  transition: background var(--dur-fast, 120ms), color var(--dur-fast, 120ms);
+}
+.cd__anchor:hover { background: rgba(255,255,255,0.06); color: var(--text); }
+/* Скролл к якорю не должен прятать заголовок под app-header */
+.cd__main, .cd__panel, .cd__columns { scroll-margin-top: 84px; }
+
+/* Состав — smart-table: контролы сортировки + фильтр позиций */
+.cd__roster-controls {
+  display: flex; flex-wrap: wrap; gap: 10px 14px; align-items: center;
+  justify-content: space-between; margin-bottom: 14px;
+}
+.cd__seg--sm .cd__seg-btn { padding: 6px 12px; font-size: 12px; }
+.cd__chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.cd__chip {
+  padding: 6px 12px; border-radius: 999px; font-size: 12px; font-weight: 600;
+  background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
+  color: var(--text-muted-strong, #b4c0d2); cursor: pointer;
+  transition: background var(--dur-fast, 120ms), color var(--dur-fast, 120ms),
+              border-color var(--dur-fast, 120ms);
+}
+.cd__chip:hover { color: var(--text); border-color: color-mix(in srgb, var(--accent-cyan) 40%, transparent); }
+.cd__chip.is-active { background: var(--brand-primary); color: #fff; border-color: transparent; }
+.cd__roster-empty {
+  grid-column: 1 / -1; text-align: center; padding: 28px 16px;
+  color: var(--text-faint); font-size: 14px;
+}
