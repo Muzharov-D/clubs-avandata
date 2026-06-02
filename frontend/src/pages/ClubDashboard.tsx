@@ -230,6 +230,15 @@ export default function ClubDashboard() {
         matches: p.matches,
         ratings: { overall: p.avgOverall, attack: p.avgAttack, defence: p.avgDefence, fitness: p.avgFitness },
         radar: p.radar ?? {},
+        // Сырые сезонные агрегаты — для инсайтов карточки лучшего игрока.
+        season: {
+          goals: Number(p.goals ?? 0), assists: Number(p.assists ?? 0),
+          dribble: Number(p.dribble ?? 0), tackle: Number(p.tackle ?? 0),
+          interception: Number(p.interception ?? 0), recovery: Number(p.recovery ?? 0),
+          duel: Number(p.duel ?? 0), pressing: Number(p.pressing ?? 0),
+          keyPass: Number(p.keyPass ?? 0), shots: Number(p.shots ?? 0),
+          distance: Number(p.distance ?? 0), sprintDistance: Number(p.sprintDistance ?? 0),
+        },
       };
     });
   }, [seasonPlayers, latestMatch]);
@@ -247,6 +256,23 @@ export default function ClubDashboard() {
       .sort((a, b) => (b.ratings?.overall ?? 0) - (a.ratings?.overall ?? 0))
       .slice(0, 5);
   }, [seasonRoster]);
+
+  // Форма команды за сезон: последние сыгранные матчи → В/Н/П (хронологически).
+  // Источник — calendar (результаты есть без догрузки деталей). Берём до 6.
+  const seasonForm = useMemo<{ result: 'W' | 'D' | 'L'; opp: string; score: string; date: string }[]>(() => {
+    const played = calendar
+      .filter((m) => m.isOurMatch && m.scoreH != null && m.scoreA != null && m.date)
+      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+      .slice(0, 6);
+    const mapped = played.map((m) => {
+      const ourHome = isOurName(m.home, ourName);
+      const our = Number(ourHome ? m.scoreH : m.scoreA);
+      const opp = Number(ourHome ? m.scoreA : m.scoreH);
+      const result: 'W' | 'D' | 'L' = our > opp ? 'W' : our === opp ? 'D' : 'L';
+      return { result, opp: trimAgeSuffix(ourHome ? m.away : m.home), score: `${our}:${opp}`, date: m.date as string };
+    });
+    return mapped.reverse(); // хронологический порядок слева-направо
+  }, [calendar, ourName]);
 
   // Средний рейтинг команды за сезон: из агрегата, иначе среднее по составу.
   const avgTeamRating = useMemo<number>(() => {
@@ -377,31 +403,60 @@ export default function ClubDashboard() {
             )}
           </div>
 
-          {/* Средний рейтинг команды за сезон (#9) */}
+          {/* Рейтинг сезона (#9) — инфографика: оценка + форма + раскладка по линиям */}
           {(() => {
             const ov = Number(avgTeamRating ?? 0);
+            const tar = (seasonAgg?.teamAvgRatings ?? {}) as Record<string, unknown>;
+            const lines: { label: string; val: number }[] = [
+              { label: 'Атака', val: Number(tar.attack ?? 0) },
+              { label: 'Защита', val: Number(tar.defence ?? 0) },
+              { label: 'Фитнес', val: Number(tar.fitness ?? 0) },
+            ].filter((l) => l.val > 0);
+            const col = ratingColor(ov);
             return (
               <div className="cd__kpi-card cd__kpi-card--metric">
                 <div className="cd__kpi-head">
-                  <span className="cd__kpi-label">Средний рейтинг команды</span>
+                  <span className="cd__kpi-label">Рейтинг сезона</span>
                   {ov > 0 && (
-                    <span className="cd__kpi-grade" style={{ color: ratingColor(ov), background: `color-mix(in srgb, ${ratingColor(ov)} 16%, transparent)` }}>
+                    <span className="cd__kpi-grade" style={{ color: col, background: `color-mix(in srgb, ${col} 16%, transparent)` }}>
                       {ratingGrade(ov)}
                     </span>
                   )}
                 </div>
                 {ov > 0 ? (
-                  <>
-                    <div className="cd__kpi-hero">
-                      <span className="cd__kpi-big" style={{ color: ratingColor(ov) }}>
+                  <div className="cd__rt">
+                    <div className="cd__rt-top">
+                      <span className="cd__kpi-big" style={{ color: col }}>
                         {ov.toFixed(2)}<span className="cd__kpi-scale">/10</span>
                       </span>
+                      {seasonForm.length > 0 && (
+                        <div className="cd__rt-form" title="Форма: последние матчи">
+                          <div className="cd__rt-dots">
+                            {seasonForm.map((f, i) => (
+                              <span key={i} className={`cd__dot cd__dot--${f.result}`} title={`${f.opp} ${f.score}`}>
+                                {f.result === 'W' ? 'В' : f.result === 'D' ? 'Н' : 'П'}
+                              </span>
+                            ))}
+                          </div>
+                          <span className="cd__rt-form-cap">форма</span>
+                        </div>
+                      )}
                     </div>
-                    <div className="cd__kpi-foot">
-                      <span className="cd__kpi-bar"><span className="cd__kpi-bar-fill" style={{ width: `${Math.min(100, ov * 10)}%`, background: ratingColor(ov) }} /></span>
-                      <span className="cd__kpi-sub">{seasonMatchCount > 0 ? `за сезон · ${seasonMatchCount} матч.` : 'за сезон'}</span>
-                    </div>
-                  </>
+                    {lines.length > 0 && (
+                      <div className="cd__rt-lines">
+                        {lines.map((l) => (
+                          <div key={l.label} className="cd__rt-line">
+                            <span className="cd__rt-line-lab">{l.label}</span>
+                            <span className="cd__rt-line-bar">
+                              <span className="cd__rt-line-fill" style={{ width: `${Math.min(100, l.val * 10)}%`, background: ratingColor(l.val) }} />
+                            </span>
+                            <span className="cd__rt-line-val" style={{ color: ratingColor(l.val) }}>{l.val.toFixed(1)}</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    <span className="cd__kpi-sub">{seasonMatchCount > 0 ? `средний индекс эффективности · ${seasonMatchCount} матч.` : 'средний индекс эффективности'}</span>
+                  </div>
                 ) : (
                   <div className="cd__kpi-hero"><div className="cd__kpi-empty">нет разбора</div></div>
                 )}
@@ -409,33 +464,47 @@ export default function ClubDashboard() {
             );
           })()}
 
-          {/* Лучший игрок команды (#10) */}
+          {/* Лучший игрок сезона (#10) — карточка с авто-инсайтами по вкладу */}
           {(() => {
             const best = topPlayers[0];
+            const r = Number(best?.ratings?.overall ?? 0);
+            const insights = best ? bestPlayerInsights(best, seasonRoster) : [];
             return (
               <div
                 className={`cd__kpi-card cd__kpi-card--player${best ? ' cd__kpi-card--click' : ''}`}
                 onClick={() => best && navigate(`/players/${best.playerId}`)}
               >
                 <div className="cd__kpi-head">
-                  <span className="cd__kpi-label">Лучший игрок</span>
+                  <span className="cd__kpi-label">Лучший игрок сезона</span>
                   {best && (
-                    <span className="cd__kpi-rank" style={{ background: ratingColor(best.ratings?.overall), color: ratingTextColor(best.ratings?.overall) }}>
-                      {Number(best.ratings?.overall ?? 0).toFixed(1)}
+                    <span className="cd__kpi-rank" style={{ background: ratingColor(r), color: ratingTextColor(r) }}>
+                      {r.toFixed(1)}
                     </span>
                   )}
                 </div>
                 {best ? (
-                  <>
-                    <div className="cd__kpi-hero cd__kpi-hero--player">
-                      <PlayerPhoto player={best} size={72} className="cd__kpi-photo" />
-                      <div className="cd__kpi-player-body">
-                        <span className="cd__kpi-player-name">{best.fullName}</span>
-                        <span className="cd__kpi-sub">#{best.number ?? '—'} · {best.position || 'игрок'}</span>
+                  <div className="cd__bp">
+                    <div className="cd__bp-id">
+                      <PlayerPhoto player={best} size={64} className="cd__bp-photo" />
+                      <div className="cd__bp-body">
+                        <span className="cd__bp-name">{best.fullName}</span>
+                        <span className="cd__kpi-sub">#{best.number ?? '—'} · {best.position || 'игрок'}{best.matches ? ` · ${best.matches} матч.` : ''}</span>
                       </div>
                     </div>
+                    {insights.length > 0 && (
+                      <ul className="cd__bp-insights">
+                        {insights.map((ins, i) => (
+                          <li key={i} className="cd__bp-insight">
+                            <InsightDot kind={ins.kind} />
+                            <span className="cd__bp-insight-text">
+                              {ins.lead && <b className="cd__bp-insight-lead">{ins.lead}</b>}{ins.text}
+                            </span>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
                     <div className="cd__kpi-foot cd__kpi-foot--hint">Открыть профиль →</div>
-                  </>
+                  </div>
                 ) : (
                   <div className="cd__kpi-hero"><div className="cd__kpi-empty">нет разбора</div></div>
                 )}
@@ -1075,6 +1144,92 @@ function MatchupTeam({ name, shield, isOur }: { name?: string; shield?: string |
     <span className={`cd__mt${isOur ? ' cd__mt--us' : ''}`}>
       <TeamCrest src={shield} name={name} size={32} />
       <span className="cd__mt-name">{name}</span>
+    </span>
+  );
+}
+
+// ── Авто-инсайты карточки лучшего игрока (сезонный вклад) ────────────────────
+// Не пересказ суммы, а вывод: «лучший бомбардир», «лидер по обводкам», беговая
+// работа. Сравниваем игрока с командой (лидерство = badge), берём топ-3.
+type Insight = { kind: 'goal' | 'assist' | 'duel' | 'run'; lead?: string; text: string };
+
+function ruPlural(n: number, one: string, few: string, many: string): string {
+  const m10 = n % 10, m100 = n % 100;
+  if (m10 === 1 && m100 !== 11) return one;
+  if (m10 >= 2 && m10 <= 4 && (m100 < 10 || m100 >= 20)) return few;
+  return many;
+}
+
+function bestPlayerInsights(best: AnyObj, roster: AnyObj[]): Insight[] {
+  const s = (best?.season ?? {}) as Record<string, number>;
+  if (!s || Object.values(s).every((v) => !Number(v))) return [];
+  const out: Insight[] = [];
+  // Командные максимумы — для значка «лучший в команде».
+  const maxOf = (key: string): number =>
+    roster.reduce((m, p) => Math.max(m, Number((p?.season as AnyObj)?.[key] ?? 0)), 0);
+  const isLeader = (key: string, v: number) => v > 0 && v >= maxOf(key);
+
+  // 1) Голы
+  const goals = Number(s.goals ?? 0);
+  if (goals > 0) {
+    out.push({
+      kind: 'goal',
+      lead: isLeader('goals', goals) ? 'Лучший бомбардир' : undefined,
+      text: `${isLeader('goals', goals) ? ' · ' : ''}${goals} ${ruPlural(goals, 'гол', 'гола', 'голов')} за сезон`,
+    });
+  }
+  // 2) Результативные передачи
+  const assists = Number(s.assists ?? 0);
+  if (assists > 0) {
+    out.push({
+      kind: 'assist',
+      lead: isLeader('assists', assists) ? 'Главный ассистент' : undefined,
+      text: `${isLeader('assists', assists) ? ' · ' : ''}${assists} ${ruPlural(assists, 'результативная передача', 'результативные передачи', 'результативных передач')}`,
+    });
+  }
+  // 3) Яркая «не-голевая» характеристика — где игрок лидер в команде.
+  const TRAITS: { key: string; one: string; few: string; many: string }[] = [
+    { key: 'dribble', one: 'обводка', few: 'обводки', many: 'обводок' },
+    { key: 'tackle', one: 'отбор', few: 'отбора', many: 'отборов' },
+    { key: 'interception', one: 'перехват', few: 'перехвата', many: 'перехватов' },
+    { key: 'recovery', one: 'возврат', few: 'возврата', many: 'возвратов' },
+    { key: 'pressing', one: 'действие в прессинге', few: 'действия в прессинге', many: 'действий в прессинге' },
+  ];
+  const traitLead = TRAITS
+    .map((t) => ({ ...t, v: Number(s[t.key] ?? 0) }))
+    .filter((t) => isLeader(t.key, t.v))
+    .sort((a, b) => b.v - a.v)[0];
+  if (traitLead && out.length < 3) {
+    out.push({ kind: 'duel', lead: 'Лидер команды', text: ` · ${traitLead.v} ${ruPlural(traitLead.v, traitLead.one, traitLead.few, traitLead.many)}` });
+  }
+  // 4) Беговая работа — заполняем до трёх, если есть дистанция.
+  const dist = Number(s.distance ?? 0);
+  const m = Number(best?.matches ?? 0);
+  if (dist > 0 && m > 0 && out.length < 3) {
+    out.push({ kind: 'run', text: `${(dist / m / 1000).toFixed(1)} км за матч` });
+  }
+  return out.slice(0, 3);
+}
+
+/** Цветная иконка-маркер инсайта (без эмодзи — спокойный тон дашборда). */
+function InsightDot({ kind }: { kind: Insight['kind'] }) {
+  const color = kind === 'goal' ? 'var(--success)'
+    : kind === 'assist' ? 'var(--accent-cyan)'
+    : kind === 'duel' ? 'var(--warning)'
+    : 'var(--text-faint)';
+  return (
+    <span className="cd__bp-dot" aria-hidden>
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+        {kind === 'goal' ? (
+          <circle cx="12" cy="12" r="8" />
+        ) : kind === 'assist' ? (
+          <path d="M5 12h12M13 7l5 5-5 5" />
+        ) : kind === 'duel' ? (
+          <path d="M14.5 4l5.5 5.5L9 20.5 3.5 15z M16 2l6 6" />
+        ) : (
+          <path d="M13 4l-2 6h5l-7 10 2-7H6z" />
+        )}
+      </svg>
     </span>
   );
 }

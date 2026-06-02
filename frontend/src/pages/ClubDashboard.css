@@ -124,6 +124,41 @@
   font-variant-numeric: tabular-nums; position: relative; z-index: 1;
 }
 .cd__kpi-player-name { font-size: 18px; font-weight: 700; color: #fff; line-height: 1.2; }
+
+/* ── Карточка «Рейтинг сезона»: оценка + форма + раскладка по линиям ── */
+.cd__rt { flex: 1; display: flex; flex-direction: column; gap: 14px; position: relative; z-index: 1; }
+.cd__rt-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.cd__rt .cd__kpi-big { font-size: 46px; }
+.cd__rt-form { display: flex; flex-direction: column; align-items: flex-end; gap: 5px; }
+.cd__rt-dots { display: flex; gap: 4px; }
+.cd__dot {
+  width: 20px; height: 20px; border-radius: 6px;
+  display: inline-flex; align-items: center; justify-content: center;
+  font-size: 10px; font-weight: 800; font-variant-numeric: tabular-nums;
+}
+.cd__dot--W { background: color-mix(in srgb, var(--success) 22%, transparent); color: var(--success); }
+.cd__dot--D { background: rgba(255,255,255,0.08); color: var(--text-muted-strong, #b4c0d2); }
+.cd__dot--L { background: color-mix(in srgb, var(--danger) 22%, transparent); color: var(--danger); }
+.cd__rt-form-cap { font-size: 9px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-faint); font-weight: 600; }
+.cd__rt-lines { display: flex; flex-direction: column; gap: 7px; }
+.cd__rt-line { display: grid; grid-template-columns: 48px 1fr 30px; align-items: center; gap: 9px; }
+.cd__rt-line-lab { font-size: 11px; color: var(--text-muted); font-weight: 600; }
+.cd__rt-line-bar { height: 6px; background: rgba(255,255,255,0.06); border-radius: 999px; overflow: hidden; }
+.cd__rt-line-fill { display: block; height: 100%; border-radius: 999px; transition: width 500ms var(--ease-out, ease-out); }
+.cd__rt-line-val { font-size: 12px; font-weight: 800; text-align: right; font-variant-numeric: tabular-nums; }
+
+/* ── Карточка «Лучший игрок сезона»: персона + авто-инсайты ── */
+.cd__bp { flex: 1; display: flex; flex-direction: column; gap: 14px; position: relative; z-index: 1; }
+.cd__bp-id { display: flex; align-items: center; gap: 13px; }
+.cd__bp-photo { flex-shrink: 0; border-radius: 50%; }
+.cd__bp-body { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.cd__bp-name { font-size: 18px; font-weight: 800; color: #fff; line-height: 1.15; letter-spacing: -0.01em; }
+.cd__bp-insights { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.cd__bp-insight { display: flex; align-items: flex-start; gap: 9px; font-size: 12.5px; color: var(--text-muted-strong, #b4c0d2); line-height: 1.3; }
+.cd__bp-dot { flex-shrink: 0; margin-top: 1px; display: inline-flex; }
+.cd__bp-insight-lead { color: #fff; font-weight: 700; }
+.cd__bp-insight-text { min-width: 0; }
+
 @media (max-width: 880px) {
   .cd__main-grid { grid-template-columns: 1fr; }
 }
