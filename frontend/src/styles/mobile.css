@@ -444,7 +444,6 @@ img, svg, video { max-width: 100%; height: auto; }
   }
 
   /* Top-5 / лидеры — 1 на экран в свайпе */
-  .topr-card,
   .top5-card,
   .leader-card,
   .club-overview__leader-card {

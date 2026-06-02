@@ -7,7 +7,7 @@ import PdfUploadDialog from '../components/PdfUploadDialog';
 import PlayerPhoto from '../components/PlayerPhoto';
 import { ratingColor, ratingTextColor } from '../utils/colors';
 import { shortNameFromPlayer } from '../utils/players';
-import { isOurClub } from '../utils/legirus';
+import { isOurClub, shieldFor } from '../utils/legirus';
 import { useAuth } from '../contexts/AuthContext';
 import { useTeam } from '../contexts/TeamContext';
 import { useTournament } from '../contexts/TournamentContext';
@@ -178,9 +178,7 @@ export default function MatchesDashboard() {
                 <div className="matches-dashboard__last-date">{fmtDate(lastMatch.date)}</div>
                 <div className="matches-dashboard__last-teams">
                   <div className="matches-dashboard__last-team">
-                    <span className="matches-dashboard__last-shield" aria-hidden>
-                      {(lastMatch.homeTeam?.name || 'К')[0]}
-                    </span>
+                    <LastTeamCrest name={lastMatch.homeTeam?.name} />
                     <span>{lastMatch.homeTeam?.name?.replace(/\s*[Uu]-?\s*\d{1,3}\s*$/, '').replace(/\s+20\d{2}\s*$/, '') || 'Команда'}</span>
                   </div>
                   <div className="matches-dashboard__last-score">
@@ -190,7 +188,7 @@ export default function MatchesDashboard() {
                   </div>
                   <div className="matches-dashboard__last-team away">
                     <span>{(lastMatch.awayTeam?.name || 'Соперник').replace(/\s*[Uu]-?\s*\d{1,3}\s*/g, ' ').replace(/\s+20\d{2}\s*/g, ' ').replace(/\s+/g, ' ').trim()}</span>
-                    <div className="matches-dashboard__last-placeholder">?</div>
+                    <LastTeamCrest name={lastMatch.awayTeam?.name} />
                   </div>
                 </div>
                 <button
@@ -217,11 +215,8 @@ export default function MatchesDashboard() {
           {/* Топ-5 по рейтингу с трендами — свайп-карусель */}
           {topRated.length > 0 && (
             <div className="card">
-              <div className="page-section-title">
-                Топ-5 по рейтингу сезона{' '}
-                <span className="topr-hint">— листайте →</span>
-              </div>
-              <div className="topr-carousel">
+              <div className="page-section-title">Топ-5 по рейтингу сезона</div>
+              <div className="topr-table">
                 {topRated.map((row, i) => {
                   const { player, last, avgAll, delta, games } = row;
                   const unlocked = canSeePlayer(player.id);
@@ -238,27 +233,17 @@ export default function MatchesDashboard() {
                   return (
                     <div
                       key={player.id}
-                      className={'topr-card' + (unlocked ? '' : ' topr-card--locked')}
+                      className={'topr-row' + (unlocked ? '' : ' topr-row--locked')}
                       onClick={() => { if (unlocked) navigate(`/players/${player.id}`); }}
                       title={unlocked ? '' : 'Доступно только тренеру'}
                     >
-                      <div className="topr-card__rank">#{i + 1}</div>
-                      <PlayerPhoto player={player} size={64} />
-                      <div className="topr-card__name">{shortNameFromPlayer(player)}</div>
-                      <div className="topr-card__pos">
-                        №{player.number} · {player.positionFull || player.position}
-                      </div>
-                      <div
-                        className="topr-card__rating"
-                        style={{
-                          background: ratingColor(avgAll),
-                          color: ratingTextColor(avgAll),
-                        }}
-                      >
-                        {avgAll.toFixed(1)}
-                      </div>
-                      <div className="topr-card__rating-label">
-                        средний за {games} {games === 1 ? 'матч' : games < 5 ? 'матча' : 'матчей'}
+                      <div className="topr-row__rank">#{i + 1}</div>
+                      <PlayerPhoto player={player} size={40} />
+                      <div className="topr-row__info">
+                        <div className="topr-row__name">{shortNameFromPlayer(player)}</div>
+                        <div className="topr-row__pos">
+                          №{player.number} · {player.positionFull || player.position}
+                        </div>
                       </div>
                       <div className={`topr-trend ${trendClass}`}>
                         <span className="topr-trend__arrow">{trendArrow}</span>
@@ -268,8 +253,16 @@ export default function MatchesDashboard() {
                             : `${delta > 0 ? '+' : ''}${delta.toFixed(2)}`}
                         </span>
                       </div>
-                      <div className="topr-card__last">
-                        Последний матч: <b>{last.toFixed(1)}</b>
+                      <div className="topr-row__ratingwrap">
+                        <div
+                          className="topr-row__rating"
+                          style={{ background: ratingColor(avgAll), color: ratingTextColor(avgAll) }}
+                        >
+                          {avgAll.toFixed(1)}
+                        </div>
+                        <div className="topr-row__sub">
+                          за {games} {games === 1 ? 'матч' : games < 5 ? 'матча' : 'матчей'} · посл. {last.toFixed(1)}
+                        </div>
                       </div>
                     </div>
                   );
@@ -300,6 +293,21 @@ export default function MatchesDashboard() {
       )}
     </div>
   );
+}
+
+// Эмблема команды в сводке матча: через shieldFor (наш клуб → лого, соперник →
+// инициал, т.к. внешнего щита в объекте матча нет). Единая точка эмблем проекта.
+function LastTeamCrest({ name }) {
+  const [errored, setErrored] = useState(false);
+  const src = shieldFor(name || '', '');
+  if (!src || errored) {
+    return (
+      <span className="matches-dashboard__last-placeholder" aria-hidden>
+        {(name || '?').trim().charAt(0).toUpperCase() || '?'}
+      </span>
+    );
+  }
+  return <img className="matches-dashboard__last-crest" src={src} alt="" onError={() => setErrored(true)} />;
 }
 
 function SeasonStat({ label, value }) {
