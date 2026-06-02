@@ -38,6 +38,7 @@ import PredictedLineup from '../components/PredictedLineup';
 // @ts-ignore — legacy .jsx
 import PlayerPhoto from '../components/PlayerPhoto';
 import { useDocumentTitle } from '../hooks/useDocumentTitle';
+import { SplitText, AnimatedNumber } from '../components/motion';
 import './ClubDashboard.css';
 import './clubKinetic.css';
 
@@ -288,7 +289,7 @@ export default function ClubDashboard() {
       <header className="cd__header">
         <div>
           <div className="cd__eyebrow">{team.ageLabel || `U-${team.ageGroup}`} · Сезон {seasonLabel}</div>
-          <h1 className="cd__title">{team.name}</h1>
+          <h1 className="cd__title"><SplitText text={team.name} /></h1>
           <div className="cd__sub">
             Главный тренер: <b>{team.headCoach || '—'}</b>
             {ourRow && (
@@ -385,7 +386,7 @@ export default function ClubDashboard() {
                   <div className="cd__rt">
                     <div className="cd__rt-top">
                       <span className="cd__kpi-big" style={{ color: col }}>
-                        {ov.toFixed(2)}<span className="cd__kpi-scale">/10</span>
+                        <AnimatedNumber value={ov} format={(v) => v.toFixed(2)} /><span className="cd__kpi-scale">/10</span>
                       </span>
                       {seasonForm.length > 0 && (
                         <div className="cd__rt-form" title="Форма: последние матчи">
