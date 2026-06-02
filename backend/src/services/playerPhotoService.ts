@@ -212,8 +212,22 @@ const POSITION_FIELDS = [
   'playerPosition', 'gamePosition', 'positionTitle', 'post',
 ];
 
-/** Полное название позиции игрока FFSPB (например «Левый защитник»). */
+/** Полное название позиции игрока FFSPB (например «Полузащитник»). */
 export function extractPositionFull(p: Record<string, unknown>): string | null {
+  // Основной формат FFSPB/Наградиона: позиция лежит в массиве publicExtra как
+  // { field: { name: 'Амплуа' }, value: 'Полузащитник' } (подтверждено ростером).
+  const extra = p.publicExtra;
+  if (Array.isArray(extra)) {
+    for (const e of extra) {
+      const f = e as { field?: { name?: unknown }; value?: unknown };
+      const fname = typeof f?.field?.name === 'string' ? f.field.name : '';
+      if (/ампл|позиц|роль|амплуа/i.test(fname)) {
+        const val = typeof f.value === 'string' ? f.value.trim() : '';
+        if (val) return val;
+      }
+    }
+  }
+  // Fallback — топ-поля (если формат изменится).
   for (const k of POSITION_FIELDS) {
     const s = fieldString(p[k]);
     if (s) return s;
