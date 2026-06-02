@@ -101,7 +101,7 @@ export function PublicTenantTeam() {
   const ourRow = standings?.table?.find((r) => r.isOurClub);
 
   return (
-    <div className="pub">
+    <div className="pub" data-testid="public-team">
       {/* Bg glow */}
       <div className="pub__glow" aria-hidden />
 

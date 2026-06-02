@@ -139,12 +139,12 @@ export function AdminTenantNew() {
 
   if (result) {
     return (
-      <div style={{ maxWidth: 560 }}>
+      <div style={{ maxWidth: 560 }} data-testid="tenant-created">
         <h1>Клуб создан</h1>
         <div className="surface" style={{ display: 'grid', gap: 12 }}>
           <div>
             <div style={{ color: 'var(--text-muted)', fontSize: 13 }}>Slug</div>
-            <code style={{ fontSize: 16 }}>{result.tenant.slug}</code>
+            <code style={{ fontSize: 16 }} data-testid="created-slug">{result.tenant.slug}</code>
           </div>
           <div>
             <div style={{ color: 'var(--text-muted)', fontSize: 13 }}>Главный тренер</div>
@@ -207,6 +207,7 @@ export function AdminTenantNew() {
             placeholder="ФК Зенит"
             required
             autoFocus
+            data-testid="tenant-name"
           />
         </div>
         <div>
@@ -216,6 +217,7 @@ export function AdminTenantNew() {
             onChange={(e) => setForm({ ...form, displayName: e.target.value })}
             placeholder="Зенит"
             required
+            data-testid="tenant-displayname"
           />
         </div>
         <div>
@@ -230,6 +232,7 @@ export function AdminTenantNew() {
             placeholder="zenit-fk"
             required
             pattern="[a-z0-9-]+"
+            data-testid="tenant-slug"
           />
           <div style={{ fontSize: 12, color: '#94a3b8', marginTop: 4 }}>
             будет URL: <code style={{ color: '#22d3ee' }}>clubs.avandata.ru/m/{form.slug || '...'}</code>
@@ -364,6 +367,7 @@ export function AdminTenantNew() {
             onChange={(e) => setForm({ ...form, headCoachEmail: e.target.value })}
             placeholder="coach@club.ru"
             required
+            data-testid="tenant-coach-email"
           />
         </div>
         <div>
@@ -372,13 +376,14 @@ export function AdminTenantNew() {
             value={form.headCoachName}
             onChange={(e) => setForm({ ...form, headCoachName: e.target.value })}
             required
+            data-testid="tenant-coach-name"
           />
         </div>
 
         {error && <div style={{ color: 'var(--danger)', fontSize: 14 }}>{error}</div>}
 
         <div style={{ display: 'flex', gap: 12 }}>
-          <button type="submit" disabled={create.isPending}>
+          <button type="submit" disabled={create.isPending} data-testid="tenant-submit">
             {create.isPending ? 'Создаю…' : 'Создать клуб'}
           </button>
           <button

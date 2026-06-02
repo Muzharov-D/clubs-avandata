@@ -325,7 +325,7 @@ export default function ClubDashboard() {
   if (!team)   return <div className="cd"><div className="cd__error">Команда не найдена</div></div>;
 
   return (
-    <div className="cd kinetic" ref={cdRef}>
+    <div className="cd kinetic" ref={cdRef} data-testid="club-dashboard">
       <div className="cd__bg-glow" aria-hidden />
 
       <header className="cd__header">
