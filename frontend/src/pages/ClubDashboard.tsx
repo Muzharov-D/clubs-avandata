@@ -1,17 +1,18 @@
 /**
  * Главный дашборд клуба — заменяет legacy ClubPage с Легирус-моками.
  *
- * ЯКОРЬ — СЕЗОН, не «последний матч»: рейтинги/топ-5/профили/состав/идентичность
- * считаются по сезонному агрегату. На последнем матче остаётся только Hero
- * (ближайший + последний результат) и опция «Матч» в переключателе показателей.
+ * РОЛЬ — ВИТРИНА (статус «сейчас» за 10 секунд), НЕ океан аналитики.
+ * Глубокая командная аналитика (xG-модель, идентичность, командные показатели
+ * за период) живёт на /analytics — здесь её НЕ дублируем (см. UI_IMPROVEMENTS_200
+ * «Рекомендованный порядок»: club=витрина, analytics=океан).
  *
  * Секции:
  *  - Hero: ближайший матч (countdown + venue) + последний результат
- *  - Командные показатели за период (Матч / 1 круг / 2 круг / Сезон, по умолч. сезон)
- *  - Детальная аналитика по секциям (среднее за сезон)
- *  - Как команда играет (стиль за сезон, тренерским языком)
+ *  - Рейтинг сезона (оценка + форма) + лучший игрок сезона
+ *  - Детальная аналитика по секциям (среднее за сезон) — ВРЕМЕННО, переедет в /analytics
  *  - Топ-5 игроков по среднему рейтингу за сезон + турнирная таблица
- *  - Профили топ-3 (сезонный радар) + состав за сезон
+ *  - Профили топ-3 (сезонный радар) — ВРЕМЕННО, переедет в профиль/океан
+ *  - Состав за сезон по линиям
  *
  * Данные: /data/teams, /data/matches?teamId, /data/match/:id, /data/calendar/:age,
  *         /data/standings/:age, /data/players/season, /data/matches/aggregate
@@ -29,7 +30,6 @@ import { useAuth } from '../contexts/AuthContext';
 // @ts-ignore — legacy
 import { useTeam } from '../contexts/TeamContext';
 import { PlayerRadar } from '../components/PlayerRadar';
-import { StatTile } from '../components/StatTile';
 // Единая шкала рейтинга (var(--rating-*)) — общий источник по всему UI.
 import { ratingColor, ratingTextColor } from '../utils/colors';
 // @ts-ignore — legacy .js
@@ -38,10 +38,6 @@ import { shieldFor } from '../utils/legirus';
 import PredictedLineup from '../components/PredictedLineup';
 // @ts-ignore — legacy .jsx
 import PlayerPhoto from '../components/PlayerPhoto';
-// @ts-ignore — legacy .jsx
-import TeamSeasonAnalytics from '../components/analytics/TeamSeasonAnalytics';
-// @ts-ignore — legacy .jsx
-import TeamIdentityCard from '../components/analytics/TeamIdentityCard';
 import { useDocumentTitle } from '../hooks/useDocumentTitle';
 import './ClubDashboard.css';
 import './clubKinetic.css';
@@ -81,15 +77,6 @@ export default function ClubDashboard() {
   const [seasonAgg, setSeasonAgg]         = useState<AnyObj | null>(null);
   const [loading, setLoading]         = useState(true);
   const [error, setError]             = useState<string | null>(null);
-
-  // Фильтр периода блока «Командные показатели» (правка Зенита #7).
-  // 'match' — конкретный матч (по умолчанию последний, можно выбрать другой);
-  // round1/round2/season — усреднённые показатели за период (агрегат с backend).
-  const [statPeriod, setStatPeriod]       = useState<'match' | 'round1' | 'round2' | 'season'>('season');
-  const [statMatchId, setStatMatchId]     = useState<string | null>(null);
-  const [statMatchDetail, setStatMatchDetail] = useState<AnyObj | null>(null);
-  const [statAgg, setStatAgg]             = useState<AnyObj | null>(null);
-  const [statLoading, setStatLoading]     = useState(false);
 
   useEffect(() => {
     if (!user) return;
@@ -148,35 +135,6 @@ export default function ClubDashboard() {
     })();
     return () => { cancelled = true; };
   }, [user, selectedTeamId]);
-
-  // Режим «Матч»: если выбран НЕ последний матч — догружаем его детали.
-  // Последний (matches[0]) уже загружен как latestMatch — повторный fetch не нужен.
-  useEffect(() => {
-    if (statPeriod !== 'match') { setStatMatchDetail(null); return; }
-    const id = statMatchId ?? matches[0]?.id ?? null;
-    if (!id || id === matches[0]?.id) { setStatMatchDetail(null); return; }
-    let cancelled = false;
-    setStatLoading(true);
-    fetchMatch(id)
-      .then((d) => { if (!cancelled) setStatMatchDetail(d as AnyObj); })
-      .catch(() => { if (!cancelled) setStatMatchDetail(null); })
-      .finally(() => { if (!cancelled) setStatLoading(false); });
-    return () => { cancelled = true; };
-  }, [statPeriod, statMatchId, matches]);
-
-  // Режим «1 круг / 2 круг / сезон»: тянем агрегат с backend.
-  useEffect(() => {
-    if (statPeriod === 'match') { setStatAgg(null); return; }
-    const teamId = team?.id ?? selectedTeamId;
-    if (!teamId) return;
-    let cancelled = false;
-    setStatLoading(true);
-    fetchMatchAggregate(teamId, statPeriod)
-      .then((d) => { if (!cancelled) setStatAgg(d as AnyObj); })
-      .catch(() => { if (!cancelled) setStatAgg(null); })
-      .finally(() => { if (!cancelled) setStatLoading(false); });
-    return () => { cancelled = true; };
-  }, [statPeriod, team, selectedTeamId]);
 
   // Имя нашей команды для сравнений «наш матч» / «наша строка таблицы».
   // Берём из выбранной команды (а не хардкод «Зенит»), fallback на team из БД.
@@ -349,7 +307,6 @@ export default function ClubDashboard() {
       <nav className="cd__anchors" aria-label="Разделы дашборда">
         {[
           { id: 'sec-main', label: 'Главное' },
-          ...(latestMatch?.teamSummaryStats ? [{ id: 'sec-stats', label: 'Показатели' }] : []),
           ...((seasonAgg?.teamAggregates ?? latestMatch?.teamAggregates) ? [{ id: 'sec-detail', label: 'Аналитика' }] : []),
           { id: 'sec-top', label: 'Топ-игроки' },
           { id: 'sec-roster', label: 'Состав' },
@@ -522,165 +479,6 @@ export default function ClubDashboard() {
       {/* Вероятный состав на следующий матч (Phase 5) — тренеру */}
       {isCoach && selectedTeamId && <PredictedLineup teamId={selectedTeamId} />}
 
-      {/* Командные показатели за период (правка Зенита #7): матч / 1 круг / 2 круг / сезон.
-          В режиме «матч» — наша сторона teamSummaryStats {home, away} + сравнение с
-          соперником; в режиме периода — усреднённый агрегат с backend (opp = null). */}
-      {latestMatch?.teamSummaryStats && (() => {
-        const isMatchMode = statPeriod === 'match';
-        const displayMatch = isMatchMode ? (statMatchDetail ?? latestMatch) : null;
-        const our = isMatchMode
-          ? pickOurSide(displayMatch as AnyObj, ourName)
-          : ((statAgg?.our ?? null) as AnyObj | null);
-        const opp = isMatchMode ? pickOppSide(displayMatch as AnyObj, ourName) : null;
-        const avgRatings = (isMatchMode
-          ? (displayMatch as AnyObj)?.teamAvgRatings
-          : statAgg?.teamAvgRatings) as Record<string, unknown> | undefined;
-
-        const PERIODS: { key: typeof statPeriod; label: string }[] = [
-          { key: 'match',  label: 'Матч' },
-          { key: 'round1', label: '1 круг' },
-          { key: 'round2', label: '2 круг' },
-          { key: 'season', label: `Сезон ${seasonLabel}` },
-        ];
-
-        // Семантический цвет KPI: зелёный — лучше соперника, красный — хуже.
-        // higherBetter=false для «плохих» метрик (нарушения). Нет соперника → нейтраль.
-        const cmp = (a: unknown, b: unknown, higherBetter = true): 'green' | 'red' | 'muted' => {
-          const x = Number(a); const y = Number(b);
-          if (!Number.isFinite(x) || !Number.isFinite(y) || x === y) return 'muted';
-          const better = higherBetter ? x > y : x < y;
-          return better ? 'green' : 'red';
-        };
-
-        const sub = (() => {
-          if (isMatchMode) {
-            const m = displayMatch as AnyObj;
-            return `${cleanTeamName(m.home)} ${m.scoreHome}:${m.scoreAway} ${cleanTeamName(m.away)}`;
-          }
-          const n = Number(statAgg?.matchCount ?? 0);
-          const word = n % 10 === 1 && n % 100 !== 11 ? 'матч'
-            : [2, 3, 4].includes(n % 10) && ![12, 13, 14].includes(n % 100) ? 'матча' : 'матчей';
-          const label = PERIODS.find((p) => p.key === statPeriod)?.label ?? '';
-          return `${label} · ${n} ${word} · среднее за матч`;
-        })();
-
-        return (
-          <section className="cd__panel reveal" id="sec-stats">
-            <div className="cd__panel-header">
-              <h2 className="cd__panel-title">Командные показатели</h2>
-              <span className="cd__panel-sub">{sub}</span>
-            </div>
-            <div className="cd__period-bar">
-              <div className="cd__seg" role="tablist" aria-label="Период показателей">
-                {PERIODS.map((p) => (
-                  <button
-                    key={p.key}
-                    type="button"
-                    role="tab"
-                    aria-selected={statPeriod === p.key}
-                    className={`cd__seg-btn${statPeriod === p.key ? ' is-active' : ''}`}
-                    onClick={() => setStatPeriod(p.key)}
-                  >
-                    {p.label}
-                  </button>
-                ))}
-              </div>
-              {isMatchMode && matches.length > 1 && (
-                <select
-                  className="cd__match-select"
-                  aria-label="Выбор матча"
-                  value={statMatchId ?? matches[0]?.id ?? ''}
-                  onChange={(e) => setStatMatchId(e.target.value)}
-                >
-                  {matches.map((m) => (
-                    <option key={m.id} value={m.id}>
-                      {cleanTeamName(m.home)} {m.scoreHome}:{m.scoreAway} {cleanTeamName(m.away)}
-                    </option>
-                  ))}
-                </select>
-              )}
-            </div>
-            {statLoading && !our ? (
-              <div className="cd__stats-empty">Загрузка…</div>
-            ) : !our ? (
-              <div className="cd__stats-empty">Нет разобранных матчей за выбранный период</div>
-            ) : (
-            <>
-            <div className="cd__stats-grid">
-              <StatTile accent={cmp(our.possessionPct, opp?.possessionPct)} label="Владение"
-                value={our.possessionPct != null ? our.possessionPct : '—'}
-                unit={our.possessionPct != null ? '%' : undefined}
-                extra={opp?.possessionPct != null ? `соперник ${opp.possessionPct}%` : undefined}
-                delta={opp?.possessionPct != null && our.possessionPct != null && our.possessionPct !== opp.possessionPct
-                  ? { sign: our.possessionPct > opp.possessionPct ? 'up' : 'down', text: `${Math.abs(our.possessionPct - opp.possessionPct)}%` }
-                  : undefined} />
-              <StatTile accent={cmp(our.shots?.total, opp?.shots?.total)} label="Удары"
-                value={our.shots?.total != null ? our.shots.total : '—'}
-                extra={our.shots?.total != null
-                  ? `в створ ${our.shots?.onTarget ?? '—'} · ${our.shots?.accuracy ?? '—'}%`
-                  : undefined}
-                delta={opp?.shots?.total != null && our.shots?.total != null && our.shots.total !== opp.shots.total
-                  ? { sign: our.shots.total > opp.shots.total ? 'up' : 'down', text: `${Math.abs(our.shots.total - opp.shots.total)}` }
-                  : undefined} />
-              {(() => {
-                // xG-guard: >6 — битый рейтинг вместо xG (старые разборы) → не показываем.
-                const xg = (v: unknown) => { const n = Number(v); return (v != null && Number.isFinite(n) && n <= 6) ? n : null; };
-                const ourXg = xg(our.expectedGoals); const oppXg = xg(opp?.expectedGoals);
-                return (
-                  <StatTile accent={cmp(ourXg, oppXg)} label="xG"
-                    value={ourXg != null ? ourXg.toFixed(2) : '—'}
-                    extra={oppXg != null ? `соперник ${oppXg.toFixed(2)}` : undefined} />
-                );
-              })()}
-              {/* Передачи/Угловые — объём (стиль игры), не «хуже/лучше»: нейтрально. */}
-              <StatTile accent="muted"  label="Передачи"
-                value={our.passes?.total != null ? our.passes.total : '—'}
-                extra={our.passes?.total != null
-                  ? `точность ${our.passes?.accuracy ?? '—'}% (${our.passes?.successful ?? '—'})`
-                  : undefined} />
-              <StatTile accent="muted"  label="Угловые"
-                value={our.corners?.total != null ? our.corners.total : '—'}
-                extra={our.corners?.accuracy != null ? `${our.corners.accuracy}% реализация` : undefined} />
-              <StatTile accent={cmp(our.fouls, opp?.fouls, false)} label="Нарушения"
-                value={our.fouls != null ? our.fouls : '—'}
-                extra={opp?.fouls != null ? `соперник ${opp.fouls}` : undefined} />
-              <StatTile accent={cmp(our.offsides, opp?.offsides, false)} label="Офсайды"
-                value={our.offsides != null ? our.offsides : '—'}
-                extra={opp?.offsides != null ? `соперник ${opp.offsides}` : undefined} />
-            </div>
-            {avgRatings && (() => {
-              const tar = avgRatings as Record<string, unknown>;
-              const fmt = (k: string) => {
-                const v = tar[k];
-                return v != null && Number(v) > 0 ? Number(v).toFixed(2) : '—';
-              };
-              const anyValue = ['overall','fitness','attack','defence'].some((k) => {
-                const v = tar[k]; return v != null && Number(v) > 0;
-              });
-              if (!anyValue) return null;
-              return (
-                <>
-                  <div className="cd__avg-caption">Средний индекс эффективности по команде</div>
-                  <div className="cd__avg-row">
-                    {([['overall', 'Общий'], ['fitness', 'Фитнес'], ['attack', 'Атака'], ['defence', 'Защита']] as const).map(([k, label]) => {
-                      const n = Number(tar[k] ?? 0);
-                      return (
-                        <div className="cd__avg-item" key={k}>
-                          <span className="cd__avg-label">{label}</span>
-                          <span className="cd__avg-val" style={n > 0 ? { color: ratingColor(n) } : undefined}>{fmt(k)}</span>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </>
-              );
-            })()}
-            </>
-            )}
-          </section>
-        );
-      })()}
-
       {/* teamAggregates — глубокая аналитика по секциям ЗА СЕЗОН (усреднённые
           командные агрегаты). Считаем только секции с хотя бы одной числовой
           записью — чтобы не показывать пустые категории. */}
@@ -716,12 +514,6 @@ export default function ClubDashboard() {
         </section>
         );
       })()}
-
-      {/* xG-аналитика сезона: xPTS vs факт, реализация, форма, xG по матчам */}
-      {matches.length > 0 && <TeamSeasonAnalytics matches={matches} />}
-
-      {/* Как команда играет — стиль за сезон (тренерским языком) */}
-      {seasonAgg && <TeamIdentityCard aggregate={seasonAgg} />}
 
       {/* Top 5 + standings */}
       <section className="cd__columns" id="sec-top">
@@ -970,17 +762,6 @@ export function isOurName(matchTeam: unknown, ourLower: string): boolean {
   if (me.includes('сшор') && !her.includes('сшор')) return false;
   if (me === her) return true;
   return her.includes(me) || me.includes(her);
-}
-
-function pickOurSide(m: AnyObj, ourLower: string): AnyObj | null {
-  const ss = m.teamSummaryStats as { home?: AnyObj; away?: AnyObj } | null;
-  if (!ss) return null;
-  return isOurName(m.home, ourLower) ? (ss.home ?? null) : (ss.away ?? null);
-}
-function pickOppSide(m: AnyObj, ourLower: string): AnyObj | null {
-  const ss = m.teamSummaryStats as { home?: AnyObj; away?: AnyObj } | null;
-  if (!ss) return null;
-  return isOurName(m.home, ourLower) ? (ss.away ?? null) : (ss.home ?? null);
 }
 
 const AGG_TITLES: Record<string, string> = {
