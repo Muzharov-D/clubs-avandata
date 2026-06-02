@@ -619,7 +619,7 @@ function MatchTab({ playerId, match, loading, allMatches, currentMatchId, setSel
           {match && <div className="player-detail__hero-match">по матчу {fmtMatchShort(match)}</div>}
           <div className="player-detail__hero-meta">
             {Number(player.minutes ?? 0) === 0 ? (
-              <span style={{ color: '#94a3c8' }}>Не выходил на поле в этом матче</span>
+              <span style={{ color: 'var(--text-muted)' }}>Не выходил на поле в этом матче</span>
             ) : (
               <>
                 <span>Минут на поле: <b>{player.minutes}</b></span>
