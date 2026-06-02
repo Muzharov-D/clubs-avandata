@@ -87,9 +87,13 @@ export default function CalendarPage() {
   // ("zenit-fk-2011" → "zenit-fk-" + age).
   const teamIdPrefix = (selectedTeam?.id || '').replace(/\d{4}$/, '') || 'legirus-';
 
-  // Список доступных возрастных групп
+  // Список доступных возрастных групп.
+  // GET /data/calendar отдаёт МАССИВ [{ ageGroup }], а не { ageGroups: [...] } —
+  // поддерживаем обе формы (иначе ages=[] → age не выставляется → пусто).
   const listRes = useApi(fetchCalendarList, []);
-  const ages = listRes.data?.ageGroups || [];
+  const ages = Array.isArray(listRes.data)
+    ? [...new Set(listRes.data.map((r) => r.ageGroup).filter(Boolean))].sort()
+    : (listRes.data?.ageGroups || []);
 
   const yearStr = selectedTeam?.year ? String(selectedTeam.year) : null;
   const defaultAge = (yearStr && ages.includes(yearStr)) ? yearStr
