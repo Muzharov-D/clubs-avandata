@@ -271,7 +271,7 @@ function SeasonTab({ identity, playerId, teamId, teamName, seasonPlayers, series
     <>
       {/* Компактная шапка: фото · имя · позиция/команда · средний рейтинг */}
       <div className="card player-detail__hero player-detail__hero--season">
-        <PlayerPhoto player={identity} size={96} />
+        <PlayerPhoto player={identity} size={120} />
         <div className="player-detail__hero-info">
           <h1 className="player-detail__hero-name"><SplitText text={identity.fullName} /></h1>
           <div className="player-detail__hero-pos">
