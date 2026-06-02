@@ -265,7 +265,11 @@ function SeasonTab({ identity, playerId, teamId, teamName, seasonPlayers, series
         <div className="player-detail__hero-info">
           <h1 className="player-detail__hero-name">{identity.fullName}</h1>
           <div className="player-detail__hero-pos">
-            №{identity.number} · {identity.positionFull || identity.position}{teamName ? ` · ${trimAge(teamName)}` : ''}
+            {[
+              identity.number != null ? `№${identity.number}` : null,
+              identity.positionFull || identity.position || null,
+              teamName ? trimAge(teamName) : null,
+            ].filter(Boolean).join(' · ')}
           </div>
         </div>
         <div className="player-detail__hero-rating">
