@@ -39,7 +39,7 @@
 .an-xg__val { font-size: 30px; font-weight: 800; line-height: 1; font-variant-numeric: tabular-nums; }
 .an-xg__val--us { color: var(--brand-accent, #22c55e); }
 .an-xg__val--them { color: var(--text-muted-strong, #b4c0d2); }
-.an-xg__cap { font-size: 11px; color: var(--an-muted); margin-top: 4px; text-transform: uppercase; letter-spacing: 0.04em; }
+.an-xg__cap { font-size: 12px; color: var(--an-muted); margin-top: 4px; text-transform: uppercase; letter-spacing: 0.04em; }
 .an-xg__sep { font-size: 18px; color: var(--text-faint); }
 
 .an-chips { display: flex; flex-wrap: wrap; gap: 8px; margin: 4px 0 10px; }
@@ -125,6 +125,9 @@
 .an-pct__track { flex: 1; height: 10px; border-radius: 5px; background: var(--bg-surface-3, #232b38); overflow: hidden; position: relative; }
 .an-pct__fill { height: 100%; border-radius: 5px; background: #64748b; }
 .an-pct__fill--hi { background: var(--an-pos); }
+/* Нейтральная середина (40–60 перцентиль): средний игрок не должен тревожно
+   жёлтить/краснеть. Серый = «в норме», без сигнала. */
+.an-pct__fill--neutral { background: var(--border-strong); }
 .an-pct__fill--mid { background: var(--an-warn); }
 .an-pct__fill--lo { background: var(--an-neg); }
 .an-pct__num { flex: 0 0 64px; text-align: right; font-size: 13px; font-weight: 700; font-variant-numeric: tabular-nums; }

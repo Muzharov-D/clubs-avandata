@@ -40,6 +40,8 @@ export default function PlayersLeaders() {
 
   const match = matchRes.data;
   const all = match?.players || [];
+  const lastMatchMeta = matchesRes.data?.matches?.[0];
+  const lastMatchDate = lastMatchMeta?.date || lastMatchMeta?.matchDate || '';
 
   if (matchesRes.loading || matchRes.loading) return <div className="empty-state">Загрузка…</div>;
   if (!match) return <div className="empty-state">Нет данных</div>;
@@ -68,6 +70,10 @@ export default function PlayersLeaders() {
         <NavLink to="/players" end className={({ isActive }) => 'players-subnav__item' + (isActive ? ' active' : '')}>Лидеры</NavLink>
         <NavLink to="/players/rating" className={({ isActive }) => 'players-subnav__item' + (isActive ? ' active' : '')}>Рейтинг</NavLink>
         <NavLink to="/players/compare" className={({ isActive }) => 'players-subnav__item' + (isActive ? ' active' : '')}>Сравнение</NavLink>
+      </div>
+
+      <div className="players-leaders__scope" style={{ color: 'var(--text-faint)', fontSize: 13, margin: '4px 2px 14px' }}>
+        Показатели по последнему матчу{lastMatchDate ? `: ${lastMatchDate}` : ''}
       </div>
 
       {overall && (

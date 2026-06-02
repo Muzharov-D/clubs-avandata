@@ -9,6 +9,8 @@
  *   fill    — флаг рисовать заливку под линией
  *   showLast — выводить ли последнюю точку маркером
  */
+import { useId } from 'react';
+
 interface Props {
   values: number[];
   width?: number;
@@ -22,10 +24,13 @@ export function Sparkline({
   values,
   width = 100,
   height = 28,
-  color = '#22d3ee',
+  color = 'var(--brand-primary)',
   fill = true,
   showLast = true,
 }: Props) {
+  // Стабильный id градиента (хук — до любых return): иначе Math.random в рендере
+  // плодил новый id каждый кадр → утечка <defs> и фликер заливки.
+  const reactId = useId();
   if (!values || values.length === 0) return null;
   const xs = values.length;
   if (xs === 1) {
@@ -51,7 +56,7 @@ export function Sparkline({
   const fillPath = `${linePath} L${width},${height} L0,${height} Z`;
   const last = points[points.length - 1]!;
 
-  const gradId = `sl-grad-${Math.random().toString(36).slice(2, 7)}`;
+  const gradId = `sl-grad-${reactId}`;
 
   return (
     <svg width={width} height={height} viewBox={`0 0 ${width} ${height}`} style={{ display: 'block' }}>

@@ -475,7 +475,9 @@ export default function ClubDashboard() {
             return (
               <div
                 className={`cd__kpi-card cd__kpi-card--player${best ? ' cd__kpi-card--click' : ''}`}
+                role={best ? 'button' : undefined} tabIndex={best ? 0 : undefined}
                 onClick={() => best && navigate(`/players/${best.playerId}`)}
+                onKeyDown={best ? (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); navigate(`/players/${best.playerId}`); } } : undefined}
               >
                 <div className="cd__kpi-head">
                   <span className="cd__kpi-label">Лучший игрок сезона</span>
@@ -740,12 +742,16 @@ export default function ClubDashboard() {
           ) : (
             <ol className="cd__top">
               {(() => {
-                const maxRating = topPlayers.reduce((m, x) => Math.max(m, x.ratings?.overall ?? 0), 0) || 10;
+                // Шкала бара укоренена в 0 на канонической шкале рейтинга 0–10,
+                // а не в локальном максимуме топ-5 — иначе 7.9 и 8.2 выглядят как
+                // пропасть. Честная длина = доля от 10 (как у Opta/StatsBomb).
                 return topPlayers.map((p, i) => {
                   const r = p.ratings?.overall ?? 0;
-                  const pct = Math.min(100, (r / maxRating) * 100);
+                  const pct = Math.min(100, (r / 10) * 100);
                   return (
-                    <li key={p.playerId} className="cd__top-row" onClick={() => navigate(`/players/${p.playerId}`)}>
+                    <li key={p.playerId} className="cd__top-row" role="button" tabIndex={0}
+                      onClick={() => navigate(`/players/${p.playerId}`)}
+                      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); navigate(`/players/${p.playerId}`); } }}>
                       <span className="cd__top-rank">{i + 1}</span>
                       <span className="cd__top-num">#{p.number ?? '—'}</span>
                       <span className="cd__top-name">{p.fullName}</span>
@@ -815,7 +821,9 @@ export default function ClubDashboard() {
           </div>
           <div className="cd__radars-grid">
             {topPlayers.slice(0, 3).map((p) => (
-              <div key={p.playerId} className="cd__radar-card" onClick={() => navigate(`/players/${p.playerId}`)}>
+              <div key={p.playerId} className="cd__radar-card" role="button" tabIndex={0}
+                onClick={() => navigate(`/players/${p.playerId}`)}
+                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); navigate(`/players/${p.playerId}`); } }}>
                 <div className="cd__radar-head">
                   <span className="cd__radar-num">#{p.number}</span>
                   <span className="cd__radar-name">{p.fullName}</span>
@@ -874,7 +882,9 @@ export default function ClubDashboard() {
                 key={p.playerId}
                 className={`cd__player${r > 0 ? ' cd__player--rated' : ''}`}
                 style={r > 0 ? ({ '--rt-col': ratingColor(r) } as React.CSSProperties) : undefined}
+                role="button" tabIndex={0}
                 onClick={() => navigate(`/players/${p.playerId}`)}
+                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); navigate(`/players/${p.playerId}`); } }}
               >
                 <div className="cd__player-photo">
                   <PlayerPhoto player={p} size={44} />
@@ -1083,12 +1093,13 @@ function AggregateCard({ title, data }: { title: string; data: AnyObj }) {
   if (entries.length === 0) return null;
   // Полоса величины относительно максимума в карточке — чтобы блок «считывался»
   // взглядом, а не был серой колонкой чисел. Проценты (suffix '%') — по 100.
+  // Бар укоренён в 0: длина = честная доля от max, без искусственного «пола».
   const max = entries.reduce((m, e) => Math.max(m, e.suffix === '%' ? 100 : e.val), 0) || 1;
   return (
     <div className="cd__agg-card">
       <div className="cd__agg-title">{title}</div>
       {entries.map(({ k, label, val, suffix }) => {
-        const pct = Math.max(7, Math.round(((suffix === '%' ? val : val) / max) * 100));
+        const pct = Math.min(100, Math.round((val / max) * 100));
         return (
           <div key={k} className="cd__agg-row">
             <div className="cd__agg-row-head">

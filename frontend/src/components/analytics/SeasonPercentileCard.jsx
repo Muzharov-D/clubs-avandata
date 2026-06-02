@@ -22,10 +22,14 @@ const METRICS = [
   { key: 'distance', label: 'Дистанция', get: (s) => s.distance || 0 },
 ];
 
+// 5 корзин по порогам 20/40/60/80 (стиль Opta/StatsBomb) вместо грубых 33/66:
+// на пуле ~15 игроков старая схема красила нижнюю треть состава в «красный».
+// Теперь зелёный — топ-40%, серая нейтраль — середина, красный — только нижние 20%.
 function bucket(pct) {
-  if (pct >= 66) return 'hi';
-  if (pct >= 33) return 'mid';
-  return 'lo';
+  if (pct >= 60) return 'hi';        // топ-40% — зелёный
+  if (pct >= 40) return 'neutral';   // середина — серый, без сигнала
+  if (pct >= 20) return 'mid';       // ниже среднего — янтарный
+  return 'lo';                       // нижние 20% — красный
 }
 
 export default function SeasonPercentileCard({ subject, seasonPlayers, basis = 90 }) {
@@ -67,7 +71,7 @@ export default function SeasonPercentileCard({ subject, seasonPlayers, basis = 9
           ))}
         </div>
       )}
-      <div className="an-note">Сравнение за матч ({basis}′) против {poolSize} игроков ({scope}) по всему сезону. Заливка — перцентиль (зелёный — топ, красный — отстаёт).</div>
+      <div className="an-note">Сравнение за матч ({basis}′) против {poolSize} игроков ({scope}) по всему сезону. Заливка — перцентиль (зелёный — топ, серый — в норме, красный — отстаёт).</div>
     </div>
   );
 }

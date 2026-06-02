@@ -30,12 +30,14 @@
   --success:        #22c55e;
   --warning:        #f59e0b;
 
-  /* Шкала рейтинга (семантическая, не бренд): отлично → плохо + «не оценён». */
-  --rating-excellent: #2e7d32;
-  --rating-good:      #7cb342;
+  /* Шкала рейтинга (семантическая, не бренд): отлично → плохо + «не оценён».
+     Цвета подняты под WCAG AA на тёмном фоне (был #2e7d32=2.4:1, #d32f2f=3.6:1
+     — числа рейтингов нечитаемы). #4caf50 ≈ 4.5:1, #ef4444 идёт с белым текстом. */
+  --rating-excellent: #4caf50;
+  --rating-good:      #82bc47;
   --rating-ok:        #fbc02d;
   --rating-weak:      #fb8c00;
-  --rating-poor:      #d32f2f;
+  --rating-poor:      #ef4444;
   --rating-none:      #888;
   --rating-text-dark:  #222;
   --rating-text-light: #fff;
@@ -186,9 +188,9 @@ textarea:focus-visible,
   }
 }
 
-/* Узкий смартфон (iPhone SE / 360-420px): уменьшаем глобальный шрифт */
+/* Узкий смартфон (iPhone SE / 360-420px): глобальный font-size не уменьшаем —
+   это добивало мелкие подписи ниже 10px. */
 @media (max-width: 480px) {
-  html, body, #root { font-size: 14px; }
 }
 
 /* Безопасные отступы для notch (iOS) */

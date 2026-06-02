@@ -30,7 +30,7 @@ const AXES: Array<{ key: string; label: string; getter: (r: AnyObj, s: AnyObj) =
   { key: 'pressing',    label: 'Прессинг',  getter: (r) => num(r.pressing)     },
 ];
 
-export function PlayerRadar({ player, teamPlayers, brand = '#1FB6FF' }: Props) {
+export function PlayerRadar({ player, teamPlayers, brand = 'var(--brand-primary)' }: Props) {
   const size = 240, cx = 120, cy = 120, radius = 84;
   const eligible = teamPlayers.filter((p) => (p.minutes ?? 0) > 0);
 

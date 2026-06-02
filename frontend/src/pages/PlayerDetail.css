@@ -25,7 +25,7 @@
   letter-spacing: 0.5px;
 }
 .player-detail__pizza-pos select {
-  background: #1a1a3a url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'><path d='M1 1l4 4 4-4' stroke='%2394a3c8' stroke-width='1.5' fill='none'/></svg>") right 8px center / 10px no-repeat;
+  background: var(--bg-surface-2) url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'><path d='M1 1l4 4 4-4' stroke='%2394a3c8' stroke-width='1.5' fill='none'/></svg>") right 8px center / 10px no-repeat;
   color: #fff;
   border: 1px solid rgba(220, 38, 38, 0.35);
   border-radius: 6px;
@@ -77,7 +77,7 @@
 .player-detail__tab:hover { color: #fff; }
 .player-detail__tab.is-active {
   color: #fff;
-  background: var(--brand-primary, #dc2626);
+  background: var(--brand-primary);
 }
 .player-detail__tab-count {
   font-size: 11px;
@@ -116,7 +116,7 @@
 .player-detail__pizza-tab:hover:not(:disabled) { color: #fff; }
 .player-detail__pizza-tab.is-active {
   color: #fff;
-  border-bottom-color: #dc2626;
+  border-bottom-color: var(--brand-primary);
 }
 .player-detail__pizza-tab-count {
   font-size: 10px;
@@ -128,7 +128,7 @@
 }
 .player-detail__pizza-tab.is-active .player-detail__pizza-tab-count {
   color: #fff;
-  background: rgba(220, 38, 38, 0.3);
+  background: color-mix(in srgb, var(--brand-primary) 30%, transparent);
 }
 @media (max-width: 480px) {
   .player-detail__pizza-tab { padding: 6px 9px 8px; font-size: 11px; }
@@ -156,7 +156,7 @@
 .player-detail__splits-summary::-webkit-details-marker { display: none; }
 .player-detail__splits-summary::before {
   content: '▸';
-  color: #dc2626;
+  color: var(--brand-primary);
   font-size: 14px;
   margin-right: 6px;
   transition: transform 0.18s;
@@ -254,10 +254,10 @@
 }
 .badge__icon { font-size: 18px; line-height: 1; }
 .badge__rank {
-  font-size: 10px;
+  font-size: 12px;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  color: rgba(255, 255, 255, 0.55);
+  color: rgba(255, 255, 255, 0.65);
 }
 .badge__label { font-size: 13px; font-weight: 600; color: #fff; }
 .badge__value {
@@ -304,7 +304,7 @@
 .player-detail__line-vs {
   font-size: 18px;
   font-weight: 700;
-  color: rgba(255, 255, 255, 0.4);
+  color: rgba(255, 255, 255, 0.6);
   text-transform: lowercase;
 }
 .player-detail__line-self {
@@ -321,12 +321,12 @@
 .player-detail__match-picker {
   display: flex; align-items: center; gap: 10px;
   margin-bottom: 12px;
-  font-size: 12px; color: rgba(255,255,255,0.55);
+  font-size: 12px; color: rgba(255,255,255,0.65);
   text-transform: uppercase; letter-spacing: 0.05em;
 }
 .player-detail__match-picker select {
   flex: 1; max-width: 360px;
-  background: #1a1a3a url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'><path d='M1 1l4 4 4-4' stroke='%2394a3c8' stroke-width='1.5' fill='none'/></svg>") right 10px center / 10px no-repeat;
+  background: var(--bg-surface-2) url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'><path d='M1 1l4 4 4-4' stroke='%2394a3c8' stroke-width='1.5' fill='none'/></svg>") right 10px center / 10px no-repeat;
   color: #fff;
   border: 1px solid rgba(34,211,238,0.3);
   border-radius: 8px;
@@ -674,7 +674,7 @@
 }
 .pd-stats__tile--wide .pd-stats__val { color: #fff; }
 .pd-stats__lab {
-  font-size: 10px;
+  font-size: 12px;
   color: #94a3c8;
   margin-top: 6px;
   text-transform: uppercase;

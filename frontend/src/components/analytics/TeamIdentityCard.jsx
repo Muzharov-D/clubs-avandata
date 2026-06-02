@@ -67,7 +67,7 @@ export default function TeamIdentityCard({ aggregate, periodLabel = 'за сез
       label: 'Манера атаки',
       word: directnessWord(directness),
       val: clamp(directness * 2.5), // визуальная шкала (20% длинных ≈ полная полоса)
-      hint: 'Чаще разыгрываем коротко или сразу играем вперёд.',
+      hint: `Длинных передач — ${Math.round(directness)}% от всех (≥18% — играем вертикально).`,
     },
     press && {
       key: 'press',
