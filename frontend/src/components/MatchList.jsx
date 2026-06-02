@@ -1,4 +1,5 @@
 import { useNavigate, useLocation } from 'react-router-dom';
+import { trimAgeSuffix } from '../utils/teamName';
 import './MatchList.css';
 
 function fmtDate(iso) {
@@ -14,12 +15,9 @@ export default function MatchList({ matches, teams, activeMatchId }) {
   const navigate = useNavigate();
   const { pathname } = useLocation();
 
-  function trimAgeStr(s) {
-    return String(s || '')
-      .replace(/\s*[Uu]-?\s*\d{1,3}\s*/g, ' ')
-      .replace(/\s+20\d{2}\s*/g, ' ')
-      .replace(/\s+/g, ' ').trim();
-  }
+  // Канон обрезки возрастной группы (см. utils/teamName) — локальная копия
+  // обрезала только « 2010», но не диапазон «2010-2011» → «Выборжанин -2011».
+  const trimAgeStr = trimAgeSuffix;
   function teamName(id, fallback) {
     const t = teams?.find((x) => x.id === id);
     return trimAgeStr(t?.shortName || t?.name || fallback || '—');
