@@ -90,8 +90,9 @@ async function fetchJson(path, opts = {}) {
     const text = await res.text().catch(() => '');
     let msg = `Ошибка ${res.status}: ${res.statusText}`;
     try { msg = JSON.parse(text).error || msg; } catch (_) { if (text) msg = text; }
-    // 4xx: пользовательская ошибка, тостим
-    if (!isSilent(path)) toast.error(msg);
+    // 4xx: пользовательская ошибка, тостим — кроме silent-путей и opts.silent
+    // (например, опциональные пробы вроде посещаемости, которые штатно 404'ят).
+    if (!isSilent(path) && !opts.silent) toast.error(msg);
     throw new Error(msg);
   }
   // Пустой ответ (204) — возвращаем null
@@ -271,7 +272,8 @@ export const fetchPlayerAttendanceStats = (teamId, playerId, params = {}) => {
   if (params.from) q.set('from', params.from);
   if (params.to) q.set('to', params.to);
   const qs = q.toString();
-  return fetchJson(`/trainings/team/${encodeURIComponent(teamId)}/player/${encodeURIComponent(playerId)}/stats${qs ? `?${qs}` : ''}`);
+  // silent: посещаемость опциональна — штатный 404 (нет данных/тренировок) не тостим.
+  return fetchJson(`/trainings/team/${encodeURIComponent(teamId)}/player/${encodeURIComponent(playerId)}/stats${qs ? `?${qs}` : ''}`, { silent: true });
 };
 export const respondTraining = (trainingId, status, note) =>
   fetchJson(`/trainings/${encodeURIComponent(trainingId)}/respond`, {

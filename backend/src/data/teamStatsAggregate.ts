@@ -122,7 +122,12 @@ export function aggregateTeamStats(
   let maxRound = 0;
   for (const c of calendar) {
     if (c.round == null) continue;
-    const r = Number(c.round);
+    // calendar.round хранится как текстовый ярлык («Тур 9», «Тур 12 · ДЕРБИ»),
+    // а не число — Number() даёт NaN и round1/round2 оставались пустыми.
+    // Достаём номер тура из строки.
+    const matchNum = String(c.round).match(/\d+/);
+    if (!matchNum) continue;
+    const r = Number(matchNum[0]);
     if (!Number.isFinite(r)) continue;
     maxRound = Math.max(maxRound, r);
     const day = dayKey(c.date);
