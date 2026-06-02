@@ -170,19 +170,27 @@ def parse(pdf_path, team_id, match_id):
     # игнорируются.
     XG_PAIR = re.compile(r"^\s*(\d+[.,]\d+)\s+(\d+[.,]\d+)\b")
     XG_ONE = re.compile(r"^\s*(\d+[.,]\d+)\b")
+    # xG правдоподобен в диапазоне 0..6 (детский футбол — почти всегда <3).
+    # Строка РЕЙТИНГОВ игроков (6–9) тоже состоит из дробных пар и на части
+    # лейаутов стоит рядом с меткой → её надо ОТВЕРГАТЬ, иначе рейтинг (напр. 7.4)
+    # попадает в xG соперника. Принимаем пару только если ОБА значения ≤ XG_MAX.
+    XG_MAX = 6.0
+    def _plausible_xg(s):
+        v = _to_float(s)
+        return v is not None and 0.0 <= v <= XG_MAX
     xg_idx = _find_label_line(lines, "ОЖИДАЕМЫЕ")
     h_val = a_val = None
     if xg_idx >= 0:
         for j in range(xg_idx+1, min(len(lines), xg_idx+4)):
             mp = XG_PAIR.match(lines[j].strip())
-            if mp:
+            if mp and _plausible_xg(mp.group(1)) and _plausible_xg(mp.group(2)):
                 h_val, a_val = mp.group(1), mp.group(2)
                 break
         if h_val is None:
             # EN-вёрстка: одиночное дробное значение над меткой.
             for i in range(xg_idx-1, max(-1, xg_idx-4), -1):
                 mo = XG_ONE.match(lines[i].strip())
-                if mo:
+                if mo and _plausible_xg(mo.group(1)):
                     h_val = mo.group(1)
                     break
     out["homeStats"]["expectedGoals"] = _to_float(h_val)
