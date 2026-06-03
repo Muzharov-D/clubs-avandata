@@ -6,7 +6,7 @@
  * сезонный агрегат (/matches/aggregate?period=…): усреднённые командные
  * показатели и агрегаты.
  */
-import { num } from '../../utils/num';
+import { num, matchesWord } from '../../utils/num';
 import { interpretPpda } from '../../utils/analytics/ppda';
 import './analytics.css';
 
@@ -90,7 +90,7 @@ export default function TeamIdentityCard({ aggregate, periodLabel = 'за сез
     <section className="cd__panel reveal an">
       <div className="cd__panel-header">
         <h2 className="cd__panel-title">Как команда играет</h2>
-        <span className="cd__panel-sub">{periodLabel} · {matchCount} матч.</span>
+        <span className="cd__panel-sub">{periodLabel} · {matchCount} {matchesWord(matchCount)}</span>
       </div>
       <div className="an-style">
         {rows.map((r) => (

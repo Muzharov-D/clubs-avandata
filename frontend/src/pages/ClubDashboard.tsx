@@ -31,6 +31,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useTeam } from '../contexts/TeamContext';
 // Единая шкала рейтинга (var(--rating-*)) — общий источник по всему UI.
 import { ratingColor, ratingTextColor } from '../utils/colors';
+import { matchesWord } from '../utils/num';
 // @ts-ignore — legacy .js
 import { shieldFor } from '../utils/legirus';
 // @ts-ignore — legacy .jsx
@@ -416,7 +417,7 @@ export default function ClubDashboard() {
                         ))}
                       </div>
                     )}
-                    <span className="cd__kpi-sub">{seasonMatchCount > 0 ? `средний индекс эффективности · ${seasonMatchCount} матч.` : 'средний индекс эффективности'}</span>
+                    <span className="cd__kpi-sub">{seasonMatchCount > 0 ? `средний индекс эффективности · ${seasonMatchCount} ${matchesWord(seasonMatchCount)}` : 'средний индекс эффективности'}</span>
                   </div>
                 ) : (
                   <div className="cd__kpi-hero"><div className="cd__kpi-empty">нет разбора</div></div>
@@ -451,7 +452,7 @@ export default function ClubDashboard() {
                       <PlayerPhoto player={best} size={64} className="cd__bp-photo" />
                       <div className="cd__bp-body">
                         <span className="cd__bp-name">{best.fullName}</span>
-                        <span className="cd__kpi-sub">#{best.number ?? '—'} · {best.position || 'игрок'}{best.matches ? ` · ${best.matches} матч.` : ''}</span>
+                        <span className="cd__kpi-sub">#{best.number ?? '—'} · {best.position || posGroupLabel(posGroup(best.position))}{best.matches ? ` · ${best.matches} ${matchesWord(best.matches)}` : ''}</span>
                       </div>
                     </div>
                     {insights.length > 0 && (
@@ -485,7 +486,7 @@ export default function ClubDashboard() {
             <h2 className="cd__panel-title">Топ-5 по рейтингу</h2>
             <span className="cd__panel-sub">
               {topPlayers.length > 0
-                ? (seasonMatchCount > 0 ? `средний рейтинг за сезон · ${seasonMatchCount} матч.` : 'средний рейтинг за сезон')
+                ? (seasonMatchCount > 0 ? `средний рейтинг за сезон · ${seasonMatchCount} ${matchesWord(seasonMatchCount)}` : 'средний рейтинг за сезон')
                 : 'нет загруженных разборов'}
             </span>
           </div>
@@ -500,8 +501,8 @@ export default function ClubDashboard() {
                 const r = Number(p.ratings?.overall ?? 0);
                 const grp = posGroup(p.position);
                 const sub = [
-                  p.position || 'игрок',
-                  p.matches ? `${p.matches} матч.` : null,
+                  p.position || posGroupLabel(grp),
+                  p.matches ? `${p.matches} ${matchesWord(p.matches)}` : null,
                 ].filter(Boolean).join(' · ');
                 return (
                   <li key={p.playerId} className="cd__top-row" role="button" tabIndex={0}
@@ -581,7 +582,7 @@ export default function ClubDashboard() {
           </h2>
           <span className="cd__panel-sub">
             {seasonRoster.length
-              ? (seasonMatchCount > 0 ? `за сезон · ${seasonMatchCount} матч.` : 'за сезон')
+              ? (seasonMatchCount > 0 ? `за сезон · ${seasonMatchCount} ${matchesWord(seasonMatchCount)}` : 'за сезон')
               : 'нет загруженных разборов'}
           </span>
         </div>
@@ -615,7 +616,7 @@ export default function ClubDashboard() {
             const mins = Number(p.minutes ?? 0);
             const gp = Number(p.matches ?? 0);
             const sub = gp > 0
-              ? `${gp} матч.${mins > 0 ? ` · ${mins}'` : ''}`
+              ? `${gp} ${matchesWord(gp)}${mins > 0 ? ` · ${mins}'` : ''}`
               : (mins > 0 ? `${mins}'` : 'не выходил');
             return (
               <div
@@ -753,6 +754,17 @@ function posGroup(position?: string): string {
     if (last === 'Н') return 'fwd';
   }
   return 'unknown';
+}
+
+/** Человеко-понятная подпись группы позиции — на случай, когда точная позиция неизвестна. */
+function posGroupLabel(grp: string): string {
+  switch (grp) {
+    case 'gk': return 'вратарь';
+    case 'def': return 'защитник';
+    case 'mid': return 'полузащитник';
+    case 'fwd': return 'нападающий';
+    default: return 'полевой игрок';
+  }
 }
 
 /** Тонкая SVG-иконка пустого состояния (вместо эмодзи). */

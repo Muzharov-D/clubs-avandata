@@ -8,6 +8,7 @@
  * вид { sectionKey: { fieldKey: number | { value|pct } } }.
  */
 import './TeamAggregatesGrid.css';
+import { matchesWord } from '../../utils/num';
 
 type AnyObj = Record<string, unknown>;
 
@@ -135,7 +136,7 @@ export default function TeamAggregatesGrid({ aggregates, matchCount, periodLabel
   });
   if (meaningful.length === 0) return null;
   const sub = matchCount && matchCount > 0
-    ? `количество действий · среднее за ${periodLabel || 'период'}, ${matchCount} матч.`
+    ? `количество действий · среднее за ${periodLabel || 'период'}, ${matchCount} ${matchesWord(matchCount)}`
     : `количество действий · ${meaningful.length} категорий с данными`;
   return (
     <div className="tag">

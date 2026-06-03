@@ -29,6 +29,22 @@ export function percentileRank(value, allValues, inverse = false) {
   return Math.round((cnt / arr.length) * 100);
 }
 
+// Русское склонение существительного по числу.
+// plural(1,'матч','матча','матчей') → 'матч'; plural(3,…) → 'матча'; plural(5,…) → 'матчей'.
+export function plural(n, one, few, many) {
+  const abs = Math.abs(Math.round(n));
+  const mod10 = abs % 10;
+  const mod100 = abs % 100;
+  if (mod10 === 1 && mod100 !== 11) return one;
+  if (mod10 >= 2 && mod10 <= 4 && (mod100 < 12 || mod100 > 14)) return few;
+  return many;
+}
+
+// «5 матчей» / «1 матч» / «3 матча» — без уродливого сокращения «матч.».
+export function matchesWord(n) {
+  return plural(n, 'матч', 'матча', 'матчей');
+}
+
 // Форматирование «сырых» значений метрик для подписи на слайсе:
 // - integer-значения как целые числа;
 // - дробные (xG/xA, среднее) — 1 знак;

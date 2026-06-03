@@ -30,6 +30,7 @@ import ImpactMotm from '../components/analytics/ImpactMotm';
 import MatchLeaders from '../components/analytics/MatchLeaders';
 import SetPieceShotCard from '../components/analytics/SetPieceShotCard';
 import { coachDigest, matchMinutes } from '../utils/analytics';
+import { matchesWord } from '../utils/num';
 import { teamXg, ourSideKey, expectedPoints } from '../utils/analytics/xg';
 import { Reveal } from '../components/motion';
 import './MatchDetail.css';
@@ -493,16 +494,6 @@ export default function MatchDetail() {
       </div>
 
       <div className="match-detail__grid md-anchor reveal" id="md-detail">
-        <div className="match-detail__left">
-          <div className="card guest-placeholder">
-            <div className="page-section-title">Состав соперника</div>
-            <div className="guest-placeholder__msg">
-              {match.guestTeamPlaceholder ||
-                'SportVisor разбор содержит per-player статистику только нашей команды. Состав соперника появится, когда соперник загрузит свой отчёт.'}
-            </div>
-          </div>
-        </div>
-
         <div className="match-detail__center">
           <div className="card">
             <div className="page-section-title">Командная статистика</div>
@@ -555,7 +546,7 @@ export default function MatchDetail() {
             if (!rows.length) return null;
             return (
               <div className="card">
-                <div className="page-section-title">Командный выхлоп</div>
+                <div className="page-section-title">Объём действий: матч против сезона</div>
                 <div className="md-output">
                   {rows.map((r) => {
                     const pct = r.avg ? Math.round(((r.cur - r.avg) / r.avg) * 100) : null;
@@ -589,8 +580,8 @@ export default function MatchDetail() {
           {seasonAvg && Number(seasonAvg._games || 0) > 1 && (
             <div className="card mvs">
               <div className="page-section-title">
-                Этот матч vs средний по сезону
-                <span className="mvs__hint"> · по {seasonAvg._games} матчам</span>
+                Рейтинги: матч против сезона
+                <span className="mvs__hint"> · по {seasonAvg._games} {matchesWord(seasonAvg._games)}</span>
               </div>
               <div className="mvs__list">
                 {[

@@ -12,6 +12,7 @@ import TeamIdentityCard from '../components/analytics/TeamIdentityCard';
 import TeamAggregatesGrid from '../components/analytics/TeamAggregatesGrid';
 import SeasonTrendCard from '../components/analytics/SeasonTrendCard';
 import { isOurClub } from '../utils/legirus';
+import { matchesWord } from '../utils/num';
 import { useNavigate } from 'react-router-dom';
 import './ClubOverview.css';
 
@@ -180,7 +181,7 @@ export default function ClubOverview() {
             <>
               {/* Сводные рейтинги за период */}
               <div>
-                <div className="page-section-title">Сводные рейтинги · {periodLabel} <span className="club-overview__sub">{matchCount} матч.</span></div>
+                <div className="page-section-title">Сводные рейтинги · {periodLabel} <span className="club-overview__sub">{matchCount} {matchesWord(matchCount)}</span></div>
                 <div className="club-overview__ratings">
                   <RatingCard label="Общий" value={ratings.overall} />
                   <RatingCard label="Фитнес" value={ratings.fitness} />
@@ -278,7 +279,7 @@ function LeaderColumn({ title, rows, unit, rating, navigate }) {
             <PlayerPhoto player={r.p} size={40} />
             <div className="leader-col__info">
               <div className="leader-col__name">{r.p.fullName}</div>
-              <div className="leader-col__pos">№{r.p.number ?? '—'} · {r.p.matches} матч.</div>
+              <div className="leader-col__pos">№{r.p.number ?? '—'} · {r.p.matches} {matchesWord(r.p.matches)}</div>
             </div>
             {rating ? (
               <RatingPill value={r.v} size="md" />
