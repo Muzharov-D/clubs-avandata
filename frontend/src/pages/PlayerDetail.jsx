@@ -24,7 +24,7 @@ import HalfSplitChart from '../components/HalfSplitChart';
 import SpeedZones from '../components/SpeedZones';
 import PassProfile from '../components/PassProfile';
 import { num, percentileRank, formatRaw } from '../utils/num';
-import { POSITION_OPTIONS, PIZZA_VS_LABEL, TEMPLATES, getStatValue, positionGroup } from '../utils/pizzaTemplates';
+import { POSITION_OPTIONS, PIZZA_VS_LABEL, TEMPLATES, getStatValue, positionGroup, CIES_GROUPS, CIES_METRIC_BY_KEY } from '../utils/pizzaTemplates';
 import './PlayerDetail.css';
 
 import { trimAgeSuffix as trimAge } from '../utils/teamName';
@@ -509,11 +509,22 @@ function MatchTab({ playerId, match, loading, allMatches, currentMatchId, setSel
   );
   const [pizzaPos, setPizzaPos] = useState('MID');
   const [pizzaGroup, setPizzaGroup] = useState('all');
+  // Режим пиццы: 'template' (быстрый шаблон по позиции) или 'custom' (свои метрики по CIES).
+  const [pizzaMode, setPizzaMode] = useState('template');
+  const [customKeys, setCustomKeys] = useState(() => new Set());
   useEffect(() => {
     setPizzaPos(positionGroup(player) || 'MID');
     setPizzaGroup('all');
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [playerId, player?.position]);
+
+  const toggleCustomKey = (key) => {
+    setCustomKeys((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key); else next.add(key);
+      return next;
+    });
+  };
 
   const matchPicker = allMatches.length > 1 && (
     <div className="player-detail__match-picker">
@@ -590,6 +601,24 @@ function MatchTab({ playerId, match, loading, allMatches, currentMatchId, setSel
     { value: 'defence', label: 'Оборона', count: groupCounts.defence },
     { value: 'fitness', label: 'Фитнес',  count: groupCounts.fitness },
   ];
+
+  // Свои метрики (CIES): пицца из выбранных тренером показателей.
+  const customSlices = Array.from(customKeys)
+    .map((key) => {
+      const meta = CIES_METRIC_BY_KEY[key];
+      if (!meta) return null;
+      const myValue = getStatValue(player, key);
+      const allValues = peers.map((p) => getStatValue(p, key));
+      const pct = percentileRank(myValue, allValues, meta.inverse);
+      const teamMax = Math.max(0, ...allValues.map((v) => Number(num(v) ?? 0)));
+      return { axis: meta.axis, group: meta.color, value: pct ?? 0, displayValue: formatRaw(myValue), _key: key, _teamMax: teamMax };
+    })
+    .filter(Boolean);
+  // Метрики, по которым в этом матче нет данных у всей команды — помечаем, чтобы
+  // не вводить тренера в заблуждение пустыми слайсами.
+  const customSlicesWithData = customSlices.filter((s) => s._teamMax > 0);
+  const usingCustom = pizzaMode === 'custom';
+  const activeSlices = usingCustom ? customSlicesWithData : pizzaSlices;
 
   // Присутствие секций — для sticky-навигации и условного рендера групп.
   const hasHeatmap = !!player.maps?.fitnessHeatmap;
@@ -687,46 +716,108 @@ function MatchTab({ playerId, match, loading, allMatches, currentMatchId, setSel
       <div className="card player-detail__pizza">
         <div className="player-detail__pizza-head">
           <div className="page-section-title">Профиль в матче</div>
-          <div className="player-detail__pizza-pos">
-            <label htmlFor="pizza-pos">Шаблон:</label>
-            <select
-              id="pizza-pos"
-              value={pizzaPos}
-              onChange={(e) => { setPizzaPos(e.target.value); setPizzaGroup('all'); }}
+          <div className="player-detail__pizza-mode" role="tablist" aria-label="Режим пиццы">
+            <button
+              type="button" role="tab" aria-selected={pizzaMode === 'template'}
+              className={`player-detail__pizza-modebtn${pizzaMode === 'template' ? ' is-active' : ''}`}
+              onClick={() => setPizzaMode('template')}
             >
-              {POSITION_OPTIONS.map((o) => (
-                <option key={o.value} value={o.value}>{o.label}</option>
-              ))}
-            </select>
+              Шаблон позиции
+            </button>
+            <button
+              type="button" role="tab" aria-selected={pizzaMode === 'custom'}
+              className={`player-detail__pizza-modebtn${pizzaMode === 'custom' ? ' is-active' : ''}`}
+              onClick={() => setPizzaMode('custom')}
+            >
+              Свои метрики{customKeys.size > 0 ? ` · ${customKeys.size}` : ''}
+            </button>
           </div>
         </div>
 
-        <div className="player-detail__pizza-tabs" role="tablist">
-          {GROUP_TABS.map((t) => (
-            <button
-              key={t.value}
-              type="button"
-              role="tab"
-              aria-selected={pizzaGroup === t.value}
-              className={`player-detail__pizza-tab player-detail__pizza-tab--${t.value}${pizzaGroup === t.value ? ' is-active' : ''}`}
-              onClick={() => setPizzaGroup(t.value)}
-              disabled={t.count === 0}
-            >
-              {t.label}<span className="player-detail__pizza-tab-count">{t.count}</span>
-            </button>
-          ))}
-        </div>
+        {pizzaMode === 'template' ? (
+          <>
+            <div className="player-detail__pizza-pos">
+              <label htmlFor="pizza-pos">Шаблон:</label>
+              <select
+                id="pizza-pos"
+                value={pizzaPos}
+                onChange={(e) => { setPizzaPos(e.target.value); setPizzaGroup('all'); }}
+              >
+                {POSITION_OPTIONS.map((o) => (
+                  <option key={o.value} value={o.value}>{o.label}</option>
+                ))}
+              </select>
+            </div>
+            <div className="player-detail__pizza-tabs" role="tablist">
+              {GROUP_TABS.map((t) => (
+                <button
+                  key={t.value}
+                  type="button"
+                  role="tab"
+                  aria-selected={pizzaGroup === t.value}
+                  className={`player-detail__pizza-tab player-detail__pizza-tab--${t.value}${pizzaGroup === t.value ? ' is-active' : ''}`}
+                  onClick={() => setPizzaGroup(t.value)}
+                  disabled={t.count === 0}
+                >
+                  {t.label}<span className="player-detail__pizza-tab-count">{t.count}</span>
+                </button>
+              ))}
+            </div>
+          </>
+        ) : (
+          <div className="player-detail__cies">
+            <div className="player-detail__cies-hint">
+              Соберите свою пиццу — отметьте любые показатели. Группировка — по областям CIES.
+              {customKeys.size > 0 && (
+                <button type="button" className="player-detail__cies-clear" onClick={() => setCustomKeys(new Set())}>
+                  Сбросить
+                </button>
+              )}
+            </div>
+            <div className="player-detail__cies-groups">
+              {CIES_GROUPS.map((g) => (
+                <div className="player-detail__cies-group" key={g.id}>
+                  <div className={`player-detail__cies-group-title player-detail__cies-group-title--${g.color}`}>{g.label}</div>
+                  {g.metrics.map((m) => {
+                    const hasData = peers.some((p) => Number(num(getStatValue(p, m.key)) ?? 0) > 0);
+                    return (
+                      <label
+                        key={m.key}
+                        className={`player-detail__cies-opt${customKeys.has(m.key) ? ' is-on' : ''}${hasData ? '' : ' is-empty'}`}
+                        title={hasData ? '' : 'В этом матче нет данных у команды'}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={customKeys.has(m.key)}
+                          onChange={() => toggleCustomKey(m.key)}
+                        />
+                        {m.axis}
+                      </label>
+                    );
+                  })}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {peers.length < 2 ? (
           <div className="empty-state">
             Недостаточно данных для сравнения с командой (нужны рейтинги хотя бы 2 игроков матча).
+          </div>
+        ) : usingCustom && activeSlices.length < 3 ? (
+          <div className="empty-state">
+            Отметьте минимум 3 показателя с данными, чтобы построить пиццу
+            {customKeys.size > 0 && activeSlices.length < customKeys.size
+              ? ' (часть выбранных метрик в этом матче пуста).'
+              : '.'}
           </div>
         ) : (
           <PizzaChart
             subjectName={`${player.fullName} · ${player.positionFull || ''} · ${player.minutes ?? '?'} мин`}
             subjectMeta={`Цифры — реальные значения, длина слайса — перцентиль по ${PIZZA_VS_LABEL} (${peers.length} чел.)`}
             vsLabel={PIZZA_VS_LABEL}
-            slices={pizzaSlices}
+            slices={activeSlices}
           />
         )}
       </div>

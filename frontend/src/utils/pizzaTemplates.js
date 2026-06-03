@@ -171,6 +171,116 @@ export const TEMPLATES = {
   },
 };
 
+// ─────────────────────────────────────────────────────────────────────────
+// КАТАЛОГ МЕТРИК ПО CIES — для свободного выбора показателей в пицце.
+// CIES Football Observatory оценивает игрока по навыковым областям (а не по
+// «позиции»): завершение, созидание, распасовка, обыгрыш, отбор, оборона,
+// вратарское, фитнес. Тренер собирает свою пиццу из ЛЮБЫХ собранных метрик,
+// сгруппированных по этим областям. `color` — группа для цвета слайса
+// (attack/defence/fitness), `key` — реальный dotted-key из player.stats.
+// ─────────────────────────────────────────────────────────────────────────
+export const CIES_GROUPS = [
+  {
+    id: 'finishing', label: 'Завершение', color: 'attack',
+    metrics: [
+      { axis: 'Голы', key: 'attack4.goal' },
+      { axis: 'xG', key: 'attack1.xG' },
+      { axis: 'Голевые действия', key: 'attack1.goalActions' },
+      { axis: 'Удары', key: 'attack4.shot' },
+      { axis: 'Удары головой', key: 'attack5.byHead' },
+      { axis: 'Удары со штрафных', key: 'attack4.freeKickShot' },
+      { axis: 'Касания в штрафной', key: 'attack3.touchesInPenArea' },
+      { axis: 'Входы в штрафную', key: 'attack5.entriesInBox' },
+    ],
+  },
+  {
+    id: 'creation', label: 'Созидание', color: 'attack',
+    metrics: [
+      { axis: 'Ассисты', key: 'attack1.assist' },
+      { axis: 'xA', key: 'attack1.xA' },
+      { axis: 'Ключевые передачи', key: 'attack1.keyPass' },
+      { axis: 'Передачи под удар', key: 'attack2.shotAssist' },
+      { axis: 'Передачи в створ', key: 'attack2.shotOnTargetAssist' },
+      { axis: 'Второй ассист', key: 'attack1.secondAssist' },
+      { axis: 'Навесы', key: 'attack2.cross' },
+    ],
+  },
+  {
+    id: 'distribution', label: 'Распасовка', color: 'attack',
+    metrics: [
+      { axis: 'Всего передач', key: 'attack2.pass' },
+      { axis: 'Прогрессивные передачи', key: 'attack2.progressivePass' },
+      { axis: 'Передачи в фин. треть', key: 'attack2.passToFinalThird' },
+      { axis: 'Разрезающие передачи', key: 'attack2.throughPass' },
+      { axis: 'Длинные передачи', key: 'attack3.passLong' },
+      { axis: 'Передачи вперёд', key: 'attack3.passForward' },
+      { axis: 'Принятые передачи', key: 'attack3.receivedPass' },
+    ],
+  },
+  {
+    id: 'takeon', label: 'Обыгрыш', color: 'attack',
+    metrics: [
+      { axis: 'Обводки', key: 'attack4.dribble' },
+      { axis: 'Прогрессивный рывок', key: 'attack2.progressiveRun' },
+      { axis: 'Ускорения', key: 'attack5.acceleration' },
+      { axis: 'Заработанные фолы', key: 'attack3.foulsSuffered' },
+    ],
+  },
+  {
+    id: 'recovery', label: 'Отбор мяча', color: 'defence',
+    metrics: [
+      { axis: 'Отборы', key: 'defence1.tackle' },
+      { axis: 'Отбор с подбором', key: 'defence1.tackleAndRecovery' },
+      { axis: 'Перехваты', key: 'defence1.interception' },
+      { axis: 'Подборы', key: 'defence1.recovery' },
+      { axis: 'Прессинг', key: 'defence2.pressing' },
+      { axis: 'Контрпрессинг', key: 'defence2.counterpressing' },
+      { axis: 'Возвраты', key: 'defence2.return' },
+      { axis: 'Возвраты на чужой', key: 'defence2.returnOnOppHalf' },
+    ],
+  },
+  {
+    id: 'defending', label: 'Оборона', color: 'defence',
+    metrics: [
+      { axis: 'Подкаты', key: 'defence1.slidingTackles' },
+      { axis: 'Выносы', key: 'defence1.clearance' },
+      { axis: 'Блокированные удары', key: 'defence1.blockedShot' },
+      { axis: 'Единоборства', key: 'defence2.duel' },
+      { axis: 'Верховые единоборства', key: 'defence2.aerialDuel' },
+      { axis: 'Фолы', key: 'defence2.foul', inverse: true },
+      { axis: 'Жёлтые карточки', key: 'defence2.yellowCard', inverse: true },
+      { axis: 'Опасные потери у ворот', key: 'attack4.dangerousLosesOnOwnHalf', inverse: true },
+    ],
+  },
+  {
+    id: 'goalkeeping', label: 'Вратарское', color: 'defence',
+    metrics: [
+      { axis: 'Сейвы', key: 'defence3.save' },
+      { axis: 'Выходы вратаря', key: 'defence3.goalkeeperExits' },
+      { axis: 'Удары по воротам', key: 'defence3.shotsAgainst' },
+      { axis: 'От ворот', key: 'defence3.goalKick' },
+      { axis: 'Короткие от ворот', key: 'defence3.shortGoalKicks' },
+      { axis: 'Длинные от ворот', key: 'defence3.longGoalKicks' },
+    ],
+  },
+  {
+    id: 'physical', label: 'Фитнес', color: 'fitness',
+    metrics: [
+      { axis: 'Общая дистанция', key: 'fitness.totalDistance' },
+      { axis: 'Дистанция спринтов', key: 'fitness.sprintDistance' },
+      { axis: 'Спринты', key: 'fitness.sprintsCount' },
+      { axis: 'Интенсивный бег', key: 'fitness.intenseRunning' },
+      { axis: 'Средняя скорость', key: 'fitness.averageSpeed' },
+    ],
+  },
+];
+
+// Плоская мапа key → { axis, color, inverse } для быстрого построения слайсов.
+export const CIES_METRIC_BY_KEY = CIES_GROUPS.reduce((acc, g) => {
+  for (const m of g.metrics) acc[m.key] = { axis: m.axis, color: g.color, inverse: !!m.inverse, group: g.id };
+  return acc;
+}, {});
+
 // Достаём value по dotted-key из player.stats
 export function getStatValue(player, key) {
   if (!player?.stats || !key) return null;
