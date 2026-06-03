@@ -812,7 +812,7 @@ function MatchTab({ playerId, match, loading, allMatches, currentMatchId, setSel
         ) : (
           <PizzaChart
             subjectName={`${player.fullName} · ${player.positionFull || ''} · ${player.minutes ?? '?'} мин`}
-            subjectMeta={`Цифры — реальные значения, длина слайса — перцентиль по ${PIZZA_VS_LABEL} (${peers.length} чел.)`}
+            subjectMeta={`Цифры — реальные значения, длина слайса — перцентиль среди ${PIZZA_VS_LABEL} (${peers.length} чел.)`}
             vsLabel={PIZZA_VS_LABEL}
             slices={activeSlices}
           />

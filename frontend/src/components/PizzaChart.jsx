@@ -210,7 +210,7 @@ export default function PizzaChart({
         )}
         {vsLabel && (
           <text x={cx} y={centerLabel ? cy + 14 : cy + 4} fontSize="9" fontWeight="500" textAnchor="middle" dominantBaseline="middle" fill="#94a3c8">
-            vs {vsLabel}
+            среди {vsLabel}
           </text>
         )}
       </svg>

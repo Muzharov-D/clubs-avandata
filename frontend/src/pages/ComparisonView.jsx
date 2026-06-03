@@ -173,7 +173,7 @@ export default function ComparisonView() {
     <div className="page comparison-view">
       <div className="comparison-view__topbar">
         <SectionTabs tabs={TONE_TABS} active={tone} onChange={setTone} />
-        <span className="comparison-view__hint">Источник: {match.homeTeam?.name} vs {match.awayTeam?.name}</span>
+        <span className="comparison-view__hint">Источник: {match.homeTeam?.name} — {match.awayTeam?.name}</span>
       </div>
 
       <div className="card">

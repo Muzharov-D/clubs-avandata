@@ -40,7 +40,7 @@ export default function PlayerFormCard({ playerId, series: propSeries }) {
             <div className={`an-form__delta an-form__delta--${delta > 0.1 ? 'up' : delta < -0.1 ? 'down' : ''}`}>
               {delta > 0 ? '▲ +' : delta < 0 ? '▼ ' : '= '}{delta.toFixed(2)}
             </div>
-            <div className="an-metric__sub">vs своё среднее {mean.toFixed(2)}</div>
+            <div className="an-metric__sub">к своему среднему {mean.toFixed(2)}</div>
           </div>
         )}
       </div>

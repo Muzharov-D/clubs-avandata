@@ -42,6 +42,7 @@ export default function HeroNextMatch({ match, venue, onOpen }) {
 
   const homeIsUs = isOurClub(match.home);
   const opp = homeIsUs ? match.away : match.home;
+  const usName = shortTeamName(homeIsUs ? match.home : match.away);
   const oppShield = homeIsUs ? match.awayShield : match.homeShield;
   const placeLabel = homeIsUs ? 'Дома' : 'В гостях';
 
@@ -77,7 +78,7 @@ export default function HeroNextMatch({ match, venue, onOpen }) {
           />
           <span className="hero-next__us-name">{usName || 'Наш клуб'}</span>
         </div>
-        <div className="hero-next__vs">vs</div>
+        <div className="hero-next__vs">—</div>
         <div className="hero-next__opp">
           <span className="hero-next__opp-name">{shortTeamName(opp)}</span>
           <img

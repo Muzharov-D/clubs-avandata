@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useApi } from '../hooks/useApi';
 import { useReveal, useCountUp } from '../hooks/useReveal';
 import './matchKinetic.css';
-import { fetchMatch, fetchPlayers, fetchMatches, deleteMatch, updateMatchNote } from '../services/api';
+import { fetchMatch, fetchPlayers, fetchMatches, deleteMatch, updateMatchNote, fetchStandings } from '../services/api';
 import { useTeam } from '../contexts/TeamContext';
 import { useAuth } from '../contexts/AuthContext';
 import { toast } from '../components/Toast';
@@ -20,7 +20,7 @@ import RatingBeeswarm from '../components/RatingBeeswarm';
 import SpeedZones from '../components/SpeedZones';
 import SquadHeatmap from '../components/SquadHeatmap';
 import TwoWayScatter from '../components/TwoWayScatter';
-import { shieldFor } from '../utils/legirus';
+import { shieldFor, normalizeTeamName } from '../utils/legirus';
 import { shortNameFromPlayer } from '../utils/players';
 import { matchInsights } from '../utils/insights';
 import XgPanel from '../components/analytics/XgPanel';
@@ -116,6 +116,24 @@ export default function MatchDetail() {
 
   const match = matchRes.data;
   const players = playersRes.data?.players || [];
+
+  // Эмблемы соперников: разбор SportVisor НЕ содержит щитов команд, поэтому в
+  // шапке матча соперник падал в букву-инициал. Подтягиваем реальные эмблемы из
+  // турнирной таблицы (FFSPB logoSrc) по нормализованному имени — чтобы логотип
+  // был картинкой, а не буквой названия. Деградирует к инициалу, если эмблемы нет.
+  const ageGroup = (selectedTeamId || match?.teamId || '').match(/(?:19|20)\d{2}/)?.[0] || null;
+  const standingsRes = useApi(() => (ageGroup ? fetchStandings(ageGroup) : Promise.resolve(null)), [ageGroup]);
+  const shieldByName = useMemo(() => {
+    const map = {};
+    const rows = standingsRes.data?.table || [];
+    for (const r of rows) {
+      const key = normalizeTeamName(r.team);
+      if (key && r.shield) map[key] = r.shield;
+    }
+    return map;
+  }, [standingsRes.data]);
+  const resolveShield = (teamObj) =>
+    teamObj?.shield || shieldByName[normalizeTeamName(teamObj?.name)] || null;
 
   // Kinetic-эталон: scroll-reveal секций + count-up счёта.
   const pageRef = useRef(null);
@@ -323,7 +341,7 @@ export default function MatchDetail() {
           входом (Reveal). Один герой-момент на экран. */}
       {(() => {
         const TeamSide = ({ side, team, isWinner }) => {
-          const src = shieldFor(team?.name, team?.shield);
+          const src = shieldFor(team?.name, resolveShield(team));
           const initial = (team?.name || '?').charAt(0);
           const name = trimAgeStr(team?.name) || 'Команда';
           return (
@@ -413,7 +431,7 @@ export default function MatchDetail() {
 
         {(match.players || []).filter((p) => (p.minutes ?? 0) > 0 && ((p.ratings?.attack || 0) > 0 || (p.ratings?.defence || 0) > 0)).length >= 3 && (
           <div className="card">
-            <div className="page-section-title">Роли — атака vs оборона</div>
+            <div className="page-section-title">Роли — атака и оборона</div>
             <TwoWayScatter players={match.players} />
             <div className="md-insights__note" style={{ marginTop: 8 }}>X — рейтинг атаки, Y — обороны. Правый-верхний квадрант — двусторонние игроки.</div>
           </div>

@@ -430,7 +430,7 @@ export default function CalendarPage() {
                                   className={`cal-month__event cal-month__event--match ${m.tournament === 'cup' ? 'cal-month__event--cup' : ''} ${m.isPast ? 'cal-month__event--past' : ''}`}
                                   type="button"
                                   onClick={() => setOpenMatch(m)}
-                                  title={`${fmtTime(m.date)}${m.ageGroup ? ' · ' + m.ageGroup : ''} · ${shortName(m.home)} vs ${shortName(m.away)}${m.venue ? ' · ' + m.venue : ''}`}
+                                  title={`${fmtTime(m.date)}${m.ageGroup ? ' · ' + m.ageGroup : ''} · ${shortName(m.home)} — ${shortName(m.away)}${m.venue ? ' · ' + m.venue : ''}`}
                                 >
                                   <span className="cal-month__event-time">{fmtTime(m.date)}</span>
                                   {age === 'all' && m.ageGroup && (

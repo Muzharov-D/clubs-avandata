@@ -695,7 +695,7 @@ export default function PublicTeamSchedule() {
                                             if (isMobile) onDayClick();
                                             else setOpenMatch(m);
                                           }}
-                                          title={`${fmtTime(m.date)} · ${shortName(m.home)} vs ${shortName(m.away)}`}
+                                          title={`${fmtTime(m.date)} · ${shortName(m.home)} — ${shortName(m.away)}`}
                                         >
                                           <span className="cal-month__event-time">{fmtTime(m.date)}</span>
                                           <UiIcon name={m.tournament === 'cup' ? 'trophy' : 'ball'} size={11} className="cal-month__event-icon" />
