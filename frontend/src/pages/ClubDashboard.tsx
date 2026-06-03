@@ -478,9 +478,6 @@ export default function ClubDashboard() {
         </div>
       </section>
 
-      {/* Вероятный состав на следующий матч (Phase 5) — тренеру */}
-      {isCoach && selectedTeamId && <PredictedLineup teamId={selectedTeamId} />}
-
       {/* Top 5 + standings */}
       <section className="cd__columns" id="sec-top">
         <div className="cd__panel reveal">
@@ -570,6 +567,11 @@ export default function ClubDashboard() {
           )}
         </div>
       </section>
+
+      {/* ── Зона состава: вероятный стартовый XI + полный состав за сезон ──
+          Объединены в один блок (раньше PredictedLineup стоял выше и был
+          оторван от «Состава» блоком Топ-5/таблицы — см. правку UX). */}
+      {isCoach && selectedTeamId && <PredictedLineup teamId={selectedTeamId} />}
 
       {/* Roster */}
       <section className="cd__panel reveal" id="sec-roster">
