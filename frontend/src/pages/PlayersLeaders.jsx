@@ -1,10 +1,12 @@
+import { useMemo } from 'react';
 import { useNavigate, NavLink } from 'react-router-dom';
 import { useApi } from '../hooks/useApi';
-import { fetchMatch, fetchMatches } from '../services/api';
+import { fetchPlayersSeason } from '../services/api';
 import { useDocumentTitle } from '../hooks/useDocumentTitle';
 import LeaderMetricCard from '../components/LeaderMetricCard';
 import PlayerPhoto from '../components/PlayerPhoto';
 import RatingPill from '../components/RatingPill';
+import { AnimatedNumber, SplitText } from '../components/motion';
 import { useAuth } from '../contexts/AuthContext';
 import { useTeam } from '../contexts/TeamContext';
 import { shortNameFromPlayer } from '../utils/players';
@@ -12,68 +14,77 @@ import './PlayersLeaders.css';
 import './playersKinetic.css';
 import './PlayersRating.css';
 
+// Лидер сезона по метрике: максимум суммарного значения среди игравших.
+// Ноль/отрицательное — не лидер (артефакт бенча), карточка покажет пустое.
 function maxBy(items, getter) {
   let best = null;
   let bestVal = -Infinity;
   for (const it of items) {
-    const v = getter(it);
-    const num = typeof v === 'object' ? Number(v?.value) : Number(v);
-    if (!isNaN(num) && num > bestVal) {
-      bestVal = num; best = { item: it, value: num };
-    }
+    const v = Number(getter(it));
+    if (!Number.isNaN(v) && v > bestVal) { bestVal = v; best = { item: it, value: v }; }
   }
-  // Если лидер с нулём — это не лидер, а артефакт от бенча. Возвращаем null,
-  // карточка покажет пустое состояние, а не «лидер с 0 голов» (часто это
-  // первый игрок в сортировке).
   if (!best || best.value <= 0) return null;
   return best;
 }
 
+function Subnav() {
+  return (
+    <div className="players-rating__subnav">
+      <NavLink to="/players" end className={({ isActive }) => 'players-subnav__item' + (isActive ? ' active' : '')}>Лидеры</NavLink>
+      <NavLink to="/players/rating" className={({ isActive }) => 'players-subnav__item' + (isActive ? ' active' : '')}>Рейтинг</NavLink>
+      <NavLink to="/players/compare" className={({ isActive }) => 'players-subnav__item' + (isActive ? ' active' : '')}>Сравнение</NavLink>
+    </div>
+  );
+}
+
 export default function PlayersLeaders() {
-  useDocumentTitle('Лидеры команды');
+  useDocumentTitle('Лидеры сезона');
   const navigate = useNavigate();
   const { canSeePlayer } = useAuth();
   const { selectedTeamId } = useTeam();
-  const matchesRes = useApi(() => fetchMatches(selectedTeamId), [selectedTeamId]);
-  const lastMatchId = matchesRes.data?.matches?.[0]?.id;
-  const matchRes = useApi(() => (lastMatchId ? fetchMatch(lastMatchId) : Promise.resolve(null)), [lastMatchId]);
 
-  const match = matchRes.data;
-  const all = match?.players || [];
-  const lastMatchMeta = matchesRes.data?.matches?.[0];
-  const lastMatchDate = lastMatchMeta?.date || lastMatchMeta?.matchDate || '';
+  // СЕЗОН, не последний матч: кто лучший по сумме за сезон (был источником
+  // «последний матч» — нонсенс для «лидеров команды»).
+  const seasonRes = useApi(
+    () => (selectedTeamId ? fetchPlayersSeason(selectedTeamId) : Promise.resolve({ players: [] })),
+    [selectedTeamId],
+  );
+  const all = seasonRes.data?.players || [];
 
-  if (matchesRes.loading || matchRes.loading) return <div className="empty-state">Загрузка…</div>;
-  if (!match) return <div className="empty-state">Нет данных</div>;
+  const overall = useMemo(() => {
+    const rated = all.filter((p) => Number(p.avgOverall ?? 0) > 0 && Number(p.matches ?? 0) >= 1);
+    return [...rated].sort((a, b) => (b.avgOverall ?? 0) - (a.avgOverall ?? 0))[0] || null;
+  }, [all]);
 
-  // Берём лидера ТОЛЬКО среди реально играшних с положительным overall —
-  // иначе на верх плитки попадал бенч с overall=null/0
-  const eligibleForOverall = all.filter((p) => Number(p.ratings?.overall ?? 0) > 0);
-  const overall = eligibleForOverall.sort((a, b) => (b.ratings?.overall ?? 0) - (a.ratings?.overall ?? 0))[0];
+  const leaders = useMemo(() => ([
+    ['Голы',                maxBy(all, (p) => p.goals)],
+    ['Голевые передачи',    maxBy(all, (p) => p.assists)],
+    ['Удары',               maxBy(all, (p) => p.shots)],
+    ['Ключевые передачи',   maxBy(all, (p) => p.keyPass)],
+    ['Обводки',             maxBy(all, (p) => p.dribble)],
+    ['Отборы',              maxBy(all, (p) => p.tackle)],
+    ['Перехваты',           maxBy(all, (p) => p.interception)],
+    ['Возвраты',            maxBy(all, (p) => p.recovery)],
+    ['Прессинг',            maxBy(all, (p) => p.pressing)],
+    ['Дистанция, м',        maxBy(all, (p) => p.distance)],
+  ]), [all]);
 
-  const leaders = [
-    ['Удары в створ',         maxBy(all, (p) => p.stats?.attack4?.shot)],
-    ['Голы',                  maxBy(all, (p) => p.stats?.attack4?.goal)],
-    ['Голевые передачи',      maxBy(all, (p) => p.stats?.attack1?.assist)],
-    ['Отборы',                maxBy(all, (p) => p.stats?.defence1?.tackle)],
-    ['Перехваты',             maxBy(all, (p) => p.stats?.defence1?.interception)],
-    ['Прогрессивные передачи', maxBy(all, (p) => p.stats?.attack2?.progressivePass)],
-    ['Прессинг',              maxBy(all, (p) => p.stats?.defence2?.pressing)],
-    ['Сейвы',                 maxBy(all, (p) => p.stats?.defence3?.save)],
-    ['Дистанция, м',          maxBy(all, (p) => p.stats?.fitness?.totalDistance)],
-    ['Спринты',               maxBy(all, (p) => p.stats?.fitness?.sprintsCount)],
-  ];
+  if (seasonRes.loading) return <div className="empty-state">Загрузка…</div>;
+  if (!all.length) {
+    return (
+      <div className="page players-leaders kinetic">
+        <Subnav />
+        <div className="empty-state">Сезонная статистика появится после разбора матчей.</div>
+      </div>
+    );
+  }
 
   return (
     <div className="page players-leaders kinetic">
-      <div className="players-rating__subnav">
-        <NavLink to="/players" end className={({ isActive }) => 'players-subnav__item' + (isActive ? ' active' : '')}>Лидеры</NavLink>
-        <NavLink to="/players/rating" className={({ isActive }) => 'players-subnav__item' + (isActive ? ' active' : '')}>Рейтинг</NavLink>
-        <NavLink to="/players/compare" className={({ isActive }) => 'players-subnav__item' + (isActive ? ' active' : '')}>Сравнение</NavLink>
-      </div>
+      <Subnav />
 
       <div className="players-leaders__scope" style={{ color: 'var(--text-faint)', fontSize: 13, margin: '4px 2px 14px' }}>
-        Показатели по последнему матчу{lastMatchDate ? `: ${lastMatchDate}` : ''}
+        Лидеры по сумме за сезон
       </div>
 
       {overall && (
@@ -82,23 +93,22 @@ export default function PlayersLeaders() {
           onClick={() => { if (canSeePlayer(overall.id)) navigate(`/players/${overall.id}`); }}
           title={canSeePlayer(overall.id) ? '' : 'Доступно только тренеру'}
         >
-          <div className="players-leaders__top-label">Рейтинг игрока</div>
+          <div className="players-leaders__top-label">Лучший по среднему рейтингу сезона</div>
           <div className="players-leaders__top-body">
             <PlayerPhoto player={overall} size={120} />
             <div className="players-leaders__top-info">
-              <div className="players-leaders__top-name">{shortNameFromPlayer(overall)}</div>
-              <div className="players-leaders__top-pos">№{overall.number} · {overall.positionFull}</div>
+              <div className="players-leaders__top-name"><SplitText text={shortNameFromPlayer(overall) || overall.fullName || ''} /></div>
+              <div className="players-leaders__top-pos">№{overall.number} · {overall.position || ''}</div>
               <div className="players-leaders__top-stats">
-                {/* legirusAdapter возвращает scalar number, не {value:N} */}
-                <span>Удары: <b>{overall.stats?.attack4?.shot ?? '—'}</b></span>
-                <span>Отборы: <b>{overall.stats?.defence1?.tackle ?? '—'}</b></span>
-                <span>Голы: <b>{overall.stats?.attack4?.goal ?? '—'}</b></span>
+                <span>Матчи: <b>{overall.matches ?? '—'}</b></span>
+                <span>Голы: <b>{overall.goals ?? 0}</b></span>
+                <span>Пасы: <b>{overall.assists ?? 0}</b></span>
               </div>
             </div>
             <div className="players-leaders__top-rating">
-              <RatingPill value={overall.ratings?.overall} size="xl" />
+              <RatingPill value={overall.avgOverall} size="xl" />
               <div className="players-leaders__top-rating-100">
-                {overall.ratings?.overall ? Math.round(overall.ratings.overall * 10) : '—'}/100
+                {overall.avgOverall ? (<><AnimatedNumber value={Math.round(overall.avgOverall * 10)} />/100</>) : '—'}
               </div>
             </div>
           </div>
