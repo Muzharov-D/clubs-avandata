@@ -5,6 +5,7 @@ import { useDocumentTitle } from '../hooks/useDocumentTitle';
 import { useTeam } from '../contexts/TeamContext';
 import { downloadCsv } from '../utils/exportCsv';
 import { playerLabel } from '../utils/players';
+import { AnimatedNumber, SplitText } from '../components/motion';
 import './LoadControl.css';
 import './playersKinetic.css';
 
@@ -16,6 +17,18 @@ function loadLevel(p) {
   if ((p.minutesPerMatch || 0) >= FULL_MATCH - 5) return 'high';
   if ((p.minutesPerMatch || 0) >= 55) return 'medium';
   return 'low';
+}
+
+// Карточка сводной метрики нагрузки с пружинным count-up (broadcast-дашборд).
+function LoadStat({ label, value, color }) {
+  return (
+    <div className="card" style={{ padding: '16px 18px', display: 'flex', flexDirection: 'column', gap: 4 }}>
+      <div style={{ fontSize: 30, fontWeight: 800, fontFamily: 'var(--font-display)', lineHeight: 1, color: color || 'var(--accent-cyan)' }}>
+        <AnimatedNumber value={value} format={(v) => Math.round(v).toLocaleString('ru-RU')} />
+      </div>
+      <div style={{ fontSize: 12, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{label}</div>
+    </div>
+  );
 }
 
 export default function LoadControl() {
@@ -30,6 +43,11 @@ export default function LoadControl() {
 
   const maxMin = useMemo(() => Math.max(1, ...players.map((p) => p.minutes || 0)), [players]);
   const maxDist = useMemo(() => Math.max(1, ...players.map((p) => p.distance || 0)), [players]);
+  const totalDistKm = useMemo(() => players.reduce((s, p) => s + (p.distance || 0), 0) / 1000, [players]);
+  const avgMpm = useMemo(() => {
+    const v = players.filter((p) => p.minutesPerMatch);
+    return v.length ? v.reduce((s, p) => s + (p.minutesPerMatch || 0), 0) / v.length : 0;
+  }, [players]);
 
   const handleExport = () => {
     downloadCsv('load-control', players, [
@@ -53,12 +71,20 @@ export default function LoadControl() {
     <div className="page load-control kinetic">
       <div className="load-control__head">
         <div>
-          <h1 className="load-control__title">Контроль нагрузки</h1>
+          <h1 className="load-control__title"><SplitText text="Контроль нагрузки" /></h1>
           <div className="load-control__sub">
-            По сезонным разборам · {players.length} игроков · высокая нагрузка у {overloaded}
+            По сезонным разборам · управление ротацией и восстановлением в академии
           </div>
         </div>
         <button className="load-control__export" onClick={handleExport} title="Скачать CSV">⤓ CSV</button>
+      </div>
+
+      {/* Сводная панель сезонной нагрузки — живые числа (broadcast-дашборд) */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 12, marginBottom: 14 }}>
+        <LoadStat label="Игроков" value={players.length} />
+        <LoadStat label="Высокая нагрузка" value={overloaded} color="var(--danger)" />
+        <LoadStat label="Дистанция команды, км" value={totalDistKm} />
+        <LoadStat label="Средние минуты/матч" value={avgMpm} />
       </div>
 
       <div className="card load-control__table">
