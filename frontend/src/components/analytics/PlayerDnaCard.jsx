@@ -129,8 +129,11 @@ export default function PlayerDnaCard({
         </div>
         {showStatsInline && stats?.avgOverall > 0 && (
           <div className="dna-card__rating">
-            <div className="dna-card__rating-val">
-              <AnimatedNumber value={stats.avgOverall} format={(v) => v.toFixed(1)} stiffness={120} damping={24} />
+            <div className="dna-card__rating-ring" style={{ '--pct': Math.round(stats.avgOverall * 10) }}>
+              <span className="dna-card__rating-arc" aria-hidden />
+              <div className="dna-card__rating-num">
+                <AnimatedNumber value={stats.avgOverall} format={(v) => v.toFixed(1)} stiffness={120} damping={24} />
+              </div>
             </div>
             <div className="dna-card__rating-lab">рейтинг сезона</div>
           </div>

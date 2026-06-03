@@ -193,20 +193,32 @@
 }
 .dna-card__head-main { min-width: 0; }
 
-/* Сигнатурный рейтинг сезона — эмоциональное «одно число» героя. */
-.dna-card__rating { flex: 0 0 auto; text-align: right; }
-.dna-card__rating-val {
+/* Сигнатурный рейтинг сезона — Oura-style кольцо-score (заполнение по шкале /10). */
+.dna-card__rating { flex: 0 0 auto; display: flex; flex-direction: column; align-items: center; gap: 7px; }
+.dna-card__rating-ring { position: relative; width: clamp(104px, 9vw, 132px); aspect-ratio: 1; }
+.dna-card__rating-arc {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: conic-gradient(var(--accent-cyan) calc(var(--pct, 0) * 3.6deg), rgba(255, 255, 255, 0.07) 0);
+  -webkit-mask: radial-gradient(farthest-side, #0000 67%, #000 68%);
+          mask: radial-gradient(farthest-side, #0000 67%, #000 68%);
+  filter: drop-shadow(0 0 12px color-mix(in srgb, var(--accent-cyan) 30%, transparent));
+}
+.dna-card__rating-num {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
   font-family: var(--font-display);
-  font-size: clamp(46px, 6vw, 72px);
+  font-size: clamp(30px, 3.6vw, 42px);
   font-weight: 800;
-  line-height: 0.92;
-  color: var(--accent-cyan);
+  line-height: 1;
+  color: var(--text);
   font-variant-numeric: tabular-nums;
   letter-spacing: -0.02em;
-  text-shadow: 0 2px 28px color-mix(in srgb, var(--accent-cyan) 30%, transparent);
 }
 .dna-card__rating-lab {
-  margin-top: 3px;
   font-size: 11px;
   font-weight: 600;
   letter-spacing: 0.1em;
