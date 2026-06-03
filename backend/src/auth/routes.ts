@@ -102,7 +102,10 @@ export async function authRoutes(app: FastifyInstance) {
       httpOnly: true,
       secure: env.COOKIE_SECURE,
       sameSite: 'strict',
-      domain: env.COOKIE_DOMAIN,
+      // domain НЕ задаём: cookie host-only привязывается к хосту, который видит
+      // браузер (clubs-avandata.vercel.app через Vercel-rewrite). Явный domain с
+      // Render-дефолтом 'localhost' браузер отвергал → refresh не работал → разлогин
+      // на каждой перезагрузке. Host-only корректен и для прода, и для localhost.
       path: '/api/v1/auth',
       maxAge: env.REFRESH_TOKEN_TTL_DAYS * 86_400,
     });
@@ -219,7 +222,10 @@ export async function authRoutes(app: FastifyInstance) {
       httpOnly: true,
       secure: env.COOKIE_SECURE,
       sameSite: 'strict',
-      domain: env.COOKIE_DOMAIN,
+      // domain НЕ задаём: cookie host-only привязывается к хосту, который видит
+      // браузер (clubs-avandata.vercel.app через Vercel-rewrite). Явный domain с
+      // Render-дефолтом 'localhost' браузер отвергал → refresh не работал → разлогин
+      // на каждой перезагрузке. Host-only корректен и для прода, и для localhost.
       path: '/api/v1/auth',
       maxAge: env.REFRESH_TOKEN_TTL_DAYS * 86_400,
     });
