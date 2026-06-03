@@ -117,14 +117,24 @@ export default function PlayerDnaCard({
       {photo != null && <div className="dna-card__photo">{photo}</div>}
 
       <div className="dna-card__head">
-        <div className="dna-card__eyebrow">ДНК игрока</div>
-        {positionLine && <div className="dna-card__identity">{positionLine}</div>}
-        <h2 className="dna-card__archetype">
-          <SplitText text={archetype.name} />
-        </h2>
-        <div className="dna-card__tagline">{archetype.tagline}</div>
-        {statsLine && <div className="dna-card__stats-inline">{statsLine}</div>}
-        <div className="dna-card__superline">{superline}</div>
+        <div className="dna-card__head-main">
+          <div className="dna-card__eyebrow">ДНК игрока</div>
+          {positionLine && <div className="dna-card__identity">{positionLine}</div>}
+          <h2 className="dna-card__archetype">
+            <SplitText text={archetype.name} />
+          </h2>
+          <div className="dna-card__tagline">{archetype.tagline}</div>
+          {statsLine && <div className="dna-card__stats-inline">{statsLine}</div>}
+          <div className="dna-card__superline">{superline}</div>
+        </div>
+        {showStatsInline && stats?.avgOverall > 0 && (
+          <div className="dna-card__rating">
+            <div className="dna-card__rating-val">
+              <AnimatedNumber value={stats.avgOverall} format={(v) => v.toFixed(1)} stiffness={120} damping={24} />
+            </div>
+            <div className="dna-card__rating-lab">рейтинг сезона</div>
+          </div>
+        )}
       </div>
 
       {strengths.length > 0 && (

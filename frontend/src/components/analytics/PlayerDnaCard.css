@@ -184,7 +184,35 @@
   border-radius: 50% !important;
 }
 
-.dna-card--hero .dna-card__head { grid-column: 2; }
+.dna-card--hero .dna-card__head {
+  grid-column: 2;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 28px;
+}
+.dna-card__head-main { min-width: 0; }
+
+/* Сигнатурный рейтинг сезона — эмоциональное «одно число» героя. */
+.dna-card__rating { flex: 0 0 auto; text-align: right; }
+.dna-card__rating-val {
+  font-family: var(--font-display);
+  font-size: clamp(46px, 6vw, 72px);
+  font-weight: 800;
+  line-height: 0.92;
+  color: var(--accent-cyan);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+  text-shadow: 0 2px 28px color-mix(in srgb, var(--accent-cyan) 30%, transparent);
+}
+.dna-card__rating-lab {
+  margin-top: 3px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
 
 /* Блоки «Сильные стороны» / «Зоны роста» в герое — правая колонка, друг под другом.
    ВАЖНО: правило бьёт по ОБОИМ .dna-card__block, поэтому разводим их по строкам
@@ -242,6 +270,13 @@
     padding: 22px 18px;
   }
   .dna-card--hero .dna-card__photo { margin: 0 auto; }
-  .dna-card--hero .dna-card__head { grid-column: 1; text-align: center; }
+  .dna-card--hero .dna-card__head {
+    grid-column: 1;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 12px;
+  }
+  .dna-card__rating { text-align: center; }
   .dna-card--hero .dna-card__superline { margin-left: auto; margin-right: auto; }
 }
