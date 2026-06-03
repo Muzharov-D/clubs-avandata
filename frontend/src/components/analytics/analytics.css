@@ -95,6 +95,7 @@
 .an-toggle__btn { background: var(--bg-surface-2); color: var(--an-muted); font-size: 12px; font-weight: 600; padding: 4px 10px; border: none; cursor: pointer; }
 .an-toggle__btn.is-active { background: var(--brand-primary, #2563eb); color: #fff; }
 
+.an-leaders__filterlabel { font-size: 11px; color: var(--text-faint); margin: 2px 0 6px; }
 .an-leaders__tabs { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
 .an-leaders__tab { background: var(--bg-surface-2); border: 1px solid var(--border); border-radius: 7px; color: var(--an-muted); font-size: 12px; font-weight: 600; padding: 4px 10px; cursor: pointer; }
 .an-leaders__tab.is-active { background: var(--bg-surface-3); color: var(--text); border-color: var(--border-strong); }

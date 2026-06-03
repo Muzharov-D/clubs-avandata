@@ -51,11 +51,12 @@ export default function MatchLeaders({ players, navigate, nameOf, basis = 90 }) 
           Лидеры матча {metric.model && <span className="an-model-tag">модель</span>}
         </div>
         <div className="an-toggle" role="group" aria-label="Режим значений">
-          <button className={`an-toggle__btn${!per90Mode ? ' is-active' : ''}`} onClick={() => setPer90Mode(false)}>Σ</button>
+          <button className={`an-toggle__btn${!per90Mode ? ' is-active' : ''}`} onClick={() => setPer90Mode(false)}>всего</button>
           <button className={`an-toggle__btn${per90Mode ? ' is-active' : ''}`} onClick={() => setPer90Mode(true)}>за матч</button>
         </div>
       </div>
 
+      <div className="an-leaders__filterlabel">Ранжировать по показателю:</div>
       <div className="an-leaders__tabs" role="tablist">
         {METRICS.map((m) => (
           <button
