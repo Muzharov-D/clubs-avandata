@@ -1,7 +1,7 @@
 /**
- * Засидить расписание тренировок для команды (чтобы экран «Тренировки» не был
- * пустым на показе). По умолчанию — legirus-2010: вт/чт/сб, 18:30, 90 мин,
- * несколько прошедших + ближайшие недели, плюс один командный сбор.
+ * Засидить расписание тренировок для команды. По умолчанию — legirus-2010:
+ * точное июньское расписание 2026, переданное тренером (12 занятий, все 90 мин,
+ * поле «ЦФКСиЗ Василеостровского района»). См. массив PLAN.
  *
  *   npm run seed:trainings                                  # legirus-2010
  *   npm run seed:trainings -- --tenant=legirus --team=legirus-2010
@@ -20,35 +20,37 @@ function arg(name: string, fallback: string): string {
   return process.argv.find((a) => a.startsWith(`--${name}=`))?.split('=').slice(1).join('=') ?? fallback;
 }
 
-// ISO со смещением МСК (+03:00) на N дней от сегодня, время HH:MM.
-function isoAt(dayOffset: number, hh: number, mm: number): string {
-  const d = new Date();
-  d.setDate(d.getDate() + dayOffset);
-  const y = d.getFullYear();
-  const mo = String(d.getMonth() + 1).padStart(2, '0');
-  const da = String(d.getDate()).padStart(2, '0');
-  const h = String(hh).padStart(2, '0');
-  const m = String(mm).padStart(2, '0');
-  return `${y}-${mo}-${da}T${h}:${m}:00+03:00`;
+// ISO со смещением МСК (+03:00) для конкретной даты и времени начала.
+function iso(date: string, start: string): string {
+  return `${date}T${start}:00+03:00`;
+}
+
+// Длительность в минутах по диапазону «HH:MM-HH:MM».
+function durMin(start: string, end: string): number {
+  const [sh, sm] = start.split(':').map(Number);
+  const [eh, em] = end.split(':').map(Number);
+  return eh * 60 + em - (sh * 60 + sm);
 }
 
 const VENUE = 'ЦФКСиЗ Василеостровского района';
 
-// Расписание относительно сегодня: прошедшие + ближайшие. type из чек-листа
-// схемы: training | extra | warmup | recovery | meet.
-const PLAN: { off: number; hh: number; mm: number; type: string; notes: string }[] = [
-  { off: -13, hh: 18, mm: 30, type: 'training', notes: 'Технико-тактическая: владение + быстрый переход' },
-  { off: -11, hh: 18, mm: 30, type: 'training', notes: 'Прессинг и компактность линий' },
-  { off: -9,  hh: 11, mm: 0,  type: 'training', notes: 'Стандарты + завершение' },
-  { off: -6,  hh: 18, mm: 30, type: 'recovery', notes: 'Восстановление после матча: лёгкий бег, растяжка' },
-  { off: -4,  hh: 18, mm: 30, type: 'training', notes: 'Игровые упражнения 4×4 / 7×7' },
-  { off: -2,  hh: 18, mm: 30, type: 'training', notes: 'Предматчевая: розыгрыши, установка' },
-  { off: 1,   hh: 18, mm: 30, type: 'training', notes: 'Тактика на ближайший тур' },
-  { off: 3,   hh: 18, mm: 30, type: 'training', notes: 'Атака позиционная: ширина и забегания' },
-  { off: 5,   hh: 11, mm: 0,  type: 'training', notes: 'Физическая подготовка + единоборства' },
-  { off: 6,   hh: 19, mm: 0,  type: 'meet',     notes: 'Командный сбор: разбор видео матча' },
-  { off: 8,   hh: 18, mm: 30, type: 'training', notes: 'Оборона: страховка и опека' },
-  { off: 10,  hh: 18, mm: 30, type: 'training', notes: 'Завершение атак, удары' },
+// Точное расписание на июнь 2026 (передано тренером). Все занятия — тип training.
+const PLAN: { date: string; start: string; end: string; type: string }[] = [
+  { date: '2026-06-02', start: '18:00', end: '19:30', type: 'training' }, // вт
+  { date: '2026-06-04', start: '16:30', end: '18:00', type: 'training' }, // чт
+  { date: '2026-06-05', start: '19:30', end: '21:00', type: 'training' }, // пт
+
+  { date: '2026-06-09', start: '18:00', end: '19:30', type: 'training' }, // вт
+  { date: '2026-06-10', start: '14:45', end: '16:15', type: 'training' }, // ср
+  { date: '2026-06-12', start: '16:15', end: '17:45', type: 'training' }, // пт
+
+  { date: '2026-06-16', start: '15:00', end: '16:30', type: 'training' }, // вт
+  { date: '2026-06-18', start: '15:00', end: '16:30', type: 'training' }, // чт
+  { date: '2026-06-19', start: '15:00', end: '16:30', type: 'training' }, // пт
+
+  { date: '2026-06-23', start: '18:00', end: '19:30', type: 'training' }, // вт
+  { date: '2026-06-25', start: '15:00', end: '16:30', type: 'training' }, // чт
+  { date: '2026-06-26', start: '12:00', end: '13:30', type: 'training' }, // пт
 ];
 
 async function main(): Promise<void> {
@@ -74,9 +76,9 @@ async function main(): Promise<void> {
     let inserted = 0;
     for (const p of PLAN) {
       await c.query(
-        `INSERT INTO trainings (tenant_id, team_id, starts_at, duration_min, venue_id, venue_text, type, notes)
-         VALUES ($1, $2, $3, 90, 'seed', $4, $5, $6)`,
-        [tenant, team, isoAt(p.off, p.hh, p.mm), VENUE, p.type, p.notes],
+        `INSERT INTO trainings (tenant_id, team_id, starts_at, duration_min, venue_id, venue_text, type)
+         VALUES ($1, $2, $3, $4, 'seed', $5, $6)`,
+        [tenant, team, iso(p.date, p.start), durMin(p.start, p.end), VENUE, p.type],
       );
       inserted++;
     }
