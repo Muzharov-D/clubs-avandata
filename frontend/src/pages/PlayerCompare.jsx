@@ -5,8 +5,25 @@ import { useDocumentTitle } from '../hooks/useDocumentTitle';
 import { useTeam } from '../contexts/TeamContext';
 import { Sparkline } from '../components/Sparkline';
 import { playerLabel } from '../utils/players';
+import { percentileRank } from '../utils/num';
+import { per90 } from '../utils/analytics';
+import ComparePizza from '../components/analytics/ComparePizza';
+import '../components/analytics/ComparePizza.css';
 import './PlayerCompare.css';
 import './playersKinetic.css';
+
+// Метрики для наложения пицц — перцентиль в команде (на 90 минут).
+const PIZZA_METRICS = [
+  { label: 'Гол+пас',      get: (s) => (s.goals || 0) + (s.assists || 0) },
+  { label: 'Удары',        get: (s) => s.shots || 0 },
+  { label: 'Ключевые',     get: (s) => s.keyPass || 0 },
+  { label: 'Обводки',      get: (s) => s.dribble || 0 },
+  { label: 'Отборы',       get: (s) => s.tackle || 0 },
+  { label: 'Перехваты',    get: (s) => s.interception || 0 },
+  { label: 'Единоборства', get: (s) => s.duel || 0 },
+  { label: 'Прессинг',     get: (s) => s.pressing || 0 },
+  { label: 'Дистанция',    get: (s) => s.distance || 0 },
+];
 
 // Метрики сравнения: рейтинги (0–10) + сезонные суммы действий.
 const ROWS = [
@@ -60,6 +77,24 @@ export default function PlayerCompare() {
   const a = players.find((p) => p.id === aId) || null;
   const b = players.find((p) => p.id === bId) || null;
 
+  const [mode, setMode] = useState('bars'); // 'bars' | 'pizza'
+
+  // Перцентильные слайсы для наложения пицц: А и B на одних осях vs команда.
+  const pizzaSlices = useMemo(() => {
+    if (!a || !b) return [];
+    const pool = players.filter((p) => p.minutes > 0);
+    if (pool.length < 3) return [];
+    return PIZZA_METRICS.map((m) => {
+      const poolMax = Math.max(0, ...pool.map((p) => Number(m.get(p)) || 0));
+      if (poolMax <= 0) return null;
+      const poolVals = pool.map((p) => per90(m.get(p), p.minutes, 1, 90));
+      const aPct = percentileRank(per90(m.get(a), a.minutes, 1, 90), poolVals);
+      const bPct = percentileRank(per90(m.get(b), b.minutes, 1, 90), poolVals);
+      if (aPct == null && bPct == null) return null;
+      return { axis: m.label, a: aPct ?? 0, b: bPct ?? 0 };
+    }).filter(Boolean);
+  }, [a, b, players]);
+
   const trendA = useApi(() => (aId ? fetchPlayerTrend(aId) : Promise.resolve(null)), [aId]);
   const trendB = useApi(() => (bId ? fetchPlayerTrend(bId) : Promise.resolve(null)), [bId]);
   const serA = (trendA.data?.series || []).map((s) => s.overall).filter((v) => v > 0);
@@ -81,7 +116,7 @@ export default function PlayerCompare() {
             {players.map((p) => <option key={p.id} value={p.id}>{playerLabel(p)}</option>)}
           </select>
         </label>
-        <div className="pc-vs">VS</div>
+        <div className="pc-vs">—</div>
         <label className="pc-picker">
           <span>Игрок B</span>
           <select value={bId} onChange={(e) => setBId(e.target.value)}>
@@ -91,6 +126,30 @@ export default function PlayerCompare() {
       </div>
 
       {a && b && (
+        <div className="player-compare__modeswitch" role="tablist" aria-label="Режим сравнения">
+          <button
+            type="button" role="tab" aria-selected={mode === 'bars'}
+            className={`pc-mode${mode === 'bars' ? ' is-active' : ''}`}
+            onClick={() => setMode('bars')}
+          >Полосы</button>
+          <button
+            type="button" role="tab" aria-selected={mode === 'pizza'}
+            className={`pc-mode${mode === 'pizza' ? ' is-active' : ''}`}
+            onClick={() => setMode('pizza')}
+            disabled={pizzaSlices.length < 3}
+            title={pizzaSlices.length < 3 ? 'Недостаточно данных для пиццы' : ''}
+          >Наложение пицц</button>
+        </div>
+      )}
+
+      {a && b && mode === 'pizza' && pizzaSlices.length >= 3 && (
+        <div className="card player-compare__pizza">
+          <div className="page-section-title">Профили друг на друге</div>
+          <ComparePizza slices={pizzaSlices} nameA={playerLabel(a)} nameB={playerLabel(b)} />
+        </div>
+      )}
+
+      {a && b && mode === 'bars' && (
         <>
           <div className="card player-compare__trend">
             <div className="pc-trend__col">

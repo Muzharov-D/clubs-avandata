@@ -1,0 +1,52 @@
+.cmp-pz {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+.cmp-pz__svg {
+  width: 100%;
+  max-width: 420px;
+  height: auto;
+  overflow: visible;
+}
+.cmp-pz__ring {
+  fill: none;
+  stroke: var(--border, #262d3a);
+  stroke-width: 1;
+}
+.cmp-pz__axis {
+  stroke: var(--border, #262d3a);
+  stroke-width: 1;
+}
+.cmp-pz__lab {
+  font-size: 11px;
+  fill: var(--text-muted-strong, #b4c0d2);
+  font-weight: 600;
+}
+.cmp-pz__poly {
+  stroke-width: 2;
+  stroke-linejoin: round;
+}
+.cmp-pz__poly--a {
+  fill: color-mix(in srgb, var(--brand-primary) 26%, transparent);
+  stroke: var(--brand-primary);
+}
+.cmp-pz__poly--b {
+  fill: color-mix(in srgb, var(--rating-good, #82bc47) 24%, transparent);
+  stroke: var(--rating-good, #82bc47);
+}
+.cmp-pz__dot--a { fill: var(--brand-primary); }
+.cmp-pz__dot--b { fill: var(--rating-good, #82bc47); }
+
+.cmp-pz__legend {
+  display: flex;
+  gap: 18px;
+  font-size: 13px;
+  font-weight: 700;
+}
+.cmp-pz__leg { display: inline-flex; align-items: center; gap: 6px; color: var(--text); }
+.cmp-pz__leg i { width: 12px; height: 12px; border-radius: 3px; display: inline-block; }
+.cmp-pz__leg--a i { background: var(--brand-primary); }
+.cmp-pz__leg--b i { background: var(--rating-good, #82bc47); }
+.cmp-pz__note { font-size: 11px; color: var(--text-faint); text-align: center; }

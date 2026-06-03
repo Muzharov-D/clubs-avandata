@@ -38,6 +38,32 @@
 .cmp-bar__a { background: var(--brand-primary); }
 .cmp-bar__b { background: var(--rating-good); }
 
+/* Переключатель режима: полосы / наложение пицц */
+.player-compare__modeswitch {
+  display: inline-flex;
+  align-self: center;
+  background: var(--bg-surface-2, #1b212c);
+  border: 1px solid var(--border, #262d3a);
+  border-radius: 9px;
+  padding: 3px;
+  gap: 3px;
+  margin: 2px auto 4px;
+}
+.pc-mode {
+  appearance: none; border: none; background: transparent;
+  color: var(--text-muted); font-size: 13px; font-weight: 600;
+  padding: 7px 14px; border-radius: 7px; cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+.pc-mode:hover:not(:disabled) { color: var(--text); }
+.pc-mode:disabled { opacity: 0.4; cursor: default; }
+.pc-mode.is-active {
+  background: color-mix(in srgb, var(--brand-primary) 22%, transparent);
+  color: var(--text);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--brand-primary) 45%, transparent);
+}
+.player-compare__pizza { display: flex; flex-direction: column; gap: 12px; align-items: center; }
+
 @media (max-width: 640px) {
   .player-compare__trend { grid-template-columns: 1fr; }
 }
