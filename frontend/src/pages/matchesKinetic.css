@@ -88,3 +88,77 @@
 @media (prefers-reduced-motion: reduce) {
   .matches-dashboard.kinetic .md-grid > * { animation: none; }
 }
+
+/* ============================================================================
+   [1] ГЕРОЙ — счёт последнего матча (full-width, доминирующий момент).
+   ============================================================================ */
+.matches-dashboard.kinetic .matches-dashboard__hero-kinetic {
+  margin-bottom: 28px;
+}
+.matches-dashboard.kinetic .matches-dashboard__last--hero {
+  position: relative;
+  overflow: hidden;
+  padding: 24px 28px;
+  border-left: 4px solid var(--accent-cyan);
+  background:
+    linear-gradient(120deg, color-mix(in srgb, var(--accent-cyan) 8%, transparent), transparent 56%),
+    var(--bg-surface-2);
+}
+/* Левая грань-glow «дышит» (используем глобальный keyframe cyan-pulse). */
+.matches-dashboard.kinetic .matches-dashboard__last--hero::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 4px;
+  background: var(--accent-cyan);
+  animation: cyan-pulse 1.6s var(--ease-out, ease-in-out) infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .matches-dashboard.kinetic .matches-dashboard__last--hero::before { animation: none; }
+}
+
+/* Сетка команд героя: эмблемы крупнее, имена жирнее. */
+.matches-dashboard.kinetic .matches-dashboard__last-teams--hero {
+  gap: 24px;
+  padding: 16px 0;
+}
+.matches-dashboard.kinetic .matches-dashboard__last-teams--hero .matches-dashboard__last-team {
+  font-size: 16px;
+  font-weight: 700;
+}
+.matches-dashboard.kinetic .matches-dashboard__last-crest--hero,
+.matches-dashboard.kinetic .matches-dashboard__last-placeholder--hero {
+  width: 56px;
+  height: 56px;
+}
+
+/* Hero-счёт: гигантский clamp, цвет результата, broadcast-свечение. */
+.matches-dashboard.kinetic .matches-dashboard__last-score--hero {
+  font-family: var(--font-display, inherit);
+  font-size: clamp(80px, 12vw, 120px);
+  line-height: 1;
+  gap: 16px;
+}
+.matches-dashboard.kinetic .matches-dashboard__last-score--hero .win {
+  color: var(--accent-cyan);
+  text-shadow: 0 0 32px color-mix(in srgb, var(--accent-cyan) 35%, transparent);
+}
+.matches-dashboard.kinetic .matches-dashboard__last-score--hero .loss {
+  color: var(--rating-poor);
+}
+.matches-dashboard.kinetic .matches-dashboard__last-score--hero .sep {
+  color: var(--text-faint);
+  font-size: 0.6em;
+}
+
+@media (max-width: 768px) {
+  .matches-dashboard.kinetic .matches-dashboard__last-teams--hero {
+    grid-template-columns: 1fr auto 1fr;
+    gap: 10px;
+  }
+  .matches-dashboard.kinetic .matches-dashboard__last-crest--hero,
+  .matches-dashboard.kinetic .matches-dashboard__last-placeholder--hero {
+    width: 40px;
+    height: 40px;
+  }
+}

@@ -136,11 +136,90 @@
   font-variant-numeric: tabular-nums;
 }
 
+/* ───────── ГЕРОЙ-ВАРИАНТ: расширенная ДНК-карта (полная ширина, до инфо) ─────────
+   Раскладка 120px фото | 1fr текст | 280px рейтинг-блок (сильные стороны). */
+.dna-card--hero {
+  display: grid;
+  grid-template-columns: 120px minmax(0, 1fr) minmax(0, 320px);
+  gap: 24px;
+  align-items: start;
+  padding: 28px 26px;
+  background:
+    radial-gradient(130% 150% at 0% 0%, color-mix(in srgb, var(--brand-primary) 28%, transparent), transparent 55%),
+    radial-gradient(120% 140% at 100% 100%, color-mix(in srgb, var(--accent-cyan) 16%, transparent), transparent 55%),
+    var(--bg-surface);
+}
+
+/* Фото игрока — круглое, кольцо cyan-pulse 4px + свечение. */
+.dna-card--hero .dna-card__photo {
+  position: relative;
+  z-index: 1;
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  overflow: hidden;
+  box-shadow:
+    0 0 0 4px color-mix(in srgb, var(--accent-cyan) 55%, transparent),
+    0 8px 28px rgba(0, 0, 0, 0.3);
+}
+.dna-card--hero .dna-card__photo > * {
+  width: 100% !important;
+  height: 100% !important;
+  border-radius: 50% !important;
+}
+
+.dna-card--hero .dna-card__head { grid-column: 2; }
+
+/* Блок «Сильные стороны» в герое — правая колонка. */
+.dna-card--hero .dna-card__block {
+  grid-column: 3;
+  grid-row: 1;
+  margin-top: 0;
+  align-self: stretch;
+}
+
+.dna-card__identity {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+
+.dna-card__stats-inline {
+  font-size: 13px;
+  color: var(--text-muted);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  margin-top: 8px;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .dna-card__glow,
   .dna-bar__fill { animation: none; }
 }
 
+/* Планшет/узкий desktop: рейтинг-блок уходит под текст. */
+@media (max-width: 900px) {
+  .dna-card--hero {
+    grid-template-columns: 120px minmax(0, 1fr);
+  }
+  .dna-card--hero .dna-card__block {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    margin-top: 18px;
+  }
+}
+
 @media (max-width: 560px) {
   .dna-card { padding: 20px 16px 18px; }
+  .dna-card--hero {
+    grid-template-columns: 1fr;
+    gap: 16px;
+    padding: 22px 18px;
+  }
+  .dna-card--hero .dna-card__photo { margin: 0 auto; }
+  .dna-card--hero .dna-card__head { grid-column: 1; text-align: center; }
+  .dna-card--hero .dna-card__superline { margin-left: auto; margin-right: auto; }
 }

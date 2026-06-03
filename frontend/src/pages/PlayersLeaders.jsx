@@ -6,7 +6,7 @@ import { useDocumentTitle } from '../hooks/useDocumentTitle';
 import LeaderMetricCard from '../components/LeaderMetricCard';
 import PlayerPhoto from '../components/PlayerPhoto';
 import RatingPill from '../components/RatingPill';
-import { AnimatedNumber, SplitText } from '../components/motion';
+import { AnimatedNumber, SplitText, Reveal, StaggerList, KineticCard } from '../components/motion';
 import { useAuth } from '../contexts/AuthContext';
 import { useTeam } from '../contexts/TeamContext';
 import { shortNameFromPlayer } from '../utils/players';
@@ -87,35 +87,41 @@ export default function PlayersLeaders() {
         Лидеры по сумме за сезон
       </div>
 
-      {overall && (
-        <div
-          className={'card players-leaders__top' + (canSeePlayer(overall.id) ? '' : ' players-leaders__top--locked')}
-          onClick={() => { if (canSeePlayer(overall.id)) navigate(`/players/${overall.id}`); }}
-          title={canSeePlayer(overall.id) ? '' : 'Доступно только тренеру'}
-        >
-          <div className="players-leaders__top-label">Лучший по среднему рейтингу сезона</div>
-          <div className="players-leaders__top-body">
-            <PlayerPhoto player={overall} size={120} />
-            <div className="players-leaders__top-info">
-              <div className="players-leaders__top-name"><SplitText text={shortNameFromPlayer(overall) || overall.fullName || ''} /></div>
-              <div className="players-leaders__top-pos">№{overall.number} · {overall.position || ''}</div>
-              <div className="players-leaders__top-stats">
-                <span>Матчи: <b>{overall.matches ?? '—'}</b></span>
-                <span>Голы: <b>{overall.goals ?? 0}</b></span>
-                <span>Пасы: <b>{overall.assists ?? 0}</b></span>
+      {overall && (() => {
+        const unlocked = canSeePlayer(overall.id);
+        return (
+          <Reveal variant="fade" duration={0.5} className="players-leaders__top-reveal">
+            <KineticCard
+              glow
+              onClick={unlocked ? () => navigate(`/players/${overall.id}`) : undefined}
+              ariaLabel={unlocked ? `Открыть профиль: ${overall.fullName || ''}` : 'Доступно только тренеру'}
+              className={'card players-leaders__top players-leaders__top--kinetic' + (unlocked ? '' : ' players-leaders__top--locked')}
+            >
+              <div className="players-leaders__top-label">Лучший по среднему рейтингу сезона</div>
+              <div className="players-leaders__top-body">
+                <PlayerPhoto player={overall} size={140} className="players-leaders__top-photo" />
+                <div className="players-leaders__top-info">
+                  <div className="players-leaders__top-name"><SplitText text={shortNameFromPlayer(overall) || overall.fullName || ''} /></div>
+                  <div className="players-leaders__top-pos">№{overall.number} · {overall.position || ''}</div>
+                  <div className="players-leaders__top-stats">
+                    <span>Матчи: <b>{overall.matches ?? '—'}</b></span>
+                    <span>Голы: <b>{overall.goals ?? 0}</b></span>
+                    <span>Пасы: <b>{overall.assists ?? 0}</b></span>
+                  </div>
+                </div>
+                <div className="players-leaders__top-rating">
+                  <RatingPill value={overall.avgOverall} size="xl" />
+                  <div className="players-leaders__top-rating-100">
+                    {overall.avgOverall ? (<><AnimatedNumber value={Math.round(overall.avgOverall * 10)} stiffness={180} />/100</>) : '—'}
+                  </div>
+                </div>
               </div>
-            </div>
-            <div className="players-leaders__top-rating">
-              <RatingPill value={overall.avgOverall} size="xl" />
-              <div className="players-leaders__top-rating-100">
-                {overall.avgOverall ? (<><AnimatedNumber value={Math.round(overall.avgOverall * 10)} />/100</>) : '—'}
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+            </KineticCard>
+          </Reveal>
+        );
+      })()}
 
-      <div className="players-leaders__grid">
+      <StaggerList className="players-leaders__grid" speed="loose">
         {leaders.map(([label, lead], i) => (
           <LeaderMetricCard
             key={i}
@@ -125,7 +131,7 @@ export default function PlayersLeaders() {
             locked={lead?.item ? !canSeePlayer(lead.item.id) : false}
           />
         ))}
-      </div>
+      </StaggerList>
     </div>
   );
 }

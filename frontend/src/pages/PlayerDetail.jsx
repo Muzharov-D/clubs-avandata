@@ -34,7 +34,7 @@ function fmtMatchShort(m) {
   const dt = d ? new Date(d).toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' }) : '';
   const opp = trimAge(m.opponent || m.away || m.home || '');
   const score = (m.scoreHome != null && m.scoreAway != null) ? ` ${m.scoreHome}:${m.scoreAway}` : '';
-  return `${dt}${score ? ' ·' + score : ''}${opp ? ' vs ' + opp : ''}`.trim();
+  return `${dt}${score ? ' ·' + score : ''}${opp ? ' — ' + opp : ''}`.trim();
 }
 
 // Ключевые метрики для бейджей "Лучший в команде" — топ-3 ранг по матчу.
@@ -267,54 +267,73 @@ function SeasonTab({ identity, playerId, teamId, teamName, seasonPlayers, series
     [identity, seasonTotals, series, seasonPlayers, basis],
   );
 
+  // Позиционная строка героя ДНК: №7 · полузащитник · Легирус.
+  const positionLine = [
+    identity.number != null ? `№${identity.number}` : null,
+    identity.positionFull || identity.position || null,
+    teamName ? trimAge(teamName) : null,
+  ].filter(Boolean).join(' · ');
+
+  // ДНК-карта строится только при наличии сезонного пула (4+ игроков). Если её
+  // нет — показываем компактную сезонную шапку как fallback, чтобы экран не пустел.
+  const dnaCard = (
+    <PlayerDnaCard
+      subject={identity}
+      seasonPlayers={seasonPlayers}
+      basis={basis}
+      className="dna-card--hero"
+      showStatsInline
+      stats={seasonTotals}
+      positionLine={positionLine}
+      photo={<PlayerPhoto player={identity} size={120} />}
+    />
+  );
+
   return (
     <>
-      {/* Компактная шапка: фото · имя · позиция/команда · средний рейтинг */}
-      <div className="card player-detail__hero player-detail__hero--season">
-        <PlayerPhoto player={identity} size={120} />
-        <div className="player-detail__hero-info">
-          <h1 className="player-detail__hero-name"><SplitText text={identity.fullName} /></h1>
-          <div className="player-detail__hero-pos">
-            {[
-              identity.number != null ? `№${identity.number}` : null,
-              identity.positionFull || identity.position || null,
-              teamName ? trimAge(teamName) : null,
-            ].filter(Boolean).join(' · ')}
+      {/* ГЕРОЙ-ЦЕНТР: расширенная ДНК-карта — сразу после вкладок, до инфо-блоков */}
+      <Reveal variant="slide-up" duration={0.4}>{dnaCard}</Reveal>
+
+      {/* Fallback-шапка, если сезонного пула для ДНК недостаточно */}
+      {(!Array.isArray(seasonPlayers) || seasonPlayers.length < 4) && (
+        <div className="card player-detail__hero player-detail__hero--season">
+          <PlayerPhoto player={identity} size={120} />
+          <div className="player-detail__hero-info">
+            <h1 className="player-detail__hero-name"><SplitText text={identity.fullName} /></h1>
+            <div className="player-detail__hero-pos">{positionLine}</div>
+          </div>
+          <div className="player-detail__hero-rating">
+            <RatingPill value={avg} size="xl" />
+            <div className="player-detail__hero-rating-100">средний за сезон</div>
           </div>
         </div>
-        <div className="player-detail__hero-rating">
-          <RatingPill value={avg} size="xl" />
-          <div className="player-detail__hero-rating-100">средний за сезон</div>
-        </div>
-      </div>
+      )}
 
-      {/* ДНК игрока — сигнатурная карта-личность (архетип + перцентильный нарратив) */}
-      <PlayerDnaCard subject={identity} seasonPlayers={seasonPlayers} basis={basis} />
-
-      {/* ОВЕРВЬЮ: 3 карточки в ряд */}
-      <div className="player-detail__overview">
-        <PlayerInfoCard identity={identity} teamName={teamName} />
-        <SeasonStatsCard totals={seasonTotals} />
-        <div className="card pd-bio">
-          <div className="page-section-title">Профиль</div>
-          {bio ? <p className="pd-bio__text">{bio}</p> : <div className="pd-bio__empty">Сезонная сводка появится после разбора матчей.</div>}
+      {/* ОВЕРВЬЮ: 2 карточки в ряд (инфо · авто-биография) */}
+      <Reveal variant="slide-up" duration={0.5}>
+        <div className="player-detail__overview player-detail__overview--duo">
+          <PlayerInfoCard identity={identity} teamName={teamName} />
+          <div className="card pd-bio">
+            <div className="page-section-title">Профиль</div>
+            {bio ? <p className="pd-bio__text">{bio}</p> : <div className="pd-bio__empty">Сезонная сводка появится после разбора матчей.</div>}
+          </div>
         </div>
-      </div>
+      </Reveal>
 
       {/* Посещаемость тренировок — появляется только если есть данные */}
       <AttendanceBlock teamId={teamId} playerId={playerId} />
 
       {/* Радар-витрина: сезонная пицца (за матч vs позиционный пул) */}
-      <Reveal variant="slide-up"><SeasonProfileCard subject={identity} seasonPlayers={seasonPlayers} basis={basis} /></Reveal>
+      <Reveal variant="slide-up" duration={0.5} delay={0.2}><SeasonProfileCard subject={identity} seasonPlayers={seasonPlayers} basis={basis} /></Reveal>
 
       {/* Динамика по сезону — спарклайны рейтингов + лента матчей */}
-      <Reveal variant="slide-up"><PlayerTrendCard playerId={playerId} series={series} /></Reveal>
+      <Reveal variant="slide-up" duration={0.5} delay={0.3}><PlayerTrendCard playerId={playerId} series={series} /></Reveal>
 
       {/* Форма: индекс свежих матчей, vs своё среднее, серия, траектория */}
-      <Reveal variant="slide-up"><PlayerFormCard playerId={playerId} series={series} /></Reveal>
+      <Reveal variant="slide-up" duration={0.5} delay={0.35}><PlayerFormCard playerId={playerId} series={series} /></Reveal>
 
       {/* Перцентиль vs сезонный позиционный пул (за матч) — детальные полосы */}
-      <Reveal variant="slide-up"><SeasonPercentileCard subject={identity} seasonPlayers={seasonPlayers} basis={basis} /></Reveal>
+      <Reveal variant="slide-up" duration={0.5} delay={0.4}><SeasonPercentileCard subject={identity} seasonPlayers={seasonPlayers} basis={basis} /></Reveal>
 
       {series.length < 2 && (!seasonPlayers || seasonPlayers.length < 4) && (
         <div className="empty-state">
@@ -368,35 +387,6 @@ function PlayerInfoCard({ identity, teamName }) {
           </div>
         ))}
       </div>
-    </div>
-  );
-}
-
-// Карточка статистики сезона крупными плитками (референс «2025/2026 Stats»).
-function SeasonStatsCard({ totals }) {
-  const gi = totals ? (totals.goals || 0) + (totals.assists || 0) : 0;
-  const tiles = [
-    { label: 'Матчи',   value: totals?.matches },
-    { label: 'Минуты',  value: totals?.minutes },
-    { label: 'Голы',    value: totals?.goals },
-    { label: 'Ассисты', value: totals?.assists },
-    { label: 'Гол+пас', value: totals ? gi : null, wide: true },
-  ];
-  return (
-    <div className="card pd-stats">
-      <div className="page-section-title">Статистика сезона</div>
-      {totals ? (
-        <div className="pd-stats__grid">
-          {tiles.map((t) => (
-            <div className={`pd-stats__tile${t.wide ? ' pd-stats__tile--wide' : ''}`} key={t.label}>
-              <div className="pd-stats__val">{t.value ?? '—'}</div>
-              <div className="pd-stats__lab">{t.label}</div>
-            </div>
-          ))}
-        </div>
-      ) : (
-        <div className="pd-bio__empty">Нет сыгранных матчей в сезоне.</div>
-      )}
     </div>
   );
 }
@@ -717,7 +707,7 @@ function MatchTab({ playerId, match, loading, allMatches, currentMatchId, setSel
         ) : (
           <PizzaChart
             subjectName={`${player.fullName} · ${player.positionFull || ''} · ${player.minutes ?? '?'} мин`}
-            subjectMeta={`Цифры — реальные значения, длина слайса — percentile vs ${PIZZA_VS_LABEL} (${peers.length} чел.)`}
+            subjectMeta={`Цифры — реальные значения, длина слайса — перцентиль по ${PIZZA_VS_LABEL} (${peers.length} чел.)`}
             vsLabel={PIZZA_VS_LABEL}
             slices={pizzaSlices}
           />

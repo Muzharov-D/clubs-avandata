@@ -236,6 +236,46 @@
 }
 .players-rating__row--locked:hover { background: transparent; }
 
+/* ─── Первая (максимальная) строка: bold + cyan-border + лёгкий scale ─── */
+.players-rating__row-first-wrap {
+  animation: rating-first-in 0.3s var(--ease-out, ease-out) both;
+  animation-delay: 0.2s;
+  position: relative;
+  z-index: 1;
+}
+.players-rating__row--first {
+  background: color-mix(in srgb, var(--accent-cyan) 12%, transparent);
+  border: 1px solid var(--accent-cyan);
+  border-radius: 12px;
+  font-weight: 700;
+  scale: 1.01;
+  transition: scale 0.18s var(--ease-out, ease-out), background 0.18s var(--ease-out, ease-out);
+}
+.players-rating__row--first .players-rating__name,
+.players-rating__row--first .col-pos { font-weight: 700; }
+.players-rating__row--first:hover {
+  scale: 1.015;
+  background: color-mix(in srgb, var(--accent-cyan) 18%, transparent);
+}
+@keyframes rating-first-in {
+  from { opacity: 0; transform: scale(0.95); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+/* Анимированное значение метрики — дисплейный шрифт, cyan, табличные цифры. */
+.players-rating__metric-value--animated {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 15px;
+  color: var(--accent-cyan);
+  font-variant-numeric: tabular-nums;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .players-rating__row-first-wrap { animation: none; }
+  .players-rating__row--first { scale: 1; }
+}
+
 @media (max-width: 768px) {
   .players-rating__table { overflow-x: auto; -webkit-overflow-scrolling: touch; }
   .players-rating__table table { min-width: 600px; font-size: 12px; }

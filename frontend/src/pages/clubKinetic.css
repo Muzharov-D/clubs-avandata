@@ -111,9 +111,62 @@
 }
 .cd.kinetic .cd__player:hover { transform: translateY(-2px); border-color: color-mix(in srgb, var(--brand-primary) 45%, transparent) !important; }
 
+/* ─── Broadcast-hero: асимметричный фрейм «Главное» ─── */
+.cd.kinetic .cd__main {
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--brand-secondary) 22%, transparent), transparent 60%),
+    color-mix(in srgb, var(--bg-surface) 88%, transparent) !important;
+  border: 1px solid var(--border-strong) !important;
+  box-shadow: var(--shadow) !important;
+}
+/* Следующий матч — герой-карточка с глубиной и акцент-гранью */
+.cd.kinetic .cd__mm--next {
+  background:
+    linear-gradient(160deg, color-mix(in srgb, var(--brand-primary) 14%, transparent), transparent 55%),
+    color-mix(in srgb, var(--bg-surface-2) 60%, transparent) !important;
+  border: 1px solid color-mix(in srgb, var(--brand-primary) 28%, var(--border)) !important;
+}
+.cd.kinetic .cd__hero-matchup { font-family: var(--font-display); }
+
+/* ─── Гигантский обратный отсчёт — кинетик-свечение ─── */
+.cd.kinetic .cd__countdown-number {
+  text-shadow:
+    0 0 60px color-mix(in srgb, var(--accent-cyan) 45%, transparent),
+    0 8px 36px color-mix(in srgb, var(--brand-primary) 35%, transparent);
+}
+
+/* ─── KPI-карточки справа: дисплей-числа ─── */
+.cd.kinetic .cd__kpi-big { font-family: var(--font-display) !important; }
+
+/* ─── Топ-5: иконография на дисплей-шрифте ─── */
+.cd.kinetic .cd__top-rank,
+.cd.kinetic .cd__top-rating { font-family: var(--font-display); }
+
+/* ─── Состав tier-display: KineticCard-граница на топ-3 ─── */
+.cd.kinetic .cd__player-tile {
+  transition: transform var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast) var(--ease-out);
+}
+.cd.kinetic .cd__player-tile--top {
+  border-color: color-mix(in srgb, var(--brand-primary) 45%, transparent);
+  box-shadow:
+    inset 0 0 20px color-mix(in srgb, var(--accent-cyan) 10%, transparent),
+    var(--glow-subtle);
+}
+.cd.kinetic .cd__player-tile--top:hover {
+  box-shadow:
+    inset 0 0 30px color-mix(in srgb, var(--accent-cyan) 16%, transparent),
+    var(--glow-active);
+}
+.cd.kinetic .cd__player-name,
+.cd.kinetic .cd__player-rating,
+.cd.kinetic .cd__top-rating { font-variant-numeric: tabular-nums; }
+
 /* Reveal — глобальная самозапускающаяся анимация (theme-upgrade.css).
    Локальный opacity:0-override убран (прятал контент без JS). */
 
 @media (prefers-reduced-motion: reduce) {
   .cd.kinetic .reveal { opacity: 1; transform: none; transition: none; }
+  .cd.kinetic .cd__countdown-hero { animation: none; }
+  .cd.kinetic .cd__player-tile:hover,
+  .cd.kinetic .cd__player-tile--top:hover { transform: none; }
 }

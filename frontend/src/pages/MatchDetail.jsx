@@ -30,6 +30,8 @@ import ImpactMotm from '../components/analytics/ImpactMotm';
 import MatchLeaders from '../components/analytics/MatchLeaders';
 import SetPieceShotCard from '../components/analytics/SetPieceShotCard';
 import { coachDigest, matchMinutes } from '../utils/analytics';
+import { teamXg, ourSideKey, expectedPoints } from '../utils/analytics/xg';
+import { Reveal } from '../components/motion';
 import './MatchDetail.css';
 
 const SECTION_MAPS = [
@@ -271,6 +273,24 @@ export default function MatchDetail() {
   const usScore = homeIsUs ? (match.score?.home ?? 0) : (match.score?.away ?? 0);
   const themScore = homeIsUs ? (match.score?.away ?? 0) : (match.score?.home ?? 0);
 
+  // Нарративная строка вердикта: первый рядовой инсайт (rule-based / модельный),
+  // словесный вывод вместо сырых чисел (контракт UI). Fallback по счёту.
+  const verdictText = allInsights[0]?.text
+    || (usScore > themScore ? 'Победа в матче'
+      : usScore < themScore ? 'Поражение в матче'
+      : 'Ничейный результат');
+
+  // xPTS обеих сторон для полосы под счётом — из существующих xg-хелперов.
+  const { our: ourSide, opp: oppSide } = ourSideKey(match);
+  const xgUs = teamXg(match, ourSide);
+  const xgThem = teamXg(match, oppSide);
+  const hasXpts = xgUs != null && xgThem != null;
+  const xptsUs = hasXpts ? expectedPoints(xgUs, xgThem) : null;
+  const xptsThem = hasXpts ? expectedPoints(xgThem, xgUs) : null;
+  // Доля нашей команды в шкале «наша vs соперник» (центр полосы = равно).
+  const xptsTotal = hasXpts ? (xptsUs + xptsThem) : 0;
+  const usSharePct = hasXpts && xptsTotal > 0 ? Math.round((xptsUs / xptsTotal) * 100) : 50;
+
   return (
     <div className="page match-detail kinetic" ref={pageRef}>
       <div className="match-detail__topbar">
@@ -297,35 +317,48 @@ export default function MatchDetail() {
         </div>
       </div>
 
-      {/* HERO — kinetic: кинетик-имена, count-up счёт, mesh-фон */}
+      {/* HERO — «Вердикт матча»: full-bleed, доминирующий count-up счёт по центру,
+          эмблемы в верхних углах, нарратив-вердикт + xPTS-полоса с отдельным
+          входом (Reveal). Один герой-момент на экран. */}
       {(() => {
-        const Team = ({ side, team, isUs }) => {
+        const Badge = ({ side, team }) => {
           const src = shieldFor(team?.name, team?.shield);
           const initial = (team?.name || '?').charAt(0);
           return (
-            <div className={`kin-team kin-team--${side}${isUs ? ' kin-team--us' : ''}`}>
+            <div className={`kin-verdict__badge-${side}`} title={trimAgeStr(team?.name)}>
               {src
-                ? <img src={src} alt={team?.name || ''} className="kin-team__logo"
-                    onError={(e) => { e.currentTarget.outerHTML = `<div class="kin-team__badge">${initial}</div>`; }} />
-                : <div className="kin-team__badge">{initial}</div>}
-              <div className="kin-team__name">{trimAgeStr(team?.name)}</div>
-              <div className="kin-team__tag">{isUs ? 'наша команда' : 'соперник'}</div>
+                ? <img src={src} alt={team?.name || ''} className="kin-verdict__badge-img"
+                    onError={(e) => { e.currentTarget.outerHTML = initial; }} />
+                : initial}
             </div>
           );
         };
         return (
-          <div className="kin-hero reveal is-in">
-            <Team side="home" team={match.homeTeam} isUs={homeIsUs} />
-            <div className="kin-score-block">
-              <div className="kin-date">{fmtDate(match.date)}</div>
-              <div className="kin-score">
-                <span className={`kin-score__num${usScore > themScore && homeIsUs ? ' kin-score__num--win' : ''}`}>{homeScore}</span>
-                <span className="kin-score__sep">:</span>
-                <span className={`kin-score__num${usScore > themScore && !homeIsUs ? ' kin-score__num--win' : ''}`}>{awayScore}</span>
+          <div className="kin-hero-verdict kin-verdict reveal is-in">
+            <Badge side="home" team={match.homeTeam} />
+            <Badge side="away" team={match.awayTeam} />
+            <div className="kin-verdict__date">{fmtDate(match.date)}</div>
+
+            <div className="kin-verdict__score-container">
+              <div className="kin-verdict__score">
+                <span className={`kin-verdict__score-num${usScore > themScore && homeIsUs ? ' kin-verdict__score--win' : ''}`}>{homeScore}</span>
+                <span className="kin-verdict__score-sep">:</span>
+                <span className={`kin-verdict__score-num${usScore > themScore && !homeIsUs ? ' kin-verdict__score--win' : ''}`}>{awayScore}</span>
               </div>
-              <span className="kin-status"><span className="kin-status__dot" />Матч разобран</span>
+
+              <div className="kin-verdict__narrative">{verdictText}</div>
+
+              {hasXpts && (
+                <Reveal variant="clip" duration={0.6} delay={1.2} className="kin-verdict__xpts-wrap">
+                  <div className="kin-verdict__xpts-bar">
+                    <span className="kin-verdict__xpts-pill kin-verdict__xpts-pill--us" style={{ left: `${usSharePct}%` }} />
+                  </div>
+                  <div className="kin-verdict__xpts-legend">
+                    ожидаемые очки: {xptsUs.toFixed(1)} — {xptsThem.toFixed(1)}
+                  </div>
+                </Reveal>
+              )}
             </div>
-            <Team side="away" team={match.awayTeam} isUs={!homeIsUs} />
           </div>
         );
       })()}
@@ -338,10 +371,10 @@ export default function MatchDetail() {
           ['md-xg', 'xG'],
           ['md-press', 'Прессинг'],
           ['md-insights', 'Выводы'],
-          ['md-momentum', 'Momentum'],
+          ['md-momentum', 'Динамика'],
           ['md-half', 'По таймам'],
           ['md-fitness', 'Фитнес'],
-          ['md-heatmap', 'Хитмап'],
+          ['md-heatmap', 'Тепловая карта'],
           ['md-detail', 'Детали'],
           // 'md-maps' (Командные карты) временно скрыт — пока выводим только
           // тепловую карту игрока (на странице игрока). Командные карты добавим
@@ -439,23 +472,28 @@ export default function MatchDetail() {
       {/* Хитмап состава — игрок × метрика (StatsBomb data-table) */}
       {(match.players || []).filter((p) => (p.minutes ?? 0) > 0).length >= 3 && (
         <div className="card md-anchor reveal" id="md-heatmap">
-          <div className="page-section-title">Хитмап состава</div>
+          <div className="page-section-title">Тепловая карта состава</div>
           <SquadHeatmap players={match.players} />
           <div className="md-insights__note" style={{ marginTop: 8 }}>Заливка ячейки — относительно лучшего в столбце. Рейтинг — по цветовой шкале оценки.</div>
         </div>
       )}
 
+      {/* Поле-формация — full-width, над 3-колоночной сеткой. Без оборачивания
+          в .card: чистый контейнер во всю ширину разбора. */}
+      <div className="match-detail__field-full reveal">
+        <FormationField
+          formation={match.formation}
+          /* Передаём match.players (с adapter'ом и photoUrl) вместо team-wide,
+             чтобы PlayerPhoto в pitch получил реальные YFL-фото */
+          players={(match.players || []).length ? match.players : players}
+          ourTeamName={trimAgeStr(match.homeTeam?.name)}
+          imageSrc={match.formationImage}
+          imageFullSrc={match.formationImageFull}
+        />
+      </div>
+
       <div className="match-detail__grid md-anchor reveal" id="md-detail">
         <div className="match-detail__left">
-          <FormationField
-            formation={match.formation}
-            /* Передаём match.players (с adapter'ом и photoUrl) вместо team-wide,
-               чтобы PlayerPhoto в pitch получил реальные YFL-фото */
-            players={(match.players || []).length ? match.players : players}
-            ourTeamName={trimAgeStr(match.homeTeam?.name)}
-            imageSrc={match.formationImage}
-            imageFullSrc={match.formationImageFull}
-          />
           <div className="card guest-placeholder">
             <div className="page-section-title">Состав соперника</div>
             <div className="guest-placeholder__msg">

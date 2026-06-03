@@ -4,11 +4,17 @@
   gap: 8px;
 }
 
+.match-list__items {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
 .match-list__title {
   font-size: 12px;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  color: rgba(255, 255, 255, 0.5);
+  color: var(--text-faint);
   margin-bottom: 4px;
   font-weight: 600;
 }
@@ -17,24 +23,45 @@
   display: flex;
   flex-direction: column;
   gap: 6px;
+  width: 100%;
   padding: 12px 14px;
   background: rgba(20, 20, 60, 0.7);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--border);
   border-radius: 10px;
   text-align: left;
   color: #fff;
   cursor: pointer;
-  transition: background 0.15s, border-color 0.15s;
+  transition: background 0.15s, border-color 0.15s, transform 0.15s, opacity 0.3s;
 }
 
 .match-list__item:hover {
   background: rgba(26, 75, 160, 0.35);
-  border-color: rgba(34, 211, 238, 0.3);
+  border-color: color-mix(in srgb, var(--accent-cyan) 30%, transparent);
+  transform: translateY(-2px);
 }
 
 .match-list__item--active {
-  background: rgba(26, 75, 160, 0.55);
-  border-color: rgba(34, 211, 238, 0.6);
+  background: color-mix(in srgb, var(--accent-cyan) 8%, rgba(26, 75, 160, 0.55));
+  border-color: color-mix(in srgb, var(--accent-cyan) 60%, transparent);
+}
+
+/* Последние 3 матча — самые свежие: cyan-грань слева, полная яркость. */
+.match-list__item--recent {
+  border-left: 2px solid var(--accent-cyan);
+  opacity: 1;
+}
+
+/* Старые матчи (>7 дней) — приглушены, уводим в фон. */
+.match-list__item--aged {
+  opacity: 0.5;
+}
+.match-list__item--aged .match-list__teams,
+.match-list__item--aged .match-list__date,
+.match-list__item--aged .match-list__status {
+  color: var(--text-faint);
+}
+.match-list__item--aged:hover {
+  opacity: 0.85;
 }
 
 .match-list__date {

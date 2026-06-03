@@ -12,8 +12,9 @@ import { useAuth } from '../contexts/AuthContext';
 import { useTeam } from '../contexts/TeamContext';
 import { useTournament } from '../contexts/TournamentContext';
 import { useDocumentTitle } from '../hooks/useDocumentTitle';
-import { AnimatedNumber, SplitText } from '../components/motion';
+import { AnimatedNumber, SplitText, Reveal, StaggerList, KineticCard } from '../components/motion';
 import './MatchesDashboard.css';
+import './matchesKinetic.css';
 
 function num(v) {
   if (v === null || v === undefined) return null;
@@ -146,9 +147,53 @@ export default function MatchesDashboard() {
       .slice(0, 5);
   }, [allMatches]);
 
+  const homeScore = lastMatch?.score?.home;
+  const awayScore = lastMatch?.score?.away;
+
   return (
     <div className="page matches-dashboard kinetic">
-      {/* Season hero */}
+      {/* [1] ГЕРОЙ — счёт последнего матча, full-width, над заголовком сезона */}
+      {lastMatch && (
+        <Reveal variant="slide-up" duration={0.7} delay={0} className="matches-dashboard__hero-kinetic">
+          <KineticCard glow className="card matches-dashboard__last matches-dashboard__last--hero">
+            <div className="page-section-title">Сводка последнего матча</div>
+            <div className="matches-dashboard__last-body">
+              <div className="matches-dashboard__last-date">{fmtDate(lastMatch.date)}</div>
+              <div className="matches-dashboard__last-teams matches-dashboard__last-teams--hero">
+                <div className="matches-dashboard__last-team">
+                  <LastTeamCrest name={lastMatch.homeTeam?.name} hero />
+                  <span>{lastMatch.homeTeam?.name?.replace(/\s*[Uu]-?\s*\d{1,3}\s*$/, '').replace(/\s+20\d{2}\s*$/, '') || 'Команда'}</span>
+                </div>
+                <div className="matches-dashboard__last-score matches-dashboard__last-score--hero">
+                  <span className={homeScore != null && homeScore > awayScore ? 'win' : (homeScore != null && homeScore < awayScore ? 'loss' : '')}>
+                    {homeScore != null
+                      ? <AnimatedNumber value={Number(homeScore)} format={(v) => String(Math.round(v))} stiffness={120} damping={25} />
+                      : '—'}
+                  </span>
+                  <span className="sep">:</span>
+                  <span className={awayScore != null && awayScore > homeScore ? 'win' : (awayScore != null && awayScore < homeScore ? 'loss' : '')}>
+                    {awayScore != null
+                      ? <AnimatedNumber value={Number(awayScore)} format={(v) => String(Math.round(v))} stiffness={120} damping={25} />
+                      : '—'}
+                  </span>
+                </div>
+                <div className="matches-dashboard__last-team away">
+                  <span>{(lastMatch.awayTeam?.name || 'Соперник').replace(/\s*[Uu]-?\s*\d{1,3}\s*/g, ' ').replace(/\s+20\d{2}\s*/g, ' ').replace(/\s+/g, ' ').trim()}</span>
+                  <LastTeamCrest name={lastMatch.awayTeam?.name} hero />
+                </div>
+              </div>
+              <button
+                className="matches-dashboard__last-btn"
+                onClick={() => navigate(`/matches/${lastMatch.id}`)}
+              >
+                Открыть детали матча →
+              </button>
+            </div>
+          </KineticCard>
+        </Reveal>
+      )}
+
+      {/* Заголовок сезона */}
       <div className="matches-dashboard__hero">
         <div className="matches-dashboard__hero-text">
           <div className="matches-dashboard__hero-eyebrow">Сезон</div>
@@ -171,103 +216,51 @@ export default function MatchesDashboard() {
         </aside>
 
         <section className="matches-dashboard__col-right">
-          {/* Сводка последнего матча */}
-          {lastMatch && (
-            <div className="card matches-dashboard__last">
-              <div className="page-section-title">Сводка последнего матча</div>
-              <div className="matches-dashboard__last-body">
-                <div className="matches-dashboard__last-date">{fmtDate(lastMatch.date)}</div>
-                <div className="matches-dashboard__last-teams">
-                  <div className="matches-dashboard__last-team">
-                    <LastTeamCrest name={lastMatch.homeTeam?.name} />
-                    <span>{lastMatch.homeTeam?.name?.replace(/\s*[Uu]-?\s*\d{1,3}\s*$/, '').replace(/\s+20\d{2}\s*$/, '') || 'Команда'}</span>
-                  </div>
-                  <div className="matches-dashboard__last-score">
-                    <span className={lastMatch.score?.home > lastMatch.score?.away ? 'win' : ''}>{lastMatch.score?.home}</span>
-                    <span className="sep">:</span>
-                    <span className={lastMatch.score?.away > lastMatch.score?.home ? 'win' : ''}>{lastMatch.score?.away}</span>
-                  </div>
-                  <div className="matches-dashboard__last-team away">
-                    <span>{(lastMatch.awayTeam?.name || 'Соперник').replace(/\s*[Uu]-?\s*\d{1,3}\s*/g, ' ').replace(/\s+20\d{2}\s*/g, ' ').replace(/\s+/g, ' ').trim()}</span>
-                    <LastTeamCrest name={lastMatch.awayTeam?.name} />
-                  </div>
-                </div>
-                <button
-                  className="matches-dashboard__last-btn"
-                  onClick={() => navigate(`/matches/${lastMatch.id}`)}
-                >
-                  Открыть детали матча →
-                </button>
+          {/* [2] Сезонная статистика — иерархия: ведущая метрика + каскад вторичных */}
+          <Reveal variant="slide-up" duration={0.55} delay={0.2}>
+            <div className="card">
+              <div className="page-section-title">Информация по сезону</div>
+              <div className="matches-dashboard__season">
+                <SeasonStat label="Всего матчей" value={totalGames} primary />
+                <StaggerList speed="tight" className="matches-dashboard__season-secondary">
+                  <SeasonStat label="Забитые голы"          value={goalsFor} />
+                  <SeasonStat label="Пропущенные голы"      value={goalsAgainst} />
+                  <SeasonStat label="Среднее голов за игру" value={avgGoals} decimals={2} />
+                  <SeasonStat label="Сухие матчи"           value={cleanSheets} />
+                </StaggerList>
               </div>
             </div>
-          )}
+          </Reveal>
 
-          <div className="card">
-            <div className="page-section-title">Информация по сезону</div>
-            <div className="matches-dashboard__season">
-              <SeasonStat label="Всего матчей"            value={totalGames} />
-              <SeasonStat label="Забитые голы"            value={goalsFor} />
-              <SeasonStat label="Пропущенные голы"        value={goalsAgainst} />
-              <SeasonStat label="Среднее голов за игру"   value={avgGoals} decimals={2} />
-              <SeasonStat label="Сухие матчи"             value={cleanSheets} />
-            </div>
-          </div>
-
-          {/* Топ-5 по рейтингу с трендами — свайп-карусель */}
+          {/* [3] Топ-5 — podium-reveal: #1 чемпион крупно, #2–5 каскадом */}
           {topRated.length > 0 && (
             <div className="card">
               <div className="page-section-title">Топ-5 по рейтингу сезона</div>
               <div className="topr-table">
-                {topRated.map((row, i) => {
-                  const { player, last, avgAll, delta, games } = row;
-                  const unlocked = canSeePlayer(player.id);
-                  const trendClass =
-                    delta == null ? 'topr-trend--neutral'
-                    : delta > 0.05 ? 'topr-trend--up'
-                    : delta < -0.05 ? 'topr-trend--down'
-                    : 'topr-trend--flat';
-                  const trendArrow =
-                    delta == null ? '·'
-                    : delta > 0.05 ? '▲'
-                    : delta < -0.05 ? '▼'
-                    : '=';
-                  return (
-                    <div
-                      key={player.id}
-                      className={'topr-row' + (unlocked ? '' : ' topr-row--locked')}
-                      onClick={() => { if (unlocked) navigate(`/players/${player.id}`); }}
-                      title={unlocked ? '' : 'Доступно только тренеру'}
-                    >
-                      <div className="topr-row__rank">#{i + 1}</div>
-                      <PlayerPhoto player={player} size={40} />
-                      <div className="topr-row__info">
-                        <div className="topr-row__name">{shortNameFromPlayer(player)}</div>
-                        <div className="topr-row__pos">
-                          №{player.number} · {player.positionFull || player.position}
-                        </div>
-                      </div>
-                      <div className={`topr-trend ${trendClass}`}>
-                        <span className="topr-trend__arrow">{trendArrow}</span>
-                        <span className="topr-trend__value">
-                          {delta == null
-                            ? 'дебют'
-                            : `${delta > 0 ? '+' : ''}${delta.toFixed(2)}`}
-                        </span>
-                      </div>
-                      <div className="topr-row__ratingwrap">
-                        <div
-                          className="topr-row__rating"
-                          style={{ background: ratingColor(avgAll), color: ratingTextColor(avgAll) }}
-                        >
-                          <AnimatedNumber value={avgAll} format={(v) => v.toFixed(1)} />
-                        </div>
-                        <div className="topr-row__sub">
-                          за {games} {games === 1 ? 'матч' : games < 5 ? 'матча' : 'матчей'} · посл. {last.toFixed(1)}
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
+                {/* #1 — чемпион: входит первым (slide-right), крупнее, border-glow */}
+                <Reveal variant="slide-right" duration={0.6} delay={0.4}>
+                  <TopRatedRow
+                    row={topRated[0]}
+                    index={0}
+                    champion
+                    canSeePlayer={canSeePlayer}
+                    navigate={navigate}
+                  />
+                </Reveal>
+                {/* #2–5 — каскад после чемпиона */}
+                {topRated.length > 1 && (
+                  <StaggerList speed="normal" className="topr-row--cascade">
+                    {topRated.slice(1).map((row, i) => (
+                      <TopRatedRow
+                        key={row.player.id}
+                        row={row}
+                        index={i + 1}
+                        canSeePlayer={canSeePlayer}
+                        navigate={navigate}
+                      />
+                    ))}
+                  </StaggerList>
+                )}
               </div>
               {allMatchesLoading && (
                 <div className="topr-loading">Считаем накопленный рейтинг…</div>
@@ -298,28 +291,90 @@ export default function MatchesDashboard() {
 
 // Эмблема команды в сводке матча: через shieldFor (наш клуб → лого, соперник →
 // инициал, т.к. внешнего щита в объекте матча нет). Единая точка эмблем проекта.
-function LastTeamCrest({ name }) {
+function LastTeamCrest({ name, hero = false }) {
   const [errored, setErrored] = useState(false);
   const src = shieldFor(name || '', '');
   if (!src || errored) {
     return (
-      <span className="matches-dashboard__last-placeholder" aria-hidden>
+      <span className={`matches-dashboard__last-placeholder${hero ? ' matches-dashboard__last-placeholder--hero' : ''}`} aria-hidden>
         {(name || '?').trim().charAt(0).toUpperCase() || '?'}
       </span>
     );
   }
-  return <img className="matches-dashboard__last-crest" src={src} alt="" onError={() => setErrored(true)} />;
+  return <img className={`matches-dashboard__last-crest${hero ? ' matches-dashboard__last-crest--hero' : ''}`} src={src} alt="" onError={() => setErrored(true)} />;
 }
 
-function SeasonStat({ label, value, decimals = 0 }) {
+function SeasonStat({ label, value, decimals = 0, primary = false }) {
   const n = typeof value === 'number' ? value : Number(value);
   const isNum = value !== '—' && value != null && Number.isFinite(n);
   return (
-    <div className="season-stat">
+    <div className={'season-stat' + (primary ? ' season-stat--primary' : '')}>
       <div className="season-stat__value">
         {isNum ? <AnimatedNumber value={n} format={(v) => v.toFixed(decimals)} /> : value}
       </div>
       <div className="season-stat__label">{label}</div>
     </div>
+  );
+}
+
+// Строка топ-5 по рейтингу. champion=#1 (крупнее, border-glow, KineticCard glow);
+// остальные — обычная строка с микро-лифтом. Логика тренда/рейтинга едина.
+function TopRatedRow({ row, index, champion = false, canSeePlayer, navigate }) {
+  const { player, last, avgAll, delta, games } = row;
+  const unlocked = canSeePlayer(player.id);
+  const trendClass =
+    delta == null ? 'topr-trend--neutral'
+    : delta > 0.05 ? 'topr-trend--up'
+    : delta < -0.05 ? 'topr-trend--down'
+    : 'topr-trend--flat';
+  const trendArrow =
+    delta == null ? '·'
+    : delta > 0.05 ? '▲'
+    : delta < -0.05 ? '▼'
+    : '=';
+  const rowClass =
+    'topr-row'
+    + (champion ? ' topr-row--champion' : '')
+    + (unlocked ? '' : ' topr-row--locked');
+  return (
+    <KineticCard
+      glow={champion}
+      className={rowClass}
+      onClick={() => { if (unlocked) navigate(`/players/${player.id}`); }}
+      ariaLabel={unlocked ? `Профиль игрока ${shortNameFromPlayer(player)}` : 'Доступно только тренеру'}
+    >
+      <div className="topr-row__rank">#{index + 1}</div>
+      <PlayerPhoto player={player} size={champion ? 56 : 40} />
+      <div className="topr-row__info">
+        <div className="topr-row__name">{shortNameFromPlayer(player)}</div>
+        <div className="topr-row__pos">
+          №{player.number} · {player.positionFull || player.position}
+        </div>
+      </div>
+      <div className={`topr-trend ${trendClass}`}>
+        <span className="topr-trend__arrow">{trendArrow}</span>
+        <span className="topr-trend__value">
+          {delta == null
+            ? 'дебют'
+            : `${delta > 0 ? '+' : ''}${delta.toFixed(2)}`}
+        </span>
+      </div>
+      <div className="topr-row__ratingwrap">
+        <div
+          className="topr-row__rating"
+          style={{ background: ratingColor(avgAll), color: ratingTextColor(avgAll) }}
+        >
+          <AnimatedNumber
+            value={avgAll}
+            format={(v) => v.toFixed(1)}
+            stiffness={100}
+            damping={30}
+          />
+        </div>
+        <div className="topr-row__sub">
+          за {games} {games === 1 ? 'матч' : games < 5 ? 'матча' : 'матчей'} · посл. {last.toFixed(1)}
+        </div>
+      </div>
+    </KineticCard>
   );
 }

@@ -71,7 +71,35 @@ function computeDna(subject, seasonPlayers, basis) {
   return { archetype: archetypeOf(strengths.length ? strengths : ranked), strengths, growth, top: ranked[0] };
 }
 
-export default function PlayerDnaCard({ subject, seasonPlayers, basis = 90 }) {
+// Склонение русских числительных для inline-статистики сезона.
+function dnaPlural(n, one, few, many) {
+  const m10 = n % 10;
+  const m100 = n % 100;
+  if (m10 === 1 && m100 !== 11) return one;
+  if (m10 >= 2 && m10 <= 4 && (m100 < 10 || m100 >= 20)) return few;
+  return many;
+}
+
+// Однострочная сводка сезона: «14 матчей · 6 голов · 3 ассиста».
+function buildStatsLine(stats) {
+  if (!stats) return null;
+  const parts = [];
+  if (stats.matches != null) parts.push(`${stats.matches} ${dnaPlural(stats.matches, 'матч', 'матча', 'матчей')}`);
+  if (stats.goals != null) parts.push(`${stats.goals} ${dnaPlural(stats.goals, 'гол', 'гола', 'голов')}`);
+  if (stats.assists != null) parts.push(`${stats.assists} ${dnaPlural(stats.assists, 'ассист', 'ассиста', 'ассистов')}`);
+  return parts.length ? parts.join(' · ') : null;
+}
+
+export default function PlayerDnaCard({
+  subject,
+  seasonPlayers,
+  basis = 90,
+  className = '',
+  showStatsInline = false,
+  stats = null,
+  photo = null,
+  positionLine = null,
+}) {
   const dna = useMemo(() => computeDna(subject, seasonPlayers, basis), [subject, seasonPlayers, basis]);
   if (!dna) return null;
 
@@ -79,16 +107,23 @@ export default function PlayerDnaCard({ subject, seasonPlayers, basis = 90 }) {
   const superline = top.pct >= 75
     ? `Топ-${Math.max(1, 100 - top.pct)}% команды по «${top.label}»`
     : `Сильнее всего проявляет себя в «${top.label}»`;
+  const statsLine = showStatsInline ? buildStatsLine(stats) : null;
+  const rootClass = `dna-card${className ? ` ${className}` : ''}`;
 
   return (
-    <div className="dna-card">
+    <div className={rootClass}>
       <div className="dna-card__glow" aria-hidden />
+
+      {photo != null && <div className="dna-card__photo">{photo}</div>}
+
       <div className="dna-card__head">
         <div className="dna-card__eyebrow">ДНК игрока</div>
+        {positionLine && <div className="dna-card__identity">{positionLine}</div>}
         <h2 className="dna-card__archetype">
           <SplitText text={archetype.name} />
         </h2>
         <div className="dna-card__tagline">{archetype.tagline}</div>
+        {statsLine && <div className="dna-card__stats-inline">{statsLine}</div>}
         <div className="dna-card__superline">{superline}</div>
       </div>
 
@@ -101,7 +136,7 @@ export default function PlayerDnaCard({ subject, seasonPlayers, basis = 90 }) {
                 <div className="dna-bar__head">
                   <span className="dna-bar__label">{s.label}</span>
                   <span className="dna-bar__pct" style={{ color: colorForPct(s.pct) }}>
-                    <AnimatedNumber value={s.pct} />
+                    <AnimatedNumber value={s.pct} stiffness={200} damping={26} />
                     <span className="dna-bar__pct-suffix"> перцентиль</span>
                   </span>
                 </div>

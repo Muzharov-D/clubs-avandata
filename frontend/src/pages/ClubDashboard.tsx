@@ -38,7 +38,7 @@ import PredictedLineup from '../components/PredictedLineup';
 // @ts-ignore — legacy .jsx
 import PlayerPhoto from '../components/PlayerPhoto';
 import { useDocumentTitle } from '../hooks/useDocumentTitle';
-import { SplitText, AnimatedNumber } from '../components/motion';
+import { SplitText, AnimatedNumber, StaggerList } from '../components/motion';
 import './ClubDashboard.css';
 import './clubKinetic.css';
 
@@ -321,7 +321,7 @@ export default function ClubDashboard() {
       <section className="cd__main" id="sec-main">
         <div className="cd__main-title">Главное</div>
         <div className="cd__main-grid">
-          {/* Матчи: следующий + последний в одном блоке (#6) */}
+          {/* Матчи: следующий (герой, 60% высоты) + последний (вспомогательный, 40%) */}
           <div className="cd__main-matches">
             {nextMatch ? (
               <div className="cd__mm cd__mm--next">
@@ -335,7 +335,7 @@ export default function ClubDashboard() {
                   <span>{formatDateLong(nextMatch.date)}</span>
                   {nextMatch.venue && <span className="cd__hero-venue"> · {nextMatch.venue}</span>}
                 </div>
-                <Countdown to={nextMatch.date} />
+                <CountdownHero to={nextMatch.date} />
               </div>
             ) : (
               <div className="cd__mm cd__mm--empty">
@@ -362,6 +362,8 @@ export default function ClubDashboard() {
             )}
           </div>
 
+          {/* Правые 2 узкие колонки (40%) — KPI с каскадным появлением (StaggerList) */}
+          <StaggerList speed="normal" as="div" className="cd__kpi-column-group" whenInView={false}>
           {/* Рейтинг сезона (#9) — инфографика: оценка + форма + раскладка по линиям */}
           {(() => {
             const ov = Number(avgTeamRating ?? 0);
@@ -472,6 +474,7 @@ export default function ClubDashboard() {
               </div>
             );
           })()}
+          </StaggerList>
         </div>
       </section>
 
@@ -495,33 +498,34 @@ export default function ClubDashboard() {
               <div>Загрузи PDF + Excel SportVisor, чтобы увидеть рейтинги игроков</div>
             </div>
           ) : (
-            <ol className="cd__top">
-              {(() => {
-                // Шкала бара укоренена в 0 на канонической шкале рейтинга 0–10,
-                // а не в локальном максимуме топ-5 — иначе 7.9 и 8.2 выглядят как
-                // пропасть. Честная длина = доля от 10 (как у Opta/StatsBomb).
-                return topPlayers.map((p, i) => {
-                  const r = p.ratings?.overall ?? 0;
-                  const pct = Math.min(100, (r / 10) * 100);
-                  return (
-                    <li key={p.playerId} className="cd__top-row" role="button" tabIndex={0}
-                      onClick={() => navigate(`/players/${p.playerId}`)}
-                      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); navigate(`/players/${p.playerId}`); } }}>
-                      <span className="cd__top-rank">{i + 1}</span>
-                      <span className="cd__top-num">#{p.number ?? '—'}</span>
+            <StaggerList speed="normal" as="ol" className="cd__top">
+              {topPlayers.map((p, i) => {
+                const r = Number(p.ratings?.overall ?? 0);
+                const grp = posGroup(p.position);
+                const sub = [
+                  p.position || 'игрок',
+                  p.matches ? `${p.matches} матч.` : null,
+                ].filter(Boolean).join(' · ');
+                return (
+                  <li key={p.playerId} className="cd__top-row" role="button" tabIndex={0}
+                    onClick={() => navigate(`/players/${p.playerId}`)}
+                    onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); navigate(`/players/${p.playerId}`); } }}>
+                    <span className="cd__top-rank">{i + 1}</span>
+                    <span className="cd__top-figure">
+                      <PlayerPhoto player={p} size={64} className="cd__top-photo" />
+                      <RoleBadge group={grp} />
+                    </span>
+                    <span className="cd__top-id">
                       <span className="cd__top-name">{p.fullName}</span>
-                      <span className="cd__top-pos">{p.position || ''}</span>
-                      <span className="cd__top-bar" aria-hidden>
-                        <span className="cd__top-bar-fill" style={{ width: `${pct}%`, background: ratingColor(r) }} />
-                      </span>
-                      <span className="cd__top-rating" style={{ background: ratingColor(r), color: ratingTextColor(r) }}>
-                        {p.ratings?.overall?.toFixed(1) ?? '—'}
-                      </span>
-                    </li>
-                  );
-                });
-              })()}
-            </ol>
+                      <span className="cd__top-sub">{sub}</span>
+                    </span>
+                    <span className="cd__top-rating" style={{ background: ratingColor(r), color: ratingTextColor(r) }}>
+                      {r > 0 ? r.toFixed(1) : '—'}
+                    </span>
+                  </li>
+                );
+              })}
+            </StaggerList>
           )}
         </div>
 
@@ -580,9 +584,12 @@ export default function ClubDashboard() {
           </span>
         </div>
         {(() => {
-          // Состав без кнопок-фильтров: показываем как заявку — по линиям
-          // (вратари → защита → полузащита → нападение), внутри линии лучшие
-          // по рейтингу сверху. Порядок осмысленный сам по себе, сортировки не нужны.
+          // Состав tier-display: по линиям (вратари → защита → полузащита →
+          // нападение), внутри линии — три яруса:
+          //  • топ-3 по рейтингу → крупные плитки 80px (основа линии, свечение);
+          //  • остальные сыгравшие → 48px;
+          //  • бенч (без матчей или рейтинг < BENCH_RATING) → 48px, приглушены.
+          const BENCH_RATING = 3.0;
           const all = seasonRoster;
           const LINES: { id: string; label: string }[] = [
             { id: 'gk',  label: 'Вратари' },
@@ -591,7 +598,7 @@ export default function ClubDashboard() {
             { id: 'fwd', label: 'Нападение' },
             { id: 'unknown', label: 'Без позиции' },
           ];
-          const byLine = (id: string) => all
+          const byLine = (id: string): AnyObj[] => all
             .filter((p) => posGroup(p.position) === id)
             .sort((a, b) => {
               const ra = Number(a.ratings?.overall ?? 0); const rb = Number(b.ratings?.overall ?? 0);
@@ -599,44 +606,51 @@ export default function ClubDashboard() {
               return Number(a.number ?? 99) - Number(b.number ?? 99);
             });
 
-          const renderPlayer = (p: AnyObj) => {
+          // Плитка игрока: size 80 (топ-3) или 48 (остальные/бенч).
+          const renderTile = (p: AnyObj, size: 80 | 48) => {
             const r = Number(p.ratings?.overall ?? 0);
+            const grp = posGroup(p.position);
             const mins = Number(p.minutes ?? 0);
             const gp = Number(p.matches ?? 0);
-            const load = gp > 0
+            const sub = gp > 0
               ? `${gp} матч.${mins > 0 ? ` · ${mins}'` : ''}`
               : (mins > 0 ? `${mins}'` : 'не выходил');
             return (
               <div
                 key={p.playerId}
-                className={`cd__player${r > 0 ? ' cd__player--rated' : ''}`}
+                className={`cd__player-tile${size === 80 ? ' cd__player-tile--top' : ''}${r > 0 ? ' cd__player-tile--rated' : ''}`}
                 style={r > 0 ? ({ '--rt-col': ratingColor(r) } as React.CSSProperties) : undefined}
                 role="button" tabIndex={0}
                 onClick={() => navigate(`/players/${p.playerId}`)}
                 onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); navigate(`/players/${p.playerId}`); } }}
               >
-                <div className="cd__player-photo">
-                  <PlayerPhoto player={p} size={44} />
+                <div className="cd__player-figure">
+                  <PlayerPhoto player={p} size={size} className="cd__player-photo" />
+                  <RoleBadge group={grp} />
+                  {r > 0 && (
+                    <span className="cd__player-rating" style={{ background: ratingColor(r), color: ratingTextColor(r) }}>
+                      {r.toFixed(1)}
+                    </span>
+                  )}
                 </div>
-                <div className="cd__player-num">{p.number ?? '—'}</div>
-                <div className="cd__player-info">
-                  <div className="cd__player-name">{p.fullName}</div>
-                  <div className="cd__player-meta">
-                    {p.position || 'игрок'}{` · ${load}`}
-                  </div>
-                </div>
-                {r > 0 && (
-                  <div className="cd__player-rating" style={{ background: ratingColor(r), color: ratingTextColor(r) }}>
-                    {r.toFixed(1)}
-                  </div>
-                )}
+                <span className="cd__player-name">{p.fullName}</span>
+                <span className="cd__player-number">#{p.number ?? '—'} · {sub}</span>
               </div>
             );
           };
 
           const nonEmpty = LINES
-            .map((line) => ({ ...line, players: byLine(line.id) }))
-            .filter((g) => g.players.length > 0);
+            .map((line) => {
+              const players = byLine(line.id);
+              const isBench = (p: AnyObj): boolean =>
+                Number(p.matches ?? 0) === 0 || Number(p.ratings?.overall ?? 0) < BENCH_RATING;
+              const field = players.filter((p) => !isBench(p));
+              const bench = players.filter(isBench);
+              const top = field.slice(0, 3);
+              const rest = field.slice(3);
+              return { ...line, count: players.length, top, rest, bench };
+            })
+            .filter((g) => g.count > 0);
           // Заголовки линий показываем только когда позиции реально размечены
           // (есть ≥2 группы). Если все «без позиции» (частый случай ФФСПБ) —
           // просто состав без бессмысленной подписи «Без позиции».
@@ -648,11 +662,25 @@ export default function ClubDashboard() {
                   {showHeaders && (
                     <div className="cd__line-head">
                       <span className="cd__line-label">{g.label}</span>
-                      <span className="cd__line-count">{g.players.length}</span>
+                      <span className="cd__line-count">{g.count}</span>
                     </div>
                   )}
-                  <div className="cd__roster">
-                    {g.players.map(renderPlayer)}
+                  <div className="cd__line-tiers">
+                    {g.top.length > 0 && (
+                      <StaggerList speed="tight" as="div" className="cd__tier cd__tier--top">
+                        {g.top.map((p) => renderTile(p, 80))}
+                      </StaggerList>
+                    )}
+                    {g.rest.length > 0 && (
+                      <StaggerList speed="tight" as="div" className="cd__tier cd__tier--rest">
+                        {g.rest.map((p) => renderTile(p, 48))}
+                      </StaggerList>
+                    )}
+                    {g.bench.length > 0 && (
+                      <div className="cd__tier cd__tier--bench">
+                        {g.bench.map((p) => renderTile(p, 48))}
+                      </div>
+                    )}
                   </div>
                 </div>
               ))}
@@ -890,34 +918,97 @@ function formatDateShort(iso?: string): string {
 
 // StatTile вынесен в components/StatTile.tsx (glassmorphism + accent + delta)
 
-function Countdown({ to }: { to: string }) {
-  const [text, setText] = useState('');
+/** Группа позиции → буква-иконка роли для бейджа на фото. */
+type RoleGroup = 'gk' | 'def' | 'mid' | 'fwd' | 'unknown';
+const ROLE_LETTER: Record<RoleGroup, string> = { gk: 'ВР', def: 'З', mid: 'П', fwd: 'Н', unknown: '·' };
+const ROLE_TITLE: Record<RoleGroup, string> = {
+  gk: 'Вратарь', def: 'Защита', mid: 'Полузащита', fwd: 'Нападение', unknown: 'Без позиции',
+};
+
+/** Цветной бейдж-иконка роли на фото игрока (вратарь/защита/полузащита/нападение). */
+function RoleBadge({ group }: { group: string }) {
+  const g = (['gk', 'def', 'mid', 'fwd'].includes(group) ? group : 'unknown') as RoleGroup;
+  return (
+    <span className={`cd__role-badge cd__role-badge--${g}`} title={ROLE_TITLE[g]} aria-label={ROLE_TITLE[g]}>
+      {ROLE_LETTER[g]}
+    </span>
+  );
+}
+
+/**
+ * Состояние гигантского отсчёта: либо две крупных единицы (дни+часы / часы+мин),
+ * либо один компактный блок (<1 мин / идёт сейчас). null — отсчёт уже не нужен.
+ */
+type CountdownState =
+  | { mode: 'pair'; aLabel: string; aValue: number; aUnit: string; bValue: number; bUnit: string }
+  | { mode: 'single'; lead: string; value: number; unit: string }
+  | { mode: 'live' }
+  | null;
+
+function computeCountdown(to: string): CountdownState {
+  const diff = new Date(to).getTime() - Date.now();
+  if (diff <= -3 * 3600 * 1000) return null;      // завершился >3 ч назад
+  if (diff <= 0) return { mode: 'live' };
+  const days  = Math.floor(diff / 86400000);
+  const hours = Math.floor((diff % 86400000) / 3600000);
+  const mins  = Math.floor((diff % 3600000) / 60000);
+  if (days > 0)  return { mode: 'pair', aLabel: 'через', aValue: days, aUnit: 'дн.', bValue: hours, bUnit: 'ч.' };
+  if (hours > 0) return { mode: 'pair', aLabel: 'через', aValue: hours, aUnit: 'ч.', bValue: mins, bUnit: 'мин.' };
+  if (mins > 0)  return { mode: 'single', lead: 'начнётся через', value: mins, unit: 'мин.' };
+  return { mode: 'single', lead: 'начнётся через', value: 1, unit: 'мин.' };
+}
+
+/**
+ * Гигантский обратный отсчёт — герой-момент левой колонки. SplitText-слова
+ * («через», «и») + AnimatedNumber-числа, дышит через CSS (cd__breathe-hero).
+ * Пересчёт раз в минуту → числа переанимируются (движение подчёркивает время).
+ */
+function CountdownHero({ to }: { to: string }) {
+  const [state, setState] = useState<CountdownState>(() => computeCountdown(to));
   useEffect(() => {
     let timer: ReturnType<typeof setInterval> | null = null;
-    function tick() {
-      const diff = new Date(to).getTime() - Date.now();
-      if (diff <= -3 * 3600 * 1000) {
-        // Матч завершился больше 3 ч назад — countdown больше не нужен
-        setText('');
-        if (timer) clearInterval(timer);
-        return;
-      }
-      if (diff <= 0) {
-        setText('идёт сейчас');
-        return;
-      }
-      const days  = Math.floor(diff / 86400000);
-      const hours = Math.floor((diff % 86400000) / 3600000);
-      const mins  = Math.floor((diff % 3600000) / 60000);
-      if (days > 0)      setText(`через ${days} дн. ${hours} ч.`);
-      else if (hours > 0) setText(`через ${hours} ч. ${mins} мин.`);
-      else if (mins > 0)  setText(`через ${mins} мин.`);
-      else                setText('начнётся через минуту');
-    }
+    const tick = () => {
+      const next = computeCountdown(to);
+      setState(next);
+      if (next === null && timer) clearInterval(timer);
+    };
     tick();
     timer = setInterval(tick, 60000);
     return () => { if (timer) clearInterval(timer); };
   }, [to]);
-  if (!text) return null;
-  return <div className="cd__countdown">{text}</div>;
+
+  if (state === null) return null;
+  if (state.mode === 'live') {
+    return (
+      <div className="cd__countdown-hero" aria-label="Матч идёт сейчас">
+        <span className="cd__countdown-label"><SplitText text="идёт" /></span>
+        <span className="cd__countdown-number cd__countdown-number--word">сейчас</span>
+      </div>
+    );
+  }
+  if (state.mode === 'single') {
+    return (
+      <div className="cd__countdown-hero" aria-label={`${state.lead} ${state.value} ${state.unit}`}>
+        <span className="cd__countdown-label"><SplitText text={state.lead} /></span>
+        <span className="cd__countdown-number">
+          <AnimatedNumber value={state.value} format={(v) => String(Math.round(v))} stiffness={80} damping={12} />
+          <span className="cd__countdown-unit">{state.unit}</span>
+        </span>
+      </div>
+    );
+  }
+  return (
+    <div className="cd__countdown-hero" aria-label={`${state.aLabel} ${state.aValue} ${state.aUnit} и ${state.bValue} ${state.bUnit}`}>
+      <span className="cd__countdown-label"><SplitText text={state.aLabel} /></span>
+      <span className="cd__countdown-number">
+        <AnimatedNumber value={state.aValue} format={(v) => String(Math.round(v))} stiffness={80} damping={12} />
+        <span className="cd__countdown-unit">{state.aUnit}</span>
+      </span>
+      <span className="cd__countdown-label"><SplitText text="и" delay={0.2} /></span>
+      <span className="cd__countdown-number">
+        <AnimatedNumber value={state.bValue} format={(v) => String(Math.round(v))} stiffness={80} damping={12} />
+        <span className="cd__countdown-unit">{state.bUnit}</span>
+      </span>
+    </div>
+  );
 }

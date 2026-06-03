@@ -5,6 +5,7 @@ import { fetchPlayersSeason } from '../services/api';
 import { useDocumentTitle } from '../hooks/useDocumentTitle';
 import PlayerPhoto from '../components/PlayerPhoto';
 import RatingPill from '../components/RatingPill';
+import { AnimatedNumber, Reveal } from '../components/motion';
 import { useAuth } from '../contexts/AuthContext';
 import { useTeam } from '../contexts/TeamContext';
 import { ratingColor } from '../utils/colors';
@@ -148,6 +149,7 @@ export default function PlayersRating() {
         Рейтинги — средние за сезон, действия — суммы за сезон
       </div>
 
+      <Reveal variant="slide-up" duration={0.3}>
       <div className="card players-rating__controls">
         <div className="players-rating__controls-row players-rating__controls-row--metrics">
           <div className="players-rating__controls-label">Метрика</div>
@@ -200,6 +202,7 @@ export default function PlayersRating() {
           </button>
         </div>
       </div>
+      </Reveal>
 
       <div className="card players-rating__table">
         <div className="players-rating__head">
@@ -214,47 +217,60 @@ export default function PlayersRating() {
         <div className="players-rating__body">
           {rows.map(({ player, value }, i) => {
             const unlocked = canSeePlayer(player.id);
-            return (
-            <div
-              key={player.id}
-              className={'players-rating__row' + (unlocked ? '' : ' players-rating__row--locked')}
-              onClick={() => { if (unlocked) navigate(`/players/${player.id}`); }}
-              role={unlocked ? 'button' : undefined}
-              tabIndex={unlocked ? 0 : undefined}
-              title={unlocked ? '' : 'Доступно только тренеру'}
-            >
-              <span className="col-rank">{i + 1}</span>
-              <span className="col-photo">
-                <PlayerPhoto player={player} size={36} />
-              </span>
-              <span className="col-name">
-                <div className="players-rating__name">{shortNameFromPlayer(player)}</div>
-                <div className="players-rating__num">№{player.number}</div>
-              </span>
-              <span className="col-pos">{player.positionFull || player.position || '—'}</span>
-              <span className="col-minutes">{player.matches ?? '—'}</span>
-              <span className="col-overall">
-                <RatingPill value={player.avgOverall} size="sm" />
-              </span>
-              <span className="col-metric">
-                <div className="players-rating__metric-bar">
-                  <div
-                    className="players-rating__metric-fill"
-                    style={{
-                      width: max > 0 && typeof value === 'number' && !isNaN(value)
-                        ? `${Math.max(0, Math.min(100, (value / max) * 100))}%`
-                        : '0%',
-                      background: isPrimary
-                        ? ratingColor(value)
-                        : 'linear-gradient(90deg, var(--brand-secondary), var(--brand-primary))',
-                    }}
-                  />
-                </div>
-                <span className="players-rating__metric-value">
-                  {fmt(value, metric.digits, metric.unit)}
-                  {(() => {
-                    const pr = percentileRank(metricValues, Number(value));
-                    return pr != null ? (
+            const isFirst = i === 0;
+            const numeric = typeof value === 'number' && !isNaN(value);
+            const pr = percentileRank(metricValues, Number(value));
+
+            const row = (
+              <div
+                className={'players-rating__row'
+                  + (isFirst ? ' players-rating__row--first' : '')
+                  + (unlocked ? '' : ' players-rating__row--locked')}
+                onClick={() => { if (unlocked) navigate(`/players/${player.id}`); }}
+                role={unlocked ? 'button' : undefined}
+                tabIndex={unlocked ? 0 : undefined}
+                title={unlocked ? '' : 'Доступно только тренеру'}
+              >
+                <span className="col-rank">{i + 1}</span>
+                <span className="col-photo">
+                  <PlayerPhoto player={player} size={36} />
+                </span>
+                <span className="col-name">
+                  <div className="players-rating__name">{shortNameFromPlayer(player)}</div>
+                  <div className="players-rating__num">№{player.number}</div>
+                </span>
+                <span className="col-pos">{player.positionFull || player.position || '—'}</span>
+                <span className="col-minutes">{player.matches ?? '—'}</span>
+                <span className="col-overall">
+                  <RatingPill value={player.avgOverall} size="sm" />
+                </span>
+                <span className="col-metric">
+                  <div className="players-rating__metric-bar">
+                    <div
+                      className="players-rating__metric-fill"
+                      style={{
+                        width: max > 0 && numeric
+                          ? `${Math.max(0, Math.min(100, (value / max) * 100))}%`
+                          : '0%',
+                        background: isPrimary
+                          ? ratingColor(value)
+                          : 'linear-gradient(90deg, var(--brand-secondary), var(--brand-primary))',
+                      }}
+                    />
+                  </div>
+                  <span className="players-rating__metric-value">
+                    {numeric ? (
+                      <AnimatedNumber
+                        className="players-rating__metric-value--animated"
+                        value={Number(value)}
+                        stiffness={200}
+                        damping={25}
+                        format={(v) => fmt(metric.digits === 0 ? Math.round(v) : v, metric.digits, metric.unit)}
+                      />
+                    ) : (
+                      <span className="players-rating__metric-value--animated">—</span>
+                    )}
+                    {pr != null ? (
                       <span
                         className="players-rating__pct"
                         style={{ color: percentileColor(pr) }}
@@ -262,11 +278,19 @@ export default function PlayersRating() {
                       >
                         П{pr}
                       </span>
-                    ) : null;
-                  })()}
+                    ) : null}
+                  </span>
                 </span>
-              </span>
-            </div>
+              </div>
+            );
+
+            // Первая (максимальная) строка появляется fade+scale через CSS; остальные —
+            // каскадный slide-right (delay = индекс × 40ms), без перегрузки на 50+ строках.
+            if (isFirst) return <div key={player.id} className="players-rating__row-first-wrap">{row}</div>;
+            return (
+              <Reveal key={player.id} variant="slide-right" duration={0.25} delay={Math.min(0.2 + i * 0.04, 1.2)}>
+                {row}
+              </Reveal>
             );
           })}
         </div>

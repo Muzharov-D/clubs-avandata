@@ -57,18 +57,66 @@
 }
 .cd__main-grid {
   display: grid;
-  grid-template-columns: 1.6fr 1fr 1fr;
-  gap: 14px;
+  grid-template-columns: 60% 40%;   /* герой-матчи слева full-height + 2 узких KPI справа */
+  gap: 16px;
   align-items: stretch;
 }
-.cd__main-matches { display: flex; flex-direction: column; gap: 12px; }
+/* Герой-момент: матчи берут полную высоту, тянутся вверх-вниз */
+.cd__main-matches {
+  position: relative;
+  display: flex; flex-direction: column; gap: 12px;
+  min-height: 360px;
+}
 .cd__mm {
   background: rgba(255,255,255,0.03);
   border: 1px solid rgba(255,255,255,0.07);
   border-radius: var(--radius, 14px);
   padding: 14px 16px;
+  display: flex; flex-direction: column;
 }
-.cd__mm--empty { text-align: center; color: var(--text-faint); }
+/* Следующий матч — основной (60% высоты), последний — вспомогательный (40%) */
+.cd__mm--next  { flex: 6 1 0; justify-content: space-between; }
+.cd__mm--last  { flex: 4 1 0; }
+.cd__mm--empty { flex: 1 1 0; text-align: center; color: var(--text-faint); justify-content: center; }
+
+/* ── Правые 2 узкие KPI-колонки (40%) ── */
+.cd__kpi-column-group {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  align-items: stretch;
+}
+
+/* ── Гигантский обратный отсчёт — герой ── */
+.cd__countdown-hero {
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 8px; padding: 20px 0;
+  animation: cd__breathe-hero 3.2s ease-in-out infinite;
+}
+@keyframes cd__breathe-hero {
+  0%, 100% { transform: scale(1); }
+  50%      { transform: scale(1.02); }
+}
+.cd__countdown-label {
+  font-size: clamp(11px, 2vw, 16px);
+  color: var(--text-faint);
+  text-transform: uppercase; letter-spacing: 0.12em; font-weight: 600;
+}
+.cd__countdown-number {
+  font-family: var(--font-display);
+  font-size: clamp(120px, 15vw, 200px);
+  font-weight: 800; line-height: 1; letter-spacing: -0.04em;
+  color: var(--accent-cyan);
+  text-shadow: 0 0 60px color-mix(in srgb, var(--accent-cyan) 40%, transparent);
+  font-variant-numeric: tabular-nums;
+  display: inline-flex; align-items: baseline; gap: 0.12em;
+}
+.cd__countdown-number--word { font-size: clamp(40px, 7vw, 72px); letter-spacing: -0.02em; }
+.cd__countdown-unit {
+  font-size: clamp(20px, 3vw, 34px); font-weight: 700; letter-spacing: 0;
+  color: color-mix(in srgb, var(--accent-cyan) 70%, var(--text-faint));
+}
 .cd__mm-eyebrow {
   font-size: 12px; color: var(--accent-cyan); text-transform: uppercase;
   letter-spacing: 0.1em; font-weight: 700; margin-bottom: 8px;
@@ -160,12 +208,14 @@
 .cd__bp-insight-text { min-width: 0; }
 
 @media (max-width: 880px) {
+  /* Колонки стопкой; матчи на всю ширину */
   .cd__main-grid { grid-template-columns: 1fr; }
+  .cd__main-matches { grid-column: 1 / -1; min-height: 280px; }
+  .cd__kpi-column-group { grid-template-columns: 1fr 1fr; }
 }
 @media (min-width: 881px) and (max-width: 1100px) {
+  /* Матчи берут 1 полную колонку, KPI справа в 2 узких */
   .cd__main-grid { grid-template-columns: 1fr 1fr; }
-  .cd__main-matches { grid-column: 1 / -1; flex-direction: row; }
-  .cd__main-matches > .cd__mm { flex: 1; }
 }
 
 .cd__hero-row {
@@ -262,42 +312,54 @@
   margin-bottom: 16px;
 }
 
-/* ===== Top players ===== */
+/* ===== Top players — иконография: ранк · фото+бейдж · имя · рейтинг ===== */
 .cd__top { list-style: none; margin: 0; padding: 0; }
 .cd__top-row {
   display: grid;
-  grid-template-columns: 24px 40px 1fr auto 90px 48px;
-  gap: 10px; align-items: center;
-  padding: 10px 8px;
-  border-radius: 10px;
+  grid-template-columns: 24px 64px 1fr 48px;
+  gap: 14px; align-items: center;
+  padding: 8px 8px;
+  border-radius: 12px;
   cursor: pointer;
   transition: background 120ms;
 }
 .cd__top-row:hover { background: rgba(255,255,255,0.04); }
-.cd__top-rank { color: var(--text-faint); font-weight: 700; }
-.cd__top-num  { color: var(--text-muted); font-size: 13px; }
-.cd__top-name { font-weight: 600; font-size: 14px; }
-.cd__top-pos  { font-size: 11px; color: var(--text-faint); text-transform: uppercase; }
-.cd__top-bar {
-  display: block; height: 6px;
-  background: rgba(255,255,255,0.06);
-  border-radius: 999px; overflow: hidden;
-  position: relative;
+.cd__top-rank {
+  color: var(--text-faint); font-weight: 800; font-size: 16px;
+  text-align: center; font-variant-numeric: tabular-nums;
 }
-.cd__top-bar-fill {
-  display: block; height: 100%;
-  border-radius: 999px;
-  transition: width 380ms ease;
-  box-shadow: 0 0 12px color-mix(in srgb, var(--accent-cyan) 40%, transparent);
+.cd__top-figure { position: relative; width: 64px; height: 64px; }
+.cd__top-photo { border-radius: 50%; box-shadow: 0 0 0 2px rgba(255,255,255,0.10); }
+.cd__top-id { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.cd__top-name {
+  font-weight: 700; font-size: 15px; color: var(--text); line-height: 1.2;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
+.cd__top-sub  { font-size: 12px; color: var(--text-faint); text-transform: uppercase; letter-spacing: 0.04em; }
 .cd__top-rating {
-  padding: 4px 10px; border-radius: 8px;
-  font-weight: 800; font-size: 14px; color: #fff;
-  text-align: center; min-width: 44px;
+  padding: 5px 0; border-radius: 9px;
+  font-weight: 800; font-size: 15px;
+  text-align: center; min-width: 48px;
+  font-variant-numeric: tabular-nums;
 }
+
+/* ── Бейдж-иконка роли на фото игрока ── */
+.cd__role-badge {
+  position: absolute; bottom: -2px; right: -2px;
+  width: 20px; height: 20px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 10px; font-weight: 800; color: var(--rating-text-light);
+  border: 2px solid var(--bg-surface);
+}
+.cd__role-badge--gk      { background: var(--rating-none);  box-shadow: 0 0 12px color-mix(in srgb, var(--rating-none) 50%, transparent); }
+.cd__role-badge--def     { background: var(--success);      box-shadow: 0 0 12px color-mix(in srgb, var(--success) 50%, transparent); }
+.cd__role-badge--mid     { background: var(--accent-cyan);  box-shadow: 0 0 12px color-mix(in srgb, var(--accent-cyan) 50%, transparent); }
+.cd__role-badge--fwd     { background: var(--warning);      box-shadow: 0 0 12px color-mix(in srgb, var(--warning) 50%, transparent); }
+.cd__role-badge--unknown { background: var(--rating-none);  box-shadow: none; }
+
 @media (max-width: 720px) {
-  .cd__top-row { grid-template-columns: 24px 36px 1fr auto 48px; }
-  .cd__top-bar { display: none; }
+  .cd__top-row { grid-template-columns: 24px 56px 1fr 44px; gap: 10px; }
+  .cd__top-figure { width: 56px; height: 56px; }
 }
 
 /* ===== Standings table ===== */
@@ -336,64 +398,65 @@
   display: inline-flex; align-items: center; justify-content: center;
   font-variant-numeric: tabular-nums;
 }
-.cd__roster {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(248px, 1fr));
-  gap: 10px;
+/* ── Tier-display: ярусы внутри линии (топ-3 80px · остальные 48px · бенч) ── */
+.cd__line-tiers { display: flex; flex-direction: column; gap: 14px; }
+.cd__tier { display: grid; gap: 12px; }
+.cd__tier--top  { grid-template-columns: repeat(auto-fit, minmax(80px, 1fr)); }
+.cd__tier--rest { grid-template-columns: repeat(auto-fit, minmax(48px, 1fr)); }
+.cd__tier--bench {
+  grid-template-columns: repeat(auto-fit, minmax(48px, 1fr));
+  opacity: 0.65; filter: grayscale(30%);
 }
-/* Карточка игрока. Цвет рейтинга (--rt-col) задаёт левый рейл + лёгкий тон фона
-   + кольцо у фото — состав «считывается» взглядом: сильные зелёные, слабые
-   красные. Без оценки (бенч) — нейтральный серый. */
-.cd__player {
-  display: grid;
-  grid-template-columns: 44px 30px 1fr auto;
-  gap: 11px; align-items: center;
-  padding: 11px 13px;
-  background: rgba(255,255,255,0.02);
-  border: 1px solid rgba(255,255,255,0.05);
-  border-left: 3px solid rgba(255,255,255,0.06);
-  border-radius: 11px;
+/* В широких линиях не растягиваем плитки на всю ширину — выравниваем по началу */
+.cd__tier--top, .cd__tier--rest, .cd__tier--bench { justify-content: start; }
+
+/* Плитка игрока: фото + бейдж + рейтинг + имя/номер (колонна) */
+.cd__player-tile {
+  display: flex; flex-direction: column; align-items: center;
+  gap: 8px; padding: 8px;
+  border-radius: var(--radius-sm, 9px);
   cursor: pointer;
-  transition: border-color 150ms var(--ease-out, ease-out), transform 120ms var(--ease-out, ease-out), background 150ms;
+  transition: transform var(--dur-fast, 120ms) var(--ease-out, ease-out);
 }
-.cd__player--rated {
-  border-left-color: color-mix(in srgb, var(--rt-col) 80%, transparent);
-  background:
-    linear-gradient(90deg, color-mix(in srgb, var(--rt-col) 9%, transparent), transparent 42%),
-    rgba(255,255,255,0.02);
-}
-.cd__player:hover { transform: translateY(-2px); border-color: color-mix(in srgb, var(--accent-cyan) 40%, transparent); }
-.cd__player--rated:hover { border-color: color-mix(in srgb, var(--rt-col) 55%, transparent); }
+.cd__player-figure { position: relative; line-height: 0; }
 .cd__player-photo {
-  width: 44px; height: 44px;
   flex-shrink: 0; border-radius: 50%;
-  box-shadow: 0 0 0 2px color-mix(in srgb, var(--rt-col, rgba(255,255,255,0.12)) 65%, transparent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--rt-col, rgba(255,255,255,0.10)) 70%, transparent);
 }
-.cd__player-num {
-  width: 30px; height: 30px; border-radius: 8px;
-  background: rgba(255,255,255,0.05);
-  border: 1px solid rgba(255,255,255,0.10);
-  color: var(--text-muted-strong, #b4c0d2);
-  display: flex; align-items: center; justify-content: center;
-  font-weight: 800; font-size: 13px;
+.cd__player-tile:not(.cd__player-tile--rated) .cd__player-photo {
+  box-shadow: 0 0 0 3px rgba(255,255,255,0.10);
+}
+/* Рейтинг-бейдж в углу фото */
+.cd__player-rating {
+  position: absolute; bottom: -4px; left: -4px;
+  padding: 2px 6px; border-radius: 8px;
+  font-weight: 800; font-size: 11px;
+  text-align: center; min-width: 24px;
   font-variant-numeric: tabular-nums;
+  border: 2px solid var(--bg-surface);
 }
-.cd__player-info { min-width: 0; }
 .cd__player-name {
-  font-size: 15px; font-weight: 700; color: var(--text); line-height: 1.25;
+  font-size: clamp(11px, 2.5vw, 13px); font-weight: 700;
+  color: var(--text); text-align: center; line-height: 1.2;
+  max-width: 100%;
   display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
   overflow: hidden; word-break: break-word;
 }
-.cd__player-meta {
-  font-size: 12px; color: var(--text-muted);
-  letter-spacing: 0.03em; margin-top: 3px;
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+.cd__player-number {
+  font-size: 11px; color: var(--text-faint); text-align: center;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%;
 }
-.cd__player-rating {
-  padding: 5px 11px; border-radius: 9px;
-  font-weight: 800; font-size: 14px; color: #fff;
-  min-width: 42px; text-align: center;
-  font-variant-numeric: tabular-nums;
+.cd__player-tile:hover { transform: translateY(-2px); }
+/* Топ-3 линии — основа: акцент-граница + свечение (KineticCard-стиль) */
+.cd__player-tile--top {
+  border: 2px solid color-mix(in srgb, var(--accent-cyan) 45%, transparent);
+  box-shadow: inset 0 0 20px color-mix(in srgb, var(--accent-cyan) 8%, transparent);
+}
+.cd__player-tile--top:hover {
+  transform: scale(1.05);
+  box-shadow:
+    inset 0 0 30px color-mix(in srgb, var(--accent-cyan) 15%, transparent),
+    0 0 20px color-mix(in srgb, var(--accent-cyan) 25%, transparent);
 }
 
 /* ===== Empty state ===== */
@@ -493,4 +556,28 @@
 .cd__roster-empty {
   grid-column: 1 / -1; text-align: center; padding: 28px 16px;
   color: var(--text-faint); font-size: 14px;
+}
+
+/* ===== Адаптив героя-отсчёта и состава ===== */
+/* Планшет: отсчёт средний, матчи на всю ширину, топ-3 линии по 3 */
+@media (min-width: 481px) and (max-width: 880px) {
+  .cd__countdown-number { font-size: clamp(80px, 12vw, 140px); }
+  .cd__tier--top { grid-template-columns: repeat(3, 1fr); }
+}
+/* Мобиль: отсчёт компактный, одна колонка, состав 2×/3× */
+@media (max-width: 480px) {
+  .cd__countdown-hero { gap: 4px; padding: 12px 0; }
+  .cd__countdown-number { font-size: 60px; }
+  .cd__countdown-number--word { font-size: 36px; }
+  .cd__main-grid { grid-template-columns: 1fr; }
+  .cd__kpi-column-group { grid-template-columns: 1fr; }
+  .cd__tier--top  { grid-template-columns: repeat(2, 1fr); }
+  .cd__tier--rest, .cd__tier--bench { grid-template-columns: repeat(3, 1fr); }
+}
+
+/* ===== Уважение prefers-reduced-motion ===== */
+@media (prefers-reduced-motion: reduce) {
+  .cd__countdown-hero { animation: none; }
+  .cd__player-tile:hover,
+  .cd__player-tile--top:hover { transform: none; }
 }
