@@ -31,7 +31,6 @@ import MatchLeaders from '../components/analytics/MatchLeaders';
 import SetPieceShotCard from '../components/analytics/SetPieceShotCard';
 import { coachDigest, matchMinutes } from '../utils/analytics';
 import { matchesWord } from '../utils/num';
-import { teamXg, ourSideKey, expectedPoints } from '../utils/analytics/xg';
 import { Reveal } from '../components/motion';
 import './MatchDetail.css';
 
@@ -300,15 +299,6 @@ export default function MatchDetail() {
   // цветных эмблем — словесная подпись была смысловой тавтологией.
 
   // xPTS обеих сторон для полосы под счётом — из существующих xg-хелперов.
-  const { our: ourSide, opp: oppSide } = ourSideKey(match);
-  const xgUs = teamXg(match, ourSide);
-  const xgThem = teamXg(match, oppSide);
-  const hasXpts = xgUs != null && xgThem != null;
-  const xptsUs = hasXpts ? expectedPoints(xgUs, xgThem) : null;
-  const xptsThem = hasXpts ? expectedPoints(xgThem, xgUs) : null;
-  // Доля нашей команды в шкале «наша vs соперник» (центр полосы = равно).
-  const xptsTotal = hasXpts ? (xptsUs + xptsThem) : 0;
-  const usSharePct = hasXpts && xptsTotal > 0 ? Math.round((xptsUs / xptsTotal) * 100) : 50;
 
   return (
     <div className="page match-detail kinetic" ref={pageRef}>
@@ -370,18 +360,6 @@ export default function MatchDetail() {
                 </div>
                 <TeamSide side="away" team={match.awayTeam} isWinner={usScore > themScore ? !homeIsUs : usScore < themScore ? homeIsUs : false} />
               </div>
-
-
-              {hasXpts && (
-                <Reveal variant="clip" duration={0.6} delay={1.2} className="kin-verdict__xpts-wrap">
-                  <div className="kin-verdict__xpts-bar">
-                    <span className="kin-verdict__xpts-pill kin-verdict__xpts-pill--us" style={{ left: `${usSharePct}%` }} />
-                  </div>
-                  <div className="kin-verdict__xpts-legend">
-                    ожидаемые очки: {xptsUs.toFixed(1)} — {xptsThem.toFixed(1)}
-                  </div>
-                </Reveal>
-              )}
             </div>
           </div>
         );
