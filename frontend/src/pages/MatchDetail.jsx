@@ -296,12 +296,17 @@ export default function MatchDetail() {
   const usScore = homeIsUs ? (match.score?.home ?? 0) : (match.score?.away ?? 0);
   const themScore = homeIsUs ? (match.score?.away ?? 0) : (match.score?.home ?? 0);
 
-  // Нарративная строка вердикта: первый рядовой инсайт (rule-based / модельный),
-  // словесный вывод вместо сырых чисел (контракт UI). Fallback по счёту.
-  const verdictText = allInsights[0]?.text
-    || (usScore > themScore ? 'Победа в матче'
-      : usScore < themScore ? 'Поражение в матче'
-      : 'Ничейный результат');
+  // Нарративная строка вердикта: ТОЛЬКО словами, без второго счёта. Раньше брали
+  // первый инсайт («Поражение 1:2») — а это перевёрнутый дубль большого счёта
+  // (2:1 хозяева:гости против 1:2 мы:они), что сбивало с толку. Большой счёт с
+  // эмблемами — единственный числовой источник; подпись лишь называет исход.
+  const verdictMargin = Math.abs(usScore - themScore);
+  const verdictText =
+    usScore > themScore
+      ? (verdictMargin === 1 ? 'Победа в один мяч' : verdictMargin >= 3 ? 'Крупная победа' : 'Победа')
+      : usScore < themScore
+        ? (verdictMargin === 1 ? 'Поражение в один мяч' : verdictMargin >= 3 ? 'Крупное поражение' : 'Поражение')
+        : 'Ничья';
 
   // xPTS обеих сторон для полосы под счётом — из существующих xg-хелперов.
   const { our: ourSide, opp: oppSide } = ourSideKey(match);
