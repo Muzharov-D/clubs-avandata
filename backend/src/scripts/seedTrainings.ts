@@ -32,7 +32,7 @@ function durMin(start: string, end: string): number {
   return eh * 60 + em - (sh * 60 + sm);
 }
 
-const VENUE = 'ЦФКСиЗ Василеостровского района';
+const VENUE = 'Нова Арена';
 
 // Точное расписание на июнь 2026 (передано тренером). Все занятия — тип training.
 const PLAN: { date: string; start: string; end: string; type: string }[] = [
