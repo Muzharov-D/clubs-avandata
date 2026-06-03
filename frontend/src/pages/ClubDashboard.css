@@ -89,6 +89,11 @@
   grid-template-columns: 1fr;
   gap: 12px;
   align-items: stretch;
+  /* Не растягиваем блок под высоту героя-отсчёта слева — иначе между
+     карточками возникает вертикальный провал. Прижимаем к верху, карточки
+     берут естественную высоту. */
+  align-self: start;
+  align-content: start;
   min-width: 0;
 }
 

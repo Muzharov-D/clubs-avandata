@@ -616,12 +616,18 @@
   font-size: 13px;
   font-weight: 700;
   cursor: pointer;
-  transition: background 0.15s ease, color 0.15s ease;
+  transition: background 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
 }
 .club-overview__period-btn:hover { color: #fff; }
+/* Активный период — брендовый тинт + кольцо + свечение (как табы профиля),
+   спокойнее сплошной насыщенной заливки. white-label через var(--brand-primary). */
 .club-overview__period-btn.is-active {
   color: #fff;
-  background: var(--brand-primary, #dc2626);
+  background: linear-gradient(180deg,
+    color-mix(in srgb, var(--brand-primary, #dc2626) 32%, transparent),
+    color-mix(in srgb, var(--brand-primary, #dc2626) 20%, transparent));
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--brand-primary, #dc2626) 55%, transparent),
+              0 4px 14px color-mix(in srgb, var(--brand-primary, #dc2626) 22%, transparent);
 }
 
 /* Сезонные лидеры */
