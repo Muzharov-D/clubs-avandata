@@ -434,11 +434,28 @@ function bioFormNote(series) {
   return 'Форма стабильная.';
 }
 
+// Когда позиция в данных пустая — выводим роль из самого игрового профиля сезона
+// (а не безликое «игрок»). Сравниваем атакующий и оборонительный объём по его
+// собственным действиям. Это честная эвристика, а не выдумка позиции.
+function inferRoleNoun(seasonPlayers, id) {
+  const me = (seasonPlayers || []).find((s) => s.id === id);
+  if (!me || !(me.minutes > 0)) return null;
+  const attack = (me.goals || 0) * 3 + (me.assists || 0) * 2 + (me.shots || 0)
+    + (me.dribble || 0) + (me.keyPass || 0);
+  const defence = (me.tackle || 0) + (me.interception || 0) + (me.recovery || 0)
+    + (me.duel || 0) + (me.pressing || 0);
+  if (attack === 0 && defence === 0) return null;
+  if (attack >= defence * 1.6) return 'нападающий';
+  if (defence >= attack * 1.6) return 'защитник';
+  return 'полузащитник';
+}
+
 // Авто-биография по сезону (референс «Player Bio») — скаут-абзац из данных:
 // кто игрок, объём, результативность, сильные стороны, форма, последний матч.
 function seasonBio(identity, totals, series, seasonPlayers, basis = 90) {
   if (!totals || !totals.matches) return null;
-  const pos = (identity.positionFull || identity.position || 'игрок').toLowerCase();
+  const explicitPos = identity.positionFull || identity.position;
+  const pos = (explicitPos || inferRoleNoun(seasonPlayers, identity.id) || 'полевой игрок').toLowerCase();
   const age = ageFrom(identity.birthDate);
   const parts = [];
 
