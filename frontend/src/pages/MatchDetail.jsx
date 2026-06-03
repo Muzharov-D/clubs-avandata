@@ -322,29 +322,35 @@ export default function MatchDetail() {
           эмблемы в верхних углах, нарратив-вердикт + xPTS-полоса с отдельным
           входом (Reveal). Один герой-момент на экран. */}
       {(() => {
-        const Badge = ({ side, team }) => {
+        const TeamSide = ({ side, team, isWinner }) => {
           const src = shieldFor(team?.name, team?.shield);
           const initial = (team?.name || '?').charAt(0);
+          const name = trimAgeStr(team?.name) || 'Команда';
           return (
-            <div className={`kin-verdict__badge-${side}`} title={trimAgeStr(team?.name)}>
-              {src
-                ? <img src={src} alt={team?.name || ''} className="kin-verdict__badge-img"
-                    onError={(e) => { e.currentTarget.outerHTML = initial; }} />
-                : initial}
+            <div className={`kin-verdict__team kin-verdict__team--${side}${isWinner ? ' is-winner' : ''}`}>
+              <div className="kin-verdict__team-logo" title={name}>
+                {src
+                  ? <img src={src} alt="" className="kin-verdict__team-logo-img"
+                      onError={(e) => { e.currentTarget.replaceWith(document.createTextNode(initial)); }} />
+                  : <span className="kin-verdict__team-initial">{initial}</span>}
+              </div>
+              <span className="kin-verdict__team-name">{name}</span>
             </div>
           );
         };
         return (
           <div className="kin-hero-verdict kin-verdict reveal is-in">
-            <Badge side="home" team={match.homeTeam} />
-            <Badge side="away" team={match.awayTeam} />
             <div className="kin-verdict__date">{fmtDate(match.date)}</div>
 
             <div className="kin-verdict__score-container">
-              <div className="kin-verdict__score">
-                <span className={`kin-verdict__score-num${usScore > themScore && homeIsUs ? ' kin-verdict__score--win' : ''}`}>{homeScore}</span>
-                <span className="kin-verdict__score-sep">:</span>
-                <span className={`kin-verdict__score-num${usScore > themScore && !homeIsUs ? ' kin-verdict__score--win' : ''}`}>{awayScore}</span>
+              <div className="kin-verdict__scoreline">
+                <TeamSide side="home" team={match.homeTeam} isWinner={usScore > themScore ? homeIsUs : usScore < themScore ? !homeIsUs : false} />
+                <div className="kin-verdict__score">
+                  <span className={`kin-verdict__score-num${usScore > themScore && homeIsUs ? ' kin-verdict__score--win' : ''}`}>{homeScore}</span>
+                  <span className="kin-verdict__score-sep">:</span>
+                  <span className={`kin-verdict__score-num${usScore > themScore && !homeIsUs ? ' kin-verdict__score--win' : ''}`}>{awayScore}</span>
+                </div>
+                <TeamSide side="away" team={match.awayTeam} isWinner={usScore > themScore ? !homeIsUs : usScore < themScore ? homeIsUs : false} />
               </div>
 
               <div className="kin-verdict__narrative">{verdictText}</div>
