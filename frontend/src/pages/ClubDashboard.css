@@ -345,12 +345,8 @@
 .cd__panel-sub   { font-size: 12px; color: var(--text-muted); }
 
 .cd__hero-venue {
-  display: inline-block;
-  max-width: 220px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  vertical-align: bottom;
+  /* Места хватает — показываем площадку целиком, без обрезки «…». */
+  display: inline;
 }
 .cd__table-wrap { overflow-x: auto; }
 .cd__table-divider td {
