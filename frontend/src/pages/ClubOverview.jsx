@@ -10,6 +10,7 @@ import RatingPill from '../components/RatingPill';
 import TeamSeasonAnalytics from '../components/analytics/TeamSeasonAnalytics';
 import TeamIdentityCard from '../components/analytics/TeamIdentityCard';
 import TeamAggregatesGrid from '../components/analytics/TeamAggregatesGrid';
+import SeasonTrendCard from '../components/analytics/SeasonTrendCard';
 import { isOurClub } from '../utils/legirus';
 import { useNavigate } from 'react-router-dom';
 import './ClubOverview.css';
@@ -206,6 +207,9 @@ export default function ClubOverview() {
               </div>
             </>
           )}
+
+          {/* Сезонная форма — путь очков по турам (тренд во времени, океан) */}
+          <SeasonTrendCard matches={matches} />
 
           {/* Детальная аналитика по секциям — глубина за период (перенос с /club) */}
           <TeamAggregatesGrid aggregates={agg?.teamAggregates} matchCount={matchCount} periodLabel={periodLabel} />
