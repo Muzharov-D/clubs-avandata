@@ -410,6 +410,13 @@
 }
 .cd__table-team { text-align: left; font-weight: 500; }
 .cd__table-pts  { font-weight: 700; }
+/* Форма команды: победы · ничьи · поражения, цветом. */
+.cd__table-wdl { font-variant-numeric: tabular-nums; white-space: nowrap; font-size: 12.5px; }
+.cd__wdl { font-weight: 700; }
+.cd__wdl--w { color: var(--success, #22c55e); }
+.cd__wdl--d { color: var(--text-muted, #97a3b6); }
+.cd__wdl--l { color: var(--danger, #ef4444); }
+.cd__wdl-sep { color: var(--text-faint); margin: 0 1px; }
 .cd__table-row--us {
   background: linear-gradient(90deg, color-mix(in srgb, var(--accent-cyan) 15%, transparent), transparent);
 }

@@ -296,7 +296,7 @@ export default function ClubDashboard() {
               onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }} />
           )}
           <div className="cd__header-text">
-            <div className="cd__eyebrow">{team.ageLabel || `U-${team.ageGroup}`} · Сезон {seasonLabel}</div>
+            <div className="cd__eyebrow">{team.ageLabel || ageGroupLabel(team.ageGroup)} · Сезон {seasonLabel}</div>
             <h1 className="cd__title"><SplitText text={cleanTeamName(team.name)} /></h1>
             <div className="cd__sub">
               Главный тренер: <b>{team.headCoach || '—'}</b>
@@ -549,12 +549,12 @@ export default function ClubDashboard() {
             <div className="cd__table-wrap">
               <table className="cd__table">
                 <thead>
-                  <tr><th>#</th><th>Команда</th><th title="Игр">И</th><th title="Мячи (забили-пропустили)">М</th><th title="Очки">О</th></tr>
+                  <tr><th>#</th><th>Команда</th><th title="Игр">И</th><th title="Мячи (забили-пропустили)">М</th><th title="Победы · Ничьи · Поражения">В·Н·П</th><th title="Очки">О</th></tr>
                 </thead>
                 <tbody>
                   {standingsTopRows.map((r, i) => r.__divider ? (
                     <tr key={`div-${i}`} className="cd__table-divider">
-                      <td colSpan={5}>···</td>
+                      <td colSpan={6}>···</td>
                     </tr>
                   ) : (
                     <tr key={`${r.pos}-${r.team}`} className={r.isOurClub ? 'cd__table-row--us' : ''}>
@@ -567,6 +567,13 @@ export default function ClubDashboard() {
                       </td>
                       <td>{r.games}</td>
                       <td>{r.scored}-{r.missed}</td>
+                      <td className="cd__table-wdl">
+                        <b className="cd__wdl cd__wdl--w">{r.wins}</b>
+                        <span className="cd__wdl-sep">·</span>
+                        <b className="cd__wdl cd__wdl--d">{r.draws}</b>
+                        <span className="cd__wdl-sep">·</span>
+                        <b className="cd__wdl cd__wdl--l">{r.losses}</b>
+                      </td>
                       <td className="cd__table-pts">{r.points}</td>
                     </tr>
                   ))}
@@ -764,6 +771,15 @@ function posGroup(position?: string): string {
   return 'unknown';
 }
 
+/** Возрастная группа: год рождения (2010) → «2010 г.р.», возраст (15) → «U-15».
+ *  Раньше всегда лепили «U-», отсюда бессмысленное «U-2010» (U + год рождения). */
+function ageGroupLabel(ag?: string | null): string {
+  const s = String(ag ?? '').trim();
+  if (/^(19|20)\d{2}$/.test(s)) return `${s} г.р.`;
+  if (/^\d{1,2}$/.test(s)) return `U-${s}`;
+  return s || '—';
+}
+
 /** Человеко-понятная подпись группы позиции — на случай, когда точная позиция неизвестна. */
 function posGroupLabel(grp: string): string {
   switch (grp) {
@@ -950,6 +966,8 @@ const ROLE_TITLE: Record<RoleGroup, string> = {
 /** Цветной бейдж-иконка роли на фото игрока (вратарь/защита/полузащита/нападение). */
 function RoleBadge({ group }: { group: string }) {
   const g = (['gk', 'def', 'mid', 'fwd'].includes(group) ? group : 'unknown') as RoleGroup;
+  // Без позиции бейдж не рисуем — иначе на фото висит пустой серый кружок «·».
+  if (g === 'unknown') return null;
   return (
     <span className={`cd__role-badge cd__role-badge--${g}`} title={ROLE_TITLE[g]} aria-label={ROLE_TITLE[g]}>
       {ROLE_LETTER[g]}
