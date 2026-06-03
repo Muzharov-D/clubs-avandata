@@ -9,7 +9,15 @@ import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { fetchMatch } from '../../services/api';
 import { ourSideKey, teamXg, expectedPoints, finishing } from '../../utils/analytics';
+import { AnimatedNumber, Reveal, StaggerList } from '../motion';
 import './analytics.css';
+
+/** Словесный вердикт по разнице факт-очков и ожидаемых (без сырого числа удачи). */
+function luckVerdict(luck) {
+  if (luck <= -0.5) return 'Заслужили больше, чем взяли';
+  if (luck >= 0.5) return 'Везёт по очкам — результат выше игры';
+  return 'Берём по делу';
+}
 
 function f1(v) { return v == null ? '—' : Number(v).toFixed(1); }
 function f2(v) { return v == null ? '—' : Number(v).toFixed(2); }
@@ -68,31 +76,53 @@ export default function TeamSeasonAnalytics({ matches }) {
         <span className="cd__panel-sub">{n} матчей с xG · модель</span>
       </div>
 
-      <div className="an-season__head">
-        <div className="an-season__kpi">
-          <div className="an-season__kpi-val">{f1(sum.xpts)}</div>
-          <div className="an-season__kpi-lab">ожидаемые очки</div>
-          <div className="an-season__kpi-sub">факт {sum.actual} · {luck >= 0 ? 'повезло ' : 'недобор '}{signed(luck)}</div>
-        </div>
-        <div className="an-season__kpi">
-          <div className="an-season__kpi-val">{f2(sum.xgF / n)}</div>
-          <div className="an-season__kpi-lab">xG за матч</div>
-          <div className="an-season__kpi-sub">против {f2(sum.xgA / n)}</div>
-        </div>
-        <div className="an-season__kpi">
-          <div className="an-season__kpi-val" style={{ color: fin > 0 ? 'var(--an-pos)' : fin < 0 ? 'var(--an-neg)' : undefined }}>{signed(fin)}</div>
-          <div className="an-season__kpi-lab">реализация (Г−xG)</div>
-          <div className="an-season__kpi-sub">{sum.gF} голов при xG {f1(sum.xgF)}</div>
-        </div>
-        <div className="an-season__kpi">
-          <div className="an-form-dots">
-            {form.map((r) => (
-              <span key={r.id} className={`an-season__res an-season__res--${r.result || 'D'}`}>{r.result || '–'}</span>
-            ))}
+      <Reveal variant="slide-up" duration={0.7}>
+        <div className="an-hero">
+          <div className="an-hero__val">
+            <AnimatedNumber value={sum.xpts} format={(v) => v.toFixed(1)} stiffness={90} damping={26} />
           </div>
-          <div className="an-season__kpi-lab" style={{ marginTop: 8 }}>форма (5 матчей)</div>
+          <div className="an-hero__lab">ожидаемые очки за сезон</div>
+          <div
+            className="an-hero__verdict"
+            style={{ color: luck >= 0.5 ? 'var(--an-pos)' : luck <= -0.5 ? 'var(--an-neg)' : 'var(--an-muted)' }}
+          >
+            {luckVerdict(luck)}
+          </div>
+
+          <div className="an-hero__support">
+            <div className="an-badge" title={`против ${f2(sum.xgA / n)}`}>
+              <span className="an-badge__lab">xG/матч</span>
+              <span className="an-badge__val">
+                <AnimatedNumber value={sum.xgF / n} format={(v) => v.toFixed(2)} />
+              </span>
+            </div>
+            <div className="an-badge" title={`${sum.gF} голов при xG ${f1(sum.xgF)}`}>
+              <span className="an-badge__lab">реализация</span>
+              <span
+                className="an-badge__val"
+                style={{ color: fin > 0 ? 'var(--an-pos)' : fin < 0 ? 'var(--an-neg)' : undefined }}
+              >
+                {signed(fin)}
+              </span>
+            </div>
+            <div className="an-badge">
+              <span className="an-badge__lab">факт очков</span>
+              <span className="an-badge__val">
+                <AnimatedNumber value={sum.actual} format={(v) => String(Math.round(v))} />
+              </span>
+            </div>
+          </div>
+
+          <div className="an-hero__form">
+            <span className="an-badge__lab">форма · 5 матчей</span>
+            <StaggerList speed="tight" as="div" className="an-form-dots">
+              {form.map((r) => (
+                <span key={r.id} className={`an-season__res an-season__res--${r.result || 'D'}`}>{r.result || '–'}</span>
+              ))}
+            </StaggerList>
+          </div>
         </div>
-      </div>
+      </Reveal>
 
       <div className="an-season__list">
         {rows.map((r) => (

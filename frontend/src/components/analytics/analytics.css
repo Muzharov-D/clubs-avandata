@@ -170,6 +170,25 @@
 .an-form-dots { display: inline-flex; gap: 4px; }
 .an-form-dots span { width: 16px; height: 16px; border-radius: 4px; font-size: 10px; font-weight: 800; color: #0a0c10; display: inline-flex; align-items: center; justify-content: center; }
 
+/* ── Герой-момент сезона: ожидаемые очки ── */
+.an-hero { display: flex; flex-direction: column; align-items: center; text-align: center; padding: 20px 12px 4px; }
+.an-hero__val {
+  font-size: clamp(56px, 9vw, 104px);
+  font-weight: 800;
+  line-height: 0.95;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+  color: var(--text);
+}
+.an-hero__lab { text-transform: uppercase; letter-spacing: 0.14em; font-size: 12px; color: var(--an-muted); margin-top: 4px; }
+.an-hero__verdict { font-size: 14px; font-weight: 600; margin-top: 8px; }
+.an-hero__support { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; margin-top: 18px; }
+.an-hero .an-badge { background: var(--bg-surface-2); border: 1px solid var(--border); border-radius: 10px; padding: 8px 14px; display: flex; flex-direction: column; align-items: center; gap: 2px; }
+.an-hero .an-badge__lab { font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-faint); }
+.an-hero .an-badge__val { font-size: 16px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.an-hero__form { margin-top: 18px; display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.an-hero__form .an-season__res { width: 24px; height: 24px; border-radius: 7px; font-size: 12px; }
+
 /* ── Identity fingerprint ── */
 .an-ident__row { display: flex; align-items: center; gap: 10px; padding: 6px 0; }
 .an-ident__lab { flex: 0 0 140px; font-size: 13px; color: var(--text-muted-strong); }
