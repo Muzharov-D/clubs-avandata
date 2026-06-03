@@ -283,22 +283,30 @@ export default function ClubDashboard() {
   if (error)   return <div className="cd"><div className="cd__error">{error}</div></div>;
   if (!team)   return <div className="cd"><div className="cd__error">Команда не найдена</div></div>;
 
+  const clubLogo = shieldFor(team.name);
+
   return (
     <div className="cd kinetic" ref={cdRef} data-testid="club-dashboard">
       <div className="cd__bg-glow" aria-hidden />
 
       <header className="cd__header">
-        <div>
-          <div className="cd__eyebrow">{team.ageLabel || `U-${team.ageGroup}`} · Сезон {seasonLabel}</div>
-          <h1 className="cd__title"><SplitText text={team.name} /></h1>
-          <div className="cd__sub">
-            Главный тренер: <b>{team.headCoach || '—'}</b>
-            {ourRow && (
-              <span className="cd__pos">
-                {' · '}
-                <span className="cd__pos-num">{ourRow.pos} место</span> в {tournamentTitle}
-              </span>
-            )}
+        <div className="cd__header-id">
+          {clubLogo && (
+            <img src={clubLogo} alt="" className="cd__club-logo" aria-hidden
+              onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }} />
+          )}
+          <div className="cd__header-text">
+            <div className="cd__eyebrow">{team.ageLabel || `U-${team.ageGroup}`} · Сезон {seasonLabel}</div>
+            <h1 className="cd__title"><SplitText text={cleanTeamName(team.name)} /></h1>
+            <div className="cd__sub">
+              Главный тренер: <b>{team.headCoach || '—'}</b>
+              {ourRow && (
+                <span className="cd__pos">
+                  {' · '}
+                  <span className="cd__pos-num">{ourRow.pos} место</span> в {tournamentTitle}
+                </span>
+              )}
+            </div>
           </div>
         </div>
       </header>
