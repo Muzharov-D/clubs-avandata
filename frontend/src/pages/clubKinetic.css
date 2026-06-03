@@ -103,7 +103,7 @@
 
 /* ─── Топ-игроки и таблица: акценты на дисплей-шрифте ─── */
 .cd.kinetic .cd__top-rating, .cd.kinetic .cd__player-rating,
-.cd.kinetic .cd__table-pts, .cd.kinetic .cd__avg-val, .cd.kinetic .cd__radar-rating {
+.cd.kinetic .cd__table-pts {
   font-family: var(--font-display); font-variant-numeric: tabular-nums;
 }
 .cd.kinetic .cd__player {

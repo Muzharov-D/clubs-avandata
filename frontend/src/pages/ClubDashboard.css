@@ -237,85 +237,6 @@
 .cd__panel-title { font-size: 16px; margin: 0; font-weight: 700; }
 .cd__panel-sub   { font-size: 12px; color: var(--text-muted); }
 
-/* ===== Период командных показателей (правка Зенита #7) ===== */
-.cd__period-bar {
-  display: flex; flex-wrap: wrap; align-items: center;
-  gap: 10px; margin-bottom: 14px;
-}
-.cd__seg {
-  display: inline-flex; padding: 3px; gap: 2px;
-  background: rgba(255,255,255,0.04);
-  border: 1px solid rgba(255,255,255,0.06);
-  border-radius: 999px;
-}
-.cd__seg-btn {
-  appearance: none; cursor: pointer;
-  padding: 6px 14px; border: 0; border-radius: 999px;
-  background: transparent; color: var(--text-muted-strong, #b4c0d2);
-  font-size: 13px; font-weight: 600; line-height: 1;
-  transition: background 0.18s ease, color 0.18s ease;
-}
-.cd__seg-btn:hover { color: #fff; }
-.cd__seg-btn.is-active {
-  background: var(--brand-primary, var(--accent-cyan));
-  color: #fff;
-}
-.cd__match-select {
-  flex: 1 1 220px; min-width: 0; max-width: 360px;
-  padding: 7px 12px; border-radius: 10px;
-  background: rgba(255,255,255,0.04);
-  border: 1px solid rgba(255,255,255,0.08);
-  color: #fff; font-size: 13px; font-weight: 600; cursor: pointer;
-}
-.cd__match-select:focus-visible {
-  outline: 2px solid var(--brand-primary, var(--accent-cyan)); outline-offset: 1px;
-}
-.cd__stats-empty {
-  padding: 28px 14px; text-align: center;
-  color: var(--text-faint, #6b7689); font-size: 14px;
-}
-
-/* ===== Stats tiles ===== */
-.cd__stats-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-  gap: 10px;
-}
-.cd__stat-tile {
-  background: rgba(255,255,255,0.03);
-  border: 1px solid rgba(255,255,255,0.05);
-  border-radius: var(--radius, 14px);
-  padding: 14px;
-}
-.cd__stat-label {
-  font-size: 12px; color: var(--text-faint);
-  text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 6px;
-}
-.cd__stat-value {
-  font-size: 28px; font-weight: 800; letter-spacing: -0.01em;
-  /* Раньше был background-clip:text → риск невидимого текста на слабом GPU.
-     Сплошной цвет + лёгкое свечение читается всегда. */
-  color: var(--accent-cyan);
-  text-shadow: 0 0 14px color-mix(in srgb, var(--accent-cyan) 25%, transparent);
-}
-.cd__stat-suffix { font-size: 16px; color: var(--text-muted); margin-left: 2px; }
-.cd__stat-extra { font-size: 11px; color: var(--text-muted); margin-top: 4px; }
-
-.cd__avg-caption {
-  margin-top: 14px;
-  padding-top: 12px;
-  font-size: 11px;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: var(--text-faint);
-  border-top: 1px solid rgba(255,255,255,0.06);
-}
-.cd__avg-row {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 10px;
-  margin-top: 8px;
-}
 .cd__hero-venue {
   display: inline-block;
   max-width: 220px;
@@ -331,45 +252,6 @@
   letter-spacing: 0.4em;
   padding: 6px;
   background: rgba(255,255,255,0.02);
-}
-.cd__avg-item {
-  display: flex; flex-direction: column; align-items: center; gap: 4px;
-  padding: 10px;
-  background: color-mix(in srgb, var(--accent-cyan) 6%, transparent);
-  border-radius: 10px;
-}
-.cd__avg-label { font-size: 12px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em; }
-.cd__avg-val   { font-size: 22px; font-weight: 800; color: var(--accent-cyan); }
-
-.cd__agg-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 12px;
-}
-.cd__agg-card {
-  background: rgba(255,255,255,0.02);
-  border: 1px solid rgba(255,255,255,0.05);
-  border-radius: 12px;
-  padding: 14px;
-}
-.cd__agg-title {
-  font-size: 12.5px; color: var(--accent-cyan); font-weight: 700;
-  text-transform: uppercase; letter-spacing: 0.06em;
-  margin-bottom: 12px; padding-bottom: 8px;
-  border-bottom: 1px solid color-mix(in srgb, var(--accent-cyan) 22%, transparent);
-}
-.cd__agg-row {
-  display: flex; flex-direction: column; gap: 5px;
-  font-size: 13.5px; padding: 7px 0;
-}
-.cd__agg-row-head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
-.cd__agg-key { color: var(--text-muted-strong); }
-.cd__agg-val { font-weight: 800; color: #fff; font-variant-numeric: tabular-nums; }
-.cd__agg-bar { display: block; height: 5px; background: rgba(255,255,255,0.05); border-radius: 999px; overflow: hidden; }
-.cd__agg-bar-fill {
-  display: block; height: 100%; border-radius: 999px;
-  background: linear-gradient(90deg, color-mix(in srgb, var(--accent-cyan) 55%, transparent), var(--accent-cyan));
-  transition: width 500ms var(--ease-out, ease-out);
 }
 
 /* ===== Two-column row ===== */
@@ -529,48 +411,6 @@
   .cd__title { font-size: 26px; }
 }
 
-/* ===== Player radars grid ===== */
-.cd__radars-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 16px;
-}
-.cd__radar-card {
-  background: rgba(255,255,255,0.02);
-  border: 1px solid rgba(255,255,255,0.05);
-  border-radius: 14px;
-  padding: 16px;
-  cursor: pointer;
-  transition: border-color 200ms, transform 150ms;
-}
-.cd__radar-card:hover {
-  border-color: color-mix(in srgb, var(--accent-cyan) 30%, transparent);
-  transform: translateY(-2px);
-}
-.cd__radar-head {
-  display: grid;
-  grid-template-columns: auto 1fr auto;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 12px;
-}
-.cd__radar-num {
-  font-size: 12px;
-  color: var(--text-faint);
-  font-weight: 700;
-}
-.cd__radar-name {
-  font-weight: 700;
-  font-size: 14px;
-}
-.cd__radar-rating {
-  padding: 4px 10px;
-  border-radius: 8px;
-  font-weight: 800;
-  font-size: 13px;
-  color: #fff;
-}
-
 /* ─── Эмблемы клубов + фото лучшего игрока (блок «Главное») ─────────────── */
 .cd__crest {
   flex-shrink: 0; border-radius: 7px; object-fit: contain;
@@ -640,7 +480,6 @@
   display: flex; flex-wrap: wrap; gap: 10px 14px; align-items: center;
   justify-content: space-between; margin-bottom: 14px;
 }
-.cd__seg--sm .cd__seg-btn { padding: 6px 12px; font-size: 12px; }
 .cd__chips { display: flex; flex-wrap: wrap; gap: 6px; }
 .cd__chip {
   padding: 6px 12px; border-radius: 999px; font-size: 12px; font-weight: 600;
