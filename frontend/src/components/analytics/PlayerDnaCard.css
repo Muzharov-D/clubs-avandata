@@ -196,22 +196,24 @@
 /* Сигнатурный рейтинг сезона — Oura-style кольцо-score (заполнение по шкале /10). */
 .dna-card__rating { flex: 0 0 auto; display: flex; flex-direction: column; align-items: center; gap: 7px; }
 .dna-card__rating-ring { position: relative; width: clamp(104px, 9vw, 132px); aspect-ratio: 1; }
-.dna-card__rating-arc {
-  position: absolute;
-  inset: 0;
-  border-radius: 50%;
-  background: conic-gradient(var(--accent-cyan) calc(var(--pct, 0) * 3.6deg), rgba(255, 255, 255, 0.07) 0);
-  -webkit-mask: radial-gradient(farthest-side, #0000 67%, #000 68%);
-          mask: radial-gradient(farthest-side, #0000 67%, #000 68%);
-  filter: drop-shadow(0 0 12px color-mix(in srgb, var(--accent-cyan) 30%, transparent));
+.dna-card__rating-svg { width: 100%; height: 100%; transform: rotate(-90deg); overflow: visible; }
+.dna-ring-track { fill: none; stroke: rgba(255, 255, 255, 0.06); stroke-width: 9; }
+.dna-ring-prog {
+  fill: none;
+  stroke: url(#dna-ring-grad);
+  stroke-width: 9;
+  stroke-linecap: round;
+  filter: drop-shadow(0 0 9px color-mix(in srgb, var(--accent-cyan) 45%, transparent));
 }
+.dna-ring-grad-a { stop-color: var(--brand-primary); }
+.dna-ring-grad-b { stop-color: var(--accent-cyan); }
 .dna-card__rating-num {
   position: absolute;
   inset: 0;
   display: grid;
   place-items: center;
   font-family: var(--font-display);
-  font-size: clamp(30px, 3.6vw, 42px);
+  font-size: clamp(32px, 3.8vw, 46px);
   font-weight: 800;
   line-height: 1;
   color: var(--text);

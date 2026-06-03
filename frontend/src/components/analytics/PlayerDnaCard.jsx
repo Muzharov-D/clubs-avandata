@@ -129,8 +129,23 @@ export default function PlayerDnaCard({
         </div>
         {showStatsInline && stats?.avgOverall > 0 && (
           <div className="dna-card__rating">
-            <div className="dna-card__rating-ring" style={{ '--pct': Math.round(stats.avgOverall * 10) }}>
-              <span className="dna-card__rating-arc" aria-hidden />
+            <div className="dna-card__rating-ring">
+              <svg className="dna-card__rating-svg" viewBox="0 0 120 120" aria-hidden>
+                <defs>
+                  <linearGradient id="dna-ring-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" className="dna-ring-grad-a" />
+                    <stop offset="100%" className="dna-ring-grad-b" />
+                  </linearGradient>
+                </defs>
+                <circle className="dna-ring-track" cx="60" cy="60" r="52" />
+                <circle
+                  className="dna-ring-prog"
+                  cx="60"
+                  cy="60"
+                  r="52"
+                  style={{ strokeDasharray: `${(Math.min(100, Math.round(stats.avgOverall * 10)) / 100) * 326.7} 999` }}
+                />
+              </svg>
               <div className="dna-card__rating-num">
                 <AnimatedNumber value={stats.avgOverall} format={(v) => v.toFixed(1)} stiffness={120} damping={24} />
               </div>
