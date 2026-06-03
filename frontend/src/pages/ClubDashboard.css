@@ -282,7 +282,7 @@
 .cd__hero-meta { font-size: 13px; color: var(--text-muted); margin-bottom: 10px; }
 .cd__countdown {
   display: inline-block; padding: 6px 12px; margin-top: 6px;
-  background: color-mix(in srgb, var(--accent-cyan) 28%, transparent); color: #7fe3ff;
+  background: color-mix(in srgb, var(--accent-cyan) 28%, transparent); color: var(--accent-cyan);
   border-radius: 999px; font-size: 12px; font-weight: 700;
 }
 .cd__hero-action {
@@ -308,7 +308,17 @@
   display: flex; justify-content: space-between; align-items: baseline;
   gap: 12px; margin-bottom: 14px;
 }
-.cd__panel-title { font-size: 16px; margin: 0; font-weight: 700; }
+/* Заголовок панели — с той же фирменной акцентной риской, что и .page-section-title
+   на остальных экранах (единый дизайн-язык, без «разных вселенных»). */
+.cd__panel-title {
+  font-size: 16px; margin: 0; font-weight: 700;
+  font-family: var(--font-display);
+  display: flex; align-items: center; gap: 9px;
+}
+.cd__panel-title::before {
+  content: ''; width: 3px; height: 15px; border-radius: 2px;
+  background: var(--brand-primary); flex-shrink: 0;
+}
 .cd__panel-sub   { font-size: 12px; color: var(--text-muted); }
 
 .cd__hero-venue {
