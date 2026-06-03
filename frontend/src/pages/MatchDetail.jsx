@@ -296,17 +296,8 @@ export default function MatchDetail() {
   const usScore = homeIsUs ? (match.score?.home ?? 0) : (match.score?.away ?? 0);
   const themScore = homeIsUs ? (match.score?.away ?? 0) : (match.score?.home ?? 0);
 
-  // Нарративная строка вердикта: ТОЛЬКО словами, без второго счёта. Раньше брали
-  // первый инсайт («Поражение 1:2») — а это перевёрнутый дубль большого счёта
-  // (2:1 хозяева:гости против 1:2 мы:они), что сбивало с толку. Большой счёт с
-  // эмблемами — единственный числовой источник; подпись лишь называет исход.
-  const verdictMargin = Math.abs(usScore - themScore);
-  const verdictText =
-    usScore > themScore
-      ? (verdictMargin === 1 ? 'Победа в один мяч' : verdictMargin >= 3 ? 'Крупная победа' : 'Победа')
-      : usScore < themScore
-        ? (verdictMargin === 1 ? 'Поражение в один мяч' : verdictMargin >= 3 ? 'Крупное поражение' : 'Поражение')
-        : 'Ничья';
+  // Вердикт словами убран намеренно: исход уже читается из большого счёта и
+  // цветных эмблем — словесная подпись была смысловой тавтологией.
 
   // xPTS обеих сторон для полосы под счётом — из существующих xg-хелперов.
   const { our: ourSide, opp: oppSide } = ourSideKey(match);
@@ -380,7 +371,6 @@ export default function MatchDetail() {
                 <TeamSide side="away" team={match.awayTeam} isWinner={usScore > themScore ? !homeIsUs : usScore < themScore ? homeIsUs : false} />
               </div>
 
-              <div className="kin-verdict__narrative">{verdictText}</div>
 
               {hasXpts && (
                 <Reveal variant="clip" duration={0.6} delay={1.2} className="kin-verdict__xpts-wrap">
