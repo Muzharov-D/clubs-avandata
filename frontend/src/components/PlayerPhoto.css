@@ -1,7 +1,7 @@
 .player-photo {
   border-radius: 50%;
   overflow: hidden;
-  background: #1a1a4a;
+  background: var(--bg-surface-2, #1a2233);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -12,8 +12,14 @@
   height: 100%;
   object-fit: cover;
 }
+/* Инициалы без фото — единый бренд-градиент (white-label, через CSS-vars),
+   а не хардкод-красный. Так аватары всех игроков выглядят единообразно. */
 .player-photo--fallback {
-  background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%);
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--brand-primary) 80%, #000) 0%,
+    color-mix(in srgb, var(--brand-primary) 45%, #0b1220) 100%
+  );
   color: #fff;
   font-family: var(--font-display);
   font-weight: 700;

@@ -733,11 +733,17 @@
   letter-spacing: -0.02em;
   text-shadow: 0 2px 28px color-mix(in srgb, var(--accent-cyan) 22%, transparent);
 }
+/* Аватар запасной шапки приводим к ЕДИНОМУ виду с карточкой ДНК: круг + кольцо
+   + свечение. Раньше тут был скруглённый прямоугольник — отсюда «разные
+   вселенные» между игроками с/без достаточных данных для ДНК. */
 .player-detail__hero--season .player-photo {
+  border-radius: 50%;
   box-shadow:
-    0 0 0 2px var(--bg-surface),
-    0 0 0 4px color-mix(in srgb, var(--accent-cyan) 48%, transparent),
-    0 12px 34px rgba(6, 11, 22, 0.55);
+    0 0 0 4px color-mix(in srgb, var(--accent-cyan) 55%, transparent),
+    0 8px 28px rgba(0, 0, 0, 0.3);
+}
+.player-detail__hero--season .player-photo > * {
+  border-radius: 50% !important;
 }
 .player-detail__hero--season .player-detail__hero-pos {
   color: var(--accent-cyan);
