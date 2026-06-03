@@ -32,6 +32,7 @@ import { useTeam } from '../contexts/TeamContext';
 // Единая шкала рейтинга (var(--rating-*)) — общий источник по всему UI.
 import { ratingColor, ratingTextColor } from '../utils/colors';
 import { matchesWord } from '../utils/num';
+import { surnameOf } from '../utils/players';
 // @ts-ignore — legacy .js
 import { shieldFor, normalizeTeamName as normLeague } from '../utils/legirus';
 // @ts-ignore — legacy .jsx
@@ -655,7 +656,7 @@ export default function ClubDashboard() {
                     </span>
                   )}
                 </div>
-                <span className="cd__player-name">{p.fullName}</span>
+                <span className="cd__player-name">{surnameOf(p)}</span>
                 <span className="cd__player-number">#{p.number ?? '—'} · {sub}</span>
               </div>
             );

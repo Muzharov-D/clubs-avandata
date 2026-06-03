@@ -105,6 +105,19 @@ export function shortNameFromPlayer(player) {
   return label;
 }
 
+// Только фамилия, ЦЕЛИКОМ — для плиток состава, где «Имя Фамилия» обрезается.
+// Приоритет: поле lastName, иначе последнее слово fullName (большинство имён —
+// «Имя Фамилия»). Никогда не возвращает мусор/заглушку — падает на «№N».
+export function surnameOf(player) {
+  if (!player) return '';
+  const ln = String(player.lastName || '').trim();
+  if (ln && !isPlaceholderName(ln)) return ln;
+  const parts = String(player.fullName || '').trim().split(/\s+/).filter(Boolean);
+  if (parts.length >= 2 && !isPlaceholderName(parts[parts.length - 1])) return parts[parts.length - 1];
+  if (parts.length === 1 && !isPlaceholderName(parts[0])) return parts[0];
+  return player.number != null ? `№${player.number}` : 'Без имени';
+}
+
 // Полная подпись для списков/дропдаунов — реальное имя или «№N» (без мусора).
 export function playerLabel(player) {
   return shortNameFromPlayer(player) || (player?.number != null ? `№${player.number}` : 'Без имени');
