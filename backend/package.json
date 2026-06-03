@@ -14,7 +14,9 @@
     "db:generate": "drizzle-kit generate",
     "db:migrate": "tsx src/db/migrate.ts",
     "db:studio": "drizzle-kit studio",
-    "seed:admin": "tsx src/scripts/seedAdmin.ts"
+    "seed:admin": "tsx src/scripts/seedAdmin.ts",
+    "seed:coach": "tsx src/scripts/seedCoach.ts",
+    "seed:trainings": "tsx src/scripts/seedTrainings.ts"
   },
   "dependencies": {
     "@fastify/cookie": "^11.0.2",
