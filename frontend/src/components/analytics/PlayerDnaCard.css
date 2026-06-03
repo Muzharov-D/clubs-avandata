@@ -170,12 +170,18 @@
 
 .dna-card--hero .dna-card__head { grid-column: 2; }
 
-/* Блок «Сильные стороны» в герое — правая колонка. */
+/* Блоки «Сильные стороны» / «Зоны роста» в герое — правая колонка, друг под другом.
+   ВАЖНО: правило бьёт по ОБОИМ .dna-card__block, поэтому разводим их по строкам
+   соседним селектором, иначе второй блок наезжает на первый (grid-row коллизия). */
 .dna-card--hero .dna-card__block {
   grid-column: 3;
   grid-row: 1;
   margin-top: 0;
-  align-self: stretch;
+  align-self: start;
+}
+.dna-card--hero .dna-card__block + .dna-card__block {
+  grid-row: 2;
+  margin-top: 16px;
 }
 
 .dna-card__identity {
