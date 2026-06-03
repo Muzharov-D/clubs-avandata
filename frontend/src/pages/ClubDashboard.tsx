@@ -33,7 +33,7 @@ import { useTeam } from '../contexts/TeamContext';
 import { ratingColor, ratingTextColor } from '../utils/colors';
 import { matchesWord } from '../utils/num';
 // @ts-ignore — legacy .js
-import { shieldFor } from '../utils/legirus';
+import { shieldFor, normalizeTeamName as normLeague } from '../utils/legirus';
 // @ts-ignore — legacy .jsx
 import PredictedLineup from '../components/PredictedLineup';
 // @ts-ignore — legacy .jsx
@@ -843,14 +843,16 @@ function TeamCrest({ src, name, size = 28 }: { src?: string | null; name?: strin
 /** Место в лиге + форма (последние 5: В/Н/П) команды — считаем из календаря лиги
  *  и standings, БЕЗ новых запросов (всё уже загружено). */
 function teamLeagueInfo(name: string, calendar: AnyObj[], standings: AnyObj | null): { pos: number | null; last5: ('W' | 'D' | 'L')[] } {
-  const norm = normalizeTeamName(name);
-  const row = (((standings as AnyObj)?.table ?? []) as AnyObj[]).find((r) => normalizeTeamName(String(r.team)) === norm);
+  // normLeague (utils/legirus) сильнее локального: режет юр-формы (ФК/ГБУ ДО…) и
+  // применяет алиасы — иначе «ФК Легирус» из календаря не матчит «Легирус» в таблице.
+  const norm = normLeague(name);
+  const row = (((standings as AnyObj)?.table ?? []) as AnyObj[]).find((r) => normLeague(String(r.team)) === norm);
   const past = (calendar || [])
     .filter((m) => m.scoreH != null && m.scoreA != null && m.date &&
-      (normalizeTeamName(String(m.home)) === norm || normalizeTeamName(String(m.away)) === norm))
+      (normLeague(String(m.home)) === norm || normLeague(String(m.away)) === norm))
     .sort((a, b) => new Date(String(b.date)).getTime() - new Date(String(a.date)).getTime());
   const last5 = past.slice(0, 5).reverse().map((m) => {
-    const isHome = normalizeTeamName(String(m.home)) === norm;
+    const isHome = normLeague(String(m.home)) === norm;
     const own = Number(isHome ? m.scoreH : m.scoreA);
     const opp = Number(isHome ? m.scoreA : m.scoreH);
     return (own > opp ? 'W' : own < opp ? 'L' : 'D') as 'W' | 'D' | 'L';
