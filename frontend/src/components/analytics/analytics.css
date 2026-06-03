@@ -138,7 +138,9 @@
 .an-pct__row { display: flex; align-items: center; gap: 10px; padding: 6px 0; }
 .an-pct__label { flex: 0 0 130px; font-size: 13px; color: var(--text-muted-strong, #b4c0d2); }
 .an-pct__track { flex: 1; height: 10px; border-radius: 5px; background: var(--bg-surface-3, #232b38); overflow: hidden; position: relative; }
-.an-pct__fill { height: 100%; border-radius: 5px; background: #64748b; }
+/* display:block ОБЯЗАТЕЛЕН: это <span>, а инлайн-элемент игнорирует width/height
+   → заливка схлопывалась в 0×0 и была невидимой («окраска не доехала»). */
+.an-pct__fill { display: block; height: 100%; border-radius: 5px; background: #64748b; }
 /* Топ-20% — насыщенный зелёный со свечением, топ-40% — спокойный зелёный. */
 .an-pct__fill--hi { background: var(--an-pos); box-shadow: 0 0 10px color-mix(in srgb, var(--an-pos) 50%, transparent); }
 .an-pct__fill--good { background: color-mix(in srgb, var(--an-pos) 72%, var(--bg-surface-3)); }
