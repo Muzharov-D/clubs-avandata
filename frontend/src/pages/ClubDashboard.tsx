@@ -340,6 +340,10 @@ export default function ClubDashboard() {
                   <span className="cd__hero-vs">—</span>
                   <MatchupTeam name={teamDisplay(nextMatch.away, isOurName(nextMatch.away, ourName))} shield={nextMatch.awayShield} isOur={isOurName(nextMatch.away, ourName)} />
                 </div>
+                <div className="cd__mm-formrow">
+                  <TeamFormMini name={nextMatch.home} calendar={calendar} standings={standings} align="left" />
+                  <TeamFormMini name={nextMatch.away} calendar={calendar} standings={standings} align="right" />
+                </div>
                 <div className="cd__hero-meta">
                   <span>{formatDateLong(nextMatch.date)}</span>
                   {nextMatch.venue && <span className="cd__hero-venue"> · {nextMatch.venue}</span>}
@@ -833,6 +837,45 @@ function TeamCrest({ src, name, size = 28 }: { src?: string | null; name?: strin
   return (
     <img className="cd__crest" src={resolvedSrc} alt="" width={size} height={size}
          loading="lazy" onError={() => setErrored(true)} />
+  );
+}
+
+/** Место в лиге + форма (последние 5: В/Н/П) команды — считаем из календаря лиги
+ *  и standings, БЕЗ новых запросов (всё уже загружено). */
+function teamLeagueInfo(name: string, calendar: AnyObj[], standings: AnyObj | null): { pos: number | null; last5: ('W' | 'D' | 'L')[] } {
+  const norm = normalizeTeamName(name);
+  const row = (((standings as AnyObj)?.table ?? []) as AnyObj[]).find((r) => normalizeTeamName(String(r.team)) === norm);
+  const past = (calendar || [])
+    .filter((m) => m.scoreH != null && m.scoreA != null && m.date &&
+      (normalizeTeamName(String(m.home)) === norm || normalizeTeamName(String(m.away)) === norm))
+    .sort((a, b) => new Date(String(b.date)).getTime() - new Date(String(a.date)).getTime());
+  const last5 = past.slice(0, 5).reverse().map((m) => {
+    const isHome = normalizeTeamName(String(m.home)) === norm;
+    const own = Number(isHome ? m.scoreH : m.scoreA);
+    const opp = Number(isHome ? m.scoreA : m.scoreH);
+    return (own > opp ? 'W' : own < opp ? 'L' : 'D') as 'W' | 'D' | 'L';
+  });
+  return { pos: row?.pos != null ? Number(row.pos) : null, last5 };
+}
+
+const FORM_RU: Record<'W' | 'D' | 'L', string> = { W: 'В', D: 'Н', L: 'П' };
+
+/** Мини-блок «место в лиге + форма» под командой в превью матча. */
+function TeamFormMini({ name, calendar, standings, align }: { name?: string; calendar: AnyObj[]; standings: AnyObj | null; align: 'left' | 'right' }) {
+  if (!name) return null;
+  const { pos, last5 } = teamLeagueInfo(name, calendar, standings);
+  if (pos == null && last5.length === 0) return null;
+  return (
+    <div className={`cd__mm-form cd__mm-form--${align}`}>
+      {pos != null && <span className="cd__mm-pos">#{pos} в лиге</span>}
+      {last5.length > 0 && (
+        <span className="cd__mm-form-cells" title="Последние матчи: В — победа, Н — ничья, П — поражение">
+          {last5.map((r, i) => (
+            <span key={i} className={`cd__mm-form-cell cd__mm-form-cell--${r.toLowerCase()}`}>{FORM_RU[r]}</span>
+          ))}
+        </span>
+      )}
+    </div>
   );
 }
 

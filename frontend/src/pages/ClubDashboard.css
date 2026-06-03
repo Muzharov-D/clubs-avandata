@@ -280,6 +280,29 @@
 }
 .cd__hero-score { font-size: 24px; color: var(--text); font-weight: 800; }
 .cd__hero-meta { font-size: 13px; color: var(--text-muted); margin-bottom: 10px; }
+
+/* Превью матча: место в лиге + форма (последние 5) по обеим командам. */
+.cd__mm-formrow {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 16px;
+  margin: -2px 0 12px;
+}
+.cd__mm-form { display: flex; flex-direction: column; gap: 5px; min-width: 0; }
+.cd__mm-form--left  { align-items: flex-start; }
+.cd__mm-form--right { align-items: flex-end; }
+.cd__mm-pos {
+  font-size: 11px; font-weight: 700; letter-spacing: 0.03em;
+  color: var(--text-muted-strong, #b4c0d2);
+}
+.cd__mm-form-cells { display: inline-flex; gap: 3px; }
+.cd__mm-form-cell {
+  width: 17px; height: 17px; border-radius: 4px;
+  display: grid; place-items: center;
+  font-size: 10px; font-weight: 800; color: #fff;
+  font-variant-numeric: tabular-nums;
+}
+.cd__mm-form-cell--w { background: var(--success, #22c55e); }
+.cd__mm-form-cell--d { background: var(--border-strong, #475569); color: var(--text-muted-strong, #cbd5e1); }
+.cd__mm-form-cell--l { background: var(--danger, #ef4444); }
 .cd__countdown {
   display: inline-block; padding: 6px 12px; margin-top: 6px;
   background: color-mix(in srgb, var(--accent-cyan) 28%, transparent); color: var(--accent-cyan);
