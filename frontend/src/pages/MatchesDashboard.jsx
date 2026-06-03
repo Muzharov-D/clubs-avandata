@@ -1,13 +1,14 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useApi } from '../hooks/useApi';
-import { fetchMatches, fetchTeams, fetchMatch } from '../services/api';
+import { fetchMatches, fetchTeams, fetchMatch, fetchStandings } from '../services/api';
 import MatchList from '../components/MatchList';
 import PdfUploadDialog from '../components/PdfUploadDialog';
 import PlayerPhoto from '../components/PlayerPhoto';
 import { ratingColor, ratingTextColor } from '../utils/colors';
 import { shortNameFromPlayer } from '../utils/players';
-import { isOurClub, shieldFor } from '../utils/legirus';
+import { isOurClub, shieldFor, normalizeTeamName } from '../utils/legirus';
+import { trimAgeSuffix } from '../utils/teamName';
 import { useAuth } from '../contexts/AuthContext';
 import { useTeam } from '../contexts/TeamContext';
 import { useTournament } from '../contexts/TournamentContext';
@@ -40,6 +41,21 @@ export default function MatchesDashboard() {
   const { selectedTeamId, selectedTeam } = useTeam();
   const canUpload = user?.role === 'head_coach' || user?.role === 'team_coach';
   const matchesRes = useApi(() => fetchMatches(selectedTeamId), [selectedTeamId]);
+  // Эмблемы соперников из турнирной таблицы (в объекте матча щита нет) — чтобы
+  // в сводке был логотип, а не буква названия. Матчинг по имени со срезом возраста.
+  const ageGroup = (selectedTeamId || '').match(/(?:19|20)\d{2}/)?.[0] || null;
+  const standingsRes = useApi(() => (ageGroup ? fetchStandings(ageGroup) : Promise.resolve(null)), [ageGroup]);
+  const teamKey = (n) => normalizeTeamName(trimAgeSuffix(n));
+  const shieldByName = useMemo(() => {
+    const map = {};
+    for (const r of standingsRes.data?.table || []) {
+      const key = teamKey(r.team);
+      if (key && r.shield) map[key] = r.shield;
+    }
+    return map;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [standingsRes.data]);
+  const resolveShield = (name) => shieldByName[teamKey(name)] || null;
   const teamsRes = useApi(fetchTeams, []);
   const [uploadOpen, setUploadOpen] = useState(false);
 
@@ -161,7 +177,7 @@ export default function MatchesDashboard() {
               <div className="matches-dashboard__last-date">{fmtDate(lastMatch.date)}</div>
               <div className="matches-dashboard__last-teams matches-dashboard__last-teams--hero">
                 <div className="matches-dashboard__last-team">
-                  <LastTeamCrest name={lastMatch.homeTeam?.name} hero />
+                  <LastTeamCrest name={lastMatch.homeTeam?.name} shield={resolveShield(lastMatch.homeTeam?.name)} hero />
                   <span>{lastMatch.homeTeam?.name?.replace(/\s*[Uu]-?\s*\d{1,3}\s*$/, '').replace(/\s+20\d{2}\s*$/, '') || 'Команда'}</span>
                 </div>
                 <div className="matches-dashboard__last-score matches-dashboard__last-score--hero">
@@ -179,7 +195,7 @@ export default function MatchesDashboard() {
                 </div>
                 <div className="matches-dashboard__last-team away">
                   <span>{(lastMatch.awayTeam?.name || 'Соперник').replace(/\s*[Uu]-?\s*\d{1,3}\s*/g, ' ').replace(/\s+20\d{2}\s*/g, ' ').replace(/\s+/g, ' ').trim()}</span>
-                  <LastTeamCrest name={lastMatch.awayTeam?.name} hero />
+                  <LastTeamCrest name={lastMatch.awayTeam?.name} shield={resolveShield(lastMatch.awayTeam?.name)} hero />
                 </div>
               </div>
               <button
@@ -291,9 +307,9 @@ export default function MatchesDashboard() {
 
 // Эмблема команды в сводке матча: через shieldFor (наш клуб → лого, соперник →
 // инициал, т.к. внешнего щита в объекте матча нет). Единая точка эмблем проекта.
-function LastTeamCrest({ name, hero = false }) {
+function LastTeamCrest({ name, shield = null, hero = false }) {
   const [errored, setErrored] = useState(false);
-  const src = shieldFor(name || '', '');
+  const src = shieldFor(name || '', shield || '');
   if (!src || errored) {
     return (
       <span className={`matches-dashboard__last-placeholder${hero ? ' matches-dashboard__last-placeholder--hero' : ''}`} aria-hidden>
