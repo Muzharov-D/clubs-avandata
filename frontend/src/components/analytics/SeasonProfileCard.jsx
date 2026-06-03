@@ -5,7 +5,8 @@
  * «кто этот игрок по сезону». Деградирует, если season-данные недоступны
  * (эндпоинт только для тренеров) — тогда карточку не показываем.
  */
-import { per90, seasonPercentile } from '../../utils/analytics';
+import { per90 } from '../../utils/analytics';
+import { percentileRank } from '../../utils/num';
 import PizzaChart from '../PizzaChart';
 import './analytics.css';
 
@@ -34,35 +35,38 @@ export default function SeasonProfileCard({ subject, seasonPlayers, basis = 90 }
   const me = seasonPlayers.find((s) => s.id === subject.id);
   if (!me || !(me.minutes > 0)) return null;
 
-  const getP90 = (m) => (s) => per90(m.get(s), s.minutes, 1, basis);
+  // Пул = ВСЯ команда (сыгравшие минуты) — сравниваем с командой, а не с узким
+  // позиционным срезом (явное требование тренера).
+  const pool = seasonPlayers.filter((s) => s.minutes > 0);
+  if (pool.length < 4) return null;
 
   // Слайс показываем только если в пуле хоть у кого-то метрика > 0 (иначе пустой
   // сектор: xG/xA для младших возрастов SportVisor не считает).
   const slices = SEASON_METRICS.map((m) => {
-    const poolMax = Math.max(0, ...seasonPlayers.map((s) => Number(m.get(s)) || 0));
+    const poolMax = Math.max(0, ...pool.map((s) => Number(m.get(s)) || 0));
     if (poolMax <= 0) return null;
     const my90 = per90(m.get(me), me.minutes, 1, basis);
-    const res = seasonPercentile(subject, seasonPlayers, getP90(m), my90);
-    if (res.pct == null) return null;
-    return { axis: m.label, group: m.group, value: res.pct, displayValue: fmt90(my90), _scope: res.scope, _pool: res.poolSize };
+    const poolVals = pool.map((s) => per90(m.get(s), s.minutes, 1, basis));
+    const pct = percentileRank(my90, poolVals);
+    if (pct == null) return null;
+    return { axis: m.label, group: m.group, value: pct, displayValue: fmt90(my90) };
   }).filter(Boolean);
 
   if (slices.length < 3) return null;
 
-  const scope = slices[0]._scope === 'position' ? 'позиции' : 'команде';
-  const poolSize = slices[0]._pool;
+  const poolSize = pool.length;
 
   return (
     <div className="card player-detail__pizza">
       <div className="player-detail__pizza-head">
         <div className="page-section-title">
-          Профиль по сезону <span className="an-model-tag">за матч ({basis}′) · vs {scope}</span>
+          Профиль по сезону <span className="an-model-tag">за матч ({basis}′) · в сравнении с командой</span>
         </div>
       </div>
       <PizzaChart
         subjectName={`${subject.fullName || ''} · сезон`}
-        subjectMeta={`Цифры — действия за матч (${basis}′), длина слайса — перцентиль vs ${scope} (${poolSize} чел.)`}
-        vsLabel={scope}
+        subjectMeta={`Цифры — действия за матч (${basis}′), длина слайса — перцентиль в команде (${poolSize} чел.)`}
+        vsLabel="команде"
         slices={slices}
       />
     </div>

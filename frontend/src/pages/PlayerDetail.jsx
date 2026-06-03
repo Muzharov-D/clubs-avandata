@@ -434,20 +434,17 @@ function bioFormNote(series) {
   return 'Форма стабильная.';
 }
 
-// Когда позиция в данных пустая — выводим роль из самого игрового профиля сезона
-// (а не безликое «игрок»). Сравниваем атакующий и оборонительный объём по его
-// собственным действиям. Это честная эвристика, а не выдумка позиции.
-function inferRoleNoun(seasonPlayers, id) {
-  const me = (seasonPlayers || []).find((s) => s.id === id);
-  if (!me || !(me.minutes > 0)) return null;
-  const attack = (me.goals || 0) * 3 + (me.assists || 0) * 2 + (me.shots || 0)
-    + (me.dribble || 0) + (me.keyPass || 0);
-  const defence = (me.tackle || 0) + (me.interception || 0) + (me.recovery || 0)
-    + (me.duel || 0) + (me.pressing || 0);
-  if (attack === 0 && defence === 0) return null;
-  if (attack >= defence * 1.6) return 'нападающий';
-  if (defence >= attack * 1.6) return 'защитник';
-  return 'полузащитник';
+// Когда позиция в данных пустая — берём роль из той же группировки, что и
+// карточка «ДНК игрока» (positionGroup), чтобы био и архетип НЕ противоречили
+// друг другу («Атакующий полузащитник» сверху и «защитник» в тексте — это и есть
+// «разные вселенные»). Без данных о позиции группа = MID → «полузащитник».
+function inferRoleNoun(identity) {
+  switch (positionGroup(identity)) {
+    case 'GK': return 'вратарь';
+    case 'DEF': return 'защитник';
+    case 'FWD': return 'нападающий';
+    default: return 'полузащитник';
+  }
 }
 
 // Авто-биография по сезону (референс «Player Bio») — скаут-абзац из данных:
@@ -455,7 +452,7 @@ function inferRoleNoun(seasonPlayers, id) {
 function seasonBio(identity, totals, series, seasonPlayers, basis = 90) {
   if (!totals || !totals.matches) return null;
   const explicitPos = identity.positionFull || identity.position;
-  const pos = (explicitPos || inferRoleNoun(seasonPlayers, identity.id) || 'полевой игрок').toLowerCase();
+  const pos = (explicitPos || inferRoleNoun(identity) || 'полевой игрок').toLowerCase();
   const age = ageFrom(identity.birthDate);
   const parts = [];
 
