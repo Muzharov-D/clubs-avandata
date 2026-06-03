@@ -7,9 +7,9 @@
 import './PizzaChart.css';
 
 const GROUP_COLORS = {
-  attack:  { fill: '#dc2626', track: 'rgba(220, 38, 38, 0.16)', text: '#fff', label: 'Атака' },
-  defence: { fill: '#ffffff', track: 'rgba(255, 255, 255, 0.10)', text: '#0d1424', label: 'Оборона' },
-  fitness: { fill: '#7c2d12', track: 'rgba(124, 45, 18, 0.22)',  text: '#fff', label: 'Фитнес' },
+  attack:  { fill: '#22d3ee', track: 'rgba(34, 211, 238, 0.14)',  text: '#06131c', label: 'Атака' },
+  defence: { fill: '#818cf8', track: 'rgba(129, 140, 248, 0.14)', text: '#ffffff', label: 'Оборона' },
+  fitness: { fill: '#fbbf24', track: 'rgba(251, 191, 36, 0.14)',  text: '#1a1205', label: 'Фитнес' },
 };
 
 function polar(cx, cy, r, angle) {
@@ -174,16 +174,16 @@ export default function PizzaChart({
         <defs>
           {/* Радиальные градиенты заливок слайсов — глубина от центра к краю */}
           <radialGradient id="pz-grad-attack" cx="50%" cy="50%" r="65%">
-            <stop offset="0%" stopColor="#ff6b6b" />
-            <stop offset="100%" stopColor="#b91c1c" />
+            <stop offset="0%" stopColor="#67e8f9" />
+            <stop offset="100%" stopColor="#0e7490" />
           </radialGradient>
           <radialGradient id="pz-grad-defence" cx="50%" cy="50%" r="65%">
-            <stop offset="0%" stopColor="#ffffff" />
-            <stop offset="100%" stopColor="#b8c2d4" />
+            <stop offset="0%" stopColor="#c7d2fe" />
+            <stop offset="100%" stopColor="#4338ca" />
           </radialGradient>
           <radialGradient id="pz-grad-fitness" cx="50%" cy="50%" r="65%">
-            <stop offset="0%" stopColor="#c2410c" />
-            <stop offset="100%" stopColor="#6b2410" />
+            <stop offset="0%" stopColor="#fcd34d" />
+            <stop offset="100%" stopColor="#b45309" />
           </radialGradient>
           {/* Мягкое свечение слайсов */}
           <filter id="pz-glow" x="-20%" y="-20%" width="140%" height="140%">
