@@ -108,6 +108,7 @@ export default function TeamIdentityCard({ aggregate, periodLabel = 'за сез
       hint: xgPerShot < 0.07
         ? `${xgPerShot.toFixed(2)} xG на удар — много дальних, мало выходов на убойную позицию.`
         : `${xgPerShot.toFixed(2)} xG на удар — выходим на хорошие позиции, не бьём ради удара.`,
+      note: `${matchCount} ${matchesWord(matchCount)} — направление, не приговор`,
     },
     possession > 0 && xg != null && {
       key: 'possprod',
@@ -117,6 +118,7 @@ export default function TeamIdentityCard({ aggregate, periodLabel = 'за сез
       hint: possession >= 50 && xg < 1.1
         ? `Владеем мячом (${Math.round(possession)}%), но остроты мало (${xg.toFixed(1)} xG) — контроль не доходит до ворот.`
         : `Владение конвертируется в моменты — ${xg.toFixed(1)} xG при ${Math.round(possession)}% мяча.`,
+      note: `${matchCount} ${matchesWord(matchCount)} — направление, не приговор`,
     },
   ].filter(Boolean);
   if (rows.length === 0) return null;
@@ -138,6 +140,7 @@ export default function TeamIdentityCard({ aggregate, periodLabel = 'за сез
               <span className="an-style__fill" style={{ width: `${r.val}%` }} />
             </span>
             <div className="an-style__hint">{r.hint}</div>
+            {r.note && <div className="an-style__caveat">{r.note}</div>}
           </div>
         ))}
       </div>

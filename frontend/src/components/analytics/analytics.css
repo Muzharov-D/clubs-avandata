@@ -225,6 +225,7 @@
 .an-style__fill { display: block; height: 100%; border-radius: 4px;
   background: linear-gradient(90deg, var(--brand-primary, #2563eb), var(--brand-accent, #38bdf8)); }
 .an-style__hint { font-size: 12px; color: var(--an-muted); line-height: 1.4; }
+.an-style__caveat { font-size: 10px; color: var(--text-faint); margin-top: 3px; font-style: italic; }
 
 @media (max-width: 560px) {
   .an-press__grid { grid-template-columns: 1fr; }
