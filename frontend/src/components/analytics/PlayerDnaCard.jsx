@@ -8,6 +8,7 @@
  */
 import { useMemo } from 'react';
 import { per90, seasonPercentile } from '../../utils/analytics';
+import { positionGroup } from '../../utils/pizzaTemplates';
 import { AnimatedNumber, StaggerList, SplitText } from '../motion';
 import './PlayerDnaCard.css';
 
@@ -25,23 +26,34 @@ const DNA_METRICS = [
   { key: 'distance',     label: 'беговой объём',       group: 'fitness', get: (s) => s.distance || 0 },
 ];
 
-// Архетип по доминирующей метрике + группе сильных сторон.
-function archetypeOf(strengths) {
+// Архетип по методике CIES: ПОЗИЦИЯ × доминирующие игровые области (по-русски).
+// 15 категорий CIES дробят по флангам (CB/FB, winger/CF) — у нас разметка до 4 групп
+// (GK/DEF/MID/FWD), поэтому берём позиционно-корректное подмножество, не выдумывая фланги.
+function archetypeOf(subject, strengths) {
+  const grp = positionGroup(subject);
+  if (grp === 'GK') return { name: 'Вратарь', tagline: 'последний рубеж обороны' };
   if (!strengths.length) return { name: 'Универсал', tagline: 'сбалансированный профиль' };
-  const top = strengths[0];
-  const byKey = {
-    gi:           { name: 'Финишёр',     tagline: 'решает результативными действиями' },
-    shots:        { name: 'Финишёр',     tagline: 'постоянная угроза воротам' },
-    keyPass:      { name: 'Креативщик',  tagline: 'создаёт моменты для партнёров' },
-    dribble:      { name: 'Дриблёр',     tagline: 'обыгрывает один в один' },
-    tackle:       { name: 'Разрушитель', tagline: 'выгрызает мячи в отборе' },
-    interception: { name: 'Перехватчик', tagline: 'читает игру на опережение' },
-    recovery:     { name: 'Чистильщик',  tagline: 'подбирает и возвращает владение' },
-    duel:         { name: 'Боец',        tagline: 'выигрывает единоборства' },
-    pressing:     { name: 'Прессинг-мотор', tagline: 'не даёт сопернику дышать' },
-    distance:     { name: 'Двигатель',   tagline: 'огромный беговой объём' },
-  };
-  return byKey[top.key] || { name: 'Универсал', tagline: 'сбалансированный профиль' };
+  const topKey = strengths[0].key;
+  const ATTACK = ['gi', 'shots', 'dribble'];
+  const DEFEND = ['tackle', 'interception', 'recovery', 'duel', 'pressing'];
+
+  if (grp === 'DEF') {
+    if (topKey === 'keyPass' || topKey === 'gi') return { name: 'Защитник-распасовщик', tagline: 'начинает атаки первым пасом' };
+    if (topKey === 'duel') return { name: 'Защитник-боец', tagline: 'выигрывает верх и единоборства' };
+    return { name: 'Надёжный защитник', tagline: 'крепко читает оборону' };
+  }
+  if (grp === 'MID') {
+    if (DEFEND.includes(topKey)) return { name: 'Разрушитель', tagline: 'выгрызает мячи в центре поля' };
+    if (topKey === 'keyPass') return { name: 'Дирижёр', tagline: 'оркеструет атаки команды' };
+    if (ATTACK.includes(topKey)) return { name: 'Атакующий полузащитник', tagline: 'врывается и завершает' };
+    return { name: 'Универсальный полузащитник', tagline: 'полезен в обе стороны' };
+  }
+  // FWD
+  if (topKey === 'gi' || topKey === 'shots') return { name: 'Финишёр', tagline: 'решает результативными действиями' };
+  if (topKey === 'keyPass') return { name: 'Форвард-созидатель', tagline: 'создаёт моменты для партнёров' };
+  if (topKey === 'dribble') return { name: 'Дриблёр', tagline: 'обыгрывает один в один' };
+  if (topKey === 'duel') return { name: 'Столб атаки', tagline: 'цепляется и держит мяч впереди' };
+  return { name: 'Универсальный нападающий', tagline: 'разноплановая угроза' };
 }
 
 function colorForPct(pct) {
@@ -68,7 +80,7 @@ function computeDna(subject, seasonPlayers, basis) {
   ranked.sort((a, b) => b.pct - a.pct);
   const strengths = ranked.filter((r) => r.pct >= 55).slice(0, 4);
   const growth = ranked.filter((r) => r.pct <= 40).slice(-2).reverse();
-  return { archetype: archetypeOf(strengths.length ? strengths : ranked), strengths, growth, top: ranked[0] };
+  return { archetype: archetypeOf(subject, strengths.length ? strengths : ranked), strengths, growth, top: ranked[0] };
 }
 
 // Склонение русских числительных для inline-статистики сезона.
