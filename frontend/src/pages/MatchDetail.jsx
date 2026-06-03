@@ -123,17 +123,21 @@ export default function MatchDetail() {
   // был картинкой, а не буквой названия. Деградирует к инициалу, если эмблемы нет.
   const ageGroup = (selectedTeamId || match?.teamId || '').match(/(?:19|20)\d{2}/)?.[0] || null;
   const standingsRes = useApi(() => (ageGroup ? fetchStandings(ageGroup) : Promise.resolve(null)), [ageGroup]);
+  // Ключ матчинга: сначала срезаем возраст/год (разбор = «Выборжанин 2010-2011»,
+  // таблица = «Выборжанин»), затем нормализуем юр-формы/алиасы.
+  const teamKey = (n) => normalizeTeamName(trimAgeStr(n));
   const shieldByName = useMemo(() => {
     const map = {};
     const rows = standingsRes.data?.table || [];
     for (const r of rows) {
-      const key = normalizeTeamName(r.team);
+      const key = teamKey(r.team);
       if (key && r.shield) map[key] = r.shield;
     }
     return map;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [standingsRes.data]);
   const resolveShield = (teamObj) =>
-    teamObj?.shield || shieldByName[normalizeTeamName(teamObj?.name)] || null;
+    teamObj?.shield || shieldByName[teamKey(teamObj?.name)] || null;
 
   // Kinetic-эталон: scroll-reveal секций + count-up счёта.
   const pageRef = useRef(null);
