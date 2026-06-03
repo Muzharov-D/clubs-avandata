@@ -73,10 +73,10 @@
 }
 .tournament-switch__btn:hover { color: #fff; }
 .tournament-switch__btn--active {
-  background: linear-gradient(135deg, var(--accent-cyan), #3b82f6);
-  color: #0e0e2a;
+  background: linear-gradient(135deg, var(--accent-cyan), var(--brand-primary));
+  color: var(--bg-page);
 }
-.tournament-switch__btn--active:hover { color: #0e0e2a; }
+.tournament-switch__btn--active:hover { color: var(--bg-page); }
 
 /* LAST MATCH SUMMARY */
 .matches-dashboard__last-body {
@@ -136,7 +136,7 @@
   font-family: inherit;
 }
 .matches-dashboard__last-btn:hover {
-  background: linear-gradient(135deg, #2c66c7, #4a86e8);
+  background: var(--brand-gradient);
   transform: translateY(-1px);
 }
 
@@ -184,8 +184,8 @@
 }
 
 .matches-dashboard__upload {
-  background: linear-gradient(135deg, var(--accent-cyan), #3b82f6);
-  color: #0e0e2a;
+  background: linear-gradient(135deg, var(--accent-cyan), var(--brand-primary));
+  color: var(--bg-page);
   border: none;
   font-weight: 700;
   font-size: 13px;
@@ -392,8 +392,8 @@
   margin-top: 4px;
   font-variant-numeric: tabular-nums;
 }
-.topr-trend--up    { color: #7cb342; background: rgba(124, 179, 66, 0.12); }
-.topr-trend--down  { color: #ef5350; background: rgba(239, 83, 80, 0.12); }
+.topr-trend--up    { color: var(--success); background: color-mix(in srgb, var(--success) 12%, transparent); }
+.topr-trend--down  { color: var(--danger); background: color-mix(in srgb, var(--danger) 12%, transparent); }
 .topr-trend--flat,
 .topr-trend--neutral { color: rgba(255, 255, 255, 0.5); background: rgba(255, 255, 255, 0.04); }
 .topr-trend__arrow { font-size: 11px; }

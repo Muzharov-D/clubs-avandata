@@ -54,7 +54,7 @@
   justify-content: center;
   font-weight: 800;
   font-size: 18px;
-  color: #fff;
+  color: var(--text);
   background: var(--pub-brand);
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
 }
@@ -259,7 +259,7 @@
   background: linear-gradient(90deg, color-mix(in srgb, var(--pub-accent) 12%, transparent), transparent);
   animation: pub-pulse-row 2.5s ease-in-out infinite;
 }
-.pub__row--us td { color: #fff; font-weight: 600; }
+.pub__row--us td { color: var(--text); font-weight: 600; }
 .pub__row--us .pub__pos { color: var(--pub-accent); font-weight: 700; }
 
 @keyframes pub-pulse-row {
@@ -312,7 +312,7 @@
 .pub__star-name {
   font-size: 14px;
   font-weight: 600;
-  color: #fff;
+  color: var(--text);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -389,7 +389,7 @@
   padding: 32px 24px;
   text-align: center;
   font-size: 11px;
-  color: #475569;
+  color: var(--text-faint);
 }
 
 .pub__empty, .pub__skeleton {

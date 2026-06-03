@@ -20,14 +20,14 @@
   align-items: center;
   gap: 6px;
   font-size: 11px;
-  color: #94a3c8;
+  color: var(--text-muted);
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
 .player-detail__pizza-pos select {
   background: var(--bg-surface-2) url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'><path d='M1 1l4 4 4-4' stroke='%2394a3c8' stroke-width='1.5' fill='none'/></svg>") right 8px center / 10px no-repeat;
-  color: #fff;
-  border: 1px solid rgba(220, 38, 38, 0.35);
+  color: var(--text);
+  border: 1px solid color-mix(in srgb, var(--brand-primary) 35%, transparent);
   border-radius: 6px;
   padding: 5px 24px 5px 8px;
   font-size: 12px;
@@ -39,12 +39,12 @@
   -moz-appearance: none;
 }
 .player-detail__pizza-pos select:focus-visible {
-  border-color: #dc2626;
-  box-shadow: 0 0 0 2px rgba(220,38,38,0.25);
+  border-color: var(--brand-primary);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--brand-primary) 25%, transparent);
 }
 .player-detail__pizza-pos select option {
-  background: #14143c;
-  color: #fff;
+  background: var(--bg-surface);
+  color: var(--text);
 }
 
 /* Табы фильтра группы метрик: Все / Атака / Оборона / Фитнес */
@@ -64,7 +64,7 @@
   background: transparent;
   border: none;
   border-radius: 9px;
-  color: #94a3c8;
+  color: var(--text-muted);
   font-size: 14px;
   font-weight: 700;
   cursor: pointer;
@@ -74,9 +74,9 @@
   gap: 8px;
   transition: background 0.15s var(--ease-out, ease-out), color 0.15s var(--ease-out, ease-out);
 }
-.player-detail__tab:hover { color: #fff; }
+.player-detail__tab:hover { color: var(--text); }
 .player-detail__tab.is-active {
-  color: #fff;
+  color: var(--text);
   background: var(--brand-primary);
 }
 .player-detail__tab-count {
@@ -100,7 +100,7 @@
   padding: 7px 12px 9px;
   background: transparent;
   border: none;
-  color: #94a3c8;
+  color: var(--text-muted);
   font-size: 12px;
   font-weight: 600;
   cursor: pointer;
@@ -113,21 +113,21 @@
   transition: color 0.15s var(--ease-out, ease-out), border-color 0.15s var(--ease-out, ease-out);
 }
 .player-detail__pizza-tab:disabled { opacity: 0.35; cursor: default; }
-.player-detail__pizza-tab:hover:not(:disabled) { color: #fff; }
+.player-detail__pizza-tab:hover:not(:disabled) { color: var(--text); }
 .player-detail__pizza-tab.is-active {
-  color: #fff;
+  color: var(--text);
   border-bottom-color: var(--brand-primary);
 }
 .player-detail__pizza-tab-count {
   font-size: 10px;
   font-weight: 700;
-  color: #94a3c8;
+  color: var(--text-muted);
   background: rgba(255, 255, 255, 0.06);
   border-radius: 8px;
   padding: 1px 6px;
 }
 .player-detail__pizza-tab.is-active .player-detail__pizza-tab-count {
-  color: #fff;
+  color: var(--text);
   background: color-mix(in srgb, var(--brand-primary) 30%, transparent);
 }
 @media (max-width: 480px) {
