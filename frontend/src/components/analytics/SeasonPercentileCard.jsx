@@ -1,11 +1,12 @@
 /**
- * Перцентиль игрока против СЕЗОННОГО ПОЗИЦИОННОГО пула (на 90 минут), а не против
- * 11–17 партнёров одного матча. Это скаут-стандарт. Покрывает критики 2/14,
- * улучшения 35/44, вау 75/83/97. Деградирует, если season-данные недоступны
- * (эндпоинт только для тренеров) — тогда карточку не показываем.
+ * Перцентиль игрока ПРОТИВ ВСЕЙ КОМАНДЫ за сезон (на 90 минут). Сравнение с
+ * командой, а не с узким позиционным пулом из 3–4 человек — так требует тренер:
+ * «в сравнении с командой». Показываем топ-5 сильных и топ-5 слабых сторон —
+ * скаут-стандарт «где игрок выделяется / где проседает». Деградирует, если
+ * сезонных данных нет (эндпоинт только для тренеров) — тогда карточку не рисуем.
  */
 import { per90 } from '../../utils/analytics';
-import { seasonPercentile, callout } from '../../utils/analytics';
+import { percentileRank } from '../../utils/num';
 import './analytics.css';
 
 // Метрики из /players/season (сезонные суммы + minutes). per-90 внутри.
@@ -22,14 +23,28 @@ const METRICS = [
   { key: 'distance', label: 'Дистанция', get: (s) => s.distance || 0 },
 ];
 
-// 5 корзин по порогам 20/40/60/80 (стиль Opta/StatsBomb) вместо грубых 33/66:
-// на пуле ~15 игроков старая схема красила нижнюю треть состава в «красный».
-// Теперь зелёный — топ-40%, серая нейтраль — середина, красный — только нижние 20%.
+// 5 корзин по порогам 20/40/60/80 (стиль Opta/StatsBomb).
 function bucket(pct) {
-  if (pct >= 60) return 'hi';        // топ-40% — зелёный
+  if (pct >= 80) return 'hi';        // топ-20% — насыщенный зелёный
+  if (pct >= 60) return 'good';      // топ-40% — зелёный
   if (pct >= 40) return 'neutral';   // середина — серый, без сигнала
   if (pct >= 20) return 'mid';       // ниже среднего — янтарный
   return 'lo';                       // нижние 20% — красный
+}
+
+function PctRow({ r, basis }) {
+  return (
+    <div className="an-pct__row">
+      <span className="an-pct__label">{r.label}</span>
+      <span className="an-pct__track">
+        <span className={`an-pct__fill an-pct__fill--${bucket(r.pct)}`} style={{ width: `${Math.max(4, r.pct)}%` }} />
+      </span>
+      <span className="an-pct__num">
+        {r.pct}
+        <span className="an-pct__raw"> · {r.raw90 != null ? r.raw90.toFixed(r.raw90 >= 10 ? 0 : 1) : '—'}/{basis}</span>
+      </span>
+    </div>
+  );
 }
 
 export default function SeasonPercentileCard({ subject, seasonPlayers, basis = 90 }) {
@@ -37,41 +52,51 @@ export default function SeasonPercentileCard({ subject, seasonPlayers, basis = 9
   const me = seasonPlayers.find((s) => s.id === subject.id);
   if (!me || !(me.minutes > 0)) return null;
 
-  const getP90 = (m) => (s) => per90(m.get(s), s.minutes, 1, basis);
+  // Пул = ВСЯ команда (сыгравшие минуты), без позиционного среза.
+  const pool = seasonPlayers.filter((s) => s.minutes > 0);
+  if (pool.length < 4) return null;
 
   const rows = METRICS.map((m) => {
     const myVal = per90(m.get(me), me.minutes, 1, basis);
-    const res = seasonPercentile(subject, seasonPlayers, getP90(m), myVal);
-    return { ...m, pct: res.pct, scope: res.scope, poolSize: res.poolSize, raw90: myVal };
+    const poolVals = pool.map((s) => per90(m.get(s), s.minutes, 1, basis));
+    const pct = percentileRank(myVal, poolVals);
+    return { ...m, pct, raw90: myVal };
   }).filter((r) => r.pct != null);
 
   if (rows.length === 0) return null;
-  const scope = rows[0].scope === 'position' ? 'позиции' : 'команде';
-  const poolSize = rows[0].poolSize;
 
-  const callouts = rows
-    .map((r) => callout(r.pct, r.label))
-    .filter(Boolean)
-    .slice(0, 4);
+  const sorted = [...rows].sort((a, b) => b.pct - a.pct);
+  // Топ-5 сильных и топ-5 слабых, без пересечения по середине.
+  const half = Math.min(5, Math.floor(sorted.length / 2));
+  const top = sorted.slice(0, half);
+  const worst = sorted.slice(sorted.length - half).reverse(); // от самого слабого
+  const fewMetrics = half === 0; // <2 валидных метрик — показываем всё списком
 
   return (
     <div className="card an">
-      <div className="page-section-title">Перцентиль по сезону <span className="an-model-tag">за матч ({basis}′) · vs {scope}</span></div>
-      {rows.map((r) => (
-        <div className="an-pct__row" key={r.key}>
-          <span className="an-pct__label">{r.label}</span>
-          <span className="an-pct__track"><span className={`an-pct__fill an-pct__fill--${bucket(r.pct)}`} style={{ width: `${r.pct}%` }} /></span>
-          <span className="an-pct__num">{r.pct}<span className="an-pct__raw"> · {r.raw90 != null ? r.raw90.toFixed(r.raw90 >= 10 ? 0 : 1) : '—'}/{basis}</span></span>
-        </div>
-      ))}
-      {callouts.length > 0 && (
-        <div className="an-callouts">
-          {callouts.map((c, i) => (
-            <div className={`an-callout an-callout--${c.tone}`} key={i}>{c.text}</div>
-          ))}
+      <div className="page-section-title">
+        Перцентиль по сезону <span className="an-model-tag">за матч ({basis}′) · в сравнении с командой</span>
+      </div>
+
+      {fewMetrics ? (
+        sorted.map((r) => <PctRow key={r.key} r={r} basis={basis} />)
+      ) : (
+        <div className="an-pct__split">
+          <div className="an-pct__col">
+            <div className="an-pct__col-title an-pct__col-title--pos">Сильнее всего</div>
+            {top.map((r) => <PctRow key={r.key} r={r} basis={basis} />)}
+          </div>
+          <div className="an-pct__col">
+            <div className="an-pct__col-title an-pct__col-title--neg">Слабее всего</div>
+            {worst.map((r) => <PctRow key={r.key} r={r} basis={basis} />)}
+          </div>
         </div>
       )}
-      <div className="an-note">Сравнение за матч ({basis}′) против {poolSize} игроков ({scope}) по всему сезону. Заливка — перцентиль (зелёный — топ, серый — в норме, красный — отстаёт).</div>
+
+      <div className="an-note">
+        Перцентиль за матч ({basis}′) против {pool.length} игроков команды по всему сезону.
+        Заливка: зелёный — топ команды, серый — в норме, красный — отстаёт.
+      </div>
     </div>
   );
 }

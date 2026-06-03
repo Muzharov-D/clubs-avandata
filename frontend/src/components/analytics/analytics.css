@@ -120,11 +120,27 @@
 .an-metric__sub { font-size: 11px; color: var(--text-faint, #828fa6); margin-top: 2px; }
 
 /* ── Перцентиль-бары ── */
+/* Топ-5 сильных / топ-5 слабых рядом — десктоп в 2 колонки. */
+.an-pct__split { display: grid; grid-template-columns: 1fr 1fr; gap: 14px 28px; margin-top: 4px; }
+.an-pct__col { min-width: 0; }
+.an-pct__col-title {
+  font-size: 11px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.08em; margin-bottom: 6px;
+}
+.an-pct__col-title--pos { color: var(--an-pos); }
+.an-pct__col-title--neg { color: var(--an-neg); }
+.an-pct__split .an-pct__label { flex-basis: 104px; }
+.an-pct__split .an-pct__num { flex-basis: 58px; }
+.an-pct__split .an-pct__raw { display: none; }
+@media (max-width: 720px) { .an-pct__split { grid-template-columns: 1fr; } }
+
 .an-pct__row { display: flex; align-items: center; gap: 10px; padding: 6px 0; }
 .an-pct__label { flex: 0 0 130px; font-size: 13px; color: var(--text-muted-strong, #b4c0d2); }
 .an-pct__track { flex: 1; height: 10px; border-radius: 5px; background: var(--bg-surface-3, #232b38); overflow: hidden; position: relative; }
 .an-pct__fill { height: 100%; border-radius: 5px; background: #64748b; }
-.an-pct__fill--hi { background: var(--an-pos); }
+/* Топ-20% — насыщенный зелёный со свечением, топ-40% — спокойный зелёный. */
+.an-pct__fill--hi { background: var(--an-pos); box-shadow: 0 0 10px color-mix(in srgb, var(--an-pos) 50%, transparent); }
+.an-pct__fill--good { background: color-mix(in srgb, var(--an-pos) 72%, var(--bg-surface-3)); }
 /* Нейтральная середина (40–60 перцентиль): средний игрок не должен тревожно
    жёлтить/краснеть. Серый = «в норме», без сигнала. */
 .an-pct__fill--neutral { background: var(--border-strong); }
