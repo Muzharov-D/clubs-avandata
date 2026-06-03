@@ -39,6 +39,36 @@
 .lc-flag--medium { color: var(--rating-text-dark);  background: var(--rating-ok); }
 .lc-flag--low    { color: var(--text-muted); background: rgba(255,255,255,0.05); }
 
+/* Кликабельный флаг высокой нагрузки + разворачиваемая панель риска травмы. */
+.lc-flag--risk { padding: 0; background: transparent; }
+.lc-flag__btn {
+  appearance: none; border: none; cursor: pointer;
+  width: 100%;
+  font: inherit; font-weight: 700;
+  color: var(--rating-text-light); background: var(--rating-poor);
+  border-radius: 12px; padding: 5px 8px;
+  transition: filter 0.15s ease, box-shadow 0.15s ease;
+}
+.lc-flag__btn:hover,
+.lc-flag__btn.is-open { filter: brightness(1.08); box-shadow: 0 0 0 2px color-mix(in srgb, var(--rating-poor) 40%, transparent); }
+
+/* Полноширинная панель под строкой игрока — внутри таблицы, без обрезки. */
+.load-control__risk-row { padding: 0 16px 14px; }
+.lc-risk {
+  text-align: left;
+  background: color-mix(in srgb, var(--rating-poor) 7%, var(--bg-surface, #121826));
+  border: 1px solid color-mix(in srgb, var(--rating-poor) 38%, var(--border-strong));
+  border-radius: 12px;
+  padding: 14px 16px;
+}
+.lc-risk__title {
+  font-size: 13px; font-weight: 800; color: var(--rating-poor);
+  margin-bottom: 8px; letter-spacing: 0.01em;
+}
+.lc-risk__text { font-size: 12.5px; line-height: 1.55; color: var(--text-muted-strong, #b4c0d2); margin: 0 0 8px; font-weight: 400; }
+.lc-risk__text b { color: var(--text); font-weight: 700; }
+.lc-risk__src { font-size: 10.5px; color: var(--text-faint); margin-top: 4px; }
+
 .load-control__legend { color: var(--text-faint); font-size: 12px; line-height: 1.5; padding: 0 4px; }
 
 @media (max-width: 768px) {
