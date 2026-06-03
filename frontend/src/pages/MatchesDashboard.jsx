@@ -12,6 +12,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useTeam } from '../contexts/TeamContext';
 import { useTournament } from '../contexts/TournamentContext';
 import { useDocumentTitle } from '../hooks/useDocumentTitle';
+import { AnimatedNumber, SplitText } from '../components/motion';
 import './MatchesDashboard.css';
 
 function num(v) {
@@ -151,7 +152,7 @@ export default function MatchesDashboard() {
       <div className="matches-dashboard__hero">
         <div className="matches-dashboard__hero-text">
           <div className="matches-dashboard__hero-eyebrow">Сезон</div>
-          <h1 className="matches-dashboard__hero-title">{season}</h1>
+          <h1 className="matches-dashboard__hero-title"><SplitText text={String(season)} /></h1>
           <div className="matches-dashboard__hero-sub">
             {(ourTeam?.name || 'Команда').toUpperCase()} · {totalGames} матч{totalGames === 1 ? '' : 'ей'} разобран{totalGames === 1 ? '' : 'о'}
             {tournament === 'cup' && <> · Кубок</>}
@@ -207,7 +208,7 @@ export default function MatchesDashboard() {
               <SeasonStat label="Всего матчей"            value={totalGames} />
               <SeasonStat label="Забитые голы"            value={goalsFor} />
               <SeasonStat label="Пропущенные голы"        value={goalsAgainst} />
-              <SeasonStat label="Среднее голов за игру"   value={avgGoals} />
+              <SeasonStat label="Среднее голов за игру"   value={avgGoals} decimals={2} />
               <SeasonStat label="Сухие матчи"             value={cleanSheets} />
             </div>
           </div>
@@ -258,7 +259,7 @@ export default function MatchesDashboard() {
                           className="topr-row__rating"
                           style={{ background: ratingColor(avgAll), color: ratingTextColor(avgAll) }}
                         >
-                          {avgAll.toFixed(1)}
+                          <AnimatedNumber value={avgAll} format={(v) => v.toFixed(1)} />
                         </div>
                         <div className="topr-row__sub">
                           за {games} {games === 1 ? 'матч' : games < 5 ? 'матча' : 'матчей'} · посл. {last.toFixed(1)}
@@ -310,10 +311,14 @@ function LastTeamCrest({ name }) {
   return <img className="matches-dashboard__last-crest" src={src} alt="" onError={() => setErrored(true)} />;
 }
 
-function SeasonStat({ label, value }) {
+function SeasonStat({ label, value, decimals = 0 }) {
+  const n = typeof value === 'number' ? value : Number(value);
+  const isNum = value !== '—' && value != null && Number.isFinite(n);
   return (
     <div className="season-stat">
-      <div className="season-stat__value">{value}</div>
+      <div className="season-stat__value">
+        {isNum ? <AnimatedNumber value={n} format={(v) => v.toFixed(decimals)} /> : value}
+      </div>
       <div className="season-stat__label">{label}</div>
     </div>
   );
