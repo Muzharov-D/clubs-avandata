@@ -8,7 +8,7 @@ import PlayerPhoto from '../components/PlayerPhoto';
 import { ratingColor, ratingTextColor } from '../utils/colors';
 import { shortNameFromPlayer } from '../utils/players';
 import { isOurClub, shieldFor, normalizeTeamName } from '../utils/legirus';
-import { trimAgeSuffix } from '../utils/teamName';
+import { trimAgeSuffix, cleanTeamName } from '../utils/teamName';
 import { useAuth } from '../contexts/AuthContext';
 import { useTeam } from '../contexts/TeamContext';
 import { useTournament } from '../contexts/TournamentContext';
@@ -178,7 +178,7 @@ export default function MatchesDashboard() {
               <div className="matches-dashboard__last-teams matches-dashboard__last-teams--hero">
                 <div className="matches-dashboard__last-team">
                   <LastTeamCrest name={lastMatch.homeTeam?.name} shield={resolveShield(lastMatch.homeTeam?.name)} hero />
-                  <span>{lastMatch.homeTeam?.name?.replace(/\s*[Uu]-?\s*\d{1,3}\s*$/, '').replace(/\s+20\d{2}\s*$/, '') || 'Команда'}</span>
+                  <span>{cleanTeamName(lastMatch.homeTeam?.name) || 'Команда'}</span>
                 </div>
                 <div className="matches-dashboard__last-score matches-dashboard__last-score--hero">
                   <span className={homeScore != null && homeScore > awayScore ? 'win' : (homeScore != null && homeScore < awayScore ? 'loss' : '')}>
@@ -194,7 +194,7 @@ export default function MatchesDashboard() {
                   </span>
                 </div>
                 <div className="matches-dashboard__last-team away">
-                  <span>{(lastMatch.awayTeam?.name || 'Соперник').replace(/\s*[Uu]-?\s*\d{1,3}\s*/g, ' ').replace(/\s+20\d{2}\s*/g, ' ').replace(/\s+/g, ' ').trim()}</span>
+                  <span>{cleanTeamName(lastMatch.awayTeam?.name) || 'Соперник'}</span>
                   <LastTeamCrest name={lastMatch.awayTeam?.name} shield={resolveShield(lastMatch.awayTeam?.name)} hero />
                 </div>
               </div>
