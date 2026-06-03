@@ -97,34 +97,43 @@
   min-width: 0;
 }
 
-/* ── Гигантский обратный отсчёт — герой ── */
+/* ── Обратный отсчёт до матча — компактный ряд цифро-подов ──
+   Раньше: две цифры clamp(120–200px) стопкой = пустой экран-«герой».
+   Теперь: горизонтальный ряд аккуратных подов (число + единица), плотно
+   и премиально (референс football-score-app). */
 .cd__countdown-hero {
-  display: flex; flex-direction: column;
+  display: flex; flex-direction: row; flex-wrap: wrap;
   align-items: center; justify-content: center;
-  gap: 8px; padding: 20px 0;
-  animation: cd__breathe-hero 3.2s ease-in-out infinite;
+  gap: 8px 12px; padding: 10px 0 4px;
+  animation: cd__breathe-hero 3.6s ease-in-out infinite;
 }
 @keyframes cd__breathe-hero {
   0%, 100% { transform: scale(1); }
-  50%      { transform: scale(1.02); }
+  50%      { transform: scale(1.01); }
 }
 .cd__countdown-label {
-  font-size: clamp(11px, 2vw, 16px);
+  font-size: clamp(11px, 1.4vw, 14px);
   color: var(--text-faint);
   text-transform: uppercase; letter-spacing: 0.12em; font-weight: 600;
 }
 .cd__countdown-number {
   font-family: var(--font-display);
-  font-size: clamp(120px, 15vw, 200px);
-  font-weight: 800; line-height: 1; letter-spacing: -0.04em;
+  font-size: clamp(40px, 5vw, 58px);
+  font-weight: 800; line-height: 1; letter-spacing: -0.03em;
   color: var(--accent-cyan);
-  text-shadow: 0 0 60px color-mix(in srgb, var(--accent-cyan) 40%, transparent);
+  text-shadow: 0 0 28px color-mix(in srgb, var(--accent-cyan) 32%, transparent);
   font-variant-numeric: tabular-nums;
-  display: inline-flex; align-items: baseline; gap: 0.12em;
+  display: inline-flex; align-items: baseline; gap: 0.18em;
+  padding: 12px 18px;
+  background: color-mix(in srgb, var(--accent-cyan) 7%, rgba(255,255,255,0.015));
+  border: 1px solid color-mix(in srgb, var(--accent-cyan) 24%, transparent);
+  border-radius: 16px;
 }
-.cd__countdown-number--word { font-size: clamp(40px, 7vw, 72px); letter-spacing: -0.02em; }
+.cd__countdown-number--word {
+  font-size: clamp(34px, 4.5vw, 52px); letter-spacing: -0.02em;
+}
 .cd__countdown-unit {
-  font-size: clamp(20px, 3vw, 34px); font-weight: 700; letter-spacing: 0;
+  font-size: clamp(15px, 1.8vw, 20px); font-weight: 700; letter-spacing: 0;
   color: color-mix(in srgb, var(--accent-cyan) 70%, var(--text-faint));
 }
 .cd__mm-eyebrow {
@@ -437,14 +446,21 @@
 .cd__player-tile:not(.cd__player-tile--rated) .cd__player-photo {
   box-shadow: 0 0 0 3px rgba(255,255,255,0.10);
 }
-/* Рейтинг-бейдж в углу фото */
+/* Рейтинг-бейдж в углу фото — читаемый, не «мелкий шрифт» */
 .cd__player-rating {
-  position: absolute; bottom: -4px; left: -4px;
-  padding: 2px 6px; border-radius: 8px;
-  font-weight: 800; font-size: 11px;
-  text-align: center; min-width: 24px;
+  position: absolute; bottom: -5px; left: -5px;
+  padding: 3px 8px; border-radius: 9px;
+  font-weight: 800; font-size: 14px; line-height: 1.1;
+  text-align: center; min-width: 30px;
   font-variant-numeric: tabular-nums;
   border: 2px solid var(--bg-surface);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.35);
+}
+/* Топ-3 линии (80px фото) — рейтинг крупнее, это «лицо» состава */
+.cd__player-tile--top .cd__player-rating {
+  bottom: -6px; left: -6px;
+  padding: 4px 10px; border-radius: 11px;
+  font-size: 17px; min-width: 38px;
 }
 .cd__player-name {
   font-size: clamp(11px, 2.5vw, 13px); font-weight: 700;
@@ -572,14 +588,13 @@
 /* ===== Адаптив героя-отсчёта и состава ===== */
 /* Планшет: отсчёт средний, матчи на всю ширину, топ-3 линии по 3 */
 @media (min-width: 481px) and (max-width: 880px) {
-  .cd__countdown-number { font-size: clamp(80px, 12vw, 140px); }
   .cd__tier--top { grid-template-columns: repeat(3, 1fr); }
 }
 /* Мобиль: отсчёт компактный, одна колонка, состав 2×/3× */
 @media (max-width: 480px) {
-  .cd__countdown-hero { gap: 4px; padding: 12px 0; }
-  .cd__countdown-number { font-size: 60px; }
-  .cd__countdown-number--word { font-size: 36px; }
+  .cd__countdown-hero { gap: 6px 8px; padding: 8px 0 2px; }
+  .cd__countdown-number { font-size: 34px; padding: 9px 13px; border-radius: 13px; }
+  .cd__countdown-number--word { font-size: 30px; }
   .cd__main-grid { grid-template-columns: 1fr; }
   .cd__kpi-column-group { grid-template-columns: 1fr; }
   .cd__tier--top  { grid-template-columns: repeat(2, 1fr); }
