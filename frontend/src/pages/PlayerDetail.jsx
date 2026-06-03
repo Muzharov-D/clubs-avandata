@@ -175,23 +175,19 @@ export default function PlayerDetail() {
     () => (match?.players || []).find((p) => p.id === playerId),
     [match, playerId]
   );
-  // Позиция игрока живёт в разборах SportVisor (positionFull per-player), а в
-  // роли/сезонном агрегате её часто нет. Берём из последнего матча, где игрок
-  // выходил — иначе профиль (ДНК/био) и список матчей расходятся в позиции
-  // (на ТОП-5 «Правый нападающий», а в профиле — пусто/выдуманный «полузащитник»).
-  const positionFromMatches = useMemo(() => {
-    for (const m of allMatches) {
-      const rec = (m.players || []).find((p) => p.id === playerId);
-      if (rec?.positionFull || rec?.position) return rec.positionFull || rec.position;
-    }
-    return null;
-  }, [allMatches, playerId]);
+  // Позиция игрока живёт в разборе (match_players.position_full), а в карточке
+  // игрока / сезонном агрегате её часто нет (players.position_full = NULL).
+  // Берём из загруженного матча (matchRes = последний матч), чтобы профиль
+  // (ДНК/био) и список матчей не расходились: на ТОП-5 «Правый нападающий», а в
+  // профиле — пусто/выдуманный «полузащитник». Деградирует, если игрок не
+  // выходил в загруженном матче (тогда работает мягкий вывод роли из статистики).
   const identity = useMemo(() => {
     const base = lookedUpPlayer || matchPlayer || null;
     if (!base) return null;
     if (base.positionFull || base.position) return base;
-    return positionFromMatches ? { ...base, positionFull: positionFromMatches } : base;
-  }, [lookedUpPlayer, matchPlayer, positionFromMatches]);
+    const pos = matchPlayer?.positionFull || matchPlayer?.position;
+    return pos ? { ...base, positionFull: pos } : base;
+  }, [lookedUpPlayer, matchPlayer]);
 
   useDocumentTitle(identity?.fullName ? `${identity.fullName} — Игрок` : 'Профиль игрока');
 
