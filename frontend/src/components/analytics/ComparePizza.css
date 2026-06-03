@@ -36,6 +36,13 @@
   fill: color-mix(in srgb, var(--rating-good, #82bc47) 24%, transparent);
   stroke: var(--rating-good, #82bc47);
 }
+/* Команда — серая база (средний игрок). Под игроками, пунктир, лёгкая заливка. */
+.cmp-pz__poly--team {
+  fill: color-mix(in srgb, var(--text-muted, #97a3b6) 12%, transparent);
+  stroke: var(--text-muted, #97a3b6);
+  stroke-width: 1.5;
+  stroke-dasharray: 4 3;
+}
 .cmp-pz__dot--a { fill: var(--brand-primary); }
 .cmp-pz__dot--b { fill: var(--rating-good, #82bc47); }
 
@@ -49,4 +56,6 @@
 .cmp-pz__leg i { width: 12px; height: 12px; border-radius: 3px; display: inline-block; }
 .cmp-pz__leg--a i { background: var(--brand-primary); }
 .cmp-pz__leg--b i { background: var(--rating-good, #82bc47); }
+.cmp-pz__leg--team i { background: color-mix(in srgb, var(--text-muted, #97a3b6) 45%, transparent); border: 1px dashed var(--text-muted, #97a3b6); }
+.cmp-pz__leg--team { color: var(--text-muted-strong, #b4c0d2); font-weight: 600; }
 .cmp-pz__note { font-size: 11px; color: var(--text-faint); text-align: center; }

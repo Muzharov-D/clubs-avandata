@@ -1,14 +1,16 @@
 /**
- * Наложение «пицц» (радар-профилей) двух игроков на одни оси. Каждая ось —
- * метрика, значение — перцентиль игрока в команде (0–100). Два полупрозрачных
- * полигона поверх друг друга — сразу видно, где А сильнее B и наоборот.
+ * Наложение профилей двух игроков НА ФОНЕ команды. Три слоя на одних осях
+ * (метрика = ось, значение = перцентиль в команде 0–100):
+ *   • Команда — серая зона до медианы (средний игрок команды) — база отсчёта;
+ *   • Игрок А и Игрок B — цветные полигоны поверх.
+ * Так видно сразу: кто сильнее в дуэли И кто над/под уровнем команды.
  *
- * slices: [{ axis, a, b }] — a/b в перцентилях (0–100). nameA/nameB — подписи.
+ * slices: [{ axis, a, b, t }] — a/b/t в перцентилях (0–100), t — линия команды.
  */
 
 const PAD = 56; // место под подписи осей
 
-function ComparePizza({ slices, nameA, nameB, size = 380 }) {
+function ComparePizza({ slices, nameA, nameB, nameTeam = 'Команда (средний)', size = 380 }) {
   if (!Array.isArray(slices) || slices.length < 3) return null;
   const n = slices.length;
   const cx = size / 2;
@@ -22,12 +24,12 @@ function ComparePizza({ slices, nameA, nameB, size = 380 }) {
   };
   const poly = (key) => slices.map((s, i) => point(i, s[key]).join(',')).join(' ');
 
-  const RINGS = [25, 50, 75, 100];
+  const RINGS = [20, 40, 60, 80, 100];
 
   return (
     <div className="cmp-pz">
       <svg viewBox={`0 0 ${size} ${size}`} className="cmp-pz__svg" role="img"
-        aria-label={`Наложение профилей: ${nameA} и ${nameB}`}>
+        aria-label={`Профили на фоне команды: ${nameA}, ${nameB}`}>
         {/* кольца сетки */}
         {RINGS.map((lvl) => (
           <circle key={lvl} cx={cx} cy={cy} r={(lvl / 100) * R} className="cmp-pz__ring" />
@@ -47,17 +49,18 @@ function ComparePizza({ slices, nameA, nameB, size = 380 }) {
             </g>
           );
         })}
-        {/* полигоны игроков (B под A) */}
+        {/* слой команды (фон-база) → B → A */}
+        <polygon points={poly('t')} className="cmp-pz__poly cmp-pz__poly--team" />
         <polygon points={poly('b')} className="cmp-pz__poly cmp-pz__poly--b" />
         <polygon points={poly('a')} className="cmp-pz__poly cmp-pz__poly--a" />
-        {/* точки вершин */}
+        {/* точки вершин игроков */}
         {slices.map((s, i) => {
           const [ax, ay] = point(i, s.a);
           const [bx, by] = point(i, s.b);
           return (
             <g key={`pt-${s.axis}`}>
-              <circle cx={bx} cy={by} r="2.5" className="cmp-pz__dot cmp-pz__dot--b" />
-              <circle cx={ax} cy={ay} r="2.5" className="cmp-pz__dot cmp-pz__dot--a" />
+              <circle cx={bx} cy={by} r="2.6" className="cmp-pz__dot cmp-pz__dot--b" />
+              <circle cx={ax} cy={ay} r="2.6" className="cmp-pz__dot cmp-pz__dot--a" />
             </g>
           );
         })}
@@ -65,8 +68,11 @@ function ComparePizza({ slices, nameA, nameB, size = 380 }) {
       <div className="cmp-pz__legend">
         <span className="cmp-pz__leg cmp-pz__leg--a"><i />{nameA}</span>
         <span className="cmp-pz__leg cmp-pz__leg--b"><i />{nameB}</span>
+        <span className="cmp-pz__leg cmp-pz__leg--team"><i />{nameTeam}</span>
       </div>
-      <div className="cmp-pz__note">Длина луча — перцентиль игрока в команде (центр 0, край 100).</div>
+      <div className="cmp-pz__note">
+        Луч — перцентиль в команде (центр 0, край 100). За серой зоной — выше среднего по команде.
+      </div>
     </div>
   );
 }

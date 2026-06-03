@@ -91,7 +91,11 @@ export default function PlayerCompare() {
       const aPct = percentileRank(per90(m.get(a), a.minutes, 1, 90), poolVals);
       const bPct = percentileRank(per90(m.get(b), b.minutes, 1, 90), poolVals);
       if (aPct == null && bPct == null) return null;
-      return { axis: m.label, a: aPct ?? 0, b: bPct ?? 0 };
+      // Линия команды = перцентиль медианного игрока (≈ средний уровень команды).
+      const sorted = [...poolVals].sort((x, y) => x - y);
+      const median = sorted[Math.floor(sorted.length / 2)];
+      const tPct = percentileRank(median, poolVals);
+      return { axis: m.label, a: aPct ?? 0, b: bPct ?? 0, t: tPct ?? 50 };
     }).filter(Boolean);
   }, [a, b, players]);
 
