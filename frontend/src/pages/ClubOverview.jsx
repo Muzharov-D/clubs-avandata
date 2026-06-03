@@ -11,7 +11,7 @@ import TeamSeasonAnalytics from '../components/analytics/TeamSeasonAnalytics';
 import TeamIdentityCard from '../components/analytics/TeamIdentityCard';
 import TeamAggregatesGrid from '../components/analytics/TeamAggregatesGrid';
 import SeasonTrendCard from '../components/analytics/SeasonTrendCard';
-import { isOurClub } from '../utils/legirus';
+import { isOurClub, shieldFor } from '../utils/legirus';
 import { matchesWord } from '../utils/num';
 import { useNavigate } from 'react-router-dom';
 import './ClubOverview.css';
@@ -110,7 +110,29 @@ export default function ClubOverview() {
                 <div className="team-info__title">Команда</div>
               </div>
               <div className="team-info__body">
-                <div className="team-info__logo team-info__logo--initials" aria-hidden>
+                {(() => {
+                  const logo = shieldFor(ourTeam?.name);
+                  const initials = (ourTeam?.name || 'К').split(/\s+/).slice(0, 2).map((w) => w[0]).join('').toUpperCase();
+                  return logo ? (
+                    <img
+                      className="team-info__logo team-info__logo--img"
+                      src={logo}
+                      alt=""
+                      aria-hidden
+                      onError={(e) => {
+                        const el = e.currentTarget;
+                        el.style.display = 'none';
+                        const sib = el.nextElementSibling;
+                        if (sib) sib.style.display = '';
+                      }}
+                    />
+                  ) : null;
+                })()}
+                <div
+                  className="team-info__logo team-info__logo--initials"
+                  aria-hidden
+                  style={shieldFor(ourTeam?.name) ? { display: 'none' } : undefined}
+                >
                   {(ourTeam?.name || 'К').split(/\s+/).slice(0, 2).map((w) => w[0]).join('').toUpperCase()}
                 </div>
                 <div className="team-info__data">

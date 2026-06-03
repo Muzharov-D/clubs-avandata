@@ -59,6 +59,11 @@
   object-fit: contain;
   filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.4));
 }
+/* Лого клуба как сам бейдж (img c классом-бейджем) — вместо буквенной заглушки. */
+.team-info__logo--img {
+  object-fit: contain;
+  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.4));
+}
 .team-info__name {
   font-size: 18px;
   font-weight: 700;
