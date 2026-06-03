@@ -28,26 +28,6 @@ function threatWord(xg) {
   if (xg >= 1) return 'Создаём моменты';
   return 'Моментов мало';
 }
-function shotsWord(s) {
-  if (s >= 12) return 'Много бьём';
-  if (s >= 7) return 'Бьём в меру';
-  return 'Редко бьём';
-}
-function passAccWord(a) {
-  if (a >= 85) return 'Аккуратны в пасе';
-  if (a >= 75) return 'Средняя точность';
-  return 'Часто теряем мяч';
-}
-function setPieceWord(c) {
-  if (c >= 6) return 'Давим со стандартов';
-  if (c >= 3) return 'Стандарты в норме';
-  return 'Мало угловых';
-}
-function disciplineWord(f) {
-  if (f <= 10) return 'Играем чисто';
-  if (f <= 16) return 'В рамках правил';
-  return 'Грубовато';
-}
 
 export default function TeamIdentityCard({ aggregate, periodLabel = 'за сезон' }) {
   const our = aggregate?.our;
@@ -73,23 +53,6 @@ export default function TeamIdentityCard({ aggregate, periodLabel = 'за сез
   // Острота: xG за матч (xG — принятое обозначение). Гард >6 — битый рейтинг.
   const xgRaw = num(our.expectedGoals);
   const xg = xgRaw > 0 && xgRaw <= 6 ? xgRaw : null;
-
-  // Удары: объём + точность в створ (за матч).
-  const shots = v(our.shots);
-  const onTarget = num(our.shots?.onTarget);
-  const otPct = shots > 0 && onTarget > 0 ? Math.round((onTarget / shots) * 100) : null;
-
-  // Точность паса: успешные / всего (за матч).
-  const passTotal = v(our.passes);
-  const passOk = num(our.passes?.successful);
-  const passAcc = passTotal > 0 && passOk > 0 ? (passOk / passTotal) * 100 : null;
-
-  // Стандарты: угловые за матч (давление со стандартов).
-  const corners = v(our.corners);
-
-  // Дисциплина: фолы + ЖК за матч.
-  const fouls = num(our.fouls);
-  const yellows = num(our.yellowCards);
 
   const rows = [
     possession > 0 && {
@@ -119,34 +82,6 @@ export default function TeamIdentityCard({ aggregate, periodLabel = 'за сез
       word: threatWord(xg),
       val: clamp(xg * 33),
       hint: `В среднем ${xg.toFixed(1)} xG за матч — столько моментов создаём.`,
-    },
-    shots > 0 && {
-      key: 'shots',
-      label: 'Удары',
-      word: shotsWord(shots),
-      val: clamp(shots * 7),
-      hint: `${Math.round(shots)} ударов за матч${otPct != null ? `, ${otPct}% в створ` : ''}.`,
-    },
-    passAcc != null && {
-      key: 'passacc',
-      label: 'Точность паса',
-      word: passAccWord(passAcc),
-      val: clamp((passAcc - 50) * 2),
-      hint: `Точность передач ${Math.round(passAcc)}% (${Math.round(passOk)} из ${Math.round(passTotal)} за матч).`,
-    },
-    corners > 0 && {
-      key: 'setpiece',
-      label: 'Стандарты',
-      word: setPieceWord(corners),
-      val: clamp(corners * 12),
-      hint: `${Math.round(corners)} угловых за матч — давление со стандартов.`,
-    },
-    fouls > 0 && {
-      key: 'discipline',
-      label: 'Дисциплина',
-      word: disciplineWord(fouls),
-      val: clamp(100 - fouls * 4),
-      hint: `${Math.round(fouls)} фолов${yellows > 0 ? ` и ${yellows.toFixed(1)} ЖК` : ''} за матч.`,
     },
   ].filter(Boolean);
   if (rows.length === 0) return null;
