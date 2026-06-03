@@ -22,15 +22,15 @@
   font-family: var(--font-display);
   font-weight: 700;
   font-size: 16px;
-  color: #fff;
+  color: var(--text);
   line-height: 1;
 }
-.streak-badge--W .streak-badge__num { color: #22c55e; }
+.streak-badge--W .streak-badge__num { color: var(--success); }
 .streak-badge--L .streak-badge__num { color: #fca5a5; }
-.streak-badge--D .streak-badge__num { color: #cbd5e1; }
+.streak-badge--D .streak-badge__num { color: var(--text-muted); }
 
 .streak-badge__word {
-  color: #cbd5e1;
+  color: var(--text-muted);
   font-weight: 600;
 }
 .streak-badge__fire {
@@ -60,9 +60,9 @@
   font-weight: 700;
   font-size: 10px;
 }
-.streak-badge__dot--W { background: rgba(34, 197, 94, 0.35); color: #fff; }
-.streak-badge__dot--L { background: rgba(220, 38, 38, 0.35); color: #fff; }
-.streak-badge__dot--D { background: rgba(148, 163, 184, 0.3); color: #fff; }
+.streak-badge__dot--W { background: rgba(34, 197, 94, 0.35); color: var(--text); }
+.streak-badge__dot--L { background: rgba(220, 38, 38, 0.35); color: var(--text); }
+.streak-badge__dot--D { background: rgba(148, 163, 184, 0.3); color: var(--text); }
 
 @media (max-width: 420px) {
   .streak-badge { font-size: 11px; padding: 5px 8px; gap: 6px; }

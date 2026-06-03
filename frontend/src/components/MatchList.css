@@ -29,7 +29,7 @@
   border: 1px solid var(--border);
   border-radius: 10px;
   text-align: left;
-  color: #fff;
+  color: var(--text);
   cursor: pointer;
   transition: background 0.15s, border-color 0.15s, transform 0.15s, opacity 0.3s;
 }

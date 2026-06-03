@@ -25,13 +25,13 @@
   font-size: clamp(28px, 4vw, 48px) !important;
   letter-spacing: -0.03em;
   text-transform: uppercase;
-  color: #fff;
+  color: var(--text);
   text-shadow: 0 4px 24px color-mix(in srgb, var(--brand-primary) 40%, transparent);
 }
 .matches-dashboard.kinetic .md-sub { color: var(--text-muted); }
 .matches-dashboard.kinetic .md-upload-btn {
   background: var(--brand-gradient) !important;
-  color: #fff !important; border: none !important;
+  color: var(--text) !important; border: none !important;
   font-family: var(--font-display);
   border-radius: var(--radius-sm);
   box-shadow: 0 8px 22px -8px color-mix(in srgb, var(--brand-primary) 70%, transparent);

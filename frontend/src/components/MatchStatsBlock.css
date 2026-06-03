@@ -10,16 +10,16 @@
   justify-content: space-between;
   font-size: 11px;
   font-weight: 600;
-  color: #f1f5fb;
+  color: var(--text);
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
 /* Бренд-логика: Легирус — красный, соперник — белый. Класс на корне
    (.mds-stats--us-home или .mds-stats--us-away) переключает раскраску. */
 .mds-stats--us-home .mds-stats__team--home,
-.mds-stats--us-away .mds-stats__team--away { color: #dc2626; }
+.mds-stats--us-away .mds-stats__team--away { color: var(--brand-primary); }
 .mds-stats--us-home .mds-stats__team--away,
-.mds-stats--us-away .mds-stats__team--home { color: #fff; }
+.mds-stats--us-away .mds-stats__team--home { color: var(--text); }
 
 .mds-stats__row {
   display: flex;
@@ -37,14 +37,14 @@
 
 .mds-stats__val {
   font-weight: 700;
-  color: #f1f5fb;
+  color: var(--text);
 }
 .mds-stats__val--home { text-align: right; }
 .mds-stats__val--away { text-align: left; }
 
 .mds-stats__label {
   font-size: 11px;
-  color: #94a3c8;
+  color: var(--text-muted);
   text-transform: uppercase;
   letter-spacing: 0.3px;
   text-align: center;
@@ -70,10 +70,10 @@
 /* Бары: Легирус-сторона — красный градиент, соперник — белый. */
 .mds-stats--us-home .mds-stats__bar-home,
 .mds-stats--us-away .mds-stats__bar-away {
-  background: linear-gradient(90deg, rgba(220, 38, 38, 0.45) 0%, rgba(220, 38, 38, 0.95) 100%);
+  background: linear-gradient(90deg, color-mix(in srgb, var(--brand-primary) 45%, transparent) 0%, color-mix(in srgb, var(--brand-primary) 95%, transparent) 100%);
 }
 .mds-stats--us-away .mds-stats__bar-away {
-  background: linear-gradient(270deg, rgba(220, 38, 38, 0.45) 0%, rgba(220, 38, 38, 0.95) 100%);
+  background: linear-gradient(270deg, color-mix(in srgb, var(--brand-primary) 45%, transparent) 0%, color-mix(in srgb, var(--brand-primary) 95%, transparent) 100%);
 }
 .mds-stats--us-home .mds-stats__bar-away,
 .mds-stats--us-away .mds-stats__bar-home {

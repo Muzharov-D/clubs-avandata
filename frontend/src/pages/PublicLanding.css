@@ -4,7 +4,7 @@
     radial-gradient(circle at 20% 0%, rgba(220, 38, 38, 0.18) 0%, transparent 55%),
     radial-gradient(circle at 80% 100%, rgba(220, 38, 38, 0.12) 0%, transparent 50%),
     linear-gradient(180deg, #1a0606 0%, #0a0202 100%);
-  color: #f1f5fb;
+  color: var(--text);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -124,7 +124,7 @@
 
 .landing__hint {
   font-size: 13px;
-  color: #94a3c8;
+  color: var(--text-muted);
   letter-spacing: 0.02em;
   margin-top: 8px;
 }

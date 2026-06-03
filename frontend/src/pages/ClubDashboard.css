@@ -171,7 +171,7 @@
   font-weight: 800; font-size: 17px; text-align: center;
   font-variant-numeric: tabular-nums; position: relative; z-index: 1;
 }
-.cd__kpi-player-name { font-size: 18px; font-weight: 700; color: #fff; line-height: 1.2; }
+.cd__kpi-player-name { font-size: 18px; font-weight: 700; color: var(--text); line-height: 1.2; }
 
 /* ── Карточка «Рейтинг сезона»: оценка + форма + раскладка по линиям ── */
 .cd__rt { flex: 1; display: flex; flex-direction: column; gap: 14px; position: relative; z-index: 1; }
@@ -200,11 +200,11 @@
 .cd__bp-id { display: flex; align-items: center; gap: 13px; }
 .cd__bp-photo { flex-shrink: 0; border-radius: 50%; }
 .cd__bp-body { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
-.cd__bp-name { font-size: 20px; font-weight: 800; color: #fff; line-height: 1.15; letter-spacing: -0.01em; }
+.cd__bp-name { font-size: 20px; font-weight: 800; color: var(--text); line-height: 1.15; letter-spacing: -0.01em; }
 .cd__bp-insights { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
 .cd__bp-insight { display: flex; align-items: flex-start; gap: 10px; font-size: 14.5px; color: var(--text-muted-strong, #b4c0d2); line-height: 1.35; }
 .cd__bp-dot { flex-shrink: 0; margin-top: 2px; display: inline-flex; }
-.cd__bp-insight-lead { color: #fff; font-weight: 700; }
+.cd__bp-insight-lead { color: var(--text); font-weight: 700; }
 .cd__bp-insight-text { min-width: 0; }
 
 @media (max-width: 880px) {
@@ -254,7 +254,7 @@
   font-size: 13px; color: var(--text-faint); font-weight: 500;
   text-transform: uppercase; letter-spacing: 0.06em;
 }
-.cd__hero-score { font-size: 24px; color: #fff; font-weight: 800; }
+.cd__hero-score { font-size: 24px; color: var(--text); font-weight: 800; }
 .cd__hero-meta { font-size: 13px; color: var(--text-muted); margin-bottom: 10px; }
 .cd__countdown {
   display: inline-block; padding: 6px 12px; margin-top: 6px;
@@ -379,7 +379,7 @@
 .cd__table-row--us {
   background: linear-gradient(90deg, color-mix(in srgb, var(--accent-cyan) 15%, transparent), transparent);
 }
-.cd__table-row--us td { color: #fff; font-weight: 700; }
+.cd__table-row--us td { color: var(--text); font-weight: 700; }
 .cd__table-row--us td:first-child { color: var(--accent-cyan); }
 
 /* ===== Roster ===== */
@@ -552,7 +552,7 @@
               border-color var(--dur-fast, 120ms);
 }
 .cd__chip:hover { color: var(--text); border-color: color-mix(in srgb, var(--accent-cyan) 40%, transparent); }
-.cd__chip.is-active { background: var(--brand-primary); color: #fff; border-color: transparent; }
+.cd__chip.is-active { background: var(--brand-primary); color: var(--text); border-color: transparent; }
 .cd__roster-empty {
   grid-column: 1 / -1; text-align: center; padding: 28px 16px;
   color: var(--text-faint); font-size: 14px;

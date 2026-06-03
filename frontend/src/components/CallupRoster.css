@@ -11,7 +11,7 @@
 }
 
 .cr-sheet {
-  background: #0d1424;
+  background: var(--bg-surface);
   border: 1px solid rgba(34, 211, 238, 0.2);
   border-radius: 18px 18px 0 0;
   padding: 20px;
@@ -31,7 +31,7 @@
   border: none;
   width: 32px; height: 32px;
   border-radius: 50%;
-  color: #f1f5fb;
+  color: var(--text);
   cursor: pointer;
   font-size: 14px;
 }
@@ -43,10 +43,10 @@
 .cr-head h3 {
   margin: 0 0 4px;
   font-size: 18px; font-weight: 700;
-  color: #f1f5fb;
+  color: var(--text);
 }
 .cr-match {
-  font-size: 13px; color: #94a3c8;
+  font-size: 13px; color: var(--text-muted);
 }
 
 .cr-summary {
@@ -66,20 +66,20 @@
   display: block;
   font-size: 18px;
   font-weight: 700;
-  color: #f1f5fb;
+  color: var(--text);
 }
 .cr-stat span {
   display: block;
   font-size: 10px;
-  color: #94a3c8;
+  color: var(--text-muted);
   text-transform: uppercase;
   letter-spacing: 0.04em;
   margin-top: 2px;
 }
-.cr-stat--go b      { color: #22c55e; }
-.cr-stat--no b      { color: #ef4444; }
+.cr-stat--go b      { color: var(--success); }
+.cr-stat--no b      { color: var(--danger); }
 .cr-stat--excused b { color: #818cf8; }
-.cr-stat--pending b { color: #f59e0b; }
+.cr-stat--pending b { color: var(--warning); }
 
 .cr-actions {
   margin-bottom: 14px;
@@ -92,7 +92,7 @@
 .cr-call-all {
   width: 100%;
   padding: 12px;
-  background: linear-gradient(135deg, var(--accent-cyan) 0%, #3b82f6 100%);
+  background: linear-gradient(135deg, var(--accent-cyan) 0%, var(--brand-primary) 100%);
   color: #07071c;
   border: none;
   border-radius: 10px;
@@ -104,7 +104,7 @@
   width: 100%;
   padding: 10px;
   background: rgba(255, 255, 255, 0.06);
-  color: #f1f5fb;
+  color: var(--text);
   border: 1px solid rgba(255, 255, 255, 0.18);
   border-radius: 10px;
   font-size: 13px; font-weight: 600;
@@ -118,7 +118,7 @@
   background: rgba(34, 197, 94, 0.1);
   border: 1px solid rgba(34, 197, 94, 0.3);
   border-radius: 8px;
-  color: #22c55e;
+  color: var(--success);
   font-size: 12px;
   margin-bottom: 10px;
 }
@@ -130,7 +130,7 @@
   border: 1px dashed rgba(34, 211, 238, 0.25);
   border-radius: 10px;
   font-size: 13px;
-  color: #94a3c8;
+  color: var(--text-muted);
   line-height: 1.5;
 }
 .cr-helper b { color: var(--accent-cyan); }
@@ -146,7 +146,7 @@
   background: rgba(245, 158, 11, 0.08);
   border: 1px solid rgba(245, 158, 11, 0.25);
   border-radius: 8px;
-  color: #f59e0b;
+  color: var(--warning);
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
@@ -157,7 +157,7 @@
 }
 .cr-younger-count {
   background: rgba(245, 158, 11, 0.2);
-  color: #f59e0b;
+  color: var(--warning);
   padding: 2px 10px;
   border-radius: 10px;
   font-size: 12px;
@@ -173,7 +173,7 @@
   margin-left: 6px;
   padding: 1px 6px;
   background: rgba(245, 158, 11, 0.18);
-  color: #f59e0b;
+  color: var(--warning);
   font-size: 10px;
   font-weight: 700;
   border-radius: 4px;
@@ -182,7 +182,7 @@
 
 .cr-section-title {
   font-size: 11px;
-  color: #94a3c8;
+  color: var(--text-muted);
   text-transform: uppercase;
   letter-spacing: 0.06em;
   padding: 12px 4px 8px;
@@ -225,7 +225,7 @@
   text-align: center;
 }
 .cr-player span {
-  color: #f1f5fb;
+  color: var(--text);
   font-size: 13px;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -234,7 +234,7 @@
 
 .cr-status {
   display: flex; align-items: center; gap: 4px;
-  font-size: 11px; color: #94a3c8;
+  font-size: 11px; color: var(--text-muted);
 }
 .cr-status-icon { font-size: 14px; }
 
@@ -244,7 +244,7 @@
 .cr-row-actions select {
   background: rgba(255, 255, 255, 0.08);
   border: 1px solid rgba(255, 255, 255, 0.15);
-  color: #f1f5fb;
+  color: var(--text);
   border-radius: 6px;
   padding: 4px 6px;
   font-size: 11px;
@@ -253,7 +253,7 @@
 .cr-remove, .cr-add {
   background: rgba(239, 68, 68, 0.1);
   border: 1px solid rgba(239, 68, 68, 0.3);
-  color: #ef4444;
+  color: var(--danger);
   border-radius: 6px;
   width: 26px; height: 26px;
   cursor: pointer;
@@ -264,19 +264,19 @@
   width: auto; padding: 4px 10px;
   background: rgba(34, 197, 94, 0.1);
   border-color: rgba(34, 197, 94, 0.3);
-  color: #22c55e;
+  color: var(--success);
   font-size: 11px;
   font-weight: 600;
 }
 
 .cr-empty {
-  padding: 30px; text-align: center; color: #6b7896; font-size: 13px;
+  padding: 30px; text-align: center; color: var(--text-faint); font-size: 13px;
 }
 .cr-err {
   padding: 10px 12px;
   background: rgba(239, 68, 68, 0.1);
   border-radius: 8px;
-  color: #ef4444;
+  color: var(--danger);
   font-size: 12px;
   margin-bottom: 10px;
 }

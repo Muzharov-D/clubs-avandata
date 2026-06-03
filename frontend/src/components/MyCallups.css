@@ -11,7 +11,7 @@
   margin-bottom: 12px;
 }
 .my-callups__head h3 {
-  margin: 0; font-size: 15px; font-weight: 700; color: #f1f5fb;
+  margin: 0; font-size: 15px; font-weight: 700; color: var(--text);
   text-transform: uppercase; letter-spacing: 0.04em;
 }
 .my-callups__head span {
@@ -49,17 +49,17 @@
   width: 36px; height: 36px; object-fit: contain; flex-shrink: 0;
 }
 .my-callup__opp-name {
-  font-size: 15px; font-weight: 600; color: #f1f5fb;
+  font-size: 15px; font-weight: 600; color: var(--text);
 }
 .my-callup__date {
-  font-size: 12px; color: #94a3c8; margin-top: 2px;
+  font-size: 12px; color: var(--text-muted); margin-top: 2px;
 }
 .my-callup__venue {
-  font-size: 11px; color: #6b7896; margin-top: 2px;
+  font-size: 11px; color: var(--text-faint); margin-top: 2px;
 }
 .my-callup__badge {
   background: rgba(245, 158, 11, 0.15);
-  color: #f59e0b;
+  color: var(--warning);
   padding: 2px 8px;
   border-radius: 4px;
   font-size: 10px;
@@ -80,25 +80,25 @@
   background: rgba(255, 255, 255, 0.04);
   border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 8px;
-  color: #94a3c8;
+  color: var(--text-muted);
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
   transition: background-color 120ms var(--ease-out), border-color 120ms var(--ease-out), color 120ms var(--ease-out), transform 120ms var(--ease-out), box-shadow 120ms var(--ease-out);
 }
-.my-callup__btn:hover { background: rgba(255, 255, 255, 0.08); color: #f1f5fb; }
+.my-callup__btn:hover { background: rgba(255, 255, 255, 0.08); color: var(--text); }
 .my-callup__btn:disabled { opacity: 0.5; cursor: not-allowed; }
 .my-callup__btn-icon { font-size: 14px; }
 
 .my-callup__btn--go.is-on {
   background: rgba(34, 197, 94, 0.18);
-  border-color: #22c55e;
-  color: #22c55e;
+  border-color: var(--success);
+  color: var(--success);
 }
 .my-callup__btn--no.is-on {
   background: rgba(239, 68, 68, 0.18);
-  border-color: #ef4444;
-  color: #ef4444;
+  border-color: var(--danger);
+  color: var(--danger);
 }
 .my-callup__btn--excused.is-on {
   background: rgba(99, 102, 241, 0.18);
@@ -111,7 +111,7 @@
   padding-top: 10px;
   border-top: 1px solid rgba(255, 255, 255, 0.06);
   font-size: 12px;
-  color: #94a3c8;
+  color: var(--text-muted);
 }
 
 .my-callup__expand {
@@ -122,7 +122,7 @@
 }
 .my-callup__expand-title {
   font-size: 12px;
-  color: #94a3c8;
+  color: var(--text-muted);
   text-transform: uppercase;
   letter-spacing: 0.04em;
   margin-bottom: 4px;
@@ -136,7 +136,7 @@
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 8px;
-  color: #f1f5fb;
+  color: var(--text);
   cursor: pointer;
   transition: background-color 120ms var(--ease-out), border-color 120ms var(--ease-out), color 120ms var(--ease-out), transform 120ms var(--ease-out), box-shadow 120ms var(--ease-out);
 }
@@ -147,7 +147,7 @@
 }
 .my-callup__expand-btn span {
   font-size: 11px;
-  color: #94a3c8;
+  color: var(--text-muted);
   margin-top: 2px;
 }
 .my-callup__expand-btn--excused:hover {
@@ -156,21 +156,21 @@
 }
 .my-callup__expand-btn--declined:hover {
   border-color: rgba(239, 68, 68, 0.4);
-  color: #ef4444;
+  color: var(--danger);
 }
 .my-callup__expand-cancel {
   background: none;
   border: none;
-  color: #6b7896;
+  color: var(--text-faint);
   font-size: 12px;
   padding: 6px;
   cursor: pointer;
   align-self: flex-end;
 }
-.my-callup__expand-cancel:hover { color: #94a3c8; }
+.my-callup__expand-cancel:hover { color: var(--text-muted); }
 
 .my-callups__err {
-  color: #ef4444;
+  color: var(--danger);
   font-size: 12px;
   margin-top: 8px;
 }

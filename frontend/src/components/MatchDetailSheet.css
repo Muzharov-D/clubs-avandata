@@ -11,7 +11,7 @@
 }
 
 .mds-sheet {
-  background: linear-gradient(180deg, #14143c 0%, #0d1424 100%);
+  background: linear-gradient(180deg, var(--bg-page) 0%, var(--bg-page-2) 100%);
   border-top: 1px solid rgba(34, 211, 238, 0.3);
   border-radius: 18px 18px 0 0;
   padding: 28px 20px 32px;
@@ -58,7 +58,7 @@
   border-radius: 50%;
   background: rgba(255, 255, 255, 0.08);
   border: none;
-  color: #d6e2ff;
+  color: var(--text);
   font-size: 18px;
   cursor: pointer;
   display: flex;
@@ -93,12 +93,12 @@
 }
 .mds-badge--cup {
   background: rgba(245, 158, 11, 0.15);
-  color: #f59e0b;
+  color: var(--warning);
 }
 
 .mds-date {
   font-size: 14px;
-  color: #f1f5fb;
+  color: var(--text);
   font-weight: 600;
 }
 .mds-header-left {
@@ -120,7 +120,7 @@
   white-space: nowrap;
 }
 .mds-no-date {
-  color: #fbbf24;
+  color: var(--warning);
   font-style: italic;
   font-weight: 500;
 }
@@ -147,7 +147,7 @@
   align-items: center;
   gap: 8px;
   font-size: 14px;
-  color: #f1f5fb;
+  color: var(--text);
   font-weight: 600;
   text-align: center;
   min-width: 0;
@@ -176,7 +176,7 @@
 }
 .mds-vs-text {
   font-size: 14px;
-  color: #6b7896;
+  color: var(--text-faint);
   font-weight: 500;
 }
 
@@ -199,13 +199,13 @@
 }
 .mds-venue-name {
   font-size: 14px;
-  color: #f1f5fb;
+  color: var(--text);
   font-weight: 600;
   line-height: 1.4;
 }
 .mds-venue-sub {
   font-size: 12px;
-  color: #94a3c8;
+  color: var(--text-muted);
   margin-top: 2px;
   line-height: 1.4;
 }
@@ -246,7 +246,7 @@
   padding: 12px 16px;
   margin-top: 10px;
   background: rgba(255, 255, 255, 0.04);
-  color: #d6e2ff;
+  color: var(--text);
   border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 10px;
   font-size: 14px;
@@ -266,7 +266,7 @@
   border: 1px solid rgba(245, 158, 11, 0.25);
   border-radius: 8px;
   font-size: 13px;
-  color: #d6e2ff;
+  color: var(--text);
   line-height: 1.5;
   text-align: center;
 }
@@ -276,7 +276,7 @@
   padding-top: 12px;
   border-top: 1px solid rgba(255, 255, 255, 0.06);
   font-size: 12px;
-  color: #6b7896;
+  color: var(--text-faint);
   text-align: center;
   line-height: 1.5;
 }
@@ -440,7 +440,7 @@
 .mds-events__title {
   font-size: 11px;
   font-weight: 700;
-  color: #94a3c8;
+  color: var(--text-muted);
   text-transform: uppercase;
   letter-spacing: 0.06em;
   margin-bottom: 10px;
@@ -457,7 +457,7 @@
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.04em;
-  color: #94a3c8;
+  color: var(--text-muted);
 }
 .mds-tl-headrow .mds-tl-side--home { text-align: right; }
 .mds-tl-headrow .mds-tl-side--away { text-align: left; }
@@ -518,7 +518,7 @@
 }
 .mds-tl-text b {
   font-weight: 700;
-  color: #f1f5fb;
+  color: var(--text);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -527,7 +527,7 @@
 }
 .mds-tl-text small {
   font-size: 11px;
-  color: #94a3c8;
+  color: var(--text-muted);
   font-style: italic;
   margin-top: 1px;
 }
@@ -557,7 +557,7 @@
 }
 .mds-tl-row--goal .mds-tl-text b,
 .mds-tl-row--goal_special .mds-tl-text b,
-.mds-tl-row--penalty .mds-tl-text b { color: #4ade80; }
+.mds-tl-row--penalty .mds-tl-text b { color: var(--success); }
 
 /* Незабитый пенальти — серый/тусклый, имя зачёркнуто, красная диагональ поверх мяча */
 .mds-tl-row--penalty_missed .mds-tl-event {
@@ -565,7 +565,7 @@
   border-color: rgba(148, 163, 184, 0.4);
 }
 .mds-tl-row--penalty_missed .mds-tl-text b {
-  color: #cbd5e1;
+  color: var(--text-muted);
   text-decoration: line-through;
   text-decoration-color: rgba(239, 68, 68, 0.7);
 }
@@ -602,7 +602,7 @@
   left: -3px;
   right: -3px;
   height: 2px;
-  background: #ef4444;
+  background: var(--danger);
   transform: translateY(-50%) rotate(-30deg);
   border-radius: 1px;
   pointer-events: none;
@@ -667,7 +667,7 @@
   padding: 8px 14px;
   background: transparent;
   border: none;
-  color: #94a3c8;
+  color: var(--text-muted);
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
@@ -676,10 +676,10 @@
   margin-bottom: -1px;
   transition: color 0.15s, border-color 0.15s;
 }
-.mds-tab:hover { color: #cbd5e1; }
+.mds-tab:hover { color: var(--text-muted-strong); }
 .mds-tab--active {
-  color: #dc2626;
-  border-bottom-color: #dc2626;
+  color: var(--brand-primary);
+  border-bottom-color: var(--brand-primary);
 }
 @media (max-width: 480px) {
   .mds-tab { padding: 7px 10px; font-size: 12px; }
@@ -701,14 +701,14 @@
 .mds-comment__caption {
   font-size: 11px;
   font-weight: 700;
-  color: #dc2626;
+  color: var(--brand-primary);
   text-transform: uppercase;
   letter-spacing: 0.4px;
   margin-bottom: 6px;
 }
 .mds-comment__body {
   font-size: 13px;
-  color: #f1f5fb;
+  color: var(--text);
   line-height: 1.5;
   white-space: pre-wrap;
   overflow-wrap: anywhere;
@@ -727,8 +727,8 @@
   line-height: 1.25;
 }
 /* Классика футбольной графики: вошёл — зелёный, ушёл — красный. */
-.mds-tl-sub-in  { color: #22c55e; }
-.mds-tl-sub-out { color: #ef4444; }
+.mds-tl-sub-in  { color: var(--success); }
+.mds-tl-sub-out { color: var(--danger); }
 /* Сторонняя ориентация: на home (правая колонка модалки) — пара выровнена к
    правому краю, на away — к левому. */
 .mds-tl-side--home .mds-tl-sub-pair { align-items: flex-end; }
@@ -762,7 +762,7 @@
   .mds-round { font-size: 10px; padding: 2px 8px; }
 }
 
-.mds-event { display: flex; align-items: center; gap: 10px; padding: 8px 4px; font-size: 13px; color: #f1f5fb; }
+.mds-event { display: flex; align-items: center; gap: 10px; padding: 8px 4px; font-size: 13px; color: var(--text); }
 .mds-event__minute { flex-shrink: 0; min-width: 36px; font-weight: 700; color: var(--accent-cyan); }
 .mds-event__icon { font-size: 16px; flex-shrink: 0; }
 .mds-event__player { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }

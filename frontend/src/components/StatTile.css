@@ -48,7 +48,7 @@
 }
 .stat-tile__delta--up      { background: rgba(34,197,94,0.22);  color: #86efac; }
 .stat-tile__delta--down    { background: rgba(239,68,68,0.22);  color: #fca5a5; }
-.stat-tile__delta--neutral { background: rgba(148,163,184,0.2); color: #cbd5e1; }
+.stat-tile__delta--neutral { background: rgba(148,163,184,0.2); color: var(--text-muted); }
 
 .stat-tile__value-row {
   display: flex; align-items: baseline; gap: 6px;

@@ -262,7 +262,7 @@
   border-radius: 18px;
   display: grid; place-items: center;
   font-family: var(--font-display);
-  font-size: 34px; font-weight: 700; color: #fff;
+  font-size: 34px; font-weight: 700; color: var(--text);
   background: linear-gradient(150deg, var(--brand-primary), var(--brand-secondary));
   box-shadow: var(--shadow);
 }

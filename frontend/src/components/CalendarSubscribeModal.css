@@ -40,7 +40,7 @@
   border-radius: 50%;
   background: rgba(220, 38, 38, 0.15);
   border: none;
-  color: #fff;
+  color: var(--text);
   font-size: 16px;
   cursor: pointer;
   display: flex;
@@ -58,7 +58,7 @@
 .csm-title {
   font-size: 20px;
   font-weight: 700;
-  color: #fff;
+  color: var(--text);
   text-align: center;
   margin: 0 0 8px;
 }
@@ -83,11 +83,11 @@
   background: rgba(220, 38, 38, 0.10);
   border: 1px solid rgba(220, 38, 38, 0.3);
   border-radius: 8px;
-  color: #fff;
+  color: var(--text);
   font-size: 13px;
   line-height: 1.5;
 }
-.csm-warn b { color: #ef4444; }
+.csm-warn b { color: var(--danger); }
 
 .csm-btn {
   display: flex;
@@ -107,14 +107,14 @@
 
 .csm-btn--primary {
   background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%);
-  color: #fff;
+  color: var(--text);
   box-shadow: 0 4px 14px rgba(220, 38, 38, 0.35);
 }
 .csm-btn--primary:hover { transform: translateY(-1px); box-shadow: 0 6px 18px rgba(220, 38, 38, 0.5); }
 
 .csm-btn--secondary {
   background: rgba(255, 255, 255, 0.06);
-  color: #fff;
+  color: var(--text);
   border: 1px solid rgba(220, 38, 38, 0.25);
 }
 .csm-btn--secondary:hover { background: rgba(220, 38, 38, 0.10); border-color: rgba(220, 38, 38, 0.5); }
@@ -152,7 +152,7 @@
   background: rgba(0, 0, 0, 0.4);
   border: 1px solid rgba(220, 38, 38, 0.18);
   border-radius: 8px;
-  color: #fff;
+  color: var(--text);
   font-size: 12px;
   font-family: ui-monospace, SFMono-Regular, monospace;
 }
@@ -163,7 +163,7 @@
   background: rgba(220, 38, 38, 0.18);
   border: 1px solid rgba(220, 38, 38, 0.45);
   border-radius: 8px;
-  color: #fff;
+  color: var(--text);
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
@@ -185,8 +185,8 @@
   font-weight: 600;
   user-select: none;
 }
-.csm-help summary:hover { color: #fff; }
-.csm-help[open] summary { color: #ef4444; }
+.csm-help summary:hover { color: var(--text); }
+.csm-help[open] summary { color: var(--danger); }
 .csm-help-content {
   padding: 0 14px 14px;
   font-size: 12px;
@@ -196,17 +196,17 @@
 .csm-help-content h4 {
   margin: 12px 0 4px;
   font-size: 13px;
-  color: #fff;
+  color: var(--text);
 }
 .csm-help-content p { margin: 0; }
-.csm-help-content b { color: #fff; }
+.csm-help-content b { color: var(--text); }
 
 .csm-footer {
   margin-top: 14px;
   padding-top: 12px;
   border-top: 1px solid rgba(220, 38, 38, 0.12);
   font-size: 11px;
-  color: #6b7896;
+  color: var(--text-faint);
   text-align: center;
   line-height: 1.5;
 }

@@ -19,7 +19,7 @@
   max-height: 90vh;
   overflow-y: auto;
   position: relative;
-  color: #f1f5fb;
+  color: var(--text);
   box-shadow: 0 20px 60px rgba(220, 38, 38, 0.25);
 }
 .sm-close {
@@ -81,7 +81,7 @@
 .sm-pos {
   width: 36px;
   font-weight: 700;
-  color: #94a3c8;
+  color: var(--text-muted);
 }
 .sm-pts {
   font-weight: 700;

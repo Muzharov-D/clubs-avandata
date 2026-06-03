@@ -36,7 +36,7 @@
 
 .sidebar-nav__item:hover {
   background: rgba(255, 255, 255, 0.04);
-  color: #fff;
+  color: var(--text);
 }
 
 .sidebar-nav__item--active {

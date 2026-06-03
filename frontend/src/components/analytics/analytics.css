@@ -1,9 +1,9 @@
 /* Общие стили аналитического слоя (миссия «Погнали»).
    Семантические цвета — токенами здесь, не хардкодом в JSX. */
 .an {
-  --an-pos: #22c55e;
-  --an-neg: #ef4444;
-  --an-warn: #f59e0b;
+  --an-pos: var(--success);
+  --an-neg: var(--danger);
+  --an-warn: var(--warning);
   --an-info: var(--accent-cyan);
   --an-muted: var(--text-muted, #97a3b6);
 }

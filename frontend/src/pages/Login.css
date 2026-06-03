@@ -8,7 +8,7 @@
     linear-gradient(180deg, rgba(7, 7, 28, 0.92) 0%, rgba(14, 14, 42, 0.95) 100%),
     url('/assets/logos/fon-2_Монтажная область 1.jpg') center / cover no-repeat;
   font-family: 'Inter', system-ui, sans-serif;
-  color: #fff;
+  color: var(--text);
 }
 
 .login-card {
@@ -48,7 +48,7 @@
 .login-form input {
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.12);
-  color: #fff;
+  color: var(--text);
   font-size: 14px;
   padding: 10px 12px;
   border-radius: 8px;
@@ -64,10 +64,10 @@
 }
 .login-form button {
   margin-top: 14px;
-  background: linear-gradient(135deg, var(--accent-cyan) 0%, #3b82f6 100%);
+  background: linear-gradient(135deg, var(--accent-cyan) 0%, var(--brand-primary) 100%);
   /* Текст белый: .login-submit ниже перекрывает фон на тёмно-синий бренд-градиент,
      где прежний near-black #0e0e2a проваливался по контрасту (WCAG fail). */
-  color: #fff;
+  color: var(--text);
   border: none;
   font-weight: 800;
   font-size: 14px;
@@ -105,8 +105,8 @@
   width: 16px;
   height: 16px;
   border-radius: 50%;
-  background: #ef4444;
-  color: #fff;
+  background: var(--danger);
+  color: var(--text);
   font-weight: 800;
   font-size: 11px;
   line-height: 16px;
@@ -219,7 +219,7 @@
 .login-spinner {
   width: 15px; height: 15px; flex-shrink: 0;
   border: 2px solid rgba(255, 255, 255, 0.35);
-  border-top-color: #fff;
+  border-top-color: var(--text);
   border-radius: 50%;
   animation: login-spin 0.7s linear infinite;
 }

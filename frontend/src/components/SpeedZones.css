@@ -14,7 +14,7 @@
 /* интенсивность: жёлтый → оранжевый → красный (как в физ-отчётах) */
 .sz__seg--1 { background: var(--rating-ok, #fbc02d); }
 .sz__seg--2 { background: var(--rating-weak, #fb8c00); }
-.sz__seg--3 { background: var(--rating-poor, #d32f2f); color: #fff; }
+.sz__seg--3 { background: var(--rating-poor, #d32f2f); color: var(--text); }
 
 .sz__legend { display: flex; gap: 16px; flex-wrap: wrap; font-size: 11px; color: var(--text-muted); }
 .sz__legend span { display: inline-flex; align-items: center; gap: 6px; }

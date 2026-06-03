@@ -15,11 +15,11 @@
   letter-spacing: 0.2px;
 }
 .rank-delta--up {
-  color: #22c55e;
+  color: var(--success);
   background: rgba(34, 197, 94, 0.12);
 }
 .rank-delta--down {
-  color: #ef4444;
+  color: var(--danger);
   background: rgba(239, 68, 68, 0.12);
 }
 .rank-delta__arrow {

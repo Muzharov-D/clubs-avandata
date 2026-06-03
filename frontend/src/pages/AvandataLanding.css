@@ -6,7 +6,7 @@
 .av-landing {
   min-height: 100vh;
   background: #07071c;
-  color: #f1f5fb;
+  color: var(--text);
   font-family: 'Montserrat', system-ui, sans-serif;
   position: relative;
   overflow-x: hidden;
@@ -40,7 +40,7 @@
 .av-landing__gradient-bar {
   width: 10rem;
   height: 20rem;
-  background: linear-gradient(90deg, #ffffff 0%, #2563eb 60%, #1FB6FF 100%);
+  background: linear-gradient(90deg, #ffffff 0%, var(--brand-primary) 60%, var(--accent-cyan) 100%);
 }
 .av-landing__gradient--three .av-landing__gradient-bar {
   height: 30rem;
@@ -90,7 +90,7 @@
 }
 .av-nav__tagline {
   font-size: 11px;
-  color: #94a3b8;
+  color: var(--text-muted);
   margin-top: 1px;
   text-transform: uppercase;
   letter-spacing: 0.08em;
@@ -100,7 +100,7 @@
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.12);
-  color: #f1f5fb;
+  color: var(--text);
   font-weight: 600;
   font-size: 14px;
   transition: background 150ms ease, border-color 150ms ease, transform 100ms ease;
@@ -134,7 +134,7 @@
   border: 1px solid rgba(31, 182, 255, 0.25);
   border-radius: 999px;
   font-size: 12px;
-  color: #1FB6FF;
+  color: var(--accent-cyan);
   letter-spacing: 0.04em;
   margin-bottom: 32px;
   backdrop-filter: blur(20px);
@@ -143,8 +143,8 @@
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: #1FB6FF;
-  box-shadow: 0 0 12px #1FB6FF;
+  background: var(--accent-cyan);
+  box-shadow: 0 0 12px var(--accent-cyan);
   animation: av-pulse 2s ease-in-out infinite;
 }
 @keyframes av-pulse {
@@ -161,7 +161,7 @@
   margin: 0 0 24px;
   text-wrap: balance;
   /* impeccable: gradient-text — Absolute ban. Сплошной белый. */
-  color: #fff;
+  color: var(--text);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -174,7 +174,7 @@
   font-size: 18px;
   line-height: 1.6;
   max-width: 720px;
-  color: #94a3b8;
+  color: var(--text-muted);
   margin: 0 0 40px;
 }
 
@@ -208,7 +208,7 @@
   border-radius: 12px;
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid rgba(255, 255, 255, 0.12);
-  color: #f1f5fb;
+  color: var(--text);
   font-weight: 600;
   font-size: 15px;
   transition: background 150ms ease;
@@ -239,7 +239,7 @@
 }
 .av-stat__label {
   font-size: 12px;
-  color: #64748b;
+  color: var(--text-faint);
   margin-top: 8px;
   text-transform: uppercase;
   letter-spacing: 0.08em;
@@ -261,12 +261,12 @@
   letter-spacing: -0.02em;
   margin-bottom: 16px;
   /* impeccable: gradient-text — ban. Сплошной белый. */
-  color: #fff;
+  color: var(--text);
   text-wrap: balance;
 }
 .av-features__sub {
   text-align: center;
-  color: #94a3b8;
+  color: var(--text-muted);
   margin-bottom: 56px;
   max-width: 600px;
   margin-left: auto;
@@ -322,13 +322,13 @@
 .av-feature__title {
   font-size: 18px;
   font-weight: 700;
-  color: #f1f5fb;
+  color: var(--text);
   margin-bottom: 8px;
   letter-spacing: -0.01em;
 }
 .av-feature__text {
   font-size: 14px;
-  color: #94a3b8;
+  color: var(--text-muted);
   line-height: 1.6;
 }
 
@@ -343,7 +343,7 @@
 .av-tenants__title {
   text-align: center;
   font-size: 14px;
-  color: #64748b;
+  color: var(--text-faint);
   text-transform: uppercase;
   letter-spacing: 0.16em;
   margin-bottom: 32px;
@@ -376,7 +376,7 @@
 .av-tenant-badge__name {
   font-weight: 600;
   font-size: 14px;
-  color: #f1f5fb;
+  color: var(--text);
 }
 
 /* ===== Footer ===== */
@@ -386,7 +386,7 @@
   padding: 28px 32px;
   text-align: center;
   font-size: 12px;
-  color: #475569;
+  color: var(--text-faint);
   border-top: 1px solid rgba(255, 255, 255, 0.04);
 }
 

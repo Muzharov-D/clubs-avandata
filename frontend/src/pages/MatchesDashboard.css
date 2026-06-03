@@ -8,7 +8,7 @@
 .matches-dashboard__title {
   font-size: 18px;
   font-weight: 800;
-  color: #fff;
+  color: var(--text);
   letter-spacing: 0.02em;
 }
 
@@ -39,7 +39,7 @@
   margin: 0;
   font-size: 32px;
   font-weight: 800;
-  color: #fff;
+  color: var(--text);
   letter-spacing: 0.02em;
   line-height: 1.1;
 }
@@ -71,7 +71,7 @@
   cursor: pointer;
   transition: background 0.15s, color 0.15s;
 }
-.tournament-switch__btn:hover { color: #fff; }
+.tournament-switch__btn:hover { color: var(--text); }
 .tournament-switch__btn--active {
   background: linear-gradient(135deg, var(--accent-cyan), var(--brand-primary));
   color: var(--bg-page);
@@ -126,7 +126,7 @@
   align-self: flex-start;
   background: var(--brand-gradient);
   border: none;
-  color: #fff;
+  color: var(--text);
   padding: 10px 18px;
   border-radius: 8px;
   cursor: pointer;
@@ -169,7 +169,7 @@
   color: var(--accent-cyan);
   text-align: center;
 }
-.scorer-row__name { font-size: 14px; font-weight: 700; color: #fff; }
+.scorer-row__name { font-size: 14px; font-weight: 700; color: var(--text); }
 .scorer-row__pos { font-size: 11px; color: rgba(255, 255, 255, 0.5); margin-top: 2px; }
 .scorer-row__stats {
   display: flex;

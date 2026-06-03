@@ -24,7 +24,7 @@
 .load-control__row:last-child { border-bottom: none; }
 
 .lc-name { display: flex; flex-direction: column; }
-.lc-name__main { font-weight: 700; color: #fff; }
+.lc-name__main { font-weight: 700; color: var(--text); }
 .lc-name__sub { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
 .lc-num { text-align: center; font-weight: 700; }
 

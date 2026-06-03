@@ -1,13 +1,11 @@
 .pub {
-  --pub-brand: #2563eb;
-  --pub-accent: #1FB6FF;
+  --pub-brand: var(--brand-primary);
+  --pub-accent: var(--accent-cyan);
   /* Зональные семантические токены (зелёная зона / красная зона).
      В .pub нет глобального .analytics-контекста, поэтому объявляем локально
      теми же значениями — НЕ хардкод в разметке, а единый источник для зон. */
-  --an-pos: #22c55e;
-  --an-neg: #ef4444;
-  --text: #f1f5fb;
-  --text-faint: #94a3b8;
+  --an-pos: var(--success);
+  --an-neg: var(--danger);
   min-height: 100vh;
   background: #07071c;
   color: var(--text);

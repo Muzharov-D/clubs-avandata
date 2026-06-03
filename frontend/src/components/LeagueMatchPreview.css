@@ -11,14 +11,14 @@
 .lmp__title {
   font-size: 11px;
   font-weight: 700;
-  color: #94a3c8;
+  color: var(--text-muted);
   text-transform: uppercase;
   letter-spacing: 0.5px;
   margin-bottom: 10px;
 }
 .lmp__empty {
   font-size: 12px;
-  color: #94a3c8;
+  color: var(--text-muted);
   padding: 8px 0;
   font-style: italic;
 }
@@ -64,7 +64,7 @@
 }
 .lmp__team-rank {
   font-size: 10px;
-  color: #94a3c8;
+  color: var(--text-muted);
 }
 
 .lmp__form-row {
@@ -93,7 +93,7 @@
   align-items: baseline;
   gap: 4px;
   font-size: 11px;
-  color: #94a3c8;
+  color: var(--text-muted);
   flex-wrap: wrap;
 }
 .lmp__avg-num {
@@ -102,7 +102,7 @@
   font-weight: 700;
   color: #fff;
 }
-.lmp__avg-num--conc { color: #cbd5e1; opacity: 0.75; }
+.lmp__avg-num--conc { color: var(--text-muted); opacity: 0.75; }
 .lmp__avg-sep { color: #6b7896; padding: 0 2px; }
 .lmp__avg-label {
   font-size: 9px;
@@ -119,7 +119,7 @@
 }
 .lmp__h2h-label {
   font-size: 10px;
-  color: #94a3c8;
+  color: var(--text-muted);
   margin-bottom: 6px;
   text-transform: uppercase;
   letter-spacing: 0.3px;
