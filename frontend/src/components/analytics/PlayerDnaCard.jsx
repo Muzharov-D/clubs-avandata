@@ -129,19 +129,21 @@ export default function PlayerDnaCard({
 
       {strengths.length > 0 && (
         <div className="dna-card__block">
-          <div className="dna-card__block-title">Сильные стороны</div>
+          <div className="dna-card__block-title">
+            Сильные стороны
+            <span className="dna-card__block-sub">перцентиль в команде</span>
+          </div>
           <StaggerList className="dna-card__bars" speed="normal">
-            {strengths.map((s) => (
-              <div className="dna-bar" key={s.key}>
+            {strengths.map((s, i) => (
+              <div className={`dna-bar${i === 0 ? ' dna-bar--lead' : ''}`} key={s.key}>
                 <div className="dna-bar__head">
                   <span className="dna-bar__label">{s.label}</span>
-                  <span className="dna-bar__pct" style={{ color: colorForPct(s.pct) }}>
+                  <span className="dna-bar__pct">
                     <AnimatedNumber value={s.pct} stiffness={200} damping={26} />
-                    <span className="dna-bar__pct-suffix"> перцентиль</span>
                   </span>
                 </div>
                 <div className="dna-bar__track" aria-hidden>
-                  <div className="dna-bar__fill" style={{ width: `${s.pct}%`, background: colorForPct(s.pct) }} />
+                  <div className="dna-bar__fill" style={{ width: `${s.pct}%` }} />
                 </div>
               </div>
             ))}

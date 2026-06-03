@@ -69,14 +69,25 @@
 .dna-card__block { position: relative; margin-top: 20px; }
 
 .dna-card__block-title {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
   font-size: 12px;
   font-weight: 700;
   letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--text-muted);
-  margin-bottom: 12px;
+  margin-bottom: 14px;
 }
 .dna-card__block-title--muted { color: var(--text-faint); }
+.dna-card__block-sub {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: none;
+  color: var(--text-faint);
+}
 
 .dna-card__bars { display: grid; gap: 12px; }
 
@@ -88,32 +99,37 @@
   margin-bottom: 5px;
 }
 .dna-bar__label {
-  font-size: 14px;
+  font-size: 13.5px;
   font-weight: 600;
-  color: var(--text);
-  text-transform: capitalize;
+  color: var(--text-muted-strong, var(--text));
 }
 .dna-bar__pct {
   font-family: var(--font-display);
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 800;
   font-variant-numeric: tabular-nums;
+  color: var(--text);
 }
-.dna-bar__pct-suffix { font-size: 11px; font-weight: 600; color: var(--text-faint); }
 
 .dna-bar__track {
-  height: 8px;
+  height: 6px;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.06);
+  background: rgba(255, 255, 255, 0.05);
   overflow: hidden;
 }
 .dna-bar__fill {
   height: 100%;
   border-radius: 999px;
-  box-shadow: 0 0 12px color-mix(in srgb, var(--accent-cyan) 25%, transparent);
+  background: linear-gradient(90deg, color-mix(in srgb, var(--accent-cyan) 45%, var(--brand-primary)), var(--accent-cyan));
+  box-shadow: 0 0 14px color-mix(in srgb, var(--accent-cyan) 35%, transparent);
   animation: dna-grow 0.9s var(--ease-reveal, ease-out) both;
   transform-origin: left center;
 }
+
+/* Сигнатурная сильная сторона (топ-1) — крупнее и ярче, создаёт фокус. */
+.dna-bar--lead .dna-bar__label { color: var(--text); font-weight: 700; }
+.dna-bar--lead .dna-bar__pct { font-size: 23px; color: var(--accent-cyan); }
+.dna-bar--lead .dna-bar__track { height: 8px; }
 @keyframes dna-grow { from { transform: scaleX(0); } to { transform: scaleX(1); } }
 
 .dna-card__growth { display: flex; flex-wrap: wrap; gap: 8px; }
