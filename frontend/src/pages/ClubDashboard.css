@@ -461,10 +461,12 @@
 /* ── Tier-display: ярусы внутри линии (топ-3 80px · остальные 48px · бенч) ── */
 .cd__line-tiers { display: flex; flex-direction: column; gap: 14px; }
 .cd__tier { display: grid; gap: 12px; }
-.cd__tier--top  { grid-template-columns: repeat(auto-fit, minmax(80px, 1fr)); }
-.cd__tier--rest { grid-template-columns: repeat(auto-fit, minmax(48px, 1fr)); }
+/* min-width плитки рассчитан так, чтобы фамилия помещалась в одну строку
+   (самые длинные ~«Безбородкин»/«Татарченко» ≈ 90px при 13px). */
+.cd__tier--top  { grid-template-columns: repeat(auto-fit, minmax(96px, 1fr)); }
+.cd__tier--rest { grid-template-columns: repeat(auto-fit, minmax(90px, 1fr)); }
 .cd__tier--bench {
-  grid-template-columns: repeat(auto-fit, minmax(48px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
   opacity: 0.65; filter: grayscale(30%);
 }
 /* В широких линиях не растягиваем плитки на всю ширину — выравниваем по началу */
@@ -506,8 +508,8 @@
   font-size: clamp(11px, 2.5vw, 13px); font-weight: 700;
   color: var(--text); text-align: center; line-height: 1.2;
   max-width: 100%;
-  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
-  overflow: hidden; word-break: break-word;
+  /* фамилия в одну строку, без переносов «Воронко-в» */
+  white-space: nowrap;
 }
 .cd__player-number {
   font-size: 11px; color: var(--text-faint); text-align: center;
