@@ -28,6 +28,19 @@ function threatWord(xg) {
   if (xg >= 1) return 'Создаём моменты';
   return 'Моментов мало';
 }
+// Качество моментов = xG на удар. Средний удар ≈ 0.10 xG; ниже 0.07 — много
+// дальних/из плохих позиций, выше 0.11 — выходим на убойные.
+function chanceQualityWord(q) {
+  if (q >= 0.11) return 'Бьём из убойных';
+  if (q >= 0.07) return 'Качество среднее';
+  return 'Бьём издалека';
+}
+// Продуктивность владения: доходит ли контроль мяча до остроты у ворот.
+function possProductWord(poss, xg) {
+  if (poss >= 50 && xg >= 1.5) return 'Владение в моменты';
+  if (poss >= 50 && xg < 1.1) return 'Владение без остроты';
+  return 'Баланс по игре';
+}
 
 export default function TeamIdentityCard({ aggregate, periodLabel = 'за сезон' }) {
   const our = aggregate?.our;
@@ -53,6 +66,10 @@ export default function TeamIdentityCard({ aggregate, periodLabel = 'за сез
   // Острота: xG за матч (xG — принятое обозначение). Гард >6 — битый рейтинг.
   const xgRaw = num(our.expectedGoals);
   const xg = xgRaw > 0 && xgRaw <= 6 ? xgRaw : null;
+
+  // Качество моментов: xG на удар (связь объёма и остроты).
+  const shots = v(our.shots);
+  const xgPerShot = xg != null && shots > 0 ? xg / shots : null;
 
   const rows = [
     possession > 0 && {
@@ -82,6 +99,24 @@ export default function TeamIdentityCard({ aggregate, periodLabel = 'за сез
       word: threatWord(xg),
       val: clamp(xg * 33),
       hint: `В среднем ${xg.toFixed(1)} xG за матч — столько моментов создаём.`,
+    },
+    xgPerShot != null && {
+      key: 'quality',
+      label: 'Качество моментов',
+      word: chanceQualityWord(xgPerShot),
+      val: clamp(xgPerShot * 600),
+      hint: xgPerShot < 0.07
+        ? `${xgPerShot.toFixed(2)} xG на удар — много дальних, мало выходов на убойную позицию.`
+        : `${xgPerShot.toFixed(2)} xG на удар — выходим на хорошие позиции, не бьём ради удара.`,
+    },
+    possession > 0 && xg != null && {
+      key: 'possprod',
+      label: 'Продуктивность владения',
+      word: possProductWord(possession, xg),
+      val: clamp(xg * 33),
+      hint: possession >= 50 && xg < 1.1
+        ? `Владеем мячом (${Math.round(possession)}%), но остроты мало (${xg.toFixed(1)} xG) — контроль не доходит до ворот.`
+        : `Владение конвертируется в моменты — ${xg.toFixed(1)} xG при ${Math.round(possession)}% мяча.`,
     },
   ].filter(Boolean);
   if (rows.length === 0) return null;
