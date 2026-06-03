@@ -59,7 +59,7 @@ export function Sparkline({
   const gradId = `sl-grad-${reactId}`;
 
   return (
-    <svg width={width} height={height} viewBox={`0 0 ${width} ${height}`} style={{ display: 'block' }}>
+    <svg width={width} height={height} viewBox={`0 0 ${width} ${height}`} preserveAspectRatio="none" style={{ display: 'block' }}>
       <defs>
         <linearGradient id={gradId} x1="0" y1="0" x2="0" y2="1">
           <stop offset="0%" stopColor={color} stopOpacity="0.35" />
@@ -67,7 +67,7 @@ export function Sparkline({
         </linearGradient>
       </defs>
       {fill && <path d={fillPath} fill={`url(#${gradId})`} />}
-      <path d={linePath} stroke={color} strokeWidth={1.5} fill="none" strokeLinecap="round" strokeLinejoin="round" />
+      <path d={linePath} stroke={color} strokeWidth={1.5} fill="none" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
       {showLast && <circle cx={last[0]} cy={last[1]} r={2.5} fill={color} />}
     </svg>
   );

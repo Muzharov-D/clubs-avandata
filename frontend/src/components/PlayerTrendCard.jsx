@@ -14,6 +14,13 @@ const LINES = [
   { key: 'defence', label: 'Защита', color: 'var(--rating-good)' },
 ];
 
+function plural(n, one, few, many) {
+  const m10 = n % 10, m100 = n % 100;
+  if (m10 === 1 && m100 !== 11) return one;
+  if (m10 >= 2 && m10 <= 4 && (m100 < 10 || m100 >= 20)) return few;
+  return many;
+}
+
 export default function PlayerTrendCard({ playerId, series: propSeries }) {
   // Если родитель уже загрузил серию (PlayerDetail тянет trend на уровне страницы),
   // переиспользуем её и не делаем второй сетевой запрос.
@@ -27,7 +34,7 @@ export default function PlayerTrendCard({ playerId, series: propSeries }) {
 
   return (
     <div className="card player-trend">
-      <div className="page-section-title">Динамика по сезону · {series.length} матчей</div>
+      <div className="page-section-title">Динамика по сезону · {series.length} {plural(series.length, 'матч', 'матча', 'матчей')}</div>
       <div className="player-trend__lines">
         {LINES.map((l) => {
           const vals = series.map((s) => Number(s[l.key]) || 0);
@@ -43,7 +50,7 @@ export default function PlayerTrendCard({ playerId, series: propSeries }) {
                   {d > 0.05 ? '▲' : d < -0.05 ? '▼' : '='} {d > 0 ? '+' : ''}{d.toFixed(1)}
                 </span>
               </div>
-              <Sparkline values={vals} width={260} height={36} color={l.color} />
+              <Sparkline values={vals} width={260} height={36} color={l.color} showLast={false} />
             </div>
           );
         })}
