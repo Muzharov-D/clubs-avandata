@@ -585,7 +585,9 @@
 }
 
 /* Эмблема в строке турнирной таблицы */
-.cd__table-team-cell { display: inline-flex; align-items: center; gap: 8px; }
+/* flex (не inline-flex) + flex-start: лого+название прижаты влево независимо от
+   text-align ячейки (у .cd__table td специфичнее, иначе центрируется). */
+.cd__table-team-cell { display: flex; justify-content: flex-start; align-items: center; gap: 8px; }
 
 /* Якорная навигация по разделам — sticky-пилюля, разбивает «стену карточек» */
 .cd__anchors {
