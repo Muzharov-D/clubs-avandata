@@ -309,5 +309,18 @@ export function positionGroup(player) {
   if (/^(CB|LB|RB|LWB|RWB|SW)$/.test(code)) return 'DEF';
   if (code === 'GK' || code === 'ВР') return 'GK';
 
+  // Кириллические коды SportVisor (ЦЗ/ПЦП/ЛН/ВР…): значима последняя буква
+  // (Р→вратарь, З→защита, П→полузащита, Н→нападение) — иначе ЛН (нападающий)
+  // уходил бы в дефолтную полузащиту, и архетип CIES «съезжал».
+  const cyr = code.replace(/[^А-ЯЁ]/g, '');
+  if (cyr) {
+    if (cyr === 'ВР' || cyr.startsWith('ВРТ')) return 'GK';
+    const last = cyr[cyr.length - 1];
+    if (last === 'Р') return 'GK';
+    if (last === 'З') return 'DEF';
+    if (last === 'П') return 'MID';
+    if (last === 'Н') return 'FWD';
+  }
+
   return 'MID'; // дефолт — наименее искажающий
 }

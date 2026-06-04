@@ -391,6 +391,27 @@ export async function dataRoutes(app: FastifyInstance) {
   // сравнения/контроля нагрузки (Phase 2), а также сезонного дашборда /club
   // (топ-5, профили, состав, средний рейтинг). Доступно всем участникам клуба —
   // те же рейтинги уже показываются на /club по последнему матчу.
+  // Код позиции SportVisor → читаемое слово-группа. Латинские (CB/CM/ST) и
+  // кириллические (ЦЗ/ПЦП/ЛН/ВР) — у кириллических значима последняя буква
+  // (Р→вратарь, З→защита, П→полузащита, Н→нападение). null — если не распознали.
+  function posFullFromCode(raw: string): string | null {
+    const c = String(raw || '').toUpperCase().replace(/[^A-ZА-ЯЁ]/g, '');
+    if (!c) return null;
+    if (c === 'GK' || c === 'ВР' || c.startsWith('ВРТ')) return 'Вратарь';
+    if (/^(ST|CF|SS|LW|RW)$/.test(c)) return 'Нападающий';
+    if (/^(CB|LB|RB|LWB|RWB|SW)$/.test(c)) return 'Защитник';
+    if (/^(CM|CDM|CAM|DM|AM|LM|RM)$/.test(c)) return 'Полузащитник';
+    const cyr = c.replace(/[^А-ЯЁ]/g, '');
+    if (cyr) {
+      const last = cyr[cyr.length - 1];
+      if (last === 'Р') return 'Вратарь';
+      if (last === 'З') return 'Защитник';
+      if (last === 'П') return 'Полузащитник';
+      if (last === 'Н') return 'Нападающий';
+    }
+    return null;
+  }
+
   app.get<{ Querystring: { teamId?: string } }>('/players/season', async (req) => {
     const slug = tenantId(req);
     const teamId = req.query.teamId;
@@ -434,9 +455,12 @@ export async function dataRoutes(app: FastifyInstance) {
         a.matches += 1;
         // Позиция = роль из ПОСЛЕДНЕГО матча (источник истины — отчёт SportVisor,
         // НЕ FFSPB). rows идут ASC по дате → последняя непустая перезаписывает.
+        // Короткий код (ПЦП/ЛН/ЦЗ/ВР…) разворачиваем в читаемое слово-группу, чтобы
+        // подпись была понятной, а оба классификатора (posGroup/positionGroup) совпадали.
         if (r.position != null && String(r.position).trim()) {
-          a.position = String(r.position);
-          a.positionFull = String(r.position);
+          const full = posFullFromCode(String(r.position)) ?? String(r.position);
+          a.position = full;
+          a.positionFull = full;
         }
         a.minutes += Number(r.minutes ?? 0);
         const rt = (r.ratings as Record<string, unknown>) ?? {};
