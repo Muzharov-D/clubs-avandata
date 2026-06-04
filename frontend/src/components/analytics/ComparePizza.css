@@ -1,61 +1,58 @@
-.cmp-pz {
+.cmp-pz, .cpw {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 8px;
 }
-.cmp-pz__svg {
+.cpw__svg {
   width: 100%;
-  max-width: 420px;
+  max-width: 520px;
   height: auto;
   overflow: visible;
 }
-.cmp-pz__ring {
-  fill: none;
-  stroke: var(--border, #262d3a);
-  stroke-width: 1;
-}
-.cmp-pz__axis {
-  stroke: var(--border, #262d3a);
-  stroke-width: 1;
-}
-.cmp-pz__lab {
-  font-size: 11px;
-  fill: var(--text-muted-strong, #b4c0d2);
-  font-weight: 600;
-}
-.cmp-pz__poly {
-  stroke-width: 2;
-  stroke-linejoin: round;
-}
-.cmp-pz__poly--a {
-  fill: color-mix(in srgb, var(--brand-primary) 26%, transparent);
+
+/* Сетка + «призрак» дольки до 100% */
+.cpw__ring { fill: none; stroke: rgba(255, 255, 255, 0.07); stroke-width: 1; }
+.cpw__track { fill: rgba(255, 255, 255, 0.035); stroke: rgba(7, 7, 28, 0.5); stroke-width: 0.5; }
+
+/* Дольки игроков — полупрозрачная заливка + явная граница (внешняя дуга = уровень) */
+.cpw__wedge { stroke-width: 1.5; }
+.cpw__wedge--a {
+  fill: color-mix(in srgb, var(--brand-primary) 40%, transparent);
   stroke: var(--brand-primary);
 }
-.cmp-pz__poly--b {
-  fill: color-mix(in srgb, var(--rating-good, #82bc47) 24%, transparent);
+.cpw__wedge--b {
+  fill: color-mix(in srgb, var(--rating-good, #82bc47) 36%, transparent);
   stroke: var(--rating-good, #82bc47);
 }
-/* Команда — серая база (средний игрок). Под игроками, пунктир, лёгкая заливка. */
-.cmp-pz__poly--team {
-  fill: color-mix(in srgb, var(--text-muted, #97a3b6) 12%, transparent);
-  stroke: var(--text-muted, #97a3b6);
-  stroke-width: 1.5;
-  stroke-dasharray: 4 3;
-}
-.cmp-pz__dot--a { fill: var(--brand-primary); }
-.cmp-pz__dot--b { fill: var(--rating-good, #82bc47); }
 
-.cmp-pz__legend {
-  display: flex;
-  gap: 18px;
-  font-size: 13px;
-  font-weight: 700;
+/* Линия команды — пунктир поверх */
+.cpw__team {
+  stroke: var(--text-muted, #97a3b6);
+  stroke-width: 2;
+  stroke-dasharray: 4 3;
+  opacity: 0.85;
 }
-.cmp-pz__leg { display: inline-flex; align-items: center; gap: 6px; color: var(--text); }
-.cmp-pz__leg i { width: 12px; height: 12px; border-radius: 3px; display: inline-block; }
-.cmp-pz__leg--a i { background: var(--brand-primary); }
-.cmp-pz__leg--b i { background: var(--rating-good, #82bc47); }
-.cmp-pz__leg--team i { background: color-mix(in srgb, var(--text-muted, #97a3b6) 45%, transparent); border: 1px dashed var(--text-muted, #97a3b6); }
-.cmp-pz__leg--team { color: var(--text-muted-strong, #b4c0d2); font-weight: 600; }
-.cmp-pz__note { font-size: 11px; color: var(--text-faint); text-align: center; }
+
+/* Числа перцентилей на дольках */
+.cpw__num { font-size: 11px; font-weight: 800; paint-order: stroke; stroke: rgba(7, 7, 28, 0.85); stroke-width: 2.4px; }
+.cpw__num--a { fill: color-mix(in srgb, var(--brand-primary) 60%, #fff); }
+.cpw__num--b { fill: color-mix(in srgb, var(--rating-good, #82bc47) 55%, #fff); }
+
+.cpw__axis { font-size: 11px; font-weight: 600; fill: var(--text-muted-strong, #b4c0d2); }
+
+.cpw__core { fill: rgba(7, 7, 28, 0.92); stroke: var(--accent-cyan, #22d3ee); stroke-width: 1.5; }
+.cpw__core-lab { font-size: 11px; font-weight: 700; fill: var(--accent-cyan, #22d3ee); }
+
+.cpw__legend {
+  display: flex; flex-wrap: wrap; gap: 16px; justify-content: center;
+  font-size: 13px; font-weight: 700;
+}
+.cpw__leg { display: inline-flex; align-items: center; gap: 6px; color: var(--text); }
+.cpw__leg i { width: 12px; height: 12px; border-radius: 3px; display: inline-block; }
+.cpw__leg--a i { background: var(--brand-primary); }
+.cpw__leg--b i { background: var(--rating-good, #82bc47); }
+.cpw__leg--team i { background: transparent; border: 2px dashed var(--text-muted, #97a3b6); }
+.cpw__leg--team { color: var(--text-muted-strong, #b4c0d2); font-weight: 600; }
+
+.cpw__note { font-size: 11px; color: var(--text-faint); text-align: center; max-width: 460px; }
