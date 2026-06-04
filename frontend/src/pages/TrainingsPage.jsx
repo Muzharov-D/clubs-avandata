@@ -13,8 +13,9 @@ import { useAuth } from '../contexts/AuthContext';
 import { useDocumentTitle } from '../hooks/useDocumentTitle';
 import {
   fetchTrainingsByTeam, createTraining, updateTraining, deleteTraining,
-  fetchAttendance, saveAttendance, fetchPlayers,
+  fetchAttendance, saveAttendance, fetchPlayersSeason,
 } from '../services/api';
+import { shortNameFromPlayer } from '../utils/players';
 import './TrainingsPage.css';
 
 const TYPES = [
@@ -80,9 +81,11 @@ export default function TrainingsPage() {
     try {
       const [trs, pls] = await Promise.all([
         fetchTrainingsByTeam(teamId, { scope }),
-        fetchPlayers(teamId),
+        fetchPlayersSeason(teamId),
       ]);
       setTrainings(trs.trainings || []);
+      // Ростер для отметок берём из season-источника (как /players и /load): прямой
+      // /data/players?teamId пуст — игроки приходят из матчей, не из канонич. таблицы.
       setPlayers(pls.players || []);
     } catch (e) {
       setError(e.message);
@@ -351,7 +354,7 @@ function AttendanceSheet({ trainingId, players, canManage, onClose }) {
             return (
               <div key={p.id} className="tr-att__row">
                 <div className="tr-att__name">
-                  {p.number ? <b>{p.number}</b> : null} {p.fullName}
+                  {p.number ? <b>{p.number}</b> : null} {p.fullName || shortNameFromPlayer(p)}
                 </div>
                 <div className="tr-att__btns">
                   {STATUS.map((s) => (
