@@ -35,9 +35,10 @@
   max-width: 1000px;
   margin-left: auto;
   margin-right: auto;
-  height: 600px;
-  min-height: 600px;
-  flex-shrink: 0;
+  /* Поле заполняет доступную высоту контейнера (он выше head+запасные), без
+     форс-высоты — иначе вылезало за контейнер и накрывало статистику снизу. */
+  flex: 1 1 auto;
+  min-height: 0;
   border-radius: 10px;
   overflow: hidden;
   border: 1px solid rgba(255,255,255,0.1);
