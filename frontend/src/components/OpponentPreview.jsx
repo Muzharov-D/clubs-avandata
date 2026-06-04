@@ -7,6 +7,7 @@
 //   - История vs Легирус (если играли в этом сезоне)
 
 import { isOurClub, shieldFor, normalizeTeamName } from '../utils/legirus';
+import { formLetterRu } from '../utils/num';
 import './OpponentPreview.css';
 
 function shortTeamName(name) {
@@ -125,7 +126,7 @@ export default function OpponentPreview({ nextMatch, allMatches, standings }) {
                 className={`opp-preview__form-cell opp-preview__form-cell--${m.result?.toLowerCase()}`}
                 title={`${m.isHome ? 'дома' : 'в гостях'}: ${m.score.home}:${m.score.away}`}
               >
-                {m.result}
+                {formLetterRu(m.result)}
               </span>
             ))}
           </div>

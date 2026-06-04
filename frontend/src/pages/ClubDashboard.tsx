@@ -779,6 +779,13 @@ function posGroup(position?: string): string {
   if (p.includes('защит') || p.includes('бек') || p.includes('латераль')) return 'def';
   if (p.includes('напад') || p.includes('форвард')) return 'fwd';
   const code = p.toUpperCase().replace(/[^А-ЯЁ]/g, '');
+  // FFSPB-коды (3 буквы, значима ПЕРВАЯ): ЗАЩ/НАП/ВРТ/ПОЛ. Ставим ДО эвристики
+  // «по последней букве» — иначе НАП (последняя «П») ложно попадал в полузащиту,
+  // а ЗАЩ/ВРТ (последние Щ/Т) — в unknown «без позиции».
+  if (code.startsWith('ВРТ')) return 'gk';
+  if (code.startsWith('НАП')) return 'fwd';
+  if (code.startsWith('ЗАЩ')) return 'def';
+  if (code.startsWith('ПОЛ')) return 'mid';
   if (code && code.length <= 4) {
     if (code === 'ВР' || code === 'ГК') return 'gk';
     const last = code[code.length - 1];
