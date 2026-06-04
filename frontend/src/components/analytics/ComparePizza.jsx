@@ -1,9 +1,11 @@
 /**
- * Сравнение двух игроков в стиле «пиццы» (секторов-долек), а не спайдер-радара.
- * Геометрия как в PizzaChart: дольки расходятся из светящегося центра, длина =
- * перцентиль в команде (0–100). На каждой дольке наложены ДВА игрока (А и Б,
- * полупрозрачные) + пунктирная дуга «команда» (медиана). Видно и дуэль игроков,
- * и кто над/под уровнем команды.
+ * Сравнение двух игроков В ТОЧНОМ СТИЛЕ пиццы профиля игрока (PizzaChart):
+ * радиальные градиенты долек (глубина от центра к краю), свечение (glow),
+ * призрак-трек, светящееся ядро с пульсом, рост долек со stagger, ободные
+ * подписи. Цвет дольки — по ИГРОКУ (А/Б), а не по группе CIES.
+ *
+ * Дольки игроков вложены (бо́льшая под меньшей) — у каждого видна внешняя дуга =
+ * его перцентиль. Пунктир на дольке = уровень среднего игрока команды.
  *
  * slices: [{ axis, a, b, t }] — перцентили 0–100 (t — линия команды).
  */
@@ -50,20 +52,24 @@ function wrapAxisLabel(text) {
 }
 const clamp = (v) => Math.max(0, Math.min(100, Number(v) || 0));
 
-function ComparePizza({ slices, nameA, nameB, size = 560 }) {
+const FONT_VALUE = 12;
+const FONT_AXIS = 11;
+
+function ComparePizza({ slices, nameA, nameB, size = 600 }) {
   if (!Array.isArray(slices) || slices.length < 3) return null;
   const cx = size / 2;
   const cy = size / 2;
-  const innerR = 56;
-  const outerMax = size / 2 - 96;
+  const innerR = 60;
+  const outerMax = size / 2 - 104;
   const N = slices.length;
   const step = (2 * Math.PI) / N;
-  const pad = 0.02;
+  const pad = 0.014;
   const radius = (pct) => innerR + (outerMax - innerR) * (clamp(pct) / 100);
 
   const guides = [0.25, 0.5, 0.75, 1.0].map((f) => (
     <circle key={f} cx={cx} cy={cy} r={innerR + (outerMax - innerR) * f}
-      className="cpw__ring" strokeDasharray={f === 1 ? '0' : '2 3'} />
+      stroke="rgba(255,255,255,0.07)" strokeWidth="1" fill="none"
+      strokeDasharray={f === 1 ? '0' : '2 3'} />
   ));
 
   const sectors = slices.map((s, i) => {
@@ -73,27 +79,39 @@ function ComparePizza({ slices, nameA, nameB, size = 560 }) {
     const rA = radius(s.a);
     const rB = radius(s.b);
     const rT = radius(s.t);
-    // больший рисуем первым, меньший сверху — чтобы обе границы читались
     const aBigger = rA >= rB;
-    const big = aBigger ? { d: slicePath(cx, cy, innerR, rA, startA, endA), cls: 'a' }
-      : { d: slicePath(cx, cy, innerR, rB, startA, endA), cls: 'b' };
-    const small = aBigger ? { d: slicePath(cx, cy, innerR, rB, startA, endA), cls: 'b' }
-      : { d: slicePath(cx, cy, innerR, rA, startA, endA), cls: 'a' };
-    const aNum = polar(cx, cy, Math.max(innerR + 13, rA - 11), startA + (endA - startA) * 0.32);
-    const bNum = polar(cx, cy, Math.max(innerR + 13, rB - 11), startA + (endA - startA) * 0.68);
-    const ax = placeAxisLabel(cx, cy, outerMax + 13, midA);
+    const big = aBigger
+      ? { r: rA, key: 'a', val: s.a }
+      : { r: rB, key: 'b', val: s.b };
+    const small = aBigger
+      ? { r: rB, key: 'b', val: s.b }
+      : { r: rA, key: 'a', val: s.a };
+    const numBig = polar(cx, cy, Math.max(innerR + 14, big.r - 12), midA);
+    const numSmall = polar(cx, cy, Math.max(innerR + 14, small.r - 12), midA);
+    const ax = placeAxisLabel(cx, cy, outerMax + 12, midA);
     const lines = wrapAxisLabel(s.axis);
     return (
-      <g key={i}>
-        <path d={slicePath(cx, cy, innerR, outerMax, startA, endA)} className="cpw__track" />
-        <path d={big.d} className={`cpw__wedge cpw__wedge--${big.cls}`} />
-        <path d={small.d} className={`cpw__wedge cpw__wedge--${small.cls}`} />
-        <path d={arcPath(cx, cy, rT, startA, endA)} className="cpw__team" fill="none" />
-        <text x={aNum.x} y={aNum.y} className="cpw__num cpw__num--a" textAnchor="middle" dominantBaseline="middle">{Math.round(s.a)}</text>
-        <text x={bNum.x} y={bNum.y} className="cpw__num cpw__num--b" textAnchor="middle" dominantBaseline="middle">{Math.round(s.b)}</text>
-        <text x={ax.x} y={ax.y} className="cpw__axis" textAnchor={ax.anchor} dominantBaseline="middle"
+      <g key={i} className="cpw-sector" style={{ ['--i']: i, transformOrigin: `${cx}px ${cy}px` }}>
+        {/* призрак-трек */}
+        <path d={slicePath(cx, cy, innerR, outerMax, startA, endA)}
+          fill="rgba(255,255,255,0.035)" stroke="rgba(7,7,28,0.6)" strokeWidth="0.5" />
+        {/* бо́льшая долька (под), затем меньшая (сверху) — у обеих видна внешняя дуга */}
+        <path className="cpw-fill" d={slicePath(cx, cy, innerR, big.r, startA, endA)}
+          fill={`url(#cpw-grad-${big.key})`} stroke="rgba(7,7,28,0.85)" strokeWidth="1" filter="url(#cpw-glow)" />
+        <path className="cpw-fill" d={slicePath(cx, cy, innerR, small.r, startA, endA)}
+          fill={`url(#cpw-grad-${small.key})`} stroke="rgba(7,7,28,0.85)" strokeWidth="1" filter="url(#cpw-glow)" />
+        {/* пунктир команды */}
+        <path d={arcPath(cx, cy, rT, startA, endA)} className="cpw-team" fill="none" />
+        {/* числа перцентилей */}
+        <text x={numBig.x} y={numBig.y} className={`cpw-num cpw-num--${big.key}`}
+          fontSize={FONT_VALUE} textAnchor="middle" dominantBaseline="middle">{Math.round(big.val)}</text>
+        <text x={numSmall.x} y={numSmall.y} className={`cpw-num cpw-num--${small.key}`}
+          fontSize={FONT_VALUE} textAnchor="middle" dominantBaseline="middle">{Math.round(small.val)}</text>
+        {/* ободная подпись метрики */}
+        <text x={ax.x} y={ax.y} className="cpw-axis" fontSize={FONT_AXIS}
+          textAnchor={ax.anchor} dominantBaseline="middle"
           transform={`rotate(${ax.rotation} ${ax.x} ${ax.y})`}>
-          {lines.map((ln, li) => <tspan key={li} x={ax.x} dy={li === 0 ? 0 : 12}>{ln}</tspan>)}
+          {lines.map((ln, li) => <tspan key={li} x={ax.x} dy={li === 0 ? 0 : FONT_AXIS + 1}>{ln}</tspan>)}
         </text>
       </g>
     );
@@ -102,22 +120,32 @@ function ComparePizza({ slices, nameA, nameB, size = 560 }) {
   return (
     <div className="cpw">
       <svg viewBox={`0 0 ${size} ${size}`} className="cpw__svg" role="img"
-        aria-label={`Сравнение пицц: ${nameA}, ${nameB}, команда`}>
+        aria-label={`Сравнение профилей: ${nameA}, ${nameB}, команда`}>
         <defs>
+          {/* Радиальные градиенты по игроку — глубина как на профиле */}
+          <radialGradient id="cpw-grad-a" cx="50%" cy="50%" r="65%">
+            <stop offset="0%" className="cpw-grad-a0" />
+            <stop offset="100%" className="cpw-grad-a1" />
+          </radialGradient>
+          <radialGradient id="cpw-grad-b" cx="50%" cy="50%" r="65%">
+            <stop offset="0%" className="cpw-grad-b0" />
+            <stop offset="100%" className="cpw-grad-b1" />
+          </radialGradient>
           <filter id="cpw-glow" x="-20%" y="-20%" width="140%" height="140%">
             <feGaussianBlur stdDeviation="3" result="b" />
             <feMerge><feMergeNode in="b" /><feMergeNode in="SourceGraphic" /></feMerge>
           </filter>
           <radialGradient id="cpw-core" cx="50%" cy="50%" r="50%">
-            <stop offset="0%" stopColor="rgba(255,255,255,0.10)" />
+            <stop offset="0%" stopColor="rgba(34,211,238,0.25)" />
             <stop offset="100%" stopColor="rgba(7,7,28,0)" />
           </radialGradient>
         </defs>
         <circle cx={cx} cy={cy} r={outerMax} fill="url(#cpw-core)" opacity="0.6" />
         {guides}
         {sectors}
-        <circle cx={cx} cy={cy} r={innerR - 6} className="cpw__core" filter="url(#cpw-glow)" />
-        <text x={cx} y={cy} className="cpw__core-lab" textAnchor="middle" dominantBaseline="middle">в команде</text>
+        <circle className="cpw-core" cx={cx} cy={cy} r={innerR - 6}
+          fill="rgba(7,7,28,0.92)" stroke="var(--accent-cyan, #22d3ee)" strokeWidth="1.5" filter="url(#cpw-glow)" />
+        <text x={cx} y={cy} className="cpw-core-lab" textAnchor="middle" dominantBaseline="middle">в команде</text>
       </svg>
       <div className="cpw__legend">
         <span className="cpw__leg cpw__leg--a"><i />{nameA}</span>

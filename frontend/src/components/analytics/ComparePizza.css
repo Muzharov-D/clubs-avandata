@@ -1,48 +1,58 @@
-.cmp-pz, .cpw {
+.cpw {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
-}
-.cpw__svg {
+  gap: 12px;
   width: 100%;
-  max-width: 520px;
-  height: auto;
-  overflow: visible;
+}
+.cpw__svg { display: block; width: 100%; height: auto; max-width: 560px; overflow: visible; }
+
+/* Радиальные градиенты по игроку — глубина центр→край, как на профиле.
+   Цвета themable: бренд (игрок А) и зелёный рейтинг (игрок Б). */
+.cpw-grad-a0 { stop-color: color-mix(in srgb, var(--brand-primary) 52%, #ffffff); }
+.cpw-grad-a1 { stop-color: color-mix(in srgb, var(--brand-primary) 72%, #000000); }
+.cpw-grad-b0 { stop-color: color-mix(in srgb, var(--rating-good, #82bc47) 58%, #ffffff); }
+.cpw-grad-b1 { stop-color: color-mix(in srgb, var(--rating-good, #82bc47) 70%, #000000); }
+
+/* Рост долек со stagger + hover-подсветка (как .pizza-slice / .pizza-slice__fill) */
+.cpw-sector {
+  animation: cpw-grow 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation-delay: calc(var(--i, 0) * 45ms);
+}
+.cpw-fill { transition: filter 0.18s ease, opacity 0.18s ease; cursor: pointer; }
+.cpw__svg:hover .cpw-fill { opacity: 0.5; }
+.cpw-sector:hover .cpw-fill { opacity: 1; }
+@keyframes cpw-grow {
+  from { transform: scale(0.55); opacity: 0; }
+  to   { transform: scale(1); opacity: 1; }
 }
 
-/* Сетка + «призрак» дольки до 100% */
-.cpw__ring { fill: none; stroke: rgba(255, 255, 255, 0.07); stroke-width: 1; }
-.cpw__track { fill: rgba(255, 255, 255, 0.035); stroke: rgba(7, 7, 28, 0.5); stroke-width: 0.5; }
+/* Светящееся ядро с пульсом */
+.cpw-core { animation: cpw-pulse 3.2s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
+@keyframes cpw-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.82; } }
+.cpw-core-lab { font-size: 11px; font-weight: 700; fill: var(--accent-cyan, #22d3ee); }
 
-/* Дольки игроков — полупрозрачная заливка + явная граница (внешняя дуга = уровень) */
-.cpw__wedge { stroke-width: 1.5; }
-.cpw__wedge--a {
-  fill: color-mix(in srgb, var(--brand-primary) 40%, transparent);
-  stroke: var(--brand-primary);
-}
-.cpw__wedge--b {
-  fill: color-mix(in srgb, var(--rating-good, #82bc47) 36%, transparent);
-  stroke: var(--rating-good, #82bc47);
+@media (prefers-reduced-motion: reduce) {
+  .cpw-sector { animation: none; }
+  .cpw-core { animation: none; }
 }
 
-/* Линия команды — пунктир поверх */
-.cpw__team {
-  stroke: var(--text-muted, #97a3b6);
-  stroke-width: 2;
-  stroke-dasharray: 4 3;
-  opacity: 0.85;
+/* Линия команды — пунктир поверх долек */
+.cpw-team { stroke: #e8edf6; stroke-width: 2; stroke-dasharray: 4 3; opacity: 0.9; }
+
+/* Числа перцентилей — как value-метки профиля (дисплейный шрифт + тень) */
+.cpw-num {
+  font-family: var(--font-display);
+  font-weight: 800;
+  pointer-events: none;
+  paint-order: stroke;
+  stroke: rgba(7, 7, 28, 0.9);
+  stroke-width: 2.6px;
 }
+.cpw-num--a { fill: color-mix(in srgb, var(--brand-primary) 35%, #ffffff); }
+.cpw-num--b { fill: color-mix(in srgb, var(--rating-good, #82bc47) 30%, #ffffff); }
 
-/* Числа перцентилей на дольках */
-.cpw__num { font-size: 11px; font-weight: 800; paint-order: stroke; stroke: rgba(7, 7, 28, 0.85); stroke-width: 2.4px; }
-.cpw__num--a { fill: color-mix(in srgb, var(--brand-primary) 60%, #fff); }
-.cpw__num--b { fill: color-mix(in srgb, var(--rating-good, #82bc47) 55%, #fff); }
-
-.cpw__axis { font-size: 11px; font-weight: 600; fill: var(--text-muted-strong, #b4c0d2); }
-
-.cpw__core { fill: rgba(7, 7, 28, 0.92); stroke: var(--accent-cyan, #22d3ee); stroke-width: 1.5; }
-.cpw__core-lab { font-size: 11px; font-weight: 700; fill: var(--accent-cyan, #22d3ee); }
+.cpw-axis { font-weight: 600; fill: #e6ebf5; pointer-events: none; }
 
 .cpw__legend {
   display: flex; flex-wrap: wrap; gap: 16px; justify-content: center;
@@ -52,7 +62,7 @@
 .cpw__leg i { width: 12px; height: 12px; border-radius: 3px; display: inline-block; }
 .cpw__leg--a i { background: var(--brand-primary); }
 .cpw__leg--b i { background: var(--rating-good, #82bc47); }
-.cpw__leg--team i { background: transparent; border: 2px dashed var(--text-muted, #97a3b6); }
+.cpw__leg--team i { background: transparent; border: 2px dashed #e8edf6; }
 .cpw__leg--team { color: var(--text-muted-strong, #b4c0d2); font-weight: 600; }
 
 .cpw__note { font-size: 11px; color: var(--text-faint); text-align: center; max-width: 460px; }
