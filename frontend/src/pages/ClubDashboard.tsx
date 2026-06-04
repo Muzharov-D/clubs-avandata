@@ -39,6 +39,8 @@ import { shieldFor, normalizeTeamName as normLeague } from '../utils/legirus';
 import PredictedLineup from '../components/PredictedLineup';
 // @ts-ignore — legacy .jsx
 import PlayerPhoto from '../components/PlayerPhoto';
+// @ts-ignore — legacy .jsx
+import OpponentPreview from '../components/OpponentPreview';
 import { useDocumentTitle } from '../hooks/useDocumentTitle';
 import { SplitText, AnimatedNumber, StaggerList } from '../components/motion';
 import './ClubDashboard.css';
@@ -373,6 +375,18 @@ export default function ClubDashboard() {
                   </button>
                 )}
               </div>
+            )}
+
+            {nextMatch && (
+              <OpponentPreview
+                nextMatch={nextMatch}
+                allMatches={calendar.map((m) => ({
+                  ...m,
+                  isPast: m.scoreH != null && m.scoreA != null,
+                  score: m.scoreH != null && m.scoreA != null ? { home: m.scoreH, away: m.scoreA } : null,
+                }))}
+                standings={standings}
+              />
             )}
           </div>
 
