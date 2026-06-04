@@ -458,9 +458,13 @@
   display: flex;
   gap: 6px;
   flex-wrap: wrap;
-  padding: 8px 0;
+  padding: 10px 0;
   margin: -4px 0 2px;
   background: var(--bg-page);
+  /* Чёткий край липкой шапки: иначе контент уходит под неё без границы и
+     выглядит «обрезанным/сломанным». Граница + мягкая тень отделяют навигацию. */
+  border-bottom: 1px solid var(--border);
+  box-shadow: 0 8px 18px -8px rgba(0, 0, 0, 0.55);
 }
 .md-secnav__link {
   font-size: 12px;
