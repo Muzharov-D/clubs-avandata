@@ -16,7 +16,7 @@ const METRICS = [
   { id: 'progression', label: 'Прогрессия', get: (p) => M.progressivePass(p) + M.progressiveRun(p) + M.passToFinalThird(p), digits: 0 },
   { id: 'duel', label: 'Единоборства', get: (p) => M.duel(p), digits: 0 },
   { id: 'press', label: 'Прессинг', get: (p) => M.pressing(p) + M.counterpressing(p), digits: 0 },
-  { id: 'dist', label: 'Бег HSR', get: (p) => M.hsr(p), digits: 1 },
+  { id: 'dist', label: 'Интенс. бег', get: (p) => M.hsr(p), digits: 1 },
 ];
 
 function fmt(v, digits) {

@@ -9,6 +9,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { fetchMatch } from '../../services/api';
 import { ourSideKey, teamXg, expectedPoints, finishing } from '../../utils/analytics';
+import { formLetterRu, matchesWord } from '../../utils/num';
 import { AnimatedNumber, Reveal, StaggerList } from '../motion';
 import './analytics.css';
 
@@ -114,10 +115,10 @@ export default function TeamSeasonAnalytics({ matches }) {
           </div>
 
           <div className="an-hero__form">
-            <span className="an-badge__lab">форма · 5 матчей</span>
+            <span className="an-badge__lab">форма · {form.length} {matchesWord(form.length)}</span>
             <StaggerList speed="tight" as="div" className="an-form-dots">
               {form.map((r) => (
-                <span key={r.id} className={`an-season__res an-season__res--${r.result || 'D'}`}>{r.result || '–'}</span>
+                <span key={r.id} className={`an-season__res an-season__res--${r.result || 'D'}`}>{formLetterRu(r.result)}</span>
               ))}
             </StaggerList>
           </div>
@@ -129,7 +130,7 @@ export default function TeamSeasonAnalytics({ matches }) {
           <div className="an-season__row" key={r.id} onClick={() => navigate(`/matches/${r.id}`)}>
             <span className="an-season__opp">{r.oppName || 'Соперник'}{r.gF != null ? ` · ${r.gF}:${r.gA}` : ''}</span>
             <span className="an-season__xg">xG {f2(r.xgF)}–{f2(r.xgA)}</span>
-            <span className={`an-season__res an-season__res--${r.result || 'D'}`}>{r.result || '–'}</span>
+            <span className={`an-season__res an-season__res--${r.result || 'D'}`}>{formLetterRu(r.result)}</span>
           </div>
         ))}
       </div>

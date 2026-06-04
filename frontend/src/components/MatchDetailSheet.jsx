@@ -145,7 +145,7 @@ export default function MatchDetailSheet({ match, venue, age, onClose, theme = '
           <div className="mds-vs">
             {past && match.score
               ? <span><b>{match.score.home}</b> : <b>{match.score.away}</b></span>
-              : <span className="mds-vs-text">vs</span>}
+              : <span className="mds-vs-text">—</span>}
           </div>
           <div className="mds-team mds-team--away">
             <img

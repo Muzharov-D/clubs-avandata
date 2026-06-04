@@ -17,7 +17,7 @@ export default function MomentumStrip({ match }) {
 
   return (
     <div className="card an">
-      <div className="page-section-title">Momentum по таймам <span className="an-model-tag">модель</span></div>
+      <div className="page-section-title">Темп по таймам <span className="an-model-tag">модель</span></div>
       <div className="an-mom">
         <div className="an-mom__bar" role="img" aria-label={`Темп: 1-й тайм ${p1}%, 2-й тайм ${p2}%`}>
           <div className="an-mom__half an-mom__half--1" style={{ width: `${p1}%` }}>{p1 >= 14 ? `1-й ${p1}%` : ''}</div>

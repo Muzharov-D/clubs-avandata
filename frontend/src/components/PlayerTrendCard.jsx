@@ -2,6 +2,7 @@ import { useApi } from '../hooks/useApi';
 import { fetchPlayerTrend } from '../services/api';
 import { Sparkline } from './Sparkline';
 import { ratingColor } from '../utils/colors';
+import { formLetterRu } from '../utils/num';
 import './PlayerTrendCard.css';
 
 /**
@@ -58,7 +59,7 @@ export default function PlayerTrendCard({ playerId, series: propSeries }) {
       <div className="player-trend__strip">
         {series.slice(-8).map((s) => (
           <div className={`player-trend__chip player-trend__chip--${(s.result || '').toLowerCase()}`} key={s.matchId} title={`${s.opponent} ${s.score || ''} · рейтинг ${s.overall.toFixed(1)}`}>
-            <span className="player-trend__chip-res">{s.result || '–'}</span>
+            <span className="player-trend__chip-res">{formLetterRu(s.result)}</span>
             <span className="player-trend__chip-rt">{s.overall ? s.overall.toFixed(1) : '—'}</span>
           </div>
         ))}

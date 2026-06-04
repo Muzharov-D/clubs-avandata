@@ -49,7 +49,7 @@ const RANK_METRICS = [
   { id: 'interception', label: 'перехватам',           getter: (p) => p.stats?.defence1?.interception },
   { id: 'pressing',     label: 'прессингу',            getter: (p) => p.stats?.defence2?.pressing },
   { id: 'save',         label: 'сейвам',               getter: (p) => p.stats?.defence3?.save },
-  { id: 'distance',     label: 'дистанции',            getter: (p) => p.stats?.fitness?.totalDistance },
+  { id: 'distance',     label: 'дистанции',            getter: (p) => p.stats?.fitness?.totalDistance, fmt: (v) => (v / 1000).toFixed(1), unit: ' км' },
   { id: 'sprints',      label: 'спринтам',             getter: (p) => p.stats?.fitness?.sprintsCount },
 ];
 
@@ -571,7 +571,7 @@ function MatchTab({ playerId, match, loading, allMatches, currentMatchId, setSel
       .sort((a, b) => b.v - a.v);
     const idx = ranked.findIndex((r) => r.p.id === player.id);
     if (idx >= 0 && idx < 3) {
-      badges.push({ rank: idx + 1, label: m.label, value: ranked[idx].v, icon: RANK_ICONS[idx] });
+      badges.push({ rank: idx + 1, label: m.label, value: ranked[idx].v, icon: RANK_ICONS[idx], fmt: m.fmt, unit: m.unit });
     }
   }
   badges.sort((a, b) => a.rank - b.rank);
@@ -714,7 +714,7 @@ function MatchTab({ playerId, match, loading, allMatches, currentMatchId, setSel
                   <div className="badge__rank">{b.rank === 1 ? 'Лучший по' : `#${b.rank} по`}</div>
                   <div className="badge__label">{b.label}</div>
                 </div>
-                <div className="badge__value">{Number.isInteger(b.value) ? b.value : b.value.toFixed(1)}</div>
+                <div className="badge__value">{b.fmt ? b.fmt(b.value) : (Number.isInteger(b.value) ? b.value : b.value.toFixed(1))}{b.unit || ''}</div>
               </div>
             ))}
           </div>

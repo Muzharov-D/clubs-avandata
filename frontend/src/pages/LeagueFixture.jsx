@@ -323,7 +323,7 @@ export default function LeagueFixture() {
                           <div className="lf-card__score">
                             {m.isPast && m.score
                               ? <span><b>{m.score.home}</b>:<b>{m.score.away}</b></span>
-                              : <span className="lf-card__vs">vs</span>}
+                              : <span className="lf-card__vs">—</span>}
                           </div>
                           <div className={`lf-card__team lf-card__team--away ${isLegirus(m.away) ? 'lf-card__team--us' : ''}`}>
                             <span className="lf-card__name">{shortName(m.away)}</span>

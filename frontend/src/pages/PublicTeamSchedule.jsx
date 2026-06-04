@@ -625,7 +625,7 @@ export default function PublicTeamSchedule() {
                         <div className="pub-card__score">
                           {past && m.score
                             ? <span><b>{m.score.home}</b> : <b>{m.score.away}</b></span>
-                            : <span className="pub-card__vs">vs</span>}
+                            : <span className="pub-card__vs">—</span>}
                         </div>
                         <div className="pub-card__team pub-card__team--away">
                           <span className="pub-card__team-name">{shortName(m.away)}</span>
@@ -804,7 +804,7 @@ export default function PublicTeamSchedule() {
                                 <div className="pub-card__score">
                                   {m.isPast && m.score
                                     ? <span><b>{m.score.home}</b> : <b>{m.score.away}</b></span>
-                                    : <span className="pub-card__vs">vs</span>}
+                                    : <span className="pub-card__vs">—</span>}
                                 </div>
                                 <div className="pub-card__team pub-card__team--away">
                                   <span className="pub-card__team-name">{shortName(m.away)}</span>

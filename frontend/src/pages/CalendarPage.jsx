@@ -364,7 +364,7 @@ export default function CalendarPage() {
                       <div className="cal-card__score">
                         {past && m.score
                           ? <span><b>{m.score.home}</b> : <b>{m.score.away}</b></span>
-                          : <span className="cal-card__vs">vs</span>}
+                          : <span className="cal-card__vs">—</span>}
                       </div>
                       <div className="cal-card__team cal-card__team--away">
                         <span className="cal-card__team-name">{shortName(m.away)}</span>

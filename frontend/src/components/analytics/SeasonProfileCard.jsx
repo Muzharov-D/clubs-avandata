@@ -22,7 +22,7 @@ const SEASON_METRICS = [
   { key: 'recovery',    label: 'Возвраты',     group: 'defence', get: (s) => s.recovery || 0 },
   { key: 'duel',        label: 'Единоборства', group: 'defence', get: (s) => s.duel || 0 },
   { key: 'pressing',    label: 'Прессинг',     group: 'defence', get: (s) => s.pressing || 0 },
-  { key: 'distance',    label: 'Дистанция',    group: 'fitness', get: (s) => s.distance || 0 },
+  { key: 'distance',    label: 'Дистанция, км', group: 'fitness', get: (s) => s.distance || 0, fmt: (v) => (v / 1000).toFixed(1) },
 ];
 
 function fmt90(v) {
@@ -49,7 +49,7 @@ export default function SeasonProfileCard({ subject, seasonPlayers, basis = 90 }
     const poolVals = pool.map((s) => per90(m.get(s), s.minutes, 1, basis));
     const pct = percentileRank(my90, poolVals);
     if (pct == null) return null;
-    return { axis: m.label, group: m.group, value: pct, displayValue: fmt90(my90) };
+    return { axis: m.label, group: m.group, value: pct, displayValue: m.fmt ? m.fmt(my90) : fmt90(my90) };
   }).filter(Boolean);
 
   if (slices.length < 3) return null;

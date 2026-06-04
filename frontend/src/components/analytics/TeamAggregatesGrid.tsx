@@ -59,7 +59,7 @@ const FIELD_RU: Record<string, string> = {
   aerialDuels: 'Воздушные дуэли',
   // pressing
   pressing: 'Прессинг', counterpressing: 'Контр-прессинг',
-  averagePpda: 'Сред. PPDA',
+  averagePpda: 'Сред. PPDA', averagePPDA: 'Сред. PPDA',
   // positioning
   clearance: 'Выносы', blockedShot: 'Блок-удары', positionPlay: 'Поз. игра',
   fouls: 'Фолы', yellowCard: 'Жёлтые', redCard: 'Красные', shotsAgainst: 'Удары по воротам',
@@ -88,6 +88,15 @@ function readVal(v: unknown): { val: number | null; suffix: string } {
   return { val: null, suffix: '' };
 }
 
+// Поля-«ставки», которым осмысленна дробь (xG, дистанция удара, PPDA). Остальное —
+// счётные действия: «48,67 дуэлей» режет глаз тренеру, округляем до целого.
+const DECIMAL_KEYS = new Set(['expectedGoals', 'xG', 'avgShotDistance', 'averagePPDA', 'averagePpda', 'oppda']);
+
+function fmtAggVal(k: string, val: number, suffix: string): string {
+  if (suffix === '%' || DECIMAL_KEYS.has(k)) return val.toLocaleString('ru-RU');
+  return Math.round(val).toLocaleString('ru-RU');
+}
+
 function AggregateCard({ title, data }: { title: string; data: AnyObj }) {
   // Дедуп по русскому лейблу — оставляем макс (interception vs interceptions).
   type Entry = { k: string; label: string; val: number; suffix: string };
@@ -113,7 +122,7 @@ function AggregateCard({ title, data }: { title: string; data: AnyObj }) {
           <div key={k} className="tag-row">
             <div className="tag-row__head">
               <span className="tag-row__key">{label}</span>
-              <span className="tag-row__val">{val.toLocaleString('ru-RU')}{suffix}</span>
+              <span className="tag-row__val">{fmtAggVal(k, val, suffix)}{suffix}</span>
             </div>
             <span className="tag-row__bar" aria-hidden><span className="tag-row__bar-fill" style={{ width: `${pct}%` }} /></span>
           </div>

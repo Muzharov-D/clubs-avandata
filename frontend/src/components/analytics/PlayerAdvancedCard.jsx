@@ -45,11 +45,11 @@ export default function PlayerAdvancedCard({ player, squad, match, basis = 90 })
   const tiles = [
     { label: 'Гол+пас', model: false, val: show(M.goalContrib(player), 0), sub: 'результативность' },
     { label: 'xG', model: true, val: show(xg), sub: xgCalibrated ? 'калибр. к командному xG' : 'оценка по ударам' },
-    { label: 'xA', model: true, val: show(playerXa(player)), sub: 'ожидаемые ассисты (прокси)' },
+    { label: 'Ожид. ассисты', model: true, val: show(playerXa(player)), sub: 'модель (прокси)' },
     { label: 'Угроза xT', model: true, val: show(playerThreat(player)), sub: tShare != null ? `${Math.round(tShare * 100)}% угрозы команды` : 'добавленная угроза' },
     { label: 'Креативность', model: true, val: show(creativityIndex(player)), sub: 'созидание (индекс)' },
-    { label: 'Packing', model: true, val: show(playerPacking(player), 0), sub: 'продвижение сквозь линии' },
-    { label: 'Оборона PAdj', model: true, val: show(padjWorkload(player, ourPoss), 0), sub: 'с поправкой на владение' },
+    { label: 'Продвижение', model: true, val: show(playerPacking(player), 0), sub: 'мяч сквозь линии' },
+    { label: 'Оборона', model: true, val: show(padjWorkload(player, ourPoss), 0), sub: 'с поправкой на владение' },
   ];
   if (dWin != null) tiles.push({ label: 'Дуэли %', model: false, val: `${dWin}%`, sub: aWin != null ? `верх ${aWin}%` : 'выиграно' });
 
@@ -58,7 +58,7 @@ export default function PlayerAdvancedCard({ player, squad, match, basis = 90 })
   if (hsr > 0) {
     tiles.push({ label: 'Интенс. бег', model: false, val: show(hsr, 0), sub: 'высокая скорость (4+ м/с)' });
     const top = M.speedTop(player);
-    if (top > 0) tiles.push({ label: 'Спринт-доля', model: false, val: `${Math.round((top / hsr) * 100)}%`, sub: 'зона 7+ м/с в HSR' });
+    if (top > 0) tiles.push({ label: 'Спринт-доля', model: false, val: `${Math.round((top / hsr) * 100)}%`, sub: 'зона 7+ м/с' });
   }
 
   return (
@@ -80,8 +80,8 @@ export default function PlayerAdvancedCard({ player, squad, match, basis = 90 })
         ))}
       </div>
       <div className="an-note">
-        xG — командный xG из отчёта, распределённый по миксу ударов игрока. xT/xA/
-        packing/креативность — прозрачные модели на реальных событиях продвижения.
+        xG — командный xG из отчёта, распределённый по миксу ударов игрока. Угроза,
+        ожид. ассисты, продвижение и креативность — прозрачные модели на реальных событиях.
         {per90Mode && ` Значения за матч (${basis}′); «*» — мало минут, показано сырое.`}
       </div>
     </div>

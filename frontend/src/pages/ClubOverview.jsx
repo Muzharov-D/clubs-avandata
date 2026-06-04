@@ -12,6 +12,7 @@ import TeamIdentityCard from '../components/analytics/TeamIdentityCard';
 import TeamAggregatesGrid from '../components/analytics/TeamAggregatesGrid';
 import SeasonTrendCard from '../components/analytics/SeasonTrendCard';
 import { isOurClub, shieldFor } from '../utils/legirus';
+import { formLetterRu } from '../utils/num';
 import { matchesWord } from '../utils/num';
 import { useNavigate } from 'react-router-dom';
 import './ClubOverview.css';
@@ -172,7 +173,7 @@ export default function ClubOverview() {
                 <div className="season-record__form">
                   <span className="season-record__form-lab">Форма</span>
                   {record.form.map((r, i) => (
-                    <span key={r.id + i} className={`season-record__res season-record__res--${r.r}`}>{r.r}</span>
+                    <span key={r.id + i} className={`season-record__res season-record__res--${r.r}`}>{formLetterRu(r.r)}</span>
                   ))}
                 </div>
               )}

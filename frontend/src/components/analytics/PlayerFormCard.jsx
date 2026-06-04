@@ -6,6 +6,7 @@
 import { useApi } from '../../hooks/useApi';
 import { fetchPlayerTrend } from '../../services/api';
 import { formIndex, seasonMean, trajectorySlope, streak } from '../../utils/analytics';
+import { matchesWord } from '../../utils/num';
 import './analytics.css';
 
 export default function PlayerFormCard({ playerId, series: propSeries }) {
@@ -29,7 +30,7 @@ export default function PlayerFormCard({ playerId, series: propSeries }) {
 
   return (
     <div className="card an">
-      <div className="page-section-title">Форма <span className="an-model-tag">последние {Math.min(5, rated.length)} матчей</span></div>
+      <div className="page-section-title">Форма <span className="an-model-tag">последние {Math.min(5, rated.length)} {matchesWord(Math.min(5, rated.length))}</span></div>
       <div className="an-form__row">
         <div>
           <div className="an-form__big">{form.toFixed(2)}</div>

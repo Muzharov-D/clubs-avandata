@@ -7,6 +7,7 @@ import PdfUploadDialog from '../components/PdfUploadDialog';
 import PlayerPhoto from '../components/PlayerPhoto';
 import { ratingColor, ratingTextColor } from '../utils/colors';
 import { shortNameFromPlayer } from '../utils/players';
+import { matchesWord } from '../utils/num';
 import { isOurClub, shieldFor, normalizeTeamName } from '../utils/legirus';
 import { trimAgeSuffix, cleanTeamName } from '../utils/teamName';
 import { useAuth } from '../contexts/AuthContext';
@@ -215,7 +216,7 @@ export default function MatchesDashboard() {
           <div className="matches-dashboard__hero-eyebrow">Сезон</div>
           <h1 className="matches-dashboard__hero-title"><SplitText text={String(season)} /></h1>
           <div className="matches-dashboard__hero-sub">
-            {(ourTeam?.name || 'Команда').toUpperCase()} · {totalGames} матч{totalGames === 1 ? '' : 'ей'} разобран{totalGames === 1 ? '' : 'о'}
+            {(ourTeam?.name || 'Команда').toUpperCase()} · {totalGames} {matchesWord(totalGames)} разобран{totalGames === 1 ? '' : 'о'}
             {tournament === 'cup' && <> · Кубок</>}
           </div>
         </div>
