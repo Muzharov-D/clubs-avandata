@@ -498,6 +498,10 @@ export default function MatchDetail() {
         <div className="match-detail__center">
           <div className="card">
             <div className="page-section-title">Командная статистика</div>
+            <div className="match-detail__stats-teams" style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.78rem', fontWeight: 700, opacity: 0.85, marginBottom: 6 }}>
+              <span>{trimAgeStr(match.home) || 'Хозяева'}</span>
+              <span>{trimAgeStr(match.away) || 'Гости'}</span>
+            </div>
             <div className="match-detail__stats">
               <StatCompareBar label="Владение"          home={fmtNumOrDash(home.possessionPct, '%')} away={fmtNumOrDash(away.possessionPct, '%')} />
               <StatCompareBar label="Удары"             home={fmtNumOrDash(home.shots?.total)}       away={fmtNumOrDash(away.shots?.total)} />

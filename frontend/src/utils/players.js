@@ -122,3 +122,12 @@ export function surnameOf(player) {
 export function playerLabel(player) {
   return shortNameFromPlayer(player) || (player?.number != null ? `№${player.number}` : 'Без имени');
 }
+
+// «№15 · Правый нападающий» — но без висячего разделителя, когда позиция не
+// заполнена (частая дыра у FFSPB-игроков). Тогда возвращаем просто «№15».
+export function numberWithPos(number, position) {
+  const num = number != null && number !== '' ? `№${number}` : '';
+  const pos = position ? String(position).trim() : '';
+  if (num && pos) return `${num} · ${pos}`;
+  return num || pos || '';
+}

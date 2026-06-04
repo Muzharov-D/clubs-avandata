@@ -9,7 +9,7 @@ import RatingPill from '../components/RatingPill';
 import { AnimatedNumber, SplitText, Reveal, StaggerList, KineticCard } from '../components/motion';
 import { useAuth } from '../contexts/AuthContext';
 import { useTeam } from '../contexts/TeamContext';
-import { shortNameFromPlayer } from '../utils/players';
+import { shortNameFromPlayer, numberWithPos } from '../utils/players';
 import './PlayersLeaders.css';
 import './playersKinetic.css';
 import './PlayersRating.css';
@@ -102,7 +102,7 @@ export default function PlayersLeaders() {
                 <PlayerPhoto player={overall} size={140} className="players-leaders__top-photo" />
                 <div className="players-leaders__top-info">
                   <div className="players-leaders__top-name"><SplitText text={shortNameFromPlayer(overall) || overall.fullName || ''} /></div>
-                  <div className="players-leaders__top-pos">№{overall.number} · {overall.position || ''}</div>
+                  <div className="players-leaders__top-pos">{numberWithPos(overall.number, overall.position)}</div>
                   <div className="players-leaders__top-stats">
                     <span>Матчи: <b>{overall.matches ?? '—'}</b></span>
                     <span>Голы: <b>{overall.goals ?? 0}</b></span>

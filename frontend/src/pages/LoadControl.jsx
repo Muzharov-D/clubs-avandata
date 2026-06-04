@@ -4,7 +4,7 @@ import { fetchPlayersSeason } from '../services/api';
 import { useDocumentTitle } from '../hooks/useDocumentTitle';
 import { useTeam } from '../contexts/TeamContext';
 import { downloadCsv } from '../utils/exportCsv';
-import { playerLabel } from '../utils/players';
+import { playerLabel, numberWithPos } from '../utils/players';
 import { AnimatedNumber, SplitText } from '../components/motion';
 import './LoadControl.css';
 import './playersKinetic.css';
@@ -153,7 +153,7 @@ export default function LoadControl() {
               <div className="load-control__row">
                 <span className="lc-name">
                   <span className="lc-name__main">{playerLabel(p)}</span>
-                  <span className="lc-name__sub">№{p.number ?? '—'} · {p.position || '—'}</span>
+                  <span className="lc-name__sub">{numberWithPos(p.number, p.position)}</span>
                 </span>
                 <span className="lc-num">{p.matches}</span>
                 <span className="lc-bar">
