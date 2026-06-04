@@ -41,6 +41,8 @@ import PredictedLineup from '../components/PredictedLineup';
 import PlayerPhoto from '../components/PlayerPhoto';
 // @ts-ignore — legacy .jsx
 import OpponentPreview from '../components/OpponentPreview';
+// @ts-ignore — legacy .jsx
+import { playerArchetype } from '../components/analytics/PlayerDnaCard';
 import { useDocumentTitle } from '../hooks/useDocumentTitle';
 import { SplitText, AnimatedNumber, StaggerList } from '../components/motion';
 import './ClubDashboard.css';
@@ -219,6 +221,17 @@ export default function ClubDashboard() {
     }
     return m;
   }, [latestMatch]);
+
+  // CIES-архетип каждого игрока (для подписи в плитке состава). Считаем по сырому
+  // сезонному пулу (перцентили внутри команды). basis 80 — молодёжный матч.
+  const archetypeById = useMemo(() => {
+    const m = new Map<string, string>();
+    for (const p of seasonPlayers) {
+      const a = playerArchetype(p, seasonPlayers, 80);
+      if (a?.name) m.set(String((p as AnyObj).id), a.name);
+    }
+    return m;
+  }, [seasonPlayers]);
 
   // Сколько матчей в основе сезонного агрегата (для подписей блоков).
   const seasonMatchCount = useMemo<number>(() => {
@@ -699,6 +712,19 @@ export default function ClubDashboard() {
                 </div>
                 <span className="cd__player-name">{surnameOf(p)}</span>
                 <span className="cd__player-number">#{p.number ?? '—'} · {sub}</span>
+                {archetypeById.get(String(p.playerId)) && (
+                  <span
+                    className="cd__player-arch"
+                    title={`CIES-профиль: ${archetypeById.get(String(p.playerId))}`}
+                    style={{
+                      fontSize: size === 80 ? '0.74rem' : '0.68rem', fontWeight: 600,
+                      color: 'var(--brand-accent, #38bdf8)', marginTop: 2, maxWidth: '100%',
+                      overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                    }}
+                  >
+                    {archetypeById.get(String(p.playerId))}
+                  </span>
+                )}
               </div>
             );
           };

@@ -83,6 +83,13 @@ function computeDna(subject, seasonPlayers, basis) {
   return { archetype: archetypeOf(subject, strengths.length ? strengths : ranked), strengths, growth, top: ranked[0] };
 }
 
+// Архетип игрока по методике CIES (имя + tagline) для переиспользования вне
+// карточки — например, подпись профиля в плитке состава. null, если данных мало.
+export function playerArchetype(subject, seasonPlayers, basis = 90) {
+  const dna = computeDna(subject, seasonPlayers, basis);
+  return dna?.archetype ?? null;
+}
+
 // Склонение русских числительных для inline-статистики сезона.
 function dnaPlural(n, one, few, many) {
   const m10 = n % 10;

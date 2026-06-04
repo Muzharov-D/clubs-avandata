@@ -364,12 +364,27 @@ export async function dataRoutes(app: FastifyInstance) {
           ORDER BY m.match_date ASC NULLS LAST`,
         [slug, pid],
       );
-      const series = rows.map((m) => {
+      // Дата матча — ИСТИНА из календаря FFSPB (applyFixtureDates), а не сырой
+      // match_date (RU-парсер дату не отдаёт → бывает неверной). Иначе текст
+      // профиля «последний матч N мая» расходился со списком/разбором, где дата
+      // уже фикстурная. Меняем ТОЛЬКО даты trend — остальные эндпоинты не трогаем.
+      const datedRows: DatedMatchRow[] = rows.map((m) => ({
+        teamId: (m.team_id as string) ?? null,
+        homeTeamId: (m.home_team_id as string) ?? null,
+        awayTeamId: (m.away_team_id as string) ?? null,
+        home: (m.home_team_name as string) ?? null,
+        away: (m.away_team_name as string) ?? null,
+        scoreHome: m.score_home as number | null,
+        scoreAway: m.score_away as number | null,
+        date: m.match_date as string | null,
+      }));
+      await applyFixtureDates(conn, slug, datedRows);
+      const series = rows.map((m, i) => {
         const r = (m.ratings as Record<string, unknown>) ?? {};
         const res = ourResult(m);
         return {
           matchId: m.match_id,
-          date: m.match_date,
+          date: datedRows[i]?.date ?? m.match_date,
           opponent: res.opponent,
           result: res.result,
           score: res.us != null ? `${res.us}:${res.them}` : null,
