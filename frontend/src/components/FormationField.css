@@ -30,11 +30,14 @@
   position: relative;
   width: 100%;
   /* Пропорции реального горизонтального поля (~1.6:1), а не растянутая полоса.
-     max-width центрирует — иначе на широком экране поле плющит игроков. */
+     max-width центрирует. height+min-height обязательны: .formation — flex-column,
+     и без min-height он сжимал поле до ~210px (aspect-ratio во flex игнорировался). */
   max-width: 1000px;
   margin-left: auto;
   margin-right: auto;
-  aspect-ratio: 16 / 10;
+  height: 600px;
+  min-height: 600px;
+  flex-shrink: 0;
   border-radius: 10px;
   overflow: hidden;
   border: 1px solid rgba(255,255,255,0.1);
@@ -167,6 +170,7 @@
   /* Поле — фиксированная высота 560px слишком много для мобилы, переходим на aspect-ratio */
   .formation__pitch-wrap {
     height: auto !important;
+    min-height: 0 !important;
     aspect-ratio: 2 / 3;
     max-height: 70vh;
   }
