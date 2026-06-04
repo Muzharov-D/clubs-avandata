@@ -11,7 +11,7 @@ const envSchema = z.object({
 
   JWT_SECRET: z.string().min(32, 'JWT_SECRET must be at least 32 chars'),
   REFRESH_TOKEN_SECRET: z.string().min(32, 'REFRESH_TOKEN_SECRET must be at least 32 chars'),
-  ACCESS_TOKEN_TTL: z.string().default('15m'),
+  ACCESS_TOKEN_TTL: z.string().default('24h'),
   REFRESH_TOKEN_TTL_DAYS: z.coerce.number().int().positive().default(30),
 
   COOKIE_DOMAIN: z.string().default('localhost'),
