@@ -48,7 +48,7 @@ export default function PlayerFormCard({ playerId, series: propSeries }) {
         {st && (
           <span className={`an-chip ${st.hot ? 'an-chip--pos' : 'an-chip--neg'}`}>
             <span className="an-chip__val">{st.hot ? '🔥' : '❄️'} {st.count} {plural(st.count, 'матч', 'матча', 'матчей')}</span>
-            <span className="an-chip__label">{st.hot ? 'на ходу' : 'спад'}</span>
+            <span className="an-chip__label">{st.hot ? 'в форме' : 'спад'}</span>
           </span>
         )}
         {trend && (

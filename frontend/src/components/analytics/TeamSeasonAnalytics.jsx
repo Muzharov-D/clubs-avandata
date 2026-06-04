@@ -16,7 +16,7 @@ import './analytics.css';
 function luckVerdict(luck) {
   if (luck <= -0.5) return 'Заслужили больше, чем взяли';
   if (luck >= 0.5) return 'Эффективная реализация — очков больше, чем по xG';
-  return 'Берём по делу';
+  return 'Результат по игре';
 }
 
 function f1(v) { return v == null ? '—' : Number(v).toFixed(1); }

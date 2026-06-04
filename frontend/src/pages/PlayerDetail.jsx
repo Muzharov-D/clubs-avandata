@@ -441,7 +441,7 @@ function bioFormNote(series) {
   const mean = rated.reduce((a, b) => a + b, 0) / rated.length;
   const recent = rated.slice(-3).reduce((a, b) => a + b, 0) / Math.min(3, rated.length);
   const d = recent - mean;
-  if (d > 0.15) return 'Сейчас на ходу — форма выше своего сезонного среднего.';
+  if (d > 0.15) return 'В хорошей форме — показатели выше своего сезонного среднего.';
   if (d < -0.15) return 'Небольшой спад — форма ниже своего сезонного среднего.';
   return 'Форма стабильная.';
 }
@@ -725,7 +725,7 @@ function MatchTab({ playerId, match, loading, allMatches, currentMatchId, setSel
       <div className="card player-detail__pizza">
         <div className="player-detail__pizza-head">
           <div className="page-section-title">Профиль в матче</div>
-          <div className="player-detail__pizza-mode" role="tablist" aria-label="Режим пиццы">
+          <div className="player-detail__pizza-mode" role="tablist" aria-label="Режим профиля">
             <button
               type="button" role="tab" aria-selected={pizzaMode === 'template'}
               className={`player-detail__pizza-modebtn${pizzaMode === 'template' ? ' is-active' : ''}`}
@@ -776,7 +776,7 @@ function MatchTab({ playerId, match, loading, allMatches, currentMatchId, setSel
         ) : (
           <div className="player-detail__cies">
             <div className="player-detail__cies-hint">
-              Соберите свою пиццу — отметьте любые показатели. Группировка — по областям CIES.
+              Соберите свой профиль — отметьте любые показатели. Группировка — по областям CIES.
               {customKeys.size > 0 && (
                 <button type="button" className="player-detail__cies-clear" onClick={() => setCustomKeys(new Set())}>
                   Сбросить
@@ -816,7 +816,7 @@ function MatchTab({ playerId, match, loading, allMatches, currentMatchId, setSel
           </div>
         ) : usingCustom && activeSlices.length < 3 ? (
           <div className="empty-state">
-            Отметьте минимум 3 показателя с данными, чтобы построить пиццу
+            Отметьте минимум 3 показателя с данными, чтобы построить профиль
             {customKeys.size > 0 && activeSlices.length < customKeys.size
               ? ' (часть выбранных метрик в этом матче пуста).'
               : '.'}

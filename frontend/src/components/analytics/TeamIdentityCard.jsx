@@ -31,7 +31,7 @@ function threatWord(xg) {
 // Качество моментов = xG на удар. Средний удар ≈ 0.10 xG; ниже 0.07 — много
 // дальних/из плохих позиций, выше 0.11 — выходим на убойные.
 function chanceQualityWord(q) {
-  if (q >= 0.11) return 'Бьём из убойных';
+  if (q >= 0.11) return 'Из выгодных позиций';
   if (q >= 0.07) return 'Качество среднее';
   return 'Бьём издалека';
 }
@@ -106,8 +106,8 @@ export default function TeamIdentityCard({ aggregate, periodLabel = 'за сез
       word: chanceQualityWord(xgPerShot),
       val: clamp(xgPerShot * 600),
       hint: xgPerShot < 0.07
-        ? `${xgPerShot.toFixed(2)} xG на удар — много дальних, мало выходов на убойную позицию.`
-        : `${xgPerShot.toFixed(2)} xG на удар — выходим на хорошие позиции, не бьём ради удара.`,
+        ? `${xgPerShot.toFixed(2)} xG на удар — много дальних ударов, мало выходов на удобную позицию.`
+        : `${xgPerShot.toFixed(2)} xG на удар — выходим на удобные позиции, не бьём ради удара.`,
       note: `${matchCount} ${matchesWord(matchCount)} — направление, не приговор`,
     },
     possession > 0 && xg != null && {

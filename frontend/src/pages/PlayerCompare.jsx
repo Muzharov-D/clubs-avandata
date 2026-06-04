@@ -135,20 +135,20 @@ export default function PlayerCompare() {
             type="button" role="tab" aria-selected={mode === 'bars'}
             className={`pc-mode${mode === 'bars' ? ' is-active' : ''}`}
             onClick={() => setMode('bars')}
-          >Полосы</button>
+          >Показатели</button>
           <button
             type="button" role="tab" aria-selected={mode === 'pizza'}
             className={`pc-mode${mode === 'pizza' ? ' is-active' : ''}`}
             onClick={() => setMode('pizza')}
             disabled={pizzaSlices.length < 3}
-            title={pizzaSlices.length < 3 ? 'Недостаточно данных для пиццы' : ''}
-          >Наложение пицц</button>
+            title={pizzaSlices.length < 3 ? 'Недостаточно данных для профиля' : ''}
+          >Профили</button>
         </div>
       )}
 
       {a && b && mode === 'pizza' && pizzaSlices.length >= 3 && (
         <div className="card player-compare__pizza">
-          <div className="page-section-title">Профили друг на друге</div>
+          <div className="page-section-title">Наложение профилей</div>
           <ComparePizza slices={pizzaSlices} nameA={playerLabel(a)} nameB={playerLabel(b)} />
         </div>
       )}

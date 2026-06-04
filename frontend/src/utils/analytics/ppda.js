@@ -19,7 +19,7 @@ export function teamPpda(match) {
 export function interpretPpda(v) {
   if (v == null || !Number.isFinite(Number(v))) return null;
   const x = Number(v);
-  if (x < 8) return { level: 'Очень высокий прессинг', tone: 'positive', note: 'душим соперника высоко — уровень топ-клуба' };
+  if (x < 8) return { level: 'Очень высокий прессинг', tone: 'positive', note: 'высоко встречаем и не даём сопернику развивать атаки' };
   if (x < 11) return { level: 'Высокий прессинг', tone: 'positive', note: 'агрессивный отбор на чужой половине' };
   if (x < 15) return { level: 'Средний блок', tone: 'neutral', note: 'сбалансированное давление' };
   return { level: 'Низкий блок', tone: 'neutral', note: 'выжидательная оборона, прессинг включается реже' };
