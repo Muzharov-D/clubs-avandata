@@ -664,7 +664,7 @@ function MatchTab({ playerId, match, loading, allMatches, currentMatchId, setSel
       <div className="card player-detail__hero">
         <PlayerPhoto player={player} size={132} />
         <div className="player-detail__hero-info">
-          <div className="player-detail__hero-pos">№{player.number} · {player.positionFull}</div>
+          <div className="player-detail__hero-pos">№{player.number}{player.positionFull ? ` · ${player.positionFull}` : ''}</div>
           <h1 className="player-detail__hero-name">{player.fullName}</h1>
           {match && <div className="player-detail__hero-match">по матчу {fmtMatchShort(match)}</div>}
           <div className="player-detail__hero-meta">
@@ -672,7 +672,11 @@ function MatchTab({ playerId, match, loading, allMatches, currentMatchId, setSel
               <span style={{ color: 'var(--text-muted)' }}>Не выходил на поле в этом матче</span>
             ) : (
               <>
-                <span>Минут на поле: <b>{player.minutes}</b></span>
+                <span>Минут на поле: <b>{player.minutes}</b>{(() => {
+                  const mx = Math.max(1, ...((match?.players ?? []).map((pp) => Number(pp.minutes) || 0)));
+                  const pct = Math.round((Number(player.minutes) / mx) * 100);
+                  return pct > 0 && pct <= 100 ? ` · ${pct}% матча` : '';
+                })()}</span>
                 <span>Голы: <b>{num(player.stats?.attack4?.goal) || 0}</b></span>
                 <span>Ассисты: <b>{num(player.stats?.attack1?.assist) || 0}</b></span>
                 <span>Перехваты: <b>{num(player.stats?.defence1?.interception) || 0}</b></span>
