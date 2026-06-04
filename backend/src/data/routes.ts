@@ -397,7 +397,7 @@ export async function dataRoutes(app: FastifyInstance) {
     if (!teamId) throw new BadRequestError('teamId is required', 'NO_TEAM');
     return withTenant(slug, async (_tx, conn) => {
       const { rows } = await conn.query<AnyRow>(
-        `SELECT mp.player_id, p.full_name AS "fullName", p.number, p.position, p.photo_url AS "photoUrl",
+        `SELECT mp.player_id, p.full_name AS "fullName", p.number, mp.position, p.photo_url AS "photoUrl",
                 mp.minutes, mp.ratings, mp.stats, mp.radar, m.match_date
            FROM match_players mp
            JOIN matches m ON m.id = mp.match_id
@@ -407,7 +407,7 @@ export async function dataRoutes(app: FastifyInstance) {
         [slug, teamId],
       );
       type Agg = {
-        id: string; fullName: string; number: number | null; position: string | null; photoUrl: string | null;
+        id: string; fullName: string; number: number | null; position: string | null; positionFull: string | null; photoUrl: string | null;
         matches: number; minutes: number;
         sumOverall: number; sumAttack: number; sumDefence: number; sumFitness: number; ratedMatches: number;
         goals: number; assists: number; shots: number; keyPass: number; dribble: number;
@@ -422,7 +422,7 @@ export async function dataRoutes(app: FastifyInstance) {
         if (!a) {
           a = {
             id, fullName: String(r.fullName ?? ''), number: r.number as number | null,
-            position: r.position as string | null, photoUrl: (r.photoUrl as string | null) ?? null,
+            position: r.position as string | null, positionFull: r.position as string | null, photoUrl: (r.photoUrl as string | null) ?? null,
             matches: 0, minutes: 0, sumOverall: 0, sumAttack: 0, sumDefence: 0, sumFitness: 0, ratedMatches: 0,
             goals: 0, assists: 0, shots: 0, keyPass: 0, dribble: 0,
             tackle: 0, interception: 0, recovery: 0, duel: 0, pressing: 0,
@@ -432,6 +432,12 @@ export async function dataRoutes(app: FastifyInstance) {
           byId.set(id, a);
         }
         a.matches += 1;
+        // Позиция = роль из ПОСЛЕДНЕГО матча (источник истины — отчёт SportVisor,
+        // НЕ FFSPB). rows идут ASC по дате → последняя непустая перезаписывает.
+        if (r.position != null && String(r.position).trim()) {
+          a.position = String(r.position);
+          a.positionFull = String(r.position);
+        }
         a.minutes += Number(r.minutes ?? 0);
         const rt = (r.ratings as Record<string, unknown>) ?? {};
         const ov = Number(rt.overall ?? 0);
@@ -465,7 +471,7 @@ export async function dataRoutes(app: FastifyInstance) {
         a.sprintDistance += statField(r.stats, 'fitness', 'sprintDistance');
       }
       const players = [...byId.values()].map((a) => ({
-        id: a.id, fullName: a.fullName, number: a.number, position: a.position, photoUrl: a.photoUrl,
+        id: a.id, fullName: a.fullName, number: a.number, position: a.position, positionFull: a.positionFull, photoUrl: a.photoUrl,
         matches: a.matches, minutes: a.minutes,
         avgOverall: a.ratedMatches ? Number((a.sumOverall / a.ratedMatches).toFixed(2)) : 0,
         avgAttack: a.ratedMatches ? Number((a.sumAttack / a.ratedMatches).toFixed(2)) : 0,

@@ -184,9 +184,13 @@ export default function PlayerDetail() {
   const identity = useMemo(() => {
     const base = lookedUpPlayer || matchPlayer || null;
     if (!base) return null;
-    if (base.positionFull || base.position) return base;
-    const pos = matchPlayer?.positionFull || matchPlayer?.position;
-    return pos ? { ...base, positionFull: pos } : base;
+    // Позиция — ТОЛЬКО из разбора матча (match_players.position = роль SportVisor,
+    // источник истины). players.position_full НЕ приоритезируем: FFSPB не истина по
+    // позициям (даёт ЗАЩ там, где игрок — нападающий → архетип CIES «съезжал»).
+    // Если игрок не выходил в загруженном матче — остаётся base (мягкий фолбэк).
+    const matchPos = matchPlayer?.positionFull || matchPlayer?.position;
+    if (matchPos) return { ...base, positionFull: matchPos, position: matchPos };
+    return base;
   }, [lookedUpPlayer, matchPlayer]);
 
   useDocumentTitle(identity?.fullName ? `${identity.fullName} — Игрок` : 'Профиль игрока');
