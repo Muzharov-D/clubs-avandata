@@ -32,7 +32,7 @@
   /* Пропорции реального горизонтального поля (~1.6:1), а не растянутая полоса.
      max-width центрирует. height+min-height обязательны: .formation — flex-column,
      и без min-height он сжимал поле до ~210px (aspect-ratio во flex игнорировался). */
-  max-width: 1000px;
+  max-width: 780px;
   margin-left: auto;
   margin-right: auto;
   /* Поле заполняет доступную высоту контейнера (он выше head+запасные), без
