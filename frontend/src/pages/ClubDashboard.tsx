@@ -208,6 +208,18 @@ export default function ClubDashboard() {
     });
   }, [seasonPlayers, latestMatch]);
 
+  // Динамика рейтинга для Топ-5: оценка в ПОСЛЕДНЕМ матче против сезонного
+  // среднего → стрелка вверх/вниз (форма игрока, а не статичная цифра).
+  const lastRatingById = useMemo(() => {
+    const m = new Map<string, number>();
+    for (const pl of ((latestMatch?.players ?? []) as AnyObj[])) {
+      const ov = Number((pl.ratings as AnyObj)?.overall ?? 0);
+      const id = (pl.id ?? pl.playerId) as string | undefined;
+      if (id != null && ov > 0) m.set(String(id), ov);
+    }
+    return m;
+  }, [latestMatch]);
+
   // Сколько матчей в основе сезонного агрегата (для подписей блоков).
   const seasonMatchCount = useMemo<number>(() => {
     if (Number(seasonAgg?.matchCount)) return Number(seasonAgg!.matchCount);
@@ -527,6 +539,9 @@ export default function ClubDashboard() {
               {topPlayers.map((p, i) => {
                 const r = Number(p.ratings?.overall ?? 0);
                 const grp = posGroup(p.position);
+                const lastR = lastRatingById.get(String(p.playerId));
+                const trend = lastR != null && r > 0 ? lastR - r : null;
+                const trendDir = trend == null ? null : trend > 0.1 ? 'up' : trend < -0.1 ? 'down' : 'flat';
                 const sub = [
                   p.position || posGroupLabel(grp),
                   p.matches ? `${p.matches} ${matchesWord(p.matches)}` : null,
@@ -544,6 +559,18 @@ export default function ClubDashboard() {
                       <span className="cd__top-name">{p.fullName}</span>
                       <span className="cd__top-sub">{sub}</span>
                     </span>
+                    {trendDir && (
+                      <span
+                        className={`cd__top-trend cd__top-trend--${trendDir}`}
+                        title={`В последнем матче ${lastR!.toFixed(1)} против сезонного среднего ${r.toFixed(1)} — ${trendDir === 'up' ? 'форма растёт' : trendDir === 'down' ? 'форма падает' : 'стабильно'}`}
+                        style={{
+                          fontSize: '0.85rem', fontWeight: 700, marginRight: 8, whiteSpace: 'nowrap',
+                          color: trendDir === 'up' ? 'var(--an-pos, #22c55e)' : trendDir === 'down' ? 'var(--an-neg, #ef4444)' : 'var(--an-muted, #94a3c8)',
+                        }}
+                      >
+                        {trendDir === 'up' ? '▲' : trendDir === 'down' ? '▼' : '→'}{trend != null && trendDir !== 'flat' ? ` ${trend > 0 ? '+' : ''}${trend.toFixed(1)}` : ''}
+                      </span>
+                    )}
                     <span className="cd__top-rating" style={{ background: ratingColor(r), color: ratingTextColor(r) }}>
                       {r > 0 ? r.toFixed(1) : '—'}
                     </span>
