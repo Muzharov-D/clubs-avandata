@@ -29,7 +29,12 @@
 .formation__pitch-wrap {
   position: relative;
   width: 100%;
-  height: 560px;
+  /* Пропорции реального горизонтального поля (~1.6:1), а не растянутая полоса.
+     max-width центрирует — иначе на широком экране поле плющит игроков. */
+  max-width: 1000px;
+  margin-left: auto;
+  margin-right: auto;
+  aspect-ratio: 16 / 10;
   border-radius: 10px;
   overflow: hidden;
   border: 1px solid rgba(255,255,255,0.1);
