@@ -32,7 +32,7 @@ import { useTeam } from '../contexts/TeamContext';
 // Единая шкала рейтинга (var(--rating-*)) — общий источник по всему UI.
 import { ratingColor, ratingTextColor } from '../utils/colors';
 import { matchesWord } from '../utils/num';
-import { surnameOf } from '../utils/players';
+import { surnameOf, splitName } from '../utils/players';
 // @ts-ignore — legacy .js
 import { shieldFor, normalizeTeamName as normLeague } from '../utils/legirus';
 // @ts-ignore — legacy .jsx
@@ -184,12 +184,12 @@ export default function ClubDashboard() {
     if (seasonPlayers.length === 0) return (latestMatch?.players ?? []) as AnyObj[];
     return seasonPlayers.map((p) => {
       const name = String(p.fullName ?? '');
-      const sp = name.split(' ');
+      const nm = splitName(name);
       return {
         playerId: p.id,
         fullName: name,
-        firstName: sp[0] ?? '',
-        lastName: sp.slice(1).join(' '),
+        firstName: nm.first,
+        lastName: nm.last,
         number: p.number,
         position: p.position,
         photoUrl: p.photoUrl,
