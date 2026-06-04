@@ -6,7 +6,7 @@ import MatchList from '../components/MatchList';
 import PdfUploadDialog from '../components/PdfUploadDialog';
 import PlayerPhoto from '../components/PlayerPhoto';
 import { ratingColor, ratingTextColor } from '../utils/colors';
-import { shortNameFromPlayer } from '../utils/players';
+import { shortNameFromPlayer, numberWithPos } from '../utils/players';
 import { matchesWord } from '../utils/num';
 import { isOurClub, shieldFor, normalizeTeamName } from '../utils/legirus';
 import { trimAgeSuffix, cleanTeamName } from '../utils/teamName';
@@ -365,16 +365,19 @@ function TopRatedRow({ row, index, champion = false, canSeePlayer, navigate }) {
       <div className="topr-row__info">
         <div className="topr-row__name">{shortNameFromPlayer(player)}</div>
         <div className="topr-row__pos">
-          №{player.number} · {player.positionFull || player.position}
+          {numberWithPos(player.number, player.positionFull || player.position)}
         </div>
       </div>
-      <div className={`topr-trend ${trendClass}`}>
+      <div className={`topr-trend ${trendClass}`} title="Последний матч против среднего за сезон — это форма, а не падение рейтинга">
         <span className="topr-trend__arrow">{trendArrow}</span>
         <span className="topr-trend__value">
           {delta == null
             ? 'дебют'
             : `${delta > 0 ? '+' : ''}${delta.toFixed(2)}`}
         </span>
+        {delta != null && (
+          <span style={{ fontSize: '0.6rem', opacity: 0.65, fontWeight: 600, letterSpacing: '0.02em' }}>к среднему</span>
+        )}
       </div>
       <div className="topr-row__ratingwrap">
         <div
