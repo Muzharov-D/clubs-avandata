@@ -62,6 +62,24 @@ export function getInitials(first, last) {
   return `${f}${l}`;
 }
 
+// Суффиксы русских фамилий — чтобы распознать порядок «Фамилия Имя» (источник
+// иногда отдаёт перевёрнуто: «Семёнов Максим» → раньше фамилией считалось «Максим»).
+const SURNAME_SUFFIX = /(ов|ёв|ев|ин|ын|ский|ской|цкий|цкая|ская|ко|ук|юк|их|ых|ова|ева|ёва|ина)$/i;
+
+// Разбор полного имени на { first, last } с учётом возможного обратного порядка.
+// Если ПЕРВЫЙ токен похож на фамилию (по суффиксу), а последний — нет, считаем
+// порядок «Фамилия Имя». Иначе — обычный «Имя Фамилия» (фамилия = последнее слово).
+export function splitName(fullName) {
+  const parts = String(fullName || '').trim().split(/\s+/).filter(Boolean);
+  if (parts.length < 2) return { first: '', last: parts[0] || '' };
+  const a = parts[0];
+  const b = parts[parts.length - 1];
+  const aSur = SURNAME_SUFFIX.test(a);
+  const bSur = SURNAME_SUFFIX.test(b);
+  if (aSur && !bSur) return { first: parts.slice(1).join(' '), last: a };
+  return { first: parts.slice(0, -1).join(' '), last: b };
+}
+
 // «Фамилия И.» — короткое имя для UI где не помещается полное.
 // Закусилов А., Татарченко Г., Воронков В.
 // Если нет lastName — fallback на полное имя или ''.
@@ -95,9 +113,8 @@ export function shortNameFromPlayer(player) {
   if (player.lastName || player.firstName) {
     label = shortName(player.firstName, player.lastName);
   } else {
-    const parts = String(player.fullName || '').trim().split(/\s+/).filter(Boolean);
-    if (parts.length === 1) label = parts[0];
-    else if (parts.length >= 2) label = shortName(parts[0], parts.slice(1).join(' '));
+    const sn = splitName(player.fullName);
+    label = sn.first ? shortName(sn.first, sn.last) : sn.last;
   }
   if (isPlaceholderName(label)) {
     return player.number != null ? `№${player.number}` : 'Без имени';
@@ -112,9 +129,8 @@ export function surnameOf(player) {
   if (!player) return '';
   const ln = String(player.lastName || '').trim();
   if (ln && !isPlaceholderName(ln)) return ln;
-  const parts = String(player.fullName || '').trim().split(/\s+/).filter(Boolean);
-  if (parts.length >= 2 && !isPlaceholderName(parts[parts.length - 1])) return parts[parts.length - 1];
-  if (parts.length === 1 && !isPlaceholderName(parts[0])) return parts[0];
+  const sn = splitName(player.fullName);
+  if (sn.last && !isPlaceholderName(sn.last)) return sn.last;
   return player.number != null ? `№${player.number}` : 'Без имени';
 }
 
