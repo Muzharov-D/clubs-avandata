@@ -203,8 +203,10 @@ export default function TeamSeasonAnalytics({ matches }) {
         </div>
       )}
 
+      {/* Список матчей — в ТОМ ЖЕ направлении, что тренды-спарклайны: от старого
+          к новому. rows отсортированы DESC (новые сверху), поэтому reverse(). */}
       <div className="an-season__list">
-        {rows.map((r) => (
+        {[...rows].reverse().map((r) => (
           <div className="an-season__row" key={r.id} onClick={() => navigate(`/matches/${r.id}`)}>
             <span className="an-season__opp">{r.oppName || 'Соперник'}{r.gF != null ? ` · ${r.gF}:${r.gA}` : ''}</span>
             <span className="an-season__xg">xG {f2(r.xgF)}–{f2(r.xgA)}</span>
