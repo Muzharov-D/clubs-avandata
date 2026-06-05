@@ -551,8 +551,13 @@ export default function ClubDashboard() {
                 const r = Number(p.ratings?.overall ?? 0);
                 const grp = posGroup(p.position);
                 const lastR = lastRatingById.get(String(p.playerId));
-                const trend = lastR != null && r > 0 ? lastR - r : null;
-                const trendDir = trend == null ? null : trend > 0.1 ? 'up' : trend < -0.1 ? 'down' : 'flat';
+                // Тренд считаем на ОКРУГЛённых до .1 значениях (ровно как показываем),
+                // иначе стрелка спорит с числами: видно «7.5 vs 7.5», а стрелка ▲,
+                // т.к. сырое 7.46 vs 7.41. r — 2 знака с бэка, lastR — сырой из матча.
+                const r1 = Math.round(r * 10) / 10;
+                const lastR1 = lastR != null ? Math.round(lastR * 10) / 10 : null;
+                const trend = lastR1 != null && r > 0 ? Math.round((lastR1 - r1) * 10) / 10 : null;
+                const trendDir = trend == null ? null : trend > 0.05 ? 'up' : trend < -0.05 ? 'down' : 'flat';
                 const sub = [
                   p.position || posGroupLabel(grp),
                   p.matches ? `${p.matches} ${matchesWord(p.matches)}` : null,

@@ -4,7 +4,7 @@ import { withTenant } from '../db/tenantContext.js';
 import { UnauthorizedError, NotFoundError, BadRequestError } from '../shared/errors.js';
 import { adaptPlayerForLegirus } from './legirusAdapter.js';
 import { computeDataQuality } from './dataQuality.js';
-import { statField } from '../shared/statValue.js';
+import { statField, statFieldTotal } from '../shared/statValue.js';
 import { applyFixtureDates, type DatedMatchRow } from './matchDate.js';
 import {
   aggregateTeamStats,
@@ -417,6 +417,12 @@ export async function dataRoutes(app: FastifyInstance) {
     if (/^(CB|LB|RB|LWB|RWB|SW)$/.test(c)) return 'Защитник';
     if (/^(CM|CDM|CAM|DM|AM|LM|RM)$/.test(c)) return 'Полузащитник';
     const cyr = c.replace(/[^А-ЯЁ]/g, '');
+    // FFSPB 3-буквенные коды (значима ПЕРВАЯ буква): НАП/ЗАЩ/ПОЛ/ВРТ. Ставим ДО
+    // эвристики «по последней букве» — иначе НАП (last П) → полузащита, ЗАЩ
+    // (last Щ) → null. Должно совпадать с posGroup на /club (ClubDashboard).
+    if (cyr.startsWith('НАП')) return 'Нападающий';
+    if (cyr.startsWith('ЗАЩ')) return 'Защитник';
+    if (cyr.startsWith('ПОЛ')) return 'Полузащитник';
     if (cyr) {
       const last = cyr[cyr.length - 1];
       if (last === 'Р') return 'Вратарь';
@@ -498,7 +504,7 @@ export async function dataRoutes(app: FastifyInstance) {
         }
         a.goals += statField(r.stats, 'attack', 'goal');
         a.assists += statField(r.stats, 'attack', 'assist');
-        a.shots += statField(r.stats, 'attack', 'shot');
+        a.shots += statFieldTotal(r.stats, 'attack', 'shot');  // total попыток — как в per-match разборе
         a.keyPass += statField(r.stats, 'attack', 'keyPass');
         a.dribble += statField(r.stats, 'attack', 'dribble');
         a.tackle += statField(r.stats, 'defence', 'tackle');

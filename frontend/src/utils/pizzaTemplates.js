@@ -149,7 +149,7 @@ export const TEMPLATES = {
     slices: [
       // ВРАТАРСКОЕ (defence3) — основной профиль голкипера
       { axis: 'Сейвы',                      group: 'defence', key: 'defence3.save' },
-      { axis: 'Удары по воротам',           group: 'defence', key: 'defence3.shotsAgainst' },
+      { axis: 'Удары по воротам',           group: 'defence', key: 'defence3.shotsAgainst', inverse: true },
       { axis: 'Выходы вратаря',             group: 'defence', key: 'defence3.goalkeeperExits' },
       { axis: 'От ворот',                   group: 'defence', key: 'defence3.goalKick' },
       { axis: 'Короткие от ворот',          group: 'defence', key: 'defence3.shortGoalKicks' },
@@ -257,7 +257,7 @@ export const CIES_GROUPS = [
     metrics: [
       { axis: 'Сейвы', key: 'defence3.save' },
       { axis: 'Выходы вратаря', key: 'defence3.goalkeeperExits' },
-      { axis: 'Удары по воротам', key: 'defence3.shotsAgainst' },
+      { axis: 'Удары по воротам', key: 'defence3.shotsAgainst', inverse: true },
       { axis: 'От ворот', key: 'defence3.goalKick' },
       { axis: 'Короткие от ворот', key: 'defence3.shortGoalKicks' },
       { axis: 'Длинные от ворот', key: 'defence3.longGoalKicks' },
@@ -313,8 +313,15 @@ export function positionGroup(player) {
   // (Р→вратарь, З→защита, П→полузащита, Н→нападение) — иначе ЛН (нападающий)
   // уходил бы в дефолтную полузащиту, и архетип CIES «съезжал».
   const cyr = code.replace(/[^А-ЯЁ]/g, '');
+  // FFSPB 3-буквенные коды (значима ПЕРВАЯ буква): НАП/ЗАЩ/ПОЛ/ВРТ — ДО эвристики
+  // «по последней букве», иначе НАП (last П)→MID, ЗАЩ (last Щ)→дефолт MID.
+  // Должно совпадать с posGroup на /club и posFullFromCode на бэке.
+  if (cyr.startsWith('ВРТ')) return 'GK';
+  if (cyr.startsWith('НАП')) return 'FWD';
+  if (cyr.startsWith('ЗАЩ')) return 'DEF';
+  if (cyr.startsWith('ПОЛ')) return 'MID';
   if (cyr) {
-    if (cyr === 'ВР' || cyr.startsWith('ВРТ')) return 'GK';
+    if (cyr === 'ВР') return 'GK';
     const last = cyr[cyr.length - 1];
     if (last === 'Р') return 'GK';
     if (last === 'З') return 'DEF';

@@ -100,8 +100,14 @@ export default function TeamSeasonAnalytics({ matches }) {
 
   const sum = rows.reduce((a, r) => ({
     xgF: a.xgF + (r.xgF || 0), xgA: a.xgA + (r.xgA || 0), gF: a.gF + (r.gF || 0),
-    xpts: a.xpts + (r.xpts || 0), actual: a.actual + (r.actual || 0),
-  }), { xgF: 0, xgA: 0, gF: 0, xpts: 0, actual: 0 });
+    xpts: a.xpts + (r.xpts || 0),
+    // actual суммируем ТОЛЬКО где есть xpts — «удача» = actual−xpts должна
+    // сравнивать одно подмножество матчей (иначе вердикт ложный).
+    actual: a.actual + (r.xpts != null && r.actual != null ? r.actual : 0),
+    // Счётчики матчей именно с этим xG — чтобы делить xG/матч на верное N.
+    nXgF: a.nXgF + (r.xgF != null ? 1 : 0),
+    nXgA: a.nXgA + (r.xgA != null ? 1 : 0),
+  }), { xgF: 0, xgA: 0, gF: 0, xpts: 0, actual: 0, nXgF: 0, nXgA: 0 });
   const n = rows.length;
   const fin = finishing(sum.gF, sum.xgF);
   const luck = sum.actual - sum.xpts;
@@ -128,10 +134,10 @@ export default function TeamSeasonAnalytics({ matches }) {
           </div>
 
           <div className="an-hero__support">
-            <div className="an-badge" title={`против ${f2(sum.xgA / n)}`}>
+            <div className="an-badge" title={`против ${f2(sum.xgA / (sum.nXgA || 1))}`}>
               <span className="an-badge__lab">xG/матч</span>
               <span className="an-badge__val">
-                <AnimatedNumber value={sum.xgF / n} format={(v) => v.toFixed(2)} />
+                <AnimatedNumber value={sum.xgF / (sum.nXgF || 1)} format={(v) => v.toFixed(2)} />
               </span>
             </div>
             <div className="an-badge" title={`${sum.gF} голов при xG ${f1(sum.xgF)}`}>

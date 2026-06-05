@@ -61,9 +61,13 @@ function apiMatchToRow(m: FfspbMatch, tournament: string, ourMatcher: string): C
   const hasScore = m.resultHost != null && m.resultGuest != null && (m.done ?? 0) >= 4;
   const homeShield = m.host?.logoSrc ?? null;
   const awayShield = m.guest?.logoSrc ?? null;
+  // tourId — это ВНУТРЕННИЙ ID объекта-тура в БД провайдера (напр. 44512), а НЕ
+  // порядковый номер тура. Раньше подпись была «Тур 44512» и ломала сортировку
+  // (фронт парсит первое число). Предпочитаем человекочитаемый title/name тура;
+  // raw tourId — последний фолбэк только если иного нет.
   const round =
-    m.tourId != null ? `Тур ${m.tourId}` :
-    m.tour?.title ?? m.tour?.name ?? m.tourTitle ?? m.round ?? null;
+    m.tour?.title ?? m.tour?.name ?? m.tourTitle ?? m.round ??
+    (m.tourId != null ? `Тур ${m.tourId}` : null);
   return {
     extMatchId: String(m.id),
     matchDate: m.publicDate ?? null,

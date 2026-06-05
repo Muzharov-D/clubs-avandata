@@ -27,3 +27,26 @@ export function statField(stats: unknown, group: 'attack' | 'defence' | 'fitness
   const g = (stats as AnyObj | null)?.[group] as AnyObj | undefined;
   return unwrapScalar(g?.[key]);
 }
+
+/**
+ * «Total» компонента для попыточных метрик (удары и т.п.) — сколько было ПОПЫТОК,
+ * а не только успешных. Должна совпадать с per-match адаптером (legirusAdapter
+ * `aT('shot')` = total), иначе сезонная сумма «Удары» расходится с разбором матча.
+ */
+export function unwrapTotal(v: unknown): number {
+  if (v == null) return 0;
+  if (typeof v === 'number') return v;
+  if (typeof v === 'object') {
+    const t = (v as AnyObj).total;
+    if (typeof t === 'number') return t;
+    return unwrapScalar(v);
+  }
+  const n = Number(v);
+  return Number.isFinite(n) ? n : 0;
+}
+
+/** statField, но берёт total (для попыточных метрик: удары/обводки и т.п.). */
+export function statFieldTotal(stats: unknown, group: 'attack' | 'defence' | 'fitness', key: string): number {
+  const g = (stats as AnyObj | null)?.[group] as AnyObj | undefined;
+  return unwrapTotal(g?.[key]);
+}
