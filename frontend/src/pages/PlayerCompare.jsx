@@ -5,24 +5,25 @@ import { useDocumentTitle } from '../hooks/useDocumentTitle';
 import { useTeam } from '../contexts/TeamContext';
 import { Sparkline } from '../components/Sparkline';
 import { playerLabel } from '../utils/players';
-import { percentileRank } from '../utils/num';
-import { per90 } from '../utils/analytics';
+import { seasonPercentiles } from '../utils/playerRoles';
 import ComparePizza from '../components/analytics/ComparePizza';
 import '../components/analytics/ComparePizza.css';
 import './PlayerCompare.css';
 import './playersKinetic.css';
 
-// Метрики для наложения пицц — перцентиль в команде (на 90 минут).
+// Метрики для наложения пицц — перцентиль в команде. КЛЮЧ совпадает с движком
+// ролей; перцентиль берём из ЕДИНОГО seasonPercentiles (тот же пул/порог/
+// сглаживание, что у профиля), чтобы Дютиль не был «удары 97» тут и «96» там.
 const PIZZA_METRICS = [
-  { label: 'Гол+пас',      get: (s) => (s.goals || 0) + (s.assists || 0) },
-  { label: 'Удары',        get: (s) => s.shots || 0 },
-  { label: 'Ключевые',     get: (s) => s.keyPass || 0 },
-  { label: 'Обводки',      get: (s) => s.dribble || 0 },
-  { label: 'Отборы',       get: (s) => s.tackle || 0 },
-  { label: 'Перехваты',    get: (s) => s.interception || 0 },
-  { label: 'Единоборства', get: (s) => s.duel || 0 },
-  { label: 'Прессинг',     get: (s) => s.pressing || 0 },
-  { label: 'Дистанция',    get: (s) => s.distance || 0 },
+  { key: 'gi',           label: 'Гол+пас' },
+  { key: 'shots',        label: 'Удары' },
+  { key: 'keyPass',      label: 'Ключевые' },
+  { key: 'dribble',      label: 'Обводки' },
+  { key: 'tackle',       label: 'Отборы' },
+  { key: 'interception', label: 'Перехваты' },
+  { key: 'duel',         label: 'Единоборства' },
+  { key: 'pressing',     label: 'Прессинг' },
+  { key: 'distance',     label: 'Дистанция' },
 ];
 
 // Метрики сравнения: рейтинги (0–10) + сезонные суммы действий.
@@ -82,20 +83,18 @@ export default function PlayerCompare() {
   // Перцентильные слайсы для наложения пицц: А и B на одних осях vs команда.
   const pizzaSlices = useMemo(() => {
     if (!a || !b) return [];
-    const pool = players.filter((p) => p.minutes > 0);
-    if (pool.length < 3) return [];
+    // Единый источник перцентиля (как профиль/ДНК): пул без вратарей, порог 45,
+    // conf-сглаживание. Перцентиль scale-инвариантен к basis, поэтому совпадает
+    // с профилем независимо от длины матча.
+    const spA = seasonPercentiles(a, players);
+    const spB = seasonPercentiles(b, players);
+    if (!spA || !spB) return [];
     return PIZZA_METRICS.map((m) => {
-      const poolMax = Math.max(0, ...pool.map((p) => Number(m.get(p)) || 0));
-      if (poolMax <= 0) return null;
-      const poolVals = pool.map((p) => per90(m.get(p), p.minutes, 1, 90));
-      const aPct = percentileRank(per90(m.get(a), a.minutes, 1, 90), poolVals);
-      const bPct = percentileRank(per90(m.get(b), b.minutes, 1, 90), poolVals);
-      if (aPct == null && bPct == null) return null;
-      // Линия команды = перцентиль медианного игрока (≈ средний уровень команды).
-      const sorted = [...poolVals].sort((x, y) => x - y);
-      const median = sorted[Math.floor(sorted.length / 2)];
-      const tPct = percentileRank(median, poolVals);
-      return { axis: m.label, a: aPct ?? 0, b: bPct ?? 0, t: tPct ?? 50 };
+      const ra = spA.byKey[m.key];
+      const rb = spB.byKey[m.key];
+      if (!ra && !rb) return null;
+      // Линия команды ≈ медиана = 50-й перцентиль (midrank).
+      return { axis: m.label, a: ra?.pct ?? 0, b: rb?.pct ?? 0, t: 50 };
     }).filter(Boolean);
   }, [a, b, players]);
 
