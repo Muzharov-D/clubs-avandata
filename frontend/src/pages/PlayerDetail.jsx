@@ -403,8 +403,8 @@ function PlayerInfoCard({ identity, teamName }) {
     ['Дата рождения', dob],
     ['Возраст', age != null ? `${age} ${plural(age, 'год', 'года', 'лет')}` : null],
     ['Команда', teamName ? trimAge(teamName) : null],
-    ['Позиция', identity.versatile && identity.positions?.length
-      ? `Универсал · ${identity.positions.slice(0, 3).map((p) => p.code).join(' / ')}`
+    ['Позиция', identity.positions?.length > 1
+      ? `${identity.positionDetail || identity.positionFull} · также ${identity.positions.slice(1, 3).map((p) => p.code).join(', ')}`
       : (identity.positionDetail || identity.positionFull || identity.position)],
     ['Номер', identity.number != null ? `№${identity.number}` : null],
   ].filter(([, v]) => v != null && v !== '');

@@ -10,6 +10,7 @@ import { useMemo } from 'react';
 import { per90 } from '../../utils/analytics';
 import { percentileRank } from '../../utils/num';
 import { positionGroup } from '../../utils/pizzaTemplates';
+import { bestRole } from '../../utils/playerRoles';
 import { AnimatedNumber, StaggerList, SplitText } from '../motion';
 import './PlayerDnaCard.css';
 
@@ -27,62 +28,26 @@ const DNA_METRICS = [
   { key: 'distance',     label: 'беговой объём',       group: 'fitness', get: (s) => s.distance || 0 },
 ];
 
-// Архетип по методике CIES: ПОЗИЦИЯ (с флангом/линией) × доминирующие игровые
-// области. Источник позиции — сезонное распределение по МИНУТАМ из mp.position
-// (`me.positions`/`me.positionCode`), поэтому фланг (ЛЗ/ПЗ, ЛН/ПН) и линия
-// (ЦОП vs ЦАП) учитываются, а не схлопываются в 4 группы. Мультипозиционных
-// игроков не лепим одним ярлыком — честно показываем «Универсал (роли)».
-function archetypeOf(me, subject, strengths) {
-  const positions = Array.isArray(me?.positions) ? me.positions.filter((p) => p.group) : [];
-  // B. Мультипозиция: играл в 2+ линиях значимое время — любой единственный
-  // ярлык врёт, показываем реальные роли по убыванию минут.
-  if (me?.versatile && positions.length >= 2) {
-    const roles = positions.slice(0, 3).map((p) => p.code).join(' / ');
-    return { name: 'Универсал', tagline: roles ? `играл: ${roles}` : 'разные роли по матчам' };
-  }
-  const grp = positions[0]?.group || positionGroup(subject);
-  if (grp === 'GK') return { name: 'Вратарь', tagline: 'последний рубеж обороны' };
-  if (!strengths.length) return { name: 'Универсал', tagline: 'сбалансированный профиль' };
-  const topKey = strengths[0].key;
-  const code = String(me?.positionCode || subject?.positionCode || subject?.position || '').toUpperCase();
-  const ATTACK = ['gi', 'shots', 'dribble'];
+// Fallback-роль, когда нет сезонного распределения позиций (старые данные).
+// Без «Универсала» — всегда конкретная роль по группе + доминирующей метрике.
+function legacyRole(subject, strengths) {
+  const grp = positionGroup(subject);
+  const topKey = strengths?.[0]?.key;
   const DEFEND = ['tackle', 'interception', 'recovery', 'duel', 'pressing'];
-
+  if (grp === 'GK') return { name: 'Вратарь', tagline: 'последний рубеж обороны' };
   if (grp === 'DEF') {
-    // C. Фланг: крайний защитник vs центральный.
-    if (/(^|[^Ц])(ЛЗ|ПЗ|ЛКЗ|ПКЗ)$|^(LB|RB|LWB|RWB)$/.test(code)) {
-      if (topKey === 'gi' || topKey === 'keyPass' || topKey === 'dribble') return { name: 'Крайний защитник-созидатель', tagline: 'подключается к атаке по флангу' };
-      return { name: 'Крайний защитник', tagline: 'держит фланг в обороне' };
-    }
     if (topKey === 'keyPass' || topKey === 'gi') return { name: 'Защитник-распасовщик', tagline: 'начинает атаки первым пасом' };
-    if (topKey === 'duel') return { name: 'Защитник-боец', tagline: 'выигрывает верх и единоборства' };
-    return { name: 'Центральный защитник', tagline: 'крепко читает оборону' };
+    if (topKey === 'dribble' || topKey === 'distance') return { name: 'Выносящий защитник', tagline: 'выносит мяч вперёд из обороны' };
+    return { name: 'Цепкий защитник', tagline: 'выгрызает и выносит, без риска' };
   }
   if (grp === 'MID') {
-    // Линия: опорник vs атакующий vs центральный.
-    if (/^(ЦОП|ОПЗ|ВОП|CDM|DM)$/.test(code)) {
-      if (topKey === 'keyPass') return { name: 'Опорник-распасовщик', tagline: 'начинает атаки из глубины' };
-      if (DEFEND.includes(topKey)) return { name: 'Опорник-разрушитель', tagline: 'прикрывает оборону, выгрызает мячи' };
-      return { name: 'Опорный полузащитник', tagline: 'связывает оборону и атаку' };
-    }
-    if (/^(ЦАП|CAM|AM)$/.test(code)) return { name: 'Атакующий полузащитник', tagline: 'играет между линий и завершает' };
-    if (DEFEND.includes(topKey)) return { name: 'Разрушитель', tagline: 'выгрызает мячи в центре поля' };
     if (topKey === 'keyPass') return { name: 'Дирижёр', tagline: 'оркеструет атаки команды' };
-    if (ATTACK.includes(topKey)) return { name: 'Полузащитник-завершитель', tagline: 'врывается из глубины и завершает' };
-    return { name: 'Центральный полузащитник', tagline: 'полезен в обе стороны' };
+    if (DEFEND.includes(topKey)) return { name: 'Разрушитель', tagline: 'выгрызает мячи в центре' };
+    return { name: 'Связующий полузащитник', tagline: 'работает в обороне и атаке' };
   }
-  // FWD — фланг: вингер vs центрфорвард.
-  if (/^(ЛН|ПН|ЛВ|ПВ|LW|RW)$/.test(code)) {
-    if (topKey === 'dribble') return { name: 'Вингер-дриблёр', tagline: 'обыгрывает один в один на фланге' };
-    if (topKey === 'gi' || topKey === 'shots') return { name: 'Вингер-бомбардир', tagline: 'смещается с фланга и бьёт' };
-    if (topKey === 'keyPass') return { name: 'Вингер-созидатель', tagline: 'простреливает и ассистирует' };
-    return { name: 'Вингер', tagline: 'играет по флангу атаки' };
-  }
-  if (topKey === 'gi' || topKey === 'shots') return { name: 'Центрфорвард', tagline: 'решает результативными действиями' };
-  if (topKey === 'keyPass') return { name: 'Форвард-созидатель', tagline: 'создаёт моменты для партнёров' };
-  if (topKey === 'dribble') return { name: 'Дриблёр', tagline: 'обыгрывает один в один' };
-  if (topKey === 'duel') return { name: 'Столб атаки', tagline: 'цепляется и держит мяч впереди' };
-  return { name: 'Универсальный нападающий', tagline: 'разноплановая угроза' };
+  if (topKey === 'dribble') return { name: 'Вингер', tagline: 'обыгрывает один в один' };
+  if (topKey === 'keyPass') return { name: 'Оттянутый форвард', tagline: 'связывает игру' };
+  return { name: 'Наконечник', tagline: 'решает голами' };
 }
 
 function colorForPct(pct) {
@@ -119,7 +84,12 @@ function computeDna(subject, seasonPlayers, basis) {
   ranked.sort((a, b) => b.pct - a.pct);
   const strengths = ranked.filter((r) => r.pct >= 55).slice(0, 4);
   const growth = ranked.filter((r) => r.pct <= 40).slice(-2).reverse();
-  return { archetype: archetypeOf(me, subject, strengths.length ? strengths : ranked), strengths, growth, top: ranked[0] };
+  // Роль по МЕТРИКАМ (Football Manager-подход): позиции по минутам ограничивают
+  // множество ролей, перцентили выбирают лучшую. Без «универсалов». Fallback —
+  // если у сезонного агрегата ещё нет распределения позиций.
+  const pct = Object.fromEntries(ranked.map((r) => [r.key, r.pct]));
+  const role = bestRole(me.positions, pct) || legacyRole(subject, strengths.length ? strengths : ranked);
+  return { archetype: { name: role.name, tagline: role.tagline }, strengths, growth, top: ranked[0] };
 }
 
 // Архетип игрока по методике CIES (имя + tagline) для переиспользования вне
