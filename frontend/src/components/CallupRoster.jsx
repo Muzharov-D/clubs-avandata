@@ -9,6 +9,7 @@ import {
   fetchPlayers,
 } from '../services/api';
 import { getToken } from '../services/api';
+import { cleanTeamName } from '../utils/teamName';
 import './CallupRoster.css';
 
 const STATUS_LABELS = {
@@ -157,7 +158,7 @@ export default function CallupRoster({ match, age, teamId, onClose }) {
 
         <div className="cr-head">
           <h3>Состав на матч</h3>
-          <div className="cr-match">{match.home} — {match.away}</div>
+          <div className="cr-match">{cleanTeamName(match.home)} — {cleanTeamName(match.away)}</div>
         </div>
 
         <div className="cr-summary">
