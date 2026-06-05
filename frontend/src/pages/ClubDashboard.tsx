@@ -274,15 +274,10 @@ export default function ClubDashboard() {
     return rated.length ? rated.reduce((a, b) => a + b, 0) / rated.length : 0;
   }, [seasonAgg, seasonRoster]);
 
-  const standingsTopRows = useMemo<AnyObj[]>(() => {
-    const t = ((standings as AnyObj)?.table ?? []) as AnyObj[];
-    const top = t.slice(0, 8);
-    const our = t.find((r) => r.isOurClub);
-    // Если наша команда вне топ-8 — добавляем её внизу с разделителем-флагом
-    if (our && !top.includes(our)) {
-      return [...top, { __divider: true }, our];
-    }
-    return top;
+  // Полная таблица лиги. Детские лиги — 8–14 команд, помещается целиком; раньше
+  // резали до топ-8 и в лиге из 10 команд молча теряли 9–10 места.
+  const standingsRows = useMemo<AnyObj[]>(() => {
+    return ((standings as AnyObj)?.table ?? []) as AnyObj[];
   }, [standings]);
 
   const ourRow = useMemo<AnyObj | null>(() => {
@@ -605,7 +600,7 @@ export default function ClubDashboard() {
             <h2 className="cd__panel-title">Турнирная таблица</h2>
             <span className="cd__panel-sub">{standings ? tournamentTitle : ''}</span>
           </div>
-          {standingsTopRows.length === 0 ? (
+          {standingsRows.length === 0 ? (
             <div className="cd__empty">
               <EmptyIcon kind="trophy" />
               <div>Таблица турнира пока недоступна</div>
@@ -617,11 +612,7 @@ export default function ClubDashboard() {
                   <tr><th>#</th><th>Команда</th><th title="Игр">И</th><th title="Мячи (забили-пропустили)">М</th><th title="Победы · Ничьи · Поражения">В·Н·П</th><th title="Очки">О</th></tr>
                 </thead>
                 <tbody>
-                  {standingsTopRows.map((r, i) => r.__divider ? (
-                    <tr key={`div-${i}`} className="cd__table-divider">
-                      <td colSpan={6}>···</td>
-                    </tr>
-                  ) : (
+                  {standingsRows.map((r) => (
                     <tr key={`${r.pos}-${r.team}`} className={r.isOurClub ? 'cd__table-row--us' : ''}>
                       <td>{r.pos}</td>
                       <td className="cd__table-team">
