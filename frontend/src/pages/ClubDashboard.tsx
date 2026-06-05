@@ -572,18 +572,19 @@ export default function ClubDashboard() {
                       <span className="cd__top-name">{p.fullName}</span>
                       <span className="cd__top-sub">{sub}</span>
                     </span>
-                    {trendDir && (
-                      <span
-                        className={`cd__top-trend cd__top-trend--${trendDir}`}
-                        title={`В последнем матче ${lastR!.toFixed(1)} против сезонного среднего ${r.toFixed(1)} — ${trendDir === 'up' ? 'форма растёт' : trendDir === 'down' ? 'форма падает' : 'стабильно'}`}
-                        style={{
-                          fontSize: '0.85rem', fontWeight: 700, marginRight: 8, whiteSpace: 'nowrap',
-                          color: trendDir === 'up' ? 'var(--an-pos, #22c55e)' : trendDir === 'down' ? 'var(--an-neg, #ef4444)' : 'var(--an-muted, #94a3c8)',
-                        }}
-                      >
-                        {trendDir === 'up' ? '▲' : trendDir === 'down' ? '▼' : '→'}{trend != null && trendDir !== 'flat' ? ` ${trend > 0 ? '+' : ''}${trend.toFixed(1)}` : ''}
-                      </span>
-                    )}
+                    {/* Тренд-ячейка рендерится ВСЕГДА (пустой span, когда тренда нет),
+                        чтобы рейтинг-бейдж всегда оставался в последней колонке грида. */}
+                    <span
+                      className={`cd__top-trend${trendDir ? ` cd__top-trend--${trendDir}` : ''}`}
+                      aria-hidden={!trendDir}
+                      title={trendDir ? `В последнем матче ${lastR!.toFixed(1)} против сезонного среднего ${r.toFixed(1)} — ${trendDir === 'up' ? 'форма растёт' : trendDir === 'down' ? 'форма падает' : 'стабильно'}` : undefined}
+                      style={{
+                        fontSize: '0.85rem', fontWeight: 700, whiteSpace: 'nowrap', textAlign: 'right',
+                        color: trendDir === 'up' ? 'var(--an-pos, #22c55e)' : trendDir === 'down' ? 'var(--an-neg, #ef4444)' : 'var(--an-muted, #94a3c8)',
+                      }}
+                    >
+                      {trendDir ? `${trendDir === 'up' ? '▲' : trendDir === 'down' ? '▼' : '→'}${trend != null && trendDir !== 'flat' ? ` ${trend > 0 ? '+' : ''}${trend.toFixed(1)}` : ''}` : ''}
+                    </span>
                     <span className="cd__top-rating" style={{ background: ratingColor(r), color: ratingTextColor(r) }}>
                       {r > 0 ? r.toFixed(1) : '—'}
                     </span>
