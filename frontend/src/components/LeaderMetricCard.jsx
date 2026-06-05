@@ -30,7 +30,11 @@ export default function LeaderMetricCard({ label, value, suffix = '', player, lo
           <div className="leader-card__empty">Нет данных</div>
         )}
         <div className="leader-card__value">
-          {value === null || value === undefined ? '—' : value}{suffix}
+          {value === null || value === undefined
+            ? '—'
+            // Целые группируем разрядами (36348 → «36 348»); дроби не трогаем,
+            // чтобы не получить запятую вместо точки (правило «дроби с точкой»).
+            : (typeof value === 'number' && Number.isInteger(value) ? value.toLocaleString('ru-RU') : value)}{suffix}
         </div>
       </div>
     </div>
