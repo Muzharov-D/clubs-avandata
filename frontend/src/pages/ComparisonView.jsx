@@ -3,6 +3,7 @@ import { useApi } from '../hooks/useApi';
 import { fetchMatch, fetchMatches } from '../services/api';
 import { useTeam } from '../contexts/TeamContext';
 import { useDocumentTitle } from '../hooks/useDocumentTitle';
+import { trimAgeSuffix } from '../utils/teamName';
 import SectionTabs from '../components/SectionTabs';
 import SoccerFieldImageMap from '../components/SoccerFieldImageMap';
 import './ComparisonView.css';
@@ -145,6 +146,44 @@ const AGG_KEY_LABELS = {
   redCards: 'Красные карточки',
   blockedShots: 'Заблокированные удары',
   saves: 'Сейвы',
+
+  // Сырые per-event поля PDF (дубликаты курируемых, но другими ключами) —
+  // без перевода проваливались в английский тайтл-кейс. Язык UI — только русский.
+  goals: 'Голы',
+  shots: 'Удары',
+  byHead: 'Головой',
+  onTarget: 'В створ',
+  corner: 'Угловые',
+  freeKick: 'Штрафные',
+  throwing: 'Вбрасывания',
+  freeKickShot: 'Удары со штрафных',
+  penaltyWithShot: 'Пенальти с ударом',
+  lostBall: 'Потери мяча',
+  loseOnOwnHalf: 'Потери на своей половине',
+  technicalMistake: 'Технический брак',
+  total: 'Всего',
+  keyPass: 'Ключевые передачи',
+  successful: 'Успешные',
+  intoPenArea: 'В штрафную',
+  assists: 'Голевые передачи',
+  dribble: 'Обводки',
+  entriesInBox: 'Входы в штрафную',
+  touchesInBox: 'Касания в штрафной',
+  tackle: 'Отборы',
+  recovery: 'Возвраты',
+  inFirstThird: 'В первой трети',
+  inSecondThird: 'В средней трети',
+  inThirdThird: 'В финальной трети',
+  interception: 'Перехваты',
+  returnsByThird: 'Возвраты по третям',
+  slidingTackles: 'Подкаты',
+  recoveriesAndTackling: 'Возвраты и отборы',
+  duel: 'Единоборства',
+  aerialDuel: 'Воздушные единоборства',
+  redCard: 'Красные карточки',
+  yellowCard: 'Жёлтые карточки',
+  rebounds: 'Подборы',
+  blockedShot: 'Заблокированные удары',
 };
 
 function prettyKey(k) {
@@ -155,7 +194,7 @@ function prettyKey(k) {
 }
 
 export default function ComparisonView() {
-  useDocumentTitle('Сравнение игроков');
+  useDocumentTitle('Аналитика команды');
   const { selectedTeamId } = useTeam();
   const matchesRes = useApi(() => fetchMatches(selectedTeamId), [selectedTeamId]);
   const lastMatchId = matchesRes.data?.matches?.[0]?.id;
@@ -173,7 +212,7 @@ export default function ComparisonView() {
     <div className="page comparison-view">
       <div className="comparison-view__topbar">
         <SectionTabs tabs={TONE_TABS} active={tone} onChange={setTone} />
-        <span className="comparison-view__hint">Источник: {match.homeTeam?.name} — {match.awayTeam?.name}</span>
+        <span className="comparison-view__hint">Источник: {trimAgeSuffix(match.homeTeam?.name)} — {trimAgeSuffix(match.awayTeam?.name)}</span>
       </div>
 
       <div className="card">
