@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useApi } from '../hooks/useApi';
 import { fetchMatch, fetchMatches, fetchMetrics, fetchPlayer, fetchPlayersSeason, fetchPlayerTrend } from '../services/api';
-import { compoundAt, matchMinutes, per90 } from '../utils/analytics';
+import { compoundAt, matchMinutes, per90, MIN_RANK_MINUTES } from '../utils/analytics';
 import PlayerAdvancedCard from '../components/analytics/PlayerAdvancedCard';
 import SeasonPercentileCard from '../components/analytics/SeasonPercentileCard';
 import SeasonProfileCard from '../components/analytics/SeasonProfileCard';
@@ -468,9 +468,12 @@ const BIO_METRICS = [
 ];
 
 // Топ-2 сильные стороны: перцентиль ≥ 70 ПРОТИВ ВСЕЙ КОМАНДЫ (за матч) — ЕДИНЫЙ
-// пул с ДНК/пиццей/перцентиль-карточкой. Раньше брали позиционный пул
+// пул с пиццей/перцентиль-карточкой. Раньше брали позиционный пул
 // (seasonPercentile) → текст био мог сказать «силён в ударах» у защитника, а
 // пицца против всей команды показывала те же удары внизу — прямое противоречие.
+// Порог минут — MIN_RANK_MINUTES (как в «Перцентиль по сезону»): с порогом 1
+// в пул попадали малоигравшие (26′/29′), пул сдвигался и текст био показывал
+// 97/91 там, где карточка ниже — 96/88. Один порог → одинаковые числа.
 function bioStrengths(subject, seasonPlayers, basis) {
   if (!Array.isArray(seasonPlayers) || seasonPlayers.length < 4) return [];
   const me = seasonPlayers.find((s) => s.id === subject.id);
@@ -481,8 +484,8 @@ function bioStrengths(subject, seasonPlayers, basis) {
   for (const m of BIO_METRICS) {
     const poolMax = Math.max(0, ...pool.map((s) => Number(m.get(s)) || 0));
     if (poolMax <= 0) continue;
-    const my = per90(m.get(me), me.minutes, 1, basis);
-    const poolVals = pool.map((s) => per90(m.get(s), s.minutes, 1, basis));
+    const my = per90(m.get(me), me.minutes, MIN_RANK_MINUTES, basis);
+    const poolVals = pool.map((s) => per90(m.get(s), s.minutes, MIN_RANK_MINUTES, basis));
     const pct = percentileRank(my, poolVals);
     if (pct != null && pct >= 70) out.push({ label: m.label, pct });
   }
