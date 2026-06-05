@@ -13,6 +13,7 @@ import { logger } from '../shared/logger.js';
 import { enrichTenantPhotos } from '../services/playerPhotoService.js';
 import { resolveOurSide } from '../shared/teamName.js';
 import { validateRich, assertSportVisor } from './validation.js';
+import { dedupePhantomsByNumber } from './dedupePhantoms.js';
 import { computeDataQuality } from '../data/dataQuality.js';
 import {
   buildRosterIndex,
@@ -748,6 +749,12 @@ export async function uploadRoutes(app: FastifyInstance) {
           [teamId, tenantSlug],
         );
         if (opened.rowCount) logger.info({ matchId, teamId }, '[upload] team auto-opened on first match');
+
+        // Авто-дедуп фантомов: парсер на отчёте с нечитаемой кириллицей мог
+        // создать запись с мусорным именем («А.» #15) рядом с настоящим игроком
+        // того же номера. Сливаем в той же tenant-транзакции — дубли не копятся.
+        const removedDups = await dedupePhantomsByNumber(conn, tenantSlug, teamId!);
+        if (removedDups) logger.info({ matchId, teamId, removed: removedDups }, '[upload] phantom dups merged by number');
       });
 
       // ─── Фото: повторная загрузка отчёта могла создать/пересоздать строки
