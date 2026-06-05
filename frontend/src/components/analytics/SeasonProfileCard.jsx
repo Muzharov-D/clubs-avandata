@@ -5,24 +5,24 @@
  * «кто этот игрок по сезону». Деградирует, если season-данные недоступны
  * (эндпоинт только для тренеров) — тогда карточку не показываем.
  */
-import { per90 } from '../../utils/analytics';
-import { percentileRank } from '../../utils/num';
+import { seasonPercentiles } from '../../utils/playerRoles';
 import PizzaChart from '../PizzaChart';
 import './analytics.css';
 
-// Сезонные метрики из /players/season (суммы за сезон + minutes). per-90 внутри.
-// group → цвет слайса в пицце (attack/defence/fitness).
+// Сезонные метрики — label/group/fmt для пиццы. КЛЮЧ совпадает с движком ролей
+// (ROLE_METRICS), перцентиль и raw90 берём из ЕДИНОГО источника seasonPercentiles,
+// чтобы пицца, «ДНК», «Перцентиль по сезону» и текст био показывали одно число.
 const SEASON_METRICS = [
-  { key: 'goalContrib', label: 'Гол+пас',      group: 'attack',  get: (s) => (s.goals || 0) + (s.assists || 0) },
-  { key: 'shots',       label: 'Удары',        group: 'attack',  get: (s) => s.shots || 0 },
-  { key: 'keyPass',     label: 'Ключевые',     group: 'attack',  get: (s) => s.keyPass || 0 },
-  { key: 'dribble',     label: 'Обводки',      group: 'attack',  get: (s) => s.dribble || 0 },
-  { key: 'tackle',      label: 'Отборы',       group: 'defence', get: (s) => s.tackle || 0 },
-  { key: 'interception',label: 'Перехваты',    group: 'defence', get: (s) => s.interception || 0 },
-  { key: 'recovery',    label: 'Возвраты',     group: 'defence', get: (s) => s.recovery || 0 },
-  { key: 'duel',        label: 'Единоборства', group: 'defence', get: (s) => s.duel || 0 },
-  { key: 'pressing',    label: 'Прессинг',     group: 'defence', get: (s) => s.pressing || 0 },
-  { key: 'distance',    label: 'Дистанция, км', group: 'fitness', get: (s) => s.distance || 0, fmt: (v) => (v / 1000).toFixed(1) },
+  { key: 'gi',          label: 'Гол+пас',      group: 'attack'  },
+  { key: 'shots',       label: 'Удары',        group: 'attack'  },
+  { key: 'keyPass',     label: 'Ключевые',     group: 'attack'  },
+  { key: 'dribble',     label: 'Обводки',      group: 'attack'  },
+  { key: 'tackle',      label: 'Отборы',       group: 'defence' },
+  { key: 'interception',label: 'Перехваты',    group: 'defence' },
+  { key: 'recovery',    label: 'Возвраты',     group: 'defence' },
+  { key: 'duel',        label: 'Единоборства', group: 'defence' },
+  { key: 'pressing',    label: 'Прессинг',     group: 'defence' },
+  { key: 'distance',    label: 'Дистанция, км', group: 'fitness', fmt: (v) => (v / 1000).toFixed(1) },
 ];
 
 function fmt90(v) {
@@ -32,29 +32,21 @@ function fmt90(v) {
 
 export default function SeasonProfileCard({ subject, seasonPlayers, basis = 90 }) {
   if (!subject || !Array.isArray(seasonPlayers) || seasonPlayers.length < 4) return null;
-  const me = seasonPlayers.find((s) => s.id === subject.id);
-  if (!me || !(me.minutes > 0)) return null;
 
-  // Пул = ВСЯ команда (сыгравшие минуты) — сравниваем с командой, а не с узким
-  // позиционным срезом (явное требование тренера).
-  const pool = seasonPlayers.filter((s) => s.minutes > 0);
-  if (pool.length < 4) return null;
+  // Единый источник: тот же пул/порог/сглаживание, что у «ДНК» и «Перцентиля».
+  const sp = seasonPercentiles(subject, seasonPlayers, basis);
+  if (!sp) return null;
 
-  // Слайс показываем только если в пуле хоть у кого-то метрика > 0 (иначе пустой
-  // сектор: xG/xA для младших возрастов SportVisor не считает).
+  // Слайс — только если метрика есть в источнике (в пуле кто-то её набирал).
   const slices = SEASON_METRICS.map((m) => {
-    const poolMax = Math.max(0, ...pool.map((s) => Number(m.get(s)) || 0));
-    if (poolMax <= 0) return null;
-    const my90 = per90(m.get(me), me.minutes, 1, basis);
-    const poolVals = pool.map((s) => per90(m.get(s), s.minutes, 1, basis));
-    const pct = percentileRank(my90, poolVals);
-    if (pct == null) return null;
-    return { axis: m.label, group: m.group, value: pct, displayValue: m.fmt ? m.fmt(my90) : fmt90(my90) };
+    const r = sp.byKey[m.key];
+    if (!r) return null;
+    return { axis: m.label, group: m.group, value: r.pct, displayValue: m.fmt ? m.fmt(r.raw90) : fmt90(r.raw90) };
   }).filter(Boolean);
 
   if (slices.length < 3) return null;
 
-  const poolSize = pool.length;
+  const poolSize = sp.poolSize;
 
   return (
     <div className="card player-detail__pizza">
@@ -65,7 +57,7 @@ export default function SeasonProfileCard({ subject, seasonPlayers, basis = 90 }
       </div>
       <PizzaChart
         subjectName={`${subject.fullName || ''} · сезон`}
-        subjectMeta={`Цифры — действия за матч (${basis}′), длина слайса — перцентиль в команде (${poolSize} чел.)`}
+        subjectMeta={`Цифры — действия за матч (${basis}′), длина слайса — перцентиль среди ${poolSize} полевых игроков`}
         vsLabel="команды"
         slices={slices}
       />

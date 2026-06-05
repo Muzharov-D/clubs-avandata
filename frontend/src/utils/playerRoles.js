@@ -219,10 +219,27 @@ export function playerRolePct(subject, seasonPlayers, basis = MATCH_MINUTES_DEFA
     const better = poolVals.filter((v) => v > my).length;
     const tiedAtTop = poolVals.filter((v) => v === my).length > 1;
     const rank = better === 0 && !tiedAtTop ? 1 : better + 1;
-    ranked.push({ key: m.key, label: m.label, group: m.group, rank, poolSize: poolVals.length, pct: Math.round(50 + (p - 50) * conf) });
+    ranked.push({ key: m.key, label: m.label, group: m.group, rank, poolSize: poolVals.length, raw90: my, pct: Math.round(50 + (p - 50) * conf) });
   }
   if (ranked.length < 3) return null;
   ranked.sort((a, b) => b.pct - a.pct);
   const pct = Object.fromEntries(ranked.map((r) => [r.key, r.pct]));
   return { me, ranked, pct, positions: me.positions };
+}
+
+/**
+ * ЕДИНЫЙ источник сезонных перцентилей по 10 метрикам — для «ДНК», «Перцентиль
+ * по сезону», сезонной пиццы и текста био. Один пул (без вратарей для полевых),
+ * один порог минут (45) и conf-сглаживание → одно число во всех карточках.
+ * Раньше каждая карточка считала сама (порог 1 vs 45, вратари в пуле или нет),
+ * и «лучший» игрок получал то 96, то 97, то 79, то 81 — это сбивало с толку.
+ * Ключи метрик — как в ROLE_METRICS (gi/shots/keyPass/…); карточка со своим
+ * списком ищет по ключу. Возвращает null при недостатке данных (как и движок).
+ * @returns {{ byKey: Object<string,{pct,raw90,rank,poolSize,label,group}>, poolSize: number, ranked: Array }|null}
+ */
+export function seasonPercentiles(subject, seasonPlayers, basis = MATCH_MINUTES_DEFAULT) {
+  const base = playerRolePct(subject, seasonPlayers, basis);
+  if (!base) return null;
+  const byKey = Object.fromEntries(base.ranked.map((r) => [r.key, r]));
+  return { byKey, poolSize: base.ranked[0]?.poolSize ?? 0, ranked: base.ranked };
 }

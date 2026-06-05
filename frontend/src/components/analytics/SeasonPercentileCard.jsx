@@ -5,22 +5,23 @@
  * скаут-стандарт «где игрок выделяется / где проседает». Деградирует, если
  * сезонных данных нет (эндпоинт только для тренеров) — тогда карточку не рисуем.
  */
-import { per90, MIN_RANK_MINUTES } from '../../utils/analytics';
-import { percentileRank } from '../../utils/num';
+import { seasonPercentiles } from '../../utils/playerRoles';
 import './analytics.css';
 
-// Метрики из /players/season (сезонные суммы + minutes). per-90 внутри.
+// Метрики — только label для строк. КЛЮЧ совпадает с движком ролей; перцентиль и
+// raw90 берём из ЕДИНОГО источника seasonPercentiles (тот же пул/порог/сглаживание,
+// что у «ДНК» и пиццы), чтобы «лучший» игрок не получал то 96, то 97, то 79, то 81.
 const METRICS = [
-  { key: 'goalContrib', label: 'Гол+пас', get: (s) => (s.goals || 0) + (s.assists || 0) },
-  { key: 'shots', label: 'Удары', get: (s) => s.shots || 0 },
-  { key: 'keyPass', label: 'Ключевые пасы', get: (s) => s.keyPass || 0 },
-  { key: 'dribble', label: 'Обводки', get: (s) => s.dribble || 0 },
-  { key: 'tackle', label: 'Отборы', get: (s) => s.tackle || 0 },
-  { key: 'interception', label: 'Перехваты', get: (s) => s.interception || 0 },
-  { key: 'recovery', label: 'Возвраты', get: (s) => s.recovery || 0 },
-  { key: 'duel', label: 'Единоборства', get: (s) => s.duel || 0 },
-  { key: 'pressing', label: 'Прессинг', get: (s) => s.pressing || 0 },
-  { key: 'distance', label: 'Дистанция', get: (s) => s.distance || 0 },
+  { key: 'gi', label: 'Гол+пас' },
+  { key: 'shots', label: 'Удары' },
+  { key: 'keyPass', label: 'Ключевые пасы' },
+  { key: 'dribble', label: 'Обводки' },
+  { key: 'tackle', label: 'Отборы' },
+  { key: 'interception', label: 'Перехваты' },
+  { key: 'recovery', label: 'Возвраты' },
+  { key: 'duel', label: 'Единоборства' },
+  { key: 'pressing', label: 'Прессинг' },
+  { key: 'distance', label: 'Дистанция' },
 ];
 
 // 5 корзин по порогам 20/40/60/80 (стиль Opta/StatsBomb).
@@ -49,19 +50,16 @@ function PctRow({ r, basis }) {
 
 export default function SeasonPercentileCard({ subject, seasonPlayers, basis = 90 }) {
   if (!subject || !Array.isArray(seasonPlayers) || seasonPlayers.length < 4) return null;
-  const me = seasonPlayers.find((s) => s.id === subject.id);
-  if (!me || !(me.minutes > 0)) return null;
 
-  // Пул = ВСЯ команда (сыгравшие минуты), без позиционного среза.
-  const pool = seasonPlayers.filter((s) => s.minutes > 0);
-  if (pool.length < 4) return null;
+  // Единый источник: тот же пул/порог/сглаживание, что у «ДНК» и пиццы.
+  const sp = seasonPercentiles(subject, seasonPlayers, basis);
+  if (!sp) return null;
 
   const rows = METRICS.map((m) => {
-    const myVal = per90(m.get(me), me.minutes, MIN_RANK_MINUTES, basis);
-    const poolVals = pool.map((s) => per90(m.get(s), s.minutes, MIN_RANK_MINUTES, basis));
-    const pct = percentileRank(myVal, poolVals);
-    return { ...m, pct, raw90: myVal };
-  }).filter((r) => r.pct != null);
+    const r = sp.byKey[m.key];
+    if (!r) return null;
+    return { ...m, pct: r.pct, raw90: r.raw90 };
+  }).filter(Boolean);
 
   if (rows.length === 0) return null;
 
@@ -94,7 +92,7 @@ export default function SeasonPercentileCard({ subject, seasonPlayers, basis = 9
       )}
 
       <div className="an-note">
-        Перцентиль за матч ({basis}′) против {pool.length} игроков команды по всему сезону.
+        Перцентиль за матч ({basis}′) против {sp.poolSize} полевых игроков команды по всему сезону.
         Заливка: зелёный — топ команды, серый — в норме, красный — отстаёт.
       </div>
     </div>

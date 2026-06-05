@@ -2,7 +2,8 @@ import { useEffect, useMemo, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useApi } from '../hooks/useApi';
 import { fetchMatch, fetchMatches, fetchMetrics, fetchPlayer, fetchPlayersSeason, fetchPlayerTrend } from '../services/api';
-import { compoundAt, matchMinutes, per90, MIN_RANK_MINUTES } from '../utils/analytics';
+import { compoundAt, matchMinutes } from '../utils/analytics';
+import { seasonPercentiles } from '../utils/playerRoles';
 import PlayerAdvancedCard from '../components/analytics/PlayerAdvancedCard';
 import SeasonPercentileCard from '../components/analytics/SeasonPercentileCard';
 import SeasonProfileCard from '../components/analytics/SeasonProfileCard';
@@ -453,44 +454,17 @@ function PlayerInfoCard({ identity, teamName }) {
   );
 }
 
-// Метрики для «сильных сторон» в био — те же, что в сезонном перцентиле.
-const BIO_METRICS = [
-  { label: 'гол+пас',             get: (s) => (s.goals || 0) + (s.assists || 0) },
-  { label: 'удары',               get: (s) => s.shots || 0 },
-  { label: 'ключевые передачи',   get: (s) => s.keyPass || 0 },
-  { label: 'обводки',             get: (s) => s.dribble || 0 },
-  { label: 'отборы',              get: (s) => s.tackle || 0 },
-  { label: 'перехваты',           get: (s) => s.interception || 0 },
-  { label: 'возвраты',            get: (s) => s.recovery || 0 },
-  { label: 'единоборства',        get: (s) => s.duel || 0 },
-  { label: 'прессинг',            get: (s) => s.pressing || 0 },
-  { label: 'дистанцию',           get: (s) => s.distance || 0 },
-];
-
-// Топ-2 сильные стороны: перцентиль ≥ 70 ПРОТИВ ВСЕЙ КОМАНДЫ (за матч) — ЕДИНЫЙ
-// пул с пиццей/перцентиль-карточкой. Раньше брали позиционный пул
-// (seasonPercentile) → текст био мог сказать «силён в ударах» у защитника, а
-// пицца против всей команды показывала те же удары внизу — прямое противоречие.
-// Порог минут — MIN_RANK_MINUTES (как в «Перцентиль по сезону»): с порогом 1
-// в пул попадали малоигравшие (26′/29′), пул сдвигался и текст био показывал
-// 97/91 там, где карточка ниже — 96/88. Один порог → одинаковые числа.
+// Топ-2 сильные стороны для текста био — из ЕДИНОГО источника seasonPercentiles
+// (тот же пул/порог/сглаживание, что у «ДНК», пиццы и «Перцентиль по сезону»).
+// Раньше bio считал сам по своему пулу/порогу → «лучший» получал то 97, то 96 —
+// теперь число гарантированно совпадает с карточками. Метки — из ROLE_METRICS.
 function bioStrengths(subject, seasonPlayers, basis) {
-  if (!Array.isArray(seasonPlayers) || seasonPlayers.length < 4) return [];
-  const me = seasonPlayers.find((s) => s.id === subject.id);
-  if (!me || !(me.minutes > 0)) return [];
-  const pool = seasonPlayers.filter((s) => s.minutes > 0);
-  if (pool.length < 4) return [];
-  const out = [];
-  for (const m of BIO_METRICS) {
-    const poolMax = Math.max(0, ...pool.map((s) => Number(m.get(s)) || 0));
-    if (poolMax <= 0) continue;
-    const my = per90(m.get(me), me.minutes, MIN_RANK_MINUTES, basis);
-    const poolVals = pool.map((s) => per90(m.get(s), s.minutes, MIN_RANK_MINUTES, basis));
-    const pct = percentileRank(my, poolVals);
-    if (pct != null && pct >= 70) out.push({ label: m.label, pct });
-  }
-  out.sort((a, b) => b.pct - a.pct);
-  return out.slice(0, 2).map((s) => `${s.label} (${s.pct}-й перцентиль)`);
+  const sp = seasonPercentiles(subject, seasonPlayers, basis);
+  if (!sp) return [];
+  return sp.ranked
+    .filter((r) => r.pct >= 70)
+    .slice(0, 2)
+    .map((r) => `${r.label} (${r.pct}-й перцентиль)`);
 }
 
 // Заметка о форме по серии тренда (последние vs своё среднее).
