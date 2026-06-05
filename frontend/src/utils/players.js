@@ -80,6 +80,19 @@ export function splitName(fullName) {
   return { first: parts.slice(0, -1).join(' '), last: b };
 }
 
+// Корректный порядок { first, last } даже если источник перепутал поля местами.
+// match_players иногда отдаёт lastName="Максим", firstName="Семёнов" → раньше
+// показывалось «Максим С.». Если у firstName фамильный суффикс, а у lastName нет
+// — поля перевёрнуты, меняем. Симметрично splitName, та же таблица суффиксов.
+export function orderedName(player) {
+  let first = String(player?.firstName || '').trim();
+  let last = String(player?.lastName || '').trim();
+  if (first && last && SURNAME_SUFFIX.test(first) && !SURNAME_SUFFIX.test(last)) {
+    const t = first; first = last; last = t;
+  }
+  return { first, last };
+}
+
 // «Фамилия И.» — короткое имя для UI где не помещается полное.
 // Закусилов А., Татарченко Г., Воронков В.
 // Если нет lastName — fallback на полное имя или ''.
@@ -111,7 +124,8 @@ export function shortNameFromPlayer(player) {
   if (!player) return '';
   let label = '';
   if (player.lastName || player.firstName) {
-    label = shortName(player.firstName, player.lastName);
+    const { first, last } = orderedName(player);
+    label = shortName(first, last);
   } else {
     const sn = splitName(player.fullName);
     label = sn.first ? shortName(sn.first, sn.last) : sn.last;
@@ -127,7 +141,7 @@ export function shortNameFromPlayer(player) {
 // «Имя Фамилия»). Никогда не возвращает мусор/заглушку — падает на «№N».
 export function surnameOf(player) {
   if (!player) return '';
-  const ln = String(player.lastName || '').trim();
+  const ln = String(orderedName(player).last || '').trim();
   if (ln && !isPlaceholderName(ln)) return ln;
   const sn = splitName(player.fullName);
   if (sn.last && !isPlaceholderName(sn.last)) return sn.last;
