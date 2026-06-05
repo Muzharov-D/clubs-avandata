@@ -224,7 +224,9 @@ export function playerRolePct(subject, seasonPlayers, basis = MATCH_MINUTES_DEFA
   if (ranked.length < 3) return null;
   ranked.sort((a, b) => b.pct - a.pct);
   const pct = Object.fromEntries(ranked.map((r) => [r.key, r.pct]));
-  return { me, ranked, pct, positions: me.positions };
+  // meIsGk: вратарь сравнивается со ВСЕЙ командой (пул не исключает никого),
+  // полевой — только с полевыми. Нужно для честной подписи пула в карточках.
+  return { me, ranked, pct, positions: me.positions, meIsGk };
 }
 
 /**
@@ -241,5 +243,5 @@ export function seasonPercentiles(subject, seasonPlayers, basis = MATCH_MINUTES_
   const base = playerRolePct(subject, seasonPlayers, basis);
   if (!base) return null;
   const byKey = Object.fromEntries(base.ranked.map((r) => [r.key, r]));
-  return { byKey, poolSize: base.ranked[0]?.poolSize ?? 0, ranked: base.ranked };
+  return { byKey, poolSize: base.ranked[0]?.poolSize ?? 0, ranked: base.ranked, meIsGk: base.meIsGk };
 }

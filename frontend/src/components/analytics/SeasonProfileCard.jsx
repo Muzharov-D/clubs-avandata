@@ -57,7 +57,7 @@ export default function SeasonProfileCard({ subject, seasonPlayers, basis = 90 }
       </div>
       <PizzaChart
         subjectName={`${subject.fullName || ''} · сезон`}
-        subjectMeta={`Цифры — действия за матч (${basis}′), длина слайса — перцентиль среди ${poolSize} полевых игроков`}
+        subjectMeta={`Цифры — действия за матч (${basis}′), длина слайса — перцентиль среди ${poolSize} ${sp.meIsGk ? 'игроков команды' : 'полевых игроков'}`}
         vsLabel="команды"
         slices={slices}
       />

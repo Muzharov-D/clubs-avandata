@@ -92,7 +92,7 @@ export default function SeasonPercentileCard({ subject, seasonPlayers, basis = 9
       )}
 
       <div className="an-note">
-        Перцентиль за матч ({basis}′) против {sp.poolSize} полевых игроков команды по всему сезону.
+        Перцентиль за матч ({basis}′) против {sp.poolSize} {sp.meIsGk ? 'игроков команды' : 'полевых игроков команды'} по всему сезону.
         Заливка: зелёный — топ команды, серый — в норме, красный — отстаёт.
       </div>
     </div>
