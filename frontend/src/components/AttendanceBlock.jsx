@@ -49,6 +49,7 @@ export default function AttendanceBlock({ teamId, playerId }) {
   const present = Number(stats.present) || 0;
   const late = Number(stats.late) || 0;
   const absent = Number(stats.absent) || 0;
+  const marked = present + late + absent;
   const pct = total > 0 ? Math.round(((present + late) / total) * 100) : null;
   const pctColor = pct == null ? 'var(--text-muted)' :
                    pct >= 80 ? 'var(--success)' :
@@ -68,19 +69,27 @@ export default function AttendanceBlock({ teamId, playerId }) {
           ))}
         </div>
       </div>
-      <div className="att-block__main">
-        <div className="att-block__pct" style={{ color: pctColor }}>
-          {pct != null ? pct + '%' : '—'}
+      {marked === 0 ? (
+        // Тренировки были, но отметок по игроку нет: 0% здесь врал бы («прогулял
+        // всё»), хотя данных просто нет. Показываем честный нейтральный статус.
+        <div className="att-block__empty">
+          Посещаемость не отмечена · {total} {total === 1 ? 'тренировка' : 'тренировок'} за период
         </div>
-        <div className="att-block__counts">
-          <div className="att-block__total">из {total} {total === 1 ? 'тренировки' : 'тренировок'}</div>
-          <div className="att-block__breakdown">
-            <span className="att-block__pill att-block__pill--present">был {present}</span>
-            {late > 0 && <span className="att-block__pill att-block__pill--late">опозд. {late}</span>}
-            {absent > 0 && <span className="att-block__pill att-block__pill--absent">пропустил {absent}</span>}
+      ) : (
+        <div className="att-block__main">
+          <div className="att-block__pct" style={{ color: pctColor }}>
+            {pct != null ? pct + '%' : '—'}
+          </div>
+          <div className="att-block__counts">
+            <div className="att-block__total">из {total} {total === 1 ? 'тренировки' : 'тренировок'}</div>
+            <div className="att-block__breakdown">
+              {present > 0 && <span className="att-block__pill att-block__pill--present">был {present}</span>}
+              {late > 0 && <span className="att-block__pill att-block__pill--late">опозд. {late}</span>}
+              {absent > 0 && <span className="att-block__pill att-block__pill--absent">пропустил {absent}</span>}
+            </div>
           </div>
         </div>
-      </div>
+      )}
     </section>
   );
 }

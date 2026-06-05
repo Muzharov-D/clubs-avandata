@@ -145,16 +145,16 @@ export default function MatchesDashboard() {
       if (!ratings.length) return;
       const last = ratings[ratings.length - 1];
       const avgAll = ratings.reduce((a, b) => a + b, 0) / ratings.length;
-      const prevSlice = ratings.slice(0, -1);
-      const avgPrev = prevSlice.length
-        ? prevSlice.reduce((a, b) => a + b, 0) / prevSlice.length
-        : null;
-      const delta = avgPrev != null ? last - avgPrev : null;
+      // Дельта формы = последний матч против СЕЗОННОГО среднего (avgAll) — то же
+      // правило, что на дашборде клуба, и ровно то, что обещает тултип. Раньше
+      // считали против среднего ПРЕДЫДУЩИХ матчей (avgPrev): на карточке видно
+      // «8.1 · посл. 6.9», а стрелка показывала −1.85 (=6.9−8.7) — число не
+      // выводилось из видимых. Один матч → null («дебют», тренда ещё нет).
+      const delta = ratings.length > 1 ? last - avgAll : null;
       list.push({
         player,
         last,
         avgAll,
-        avgPrev,
         delta,
         games: ratings.length,
       });
@@ -373,7 +373,7 @@ function TopRatedRow({ row, index, champion = false, canSeePlayer, navigate }) {
         <span className="topr-trend__value">
           {delta == null
             ? 'дебют'
-            : `${delta > 0 ? '+' : ''}${delta.toFixed(2)}`}
+            : `${delta > 0 ? '+' : ''}${delta.toFixed(1)}`}
         </span>
         {delta != null && (
           <span style={{ fontSize: '0.6rem', opacity: 0.65, fontWeight: 600, letterSpacing: '0.02em' }}>к среднему</span>
