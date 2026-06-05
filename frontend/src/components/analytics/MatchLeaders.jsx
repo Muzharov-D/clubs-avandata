@@ -12,7 +12,7 @@ import './analytics.css';
 
 const METRICS = [
   { id: 'ga', label: 'Гол+пас', get: (p) => M.goals(p) + M.assists(p), digits: 0 },
-  { id: 'threat', label: 'Угроза', model: true, get: (p) => playerThreat(p), digits: 2 },
+  { id: 'threat', label: 'Угроза', model: true, get: (p) => playerThreat(p), digits: 1 },
   { id: 'progression', label: 'Прогрессия', get: (p) => M.progressivePass(p) + M.progressiveRun(p) + M.passToFinalThird(p), digits: 0 },
   { id: 'duel', label: 'Единоборства', get: (p) => M.duel(p), digits: 0 },
   { id: 'press', label: 'Прессинг', get: (p) => M.pressing(p) + M.counterpressing(p), digits: 0 },

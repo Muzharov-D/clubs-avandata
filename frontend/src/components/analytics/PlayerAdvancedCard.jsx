@@ -10,11 +10,19 @@ import { num } from '../../utils/num';
 import {
   M, played, ourSideKey, teamXg, playerXgModel,
   playerThreat, threatShare, playerXa, playerPacking, creativityIndex,
-  padjWorkload, duelWinPct, aerialWinPct, per90, fmtPer90,
+  padjWorkload, duelWinPct, aerialWinPct, per90,
 } from '../../utils/analytics';
 import './analytics.css';
 
 function f0(v) { return v == null ? '—' : Math.round(Number(v)).toLocaleString('ru-RU'); }
+// Модельные/прокси-величины — 1 знак. Два знака на оценке из 5–10 событий —
+// ложная точность (±0.005, которой нет). Большие — целое с разделителем.
+function fmt1(v) {
+  if (v == null || !Number.isFinite(Number(v))) return '—';
+  const n = Number(v);
+  if (Math.abs(n) >= 100) return Math.round(n).toLocaleString('ru-RU');
+  return n.toFixed(1);
+}
 
 export default function PlayerAdvancedCard({ player, squad, match, basis = 90 }) {
   const [per90Mode, setPer90Mode] = useState(true);
@@ -34,19 +42,20 @@ export default function PlayerAdvancedCard({ player, squad, match, basis = 90 })
   const aWin = aerialWinPct(player);
 
   // value: для счётных — per-90 при включённом режиме (и достаточных минутах).
-  const show = (raw, digits = 2) => {
+  // Порог минут 40 — иначе игрок на 20–25′ экстраполируется ×3+.
+  const show = (raw, digits = 1) => {
     if (per90Mode) {
-      const p = per90(raw, minutes, 20, basis);
-      return p == null ? `${fmtPer90(raw)}*` : fmtPer90(p);
+      const p = per90(raw, minutes, 40, basis);
+      return p == null ? `${fmt1(raw)}*` : fmt1(p);
     }
-    return digits === 0 ? f0(raw) : fmtPer90(raw);
+    return digits === 0 ? f0(raw) : fmt1(raw);
   };
 
   const tiles = [
     { label: 'Гол+пас', model: false, val: show(M.goalContrib(player), 0), sub: 'результативность' },
     { label: 'xG', model: true, val: show(xg), sub: xgCalibrated ? 'калибр. к командному xG' : 'оценка по ударам' },
-    { label: 'Ожид. ассисты', model: true, val: show(playerXa(player)), sub: 'модель (прокси)' },
-    { label: 'Угроза xT', model: true, val: show(playerThreat(player)), sub: tShare != null ? `${Math.round(tShare * 100)}% угрозы команды` : 'добавленная угроза' },
+    { label: 'Острые передачи', model: true, val: show(playerXa(player)), sub: 'оценка паса (прокси)' },
+    { label: 'Угроза', model: true, val: show(playerThreat(player)), sub: tShare != null ? `${Math.round(tShare * 100)}% угрозы команды` : 'добавленная угроза (прокси)' },
     { label: 'Креативность', model: true, val: show(creativityIndex(player)), sub: 'созидание (индекс)' },
     { label: 'Продвижение', model: true, val: show(playerPacking(player), 0), sub: 'мяч сквозь линии' },
     { label: 'Оборона', model: true, val: show(padjWorkload(player, ourPoss), 0), sub: 'с поправкой на владение' },

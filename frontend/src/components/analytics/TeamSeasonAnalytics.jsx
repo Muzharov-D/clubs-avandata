@@ -126,7 +126,7 @@ export default function TeamSeasonAnalytics({ matches }) {
           <div className="an-hero__val">
             <AnimatedNumber value={sum.xpts} format={(v) => v.toFixed(1)} stiffness={90} damping={26} />
           </div>
-          <div className="an-hero__lab">ожидаемые очки за сезон</div>
+          <div className="an-hero__lab">ожидаемые очки в разобранных матчах</div>
           <div
             className="an-hero__verdict"
             style={{ color: luck >= 0.5 ? 'var(--an-pos)' : luck <= -0.5 ? 'var(--an-neg)' : 'var(--an-muted)' }}

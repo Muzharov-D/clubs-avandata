@@ -116,15 +116,8 @@ export function matchInsights(match, opts = {}) {
     if (as) contrib.push(`${as} ${plural(as,'пас','паса','пасов')}`);
     const tail = contrib.length ? ` — ${contrib.join(', ')}` : '';
     add('positive', '🥇', `Лучший: ${nameOf(best)}, рейтинг ${best.ratings.overall.toFixed(1)}${tail}.`, 52);
-
-    // Просел: только реально игравший (≥45') с заметно низким рейтингом
-    const enough = rated.filter((p) => (p.minutes ?? 0) >= 45);
-    if (enough.length >= 5) {
-      const worst = enough.reduce((a, b) => ((b.ratings.overall) < (a.ratings.overall) ? b : a));
-      if (worst.ratings.overall > 0 && worst.ratings.overall < 5.5) {
-        add('negative', '⚠️', `Тяжёлый матч у ${nameOf(worst)} — рейтинг ${worst.ratings.overall.toFixed(1)} за ${worst.minutes}′.`, 48);
-      }
-    }
+    // Намеренно НЕ подсвечиваем публично «худшего» — это дети; индивидуальный
+    // провал тренер видит в составе/рейтингах, в авто-брифинг его не выносим.
   }
 
   // ── Ключевой созидатель (ассисты + ключевые пасы), если это не лучший выше ──

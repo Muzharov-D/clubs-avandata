@@ -21,8 +21,8 @@ export default function ImpactMotm({ match, navigate, nameOf }) {
   if (parts.goals > 0) chips.push(['голы', parts.goals]);
   if (parts.assists > 0) chips.push(['ассисты', parts.assists]);
   if (parts.keyPass > 0) chips.push(['ключевые', parts.keyPass]);
-  if (parts.threat >= 0.2) chips.push(['xT', parts.threat.toFixed(2)]);
-  if (parts.xg >= 0.3) chips.push(['xG', parts.xg.toFixed(2)]);
+  if (parts.threat >= 0.2) chips.push(['угроза', parts.threat.toFixed(1)]);
+  if (parts.xg >= 0.3) chips.push(['xG', parts.xg.toFixed(1)]);
 
   return (
     <div className="card best-player an" onClick={() => navigate(`/players/${p.id}`)}>

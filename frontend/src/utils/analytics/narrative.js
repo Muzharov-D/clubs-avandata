@@ -13,7 +13,8 @@ function fmt1(v) {
   return Number(v).toFixed(1);
 }
 function fmt2(v) {
-  return Number(v).toFixed(2);
+  // 1 знак: модельные xG/угроза из 5–10 событий не имеют 2-значной точности.
+  return Number(v).toFixed(1);
 }
 
 /**
@@ -84,7 +85,7 @@ export function coachDigest(match, opts = {}) {
       .filter((x) => x.t > 0)
       .sort((a, b) => b.t - a.t);
     if (ranked.length && ranked[0].t >= 0.2) {
-      out.push({ tone: 'positive', icon: '🧠', text: `Главный по созданию угрозы: ${nameOf(ranked[0].p)} (xT-вклад ${fmt2(ranked[0].t)}).` });
+      out.push({ tone: 'positive', icon: '🧠', text: `Главный по созданию угрозы: ${nameOf(ranked[0].p)} (вклад в угрозу ${fmt2(ranked[0].t)}).` });
     }
   }
 
