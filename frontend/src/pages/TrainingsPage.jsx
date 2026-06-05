@@ -15,7 +15,7 @@ import {
   fetchTrainingsByTeam, createTraining, updateTraining, deleteTraining,
   fetchAttendance, saveAttendance, fetchPlayersSeason,
 } from '../services/api';
-import { shortNameFromPlayer } from '../utils/players';
+import { fullNameOf } from '../utils/players';
 import './TrainingsPage.css';
 
 const TYPES = [
@@ -355,7 +355,7 @@ function AttendanceSheet({ trainingId, players, canManage, onClose }) {
               <div key={p.id} className="tr-att__row">
                 <span className={`tr-att__num${p.number ? '' : ' tr-att__num--empty'}`}>{p.number || ''}</span>
                 <div className="tr-att__name">
-                  {p.fullName || shortNameFromPlayer(p)}
+                  {fullNameOf(p)}
                 </div>
                 <div className="tr-att__btns">
                   {STATUS.map((s) => (

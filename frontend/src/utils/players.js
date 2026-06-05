@@ -153,6 +153,20 @@ export function playerLabel(player) {
   return shortNameFromPlayer(player) || (player?.number != null ? `№${player.number}` : 'Без имени');
 }
 
+// Полное имя «Имя Фамилия» с авто-разворотом перепутанных first/last (как
+// orderedName: «Семёнов Максим» → «Максим Семёнов»). Если first/last пустые —
+// fallback на fullName как есть, иначе «№N». Для списков, где сырой fullName
+// расходился порядком (часть игроков «Имя Фамилия», часть «Фамилия Имя»).
+export function fullNameOf(player) {
+  if (!player) return '';
+  const { first, last } = orderedName(player);
+  if (first && last) return `${first} ${last}`;
+  if (first || last) return first || last;
+  const fn = String(player.fullName || '').trim();
+  if (fn && !isPlaceholderName(fn)) return fn;
+  return player.number != null ? `№${player.number}` : 'Без имени';
+}
+
 // «№15 · Правый нападающий» — но без висячего разделителя, когда позиция не
 // заполнена (частая дыра у FFSPB-игроков). Тогда возвращаем просто «№15».
 export function numberWithPos(number, position) {
