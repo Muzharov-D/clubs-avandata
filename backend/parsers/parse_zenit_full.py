@@ -148,6 +148,36 @@ def find_rule(page_text):
     return None
 
 
+def _rule(hkey):
+    return next((r for r in PAGE_RULES if r['h'] == hkey), None)
+
+
+def rule_from_header(header_row):
+    """Двуязычность: подзаголовок-категория («Performance index All») в русской
+    локали отчёта переведён и часто НЕ извлекается (битый шрифт кириллицы → ).
+    Но АНГЛИЙСКИЕ заголовки КОЛОНОК рейтинговых страниц стабильны в любой локали
+    («Overall», «Fitness Total», «Attack Total», «Defence Total», «Contrpressing»).
+    Распознаём страницу по ним. Порядок колонок совпадает с английским отчётом,
+    поэтому существующие cols-маппинги применимы как есть.
+    All-страницу проверяем ПЕРВОЙ — только у неё «Overall» рядом с тремя «…Total»."""
+    if not header_row:
+        return None
+    # Схлопываем пробелы/переносы: «Defence\nTotal» (перенос внутри ячейки) иначе
+    # не находится как «defence total».
+    h = re.sub(r'\s+', ' ', ' '.join(str(c or '') for c in header_row)).lower()
+    if 'overall' in h and 'attack total' in h and 'defence total' in h:
+        return _rule('performance index all')
+    if 'fitness total' in h:
+        return _rule('performance index fitness')
+    if 'attack total' in h:
+        return _rule('performance index attack')
+    if 'defence total' in h:
+        return _rule('performance index defence')
+    if 'contrpressing' in h:
+        return _rule('defence pressing')
+    return None
+
+
 def is_player_row(row):
     """Строка таблицы — это игрок? col0=«NN Имя», col2≈минуты (или пусто)."""
     if not row or len(row) < 4:
@@ -156,9 +186,12 @@ def is_player_row(row):
     m = NUM_NAME_RE.match(c0)
     if not m:
         return False
-    # после номера должно идти имя (не только цифры)
+    # после номера должно идти имя (не только цифры). � — заменитель
+    # нечитаемой кириллицы (русская локаль с битым шрифтом): имя гарблится в
+    # «», но строка-игрок остаётся валидной (номер/позиция/минуты/рейтинги целы;
+    # настоящее имя берётся по номеру из ростера/Excel при сборке матча).
     rest = m.group(2)
-    if not re.search(r'[A-Za-zА-Яа-яЁё]', rest):
+    if not re.search('[A-Za-zА-Яа-яЁё�]', rest):
         return False
     c2 = str(row[2] or '').strip()
     return c2 == '' or MINUTES_RE.match(c2) is not None
@@ -256,6 +289,10 @@ def parse(pdf_path):
 
             rule = find_rule(text)
             data_table = pick_data_table(page)
+            # Русская локаль: подзаголовок не извлёкся → пробуем по англ-заголовку
+            # колонок таблицы (стабилен в любой локали).
+            if not rule and data_table:
+                rule = rule_from_header(data_table[0])
 
             if not rule:
                 # safety-net продолжения категории (большой состав на 2+ страницах):
