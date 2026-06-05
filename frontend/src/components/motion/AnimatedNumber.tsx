@@ -2,9 +2,15 @@
  * AnimatedNumber — число «оживает» при появлении: пружинный count-up.
  * Signature-приём: KPI/счёт/xG/проценты набегают, а не возникают.
  * Уважает prefers-reduced-motion (мгновенно ставит конечное значение).
+ * Если вкладка скрыта на момент монтирования (rAF заморожен — фон/новая вкладка),
+ * count-up некому проигрывать: ставим конечное значение сразу, чтобы число
+ * никогда не залипало на стартовом `from` (0). Анимируем только когда видно.
  */
 import { useEffect } from 'react';
 import { motion, useSpring, useTransform, useReducedMotion } from 'framer-motion';
+
+const isHidden = (): boolean =>
+  typeof document !== 'undefined' && document.visibilityState === 'hidden';
 
 interface AnimatedNumberProps {
   value: number;
@@ -26,12 +32,25 @@ export function AnimatedNumber({
   from = 0,
 }: AnimatedNumberProps) {
   const reduce = useReducedMotion();
-  const spring = useSpring(reduce ? value : from, { stiffness, damping, mass: 1 });
+  // Старт без count-up, если анимировать некому: reduce-motion или скрытая вкладка.
+  const instant = reduce || isHidden();
+  const spring = useSpring(instant ? value : from, { stiffness, damping, mass: 1 });
   const text = useTransform(spring, (v) => format(v));
 
   useEffect(() => {
-    if (reduce) spring.jump(value);
+    if (reduce || isHidden()) spring.jump(value);
     else spring.set(value);
+  }, [value, reduce, spring]);
+
+  // Смонтировались скрытыми → значение уже стоит верное (jump). Когда вкладка
+  // станет видимой, подстрахуемся: ещё раз приводим пружину к актуальному value.
+  useEffect(() => {
+    if (reduce) return;
+    const onVisible = () => {
+      if (!isHidden()) spring.set(value);
+    };
+    document.addEventListener('visibilitychange', onVisible);
+    return () => document.removeEventListener('visibilitychange', onVisible);
   }, [value, reduce, spring]);
 
   return <motion.span className={className}>{text}</motion.span>;
