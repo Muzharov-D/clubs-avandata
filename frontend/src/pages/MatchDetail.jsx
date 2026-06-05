@@ -551,7 +551,7 @@ export default function MatchDetail() {
             if (!rows.length) return null;
             return (
               <div className="card">
-                <div className="page-section-title">Объём действий: матч против сезона</div>
+                <div className="page-section-title">Командные показатели: матч против сезона</div>
                 <div className="md-output">
                   {rows.map((r) => {
                     const pct = r.avg ? Math.round(((r.cur - r.avg) / r.avg) * 100) : null;
