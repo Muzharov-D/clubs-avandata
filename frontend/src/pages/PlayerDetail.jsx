@@ -184,14 +184,20 @@ export default function PlayerDetail() {
   const identity = useMemo(() => {
     const base = lookedUpPlayer || matchPlayer || null;
     if (!base) return null;
-    // Позиция — ТОЛЬКО из разбора матча (match_players.position = роль SportVisor,
-    // источник истины). players.position_full НЕ приоритезируем: FFSPB не истина по
-    // позициям (даёт ЗАЩ там, где игрок — нападающий → архетип CIES «съезжал»).
-    // Если игрок не выходил в загруженном матче — остаётся base (мягкий фолбэк).
+    // Позиция = КАНОНИЧЕСКИЙ сезонный источник (/players/season → роль из
+    // ПОСЛЕДНЕГО сыгранного матча, SportVisor, развёрнутая posFullFromCode).
+    // Берём её ПЕРВОЙ, чтобы профиль СТРОГО совпадал с дашбордом и Топ-5 — там
+    // архетип CIES считается по этой же сезонной позиции. Фолбэк — позиция из
+    // загруженного матча, затем base. players.position_full (FFSPB) НЕ
+    // приоритезируем: FFSPB не истина по позициям (давал ЗАЩ нападающему →
+    // архетип «съезжал» и расходился между экранами).
+    const seasonRow = seasonPlayers.find((s) => s.id === playerId);
+    const seasonPos = seasonRow?.positionFull || seasonRow?.position;
     const matchPos = matchPlayer?.positionFull || matchPlayer?.position;
-    if (matchPos) return { ...base, positionFull: matchPos, position: matchPos };
+    const pos = seasonPos || matchPos;
+    if (pos) return { ...base, positionFull: pos, position: pos };
     return base;
-  }, [lookedUpPlayer, matchPlayer]);
+  }, [lookedUpPlayer, matchPlayer, seasonPlayers, playerId]);
 
   useDocumentTitle(identity?.fullName ? `${identity.fullName} — Игрок` : 'Профиль игрока');
 
