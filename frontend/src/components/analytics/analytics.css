@@ -82,6 +82,15 @@
 .an-press__level--neutral { color: var(--text-muted-strong); }
 .an-press__note { font-size: 12px; color: var(--text-faint); margin-top: 2px; }
 
+/* Переосмысленный прессинг: вердикт словами крупно + полоса «кто давил активнее» */
+.an-press__verdict {
+  background: var(--bg-surface-2); border: 1px solid var(--border);
+  border-radius: 10px; padding: 12px 14px; margin-bottom: 12px;
+}
+.an-press__verdict .an-press__level { font-size: 17px; margin-top: 0; }
+.an-press__verdict .an-press__note { font-size: 13px; margin-top: 4px; }
+.an-press__compare { margin: 4px 0 2px; }
+
 /* ── Momentum ── */
 .an-mom { margin-top: 4px; }
 .an-mom__bar { display: flex; height: 26px; border-radius: 7px; overflow: hidden; border: 1px solid var(--border); }

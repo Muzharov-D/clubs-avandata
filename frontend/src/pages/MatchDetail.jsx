@@ -399,6 +399,38 @@ export default function MatchDetail() {
         <RatingCard label="Защита" value={teamRatings.defence} />
       </div>
 
+      {/* Хитмап состава — сразу под рейтингами (игрок × метрика, StatsBomb-таблица) */}
+      {(match.players || []).filter((p) => (p.minutes ?? 0) > 0).length >= 3 && (
+        <div className="card md-anchor reveal" id="md-heatmap">
+          <div className="page-section-title">Тепловая карта состава</div>
+          <SquadHeatmap players={match.players} />
+          <div className="md-insights__note" style={{ marginTop: 8 }}>Заливка ячейки — относительно лучшего в столбце. Рейтинг — по цветовой шкале оценки.</div>
+        </div>
+      )}
+
+      {/* Командная статистика — высоко: «что произошло» (мы против соперника) */}
+      <div className="card md-anchor reveal" id="md-teamstats">
+        <div className="page-section-title">Командная статистика</div>
+        <div className="match-detail__stats-teams" style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.78rem', fontWeight: 700, opacity: 0.85, marginBottom: 6 }}>
+          <span>{trimAgeStr(match.home) || 'Хозяева'}</span>
+          <span>{trimAgeStr(match.away) || 'Гости'}</span>
+        </div>
+        <div className="match-detail__stats">
+          <StatCompareBar label="Владение"          home={fmtNumOrDash(home.possessionPct, '%')} away={fmtNumOrDash(away.possessionPct, '%')} />
+          <StatCompareBar label="Удары"             home={fmtNumOrDash(home.shots?.total)}       away={fmtNumOrDash(away.shots?.total)} />
+          <StatCompareBar label="Удары в створ"     home={fmtNumOrDash(home.shots?.onTarget)}    away={fmtNumOrDash(away.shots?.onTarget)} />
+          <StatCompareBar label="xG"                home={fmtNumOrDash(home.expectedGoals)}      away={fmtNumOrDash(away.expectedGoals)} />
+          <StatCompareBar label="Передачи"          home={fmtNumOrDash(home.passes?.total)}      away={fmtNumOrDash(away.passes?.total)} />
+          <StatCompareBar label="Точные передачи"   home={fmtNumOrDash(home.passes?.successful)} away={fmtNumOrDash(away.passes?.successful)} />
+          <StatCompareBar label="Удары со штрафных" home={fmtNumOrDash(home.freeKickShots)}      away={fmtNumOrDash(away.freeKickShots)} />
+          <StatCompareBar label="Угловые"           home={fmtNumOrDash(home.corners?.total)}     away={fmtNumOrDash(away.corners?.total)} />
+          <StatCompareBar label="Нарушения"         home={fmtNumOrDash(home.fouls)}              away={fmtNumOrDash(away.fouls)} />
+          <StatCompareBar label="Жёлтые карточки"   home={fmtNumOrDash(home.yellowCards)}        away={fmtNumOrDash(away.yellowCards)} />
+          <StatCompareBar label="Красные карточки"  home={fmtNumOrDash(home.redCards)}           away={fmtNumOrDash(away.redCards)} />
+          <StatCompareBar label="Офсайды"           home={fmtNumOrDash(home.offsides)}           away={fmtNumOrDash(away.offsides)} />
+        </div>
+      </div>
+
       {/* Два аналитических распределения рядом: beeswarm (распределение оценок)
           + scatter (роли). Раньше шли стопкой во всю ширину, график занимал
           только левую половину → правая пустовала. Теперь 2 колонки. */}
@@ -476,15 +508,6 @@ export default function MatchDetail() {
         </div>
       )}
 
-      {/* Хитмап состава — игрок × метрика (StatsBomb data-table) */}
-      {(match.players || []).filter((p) => (p.minutes ?? 0) > 0).length >= 3 && (
-        <div className="card md-anchor reveal" id="md-heatmap">
-          <div className="page-section-title">Тепловая карта состава</div>
-          <SquadHeatmap players={match.players} />
-          <div className="md-insights__note" style={{ marginTop: 8 }}>Заливка ячейки — относительно лучшего в столбце. Рейтинг — по цветовой шкале оценки.</div>
-        </div>
-      )}
-
       {/* Поле-формация — full-width, над 3-колоночной сеткой. Без оборачивания
           в .card: чистый контейнер во всю ширину разбора. */}
       <div className="match-detail__field-full reveal">
@@ -501,28 +524,6 @@ export default function MatchDetail() {
 
       <div className="match-detail__grid md-anchor reveal" id="md-detail">
         <div className="match-detail__center">
-          <div className="card">
-            <div className="page-section-title">Командная статистика</div>
-            <div className="match-detail__stats-teams" style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.78rem', fontWeight: 700, opacity: 0.85, marginBottom: 6 }}>
-              <span>{trimAgeStr(match.home) || 'Хозяева'}</span>
-              <span>{trimAgeStr(match.away) || 'Гости'}</span>
-            </div>
-            <div className="match-detail__stats">
-              <StatCompareBar label="Владение"          home={fmtNumOrDash(home.possessionPct, '%')} away={fmtNumOrDash(away.possessionPct, '%')} />
-              <StatCompareBar label="Удары"             home={fmtNumOrDash(home.shots?.total)}       away={fmtNumOrDash(away.shots?.total)} />
-              <StatCompareBar label="Удары в створ"     home={fmtNumOrDash(home.shots?.onTarget)}    away={fmtNumOrDash(away.shots?.onTarget)} />
-              <StatCompareBar label="xG"                home={fmtNumOrDash(home.expectedGoals)}      away={fmtNumOrDash(away.expectedGoals)} />
-              <StatCompareBar label="Передачи"          home={fmtNumOrDash(home.passes?.total)}      away={fmtNumOrDash(away.passes?.total)} />
-              <StatCompareBar label="Точные передачи"   home={fmtNumOrDash(home.passes?.successful)} away={fmtNumOrDash(away.passes?.successful)} />
-              <StatCompareBar label="Удары со штрафных" home={fmtNumOrDash(home.freeKickShots)}      away={fmtNumOrDash(away.freeKickShots)} />
-              <StatCompareBar label="Угловые"           home={fmtNumOrDash(home.corners?.total)}     away={fmtNumOrDash(away.corners?.total)} />
-              <StatCompareBar label="Нарушения"         home={fmtNumOrDash(home.fouls)}              away={fmtNumOrDash(away.fouls)} />
-              <StatCompareBar label="Жёлтые карточки"   home={fmtNumOrDash(home.yellowCards)}        away={fmtNumOrDash(away.yellowCards)} />
-              <StatCompareBar label="Красные карточки"  home={fmtNumOrDash(home.redCards)}           away={fmtNumOrDash(away.redCards)} />
-              <StatCompareBar label="Офсайды"           home={fmtNumOrDash(home.offsides)}           away={fmtNumOrDash(away.offsides)} />
-            </div>
-          </div>
-
           <div className="card">
             <div className="page-section-title">Лидеры матча — наша команда</div>
             <div className="match-detail__breakdowns">

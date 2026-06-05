@@ -24,11 +24,11 @@ export default function MomentumStrip({ match }) {
           <div className="an-mom__half an-mom__half--2" style={{ width: `${p2}%` }}>{p2 >= 14 ? `2-й ${p2}%` : ''}</div>
         </div>
         <div className="an-mom__legend">
-          <span>{mom.shift > 0 ? 'прибавили во 2-м тайме ▲' : mom.shift < 0 ? 'сильнее 1-й тайм ▲' : 'ровно по таймам'}</span>
+          <span>{mom.shift > 0 ? 'прибавили во 2-м тайме ▲' : mom.shift < 0 ? 'сильнее в 1-м тайме ▼' : 'ровно по таймам'}</span>
           {race && <span>xG-гонка: {race.first.toFixed(2)} → +{race.second.toFixed(2)}</span>}
         </div>
       </div>
-      <div className="an-note">Темп — взвешенная сумма ударов/единоборств/прессинга/отборов по таймам. xG-гонка — распределение командного xG по доле ударов в тайме.</div>
+      <div className="an-note">Темп — взвешенная сумма атакующих действий (удары, ключевые пасы, входы в штрафную, обводки, кроссы) по таймам. xG-гонка — распределение командного xG по доле ударов в тайме.</div>
     </div>
   );
 }
