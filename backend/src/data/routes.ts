@@ -553,17 +553,12 @@ export async function dataRoutes(app: FastifyInstance) {
           .filter((p) => p.group)
           .sort((x, y) => y.minutes - x.minutes);
         const dominant = positions[0] ?? null;
-        const totalW = positions.reduce((s, p) => s + p.minutes, 0) || 1;
-        const groupW = new Map<string, number>();
-        for (const p of positions) groupW.set(p.group as string, (groupW.get(p.group as string) ?? 0) + p.minutes);
-        // Мультипозиция: 2+ разные ЛИНИИ, каждая ≥25% минут (не разовый эпизод).
-        const versatile = [...groupW.values()].filter((w) => w / totalW >= 0.25).length >= 2;
         const domWord = dominant ? (posFullFromCode(dominant.code) ?? a.positionFull) : a.positionFull;
         return {
         id: a.id, fullName: a.fullName, number: a.number,
         position: domWord, positionFull: domWord,
         positionCode: dominant?.code ?? null, positionDetail: dominant?.full ?? domWord,
-        positions, versatile,
+        positions,
         photoUrl: a.photoUrl,
         matches: a.matches, minutes: a.minutes,
         avgOverall: a.ratedMatches ? Number((a.sumOverall / a.ratedMatches).toFixed(2)) : 0,

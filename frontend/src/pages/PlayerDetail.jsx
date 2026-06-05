@@ -195,13 +195,12 @@ export default function PlayerDetail() {
     const seasonPos = seasonRow?.positionFull || seasonRow?.position;
     const matchPos = matchPlayer?.positionFull || matchPlayer?.position;
     const pos = seasonPos || matchPos;
-    // Доп. сезонные поля для подписи: детальная роль с флангом, распределение по
-    // минутам и флаг мультипозиции (новый /players/season — по сумме минут).
+    // Доп. сезонные поля для подписи: детальная роль с флангом и распределение по
+    // минутам (новый /players/season — по сумме минут).
     const extra = {
       positionDetail: seasonRow?.positionDetail || null,
       positionCode: seasonRow?.positionCode || null,
       positions: Array.isArray(seasonRow?.positions) ? seasonRow.positions : null,
-      versatile: !!seasonRow?.versatile,
     };
     if (pos) return { ...base, positionFull: pos, position: pos, ...extra };
     return { ...base, ...extra };

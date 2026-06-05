@@ -68,7 +68,9 @@ export function matchInsights(match, opts = {}) {
       if (r) { f += Number(r.first) || 0; sec += Number(r.second) || 0; any = true; }
     }
     const tot = f + sec;
-    if (!any || tot < 8) continue;
+    // ≥20 событий за матч: на 8 событиях «перекос тайма» (3→5) — шум, не вывод.
+    // Порог 20 + границы долей ниже гарантируют и абсолютную разницу ≥~6.
+    if (!any || tot < 20) continue;
     const share2 = sec / tot;
     // заметный перекос: во 2-м тайме <33% или >67% активности
     if (share2 <= 0.34) {

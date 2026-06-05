@@ -88,13 +88,13 @@ const ROLES = [
   { line: 'MID_DEF', name: 'Опорник-страховка', tagline: 'страхует оборону, играет просто', sig: { interception: 3, recovery: 2, tackle: 1 } },
 
   // Центр поля
-  { line: 'MID_C', name: 'Связующий полузащитник', tagline: 'работает в обороне и атаке, носит мяч', sig: { distance: 3, dribble: 2, recovery: 2, gi: 1, duel: 1 } },
+  { line: 'MID_C', name: 'Связующий полузащитник', tagline: 'работает в обороне и атаке, продвигает мяч', sig: { distance: 3, dribble: 2, recovery: 2, gi: 1, duel: 1 } },
   { line: 'MID_C', name: 'Разрушитель', tagline: 'выгрызает мячи в центре', sig: { tackle: 3, interception: 2, duel: 2, recovery: 1 } },
-  { line: 'MID_C', name: 'Дирижёр', tagline: 'оркеструет атаки команды', sig: { keyPass: 3, gi: 2, dribble: 1 } },
+  { line: 'MID_C', name: 'Дирижёр', tagline: 'организует атаки команды', sig: { keyPass: 3, gi: 2, dribble: 1 } },
   { line: 'MID_C', name: 'Челнок', tagline: 'челночит между линиями', sig: { distance: 3, recovery: 2, tackle: 1, keyPass: 1 } },
 
   // Атакующая полузащита
-  { line: 'MID_ATT', name: 'Атакующий полузащитник', tagline: 'играет между линий, последний пас', sig: { keyPass: 3, gi: 2, dribble: 1 } },
+  { line: 'MID_ATT', name: 'Атакующий полузащитник', tagline: 'играет между линиями, отдаёт последний пас', sig: { keyPass: 3, gi: 2, dribble: 1 } },
   { line: 'MID_ATT', name: 'Врывающийся форвард', tagline: 'врывается в штрафную и завершает', sig: { gi: 3, shots: 2, dribble: 1 } },
 
   // Фланг атаки

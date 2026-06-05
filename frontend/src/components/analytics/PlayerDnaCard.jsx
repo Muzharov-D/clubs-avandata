@@ -25,7 +25,7 @@ function legacyRole(subject, strengths) {
     return { name: 'Цепкий защитник', tagline: 'выгрызает и выносит, без риска' };
   }
   if (grp === 'MID') {
-    if (topKey === 'keyPass') return { name: 'Дирижёр', tagline: 'оркеструет атаки команды' };
+    if (topKey === 'keyPass') return { name: 'Дирижёр', tagline: 'организует атаки команды' };
     if (DEFEND.includes(topKey)) return { name: 'Разрушитель', tagline: 'выгрызает мячи в центре' };
     return { name: 'Связующий полузащитник', tagline: 'работает в обороне и атаке' };
   }

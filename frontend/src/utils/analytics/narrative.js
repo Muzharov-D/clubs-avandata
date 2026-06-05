@@ -6,7 +6,6 @@
 import { M, played } from './metrics';
 import { teamXg, ourSideKey, finishing, deservedResult, playerXgModel } from './xg';
 import { teamPpda, interpretPpda } from './ppda';
-import { teamMomentum } from './momentum';
 import { playerThreat } from './progression';
 
 function fmt1(v) {
@@ -71,12 +70,8 @@ export function coachDigest(match, opts = {}) {
     out.push({ tone: interp.tone, icon: '🔥', text: `${interp.level} — PPDA ${fmt1(ppda)} против ${fmt1(oppPpda)}: ${interp.note}.` });
   }
 
-  // ── Momentum по таймам ──
-  const mom = teamMomentum(players);
-  if (mom && Math.abs(mom.shift) > 0) {
-    if (mom.secondShare >= 0.62) out.push({ tone: 'positive', icon: '📈', text: `Прибавили во 2-м тайме — ${Math.round(mom.secondShare * 100)}% игрового темпа после перерыва.` });
-    else if (mom.firstShare >= 0.62) out.push({ tone: 'negative', icon: '📉', text: `Сильнее провели 1-й тайм (${Math.round(mom.firstShare * 100)}% темпа), во 2-м сбавили.` });
-  }
+  // Перекос по таймам намеренно НЕ дублируем тут — он есть в rule-based insights
+  // (по конкретным метрикам) и в визуальной «Полосе темпа» (MomentumStrip).
 
   // ── Лидер по добавленной угрозе (xT-прокси) ──
   if (players.length) {
