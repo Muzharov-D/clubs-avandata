@@ -434,6 +434,33 @@ export async function dataRoutes(app: FastifyInstance) {
     return null;
   }
 
+  // Детальная роль С ФЛАНГОМ (ПЦП → «Правый центральный полузащитник»). Для
+  // архетипов/подписи — фланг и линия важны, в отличие от слово-группы.
+  const POSITION_DETAIL: Record<string, string> = {
+    ВР: 'Вратарь',
+    ЦЗ: 'Центральный защитник', ЛЗ: 'Левый защитник', ПЗ: 'Правый защитник',
+    ЛКЗ: 'Левый крайний защитник', ПКЗ: 'Правый крайний защитник',
+    ЦОП: 'Центральный опорный полузащитник', ОПЗ: 'Опорный полузащитник',
+    ВОП: 'Выдвинутый опорный полузащитник',
+    ЛЦП: 'Левый центральный полузащитник', ПЦП: 'Правый центральный полузащитник',
+    ЦАП: 'Центральный атакующий полузащитник', ЛП: 'Левый полузащитник', ПП: 'Правый полузащитник',
+    ЦН: 'Центральный нападающий', ЛН: 'Левый нападающий', ПН: 'Правый нападающий',
+    ЛВ: 'Левый вингер', ПВ: 'Правый вингер',
+  };
+  function posDetailFromCode(raw: string): string | null {
+    const c = String(raw || '').toUpperCase().replace(/[^A-ZА-ЯЁ]/g, '');
+    return POSITION_DETAIL[c] || posFullFromCode(raw);
+  }
+  function posGroupFromCode(raw: string): 'GK' | 'DEF' | 'MID' | 'FWD' | null {
+    switch (posFullFromCode(raw)) {
+      case 'Вратарь': return 'GK';
+      case 'Защитник': return 'DEF';
+      case 'Полузащитник': return 'MID';
+      case 'Нападающий': return 'FWD';
+      default: return null;
+    }
+  }
+
   app.get<{ Querystring: { teamId?: string } }>('/players/season', async (req) => {
     const slug = tenantId(req);
     const teamId = req.query.teamId;
@@ -457,6 +484,7 @@ export async function dataRoutes(app: FastifyInstance) {
         tackle: number; interception: number; recovery: number; duel: number; pressing: number;
         distance: number; sprintDistance: number;
         radarAcc: Map<string, { sum: number; count: number }>;
+        posMin: Map<string, number>;
       };
       const byId = new Map<string, Agg>();
       for (const r of rows) {
@@ -471,18 +499,20 @@ export async function dataRoutes(app: FastifyInstance) {
             tackle: 0, interception: 0, recovery: 0, duel: 0, pressing: 0,
             distance: 0, sprintDistance: 0,
             radarAcc: new Map(),
+            posMin: new Map(),
           };
           byId.set(id, a);
         }
         a.matches += 1;
-        // Позиция = роль из ПОСЛЕДНЕГО матча (источник истины — отчёт SportVisor,
-        // НЕ FFSPB). rows идут ASC по дате → последняя непустая перезаписывает.
-        // Короткий код (ПЦП/ЛН/ЦЗ/ВР…) разворачиваем в читаемое слово-группу, чтобы
-        // подпись была понятной, а оба классификатора (posGroup/positionGroup) совпадали.
+        // Позиция = роль из mp.position поматчево, агрегируем по СУММЕ МИНУТ за
+        // сезон (источник истины — отчёт SportVisor). НЕ «последний матч»: сырой
+        // matches.match_date в БД пуст/неверен (реальные даты — из календаря FFSPB
+        // при отображении), поэтому «последний» врал — мультипозиционного игрока
+        // мог пометить случайной ролью. Доминанта и распределение считаются ниже.
         if (r.position != null && String(r.position).trim()) {
-          const full = posFullFromCode(String(r.position)) ?? String(r.position);
-          a.position = full;
-          a.positionFull = full;
+          const code = String(r.position).trim().toUpperCase();
+          const w = Number(r.minutes) > 0 ? Number(r.minutes) : 1; // 0/нет минут → вес 1
+          a.posMin.set(code, (a.posMin.get(code) ?? 0) + w);
         }
         a.minutes += Number(r.minutes ?? 0);
         const rt = (r.ratings as Record<string, unknown>) ?? {};
@@ -516,8 +546,25 @@ export async function dataRoutes(app: FastifyInstance) {
         a.distance += statField(r.stats, 'fitness', 'totalDistance');
         a.sprintDistance += statField(r.stats, 'fitness', 'sprintDistance');
       }
-      const players = [...byId.values()].map((a) => ({
-        id: a.id, fullName: a.fullName, number: a.number, position: a.position, positionFull: a.positionFull, photoUrl: a.photoUrl,
+      const players = [...byId.values()].map((a) => {
+        // Позиции по сумме минут за сезон (источник истины = mp.position поматчево).
+        const positions = [...a.posMin.entries()]
+          .map(([code, mins]) => ({ code, full: posDetailFromCode(code) ?? code, group: posGroupFromCode(code), minutes: Math.round(mins) }))
+          .filter((p) => p.group)
+          .sort((x, y) => y.minutes - x.minutes);
+        const dominant = positions[0] ?? null;
+        const totalW = positions.reduce((s, p) => s + p.minutes, 0) || 1;
+        const groupW = new Map<string, number>();
+        for (const p of positions) groupW.set(p.group as string, (groupW.get(p.group as string) ?? 0) + p.minutes);
+        // Мультипозиция: 2+ разные ЛИНИИ, каждая ≥25% минут (не разовый эпизод).
+        const versatile = [...groupW.values()].filter((w) => w / totalW >= 0.25).length >= 2;
+        const domWord = dominant ? (posFullFromCode(dominant.code) ?? a.positionFull) : a.positionFull;
+        return {
+        id: a.id, fullName: a.fullName, number: a.number,
+        position: domWord, positionFull: domWord,
+        positionCode: dominant?.code ?? null, positionDetail: dominant?.full ?? domWord,
+        positions, versatile,
+        photoUrl: a.photoUrl,
         matches: a.matches, minutes: a.minutes,
         avgOverall: a.ratedMatches ? Number((a.sumOverall / a.ratedMatches).toFixed(2)) : 0,
         avgAttack: a.ratedMatches ? Number((a.sumAttack / a.ratedMatches).toFixed(2)) : 0,
@@ -532,7 +579,8 @@ export async function dataRoutes(app: FastifyInstance) {
         radar: Object.fromEntries(
           [...a.radarAcc.entries()].map(([k, { sum, count }]) => [k, Number((sum / count).toFixed(2))]),
         ),
-      }));
+        };
+      });
       return { teamId, players };
     });
   });
