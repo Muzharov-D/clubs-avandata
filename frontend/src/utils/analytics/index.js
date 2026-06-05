@@ -6,7 +6,6 @@
  */
 export * from './metrics';
 export * from './per90';
-export * from './percentiles';
 export * from './xg';
 export * from './progression';
 export * from './ppda';
