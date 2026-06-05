@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useApi } from '../hooks/useApi';
-import { useReveal, useCountUp } from '../hooks/useReveal';
+import { useReveal } from '../hooks/useReveal';
 import './matchKinetic.css';
 import { fetchMatch, fetchPlayers, fetchMatches, deleteMatch, updateMatchNote, fetchStandings } from '../services/api';
 import { useTeam } from '../contexts/TeamContext';
@@ -138,16 +138,13 @@ export default function MatchDetail() {
   const resolveShield = (teamObj) =>
     teamObj?.shield || shieldByName[teamKey(teamObj?.name)] || null;
 
-  // Kinetic-эталон: scroll-reveal секций + count-up счёта.
-  // Счёт: разбор отдаёт его плоскими scoreHome/scoreAway (как в заголовке),
-  // вложенный match.score у части матчей пуст — поэтому герой залипал на 0:0.
-  // Берём плоское поле, вложенное — как fallback.
+  // Kinetic-эталон: scroll-reveal секций. Счёт рендерим НАПРЯМУЮ (не count-up):
+  // count-up залипал на 0:0 на части матчей. Берём плоское scoreHome/scoreAway
+  // (как в заголовке), вложенный match.score — как fallback.
   const pageRef = useRef(null);
   useReveal(pageRef, [match?.id, players.length]);
   const sHome = match?.scoreHome ?? match?.score?.home ?? 0;
   const sAway = match?.scoreAway ?? match?.score?.away ?? 0;
-  const homeScore = useCountUp(sHome, 850);
-  const awayScore = useCountUp(sAway, 850);
 
   const matchTitle = match
     ? `${match.home || ''} ${match.scoreHome ?? ''}:${match.scoreAway ?? ''} ${match.away || ''}`.trim()
@@ -359,9 +356,9 @@ export default function MatchDetail() {
               <div className="kin-verdict__scoreline">
                 <TeamSide side="home" team={match.homeTeam} isWinner={usScore > themScore ? homeIsUs : usScore < themScore ? !homeIsUs : false} />
                 <div className="kin-verdict__score">
-                  <span className={`kin-verdict__score-num${usScore > themScore && homeIsUs ? ' kin-verdict__score--win' : ''}`}>{homeScore}</span>
+                  <span className={`kin-verdict__score-num${usScore > themScore && homeIsUs ? ' kin-verdict__score--win' : ''}`}>{sHome}</span>
                   <span className="kin-verdict__score-sep">:</span>
-                  <span className={`kin-verdict__score-num${usScore > themScore && !homeIsUs ? ' kin-verdict__score--win' : ''}`}>{awayScore}</span>
+                  <span className={`kin-verdict__score-num${usScore > themScore && !homeIsUs ? ' kin-verdict__score--win' : ''}`}>{sAway}</span>
                 </div>
                 <TeamSide side="away" team={match.awayTeam} isWinner={usScore > themScore ? !homeIsUs : usScore < themScore ? homeIsUs : false} />
               </div>
