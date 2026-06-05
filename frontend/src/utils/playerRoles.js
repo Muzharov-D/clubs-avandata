@@ -17,6 +17,23 @@
  * Метрики (перцентиль в команде): gi, shots, keyPass, dribble, tackle,
  * interception, recovery, duel, pressing, distance.
  */
+import { per90, MIN_RANK_MINUTES, MATCH_MINUTES_DEFAULT } from './analytics';
+import { percentileRank } from './num';
+
+// 10 метрик для перцентиля и сигнатур ролей. Единый источник для «ДНК игрока»
+// и «Ролевого профиля» — оба движка считают по этому списку.
+export const ROLE_METRICS = [
+  { key: 'gi',           label: 'гол+пас',           group: 'attack',  get: (s) => (s.goals || 0) + (s.assists || 0) },
+  { key: 'shots',        label: 'удары',             group: 'attack',  get: (s) => s.shots || 0 },
+  { key: 'keyPass',      label: 'ключевые передачи', group: 'attack',  get: (s) => s.keyPass || 0 },
+  { key: 'dribble',      label: 'обводки',           group: 'attack',  get: (s) => s.dribble || 0 },
+  { key: 'tackle',       label: 'отборы',            group: 'defence', get: (s) => s.tackle || 0 },
+  { key: 'interception', label: 'перехваты',         group: 'defence', get: (s) => s.interception || 0 },
+  { key: 'recovery',     label: 'возвраты',          group: 'defence', get: (s) => s.recovery || 0 },
+  { key: 'duel',         label: 'единоборства',      group: 'defence', get: (s) => s.duel || 0 },
+  { key: 'pressing',     label: 'прессинг',          group: 'defence', get: (s) => s.pressing || 0 },
+  { key: 'distance',     label: 'беговой объём',     group: 'fitness', get: (s) => s.distance || 0 },
+];
 
 // Линия позиции по коду SportVisor (кириллица) или латинскому коду.
 export function lineOf(code) {
@@ -32,7 +49,7 @@ export function lineOf(code) {
   if (c.startsWith('НАП')) return 'FWD_C';
   if (c.startsWith('ЗАЩ')) return 'DEF_C';
   if (c.startsWith('ПОЛ')) return 'MID_C';
-  return 'MID_C'; // дефолт — наименее искажающий
+  return null; // неизвестный код — НЕ угадываем (бэк такие позиции тоже отбрасывает)
 }
 
 // Группа-линия (для нуда к доминирующей зоне) по линии.
@@ -87,13 +104,21 @@ const ROLES = [
 function roleFit(sig, pct) {
   let sum = 0;
   let w = 0;
+  let n = 0;
   for (const key of Object.keys(sig)) {
     const p = pct[key];
     if (p == null) continue;
     sum += p * sig[key];
     w += sig[key];
+    n += 1;
   }
-  return w > 0 ? sum / w : null;
+  if (w <= 0) return null;
+  const fit = sum / w;
+  // Штраф за малую размерность сигнатуры: роль с 2 метриками (Наконечник
+  // {gi,shots}) не должна системно бить роль с 4-5 только потому, что усредняет
+  // меньше осей. Стягиваем к 50 при n<3 — высокий fit узкой роли «остужается».
+  const cover = Math.min(1, n / 3);
+  return 50 + (fit - 50) * cover;
 }
 
 /**
@@ -102,9 +127,13 @@ function roleFit(sig, pct) {
  * @param {Object<string, number>} pct — перцентиль игрока по метрикам (0..100).
  * @returns {{name, tagline, fit, line}|null}
  */
-export function bestRole(positions, pct) {
-  const list = Array.isArray(positions) ? positions.filter((p) => p && p.code) : [];
-  if (!list.length) return null;
+/**
+ * Ранжированный список подходящих ролей (для «Ролевого профиля»), отсортирован
+ * по score. Первый = архетип игрока («ДНК»). Один движок для обеих карточек.
+ */
+export function rankRoles(positions, pct) {
+  const list = Array.isArray(positions) ? positions.filter((p) => p && p.code && lineOf(p.code)) : [];
+  if (!list.length || !pct) return [];
 
   // Минуты по линии и по группе-зоне.
   const lineMin = new Map();
@@ -121,19 +150,61 @@ export function bestRole(positions, pct) {
 
   // Вратарь — особняком: если основная линия GK, метрики полевых не применимы.
   const domLine = [...lineMin.entries()].sort((a, b) => b[1] - a[1])[0]?.[0];
-  if (domLine === 'GK') return { name: 'Вратарь', tagline: 'последний рубеж обороны', fit: null, line: 'GK' };
+  if (domLine === 'GK') return [{ name: 'Вратарь', tagline: 'последний рубеж обороны', fit: null, line: 'GK', score: 1 }];
 
   const lines = new Set([...lineMin.keys()]);
-  let best = null;
+  const out = [];
   for (const role of ROLES) {
     if (role.line === 'GK' || !lines.has(role.line)) continue;
     const fit = roleFit(role.sig, pct);
     if (fit == null) continue;
-    // Нуд к доминирующей ЗОНЕ: роль второстепенной зоны не перебивает основную,
-    // но при явном metric-преимуществе всё ещё может выиграть (0.45..1.0).
+    // Нуд к доминирующей ЗОНЕ (DEF/MID/FWD): роль второстепенной зоны не
+    // перебивает основную, кроме явного metric-преимущества (0.25..1.0).
     const groupShare = (groupMin.get(groupOfLine(role.line)) || 0) / total;
-    const score = fit * (0.45 + 0.55 * groupShare);
-    if (!best || score > best.score) best = { name: role.name, tagline: role.tagline, fit: Math.round(fit), line: role.line, score };
+    const score = fit * (0.25 + 0.75 * groupShare);
+    out.push({ name: role.name, tagline: role.tagline, fit: Math.round(fit), line: role.line, score });
   }
-  return best;
+  out.sort((a, b) => b.score - a.score);
+  return out;
+}
+
+/** Лучшая роль по метрикам (первая из rankRoles). */
+export function bestRole(positions, pct) {
+  return rankRoles(positions, pct)[0] || null;
+}
+
+// Вратарь по доминирующей позиции (для исключения из пула полевых метрик).
+function isGkRow(s) {
+  const code = s?.positionCode
+    || (Array.isArray(s?.positions) && s.positions[0]?.code)
+    || s?.position;
+  return lineOf(code) === 'GK';
+}
+
+/**
+ * Единый расчёт перцентилей игрока по 10 метрикам (per-90 vs пул команды).
+ * Переиспользуется «ДНК игрока» и «Ролевым профилем», чтобы роль и сильные
+ * стороны считались ОДИНАКОВО. Вратарей исключаем из пула для полевых метрик.
+ * @returns {{me, ranked, pct, positions}|null}
+ */
+export function playerRolePct(subject, seasonPlayers, basis = MATCH_MINUTES_DEFAULT) {
+  if (!subject || !Array.isArray(seasonPlayers) || seasonPlayers.length < 4) return null;
+  const me = seasonPlayers.find((s) => s.id === subject.id);
+  if (!me || !(me.minutes > 0)) return null;
+  const meIsGk = isGkRow(me);
+  const pool = seasonPlayers.filter((s) => s.minutes > 0 && (meIsGk || !isGkRow(s)));
+  if (pool.length < 4) return null;
+  const ranked = [];
+  for (const m of ROLE_METRICS) {
+    const poolMax = Math.max(0, ...pool.map((s) => Number(m.get(s)) || 0));
+    if (poolMax <= 0) continue;
+    const my = per90(m.get(me), me.minutes, MIN_RANK_MINUTES, basis);
+    const poolVals = pool.map((s) => per90(m.get(s), s.minutes, MIN_RANK_MINUTES, basis));
+    const p = percentileRank(my, poolVals);
+    if (p != null) ranked.push({ key: m.key, label: m.label, group: m.group, pct: p });
+  }
+  if (ranked.length < 3) return null;
+  ranked.sort((a, b) => b.pct - a.pct);
+  const pct = Object.fromEntries(ranked.map((r) => [r.key, r.pct]));
+  return { me, ranked, pct, positions: me.positions };
 }

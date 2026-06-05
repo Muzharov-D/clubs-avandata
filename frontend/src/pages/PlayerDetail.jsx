@@ -365,6 +365,9 @@ function SeasonTab({ identity, playerId, teamId, teamName, seasonPlayers, series
       {/* Перцентиль vs сезонный позиционный пул (за матч) — детальные полосы */}
       <Reveal variant="slide-up" duration={0.5} delay={0.4}><SeasonPercentileCard subject={identity} seasonPlayers={seasonPlayers} basis={basis} /></Reveal>
 
+      {/* Ролевой профиль — ранжированный fit по ролям (тот же движок, что «ДНК») */}
+      <Reveal variant="slide-up" duration={0.5} delay={0.5}><RoleFitCard subject={identity} seasonPlayers={seasonPlayers} basis={basis} /></Reveal>
+
       {series.length < 2 && (!seasonPlayers || seasonPlayers.length < 4) && (
         <div className="empty-state">
           Сезонная статистика появится после разбора 2+ матчей.
@@ -860,9 +863,6 @@ function MatchTab({ playerId, match, loading, allMatches, currentMatchId, setSel
           />
         )}
       </div>
-
-      {/* Ролевой профиль — к какому архетипу ближе игрок */}
-      <RoleFitCard player={player} squad={match.players} />
 
       </section>
 

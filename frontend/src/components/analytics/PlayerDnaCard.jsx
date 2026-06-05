@@ -7,26 +7,10 @@
  * Данные: сезонный пул игроков (seasonPlayers) + per-90 нормализация по basis.
  */
 import { useMemo } from 'react';
-import { per90, MIN_RANK_MINUTES } from '../../utils/analytics';
-import { percentileRank } from '../../utils/num';
 import { positionGroup } from '../../utils/pizzaTemplates';
-import { bestRole } from '../../utils/playerRoles';
+import { playerRolePct, rankRoles } from '../../utils/playerRoles';
 import { AnimatedNumber, StaggerList, SplitText } from '../motion';
 import './PlayerDnaCard.css';
-
-// Метрики ДНК (как в сезонном перцентиле) + группа для определения архетипа.
-const DNA_METRICS = [
-  { key: 'gi',           label: 'гол+пас',             group: 'attack',  get: (s) => (s.goals || 0) + (s.assists || 0) },
-  { key: 'shots',        label: 'удары',               group: 'attack',  get: (s) => s.shots || 0 },
-  { key: 'keyPass',      label: 'ключевые передачи',   group: 'attack',  get: (s) => s.keyPass || 0 },
-  { key: 'dribble',      label: 'обводки',             group: 'attack',  get: (s) => s.dribble || 0 },
-  { key: 'tackle',       label: 'отборы',              group: 'defence', get: (s) => s.tackle || 0 },
-  { key: 'interception', label: 'перехваты',           group: 'defence', get: (s) => s.interception || 0 },
-  { key: 'recovery',     label: 'возвраты',            group: 'defence', get: (s) => s.recovery || 0 },
-  { key: 'duel',         label: 'единоборства',        group: 'defence', get: (s) => s.duel || 0 },
-  { key: 'pressing',     label: 'прессинг',            group: 'defence', get: (s) => s.pressing || 0 },
-  { key: 'distance',     label: 'беговой объём',       group: 'fitness', get: (s) => s.distance || 0 },
-];
 
 // Fallback-роль, когда нет сезонного распределения позиций (старые данные).
 // Без «Универсала» — всегда конкретная роль по группе + доминирующей метрике.
@@ -59,36 +43,17 @@ function colorForPct(pct) {
 }
 
 function computeDna(subject, seasonPlayers, basis) {
-  if (!Array.isArray(seasonPlayers) || seasonPlayers.length < 4) return null;
-  const me = seasonPlayers.find((s) => s.id === subject.id);
-  if (!me || !(me.minutes > 0)) return null;
-  // Пул = ВСЯ команда (сыгравшие минуты) — ЕДИНЫЙ с пиццей (SeasonProfileCard),
-  // чтобы перцентили «сильных сторон» строго совпадали со слайсами пиццы и с
-  // подписью карточки «перцентиль в команде». Раньше брали позиционный пул
-  // (seasonPercentile сравнивал защитника только с защитниками) → у защитника
-  // «удары 100» (лучший среди защитников при 0.3/матч), а пицца против всей
-  // команды давала тем же ударам крошечный слайс — данные противоречили и
-  // подрывали доверие.
-  const pool = seasonPlayers.filter((s) => s.minutes > 0);
-  if (pool.length < 4) return null;
-  const ranked = [];
-  for (const m of DNA_METRICS) {
-    const poolMax = Math.max(0, ...pool.map((s) => Number(m.get(s)) || 0));
-    if (poolMax <= 0) continue;
-    const my = per90(m.get(me), me.minutes, MIN_RANK_MINUTES, basis);
-    const poolVals = pool.map((s) => per90(m.get(s), s.minutes, MIN_RANK_MINUTES, basis));
-    const pct = percentileRank(my, poolVals);
-    if (pct != null) ranked.push({ key: m.key, label: m.label, group: m.group, pct });
-  }
-  if (ranked.length < 3) return null;
-  ranked.sort((a, b) => b.pct - a.pct);
+  // Единый расчёт перцентилей (тот же, что у «Ролевого профиля») — пул = команда
+  // без вратарей, per-90 с порогом минут, midrank-перцентиль.
+  const base = playerRolePct(subject, seasonPlayers, basis);
+  if (!base) return null;
+  const { me, ranked, pct } = base;
   const strengths = ranked.filter((r) => r.pct >= 55).slice(0, 4);
   const growth = ranked.filter((r) => r.pct <= 40).slice(-2).reverse();
   // Роль по МЕТРИКАМ (Football Manager-подход): позиции по минутам ограничивают
   // множество ролей, перцентили выбирают лучшую. Без «универсалов». Fallback —
   // если у сезонного агрегата ещё нет распределения позиций.
-  const pct = Object.fromEntries(ranked.map((r) => [r.key, r.pct]));
-  const role = bestRole(me.positions, pct) || legacyRole(subject, strengths.length ? strengths : ranked);
+  const role = rankRoles(me.positions, pct)[0] || legacyRole(subject, strengths.length ? strengths : ranked);
   return { archetype: { name: role.name, tagline: role.tagline }, strengths, growth, top: ranked[0] };
 }
 
@@ -132,9 +97,12 @@ export default function PlayerDnaCard({
   if (!dna) return null;
 
   const { archetype, strengths, growth, top } = dna;
-  const superline = top.pct >= 75
-    ? `Топ-${Math.max(1, 100 - top.pct)}% команды по «${top.label}»`
-    : `Сильнее всего проявляет себя в «${top.label}»`;
+  // Без «Топ-1%» (на 16 игроках это бессмыслица) — честная словесная подача.
+  const superline = top.pct >= 90
+    ? `Лучший в команде по «${top.label}»`
+    : top.pct >= 70
+      ? `В числе сильнейших по «${top.label}»`
+      : `Сильнее всего проявляет себя в «${top.label}»`;
   const statsLine = showStatsInline ? buildStatsLine(stats) : null;
   const rootClass = `dna-card${className ? ` ${className}` : ''}`;
 
