@@ -147,7 +147,9 @@ export default function MatchDetail() {
   const sAway = match?.scoreAway ?? match?.score?.away ?? 0;
 
   const matchTitle = match
-    ? `${match.home || ''} ${match.scoreHome ?? ''}:${match.scoreAway ?? ''} ${match.away || ''}`.trim()
+    // Имена без возрастного суффикса — как в шапке страницы (был сырой заголовок
+    // вкладки «Выборжанин 2010-2011 2:1 Легирус 2010-2011»).
+    ? `${trimAgeStr(match.home) || ''} ${match.scoreHome ?? ''}:${match.scoreAway ?? ''} ${trimAgeStr(match.away) || ''}`.trim()
     : 'Матч';
   useDocumentTitle(matchTitle);
   const home = match?.teamSummaryStats?.home || {};
