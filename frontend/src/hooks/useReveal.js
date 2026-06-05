@@ -68,7 +68,11 @@ export function useCountUp(value, ms = 900, decimals = 0) {
     };
     const reduce = typeof window !== 'undefined'
       && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
-    if (reduce || target === 0) { setN(target); return; }
+    // requestAnimationFrame заморожен на скрытой/фоновой вкладке → count-up
+    // застрял бы на промежуточном кадре (KPI «8 голов» читался как «7»).
+    // Скрытая вкладка или reduce-motion → сразу финальное значение.
+    const hidden = typeof document !== 'undefined' && document.visibilityState === 'hidden';
+    if (reduce || hidden || target === 0) { setN(target); return; }
     let raf, start;
     const tick = (t) => {
       if (start == null) start = t;
@@ -78,7 +82,10 @@ export function useCountUp(value, ms = 900, decimals = 0) {
       if (p < 1) raf = requestAnimationFrame(tick);
     };
     raf = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(raf);
+    // Если вкладку спрятали посреди анимации — гарантируем финал (rAF встанет).
+    const onVis = () => { if (document.visibilityState === 'hidden') setN(target); };
+    document.addEventListener('visibilitychange', onVis);
+    return () => { cancelAnimationFrame(raf); document.removeEventListener('visibilitychange', onVis); };
   }, [value, ms, decimals]);
   return n;
 }
