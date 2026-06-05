@@ -36,8 +36,6 @@ import { surnameOf, splitName } from '../utils/players';
 // @ts-ignore — legacy .js
 import { shieldFor, normalizeTeamName as normLeague } from '../utils/legirus';
 // @ts-ignore — legacy .jsx
-import PredictedLineup from '../components/PredictedLineup';
-// @ts-ignore — legacy .jsx
 import PlayerPhoto from '../components/PlayerPhoto';
 // @ts-ignore — legacy .jsx
 import OpponentPreview from '../components/OpponentPreview';
@@ -60,7 +58,7 @@ interface Team {
 
 export default function ClubDashboard() {
   const navigate = useNavigate();
-  const { user, isCoach } = useAuth() as { user: { tenantId?: string | null; fullName?: string } | null; isCoach: boolean };
+  const { user } = useAuth() as { user: { tenantId?: string | null; fullName?: string } | null };
   const { selectedTeam, selectedTeamId } = useTeam() as { selectedTeam: Team | null; selectedTeamId: string | null };
   useDocumentTitle(selectedTeam?.name ? `${selectedTeam.name} — Клуб` : 'Клуб');
 
@@ -643,11 +641,6 @@ export default function ClubDashboard() {
           )}
         </div>
       </section>
-
-      {/* ── Зона состава: вероятный стартовый XI + полный состав за сезон ──
-          Объединены в один блок (раньше PredictedLineup стоял выше и был
-          оторван от «Состава» блоком Топ-5/таблицы — см. правку UX). */}
-      {isCoach && selectedTeamId && <PredictedLineup teamId={selectedTeamId} />}
 
       {/* Roster */}
       <section className="cd__panel reveal" id="sec-roster">
