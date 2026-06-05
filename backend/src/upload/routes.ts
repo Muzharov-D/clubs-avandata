@@ -562,8 +562,20 @@ export async function uploadRoutes(app: FastifyInstance) {
           // Резолв к существующей записи (даже под другим №); иначе детерминир.
           // id по фамилии+номеру; заглушка без фамилии → по номеру.
           const resolved = resolvePlayerId(teamId!, rosterIndex, { number: num, fullName: np.full, firstName: np.firstName, lastName: np.lastName });
-          const playerId = resolved.id ?? `pdf-${teamId}-n${numStr}`;
-          const rosterRow = resolved.matched ? rosterIndex.entries.find((e) => e.id === playerId) : undefined;
+          let playerId = resolved.id;
+          let rosterRow = resolved.matched ? rosterIndex.entries.find((e) => e.id === playerId) : undefined;
+          // Имя из PDF могло гарблиться (русская локаль SportVisor: кириллица →
+          // нечитаемо), и резолв по фамилии не сматчил существующего игрока.
+          // Фоллбэк по НОМЕРУ к ростеру (он только что синхронизирован из чистого
+          // Excel этого матча) — иначе плодим дубль вроде «А.» #15 рядом с «Дютиль».
+          if (!rosterRow) {
+            const byNum = rosterByNum.get(numStr);
+            if (byNum) {
+              playerId = byNum.id;
+              rosterRow = rosterIndex.entries.find((e) => e.id === byNum.id);
+            }
+          }
+          if (!playerId) playerId = `pdf-${teamId}-n${numStr}`;
           if (!rosterRow) {
             await conn.query(
               `INSERT INTO players (id, tenant_id, team_id, full_name, first_name, last_name, number, position)
