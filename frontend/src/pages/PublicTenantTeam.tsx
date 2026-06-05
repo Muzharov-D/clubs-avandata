@@ -15,6 +15,8 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { AnimatedNumber, Reveal, SplitText, KineticCard, StaggerList } from '../components/motion';
+import { cleanTeamName } from '../utils/teamName';
+import { orderFullName } from '../utils/players';
 import './PublicTenantTeam.css';
 
 interface Tenant {
@@ -210,11 +212,11 @@ export function PublicTenantTeam() {
 
           <div className="pub__hero-matchup">
             <div className={`pub__hero-team ${isUs(nextMatch.home, ourTeamName) ? 'pub__hero-team--us' : ''}`}>
-              <SplitText className="pub__hero-team-name" text={nextMatch.home} delay={0.1} />
+              <SplitText className="pub__hero-team-name" text={cleanTeamName(nextMatch.home)} delay={0.1} />
             </div>
             <div className="pub__hero-vs">—</div>
             <div className={`pub__hero-team ${isUs(nextMatch.away, ourTeamName) ? 'pub__hero-team--us' : ''}`}>
-              <SplitText className="pub__hero-team-name" text={nextMatch.away} delay={0.2} />
+              <SplitText className="pub__hero-team-name" text={cleanTeamName(nextMatch.away)} delay={0.2} />
             </div>
           </div>
 
@@ -300,7 +302,7 @@ export function PublicTenantTeam() {
                   return (
                     <tr key={r.pos} className={`pub__row pub__row--${zone}`}>
                       <td className="pub__pos">{r.pos}</td>
-                      <td className="pub__team-cell">{r.team}</td>
+                      <td className="pub__team-cell">{cleanTeamName(r.team)}</td>
                       <td>{r.games}</td>
                       <td>{r.wins}</td>
                       <td>{r.draws}</td>
@@ -317,7 +319,7 @@ export function PublicTenantTeam() {
           </div>
           {ourRow && (
             <div className="pub__our-summary">
-              <strong>{ourRow.team}</strong>
+              <strong>{cleanTeamName(ourRow.team)}</strong>
               <span className="pub__our-summary-pos"> · {ourRow.pos} место</span>
               <span>
                 {' '}
@@ -342,7 +344,7 @@ export function PublicTenantTeam() {
                 <KineticCard glow className="pub__star">
                   <div className="pub__star-num">{p.number ?? '—'}</div>
                   <div className="pub__star-info">
-                    <div className="pub__star-name">{p.fullName}</div>
+                    <div className="pub__star-name">{orderFullName(p.fullName)}</div>
                     {p.position && <div className="pub__star-pos">{p.position}</div>}
                   </div>
                 </KineticCard>
@@ -358,7 +360,7 @@ export function PublicTenantTeam() {
                 <div key={p.id} className="pub__player">
                   <div className="pub__player-num">{p.number ?? '—'}</div>
                   <div className="pub__player-info">
-                    <div className="pub__player-name">{p.fullName}</div>
+                    <div className="pub__player-name">{orderFullName(p.fullName)}</div>
                     {p.position && <div className="pub__player-pos">{p.position}</div>}
                   </div>
                 </div>

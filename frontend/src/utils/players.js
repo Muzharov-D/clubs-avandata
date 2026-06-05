@@ -167,6 +167,15 @@ export function fullNameOf(player) {
   return player.number != null ? `№${player.number}` : 'Без имени';
 }
 
+// «Имя Фамилия» из СТРОКИ fullName, когда нет полей first/last (публичные
+// данные). splitName уже распознаёт фамилию по суффиксу, поэтому «Семёнов
+// Максим» → first=«Максим», last=«Семёнов» → «Максим Семёнов».
+export function orderFullName(fullName) {
+  const { first, last } = splitName(fullName);
+  if (first && last) return `${first} ${last}`;
+  return last || first || String(fullName || '').trim();
+}
+
 // «№15 · Правый нападающий» — но без висячего разделителя, когда позиция не
 // заполнена (частая дыра у FFSPB-игроков). Тогда возвращаем просто «№15».
 export function numberWithPos(number, position) {
