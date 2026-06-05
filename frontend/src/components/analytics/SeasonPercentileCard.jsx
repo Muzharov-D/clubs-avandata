@@ -5,7 +5,7 @@
  * скаут-стандарт «где игрок выделяется / где проседает». Деградирует, если
  * сезонных данных нет (эндпоинт только для тренеров) — тогда карточку не рисуем.
  */
-import { per90 } from '../../utils/analytics';
+import { per90, MIN_RANK_MINUTES } from '../../utils/analytics';
 import { percentileRank } from '../../utils/num';
 import './analytics.css';
 
@@ -57,8 +57,8 @@ export default function SeasonPercentileCard({ subject, seasonPlayers, basis = 9
   if (pool.length < 4) return null;
 
   const rows = METRICS.map((m) => {
-    const myVal = per90(m.get(me), me.minutes, 1, basis);
-    const poolVals = pool.map((s) => per90(m.get(s), s.minutes, 1, basis));
+    const myVal = per90(m.get(me), me.minutes, MIN_RANK_MINUTES, basis);
+    const poolVals = pool.map((s) => per90(m.get(s), s.minutes, MIN_RANK_MINUTES, basis));
     const pct = percentileRank(myVal, poolVals);
     return { ...m, pct, raw90: myVal };
   }).filter((r) => r.pct != null);

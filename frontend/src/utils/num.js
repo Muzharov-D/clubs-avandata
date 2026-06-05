@@ -20,13 +20,17 @@ export function percentileRank(value, allValues, inverse = false) {
   if (value === null || value === undefined || isNaN(value)) return null;
   const arr = (allValues || []).map(num).filter((v) => v !== null && !isNaN(v));
   if (arr.length < 2) return null;
-  let cnt = 0;
-  if (inverse) {
-    for (const v of arr) if (v >= value) cnt++;
-  } else {
-    for (const v of arr) if (v <= value) cnt++;
+  // Midrank: равные значения считаем как ПОЛОВИНУ, а не как «≤».
+  // Иначе нуль среди многих нулей (защитник с 0 обводок при 9 нулях из 12)
+  // получал бы 75-й перцентиль — ложная «сильная сторона»; а единственный
+  // лучший «прилипал» к ровно 100. Стандарт скаутинга — midrank.
+  let below = 0;
+  let equal = 0;
+  for (const v of arr) {
+    if (v === value) equal++;
+    else if (inverse ? v > value : v < value) below++;
   }
-  return Math.round((cnt / arr.length) * 100);
+  return Math.round(((below + 0.5 * equal) / arr.length) * 100);
 }
 
 // Русское склонение существительного по числу.

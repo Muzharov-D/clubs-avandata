@@ -7,7 +7,7 @@
  * Данные: сезонный пул игроков (seasonPlayers) + per-90 нормализация по basis.
  */
 import { useMemo } from 'react';
-import { per90 } from '../../utils/analytics';
+import { per90, MIN_RANK_MINUTES } from '../../utils/analytics';
 import { percentileRank } from '../../utils/num';
 import { positionGroup } from '../../utils/pizzaTemplates';
 import { bestRole } from '../../utils/playerRoles';
@@ -75,8 +75,8 @@ function computeDna(subject, seasonPlayers, basis) {
   for (const m of DNA_METRICS) {
     const poolMax = Math.max(0, ...pool.map((s) => Number(m.get(s)) || 0));
     if (poolMax <= 0) continue;
-    const my = per90(m.get(me), me.minutes, 1, basis);
-    const poolVals = pool.map((s) => per90(m.get(s), s.minutes, 1, basis));
+    const my = per90(m.get(me), me.minutes, MIN_RANK_MINUTES, basis);
+    const poolVals = pool.map((s) => per90(m.get(s), s.minutes, MIN_RANK_MINUTES, basis));
     const pct = percentileRank(my, poolVals);
     if (pct != null) ranked.push({ key: m.key, label: m.label, group: m.group, pct });
   }
