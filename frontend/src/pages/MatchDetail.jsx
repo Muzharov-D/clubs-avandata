@@ -139,10 +139,15 @@ export default function MatchDetail() {
     teamObj?.shield || shieldByName[teamKey(teamObj?.name)] || null;
 
   // Kinetic-эталон: scroll-reveal секций + count-up счёта.
+  // Счёт: разбор отдаёт его плоскими scoreHome/scoreAway (как в заголовке),
+  // вложенный match.score у части матчей пуст — поэтому герой залипал на 0:0.
+  // Берём плоское поле, вложенное — как fallback.
   const pageRef = useRef(null);
   useReveal(pageRef, [match?.id, players.length]);
-  const homeScore = useCountUp(match?.score?.home ?? 0, 850);
-  const awayScore = useCountUp(match?.score?.away ?? 0, 850);
+  const sHome = match?.scoreHome ?? match?.score?.home ?? 0;
+  const sAway = match?.scoreAway ?? match?.score?.away ?? 0;
+  const homeScore = useCountUp(sHome, 850);
+  const awayScore = useCountUp(sAway, 850);
 
   const matchTitle = match
     ? `${match.home || ''} ${match.scoreHome ?? ''}:${match.scoreAway ?? ''} ${match.away || ''}`.trim()
@@ -196,7 +201,7 @@ export default function MatchDetail() {
     if (!evs.length) return [];
     const goalTypes = new Set(['goal', 'penalty', 'own_goal']);
     const goalsInEvents = evs.filter((e) => goalTypes.has(e.type)).length;
-    const totalGoals = (match.score?.home || 0) + (match.score?.away || 0);
+    const totalGoals = (sHome || 0) + (sAway || 0);
     if (!totalGoals || goalsInEvents !== totalGoals) return []; // неполная/недостоверная — скрываем
     const ourLast = (match.players || [])
       .map((p) => (p.lastName || String(p.fullName || '').split(' ').slice(-1)[0] || '').toLowerCase())
@@ -292,8 +297,8 @@ export default function MatchDetail() {
 
   // Ориентация: какая сторона — наша (для подсветки кинетик-имени и счёта).
   const homeIsUs = match.homeTeam?.isOurTeam ?? !match.awayTeam?.isOurTeam;
-  const usScore = homeIsUs ? (match.score?.home ?? 0) : (match.score?.away ?? 0);
-  const themScore = homeIsUs ? (match.score?.away ?? 0) : (match.score?.home ?? 0);
+  const usScore = homeIsUs ? sHome : sAway;
+  const themScore = homeIsUs ? sAway : sHome;
 
   // Вердикт словами убран намеренно: исход уже читается из большого счёта и
   // цветных эмблем — словесная подпись была смысловой тавтологией.
@@ -488,7 +493,7 @@ export default function MatchDetail() {
           /* Передаём match.players (с adapter'ом и photoUrl) вместо team-wide,
              чтобы PlayerPhoto в pitch получил реальные YFL-фото */
           players={(match.players || []).length ? match.players : players}
-          ourTeamName={trimAgeStr(match.homeTeam?.name)}
+          ourTeamName={trimAgeStr(homeIsUs ? match.homeTeam?.name : match.awayTeam?.name)}
           imageSrc={match.formationImage}
           imageFullSrc={match.formationImageFull}
         />
@@ -572,7 +577,7 @@ export default function MatchDetail() {
                   })}
                 </div>
                 {rows.some((r) => r.avg != null) && (
-                  <div className="md-insights__note" style={{ marginTop: 10 }}>Сравнение со средним по сезону ({allMatchData.length} матчей). ▲/▼ — отклонение от обычного.</div>
+                  <div className="md-insights__note" style={{ marginTop: 10 }}>Сравнение со средним по сезону ({allMatchData.length} {matchesWord(allMatchData.length)}). ▲/▼ — отклонение от обычного.</div>
                 )}
               </div>
             );
