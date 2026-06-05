@@ -179,8 +179,10 @@ export default function TeamSeasonAnalytics({ matches }) {
               const clean = trend.map((s) => s[m.key]).filter((v) => v != null);
               if (clean.length < 2) return null;
               const last = clean[clean.length - 1];
-              const first = clean[0];
-              const delta = last - first;
+              // Дельта — последний тур против СРЕДНЕГО по сезону (а не против
+              // первого матча): показывает, выше или ниже своей нормы команда.
+              const avg = clean.reduce((a, b) => a + b, 0) / clean.length;
+              const delta = last - avg;
               const up = delta > 0;
               const flat = Math.abs(delta) < (m.key === 'xg' ? 0.05 : 0.5);
               const dCol = flat ? 'var(--an-muted)' : up ? 'var(--an-pos)' : 'var(--an-neg)';
@@ -199,7 +201,7 @@ export default function TeamSeasonAnalytics({ matches }) {
             })}
           </div>
           <div className="an-note" style={{ marginTop: 8 }}>
-            Динамика командных метрик по сыгранным турам — куда движется игра, а не одна точка. Дельта — последний тур против первого.
+            Динамика командных метрик по сыгранным турам — куда движется игра, а не одна точка. Дельта — последний тур против среднего по сезону.
           </div>
         </div>
       )}
