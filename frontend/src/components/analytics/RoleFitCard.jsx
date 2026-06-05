@@ -13,12 +13,15 @@ export default function RoleFitCard({ subject, seasonPlayers, basis = 90 }) {
   // Вратарь (fit=null) или мало подходящих ролей — карточку не рисуем.
   if (ranked.length < 2 || ranked[0]?.fit == null) return null;
   const top = ranked.slice(0, 4);
-  // Показываем и сортируем по ОДНОЙ величине — score (соответствие с поправкой на
-  // долю минут в зоне роли). Если рисовать сырой fit, а упорядочивать по score,
-  // «лучшая» роль второстепенной зоны проигрывает по порядку, но её число выше —
-  // и бар переполняется (fit/maxFit > 1). score устраняет это: top[0] всегда максимум.
-  const score = (r) => Math.round(r.score);
-  const max = score(top[0]) || 1;
+  // Порядок, бар и число — по ОДНОЙ величине (score: соответствие с поправкой на
+  // долю минут в зоне роли), иначе сырой fit под «лучшим» спорит с порядком и бар
+  // переполняется (fit/maxFit > 1). Но «голый» score у мультипозиционного игрока
+  // придушен зоной (лучшая роль ~55 вместо fit 71 — читается тускло). Поэтому
+  // НОРМИРУЕМ к шкале fit: лучшая роль показывает свой интуитивный fit, остальные —
+  // пропорционально score. Моно-зонный игрок (groupShare≈1, score≈fit) не меняется.
+  const maxScore = top[0].score || 1;
+  const fitBest = top[0].fit || 0;
+  const shown = (r) => Math.round((r.score / maxScore) * fitBest);
 
   return (
     <div className="card an">
@@ -27,8 +30,8 @@ export default function RoleFitCard({ subject, seasonPlayers, basis = 90 }) {
         {top.map((r, i) => (
           <div className="an-rolefit__row" key={r.name}>
             <span className={`an-rolefit__name${i === 0 ? ' an-rolefit__name--best' : ''}`}>{r.name}</span>
-            <span className="an-rolefit__track"><span className="an-rolefit__fill" style={{ width: `${Math.min(100, Math.round((score(r) / max) * 100))}%` }} /></span>
-            <span className="an-rolefit__pct">{score(r)}</span>
+            <span className="an-rolefit__track"><span className="an-rolefit__fill" style={{ width: `${Math.min(100, Math.round((r.score / maxScore) * 100))}%` }} /></span>
+            <span className="an-rolefit__pct">{shown(r)}</span>
           </div>
         ))}
       </div>
