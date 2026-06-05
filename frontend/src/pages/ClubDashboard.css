@@ -252,7 +252,7 @@
   position: relative; z-index: 1;
   background: linear-gradient(180deg, rgba(20,25,50,0.7), rgba(15,20,40,0.5));
   border: 1px solid rgba(255,255,255,0.08);
-  border-radius: 18px;
+  border-radius: var(--radius);
   padding: 22px;
   overflow: hidden;
 }
@@ -323,7 +323,7 @@
   position: relative; z-index: 1;
   background: linear-gradient(180deg, rgba(20,25,50,0.5), rgba(15,20,40,0.3));
   border: 1px solid rgba(255,255,255,0.06);
-  border-radius: 16px;
+  border-radius: var(--radius);
   padding: 20px;
   margin-bottom: 16px;
 }

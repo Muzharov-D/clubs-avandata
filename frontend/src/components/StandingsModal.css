@@ -12,7 +12,7 @@
 .sm-sheet {
   background: linear-gradient(180deg, #1a0606 0%, #0f0303 100%);
   border: 1px solid rgba(220, 38, 38, 0.35);
-  border-radius: 16px;
+  border-radius: var(--radius-lg);
   padding: 22px;
   width: 100%;
   max-width: 720px;
@@ -131,7 +131,7 @@
     width: 100%;
     max-width: 100%;           /* растянуть на всю доступную ширину viewport - padding */
     max-height: calc(100vh - 32px);
-    border-radius: 16px;       /* скругления со всех сторон, не bottom-sheet */
+    border-radius: var(--radius-lg);       /* скругления со всех сторон, не bottom-sheet */
     margin: 0;
     animation: sm-fade 200ms ease-out;
   }

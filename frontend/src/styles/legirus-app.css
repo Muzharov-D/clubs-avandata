@@ -63,7 +63,7 @@
 .card {
   background: rgba(20, 20, 60, 0.7);
   border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 10px;
+  border-radius: var(--radius);
   padding: 16px;
 }
 
@@ -78,7 +78,7 @@
 @media (max-width: 768px) {
   body, .page { font-size: 14px; }
   .page { padding: 12px !important; }
-  .card { padding: 12px !important; border-radius: 10px; }
+  .card { padding: 12px !important; border-radius: var(--radius); }
   .page-section-title { font-size: 16px; }
 }
 @media (max-width: 480px) {

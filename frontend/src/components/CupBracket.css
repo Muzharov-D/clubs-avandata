@@ -37,7 +37,7 @@
 .cup-match {
   background: rgba(20, 20, 60, 0.55);
   border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 10px;
+  border-radius: var(--radius-sm);
   padding: 8px 10px;
   font-size: 12px;
   display: flex;
@@ -90,7 +90,7 @@
 .cup-bracket__empty {
   padding: 14px;
   background: rgba(255, 255, 255, 0.04);
-  border-radius: 10px;
+  border-radius: var(--radius);
   font-size: 13px;
   color: rgba(255, 255, 255, 0.6);
 }

@@ -22,7 +22,7 @@
   align-items: center;
   background: rgba(20, 20, 60, 0.7);
   border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 12px;
+  border-radius: var(--radius);
   padding: 16px 32px;
   margin-bottom: 16px;
 }
@@ -205,7 +205,7 @@
 .match-detail__map-cell {
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid rgba(255, 255, 255, 0.05);
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   padding: 8px;
   display: flex;
   justify-content: center;
@@ -254,7 +254,7 @@
   padding: 10px 12px;
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid rgba(255, 255, 255, 0.06);
-  border-radius: 10px;
+  border-radius: var(--radius-sm);
 }
 .mvs-row__label {
   font-size: 11px;
@@ -410,7 +410,7 @@
   font-size: 14px;
   color: var(--text);
   padding: 9px 12px;
-  border-radius: 10px;
+  border-radius: var(--radius-sm);
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid var(--border);
 }
@@ -515,7 +515,7 @@
   flex-direction: column;
   gap: 3px;
   padding: 12px 14px;
-  border-radius: 10px;
+  border-radius: var(--radius-sm);
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid var(--border);
 }

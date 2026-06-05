@@ -281,7 +281,7 @@
   position: relative;
   background: linear-gradient(180deg, rgba(28, 35, 60, 0.6) 0%, rgba(15, 20, 40, 0.6) 100%);
   border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 20px;
+  border-radius: var(--radius);
   padding: 32px;
   text-align: left;
   transition: transform 250ms ease, border-color 250ms ease, box-shadow 250ms ease;

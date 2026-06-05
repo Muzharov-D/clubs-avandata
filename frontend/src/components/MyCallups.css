@@ -1,7 +1,7 @@
 .my-callups {
   background: linear-gradient(135deg, rgba(34, 211, 238, 0.06) 0%, rgba(59, 130, 246, 0.04) 100%);
   border: 1px solid rgba(34, 211, 238, 0.25);
-  border-radius: 14px;
+  border-radius: var(--radius);
   padding: 18px;
   margin-bottom: 16px;
 }
@@ -30,7 +30,7 @@
 .my-callup {
   background: rgba(255, 255, 255, 0.04);
   border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 12px;
+  border-radius: var(--radius);
   padding: 14px;
   transition: border-color 120ms;
 }

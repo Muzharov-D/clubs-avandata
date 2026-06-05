@@ -179,7 +179,7 @@
 .lf-card {
   background: rgba(255, 255, 255, 0.04);
   border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 10px;
+  border-radius: var(--radius);
   padding: 10px 12px;
   cursor: pointer;
   transition: background 120ms, border-color 120ms;
@@ -280,7 +280,7 @@
   padding: 10px 12px;
   background: rgba(255, 255, 255, 0.04);
   border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 10px;
+  border-radius: var(--radius);
   min-height: 48px;
 }
 .lf-scorers__row--top {

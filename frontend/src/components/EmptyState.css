@@ -7,7 +7,7 @@
   text-align: center;
   background: rgba(255, 255, 255, 0.02);
   border: 1px dashed rgba(255, 255, 255, 0.08);
-  border-radius: 12px;
+  border-radius: var(--radius);
   color: #94a3c8;
 }
 .empty-state-card__icon {

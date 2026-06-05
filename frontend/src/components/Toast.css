@@ -21,7 +21,7 @@
   background: #0d1424;
   color: #f1f5fb;
   border: none;             /* reset для <button> */
-  border-radius: 10px;
+  border-radius: var(--radius);
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(255,255,255,0.04);
   font-size: 13px;
   font-weight: 600;

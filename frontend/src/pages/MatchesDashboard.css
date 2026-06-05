@@ -19,7 +19,7 @@
   justify-content: space-between;
   padding: 24px 28px;
   margin-bottom: 16px;
-  border-radius: 14px;
+  border-radius: var(--radius-lg);
   background:
     linear-gradient(120deg, rgba(8, 8, 32, 0.85) 0%, rgba(26, 75, 160, 0.55) 60%, rgba(8, 8, 32, 0.55) 100%),
     url('/assets/logos/fon-3_Монтажная область 1.jpg') center / cover no-repeat;
@@ -155,7 +155,7 @@
   padding: 8px 12px;
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid rgba(255, 255, 255, 0.06);
-  border-radius: 10px;
+  border-radius: var(--radius);
   cursor: pointer;
   transition: border-color 0.15s, transform 0.15s;
 }
@@ -229,7 +229,7 @@
 .season-stat {
   background: var(--bg-surface-3);
   border: 1px solid var(--border);
-  border-radius: 10px;
+  border-radius: var(--radius);
   padding: 16px;
   text-align: center;
 }
@@ -293,7 +293,7 @@
   padding: 8px 12px;
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid var(--border);
-  border-radius: 12px;
+  border-radius: var(--radius);
   cursor: pointer;
   transition: border-color 0.15s ease, transform 0.15s ease, background 0.15s ease;
 }

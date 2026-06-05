@@ -28,7 +28,7 @@
   background: var(--bg-surface-2) url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'><path d='M1 1l4 4 4-4' stroke='%2394a3c8' stroke-width='1.5' fill='none'/></svg>") right 8px center / 10px no-repeat;
   color: var(--text);
   border: 1px solid color-mix(in srgb, var(--brand-primary) 35%, transparent);
-  border-radius: 6px;
+  border-radius: var(--radius-sm);
   padding: 5px 24px 5px 8px;
   font-size: 12px;
   font-family: inherit;
@@ -374,7 +374,7 @@
   gap: 12px;
   padding: 10px 14px;
   background: rgba(255, 255, 255, 0.03);
-  border-radius: 10px;
+  border-radius: var(--radius-sm);
   border: 1px solid rgba(255, 255, 255, 0.06);
 }
 .player-detail__line-pair--leader {
@@ -574,7 +574,7 @@
 
 .fitness-cell {
   background: rgba(255, 255, 255, 0.04);
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   padding: 12px;
   text-align: center;
   border: 1px solid rgba(255, 255, 255, 0.06);

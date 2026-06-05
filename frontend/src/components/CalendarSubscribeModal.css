@@ -21,7 +21,7 @@
 .csm-sheet {
   background: linear-gradient(180deg, #1a0606 0%, #0a0202 100%);
   border: 1px solid rgba(220, 38, 38, 0.4);
-  border-radius: 16px;
+  border-radius: var(--radius-lg);
   padding: 28px 24px;
   width: 100%;
   max-width: 480px;
@@ -82,7 +82,7 @@
   padding: 12px 14px;
   background: rgba(220, 38, 38, 0.10);
   border: 1px solid rgba(220, 38, 38, 0.3);
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   color: var(--text);
   font-size: 13px;
   line-height: 1.5;
@@ -151,7 +151,7 @@
   padding: 10px 12px;
   background: rgba(0, 0, 0, 0.4);
   border: 1px solid rgba(220, 38, 38, 0.18);
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   color: var(--text);
   font-size: 12px;
   font-family: ui-monospace, SFMono-Regular, monospace;
@@ -174,7 +174,7 @@
 .csm-help {
   margin-top: 8px;
   background: rgba(0, 0, 0, 0.3);
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   border: 1px solid rgba(220, 38, 38, 0.12);
 }
 .csm-help summary {

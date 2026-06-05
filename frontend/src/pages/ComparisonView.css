@@ -23,7 +23,7 @@
   background: rgba(20,20,60,0.5);
   border: 1px solid rgba(255,255,255,0.06);
   padding: 12px 14px;
-  border-radius: 10px;
+  border-radius: var(--radius-sm);
   font-size: 13px;
 }
 .comparison-metric__label {

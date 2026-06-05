@@ -58,7 +58,7 @@
   text-align: left;
   background: color-mix(in srgb, var(--rating-poor) 7%, var(--bg-surface, #121826));
   border: 1px solid color-mix(in srgb, var(--rating-poor) 38%, var(--border-strong));
-  border-radius: 12px;
+  border-radius: var(--radius);
   padding: 14px 16px;
 }
 .lc-risk__title {

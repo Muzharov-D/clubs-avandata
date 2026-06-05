@@ -1,7 +1,7 @@
 .donut-card {
   background: rgba(20, 20, 60, 0.7);
   border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 12px;
+  border-radius: var(--radius);
   padding: 14px;
   display: flex;
   flex-direction: column;

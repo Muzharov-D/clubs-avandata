@@ -13,7 +13,7 @@
   max-width: 100%;
   background: #14143c;
   border: 1px solid rgba(34, 211, 238, 0.2);
-  border-radius: 14px;
+  border-radius: var(--radius-lg);
   overflow: hidden;
 }
 
@@ -144,7 +144,7 @@
   border: 1px solid rgba(124, 179, 246, 0.35);
   color: #cfe1ff;
   padding: 10px 12px;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   font-size: 13px;
   display: flex; align-items: center; gap: 10px;
   line-height: 1.5;
@@ -165,7 +165,7 @@
   border: 1px solid rgba(211,47,47,0.4);
   color: #ff8080;
   padding: 10px 12px;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   font-size: 13px;
 }
 
@@ -174,7 +174,7 @@
   border: 1px solid rgba(124,179,66,0.5);
   color: #a8d870;
   padding: 10px 12px;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   font-size: 13px;
 }
 

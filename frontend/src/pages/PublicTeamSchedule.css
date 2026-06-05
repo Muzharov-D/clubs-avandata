@@ -110,7 +110,7 @@
   min-height: 56px;
   background: linear-gradient(135deg, rgba(220, 38, 38, 0.18) 0%, rgba(0, 0, 0, 0.4) 100%);
   border: 1px solid rgba(220, 38, 38, 0.4);
-  border-radius: 12px;
+  border-radius: var(--radius);
   cursor: pointer;
   transition: transform 120ms, border-color 120ms, box-shadow 120ms;
   color: inherit;
@@ -490,7 +490,7 @@
 .pub-card {
   background: linear-gradient(135deg, rgba(0, 0, 0, 0.5) 0%, rgba(26, 6, 6, 0.7) 100%);
   border: 1px solid rgba(220, 38, 38, 0.18);
-  border-radius: 12px;
+  border-radius: var(--radius);
   padding: 14px;
   transition: background 120ms, border-color 120ms, transform 120ms;
 }
@@ -637,7 +637,7 @@
   padding: 14px;
   background: linear-gradient(135deg, rgba(220, 38, 38, 0.08) 0%, rgba(0, 0, 0, 0.5) 100%);
   border: 1px solid rgba(220, 38, 38, 0.35);
-  border-radius: 12px;
+  border-radius: var(--radius);
 }
 .public-page__day-details-head {
   display: flex;

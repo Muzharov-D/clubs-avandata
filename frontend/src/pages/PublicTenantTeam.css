@@ -88,7 +88,7 @@
   text-align: center;
   background: linear-gradient(180deg, rgba(20, 25, 50, 0.6), rgba(15, 20, 40, 0.4));
   border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 20px;
+  border-radius: var(--radius-lg);
   margin: 0 24px 20px;
   position: relative;
   overflow: hidden;
@@ -193,7 +193,7 @@
 .pub__card {
   background: linear-gradient(180deg, rgba(20, 25, 50, 0.5), rgba(15, 20, 40, 0.3));
   border: 1px solid rgba(255, 255, 255, 0.06);
-  border-radius: 18px;
+  border-radius: var(--radius);
   margin: 0 24px 16px;
   padding: 20px;
 }
@@ -269,7 +269,7 @@
   margin-top: 12px;
   padding: 10px 14px;
   background: rgba(255, 255, 255, 0.03);
-  border-radius: 10px;
+  border-radius: var(--radius-sm);
   font-size: 13px;
   color: var(--text-faint);
 }
@@ -291,7 +291,7 @@
   padding: 14px;
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02));
   border: 1px solid color-mix(in srgb, var(--pub-accent) 35%, transparent);
-  border-radius: 12px;
+  border-radius: var(--radius);
   cursor: default;
 }
 .pub__star-num {
@@ -337,7 +337,7 @@
   padding: 10px;
   background: rgba(255, 255, 255, 0.02);
   border: 1px solid rgba(255, 255, 255, 0.04);
-  border-radius: 10px;
+  border-radius: var(--radius);
   opacity: 0.78;
   transition: opacity 0.18s ease;
 }

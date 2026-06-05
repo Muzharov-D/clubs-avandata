@@ -14,7 +14,7 @@
 .pp-card {
   background: linear-gradient(180deg, #14143c 0%, #0d1424 100%);
   border: 1px solid rgba(220, 38, 38, 0.4);
-  border-radius: 16px;
+  border-radius: var(--radius-lg);
   padding: 24px 20px 20px;
   padding-bottom: max(20px, env(safe-area-inset-bottom));
   width: 100%;
@@ -79,7 +79,7 @@
   color: #f1f5fb;
   padding: 9px 12px;
   background: rgba(220, 38, 38, 0.08);
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   border: 1px solid rgba(220, 38, 38, 0.3);
 }
 
@@ -133,7 +133,7 @@
   color: #f1f5fb;
   background: rgba(255, 255, 255, 0.04);
   padding: 12px;
-  border-radius: 10px;
+  border-radius: var(--radius-sm);
   line-height: 1.4;
 }
 .pp-step-n {

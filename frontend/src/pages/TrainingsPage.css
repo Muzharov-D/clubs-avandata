@@ -70,7 +70,7 @@
   gap: 16px;
   background: rgba(255, 255, 255, 0.04);
   border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 12px;
+  border-radius: var(--radius);
   padding: 14px 16px;
   transition: border-color 120ms;
 }
@@ -124,7 +124,7 @@
 .tr-modal__panel {
   background: var(--bg-surface);
   border: 1px solid rgba(34, 211, 238, 0.2);
-  border-radius: 16px;
+  border-radius: var(--radius-lg);
   padding: 22px;
   width: 100%;
   max-width: 480px;
@@ -154,7 +154,7 @@
 .tr-field input, .tr-field textarea, .tr-field select {
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   padding: 10px 12px;
   color: var(--text);
   font-size: 14px;
@@ -173,7 +173,7 @@
   color: var(--danger); font-size: 13px;
   padding: 8px 12px;
   background: rgba(239, 68, 68, 0.08);
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
 }
 
 .tr-modal__actions {
@@ -202,7 +202,7 @@
   display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
   padding: 10px;
   background: rgba(255, 255, 255, 0.03);
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   font-size: 12px;
   color: var(--text-muted);
 }
@@ -225,7 +225,7 @@
   display: flex; align-items: center; justify-content: space-between;
   padding: 8px 12px;
   background: rgba(255, 255, 255, 0.03);
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   gap: 10px;
 }
 .tr-att__name {
