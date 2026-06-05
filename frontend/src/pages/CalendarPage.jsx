@@ -16,6 +16,7 @@ import MatchDetailSheet from '../components/MatchDetailSheet';
 import TrainingDetailSheet from '../components/TrainingDetailSheet';
 import CoachCommentForm from '../components/CoachCommentForm';
 import { shieldFor, isOurClub, normalizeTeamName } from '../utils/legirus';
+import { cleanTeamName } from '../utils/teamName';
 import './CalendarPage.css';
 
 const FILTERS = [
@@ -60,7 +61,10 @@ function fmtDayHeader(d) {
 }
 function shortName(name) {
   if (!name) return '—';
-  return String(name).replace(/\s*\((ЦФКСиЗ ВО|ГБУ ДО)[^)]*\)\s*/i, '').trim();
+  // Единый display-клинер (как на экранах матча/клуба/игрока): срезает юр-форму
+  // «ФК»/«ГБУ ДО» и хвостовые скобки «(ЦФКСиЗ ВО)». Раньше календарь чистил только
+  // скобку → своя команда висела «ФК Легирус», тогда как везде — «Легирус».
+  return cleanTeamName(name) || '—';
 }
 
 export default function CalendarPage() {
