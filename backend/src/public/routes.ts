@@ -1,5 +1,6 @@
 import type { FastifyInstance } from 'fastify';
 import { withTenant, withBypassRLS } from '../db/tenantContext.js';
+import { resolveOurExtId, markOurStandingsRow } from '../data/ourTeam.js';
 import { eq } from 'drizzle-orm';
 import { tenants } from '../db/schema/tenants.js';
 import { NotFoundError } from '../shared/errors.js';
@@ -59,6 +60,7 @@ export async function publicRoutes(app: FastifyInstance) {
       const { rows: matches } = await conn.query(
         `SELECT ext_match_id AS "matchId", match_date AS "date",
                 home_team AS "home", away_team AS "away",
+                ext_home_team_id AS "homeTeamId", ext_away_team_id AS "awayTeamId",
                 score_home AS "scoreH", score_away AS "scoreA",
                 is_our_match AS "isOurMatch", venue, round, tournament,
                 home_shield AS "homeShield", away_shield AS "awayShield"
@@ -67,13 +69,27 @@ export async function publicRoutes(app: FastifyInstance) {
         [slug, age],
       );
       const now = Date.now();
-      const reshaped = matches.map((m) => ({
-        ...m,
-        score: m.scoreH != null && m.scoreA != null ? { home: m.scoreH, away: m.scoreA } : null,
-        isPast: m.scoreH != null && m.scoreA != null,
-        isUpcoming: m.scoreH == null && (!m.date || new Date(m.date).getTime() >= now),
-      }));
-      return { ageGroup: age, matches: reshaped };
+      // Публичная страница без логина → нет CLUB_HINTS на фронте. Проставляем
+      // ourSide по ext team id здесь, чтобы родитель видел свою команду верно
+      // (раньше month-view хардкодил isLegirus → для не-Легируса всегда «соперник»).
+      const ourExtId = await resolveOurExtId(conn, slug, age);
+      const reshaped = matches.map((m) => {
+        const ourSide =
+          ourExtId != null
+            ? String(m.homeTeamId) === ourExtId ? 'home'
+              : String(m.awayTeamId) === ourExtId ? 'away'
+              : null
+            : null;
+        return {
+          ...m,
+          ourSide,
+          isOurMatch: ourExtId != null ? ourSide != null : !!m.isOurMatch,
+          score: m.scoreH != null && m.scoreA != null ? { home: m.scoreH, away: m.scoreA } : null,
+          isPast: m.scoreH != null && m.scoreA != null,
+          isUpcoming: m.scoreH == null && (!m.date || new Date(m.date).getTime() >= now),
+        };
+      });
+      return { ageGroup: age, ourExtId, matches: reshaped };
     });
   });
 
@@ -111,11 +127,14 @@ export async function publicRoutes(app: FastifyInstance) {
           [slug, age],
         ),
       ]);
+      const standings = standingsRows[0]
+        ? { ...standingsRows[0], table: await markOurStandingsRow(conn, slug, age, standingsRows[0].table) }
+        : null;
       return {
         team: teamRows[0] ?? null,
         players: playersRows,
         nextMatch: nextRows[0] ?? null,
-        standings: standingsRows[0] ?? null,
+        standings,
       };
     });
   });

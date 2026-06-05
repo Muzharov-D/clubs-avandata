@@ -33,6 +33,8 @@ import { useTeam } from '../contexts/TeamContext';
 import { ratingColor, ratingTextColor } from '../utils/colors';
 import { matchesWord } from '../utils/num';
 import { surnameOf, splitName } from '../utils/players';
+// Единый матчинг «наша команда» по ext team id (бэк проставляет m.ourSide).
+import { ourSide } from '../utils/ourTeam';
 // @ts-ignore — legacy .js
 import { shieldFor, normalizeTeamName as normLeague } from '../utils/legirus';
 // @ts-ignore — legacy .jsx
@@ -253,7 +255,7 @@ export default function ClubDashboard() {
       .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
       .slice(0, 6);
     const mapped = played.map((m) => {
-      const ourHome = isOurName(m.home, ourName);
+      const ourHome = ourSide(m, { ourName }) === 'home';
       const our = Number(ourHome ? m.scoreH : m.scoreA);
       const opp = Number(ourHome ? m.scoreA : m.scoreH);
       const result: 'W' | 'D' | 'L' = our > opp ? 'W' : our === opp ? 'D' : 'L';
@@ -362,9 +364,9 @@ export default function ClubDashboard() {
               <div className="cd__mm cd__mm--next">
                 <div className="cd__mm-eyebrow">Следующий · {nextMatch.round || ''}</div>
                 <div className="cd__hero-matchup">
-                  <MatchupTeam name={teamDisplay(nextMatch.home, isOurName(nextMatch.home, ourName))} shield={nextMatch.homeShield} isOur={isOurName(nextMatch.home, ourName)} />
+                  <MatchupTeam name={teamDisplay(nextMatch.home, ourSide(nextMatch, { ourName }) === 'home')} shield={nextMatch.homeShield} isOur={ourSide(nextMatch, { ourName }) === 'home'} />
                   <span className="cd__hero-vs">—</span>
-                  <MatchupTeam name={teamDisplay(nextMatch.away, isOurName(nextMatch.away, ourName))} shield={nextMatch.awayShield} isOur={isOurName(nextMatch.away, ourName)} />
+                  <MatchupTeam name={teamDisplay(nextMatch.away, ourSide(nextMatch, { ourName }) === 'away')} shield={nextMatch.awayShield} isOur={ourSide(nextMatch, { ourName }) === 'away'} />
                 </div>
                 <div className="cd__mm-formrow">
                   <TeamFormMini name={nextMatch.home} calendar={calendar} standings={standings} align="left" />
@@ -387,9 +389,9 @@ export default function ClubDashboard() {
               <div className="cd__mm cd__mm--last">
                 <div className="cd__mm-eyebrow">Последний · {lastResult.round || ''}</div>
                 <div className="cd__hero-matchup">
-                  <MatchupTeam name={teamDisplay(lastResult.home, isOurName(lastResult.home, ourName))} shield={lastResult.homeShield} isOur={isOurName(lastResult.home, ourName)} />
+                  <MatchupTeam name={teamDisplay(lastResult.home, ourSide(lastResult, { ourName }) === 'home')} shield={lastResult.homeShield} isOur={ourSide(lastResult, { ourName }) === 'home'} />
                   <span className="cd__hero-score">{lastResult.scoreH}:{lastResult.scoreA}</span>
-                  <MatchupTeam name={teamDisplay(lastResult.away, isOurName(lastResult.away, ourName))} shield={lastResult.awayShield} isOur={isOurName(lastResult.away, ourName)} />
+                  <MatchupTeam name={teamDisplay(lastResult.away, ourSide(lastResult, { ourName }) === 'away')} shield={lastResult.awayShield} isOur={ourSide(lastResult, { ourName }) === 'away'} />
                 </div>
                 <div className="cd__hero-meta">{formatDateShort(lastResult.date)}</div>
                 {lastReport && (

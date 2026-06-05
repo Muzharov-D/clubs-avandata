@@ -22,7 +22,10 @@ import OpponentPreview from '../components/OpponentPreview';
 import PullToRefresh from '../components/PullToRefresh';
 import { toast } from '../components/Toast';
 import { tierForAge } from '../utils/ageRating';
-import { shieldFor, isLegirus } from '../utils/legirus';
+import { shieldFor } from '../utils/legirus';
+// Наша сторона матча — по ext team id (бэк проставляет m.ourSide). Публичная
+// страница без логина, поэтому полагаемся на серверный ourSide, а не на хардкод.
+import { ourSide } from '../utils/ourTeam';
 import { fmtRelative } from '../utils/dates';
 import './PublicTeamSchedule.css';
 import './CalendarPage.css';
@@ -683,7 +686,7 @@ export default function PublicTeamSchedule() {
                                   {d.events.map((e, i) => {
                                     if (e.kind === 'match') {
                                       const m = e.data;
-                                      const ourHome = isLegirus(m.home);
+                                      const ourHome = ourSide(m) === 'home';
                                       const opp = ourHome ? m.away : m.home;
                                       return (
                                         <button

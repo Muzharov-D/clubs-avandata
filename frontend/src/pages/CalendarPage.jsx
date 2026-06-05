@@ -15,7 +15,7 @@ import CallupRoster from '../components/CallupRoster';
 import MatchDetailSheet from '../components/MatchDetailSheet';
 import TrainingDetailSheet from '../components/TrainingDetailSheet';
 import CoachCommentForm from '../components/CoachCommentForm';
-import { shieldFor, isLegirus, normalizeTeamName } from '../utils/legirus';
+import { shieldFor, isOurClub, normalizeTeamName } from '../utils/legirus';
 import './CalendarPage.css';
 
 const FILTERS = [
@@ -69,15 +69,11 @@ export default function CalendarPage() {
   const { isCoach, user, tenant } = useAuth();
   // Имя «нас» для определения дом/гость в month view. Для multi-tenant —
   // используем имя тенанта, для legacy — fallback на isLegirus.
-  const ourNameLower = normalizeTeamName(tenant?.displayName || tenant?.name || '');
-  const isOurTeam = (teamName) => {
-    if (!teamName) return false;
-    if (isLegirus(teamName)) return true;
-    if (!ourNameLower) return false;
-    const t = normalizeTeamName(teamName);
-    if (ourNameLower.includes('сшор') && !t.includes('сшор')) return false;
-    return t === ourNameLower || t.includes(ourNameLower) || ourNameLower.includes(t);
-  };
+  // Единый матчинг «наша команда» — isOurClub (tenant-aware, CLUB_HINTS из
+  // AuthContext + защита от резерва/дублей и СШОР). Раньше своя substring-копия
+  // + хардкод isLegirus давали ложные совпадения и переворот дом/гость.
+  void tenant; void normalizeTeamName;
+  const isOurTeam = (teamName) => isOurClub(teamName);
   const [openCallup, setOpenCallup] = useState(null);
   const [openMatch, setOpenMatch] = useState(null);
   const [openTraining, setOpenTraining] = useState(null);

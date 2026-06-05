@@ -63,6 +63,11 @@ export function clearClubHints() {
 export function isOurClub(name) {
   const t = normalizeTeamName(name);
   if (!t) return false;
+  // Резерв/дубль: normalizeTeamName переводит дефис в пробел, поэтому
+  // «Зенит-2» → «зенит 2», «… II» → «… ii». Если резерв-суффикс есть только у
+  // одной стороны — это РАЗНЫЕ команды (дубль ≠ основа) → не матчим по подстроке.
+  const RESERVE = /\s(?:2|3|ii|iii)$/i;
+  const tReserve = RESERVE.test(t);
   for (const hint of CLUB_HINTS) {
     if (!hint) continue;
     // Edge: «сшор» в наших подсказках — но команда без «сшор» в имени —
@@ -71,6 +76,7 @@ export function isOurClub(name) {
     const nameIsShkola = t.includes('сшор') || t.includes('школа');
     if (hintIsShkola !== nameIsShkola) continue;
     if (t === hint) return true;
+    if (tReserve !== RESERVE.test(hint)) continue; // дубль только у одной стороны
     if (t.includes(hint) || hint.includes(t)) return true;
   }
   return false;

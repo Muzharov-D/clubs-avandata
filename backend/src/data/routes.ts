@@ -5,6 +5,7 @@ import { UnauthorizedError, NotFoundError, BadRequestError } from '../shared/err
 import { adaptPlayerForLegirus } from './legirusAdapter.js';
 import { computeDataQuality } from './dataQuality.js';
 import { statField, statFieldTotal } from '../shared/statValue.js';
+import { resolveOurExtId, markOurStandingsRow } from './ourTeam.js';
 import { applyFixtureDates, type DatedMatchRow } from './matchDate.js';
 import {
   aggregateTeamStats,
@@ -549,7 +550,8 @@ export async function dataRoutes(app: FastifyInstance) {
       );
       if (rows.length === 0) throw new NotFoundError('standings not found');
       const r = rows[0];
-      return { ...r, title: `${r.leagueName} · ${r.ageGroup} г.р.` };
+      const table = await markOurStandingsRow(conn, slug, r.ageGroup as string, r.table);
+      return { ...r, table, title: `${r.leagueName} · ${r.ageGroup} г.р.` };
     });
   });
 
@@ -569,7 +571,8 @@ export async function dataRoutes(app: FastifyInstance) {
       const standings: Record<string, unknown> = {};
       for (const r of rows) {
         ageGroups.push(r.ageGroup);
-        standings[r.ageGroup] = { ...r, title: `${r.leagueName} · ${r.ageGroup} г.р.` };
+        const table = await markOurStandingsRow(conn, slug, r.ageGroup as string, r.table);
+        standings[r.ageGroup] = { ...r, table, title: `${r.leagueName} · ${r.ageGroup} г.р.` };
       }
       return { ageGroups, standings };
     });
@@ -628,13 +631,28 @@ export async function dataRoutes(app: FastifyInstance) {
         [slug, req.params.ageGroup],
       );
       const now = Date.now();
-      const reshaped = matches.map((m) => ({
-        ...m,
-        score: m.scoreH != null && m.scoreA != null ? { home: m.scoreH, away: m.scoreA } : null,
-        isPast: m.scoreH != null && m.scoreA != null,
-        isUpcoming: m.scoreH == null && (!m.date || new Date(m.date).getTime() >= now),
-      }));
-      return { ageGroup: req.params.ageGroup, ...meta[0], matches: reshaped };
+      // Единый матчинг «наша команда» по ext team id (см. ourTeam.ts). Каждому
+      // матчу проставляем ourSide ('home'|'away'|null) — фронт читает его вместо
+      // 5 разных подстрочных реализаций. isOurMatch пересчитываем по ext id,
+      // если он известен (иначе оставляем сохранённое значение синка).
+      const ourExtId = await resolveOurExtId(conn, slug, req.params.ageGroup);
+      const reshaped = matches.map((m) => {
+        const ourSide =
+          ourExtId != null
+            ? String(m.homeTeamId) === ourExtId ? 'home'
+              : String(m.awayTeamId) === ourExtId ? 'away'
+              : null
+            : null;
+        return {
+          ...m,
+          ourSide,
+          isOurMatch: ourExtId != null ? ourSide != null : !!m.isOurMatch,
+          score: m.scoreH != null && m.scoreA != null ? { home: m.scoreH, away: m.scoreA } : null,
+          isPast: m.scoreH != null && m.scoreA != null,
+          isUpcoming: m.scoreH == null && (!m.date || new Date(m.date).getTime() >= now),
+        };
+      });
+      return { ageGroup: req.params.ageGroup, ourExtId, ...meta[0], matches: reshaped };
     });
   });
 

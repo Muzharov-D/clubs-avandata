@@ -18,7 +18,7 @@ import OfflineBanner from '../components/OfflineBanner';
 import UiIcon from '../components/UiIcon';
 import Skeleton from '../components/Skeleton';
 import EmptyState from '../components/EmptyState';
-import { shieldFor, isLegirus, normalizeTeamName } from '../utils/legirus';
+import { shieldFor, isOurClub, normalizeTeamName } from '../utils/legirus';
 import { fmtRelative } from '../utils/dates';
 import './LeagueFixture.css';
 import './PublicTeamSchedule.css';
@@ -311,7 +311,7 @@ export default function LeagueFixture() {
                           {m.date ? fmtRelative(m.date) : 'Дата уточняется'}
                         </div>
                         <div className="lf-card__teams">
-                          <div className={`lf-card__team lf-card__team--home ${isLegirus(m.home) ? 'lf-card__team--us' : ''}`}>
+                          <div className={`lf-card__team lf-card__team--home ${isOurClub(m.home) ? 'lf-card__team--us' : ''}`}>
                             <img
                               src={shieldFor(m.home, m.homeShield)}
                               alt=""
@@ -325,7 +325,7 @@ export default function LeagueFixture() {
                               ? <span><b>{m.score.home}</b>:<b>{m.score.away}</b></span>
                               : <span className="lf-card__vs">—</span>}
                           </div>
-                          <div className={`lf-card__team lf-card__team--away ${isLegirus(m.away) ? 'lf-card__team--us' : ''}`}>
+                          <div className={`lf-card__team lf-card__team--away ${isOurClub(m.away) ? 'lf-card__team--us' : ''}`}>
                             <span className="lf-card__name">{shortName(m.away)}</span>
                             <img
                               src={shieldFor(m.away, m.awayShield)}
