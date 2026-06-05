@@ -123,27 +123,64 @@ export async function trainingsRoutes(app: FastifyInstance) {
     });
   });
 
-  // GET /trainings/:id/attendance — отметки посещаемости
+  // GET /trainings/:id/attendance — отметки посещаемости.
+  // Возвращаем объект-карту { [playerId]: { status, responseStatus, note } } —
+  // именно в таком виде его потребляет фронтовый AttendanceSheet (Object.entries
+  // + val.status). `status` — это presence_status (что отметил тренер).
   app.get<{ Params: { id: string } }>('/trainings/:id/attendance', async (req) => {
     const slug = tenantId(req);
     return withTenant(slug, async (_tx, conn) => {
-      const { rows } = await conn.query(
+      const { rows } = await conn.query<{
+        playerId: string;
+        responseStatus: string | null;
+        presenceStatus: string | null;
+        note: string | null;
+      }>(
         `SELECT player_id AS "playerId", response_status AS "responseStatus",
                 presence_status AS "presenceStatus", note
            FROM training_attendance WHERE tenant_id = $1 AND training_id = $2`,
         [slug, req.params.id],
       );
-      return { attendance: rows };
+      const attendance: Record<string, { status: string | null; responseStatus: string | null; note: string | null }> = {};
+      for (const r of rows) {
+        attendance[r.playerId] = { status: r.presenceStatus, responseStatus: r.responseStatus, note: r.note };
+      }
+      return { attendance };
     });
   });
 
-  // POST /trainings/:id/attendance — сохранить отметки {marks:[{playerId,presenceStatus,note}]}
-  app.post<{ Params: { id: string }; Body: { marks?: AnyBody[] } }>(
+  // POST /trainings/:id/attendance — сохранить отметки.
+  // Фронт (AttendanceSheet) шлёт marks как объект-карту { [playerId]: status }.
+  // Принимаем ОБА вида (карта или массив [{playerId,presenceStatus,note}]),
+  // чтобы не было «marks is not iterable» → 500 при объекте.
+  type MarkRow = { playerId: string; presenceStatus: string | null; note: string | null };
+  function normalizeMarks(raw: unknown): MarkRow[] {
+    if (Array.isArray(raw)) {
+      return raw
+        .filter((m): m is AnyBody => !!m && typeof m === 'object')
+        .map((m) => ({
+          playerId: String((m as AnyBody).playerId ?? ''),
+          presenceStatus: ((m as AnyBody).presenceStatus as string) ?? null,
+          note: ((m as AnyBody).note as string) ?? null,
+        }))
+        .filter((m) => m.playerId !== '');
+    }
+    if (raw && typeof raw === 'object') {
+      return Object.entries(raw as Record<string, unknown>).map(([playerId, status]) => ({
+        playerId,
+        presenceStatus: typeof status === 'string' ? status : null,
+        note: null,
+      }));
+    }
+    return [];
+  }
+
+  app.post<{ Params: { id: string }; Body: { marks?: unknown } }>(
     '/trainings/:id/attendance',
     async (req) => {
       const slug = tenantId(req);
       assertCoach(req);
-      const marks = req.body?.marks ?? [];
+      const marks = normalizeMarks(req.body?.marks);
       return withTenant(slug, async (_tx, conn) => {
         for (const m of marks) {
           await conn.query(
@@ -153,7 +190,7 @@ export async function trainingsRoutes(app: FastifyInstance) {
              ON CONFLICT (training_id, player_id) DO UPDATE
                SET presence_status = EXCLUDED.presence_status,
                    presence_at = now(), marked_by = EXCLUDED.marked_by, note = EXCLUDED.note`,
-            [req.params.id, m.playerId, slug, (m.presenceStatus as string) ?? null, req.user?.sub ?? null, (m.note as string) ?? null],
+            [req.params.id, m.playerId, slug, m.presenceStatus, req.user?.sub ?? null, m.note],
           );
         }
         return { ok: true, saved: marks.length };

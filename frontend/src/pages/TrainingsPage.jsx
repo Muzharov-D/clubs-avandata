@@ -353,8 +353,9 @@ function AttendanceSheet({ trainingId, players, canManage, onClose }) {
             const cur = att[p.id];
             return (
               <div key={p.id} className="tr-att__row">
+                <span className={`tr-att__num${p.number ? '' : ' tr-att__num--empty'}`}>{p.number || ''}</span>
                 <div className="tr-att__name">
-                  {p.number ? <b>{p.number}</b> : null} {p.fullName || shortNameFromPlayer(p)}
+                  {p.fullName || shortNameFromPlayer(p)}
                 </div>
                 <div className="tr-att__btns">
                   {STATUS.map((s) => (
