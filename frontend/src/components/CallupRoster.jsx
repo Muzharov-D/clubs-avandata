@@ -62,7 +62,9 @@ export default function CallupRoster({ match, age, teamId, onClose }) {
   const youngerTeamId = youngerAge && teamIdPrefix ? `${teamIdPrefix}${youngerAge}` : null;
 
   async function load() {
-    if (!match?.matchId || !age) return;
+    // Нет id матча или возраста — грузить нечего. Раньше выходили БЕЗ
+    // setLoading(false) → модалка навсегда залипала на «Загрузка…».
+    if (!match?.matchId || !age) { setLoading(false); return; }
     setLoading(true);
     setErr(null);
     try {

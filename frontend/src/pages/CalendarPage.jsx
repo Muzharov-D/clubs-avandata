@@ -503,6 +503,8 @@ export default function CalendarPage() {
       {openCallup && (
         <CallupRoster
           match={openCallup}
+          age={age}
+          teamId={teamId}
           onClose={() => setOpenCallup(null)}
         />
       )}
