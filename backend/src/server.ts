@@ -11,6 +11,7 @@ import { publicRoutes } from './public/routes.js';
 import { uploadRoutes } from './upload/routes.js';
 import { dataRoutes } from './data/routes.js';
 import { trainingsRoutes } from './trainings/routes.js';
+import { callupsRoutes } from './callups/routes.js';
 import { closePool } from './db/client.js';
 import { runMigrations } from './db/migrate.js';
 import { startCrons, stopCrons } from './cron/runner.js';
@@ -65,6 +66,7 @@ async function buildServer() {
   await app.register(publicRoutes, { prefix: '/api/v1/public' });
   await app.register(uploadRoutes, { prefix: '/api/v1' });
   await app.register(trainingsRoutes, { prefix: '/api/v1' });
+  await app.register(callupsRoutes, { prefix: '/api/v1' });
 
   return app;
 }
