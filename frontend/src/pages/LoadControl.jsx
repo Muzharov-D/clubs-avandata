@@ -3,7 +3,6 @@ import { useApi } from '../hooks/useApi';
 import { fetchPlayersSeason } from '../services/api';
 import { useDocumentTitle } from '../hooks/useDocumentTitle';
 import { useTeam } from '../contexts/TeamContext';
-import { downloadCsv } from '../utils/exportCsv';
 import { playerLabel, numberWithPos } from '../utils/players';
 import { AnimatedNumber, SplitText } from '../components/motion';
 import './LoadControl.css';
@@ -99,19 +98,6 @@ export default function LoadControl() {
     return v.length ? v.reduce((s, p) => s + (p.minutesPerMatch || 0), 0) / v.length : 0;
   }, [players]);
 
-  const handleExport = () => {
-    downloadCsv('load-control', players, [
-      { label: 'Игрок', get: (p) => playerLabel(p) },
-      { label: '№', key: 'number' },
-      { label: 'Позиция', key: 'position' },
-      { label: 'Матчей', key: 'matches' },
-      { label: 'Минут всего', key: 'minutes' },
-      { label: 'Минут/матч', key: 'minutesPerMatch' },
-      { label: 'Дистанция, м', key: 'distance' },
-      { label: 'Спринт, м', key: 'sprintDistance' },
-    ]);
-  };
-
   if (seasonRes.loading) return <div className="empty-state">Загрузка…</div>;
   if (!players.length) return <div className="empty-state">Нет загруженных разборов для расчёта нагрузки</div>;
 
@@ -126,7 +112,6 @@ export default function LoadControl() {
             По сезонным разборам · управление ротацией и восстановлением в академии
           </div>
         </div>
-        <button className="load-control__export" onClick={handleExport} title="Скачать CSV">⤓ CSV</button>
       </div>
 
       {/* Сводная панель сезонной нагрузки — живые числа (broadcast-дашборд) */}

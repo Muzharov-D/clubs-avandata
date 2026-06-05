@@ -11,7 +11,6 @@ import { useTeam } from '../contexts/TeamContext';
 import { ratingColor } from '../utils/colors';
 import { shortNameFromPlayer } from '../utils/players';
 import { percentileRank, percentileColor } from '../utils/percentile';
-import { downloadCsv } from '../utils/exportCsv';
 import './PlayersRating.css';
 import './playersKinetic.css';
 
@@ -111,18 +110,6 @@ export default function PlayersRating() {
     [rows],
   );
 
-  const handleExport = () => {
-    const columns = [
-      { label: 'Игрок', get: (p) => shortNameFromPlayer(p) },
-      { label: '№', get: (p) => p.number ?? '' },
-      { label: 'Позиция', get: (p) => p.position || '' },
-      { label: 'Матчи', get: (p) => p.matches ?? '' },
-      { label: 'Минуты', get: (p) => p.minutes ?? '' },
-      ...METRICS.map((m) => ({ label: m.label, get: (p) => { const v = m.path(p); return v == null || isNaN(v) ? '' : Number(v); } })),
-    ];
-    downloadCsv('rating-season', players, columns);
-  };
-
   const Subnav = (
     <div className="players-rating__subnav">
       <NavLink to="/players" end className={({ isActive }) => 'players-subnav__item' + (isActive ? ' active' : '')}>Лидеры</NavLink>
@@ -192,13 +179,6 @@ export default function PlayersRating() {
             title="Изменить направление сортировки"
           >
             {direction === 'desc' ? '↓ По убыванию' : '↑ По возрастанию'}
-          </button>
-          <button
-            className="players-rating__direction"
-            onClick={handleExport}
-            title="Скачать все метрики в CSV (для Excel)"
-          >
-            ⤓ CSV
           </button>
         </div>
       </div>
