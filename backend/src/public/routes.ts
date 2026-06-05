@@ -5,6 +5,31 @@ import { eq } from 'drizzle-orm';
 import { tenants } from '../db/schema/tenants.js';
 import { NotFoundError } from '../shared/errors.js';
 
+// Слово-группа позиции по коду SportVisor/FFSPB. ЗЕРКАЛО posFullFromCode из
+// data/routes.ts — источник истины позиции = match_players.position по минутам
+// (а НЕ players.position: там FFSPB-амплуа, у которого вратарь мог числиться
+// «ЗАЩ»). При правке кодов синхронизировать обе копии.
+function posWord(raw: string | null): string | null {
+  const c = String(raw || '').toUpperCase().replace(/[^A-ZА-ЯЁ]/g, '');
+  if (!c) return null;
+  if (c === 'GK' || c === 'ВР' || c.startsWith('ВРТ')) return 'Вратарь';
+  if (/^(ST|CF|SS|LW|RW)$/.test(c)) return 'Нападающий';
+  if (/^(CB|LB|RB|LWB|RWB|SW)$/.test(c)) return 'Защитник';
+  if (/^(CM|CDM|CAM|DM|AM|LM|RM)$/.test(c)) return 'Полузащитник';
+  const cyr = c.replace(/[^А-ЯЁ]/g, '');
+  if (cyr.startsWith('НАП')) return 'Нападающий';
+  if (cyr.startsWith('ЗАЩ')) return 'Защитник';
+  if (cyr.startsWith('ПОЛ')) return 'Полузащитник';
+  if (cyr) {
+    const last = cyr[cyr.length - 1];
+    if (last === 'Р') return 'Вратарь';
+    if (last === 'З') return 'Защитник';
+    if (last === 'П') return 'Полузащитник';
+    if (last === 'Н') return 'Нападающий';
+  }
+  return null;
+}
+
 /**
  * Public родительский экран — без auth, tenant из URL path.
  *
@@ -96,7 +121,7 @@ export async function publicRoutes(app: FastifyInstance) {
   app.get<{ Params: { slug: string; age: string } }>('/:slug/team/:age', async (req) => {
     const { slug, age } = req.params;
     return withTenant(slug, async (_tx, conn) => {
-      const [{ rows: teamRows }, { rows: playersRows }, { rows: nextRows }, { rows: standingsRows }] = await Promise.all([
+      const [{ rows: teamRows }, { rows: playersRows }, { rows: nextRows }, { rows: standingsRows }, { rows: posRows }] = await Promise.all([
         conn.query(
           `SELECT id, name, age_group AS "ageGroup", age_label AS "ageLabel", head_coach AS "headCoach"
              FROM teams WHERE tenant_id = $1 AND age_group = $2 LIMIT 1`,
@@ -126,13 +151,37 @@ export async function publicRoutes(app: FastifyInstance) {
              ORDER BY fetched_at DESC LIMIT 1`,
           [slug, age],
         ),
+        // Доминирующая позиция по сумме минут из match_players (источник истины,
+        // в отличие от players.position = FFSPB-амплуа). Группируем по игроку+коду.
+        conn.query(
+          `SELECT mp.player_id AS "playerId", mp.position AS code, SUM(mp.minutes) AS mins
+             FROM match_players mp
+             JOIN players p ON p.id = mp.player_id
+             JOIN teams t ON t.id = p.team_id
+            WHERE mp.tenant_id = $1 AND t.age_group = $2
+              AND mp.position IS NOT NULL AND mp.minutes > 0
+            GROUP BY mp.player_id, mp.position`,
+          [slug, age],
+        ),
       ]);
       const standings = standingsRows[0]
         ? { ...standingsRows[0], table: await markOurStandingsRow(conn, slug, age, standingsRows[0].table) }
         : null;
+      // Для каждого игрока — код позиции с максимальной суммой минут.
+      const domCode = new Map<string, { code: string; mins: number }>();
+      for (const r of posRows as Array<{ playerId: string; code: string; mins: string | number }>) {
+        const mins = Number(r.mins) || 0;
+        const cur = domCode.get(r.playerId);
+        if (!cur || mins > cur.mins) domCode.set(r.playerId, { code: r.code, mins });
+      }
+      const players = (playersRows as Array<{ id: string; position: string | null; [k: string]: unknown }>).map((p) => {
+        // По минутам из матчей, иначе нормализуем сырое players.position в слово.
+        const word = posWord(domCode.get(p.id)?.code ?? null) ?? posWord(p.position);
+        return { ...p, position: word ?? p.position };
+      });
       return {
         team: teamRows[0] ?? null,
-        players: playersRows,
+        players,
         nextMatch: nextRows[0] ?? null,
         standings,
       };
