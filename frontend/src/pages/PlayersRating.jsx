@@ -184,7 +184,7 @@ export default function PlayersRating() {
       </div>
       </Reveal>
 
-      <div className="card players-rating__table">
+      <div className={'card players-rating__table' + (isPrimary ? ' players-rating__table--primary' : '')}>
         <div className="players-rating__head">
           <span className="col-rank">№</span>
           <span className="col-photo"></span>

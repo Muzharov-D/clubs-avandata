@@ -139,6 +139,13 @@
   gap: 12px;
   padding: 10px 16px;
 }
+/* Выбран сам рейтинг → колонка-метрика дублирует «Рейтинг». Прячем якорную
+   пилюлю и схлопываем её трек, чтобы не было двух одинаковых колонок. */
+.players-rating__table--primary .players-rating__head,
+.players-rating__table--primary .players-rating__row {
+  grid-template-columns: 36px 48px 1.4fr 1fr 70px 2fr;
+}
+.players-rating__table--primary .col-overall { display: none; }
 .players-rating__head {
   background: rgba(255, 255, 255, 0.04);
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
