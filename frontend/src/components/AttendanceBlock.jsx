@@ -39,12 +39,20 @@ export default function AttendanceBlock({ teamId, playerId }) {
   if (!teamId || !playerId) return null;
   if (loading) return null; // не мерцать spinner'ом на странице
   if (err) return null;
-  if (!stats || stats.total === 0) return null; // блок появляется только когда есть данные
 
-  const pct = stats.attendedPct;
-  const pctColor = pct == null ? '#94a3c8' :
-                   pct >= 80 ? '#22c55e' :
-                   pct >= 60 ? '#f59e0b' : '#ef4444';
+  // Бэк (GET .../stats) отдаёт totalPast/present/late/absent; COUNT приходит
+  // строками (pg) — коэрсим в числа. attendedPct считаем на клиенте: «был» +
+  // «опоздал» = посетил (пришёл, пусть и позже). `excused` бэк не отдаёт.
+  const total = Number(stats?.totalPast) || 0;
+  if (!stats || total === 0) return null; // блок появляется только когда есть данные
+
+  const present = Number(stats.present) || 0;
+  const late = Number(stats.late) || 0;
+  const absent = Number(stats.absent) || 0;
+  const pct = total > 0 ? Math.round(((present + late) / total) * 100) : null;
+  const pctColor = pct == null ? 'var(--text-muted)' :
+                   pct >= 80 ? 'var(--success)' :
+                   pct >= 60 ? 'var(--warning)' : 'var(--danger)';
 
   return (
     <section className="att-block">
@@ -65,12 +73,11 @@ export default function AttendanceBlock({ teamId, playerId }) {
           {pct != null ? pct + '%' : '—'}
         </div>
         <div className="att-block__counts">
-          <div className="att-block__total">из {stats.total} {stats.total === 1 ? 'тренировки' : 'тренировок'}</div>
+          <div className="att-block__total">из {total} {total === 1 ? 'тренировки' : 'тренировок'}</div>
           <div className="att-block__breakdown">
-            <span className="att-block__pill att-block__pill--present">был {stats.present}</span>
-            {stats.late > 0 && <span className="att-block__pill att-block__pill--late">опозд. {stats.late}</span>}
-            {stats.excused > 0 && <span className="att-block__pill att-block__pill--excused">уваж. {stats.excused}</span>}
-            {stats.absent > 0 && <span className="att-block__pill att-block__pill--absent">пропустил {stats.absent}</span>}
+            <span className="att-block__pill att-block__pill--present">был {present}</span>
+            {late > 0 && <span className="att-block__pill att-block__pill--late">опозд. {late}</span>}
+            {absent > 0 && <span className="att-block__pill att-block__pill--absent">пропустил {absent}</span>}
           </div>
         </div>
       </div>

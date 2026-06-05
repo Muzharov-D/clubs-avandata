@@ -198,33 +198,99 @@
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
   gap: 14px 18px;
 }
+.player-detail__cies-count {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-muted-strong, #b4c0d2);
+  background: var(--bg-surface-2);
+  border: 1px solid var(--border, rgba(255, 255, 255, 0.1));
+  border-radius: var(--radius-sm);
+  padding: 2px 8px;
+  letter-spacing: 0.02em;
+}
+.player-detail__cies-count.is-full {
+  color: var(--brand-primary);
+  border-color: color-mix(in srgb, var(--brand-primary) 45%, transparent);
+}
 .player-detail__cies-group { min-width: 0; }
 .player-detail__cies-group-title {
   font-size: 11px;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  margin-bottom: 7px;
+  margin-bottom: 9px;
   padding-bottom: 4px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 .player-detail__cies-group-title--attack  { color: var(--pizza-attack, #ef5b7b); }
 .player-detail__cies-group-title--defence { color: var(--pizza-defence, #4ea1ff); }
 .player-detail__cies-group-title--fitness { color: var(--pizza-fitness, #f0b429); }
-.player-detail__cies-opt {
+
+/* Чип-тогглы метрик — пилюли вместо «чекбоксов из 2000-х» */
+.player-detail__cies-chips {
   display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.player-detail__cies-chip {
+  --cies-accent: var(--pizza-attack, #ef5b7b);
+  appearance: none;
+  display: inline-flex;
   align-items: center;
-  gap: 7px;
-  font-size: 12.5px;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.1;
   color: var(--text-muted-strong, #b4c0d2);
-  padding: 4px 0;
+  background: var(--bg-surface-2);
+  border: 1px solid var(--border, rgba(255, 255, 255, 0.1));
+  border-radius: var(--radius-lg);
+  padding: 5px 10px 5px 8px;
   cursor: pointer;
   user-select: none;
+  transition: color 0.15s ease, background 0.15s ease, border-color 0.15s ease;
 }
-.player-detail__cies-opt input { accent-color: var(--brand-primary); cursor: pointer; }
-.player-detail__cies-opt:hover { color: var(--text); }
-.player-detail__cies-opt.is-on { color: var(--text); font-weight: 600; }
-.player-detail__cies-opt.is-empty { opacity: 0.4; }
+.player-detail__cies-chip--attack  { --cies-accent: var(--pizza-attack, #ef5b7b); }
+.player-detail__cies-chip--defence { --cies-accent: var(--pizza-defence, #4ea1ff); }
+.player-detail__cies-chip--fitness { --cies-accent: var(--pizza-fitness, #f0b429); }
+.player-detail__cies-chip-tick {
+  width: 14px;
+  height: 14px;
+  flex: 0 0 auto;
+  border-radius: 50%;
+  border: 1.5px solid var(--border, rgba(255, 255, 255, 0.2));
+  position: relative;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+.player-detail__cies-chip:hover:not(:disabled) {
+  color: var(--text);
+  border-color: color-mix(in srgb, var(--cies-accent) 45%, transparent);
+}
+.player-detail__cies-chip.is-on {
+  color: var(--text);
+  background: color-mix(in srgb, var(--cies-accent) 16%, transparent);
+  border-color: color-mix(in srgb, var(--cies-accent) 55%, transparent);
+}
+.player-detail__cies-chip.is-on .player-detail__cies-chip-tick {
+  background: var(--cies-accent);
+  border-color: var(--cies-accent);
+}
+.player-detail__cies-chip.is-on .player-detail__cies-chip-tick::after {
+  content: '';
+  position: absolute;
+  left: 4px;
+  top: 1px;
+  width: 4px;
+  height: 8px;
+  border: solid #07071c;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+.player-detail__cies-chip.is-empty { opacity: 0.4; }
+.player-detail__cies-chip:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
 
 /* === Полная таблица метрик: <details> аккордеон === */
 .player-detail__splits-toggle {

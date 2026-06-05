@@ -97,10 +97,12 @@ export default function PlayerDnaCard({
   if (!dna) return null;
 
   const { archetype, strengths, growth, top } = dna;
-  // Без «Топ-1%» (на 16 игроках это бессмыслица) — честная словесная подача.
-  const superline = top.pct >= 90
+  // Ранготочный бейдж: «Лучший в команде» — ТОЛЬКО при фактическом ранге #1 по
+  // сырому per-90 (не по порогу перцентиля — midrank намеренно не даёт 100, и
+  // единоличный лидер из 16 получает ~96). Иначе — словесно по перцентилю.
+  const superline = top.rank === 1
     ? `Лучший в команде по «${top.label}»`
-    : top.pct >= 70
+    : top.pct >= 80
       ? `В числе сильнейших по «${top.label}»`
       : `Сильнее всего проявляет себя в «${top.label}»`;
   const statsLine = showStatsInline ? buildStatsLine(stats) : null;
@@ -155,7 +157,10 @@ export default function PlayerDnaCard({
         <div className="dna-card__block">
           <div className="dna-card__block-title">
             Сильные стороны
-            <span className="dna-card__block-sub">перцентиль в команде</span>
+            <span
+              className="dna-card__block-sub"
+              title="Перцентиль: насколько игрок выше остальных в команде. 100 недостижим — сравнение включает самого игрока, поэтому даже единоличный лидер набирает чуть меньше."
+            >выше % команды</span>
           </div>
           <StaggerList className="dna-card__bars" speed="normal">
             {strengths.map((s, i) => (

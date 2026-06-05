@@ -37,6 +37,34 @@ function fmtMatchShort(m) {
   return `${dt}${score ? ' ·' + score : ''}${opp ? ' — ' + opp : ''}`.trim();
 }
 
+// Границы «своей пиццы»: меньше 3 — не строится профиль, больше 12 — слайсы
+// сливаются и подписи нечитаемы. Потолок — мягкий (просто не даём добавить ещё).
+const PIZZA_MIN_METRICS = 3;
+const PIZZA_MAX_METRICS = 12;
+const CUSTOM_KEYS_STORAGE = 'pd:pizza:customKeys';
+
+// Загрузка/сохранение выбора метрик «своей пиццы» (переживает переход между игроками).
+function loadCustomKeys() {
+  try {
+    const raw = localStorage.getItem(CUSTOM_KEYS_STORAGE);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return [];
+    // Отсеиваем ключи, которых больше нет в каталоге, и режем по потолку.
+    return parsed.filter((k) => typeof k === 'string' && CIES_METRIC_BY_KEY[k]).slice(0, PIZZA_MAX_METRICS);
+  } catch {
+    return [];
+  }
+}
+
+function saveCustomKeys(keys) {
+  try {
+    localStorage.setItem(CUSTOM_KEYS_STORAGE, JSON.stringify(Array.from(keys)));
+  } catch {
+    // localStorage недоступен (приватный режим/квота) — тихо игнорируем, фича опциональна.
+  }
+}
+
 // Ключевые метрики для бейджей "Лучший в команде" — топ-3 ранг по матчу.
 const RANK_METRICS = [
   { id: 'goal',         label: 'голам',                getter: (p) => p.stats?.attack4?.goal },
@@ -548,17 +576,29 @@ function MatchTab({ playerId, match, loading, allMatches, currentMatchId, setSel
   const [pizzaGroup, setPizzaGroup] = useState('all');
   // Режим пиццы: 'template' (быстрый шаблон по позиции) или 'custom' (свои метрики по CIES).
   const [pizzaMode, setPizzaMode] = useState('template');
-  const [customKeys, setCustomKeys] = useState(() => new Set());
+  // Выбор «своих метрик» переживает переход между игроками — храним в localStorage,
+  // чтобы тренер не пересобирал профиль каждый раз. Дефолт — пустой набор (откат к шаблону).
+  const [customKeys, setCustomKeys] = useState(() => new Set(loadCustomKeys()));
   useEffect(() => {
     setPizzaPos(positionGroup(player) || 'MID');
     setPizzaGroup('all');
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [playerId, player?.position]);
+  // Персист выбора метрик между перерисовками и игроками.
+  useEffect(() => {
+    saveCustomKeys(customKeys);
+  }, [customKeys]);
 
   const toggleCustomKey = (key) => {
     setCustomKeys((prev) => {
       const next = new Set(prev);
-      if (next.has(key)) next.delete(key); else next.add(key);
+      if (next.has(key)) {
+        next.delete(key);
+      } else {
+        // Мягкий потолок: больше PIZZA_MAX_METRICS слайсов — пицца нечитаема.
+        if (next.size >= PIZZA_MAX_METRICS) return prev;
+        next.add(key);
+      }
       return next;
     });
   };
@@ -808,7 +848,14 @@ function MatchTab({ playerId, match, loading, allMatches, currentMatchId, setSel
         ) : (
           <div className="player-detail__cies">
             <div className="player-detail__cies-hint">
-              Соберите свой профиль — отметьте любые показатели. Группировка — по областям CIES.
+              <span>Соберите свой профиль — отметьте от {PIZZA_MIN_METRICS} до {PIZZA_MAX_METRICS} показателей. Группировка — по областям CIES.</span>
+              <span
+                className={`player-detail__cies-count${customKeys.size >= PIZZA_MAX_METRICS ? ' is-full' : ''}`}
+                aria-live="polite"
+              >
+                {customKeys.size}/{PIZZA_MAX_METRICS}
+                {customKeys.size >= PIZZA_MAX_METRICS ? ' · максимум' : ''}
+              </span>
               {customKeys.size > 0 && (
                 <button type="button" className="player-detail__cies-clear" onClick={() => setCustomKeys(new Set())}>
                   Сбросить
@@ -819,23 +866,34 @@ function MatchTab({ playerId, match, loading, allMatches, currentMatchId, setSel
               {CIES_GROUPS.map((g) => (
                 <div className="player-detail__cies-group" key={g.id}>
                   <div className={`player-detail__cies-group-title player-detail__cies-group-title--${g.color}`}>{g.label}</div>
-                  {g.metrics.map((m) => {
-                    const hasData = peers.some((p) => Number(num(getStatValue(p, m.key)) ?? 0) > 0);
-                    return (
-                      <label
-                        key={m.key}
-                        className={`player-detail__cies-opt${customKeys.has(m.key) ? ' is-on' : ''}${hasData ? '' : ' is-empty'}`}
-                        title={hasData ? '' : 'В этом матче нет данных у команды'}
-                      >
-                        <input
-                          type="checkbox"
-                          checked={customKeys.has(m.key)}
-                          onChange={() => toggleCustomKey(m.key)}
-                        />
-                        {m.axis}
-                      </label>
-                    );
-                  })}
+                  <div className="player-detail__cies-chips">
+                    {g.metrics.map((m) => {
+                      const hasData = peers.some((p) => Number(num(getStatValue(p, m.key)) ?? 0) > 0);
+                      const isOn = customKeys.has(m.key);
+                      // При достижении потолка чипы, которые ещё не выбраны, блокируются.
+                      const atCap = !isOn && customKeys.size >= PIZZA_MAX_METRICS;
+                      const title = !hasData
+                        ? 'В этом матче нет данных у команды'
+                        : atCap
+                          ? `Максимум ${PIZZA_MAX_METRICS} метрик — снимите одну, чтобы добавить эту`
+                          : '';
+                      return (
+                        <button
+                          key={m.key}
+                          type="button"
+                          role="checkbox"
+                          aria-checked={isOn}
+                          disabled={atCap}
+                          className={`player-detail__cies-chip player-detail__cies-chip--${g.color}${isOn ? ' is-on' : ''}${hasData ? '' : ' is-empty'}`}
+                          title={title}
+                          onClick={() => toggleCustomKey(m.key)}
+                        >
+                          <span className="player-detail__cies-chip-tick" aria-hidden="true" />
+                          {m.axis}
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
               ))}
             </div>
@@ -846,9 +904,9 @@ function MatchTab({ playerId, match, loading, allMatches, currentMatchId, setSel
           <div className="empty-state">
             Недостаточно данных для сравнения с командой (нужны рейтинги хотя бы 2 игроков матча).
           </div>
-        ) : usingCustom && activeSlices.length < 3 ? (
+        ) : usingCustom && activeSlices.length < PIZZA_MIN_METRICS ? (
           <div className="empty-state">
-            Отметьте минимум 3 показателя с данными, чтобы построить профиль
+            Отметьте минимум {PIZZA_MIN_METRICS} показателя с данными, чтобы построить профиль
             {customKeys.size > 0 && activeSlices.length < customKeys.size
               ? ' (часть выбранных метрик в этом матче пуста).'
               : '.'}

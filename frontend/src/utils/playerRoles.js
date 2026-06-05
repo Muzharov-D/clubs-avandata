@@ -192,6 +192,8 @@ function isGkRow(s) {
  * Единый расчёт перцентилей игрока по 10 метрикам (per-90 vs пул команды).
  * Переиспользуется «ДНК игрока» и «Ролевым профилем», чтобы роль и сильные
  * стороны считались ОДИНАКОВО. Вратарей исключаем из пула для полевых метрик.
+ * Каждая метрика в `ranked` несёт `rank` (1 = единоличный лидер по сырому per-90)
+ * и `poolSize` — для ранготочного бейджа «Лучший в команде».
  * @returns {{me, ranked, pct, positions}|null}
  */
 export function playerRolePct(subject, seasonPlayers, basis = MATCH_MINUTES_DEFAULT) {
@@ -210,7 +212,14 @@ export function playerRolePct(subject, seasonPlayers, basis = MATCH_MINUTES_DEFA
     const my = per90(m.get(me), me.minutes, MIN_RANK_MINUTES, basis);
     const poolVals = pool.map((s) => per90(m.get(s), s.minutes, MIN_RANK_MINUTES, basis));
     const p = percentileRank(my, poolVals);
-    if (p != null) ranked.push({ key: m.key, label: m.label, group: m.group, pct: Math.round(50 + (p - 50) * conf) });
+    if (p == null) continue;
+    // Реальный ранг по сырому per-90 (1 = строго лучший в пуле). Перцентиль —
+    // midrank и намеренно не достигает 100, поэтому для бейджа «Лучший в команде»
+    // нужен явный ранг, а не порог. `rank === 1` только при единоличном лидерстве.
+    const better = poolVals.filter((v) => v > my).length;
+    const tiedAtTop = poolVals.filter((v) => v === my).length > 1;
+    const rank = better === 0 && !tiedAtTop ? 1 : better + 1;
+    ranked.push({ key: m.key, label: m.label, group: m.group, rank, poolSize: poolVals.length, pct: Math.round(50 + (p - 50) * conf) });
   }
   if (ranked.length < 3) return null;
   ranked.sort((a, b) => b.pct - a.pct);
