@@ -7,7 +7,8 @@
  * Данные: сезонный пул игроков (seasonPlayers) + per-90 нормализация по basis.
  */
 import { useMemo } from 'react';
-import { per90, seasonPercentile } from '../../utils/analytics';
+import { per90 } from '../../utils/analytics';
+import { percentileRank } from '../../utils/num';
 import { positionGroup } from '../../utils/pizzaTemplates';
 import { AnimatedNumber, StaggerList, SplitText } from '../motion';
 import './PlayerDnaCard.css';
@@ -68,13 +69,23 @@ function computeDna(subject, seasonPlayers, basis) {
   if (!Array.isArray(seasonPlayers) || seasonPlayers.length < 4) return null;
   const me = seasonPlayers.find((s) => s.id === subject.id);
   if (!me || !(me.minutes > 0)) return null;
+  // Пул = ВСЯ команда (сыгравшие минуты) — ЕДИНЫЙ с пиццей (SeasonProfileCard),
+  // чтобы перцентили «сильных сторон» строго совпадали со слайсами пиццы и с
+  // подписью карточки «перцентиль в команде». Раньше брали позиционный пул
+  // (seasonPercentile сравнивал защитника только с защитниками) → у защитника
+  // «удары 100» (лучший среди защитников при 0.3/матч), а пицца против всей
+  // команды давала тем же ударам крошечный слайс — данные противоречили и
+  // подрывали доверие.
+  const pool = seasonPlayers.filter((s) => s.minutes > 0);
+  if (pool.length < 4) return null;
   const ranked = [];
   for (const m of DNA_METRICS) {
-    const poolMax = Math.max(0, ...seasonPlayers.map((s) => Number(m.get(s)) || 0));
+    const poolMax = Math.max(0, ...pool.map((s) => Number(m.get(s)) || 0));
     if (poolMax <= 0) continue;
     const my = per90(m.get(me), me.minutes, 1, basis);
-    const res = seasonPercentile(subject, seasonPlayers, (s) => per90(m.get(s), s.minutes, 1, basis), my);
-    if (res.pct != null) ranked.push({ key: m.key, label: m.label, group: m.group, pct: res.pct });
+    const poolVals = pool.map((s) => per90(m.get(s), s.minutes, 1, basis));
+    const pct = percentileRank(my, poolVals);
+    if (pct != null) ranked.push({ key: m.key, label: m.label, group: m.group, pct });
   }
   if (ranked.length < 3) return null;
   ranked.sort((a, b) => b.pct - a.pct);
