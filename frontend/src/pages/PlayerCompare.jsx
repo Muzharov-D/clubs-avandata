@@ -107,7 +107,9 @@ export default function PlayerCompare() {
   if (seasonRes.loading) return <div className="empty-state">Загрузка…</div>;
   if (players.length < 2) return <div className="empty-state">Нужно минимум 2 игрока с разборами для сравнения</div>;
 
-  const fmt = (r) => (v) => (v == null ? '—' : r.rating ? Number(v).toFixed(1) : Math.round(v));
+  // Рейтинги — 1 знак (точка). Остальное — целые с группировкой разрядов
+  // (33443 → «33 443»), чтобы дистанция не выглядела сырой.
+  const fmt = (r) => (v) => (v == null ? '—' : r.rating ? Number(v).toFixed(1) : Math.round(v).toLocaleString('ru-RU'));
 
   return (
     <div className="page player-compare kinetic">
