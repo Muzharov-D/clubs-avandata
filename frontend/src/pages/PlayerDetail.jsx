@@ -195,8 +195,16 @@ export default function PlayerDetail() {
     const seasonPos = seasonRow?.positionFull || seasonRow?.position;
     const matchPos = matchPlayer?.positionFull || matchPlayer?.position;
     const pos = seasonPos || matchPos;
-    if (pos) return { ...base, positionFull: pos, position: pos };
-    return base;
+    // Доп. сезонные поля для подписи: детальная роль с флангом, распределение по
+    // минутам и флаг мультипозиции (новый /players/season — по сумме минут).
+    const extra = {
+      positionDetail: seasonRow?.positionDetail || null,
+      positionCode: seasonRow?.positionCode || null,
+      positions: Array.isArray(seasonRow?.positions) ? seasonRow.positions : null,
+      versatile: !!seasonRow?.versatile,
+    };
+    if (pos) return { ...base, positionFull: pos, position: pos, ...extra };
+    return { ...base, ...extra };
   }, [lookedUpPlayer, matchPlayer, seasonPlayers, playerId]);
 
   useDocumentTitle(identity?.fullName ? `${identity.fullName} — Игрок` : 'Профиль игрока');
@@ -395,7 +403,9 @@ function PlayerInfoCard({ identity, teamName }) {
     ['Дата рождения', dob],
     ['Возраст', age != null ? `${age} ${plural(age, 'год', 'года', 'лет')}` : null],
     ['Команда', teamName ? trimAge(teamName) : null],
-    ['Позиция', identity.positionFull || identity.position],
+    ['Позиция', identity.versatile && identity.positions?.length
+      ? `Универсал · ${identity.positions.slice(0, 3).map((p) => p.code).join(' / ')}`
+      : (identity.positionDetail || identity.positionFull || identity.position)],
     ['Номер', identity.number != null ? `№${identity.number}` : null],
   ].filter(([, v]) => v != null && v !== '');
   return (
