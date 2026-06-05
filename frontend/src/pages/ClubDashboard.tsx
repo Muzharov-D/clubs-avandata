@@ -815,6 +815,11 @@ export function isOurName(matchTeam: unknown, ourLower: string): boolean {
   // Edge: если МЫ «сшор зенит» — не должны матчиться с просто «зенит» без «сшор»
   if (me.includes('сшор') && !her.includes('сшор')) return false;
   if (me === her) return true;
+  // Резерв/дубль («Легирус-2», «Зенит-3», «… II») — НЕ основная команда. Если
+  // резерв-суффикс есть только у одной стороны — substring-матч НЕ применяем,
+  // иначе матчи дубля считались бы нашими → переворот счёта/формы в блоке.
+  const reserveRe = /[-\s](?:2|3|ii|iii)$/i;
+  if (reserveRe.test(her) !== reserveRe.test(me)) return false;
   return her.includes(me) || me.includes(her);
 }
 
