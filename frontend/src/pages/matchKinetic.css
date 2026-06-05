@@ -51,12 +51,15 @@
   grid-template-columns: 1fr;
   align-items: center;
   justify-items: center;
-  min-height: clamp(240px, 40vh, 380px);
+  /* Компактный баннер, высота по контенту (счёт+команды+дата), без «пустого
+     героя». Раньше min-height до 380px растягивал блок и оставлял огромные
+     пустоты сверху/снизу — герой доминировал над экраном. */
+  min-height: 0;
   /* Full-bleed: разрываем боковые поля контейнера страницы на всю ширину. */
   width: 100vw;
   margin-left: calc(50% - 50vw);
   margin-right: calc(50% - 50vw);
-  padding: 48px 24px 36px;
+  padding: 40px 24px 22px;
   overflow: hidden;
   border-top: 1px solid var(--border);
   border-bottom: 1px solid var(--border);
@@ -87,8 +90,8 @@
   min-width: 0;
 }
 .kin-verdict__team-logo {
-  width: clamp(52px, 7vw, 80px);
-  height: clamp(52px, 7vw, 80px);
+  width: clamp(48px, 6vw, 64px);
+  height: clamp(48px, 6vw, 64px);
   display: grid;
   place-items: center;
   border-radius: 14px;
@@ -118,7 +121,7 @@
 
 .kin-verdict__date {
   position: absolute;
-  top: 28px;
+  top: 14px;
   left: 50%;
   transform: translateX(-50%);
   font-size: 12px;
@@ -143,7 +146,7 @@
   align-items: center;
   gap: 8px;
   font-family: var(--font-display);
-  font-size: clamp(64px, 10vw, 116px);
+  font-size: clamp(54px, 8vw, 92px);
   font-weight: 900;
   letter-spacing: -0.04em;
   line-height: 0.9;
@@ -220,7 +223,7 @@
 .match-detail__field-full > * { height: 100%; }
 
 @media (max-width: 720px) {
-  .kin-hero-verdict.kin-verdict { min-height: clamp(240px, 46vh, 360px); padding: 52px 16px 32px; }
+  .kin-hero-verdict.kin-verdict { min-height: 0; padding: 36px 16px 20px; }
   .kin-verdict__narrative { font-size: 16px; }
   .kin-verdict__scoreline { gap: 12px; }
   .kin-verdict__team-name { font-size: 12px; }

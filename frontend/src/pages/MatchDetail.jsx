@@ -524,9 +524,9 @@ export default function MatchDetail() {
           <div className="card">
             <div className="page-section-title">Лидеры матча — наша команда</div>
             <div className="match-detail__breakdowns">
-              <PlayerBreakdown title="Голы" rows={topGoals} navigate={navigate} />
-              <PlayerBreakdown title="Ассисты" rows={topAssists} navigate={navigate} />
-              <PlayerBreakdown title="Отборы" rows={topTackles} navigate={navigate} />
+              <PlayerBreakdown title="Голы" rows={topGoals} navigate={navigate} emptyText="нет голов в этом матче" />
+              <PlayerBreakdown title="Ассисты" rows={topAssists} navigate={navigate} emptyText="нет ассистов в этом матче" />
+              <PlayerBreakdown title="Отборы" rows={topTackles} navigate={navigate} emptyText="нет отборов в этом матче" />
             </div>
           </div>
 
@@ -541,7 +541,6 @@ export default function MatchDetail() {
               { label: 'Прогрессивные передачи', get: (m) => num(m?.teamAggregates?.passes?.progressive) },
               { label: 'Отборы',                 get: (m) => num(m?.teamAggregates?.duels?.totalDuels ?? m?.teamAggregates?.recoveriesAndTackling?.tackle) },
               { label: 'Перехваты',              get: (m) => num(m?.teamAggregates?.positioning?.interceptions ?? m?.teamAggregates?.recoveriesAndTackling?.interception) },
-              { label: 'Атаки с ударом',         get: (m) => { const t = m?.teamAggregates || {}; return (t.attacks?.positional?.withShot || 0) + (t.attacks?.counterattacks?.withShot || 0); } },
               { label: 'Кроссы',                 get: (m) => num(m?.teamAggregates?.passes?.crosses) },
             ];
             const rows = defs.map((d) => {
@@ -693,11 +692,11 @@ function CoachNoteCard({ matchId, initial }) {
   );
 }
 
-function PlayerBreakdown({ title, rows, navigate }) {
+function PlayerBreakdown({ title, rows, navigate, emptyText = 'нет данных' }) {
   return (
     <div className="player-breakdown">
       <div className="player-breakdown__title">{title}</div>
-      {rows.length === 0 && <div className="empty-state">Нет данных</div>}
+      {rows.length === 0 && <div className="player-breakdown__empty">{emptyText}</div>}
       {rows.map(({ player, value }, i) => (
         <div
           key={player.id}

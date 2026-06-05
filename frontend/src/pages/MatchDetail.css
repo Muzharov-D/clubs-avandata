@@ -164,6 +164,22 @@
   font-weight: 600;
   margin-bottom: 4px;
 }
+/* Лёгкий empty-state на колонку: осмысленная подпись по центру, не оставляет
+   колонку голой и не утяжеляет её визуально (как «Нет данных», но по смыслу). */
+.player-breakdown__empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 56px;
+  padding: 12px 8px;
+  text-align: center;
+  font-size: 12px;
+  line-height: 1.35;
+  color: var(--text-faint);
+  background: color-mix(in srgb, var(--text) 3%, transparent);
+  border: 1px dashed var(--border);
+  border-radius: var(--radius-sm);
+}
 .player-breakdown__row {
   display: grid;
   grid-template-columns: 18px auto 1fr auto;
