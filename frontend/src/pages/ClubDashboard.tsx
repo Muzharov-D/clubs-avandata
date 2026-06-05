@@ -331,7 +331,7 @@ export default function ClubDashboard() {
               {ourRow && (
                 <span className="cd__pos">
                   {' · '}
-                  <span className="cd__pos-num">{ourRow.pos} место</span> в {tournamentTitle}
+                  <span className="cd__pos-num">{ourRow.pos} место</span> · {tournamentTitle}
                 </span>
               )}
             </div>
