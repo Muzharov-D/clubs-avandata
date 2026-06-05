@@ -12,6 +12,7 @@ import TeamIdentityCard from '../components/analytics/TeamIdentityCard';
 import TeamAggregatesGrid from '../components/analytics/TeamAggregatesGrid';
 import SeasonTrendCard from '../components/analytics/SeasonTrendCard';
 import { isOurClub, shieldFor } from '../utils/legirus';
+import { cleanTeamName } from '../utils/teamName';
 import { formLetterRu } from '../utils/num';
 import { matchesWord } from '../utils/num';
 import { useNavigate } from 'react-router-dom';
@@ -137,7 +138,7 @@ export default function ClubOverview() {
                   {(ourTeam?.name || 'К').split(/\s+/).slice(0, 2).map((w) => w[0]).join('').toUpperCase()}
                 </div>
                 <div className="team-info__data">
-                  <div className="team-info__name">{(ourTeam?.name || 'Команда').toUpperCase()}</div>
+                  <div className="team-info__name">{cleanTeamName(ourTeam?.name || 'Команда').toUpperCase()}</div>
                   <div className="team-info__rating">
                     Средний рейтинг за {periodLabel}:&nbsp;
                     <span className="team-info__rating-val">
@@ -156,7 +157,7 @@ export default function ClubOverview() {
 
             {/* Сезонная запись: В-Н-П, голы, форма */}
             <div className="card season-record">
-              <div className="team-info__title">Итоги сезона</div>
+              <div className="team-info__title">Итоги по разобранным матчам</div>
               <div className="season-record__wdl">
                 <div className="season-record__cell season-record__cell--w"><b>{record.w}</b><span>побед</span></div>
                 <div className="season-record__cell season-record__cell--d"><b>{record.d}</b><span>ничьих</span></div>

@@ -10,6 +10,7 @@ import { useNavigate } from 'react-router-dom';
 import { fetchMatch } from '../../services/api';
 import { ourSideKey, teamXg, expectedPoints, finishing } from '../../utils/analytics';
 import { formLetterRu, matchesWord } from '../../utils/num';
+import { cleanTeamName } from '../../utils/teamName';
 import { AnimatedNumber, Reveal, StaggerList } from '../motion';
 import { Sparkline } from '../Sparkline';
 import './analytics.css';
@@ -208,7 +209,7 @@ export default function TeamSeasonAnalytics({ matches }) {
       <div className="an-season__list">
         {[...rows].reverse().map((r) => (
           <div className="an-season__row" key={r.id} onClick={() => navigate(`/matches/${r.id}`)}>
-            <span className="an-season__opp">{r.oppName || 'Соперник'}{r.gF != null ? ` · ${r.gF}:${r.gA}` : ''}</span>
+            <span className="an-season__opp">{cleanTeamName(r.oppName) || 'Соперник'}{r.gF != null ? ` · ${r.gF}:${r.gA}` : ''}</span>
             <span className="an-season__xg">xG {f2(r.xgF)}–{f2(r.xgA)}</span>
             <span className={`an-season__res an-season__res--${r.result || 'D'}`}>{formLetterRu(r.result)}</span>
           </div>

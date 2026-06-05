@@ -93,7 +93,10 @@ function readVal(v: unknown): { val: number | null; suffix: string } {
 const DECIMAL_KEYS = new Set(['expectedGoals', 'xG', 'avgShotDistance', 'averagePPDA', 'averagePpda', 'oppda']);
 
 function fmtAggVal(k: string, val: number, suffix: string): string {
-  if (suffix === '%' || DECIMAL_KEYS.has(k)) return val.toLocaleString('ru-RU');
+  // Дроби — с ТОЧКОЙ, как во всём UI (1.83, 6.9), не запятая ru-RU: на одной
+  // странице рядом «1.77 xG» — разнобой запятая/точка резал глаз. Целые —
+  // с разделителем тысяч.
+  if (suffix === '%' || DECIMAL_KEYS.has(k)) return String(Math.round(val * 100) / 100);
   return Math.round(val).toLocaleString('ru-RU');
 }
 
