@@ -6,6 +6,12 @@
 
 const DECAY = 0.78; // вес затухания на матч в прошлое
 
+// Минимум матчей для словесных выводов о ДИНАМИКЕ (траектория/серия). На 3
+// точках «форма растёт» или «серия из 3 матчей» — статистический шум: один
+// слабый/яркий матч переворачивает наклон. Индекс формы (взвешенное среднее)
+// показываем и раньше, а вердикты о тренде — только с накоплением выборки.
+const MIN_TREND_MATCHES = 5;
+
 /** Индекс формы: среднее по последним N с экспоненциальным затуханием свежести. */
 export function formIndex(series, key = 'overall', n = 5) {
   const vals = (series || []).filter((s) => Number(s?.[key]) > 0).slice(-n);
@@ -32,7 +38,7 @@ export function trajectorySlope(series, key = 'overall') {
   const pts = (series || [])
     .map((s, i) => [i, Number(s?.[key])])
     .filter((p) => p[1] > 0);
-  if (pts.length < 3) return null;
+  if (pts.length < MIN_TREND_MATCHES) return null;
   const n = pts.length;
   const sx = pts.reduce((a, p) => a + p[0], 0);
   const sy = pts.reduce((a, p) => a + p[1], 0);
@@ -46,7 +52,7 @@ export function trajectorySlope(series, key = 'overall') {
 /** Горячая/холодная серия относительно личного среднего. */
 export function streak(series, key = 'overall') {
   const vals = (series || []).filter((s) => Number(s?.[key]) > 0).map((s) => Number(s[key]));
-  if (vals.length < 3) return null;
+  if (vals.length < MIN_TREND_MATCHES) return null;
   const avg = vals.reduce((a, b) => a + b, 0) / vals.length;
   let count = 0;
   let dir = null;

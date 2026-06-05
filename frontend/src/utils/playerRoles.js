@@ -20,6 +20,13 @@
 import { per90, MIN_RANK_MINUTES, MATCH_MINUTES_DEFAULT } from './analytics';
 import { percentileRank } from './num';
 
+// Минуты, при которых перцентилям игрока доверяем «как есть». Меньше — байес-
+// сглаживаем к 50 (≈2 полных матча). На 3 разобранных матчах перцентиль
+// малоигравшего игрока шумный: 20 минут не дают права на «топ/худший по метрике».
+// Сглаживание одинаково для ВСЕХ метрик игрока → порядок метрик и выбранная роль
+// не меняются, смягчаются только величины (бары «ДНК», fit ролей).
+const MIN_STABLE_MINUTES = 180;
+
 // 10 метрик для перцентиля и сигнатур ролей. Единый источник для «ДНК игрока»
 // и «Ролевого профиля» — оба движка считают по этому списку.
 export const ROLE_METRICS = [
@@ -194,6 +201,8 @@ export function playerRolePct(subject, seasonPlayers, basis = MATCH_MINUTES_DEFA
   const meIsGk = isGkRow(me);
   const pool = seasonPlayers.filter((s) => s.minutes > 0 && (meIsGk || !isGkRow(s)));
   if (pool.length < 4) return null;
+  // Доверие к выборке игрока: чем меньше минут, тем сильнее тянем перцентиль к 50.
+  const conf = Math.min(1, (Number(me.minutes) || 0) / MIN_STABLE_MINUTES);
   const ranked = [];
   for (const m of ROLE_METRICS) {
     const poolMax = Math.max(0, ...pool.map((s) => Number(m.get(s)) || 0));
@@ -201,7 +210,7 @@ export function playerRolePct(subject, seasonPlayers, basis = MATCH_MINUTES_DEFA
     const my = per90(m.get(me), me.minutes, MIN_RANK_MINUTES, basis);
     const poolVals = pool.map((s) => per90(m.get(s), s.minutes, MIN_RANK_MINUTES, basis));
     const p = percentileRank(my, poolVals);
-    if (p != null) ranked.push({ key: m.key, label: m.label, group: m.group, pct: p });
+    if (p != null) ranked.push({ key: m.key, label: m.label, group: m.group, pct: Math.round(50 + (p - 50) * conf) });
   }
   if (ranked.length < 3) return null;
   ranked.sort((a, b) => b.pct - a.pct);

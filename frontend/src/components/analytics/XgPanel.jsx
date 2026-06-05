@@ -85,11 +85,14 @@ export default function XgPanel({ match }) {
 
       {prob && (
         <div className="an-prob">
+          {/* Полоса — ВИЗУАЛЬНАЯ пропорция (читается как «примерно»), без печатных
+              процентов: точный «67%» из двойного Пуассона по двум xG на ~5–10
+              моментах создаёт ложную точность. */}
           <div className="an-prob__bar" role="img"
-            aria-label={`Вероятность по xG: победа ${pct(prob.win)}%, ничья ${pct(prob.draw)}%, поражение ${pct(prob.loss)}%`}>
-            {prob.win > 0.04 && <div className="an-prob__seg an-prob__seg--win" style={{ width: `${pct(prob.win)}%` }}>{pct(prob.win)}%</div>}
-            {prob.draw > 0.04 && <div className="an-prob__seg an-prob__seg--draw" style={{ width: `${pct(prob.draw)}%` }}>{pct(prob.draw)}%</div>}
-            {prob.loss > 0.04 && <div className="an-prob__seg an-prob__seg--loss" style={{ width: `${pct(prob.loss)}%` }}>{pct(prob.loss)}%</div>}
+            aria-label={`По xG исход примерно: победа ${pct(prob.win)}%, ничья ${pct(prob.draw)}%, поражение ${pct(prob.loss)}%`}>
+            {prob.win > 0.04 && <div className="an-prob__seg an-prob__seg--win" style={{ width: `${pct(prob.win)}%` }} />}
+            {prob.draw > 0.04 && <div className="an-prob__seg an-prob__seg--draw" style={{ width: `${pct(prob.draw)}%` }} />}
+            {prob.loss > 0.04 && <div className="an-prob__seg an-prob__seg--loss" style={{ width: `${pct(prob.loss)}%` }} />}
           </div>
           <div className="an-prob__legend">
             <span>победа</span><span>ничья</span><span>поражение</span>
@@ -99,14 +102,14 @@ export default function XgPanel({ match }) {
 
       {dr && (
         <div className="an-deserved">
-          <span className="an-chip__label">Заслуженный счёт по моментам:</span>
-          <span className="an-deserved__score">{dr.deservedFor}:{dr.deservedAgainst}</span>
-          {dr.luck != null && Math.abs(dr.luck) >= 0.6 && (
+          <span className="an-chip__label">По моментам (xG):</span>
+          <span className="an-deserved__score">{f1(dr.xgFor)} — {f1(dr.xgAgainst)}</span>
+          {dr.luck != null && Math.abs(dr.luck) >= 1.0 && (
             <span className={`an-badge ${dr.luck > 0 ? 'an-badge--pos' : 'an-badge--neg'}`}>
-              {dr.luck > 0 ? `повезло +${dr.luck.toFixed(1)} очка` : `недобрали ${dr.luck.toFixed(1)} очка`}
+              {dr.luck > 0 ? `взяли больше, чем наиграли (+${dr.luck.toFixed(1)} очка)` : `недобрали по игре (${dr.luck.toFixed(1)} очка)`}
             </span>
           )}
-          {dr.luck != null && Math.abs(dr.luck) < 0.6 && (
+          {dr.luck != null && Math.abs(dr.luck) < 1.0 && (
             <span className="an-badge an-badge--neutral">результат по игре</span>
           )}
         </div>
@@ -114,8 +117,8 @@ export default function XgPanel({ match }) {
 
       <div className="an-note">
         Командный xG — из отчёта SportVisor. Вероятности и ожидаемые очки — модель
-        (двойной Пуассон по xG): оценка того, насколько исход заслужен по созданным
-        моментам, а не прогноз.
+        (двойной Пуассон по xG): грубая оценка того, насколько исход заслужен по
+        созданным моментам, а не прогноз. На малом числе моментов — ориентир, не цифра.
       </div>
     </div>
   );

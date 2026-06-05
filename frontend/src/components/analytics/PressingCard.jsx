@@ -11,7 +11,7 @@ function f1(v) { return v == null ? '—' : Number(v).toFixed(1); }
 export default function PressingCard({ match }) {
   if (!match) return null;
   const { ours, opp } = teamPpda(match);
-  const interp = interpretPpda(ours);
+  const interp = interpretPpda(ours, opp);
   const vol = pressingVolume(match.players || []);
   const line = lineHeight(match);
   if (ours == null && vol.pressing === 0) return null;

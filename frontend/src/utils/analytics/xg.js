@@ -8,9 +8,12 @@
 import { num } from '../num';
 import { M } from './metrics';
 
-// Защита от битого/устаревшего xG: значение из старых разборов могло содержать
-// мусор (схваченный рейтинг игрока ~8.3). xG команды за матч физически не бывает
-// выше ~6 даже у взрослых — такое значение считаем недостоверным.
+// Защита от битого/устаревшего xG: парсер старых разборов мог схватить строку
+// РЕЙТИНГОВ игроков (6–9) вместо xG. Порог 6 — НЕ косметический кап «детских
+// разгромов» (реальный командный xG в U-15 почти никогда не превышает 6), а
+// фильтр того самого мусора в диапазоне 6–9; завязан на парсер-guard и
+// backend-чистилку (scripts/fixBrokenXg.ts, XG_MAX=6.0). Поднимать его (как
+// предлагал аудит) нельзя — рейтинги 7/8/9 утекут обратно в xG.
 const MAX_PLAUSIBLE_TEAM_XG = 6;
 
 /** Командный xG нужной стороны из teamSummaryStats (битые значения → null). */
@@ -116,7 +119,9 @@ export function expectedPoints(xgFor, xgAgainst) {
 }
 
 /**
- * «Заслуженный счёт» — округлённые xG обеих сторон + вердикт vs фактический счёт.
+ * Оценка по моментам: сырые xG обеих сторон (БЕЗ округления к счёту — «xG
+ * 1.8 округлить до 2 гола» создаёт ложный «заслуженный счёт» из ~5 моментов) +
+ * ожидаемые очки и индекс везения vs фактический результат.
  * luck >0 — повезло (взяли больше, чем наиграли), <0 — недобрали.
  */
 export function deservedResult({ xgFor, xgAgainst, goalsFor, goalsAgainst }) {
@@ -130,8 +135,8 @@ export function deservedResult({ xgFor, xgAgainst, goalsFor, goalsAgainst }) {
   }
   const luck = actualPts == null ? null : actualPts - xp;
   return {
-    deservedFor: Math.round(xf),
-    deservedAgainst: Math.round(xa),
+    xgFor: xf,
+    xgAgainst: xa,
     xPoints: xp,
     actualPoints: actualPts,
     luck,

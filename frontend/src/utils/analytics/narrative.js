@@ -40,7 +40,7 @@ export function coachDigest(match, opts = {}) {
       out.push({
         tone: 'neutral',
         icon: '📊',
-        text: `По моментам (xG ${fmt2(xgFor)}–${fmt2(xgAgainst)}) заслуженный счёт ≈ ${dr.deservedFor}:${dr.deservedAgainst}, ожидаемые очки ${fmt1(dr.xPoints)}.`,
+        text: `По моментам — xG ${fmt2(xgFor)} против ${fmt2(xgAgainst)}, ожидаемые очки ${fmt1(dr.xPoints)}.`,
       });
       if (dr.luck != null && Math.abs(dr.luck) >= 1.2) {
         out.push(
@@ -64,11 +64,11 @@ export function coachDigest(match, opts = {}) {
     }
   }
 
-  // ── PPDA / прессинг ──
-  const { ours: ppda } = teamPpda(match);
-  const interp = interpretPpda(ppda);
-  if (interp && ppda != null) {
-    out.push({ tone: interp.tone, icon: '🔥', text: `${interp.level} — PPDA ${fmt1(ppda)}: ${interp.note}.` });
+  // ── PPDA / прессинг (относительно соперника, не по взрослым порогам) ──
+  const { ours: ppda, opp: oppPpda } = teamPpda(match);
+  const interp = interpretPpda(ppda, oppPpda);
+  if (interp && ppda != null && oppPpda != null) {
+    out.push({ tone: interp.tone, icon: '🔥', text: `${interp.level} — PPDA ${fmt1(ppda)} против ${fmt1(oppPpda)}: ${interp.note}.` });
   }
 
   // ── Momentum по таймам ──

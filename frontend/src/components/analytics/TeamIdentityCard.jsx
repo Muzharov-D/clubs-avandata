@@ -58,10 +58,13 @@ export default function TeamIdentityCard({ aggregate, periodLabel = 'за сез
   const passVol = long + middle + short;
   const directness = passVol > 0 ? (long / passVol) * 100 : null;
 
-  // Прессинг: PPDA → тренерская интерпретация (слова, без числа в тексте).
+  // Прессинг: вердикт ОТНОСИТЕЛЬНО соперника (наш PPDA vs средний PPDA соперников
+  // за период — одна шкала), без взрослых абсолютных порогов и магического «15».
+  // Интенсивность-полоса = доля нашей агрессии отбора (1/PPDA) против соперника.
   const ppda = num(ta.pressing?.averagePPDA);
-  const press = ppda > 0 ? interpretPpda(ppda) : null;
-  const pressIntensity = ppda > 0 ? clamp(((15 - ppda) / 15) * 100) : null;
+  const oppPpda = num(ta.passes?.oppda);
+  const press = ppda > 0 && oppPpda > 0 ? interpretPpda(ppda, oppPpda) : null;
+  const pressIntensity = press ? clamp(((1 / ppda) / ((1 / ppda) + (1 / oppPpda))) * 100) : null;
 
   // Острота: xG за матч (xG — принятое обозначение). Гард >6 — битый рейтинг.
   const xgRaw = num(our.expectedGoals);

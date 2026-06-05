@@ -15,14 +15,24 @@ export function teamPpda(match) {
   };
 }
 
-/** Интерпретация PPDA тренерским языком. */
-export function interpretPpda(v) {
-  if (v == null || !Number.isFinite(Number(v))) return null;
-  const x = Number(v);
-  if (x < 8) return { level: 'Очень высокий прессинг', tone: 'positive', note: 'высоко встречаем и не даём сопернику развивать атаки' };
-  if (x < 11) return { level: 'Высокий прессинг', tone: 'positive', note: 'агрессивный отбор на чужой половине' };
-  if (x < 15) return { level: 'Средний блок', tone: 'neutral', note: 'сбалансированное давление' };
-  return { level: 'Низкий блок', tone: 'neutral', note: 'выжидательная оборона, прессинг включается реже' };
+// Маржа, внутри которой считаем интенсивность отбора «на равных».
+const PPDA_PARITY = 0.15;
+
+/**
+ * Интерпретация прессинга тренерским языком — ОТНОСИТЕЛЬНАЯ: сравниваем наш PPDA
+ * с PPDA соперника (одна метрика, один провайдер, одна шкала). Это честно, в
+ * отличие от взрослых абсолютных порогов 8/11/15: детская SportVisor-метрика
+ * идёт в районе ~3 и под эти пороги не калибрована — абсолютный вердикт всегда
+ * выдавал бы «очень высокий прессинг». Ниже PPDA = агрессивнее отбор. Без PPDA
+ * соперника абсолютный уровень не выносим (возвращаем null).
+ */
+export function interpretPpda(ours, opp) {
+  const a = Number(ours);
+  const b = Number(opp);
+  if (!Number.isFinite(a) || a <= 0 || !Number.isFinite(b) || b <= 0) return null;
+  if (a <= b * (1 - PPDA_PARITY)) return { level: 'Прессингуем активнее', tone: 'positive', note: 'отбираем мяч выше и быстрее соперника' };
+  if (a >= b * (1 + PPDA_PARITY)) return { level: 'Спокойный отбор', tone: 'neutral', note: 'обороняемся компактнее, прессингуем реже соперника' };
+  return { level: 'Прессинг на равных', tone: 'neutral', note: 'по интенсивности отбора близко к сопернику' };
 }
 
 /** Интенсивность прессинга команды (сумма прессинг-действий состава). */
