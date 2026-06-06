@@ -548,17 +548,32 @@ export default function MatchDetail() {
               for (const v of vals) { const n = num(v); if (n > 0) return n; }
               return 0;
             };
+            // Дистанция в км (метры/1000, округление). 0 → скрыта ниже.
+            const km = (m) => { const d = num(m?.teamAggregates?.fitness?.totalDistance); return d > 0 ? Math.round(d / 1000) : 0; };
+            // teamAggregates — всегда НАША команда (не home/away): в выездных
+            // матчах teamSummaryStats.home = соперник, давал чужие удары в створ.
+            // Метрики тренерские, без жаргона; нулевые/отсутствующие авто-скрыты
+            // ниже (cur > 0), поэтому набор широкий — на полном экспорте грид
+            // насыщенный, на урезанном показывает только то, что реально есть.
             const defs = [
-              // teamAggregates — всегда НАША команда (не home/away): в выездных
-              // матчах teamSummaryStats.home = соперник, давал чужие удары в створ.
+              // Атака
+              { label: 'Удары',                  get: (m) => num(m?.teamAggregates?.shooting?.shots ?? m?.teamAggregates?.shooting?.totalShots) },
               { label: 'Удары в створ',          get: (m) => num(m?.teamAggregates?.shooting?.onTarget) },
+              { label: 'Касания в штрафной',     get: (m) => num(m?.teamAggregates?.attacks?.touchesInBox) },
+              { label: 'Обводки',                get: (m) => num(m?.teamAggregates?.attacks?.dribble) },
+              // Передачи
+              { label: 'Ключевые передачи',      get: (m) => num(m?.teamAggregates?.passes?.keyPass) },
+              { label: 'Точные передачи',        get: (m) => num(m?.teamAggregates?.passes?.successful) },
               { label: 'Прогрессивные передачи', get: (m) => num(m?.teamAggregates?.passes?.progressive) },
-              // Отборы = tackles (recoveriesAndTackling.tackle — корректный источник),
-              // duels.totalDuels — фолбэк. Перехваты = recoveriesAndTackling.interception
-              // (сумма, см. история фиксов), positioning.interceptions — фолбэк.
+              { label: 'Кроссы',                 get: (m) => num(m?.teamAggregates?.passes?.crosses) },
+              // Оборона. Отборы = tackles (recoveriesAndTackling.tackle — корректный
+              // источник), duels.totalDuels — фолбэк. Перехваты = recoveriesAndTackling
+              // .interception (сумма, см. история фиксов), positioning — фолбэк.
               { label: 'Отборы',                 get: (m) => firstPositive(m?.teamAggregates?.recoveriesAndTackling?.tackle, m?.teamAggregates?.duels?.totalDuels) },
               { label: 'Перехваты',              get: (m) => firstPositive(m?.teamAggregates?.recoveriesAndTackling?.interception, m?.teamAggregates?.positioning?.interceptions) },
-              { label: 'Кроссы',                 get: (m) => num(m?.teamAggregates?.passes?.crosses) },
+              { label: 'Подборы',                get: (m) => num(m?.teamAggregates?.recoveriesAndTackling?.recovery) },
+              // Физика
+              { label: 'Дистанция, км',          get: km },
             ];
             const rows = defs.map((d) => {
               const cur = d.get(match);
