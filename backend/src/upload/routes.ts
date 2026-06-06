@@ -192,8 +192,11 @@ export async function uploadRoutes(app: FastifyInstance) {
       // из PDF пустые). Двуязычные заголовки (рус/англ). Best-effort.
       let csvDerivedAgg: Record<string, Record<string, { value: number }>> | null = null;
       if (xlsxBuffer) {
-        const script = secondaryKind === 'csv' ? 'parse_csv.py' : 'parse_excel.py';
-        await runPython(PYTHON_BIN, [join(PARSERS_DIR, script), xlsxPath, xlsxOutPath], work);
+        // parse_csv.py — единый двуязычный (рус/англ) парсер для CSV И xlsx:
+        // отдаёт стату в неймспейсе attack/defence/fitness (как rich PDF), поэтому
+        // детальная per-player стата доходит до match_players.stats и при урезанном
+        // PDF (где rich пуст). parse_excel (legacy, группы passing/...) больше не нужен.
+        await runPython(PYTHON_BIN, [join(PARSERS_DIR, 'parse_csv.py'), xlsxPath, xlsxOutPath], work);
         excelData = JSON.parse(await readFile(xlsxOutPath, 'utf-8')) as SecondaryOutput;
         logger.info({ matchId, kind: secondaryKind, players: excelData.players.length, cols: excelData.match.columnsCount }, '[upload] secondary stats parsed');
         try {
@@ -662,15 +665,12 @@ export async function uploadRoutes(app: FastifyInstance) {
           const ex = combined.get(numStr);
           if (!ex) continue;
           const stats = ex.stats as Record<string, Record<string, unknown>>;
+          // CSV/xlsx (через parse_csv) — тот же неймспейс attack/defence/fitness,
+          // структурированный эталон → перетирает PDF по-ключу. Ключи, которых в
+          // CSV нет, остаются из rich. При урезанном PDF rich пуст → стата целиком
+          // из CSV (иначе «Лидеры»/«Тепловая карта» пустые).
           for (const [grp, vals] of Object.entries(ep.stats)) {
-            const groupVals = vals as Record<string, unknown>;
-            if (secondaryKind === 'csv') {
-              stats[grp] = { ...(stats[grp] ?? {}), ...groupVals }; // CSV wins per-key
-            } else {
-              const cur = stats[grp];
-              const pdfHasGroup = cur && typeof cur === 'object' && Object.keys(cur).length > 0;
-              if (!pdfHasGroup) stats[grp] = groupVals; // PDF группу не дал → из Excel
-            }
+            stats[grp] = { ...(stats[grp] ?? {}), ...(vals as Record<string, unknown>) };
           }
         }
         // FROM old build_match — для splits только (1st/2nd half)
