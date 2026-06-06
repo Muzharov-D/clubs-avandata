@@ -35,16 +35,36 @@ export default function SetPieceShotCard({ match }) {
     <div className="card an">
       <div className="page-section-title">Стандарты, удары, переходы <span className="an-model-tag">отчёт + модель</span></div>
 
-      {hasShots && (
-        <>
-          <div className="an-metric__label" style={{ marginBottom: 6 }}>Качество ударов ({shots} всего)</div>
-          <div className="an-prob__bar">
-            {open > 0 && <div className="an-prob__seg an-prob__seg--win" style={{ width: `${pct(open)}%` }}>{pct(open) >= 12 ? `с игры ${open}` : ''}</div>}
-            {head > 0 && <div className="an-prob__seg an-prob__seg--draw" style={{ width: `${pct(head)}%` }}>{pct(head) >= 12 ? `головой ${head}` : ''}</div>}
-            {fk > 0 && <div className="an-prob__seg" style={{ width: `${pct(fk)}%`, background: 'var(--an-warn)' }}>{pct(fk) >= 12 ? `штрафные ${fk}` : ''}</div>}
+      {hasShots && (() => {
+        // Категории ударов по типу момента. Полосу-разбивку показываем только
+        // когда категорий ≥2 — иначе одна категория = полоса во всю ширину
+        // «с игры 13», что выглядит вырождённо. На одну категорию — строкой.
+        const cats = [
+          ['с игры', open, 'an-prob__seg an-prob__seg--win', null],
+          ['головой', head, 'an-prob__seg an-prob__seg--draw', null],
+          ['штрафные', fk, 'an-prob__seg', 'var(--an-warn)'],
+        ].filter(([, n]) => n > 0);
+        if (cats.length >= 2) {
+          return (
+            <>
+              <div className="an-metric__label" style={{ marginBottom: 6 }}>Качество ударов ({shots} всего)</div>
+              <div className="an-prob__bar">
+                {cats.map(([label, n, cls, bg]) => (
+                  <div key={label} className={cls} style={{ width: `${pct(n)}%`, ...(bg ? { background: bg } : {}) }}>
+                    {pct(n) >= 12 ? `${label} ${n}` : ''}
+                  </div>
+                ))}
+              </div>
+            </>
+          );
+        }
+        const only = cats[0];
+        return (
+          <div className="an-metric__label">
+            Качество ударов: {shots} {only ? `— все ${only[0]}` : ''}
           </div>
-        </>
-      )}
+        );
+      })()}
 
       <div className="an-chips" style={{ marginTop: 12 }}>
         {hasSp && sp.corners > 0 && <span className="an-chip"><span className="an-chip__label">угловые</span><span className="an-chip__val">{sp.corners}</span></span>}

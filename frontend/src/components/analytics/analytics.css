@@ -111,10 +111,12 @@
 .an-leaders__row { display: flex; align-items: center; gap: 10px; padding: 7px 0; border-top: 1px solid var(--border); cursor: pointer; }
 .an-leaders__row:first-child { border-top: none; }
 .an-leaders__rank { width: 18px; text-align: center; color: var(--text-faint); font-weight: 700; font-size: 13px; }
-.an-leaders__name { flex: 1; font-size: 14px; font-weight: 600; }
+/* Имя — по контенту (не раздувать flex:1, иначе пустой провал и полоса-сливер
+   у правого края). Полоса растёт и заполняет ряд. */
+.an-leaders__name { flex: 0 1 auto; min-width: 0; font-size: 14px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .an-leaders__sub { font-size: 11px; color: var(--an-muted); font-weight: 400; }
 .an-leaders__val { font-variant-numeric: tabular-nums; font-weight: 800; font-size: 15px; }
-.an-leaders__bar { flex: 0 0 64px; height: 6px; border-radius: 3px; background: var(--bg-surface-3); overflow: hidden; }
+.an-leaders__bar { flex: 1 1 auto; min-width: 80px; height: 6px; border-radius: 3px; background: var(--bg-surface-3); overflow: hidden; }
 .an-leaders__bar-fill { height: 100%; background: var(--brand-accent, #22c55e); }
 
 /* MotM impact */

@@ -523,7 +523,9 @@
 /* ─── Командный выхлоп vs сезон (замена бесполезных N-из-N бубликов) ─── */
 .md-output {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  /* max 220px (не 1fr): при одной метрике на урезанном экспорте плитка не
+     растягивается на всю ширину карточки, а садится слева. */
+  grid-template-columns: repeat(auto-fit, minmax(150px, 220px));
   gap: 10px;
 }
 .md-out {
