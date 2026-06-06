@@ -28,6 +28,7 @@ const SECTION_TITLES: Record<string, string> = {
   duels: 'Единоборства',
   positioning: 'Позиционная игра',
   setPieces: 'Стандарты',
+  fitness: 'Фитнес',
 };
 
 const FIELD_RU: Record<string, string> = {
@@ -67,6 +68,10 @@ const FIELD_RU: Record<string, string> = {
   corner: 'Угловые', corners: 'Угловые', freeKick: 'Штрафные', freeKicks: 'Штрафные',
   freeKickShot: 'Штр. с ударом', penalty: 'Пенальти', throwing: 'Ауты', throwIns: 'Ауты',
   offsides: 'Офсайды', penaltyWithShot: 'Пенальти с ударом',
+  // fitness — секция приходит с бэка англ. ключами; UI строго русский
+  totalDistance: 'Общая дистанция', sprintDistance: 'Спринт-дистанция',
+  averageSpeed: 'Средняя скорость', intenseRunning: 'Интенсивный бег',
+  sprintsCount: 'Спринтов', sprintDistanceM: 'Спринт-дистанция',
 };
 
 function sectionTitle(k: string): string { return SECTION_TITLES[k] || k; }
