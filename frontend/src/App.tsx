@@ -5,6 +5,8 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { TeamProvider } from './contexts/TeamContext';
 import { TournamentProvider } from './contexts/TournamentContext';
+// @ts-ignore — legacy .jsx
+import { DashboardLayoutProvider } from './constructor/DashboardLayoutContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import MainLayout from './layouts/MainLayout';
 import Login from './pages/Login';
@@ -26,6 +28,8 @@ import PlayerCompare from './pages/PlayerCompare';
 import LoadControl from './pages/LoadControl';
 import CalendarPage from './pages/CalendarPage';
 import TrainingsPage from './pages/TrainingsPage';
+// @ts-ignore — legacy .jsx
+import ConstructorPage from './pages/ConstructorPage';
 import PublicTeamSchedule from './pages/PublicTeamSchedule';
 import LeagueFixture from './pages/LeagueFixture';
 import PublicLanding from './pages/PublicLanding';
@@ -98,6 +102,7 @@ export function App() {
           <AuthProvider>
             <TeamProvider>
               <TournamentProvider>
+                <DashboardLayoutProvider>
                 <Routes>
                   <Route path="/login" element={<Login />} />
                   <Route path="/set-password" element={<SetPassword />} />
@@ -140,9 +145,11 @@ export function App() {
                     <Route path="/load" element={<CoachOnly><LoadControl /></CoachOnly>} />
                     {/* PlayerDetail.jsx — 1:1 копия Легируса с pizza-chart, фото, бейджами */}
                     <Route path="/players/:playerId" element={<OwnPlayerOnly><PlayerDetail /></OwnPlayerOnly>} />
+                    <Route path="/constructor" element={<CoachOnly><ConstructorPage /></CoachOnly>} />
                     <Route path="*" element={<Navigate to="/club" replace />} />
                   </Route>
                 </Routes>
+                </DashboardLayoutProvider>
               </TournamentProvider>
             </TeamProvider>
           </AuthProvider>

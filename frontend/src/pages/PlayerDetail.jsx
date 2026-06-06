@@ -26,6 +26,7 @@ import SpeedZones from '../components/SpeedZones';
 import PassProfile from '../components/PassProfile';
 import { num, percentileRank, formatRaw } from '../utils/num';
 import { POSITION_OPTIONS, PIZZA_VS_LABEL, TEMPLATES, getStatValue, positionGroup, CIES_GROUPS, CIES_METRIC_BY_KEY } from '../utils/pizzaTemplates';
+import Block from '../constructor/Block';
 import './PlayerDetail.css';
 
 import { trimAgeSuffix as trimAge } from '../utils/teamName';
@@ -350,7 +351,7 @@ function SeasonTab({ identity, playerId, teamId, teamName, seasonPlayers, series
   return (
     <>
       {/* ГЕРОЙ-ЦЕНТР: расширенная ДНК-карта — сразу после вкладок, до инфо-блоков */}
-      <Reveal variant="slide-up" duration={0.4}>{dnaCard}</Reveal>
+      <Block page="player" id="dna"><Reveal variant="slide-up" duration={0.4}>{dnaCard}</Reveal></Block>
 
       {/* Fallback-шапка, если сезонного пула для ДНК недостаточно */}
       {(!Array.isArray(seasonPlayers) || seasonPlayers.length < 4) && (
@@ -379,22 +380,22 @@ function SeasonTab({ identity, playerId, teamId, teamName, seasonPlayers, series
       </Reveal>
 
       {/* Посещаемость тренировок — появляется только если есть данные */}
-      <AttendanceBlock teamId={teamId} playerId={playerId} />
+      <Block page="player" id="attendance"><AttendanceBlock teamId={teamId} playerId={playerId} /></Block>
 
       {/* Радар-витрина: сезонная пицца (за матч vs позиционный пул) */}
-      <Reveal variant="slide-up" duration={0.5} delay={0.2}><SeasonProfileCard subject={identity} seasonPlayers={seasonPlayers} basis={basis} /></Reveal>
+      <Block page="player" id="season-profile"><Reveal variant="slide-up" duration={0.5} delay={0.2}><SeasonProfileCard subject={identity} seasonPlayers={seasonPlayers} basis={basis} /></Reveal></Block>
 
       {/* Динамика по сезону — спарклайны рейтингов + лента матчей */}
       <Reveal variant="slide-up" duration={0.5} delay={0.3}><PlayerTrendCard playerId={playerId} series={series} /></Reveal>
 
       {/* Форма: индекс свежих матчей, vs своё среднее, серия, траектория */}
-      <Reveal variant="slide-up" duration={0.5} delay={0.35}><PlayerFormCard playerId={playerId} series={series} /></Reveal>
+      <Block page="player" id="form"><Reveal variant="slide-up" duration={0.5} delay={0.35}><PlayerFormCard playerId={playerId} series={series} /></Reveal></Block>
 
       {/* Перцентиль vs сезонный позиционный пул (за матч) — детальные полосы */}
-      <Reveal variant="slide-up" duration={0.5} delay={0.4}><SeasonPercentileCard subject={identity} seasonPlayers={seasonPlayers} basis={basis} /></Reveal>
+      <Block page="player" id="season-percentile"><Reveal variant="slide-up" duration={0.5} delay={0.4}><SeasonPercentileCard subject={identity} seasonPlayers={seasonPlayers} basis={basis} /></Reveal></Block>
 
       {/* Ролевой профиль — ранжированный fit по ролям (тот же движок, что «ДНК») */}
-      <Reveal variant="slide-up" duration={0.5} delay={0.5}><RoleFitCard subject={identity} seasonPlayers={seasonPlayers} basis={basis} /></Reveal>
+      <Block page="player" id="role-fit"><Reveal variant="slide-up" duration={0.5} delay={0.5}><RoleFitCard subject={identity} seasonPlayers={seasonPlayers} basis={basis} /></Reveal></Block>
 
       {series.length < 2 && (!seasonPlayers || seasonPlayers.length < 4) && (
         <div className="empty-state">
@@ -771,6 +772,7 @@ function MatchTab({ playerId, match, loading, allMatches, currentMatchId, setSel
       )}
 
       {/* PIZZA CHART — профиль по составу матча */}
+      <Block page="player" id="pizza">
       <div className="card player-detail__pizza">
         <div className="player-detail__pizza-head">
           <div className="page-section-title">Профиль в матче</div>
@@ -897,6 +899,7 @@ function MatchTab({ playerId, match, loading, allMatches, currentMatchId, setSel
           />
         )}
       </div>
+      </Block>
 
       </section>
 
@@ -912,6 +915,7 @@ function MatchTab({ playerId, match, loading, allMatches, currentMatchId, setSel
 
       <div className="pd-grid-2">
       {/* FITNESS — скрываем целиком если ни одна метрика не считалась (бенч) */}
+      <Block page="player" id="fitness">
       {FITNESS_ROWS.some(([, k]) => Number(num(fitnessStats[k]) ?? 0) > 0) && (
         <div className="card">
           <div className="page-section-title">Фитнес</div>
@@ -927,6 +931,7 @@ function MatchTab({ playerId, match, loading, allMatches, currentMatchId, setSel
           </div>
         </div>
       )}
+      </Block>
 
       {/* Зоны интенсивности */}
       {(() => {
@@ -990,8 +995,8 @@ function MatchTab({ playerId, match, loading, allMatches, currentMatchId, setSel
             </span>
           </summary>
           <div className="player-detail__splits-body">
-            <SplitsTable title="Атака — раскладка по таймам" keys={attackRows} splits={splits} labels={labels} />
-            <SplitsTable title="Защита — раскладка по таймам" keys={defenceRows} splits={splits} labels={labels} />
+            <Block page="player" id="attack-split"><SplitsTable title="Атака — раскладка по таймам" keys={attackRows} splits={splits} labels={labels} /></Block>
+            <Block page="player" id="defence-split"><SplitsTable title="Защита — раскладка по таймам" keys={defenceRows} splits={splits} labels={labels} /></Block>
           </div>
         </details>
       )}

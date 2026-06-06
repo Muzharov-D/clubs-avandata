@@ -12,3 +12,4 @@ export * from './standings.js';
 export * from './trainings.js';
 export * from './matchCallups.js';
 export * from './push.js';
+export * from './dashboardLayouts.js';

@@ -15,6 +15,7 @@ import { useTeam } from '../contexts/TeamContext';
 import { useTournament } from '../contexts/TournamentContext';
 import { useDocumentTitle } from '../hooks/useDocumentTitle';
 import { AnimatedNumber, SplitText, Reveal, StaggerList, KineticCard } from '../components/motion';
+import Block from '../constructor/Block';
 import './MatchesDashboard.css';
 import './matchesKinetic.css';
 
@@ -170,6 +171,7 @@ export default function MatchesDashboard() {
   return (
     <div className="page matches-dashboard kinetic">
       {/* [1] ГЕРОЙ — счёт последнего матча, full-width, над заголовком сезона */}
+      <Block page="matches" id="last-match">
       {lastMatch && (
         <Reveal variant="slide-up" duration={0.7} delay={0} className="matches-dashboard__hero-kinetic">
           <KineticCard glow className="card matches-dashboard__last matches-dashboard__last--hero">
@@ -209,6 +211,7 @@ export default function MatchesDashboard() {
           </KineticCard>
         </Reveal>
       )}
+      </Block>
 
       {/* Заголовок сезона */}
       <div className="matches-dashboard__hero">
@@ -234,6 +237,7 @@ export default function MatchesDashboard() {
 
         <section className="matches-dashboard__col-right">
           {/* [2] Сезонная статистика — иерархия: ведущая метрика + каскад вторичных */}
+          <Block page="matches" id="season-summary">
           <Reveal variant="slide-up" duration={0.55} delay={0.2}>
             <div className="card">
               <div className="page-section-title">Информация по сезону</div>
@@ -248,6 +252,7 @@ export default function MatchesDashboard() {
               </div>
             </div>
           </Reveal>
+          </Block>
 
           {/* [3] Топ-5 — podium-reveal: #1 чемпион крупно, #2–5 каскадом */}
           {topRated.length > 0 && (

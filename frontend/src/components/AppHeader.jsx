@@ -4,6 +4,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useTeam } from '../contexts/TeamContext';
 import PushOptInButton from './PushOptInButton';
 import EffectsToggle from './EffectsToggle';
+import ConstructorToggle from '../constructor/ConstructorToggle';
 import ChangePasswordModal from './ChangePasswordModal';
 import { toast } from './Toast';
 import './AppHeader.css';
@@ -93,6 +94,7 @@ export default function AppHeader() {
             </span>
           )}
         </div>
+        <ConstructorToggle />
         <PushOptInButton />
         <EffectsToggle />
         <button

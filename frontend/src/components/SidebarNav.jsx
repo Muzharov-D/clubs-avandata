@@ -28,6 +28,9 @@ export default function SidebarNav() {
     isCoach
       ? { id: 'load', label: 'Нагрузка', path: '/load', icon: '🏃' }
       : null,
+    isCoach
+      ? { id: 'constructor', label: 'Конструктор', path: '/constructor', icon: '⚙' }
+      : null,
   ].filter(Boolean);
 
   function isActive(item) {
@@ -39,6 +42,7 @@ export default function SidebarNav() {
     if (item.id === 'me')        return pathname === item.path;
     if (item.id === 'players')   return pathname.startsWith('/players');
     if (item.id === 'load')      return pathname.startsWith('/load');
+    if (item.id === 'constructor') return pathname.startsWith('/constructor');
     return false;
   }
 
