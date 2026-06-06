@@ -225,6 +225,22 @@ def parse(pdf_path, team_id, match_id):
                 h_val = band[0]
             if a_val is None and len(band) >= 2:
                 a_val = band[1]
+    # Same-line layout: '2.4 ОЖИДАЕМЫЕ ГОЛЫ (xG) 2 <шум>' — оба значения на одной
+    # строке (home ПЕРЕД меткой, away ПОСЛЕ '(xG)'). В этом шаблоне away-xG бывает
+    # ЦЕЛЫМ ('2'), поэтому здесь допускаем целые; фильтр 0..6 отсекает шум-цифры
+    # ('3333333333'). Только дозаполняем пропуски — найденное дробным разбором не трогаем.
+    if (h_val is None or a_val is None) and xg_idx >= 0:
+        L = lines[xg_idx]
+        NUM = r"\d+(?:[.,]\d+)?"
+        if h_val is None and "ОЖИДАЕМЫЕ" in L:
+            pre = [t for t in re.findall(NUM, L.split("ОЖИДАЕМЫЕ")[0]) if _plausible_xg(t)]
+            if pre:
+                h_val = pre[-1]
+        if a_val is None:
+            post_src = re.split(r"\(xG\)|ОЖИДАЕМЫЕ ГОЛЫ|ОЖИДАЕМЫЕ", L)[-1]
+            post = [t for t in re.findall(NUM, post_src) if _plausible_xg(t)]
+            if post:
+                a_val = post[0]
     out["homeStats"]["expectedGoals"] = _to_float(h_val)
     out["awayStats"]["expectedGoals"] = _to_float(a_val)
 
