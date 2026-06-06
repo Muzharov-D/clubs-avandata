@@ -49,15 +49,24 @@ def _parse_pct_pair(text, label):
     return (m.group(1), m.group(2)) if m else (None, None)
 
 
-def _stats_for_side(text, anchor, side):
-    line = next((l for l in text.split("\n") if anchor in l), None)
-    if not line:
-        return None
-    parts = line.split(anchor)
-    if len(parts) != 2:
-        return None
-    chunk = parts[0].strip().split() if side == "home" else parts[1].strip().split()
-    return chunk
+def _stats_for_side(text, anchors, side, exclude=()):
+    """Чанк чисел до/после метки. anchors — строка или кортеж альтернатив
+    (разные шаблоны экспорта: «УДАРЫ» vs «ВСЕГО УДАРОВ»). exclude — подстроки,
+    при которых строку пропускаем (чтобы «УДАРЫ» не цеплялся за «ШТРАФНЫЕ
+    УДАРЫ» / «УДАРЫ ОТ ВОРОТ»)."""
+    if isinstance(anchors, str):
+        anchors = (anchors,)
+    for anchor in anchors:
+        for l in text.split("\n"):
+            if anchor not in l or any(x in l for x in exclude):
+                continue
+            parts = l.split(anchor)
+            if len(parts) != 2:
+                continue
+            chunk = parts[0].strip().split() if side == "home" else parts[1].strip().split()
+            if chunk:
+                return chunk
+    return None
 
 
 def _find_label_line(lines, *labels):
@@ -148,9 +157,13 @@ def parse(pdf_path, team_id, match_id):
     out["homeStats"]["possessionPct"] = _parse_pct(home_poss)
     out["awayStats"]["possessionPct"] = _parse_pct(away_poss)
 
-    # --- Shots (УДАРЫ) — same line: '13 69% 9 УДАРЫ 11 36% 4' ---
-    h = _stats_for_side(text, "УДАРЫ", "home")
-    a = _stats_for_side(text, "УДАРЫ", "away")
+    # --- Shots — same line: '13 69% 9 УДАРЫ 11 36% 4'. Метка бывает «УДАРЫ»
+    # или «ВСЕГО УДАРОВ» (вариант шаблона). Исключаем «ШТРАФНЫЕ УДАРЫ» и
+    # «УДАРЫ ОТ ВОРОТ», иначе «УДАРЫ» цепляется за них. ---
+    SHOT_ANCHORS = ("ВСЕГО УДАРОВ", "УДАРЫ")
+    SHOT_EXCLUDE = ("ШТРАФН", "ВОРОТ")
+    h = _stats_for_side(text, SHOT_ANCHORS, "home", SHOT_EXCLUDE)
+    a = _stats_for_side(text, SHOT_ANCHORS, "away", SHOT_EXCLUDE)
     if h and len(h) >= 3:
         out["homeStats"]["shots"] = {"total": _to_int(h[-3]), "accuracy": _parse_pct(h[-2]), "onTarget": _to_int(h[-1])}
     else:
