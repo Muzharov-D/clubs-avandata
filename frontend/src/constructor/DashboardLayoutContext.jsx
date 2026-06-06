@@ -38,6 +38,7 @@ const FALLBACK = {
   setBlock: () => {},
   resetPage: () => {},
   resetAll: () => {},
+  saveNow: () => Promise.resolve(),
   editMode: false,
   setEditMode: () => {},
   canEdit: false,
@@ -134,6 +135,16 @@ export function DashboardLayoutProvider({ children }) {
     [layout],
   );
 
+  // Явное сохранение для кнопки «Сохранить»: гасим debounce и пишем сразу.
+  // Возвращает промис — кнопка показывает статус «Сохранение…» → «Сохранено».
+  const saveNow = useCallback(() => {
+    if (saveTimer.current) { clearTimeout(saveTimer.current); saveTimer.current = null; }
+    dirtyRef.current = false;
+    if (!userId) return Promise.resolve();
+    writeCache(userId, layout);
+    return saveDashboardLayout(layout);
+  }, [userId, layout]);
+
   const value = useMemo(() => ({
     layout,
     isVisible,
@@ -141,10 +152,11 @@ export function DashboardLayoutProvider({ children }) {
     setBlock,
     resetPage,
     resetAll,
+    saveNow,
     editMode: isCoach ? editMode : false,
     setEditMode,
     canEdit: isCoach,
-  }), [layout, isVisible, toggle, setBlock, resetPage, resetAll, editMode, isCoach]);
+  }), [layout, isVisible, toggle, setBlock, resetPage, resetAll, saveNow, editMode, isCoach]);
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }
