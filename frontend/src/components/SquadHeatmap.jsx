@@ -1,5 +1,7 @@
+import { useMemo } from 'react';
 import { ratingColor } from '../utils/colors';
 import { shortNameFromPlayer } from '../utils/players';
+import { useTableSort, sortArrow } from '../hooks/useTableSort';
 import './SquadHeatmap.css';
 
 /**
@@ -27,9 +29,21 @@ const COLS = [
 ];
 
 export default function SquadHeatmap({ players }) {
-  const ps = (players || [])
-    .filter((p) => (p.minutes ?? 0) > 0)
-    .sort((a, b) => (b.ratings?.overall || 0) - (a.ratings?.overall || 0));
+  const base = useMemo(
+    () => (players || []).filter((p) => (p.minutes ?? 0) > 0),
+    [players],
+  );
+
+  // Сортировка по клику на заголовок столбца (по умолчанию — рейтинг ↓).
+  const accessors = useMemo(() => {
+    const acc = { name: (p) => shortNameFromPlayer(p) };
+    COLS.forEach((c) => { acc[c.key] = c.get; });
+    return acc;
+  }, []);
+  const { sorted: ps, sortKey, sortDir, requestSort } = useTableSort(base, {
+    initialKey: 'ov', initialDir: 'desc', accessors,
+  });
+
   if (ps.length < 3) return null;
 
   const max = {};
@@ -40,8 +54,25 @@ export default function SquadHeatmap({ players }) {
   return (
     <div className="shm-wrap">
       <div className="shm" style={{ gridTemplateColumns: cols }}>
-        <div className="shm__cell shm__cell--head shm__cell--name">Игрок</div>
-        {COLS.map((c) => <div key={c.key} className="shm__cell shm__cell--head">{c.label}</div>)}
+        <button
+          type="button"
+          className={`shm__cell shm__cell--head shm__cell--name shm__cell--sortable${sortKey === 'name' ? ' is-active' : ''}`}
+          onClick={() => requestSort('name', 'asc')}
+          title="Сортировать по имени"
+        >
+          Игрок <span className="shm__sort">{sortArrow(sortKey === 'name', sortDir)}</span>
+        </button>
+        {COLS.map((c) => (
+          <button
+            key={c.key}
+            type="button"
+            className={`shm__cell shm__cell--head shm__cell--sortable${sortKey === c.key ? ' is-active' : ''}`}
+            onClick={() => requestSort(c.key, 'desc')}
+            title={`Сортировать по «${c.label}»`}
+          >
+            {c.label} <span className="shm__sort">{sortArrow(sortKey === c.key, sortDir)}</span>
+          </button>
+        ))}
 
         {ps.map((p) => (
           <Row key={p.id} p={p} max={max} />
