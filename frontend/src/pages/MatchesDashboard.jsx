@@ -178,7 +178,7 @@ export default function MatchesDashboard() {
               <div className="matches-dashboard__last-date">{fmtDate(lastMatch.date)}</div>
               <div className="matches-dashboard__last-teams matches-dashboard__last-teams--hero">
                 <div className="matches-dashboard__last-team">
-                  <LastTeamCrest name={lastMatch.homeTeam?.name} shield={resolveShield(lastMatch.homeTeam?.name)} hero />
+                  <LastTeamCrest name={lastMatch.homeTeam?.name} shield={lastMatch.homeTeam?.shield || resolveShield(lastMatch.homeTeam?.name)} hero />
                   <span>{cleanTeamName(lastMatch.homeTeam?.name) || 'Команда'}</span>
                 </div>
                 <div className="matches-dashboard__last-score matches-dashboard__last-score--hero">
@@ -196,7 +196,7 @@ export default function MatchesDashboard() {
                 </div>
                 <div className="matches-dashboard__last-team away">
                   <span>{cleanTeamName(lastMatch.awayTeam?.name) || 'Соперник'}</span>
-                  <LastTeamCrest name={lastMatch.awayTeam?.name} shield={resolveShield(lastMatch.awayTeam?.name)} hero />
+                  <LastTeamCrest name={lastMatch.awayTeam?.name} shield={lastMatch.awayTeam?.shield || resolveShield(lastMatch.awayTeam?.name)} hero />
                 </div>
               </div>
               <button

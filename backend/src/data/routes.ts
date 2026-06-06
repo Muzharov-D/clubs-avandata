@@ -7,6 +7,7 @@ import { computeDataQuality } from './dataQuality.js';
 import { statField, statFieldTotal } from '../shared/statValue.js';
 import { resolveOurExtId, markOurStandingsRow } from './ourTeam.js';
 import { applyFixtureDates, type DatedMatchRow } from './matchDate.js';
+import { linkFfspbFixture } from '../upload/ffspbMatchLink.js';
 import {
   aggregateTeamStats,
   type AggregatePeriod,
@@ -268,10 +269,53 @@ export async function dataRoutes(app: FastifyInstance) {
       // для незабэкфилленных legacy-строк оба null → фронт падает на fallback по имени.
       // Реальная дата из календаря Наградиона (по сопернику + возрасту команды).
       await applyFixtureDates(conn, slug, [match as DatedMatchRow]);
+      // Кресты соперника из FFSPB-фикстуры (привязка на upload, см. ffspbMatchLink).
+      // Детерминированный источник — фронт-resolveShield первым берёт teamObj.shield,
+      // иначе падает на нечёткий поиск по имени в standings.
+      let homeShield = (metaObj.homeShield as string | null) ?? null;
+      let awayShield = (metaObj.awayShield as string | null) ?? null;
+      let homeName = match.home as string | null;
+      let awayName = match.away as string | null;
+      // Backfill на лету для legacy-матчей (загружены до FFSPB-линка): тем же
+      // консервативным правилом (счёт + имя, единственность) резолвим крест +
+      // каноническое имя соперника. Зеркалит applyFixtureDates выше; best-effort.
+      if (homeShield == null && awayShield == null) {
+        try {
+          const ourSide = match.homeTeamId === match.teamId ? 'home'
+            : match.awayTeamId === match.teamId ? 'away' : null;
+          if (ourSide) {
+            const tRes = await conn.query<{ name: string; ageGroup: string }>(
+              `SELECT name, age_group AS "ageGroup" FROM teams WHERE id = $1`, [match.teamId],
+            );
+            const ageGroup = tRes.rows[0]?.ageGroup ?? null;
+            const ourName = tRes.rows[0]?.name ?? null;
+            if (ageGroup) {
+              const link = await linkFfspbFixture(
+                conn, slug, ageGroup, ourName, ourSide,
+                String(homeName ?? ''), String(awayName ?? ''),
+                { home: match.scoreHome as number | null, away: match.scoreAway as number | null },
+              );
+              if (link) {
+                if (ourSide === 'home') {
+                  awayShield = link.opponentShield;
+                  if (link.opponentName) awayName = link.opponentName;
+                } else {
+                  homeShield = link.opponentShield;
+                  if (link.opponentName) homeName = link.opponentName;
+                }
+              }
+            }
+          }
+        } catch (e) {
+          app.log.warn({ matchId: match.id, err: (e as Error).message }, '[match] FFSPB shield backfill skipped');
+        }
+      }
       return {
         ...match,
-        homeTeam: { id: match.homeTeamId, name: match.home, isOurTeam: match.homeTeamId === match.teamId },
-        awayTeam: { id: match.awayTeamId, name: match.away, isOurTeam: match.awayTeamId === match.teamId },
+        home: homeName,
+        away: awayName,
+        homeTeam: { id: match.homeTeamId, name: homeName, isOurTeam: match.homeTeamId === match.teamId, shield: homeShield },
+        awayTeam: { id: match.awayTeamId, name: awayName, isOurTeam: match.awayTeamId === match.teamId, shield: awayShield },
         score:    { home: match.scoreHome ?? 0, away: match.scoreAway ?? 0 },
         date:     match.date,
         teamAggregates,

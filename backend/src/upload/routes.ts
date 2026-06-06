@@ -12,6 +12,7 @@ import { BadRequestError, UnauthorizedError, AppError } from '../shared/errors.j
 import { logger } from '../shared/logger.js';
 import { enrichTenantPhotos } from '../services/playerPhotoService.js';
 import { resolveOurSide } from '../shared/teamName.js';
+import { linkFfspbFixture, type FfspbFixtureLink } from './ffspbMatchLink.js';
 import { validateRich, assertSportVisor } from './validation.js';
 import { dedupePhantomsByNumber } from './dedupePhantoms.js';
 import { computeDataQuality } from '../data/dataQuality.js';
@@ -508,24 +509,63 @@ export async function uploadRoutes(app: FastifyInstance) {
             logger.info({ matchId, src: 'calendar', homeName, awayName }, '[upload] team names from calendar fallback');
           }
         }
+        // Имя + возрастная группа нашей команды — нужны для ориентации, фолбэка
+        // имён и привязки к FFSPB-фикстуре. Один запрос вместо двух прежних.
+        const ourTeamRes = await conn.query<{ name: string; ageGroup: string }>(
+          `SELECT name, age_group AS "ageGroup" FROM teams WHERE id = $1`, [teamId],
+        );
+        const ourName = ourTeamRes.rows[0]?.name || 'Наша команда';
+        const ageGroup = ourTeamRes.rows[0]?.ageGroup ?? null;
+
         // Fallback 2: подставляем имя нашей команды + «Соперник», чтобы не было пустоты.
         if (!homeName || !awayName) {
-          const t = await conn.query<{ name: string }>(`SELECT name FROM teams WHERE id = $1`, [teamId]);
-          const ourName = t.rows[0]?.name || 'Наша команда';
           if (!homeName) homeName = ourName;
           if (!awayName) awayName = 'Соперник';
           logger.warn({ matchId, homeName, awayName }, '[upload] team names — last-resort fallback');
         }
         // Ориентация дом/гость: пишем наш team_id в соответствующую колонку, чтобы
         // фронт определял сторону по ID, а не по подстроке имени (порт §13.4 / задача #4).
-        const ourTeamRes = await conn.query<{ name: string }>(`SELECT name FROM teams WHERE id = $1`, [teamId]);
-        const ourSide = resolveOurSide(ourTeamRes.rows[0]?.name, homeName, awayName);
+        const ourSide = resolveOurSide(ourName, homeName, awayName);
         const homeTeamId = ourSide === 'home' ? teamId : null;
         const awayTeamId = ourSide === 'away' ? teamId : null;
         if (!ourSide) {
           logger.warn(
-            { matchId, ourName: ourTeamRes.rows[0]?.name, homeName, awayName },
+            { matchId, ourName, homeName, awayName },
             '[upload] orientation undetermined — home/away ids left null',
+          );
+        }
+
+        // ── Детерминированная привязка к FFSPB-фикстуре: крест/каноническое имя/
+        // ext id соперника + реальная дата. Консервативно (счёт + имя, единственность);
+        // best-effort — при невозможности линка остаётся текущее поведение.
+        let ffspbLink: FfspbFixtureLink | null = null;
+        if (ageGroup) {
+          try {
+            ffspbLink = await linkFfspbFixture(
+              conn, tenantSlug, ageGroup, ourName, ourSide, homeName, awayName, score,
+            );
+          } catch (e) {
+            logger.warn({ matchId, err: (e as Error).message }, '[upload] FFSPB fixture link skipped');
+          }
+        }
+        let homeShield: string | null = null;
+        let awayShield: string | null = null;
+        let ffspbExtMatchId: string | null = null;
+        if (ffspbLink && ourSide) {
+          // Соперник — сторона, что НЕ наша. Заменяем SportVisor-имя каноническим
+          // из календаря и проставляем крест соперника из FFSPB.
+          if (ourSide === 'home') {
+            if (ffspbLink.opponentName) awayName = ffspbLink.opponentName;
+            awayShield = ffspbLink.opponentShield;
+          } else {
+            if (ffspbLink.opponentName) homeName = ffspbLink.opponentName;
+            homeShield = ffspbLink.opponentShield;
+          }
+          if (ffspbLink.matchDate) matchDate = ffspbLink.matchDate.toISOString();
+          ffspbExtMatchId = ffspbLink.extMatchId;
+          logger.info(
+            { matchId, ffspbExtMatchId, opponent: ffspbLink.opponentName },
+            '[upload] linked to FFSPB fixture',
           );
         }
         await conn.query(
@@ -554,6 +594,12 @@ export async function uploadRoutes(app: FastifyInstance) {
               events,
               excelMeta: excelData?.match ?? null,
               excelColumnsCount: excelData?.match.columnsCount ?? null,
+              // Привязка к FFSPB-фикстуре (крест соперника на детали матча +
+              // трассировка). null/false, если линк не состоялся.
+              homeShield,
+              awayShield,
+              ffspbExtMatchId,
+              ffspbLinked: !!ffspbLink,
             }),
           ],
         );
