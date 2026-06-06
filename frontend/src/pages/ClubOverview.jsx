@@ -11,6 +11,7 @@ import TeamSeasonAnalytics from '../components/analytics/TeamSeasonAnalytics';
 import TeamIdentityCard from '../components/analytics/TeamIdentityCard';
 import TeamAggregatesGrid from '../components/analytics/TeamAggregatesGrid';
 import SeasonTrendCard from '../components/analytics/SeasonTrendCard';
+import Block from '../constructor/Block';
 import { isOurClub, shieldFor } from '../utils/legirus';
 import { cleanTeamName } from '../utils/teamName';
 import { formLetterRu } from '../utils/num';
@@ -107,6 +108,7 @@ export default function ClubOverview() {
         <section className="club-overview__col-right">
           {/* HERO: команда + сезонная запись */}
           <div className="club-overview__hero">
+            <Block page="analytics" id="team-info">
             <div className="card team-info">
               <div className="team-info__head">
                 <div className="team-info__title">Команда</div>
@@ -154,8 +156,10 @@ export default function ClubOverview() {
                 </div>
               </div>
             </div>
+            </Block>
 
             {/* Сезонная запись: В-Н-П, голы, форма */}
+            <Block page="analytics" id="season-record">
             <div className="card season-record">
               <div className="team-info__title">Итоги по разобранным матчам</div>
               <div className="season-record__wdl">
@@ -179,6 +183,7 @@ export default function ClubOverview() {
                 </div>
               )}
             </div>
+            </Block>
           </div>
 
           {/* Переключатель периода */}
@@ -234,16 +239,22 @@ export default function ClubOverview() {
           )}
 
           {/* Сезонная форма — путь очков по турам (тренд во времени, океан) */}
-          <SeasonTrendCard matches={matches} />
+          <Block page="analytics" id="season-trend">
+            <SeasonTrendCard matches={matches} />
+          </Block>
 
           {/* Детальная аналитика по секциям — глубина за период (перенос с /club) */}
-          <TeamAggregatesGrid aggregates={agg?.teamAggregates} matchCount={matchCount} periodLabel={periodLabel} />
+          <Block page="analytics" id="team-aggregates">
+            <TeamAggregatesGrid aggregates={agg?.teamAggregates} matchCount={matchCount} periodLabel={periodLabel} />
+          </Block>
 
           {/* xG-аналитика сезона (модель, по всем матчам) */}
-          <TeamSeasonAnalytics matches={matches} />
+          <Block page="analytics" id="team-season-analytics">
+            <TeamSeasonAnalytics matches={matches} />
+          </Block>
 
           {/* Как команда играет — стиль за выбранный период (тренерским языком) */}
-          {agg && <TeamIdentityCard aggregate={agg} periodLabel={`за ${periodLabel}`} />}
+          <Block page="analytics" id="team-identity">{agg && <TeamIdentityCard aggregate={agg} periodLabel={`за ${periodLabel}`} />}</Block>
 
           {/* Сезонные лидеры — бомбардиры / ассистенты / рейтинг */}
           {leaders && (

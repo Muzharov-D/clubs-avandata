@@ -313,6 +313,13 @@ export const respondCallup = (age, extMatchId, status, note, playerId) =>
   fetchJson(`/callups/match/${encodeURIComponent(age)}/${encodeURIComponent(extMatchId)}/respond`,
             { method: 'POST', body: { status, note, playerId } });
 
+// === Конструктор кабинета (per-user видимость блоков) — backend dashboard/routes.ts ===
+// GET всегда отдаёт { layout: {...} } (пусто = всё видимо). silent: фоновую
+// загрузку при старте не тостим — контекст деградирует на localStorage-кеш.
+export const fetchDashboardLayout = () => fetchJson('/dashboard/layout', { silent: true });
+export const saveDashboardLayout = (layout) =>
+  fetchJson('/dashboard/layout', { method: 'PUT', body: { layout } });
+
 export async function uploadPdf(file, teamId, tournament, excel) {
   const fd = new FormData();
   fd.append('file', file);

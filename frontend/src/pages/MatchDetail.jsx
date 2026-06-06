@@ -28,6 +28,7 @@ import PressingCard from '../components/analytics/PressingCard';
 import MomentumStrip from '../components/analytics/MomentumStrip';
 import ImpactMotm from '../components/analytics/ImpactMotm';
 import MatchLeaders from '../components/analytics/MatchLeaders';
+import Block from '../constructor/Block';
 import SetPieceShotCard from '../components/analytics/SetPieceShotCard';
 import { coachDigest, matchMinutes } from '../utils/analytics';
 import { matchesWord } from '../utils/num';
@@ -392,14 +393,17 @@ export default function MatchDetail() {
       </nav>
 
       {/* 4 рейтинга команды */}
+      <Block page="match" id="team-ratings">
       <div className="match-detail__ratings" id="md-ratings">
         <RatingCard label="Общий" value={teamRatings.overall} />
         <RatingCard label="Фитнес" value={teamRatings.fitness} />
         <RatingCard label="Атака" value={teamRatings.attack} />
         <RatingCard label="Защита" value={teamRatings.defence} />
       </div>
+      </Block>
 
       {/* Хитмап состава — сразу под рейтингами (игрок × метрика, StatsBomb-таблица) */}
+      <Block page="match" id="squad-heatmap">
       {(match.players || []).filter((p) => (p.minutes ?? 0) > 0).length >= 3 && (
         <div className="card md-anchor reveal" id="md-heatmap">
           <div className="page-section-title">Тепловая карта состава</div>
@@ -407,8 +411,10 @@ export default function MatchDetail() {
           <div className="md-insights__note" style={{ marginTop: 8 }}>Заливка ячейки — относительно лучшего в столбце. Рейтинг — по цветовой шкале оценки.</div>
         </div>
       )}
+      </Block>
 
       {/* Командная статистика — высоко: «что произошло» (мы против соперника) */}
+      <Block page="match" id="stat-compare">
       <div className="card md-anchor reveal" id="md-teamstats">
         <div className="page-section-title">Командная статистика</div>
         <div className="match-detail__stats-teams" style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.78rem', fontWeight: 700, opacity: 0.85, marginBottom: 6 }}>
@@ -430,6 +436,7 @@ export default function MatchDetail() {
           <StatCompareBar label="Офсайды"           ourSide={ourSideKey} home={fmtNumOrDash(home.offsides)}           away={fmtNumOrDash(away.offsides)} />
         </div>
       </div>
+      </Block>
 
       {/* Два аналитических распределения рядом: beeswarm (распределение оценок)
           + scatter (роли). Раньше шли стопкой во всю ширину, график занимал
@@ -453,10 +460,10 @@ export default function MatchDetail() {
       </div>
 
       {/* xG-панель: командный xG + контекст, вероятность исхода, xPTS, заслуженный счёт */}
-      <div className="reveal" id="md-xg"><XgPanel match={match} /></div>
+      <Block page="match" id="xg"><div className="reveal" id="md-xg"><XgPanel match={match} /></div></Block>
 
       {/* Прессинг (объём; PPDA убран) */}
-      <div className="reveal" id="md-press"><PressingCard match={match} /></div>
+      <Block page="match" id="pressing"><div className="reveal" id="md-press"><PressingCard match={match} /></div></Block>
 
       {/* Стандарты, качество ударов, переходная угроза */}
       <div className="reveal"><SetPieceShotCard match={match} /></div>
@@ -478,7 +485,7 @@ export default function MatchDetail() {
       )}
 
       {/* Хроника матча — только если голы сходятся со счётом (см. timeline) */}
-      <MatchTimeline events={timeline} />
+      <Block page="match" id="timeline"><MatchTimeline events={timeline} /></Block>
 
       {/* Momentum по таймам + xG-гонка */}
       <div className="reveal" id="md-momentum"><MomentumStrip match={match} /></div>
@@ -492,6 +499,7 @@ export default function MatchDetail() {
       )}
 
       {/* Физическая нагрузка: интенсивный бег по зонам скорости */}
+      <Block page="match" id="speed-zones">
       {intensity.list.length > 0 && (
         <div className="card md-anchor reveal" id="md-fitness">
           <div className="page-section-title">Физическая нагрузка — интенсивный бег</div>
@@ -507,9 +515,11 @@ export default function MatchDetail() {
           </div>
         </div>
       )}
+      </Block>
 
       {/* Поле-формация — full-width, над 3-колоночной сеткой. Без оборачивания
           в .card: чистый контейнер во всю ширину разбора. */}
+      <Block page="match" id="formation">
       <div className="match-detail__field-full reveal">
         <FormationField
           formation={match.formation}
@@ -521,6 +531,7 @@ export default function MatchDetail() {
           imageFullSrc={match.formationImageFull}
         />
       </div>
+      </Block>
 
       <div className="match-detail__grid md-anchor reveal" id="md-detail">
         <div className="match-detail__center">
@@ -534,7 +545,7 @@ export default function MatchDetail() {
           </div>
 
           {/* Расширенные лидеры: угроза/прогрессия/дуэли/прессинг/бег + на 90′ */}
-          <MatchLeaders players={match.players} navigate={navigate} nameOf={shortNameFromPlayer} basis={matchMinutes(Number((match.teamId || '').match(/(?:19|20)\d{2}/)?.[0]))} />
+          <Block page="match" id="match-leaders"><MatchLeaders players={match.players} navigate={navigate} nameOf={shortNameFromPlayer} basis={matchMinutes(Number((match.teamId || '').match(/(?:19|20)\d{2}/)?.[0]))} /></Block>
 
           {/* Командный выхлоп vs сезон: метрика этого матча против СРЕДНЕГО по
               сезону (вместо бесполезных «N из N» бубликов без соперника). */}

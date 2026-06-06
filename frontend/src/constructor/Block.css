@@ -1,0 +1,79 @@
+/* Конструктор — обёртка блока. Обычный режим: прозрачно (display:contents),
+   ноль влияния на вёрстку. Режим редактирования: рамка + бар с «глазиком». */
+
+.cstr-block,
+.cstr-block__body {
+  display: contents;
+}
+
+/* Режим редактирования: обёртка становится видимым контейнером. */
+.cstr-block--edit {
+  display: block;
+  position: relative;
+  margin: 6px 0;
+  padding: 10px;
+  border: 1.5px dashed color-mix(in srgb, var(--brand-primary) 55%, var(--border-strong));
+  border-radius: var(--radius);
+  background: color-mix(in srgb, var(--brand-primary) 5%, transparent);
+  transition: border-color var(--dur) var(--ease-out), background var(--dur) var(--ease-out);
+}
+.cstr-block--edit .cstr-block__body {
+  display: block;
+}
+
+/* Скрытый блок в режиме редактирования — приглушаем, но показываем. */
+.cstr-block--hidden {
+  border-style: solid;
+  border-color: color-mix(in srgb, var(--text-muted) 35%, transparent);
+  background: color-mix(in srgb, var(--text-muted) 6%, transparent);
+}
+.cstr-block--hidden .cstr-block__body {
+  opacity: 0.4;
+  filter: grayscale(0.85);
+  pointer-events: none;
+  user-select: none;
+}
+
+.cstr-block__bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+.cstr-block__label {
+  font-family: var(--font-display);
+  font-size: 0.82rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--text-muted-strong);
+  text-transform: uppercase;
+}
+
+/* «Глазик» — пилюля-переключатель видимости. */
+.cstr-block__eye {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--border-strong);
+  background: var(--bg-surface-2);
+  color: var(--text-muted-strong);
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background var(--dur-fast) var(--ease-out),
+              color var(--dur-fast) var(--ease-out),
+              border-color var(--dur-fast) var(--ease-out);
+}
+.cstr-block__eye:hover {
+  border-color: var(--brand-primary);
+}
+.cstr-block__eye--on {
+  background: color-mix(in srgb, var(--brand-primary) 18%, var(--bg-surface-2));
+  border-color: color-mix(in srgb, var(--brand-primary) 60%, transparent);
+  color: var(--text);
+}

@@ -31,6 +31,8 @@ import { useAuth } from '../contexts/AuthContext';
 import { useTeam } from '../contexts/TeamContext';
 // Единая шкала рейтинга (var(--rating-*)) — общий источник по всему UI.
 import { ratingColor, ratingTextColor } from '../utils/colors';
+// @ts-ignore — legacy .jsx
+import Block from '../constructor/Block';
 import { matchesWord } from '../utils/num';
 import { surnameOf, splitName } from '../utils/players';
 // Единый матчинг «наша команда» по ext team id (бэк проставляет m.ourSide).
@@ -355,6 +357,7 @@ export default function ClubDashboard() {
         <div className="cd__main-grid">
           {/* Матчи: следующий (герой, 60% высоты) + последний (вспомогательный, 40%) */}
           <div className="cd__main-matches">
+            <Block page="club" id="next-match">
             {nextMatch ? (
               <div className="cd__mm cd__mm--next">
                 <div className="cd__mm-eyebrow">Следующий · {nextMatch.round || ''}</div>
@@ -379,7 +382,9 @@ export default function ClubDashboard() {
                 <div className="cd__hero-empty-text">Расписание на сезон закрыто</div>
               </div>
             )}
+            </Block>
 
+            <Block page="club" id="last-match">
             {lastResult && (
               <div className="cd__mm cd__mm--last">
                 <div className="cd__mm-eyebrow">Последний · {lastResult.round || ''}</div>
@@ -396,7 +401,9 @@ export default function ClubDashboard() {
                 )}
               </div>
             )}
+            </Block>
 
+            <Block page="club" id="opponent-preview">
             {nextMatch && (
               <OpponentPreview
                 nextMatch={nextMatch}
@@ -408,11 +415,13 @@ export default function ClubDashboard() {
                 standings={standings}
               />
             )}
+            </Block>
           </div>
 
           {/* Правые 2 узкие колонки (40%) — KPI с каскадным появлением (StaggerList) */}
           <StaggerList speed="normal" as="div" className="cd__kpi-column-group" whenInView={false}>
           {/* Рейтинг сезона (#9) — инфографика: оценка + форма + раскладка по линиям */}
+          <Block page="club" id="season-rating">
           {(() => {
             const ov = Number(avgTeamRating ?? 0);
             const tar = (seasonAgg?.teamAvgRatings ?? {}) as Record<string, unknown>;
@@ -472,8 +481,10 @@ export default function ClubDashboard() {
               </div>
             );
           })()}
+          </Block>
 
           {/* Лучший игрок сезона (#10) — карточка с авто-инсайтами по вкладу */}
+          <Block page="club" id="best-player">
           {(() => {
             const best = topPlayers[0];
             const r = Number(best?.ratings?.overall ?? 0);
@@ -522,12 +533,14 @@ export default function ClubDashboard() {
               </div>
             );
           })()}
+          </Block>
           </StaggerList>
         </div>
       </section>
 
       {/* Top 5 + standings */}
       <section className="cd__columns" id="sec-top">
+        <Block page="club" id="top5">
         <div className="cd__panel reveal">
           <div className="cd__panel-header">
             <h2 className="cd__panel-title">Топ-5 по рейтингу</h2>
@@ -594,7 +607,9 @@ export default function ClubDashboard() {
             </StaggerList>
           )}
         </div>
+        </Block>
 
+        <Block page="club" id="standings">
         <div className="cd__panel reveal">
           <div className="cd__panel-header">
             <h2 className="cd__panel-title">Турнирная таблица</h2>
@@ -638,9 +653,11 @@ export default function ClubDashboard() {
             </div>
           )}
         </div>
+        </Block>
       </section>
 
       {/* Roster */}
+      <Block page="club" id="roster">
       <section className="cd__panel reveal" id="sec-roster">
         <div className="cd__panel-header">
           <h2 className="cd__panel-title">
@@ -770,6 +787,7 @@ export default function ClubDashboard() {
           );
         })()}
       </section>
+      </Block>
     </div>
   );
 }
