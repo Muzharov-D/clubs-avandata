@@ -23,6 +23,32 @@
 }
 .load-control__row:last-child { border-bottom: none; }
 
+/* Сортируемые заголовки таблицы нагрузки */
+.load-control__row--head .lc-sort {
+  appearance: none;
+  -webkit-appearance: none;
+  border: none;
+  background: none;
+  font: inherit;
+  color: var(--text-muted);
+  cursor: pointer;
+  user-select: none;
+  display: inline-flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 4px;
+  padding: 0;
+  min-width: 0;
+  text-align: left;
+  transition: color var(--dur-fast, .12s) var(--ease-out, ease);
+}
+.load-control__row--head .lc-num.lc-sort,
+.load-control__row--head .lc-flag.lc-sort { justify-content: center; }
+.load-control__row--head .lc-sort:hover { color: var(--text); }
+.load-control__row--head .lc-sort.is-active { color: var(--accent-cyan); }
+.lc-sort__a { font-size: 0.9em; opacity: 0.4; }
+.lc-sort.is-active .lc-sort__a { opacity: 1; }
+
 .lc-name { display: flex; flex-direction: column; }
 .lc-name__main { font-weight: 700; color: var(--text); }
 .lc-name__sub { font-size: 11px; color: var(--text-muted); margin-top: 2px; }

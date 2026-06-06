@@ -5,6 +5,7 @@ import { useDocumentTitle } from '../hooks/useDocumentTitle';
 import { useTeam } from '../contexts/TeamContext';
 import { playerLabel, numberWithPos } from '../utils/players';
 import { AnimatedNumber, SplitText } from '../components/motion';
+import { useTableSort, sortArrow } from '../hooks/useTableSort';
 import './LoadControl.css';
 import './playersKinetic.css';
 
@@ -85,18 +86,27 @@ export default function LoadControl() {
   const [openRiskId, setOpenRiskId] = useState(null);
   const seasonRes = useApi(() => (selectedTeamId ? fetchPlayersSeason(selectedTeamId) : Promise.resolve(null)), [selectedTeamId]);
 
-  const players = useMemo(() => {
-    const list = seasonRes.data?.players || [];
-    return [...list].sort((a, b) => (b.minutes || 0) - (a.minutes || 0));
-  }, [seasonRes.data]);
+  const basePlayers = useMemo(() => seasonRes.data?.players || [], [seasonRes.data]);
 
-  const maxMin = useMemo(() => Math.max(1, ...players.map((p) => p.minutes || 0)), [players]);
-  const maxDist = useMemo(() => Math.max(1, ...players.map((p) => p.distance || 0)), [players]);
-  const totalDistKm = useMemo(() => players.reduce((s, p) => s + (p.distance || 0), 0) / 1000, [players]);
+  const maxMin = useMemo(() => Math.max(1, ...basePlayers.map((p) => p.minutes || 0)), [basePlayers]);
+  const maxDist = useMemo(() => Math.max(1, ...basePlayers.map((p) => p.distance || 0)), [basePlayers]);
+  const totalDistKm = useMemo(() => basePlayers.reduce((s, p) => s + (p.distance || 0), 0) / 1000, [basePlayers]);
   const avgMpm = useMemo(() => {
-    const v = players.filter((p) => p.minutesPerMatch);
+    const v = basePlayers.filter((p) => p.minutesPerMatch);
     return v.length ? v.reduce((s, p) => s + (p.minutesPerMatch || 0), 0) / v.length : 0;
-  }, [players]);
+  }, [basePlayers]);
+
+  // Сортировка по клику на заголовок (по умолчанию — минуты ↓).
+  const sortAccessors = useMemo(() => ({
+    name: (p) => playerLabel(p),
+    matches: (p) => p.matches || 0,
+    minutes: (p) => p.minutes || 0,
+    distance: (p) => p.distance || 0,
+    load: (p) => ({ high: 3, medium: 2, low: 1 }[loadLevel(p)] || 0),
+  }), []);
+  const { sorted: players, sortKey, sortDir, requestSort } = useTableSort(basePlayers, {
+    initialKey: 'minutes', initialDir: 'desc', accessors: sortAccessors,
+  });
 
   if (seasonRes.loading) return <div className="empty-state">Загрузка…</div>;
   if (!players.length) return <div className="empty-state">Нет загруженных разборов для расчёта нагрузки</div>;
@@ -124,11 +134,21 @@ export default function LoadControl() {
 
       <div className="card load-control__table">
         <div className="load-control__row load-control__row--head">
-          <span className="lc-name">Игрок</span>
-          <span className="lc-num">Матчи</span>
-          <span className="lc-bar">Минуты (всего / за матч)</span>
-          <span className="lc-bar">Дистанция</span>
-          <span className="lc-flag">Нагрузка</span>
+          <button type="button" className={`lc-name lc-sort${sortKey === 'name' ? ' is-active' : ''}`} onClick={() => requestSort('name', 'asc')}>
+            Игрок <span className="lc-sort__a">{sortArrow(sortKey === 'name', sortDir)}</span>
+          </button>
+          <button type="button" className={`lc-num lc-sort${sortKey === 'matches' ? ' is-active' : ''}`} onClick={() => requestSort('matches', 'desc')}>
+            Матчи <span className="lc-sort__a">{sortArrow(sortKey === 'matches', sortDir)}</span>
+          </button>
+          <button type="button" className={`lc-bar lc-sort${sortKey === 'minutes' ? ' is-active' : ''}`} onClick={() => requestSort('minutes', 'desc')}>
+            Минуты (всего / за матч) <span className="lc-sort__a">{sortArrow(sortKey === 'minutes', sortDir)}</span>
+          </button>
+          <button type="button" className={`lc-bar lc-sort${sortKey === 'distance' ? ' is-active' : ''}`} onClick={() => requestSort('distance', 'desc')}>
+            Дистанция <span className="lc-sort__a">{sortArrow(sortKey === 'distance', sortDir)}</span>
+          </button>
+          <button type="button" className={`lc-flag lc-sort${sortKey === 'load' ? ' is-active' : ''}`} onClick={() => requestSort('load', 'desc')}>
+            Нагрузка <span className="lc-sort__a">{sortArrow(sortKey === 'load', sortDir)}</span>
+          </button>
         </div>
         {players.map((p) => {
           const lvl = loadLevel(p);

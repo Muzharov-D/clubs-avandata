@@ -48,3 +48,21 @@
 /* polish: подсветка ячейки при наведении (скан-режим) */
 .shm__cell--val { transition: filter .12s ease, box-shadow .12s ease; }
 .shm__cell--val:hover { filter: brightness(1.22); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.25); }
+
+/* Сортируемые заголовки: кнопка-ячейка с индикатором ↕/↓/↑ */
+button.shm__cell--sortable {
+  appearance: none;
+  -webkit-appearance: none;
+  border: none;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  border-right: 1px solid rgba(255, 255, 255, 0.04);
+  font-family: inherit;
+  cursor: pointer;
+  user-select: none;
+  gap: 4px;
+  transition: color var(--dur-fast, .12s) var(--ease-out, ease);
+}
+button.shm__cell--sortable:hover { color: var(--text); }
+.shm__cell--sortable.is-active { color: var(--accent-cyan); }
+.shm__sort { font-size: 0.9em; opacity: 0.35; }
+.shm__cell--sortable.is-active .shm__sort { opacity: 1; }
