@@ -32,8 +32,10 @@ PATTERNS = [
     ('goal',         re.compile(r'(?:гол|⚽|⚪|🥅)', re.I)),
     ('penalty',      re.compile(r'(?:пенальти|penalty)', re.I)),
     ('own_goal',     re.compile(r'(?:автогол|own\s+goal)', re.I)),
-    ('yellow_card',  re.compile(r'(?:жёлт|желт|🟨|⚠️|Y\s*C)', re.I)),
-    ('red_card',     re.compile(r'(?:красн|🟥|R\s*C)', re.I)),
+    # ВНИМАНИЕ: НЕ использовать «Y C»/«R C» — они ловят коды позиций (RCB/RCMF/
+    # LCB) в строках рейтингов как карточки. Только явные слова/эмодзи.
+    ('yellow_card',  re.compile(r'(?:жёлт|желт|🟨)', re.I)),
+    ('red_card',     re.compile(r'(?:красн|🟥)', re.I)),
     ('substitution', re.compile(r'(?:замен|sub|↔|⇄)', re.I)),
 ]
 
@@ -58,6 +60,17 @@ def parse_event_line(line: str):
     rest = m.group(3).strip()
     if minute > 120:
         return None  # вряд ли реальная минута
+
+    # Отсекаем НЕ-события (парсер сканирует и рейтинг-страницы):
+    #  • строка рейтинга игрока «Галицкий М. RCB 77' 7.8 9.2 6.6 8.3» — код
+    #    позиции + минуты со штрихом, либо ≥2 дробных оценки;
+    #  • стат-подпись «КРАСНЫЕ КАРТОЧКИ 0» / «ВСЕГО УДАРОВ» — метка раздела, не событие.
+    if re.search(r"\b[A-Za-z]{2,4}\b\s+\d{1,3}\s*['′ʹ`’]", rest):
+        return None
+    if len(re.findall(r"\b\d+[.,]\d\b", rest)) >= 2:
+        return None
+    if re.search(r"КАРТОЧ(?:КИ|ЕК)|ФОЛЫ|ВСЕГО\s+УДАР|ПЕРЕДАЧ|ВЛАДЕНИ|ОФСАЙД|ПРЕССИНГ|ОТБОР|ОЖИДАЕМ|ГОЛЫ\s*\(|xG|УГЛОВЫ|ШТРАФНЫ", rest, re.I):
+        return None
 
     # Определяем тип
     event_type = None
