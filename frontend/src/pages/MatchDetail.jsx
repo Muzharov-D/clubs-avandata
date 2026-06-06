@@ -466,9 +466,10 @@ export default function MatchDetail() {
       <Block page="match" id="pressing"><div className="reveal" id="md-press"><PressingCard match={match} /></div></Block>
 
       {/* Стандарты, качество ударов, переходная угроза */}
-      <div className="reveal"><SetPieceShotCard match={match} /></div>
+      <Block page="match" id="set-pieces"><div className="reveal"><SetPieceShotCard match={match} /></div></Block>
 
       {/* Авто-инсайты по матчу (rule-based + модельный дайджест) */}
+      <Block page="match" id="insights">
       {allInsights.length > 0 && (
         <div className="card match-detail__insights md-anchor reveal" id="md-insights">
           <div className="page-section-title">Ключевые выводы</div>
@@ -483,20 +484,23 @@ export default function MatchDetail() {
           <div className="md-insights__note">Автоматически по данным матча — не заменяет разбор тренера.</div>
         </div>
       )}
+      </Block>
 
       {/* Хроника матча — только если голы сходятся со счётом (см. timeline) */}
       <Block page="match" id="timeline"><MatchTimeline events={timeline} /></Block>
 
       {/* Momentum по таймам + xG-гонка */}
-      <div className="reveal" id="md-momentum"><MomentumStrip match={match} /></div>
+      <Block page="match" id="momentum"><div className="reveal" id="md-momentum"><MomentumStrip match={match} /></div></Block>
 
       {/* Командная динамика по таймам (Phase: by-half) */}
+      <Block page="match" id="half-split">
       {teamHalf.length > 0 && (
         <div className="card md-anchor reveal" id="md-half">
           <div className="page-section-title">Динамика по таймам — команда</div>
           <HalfSplitChart rows={teamHalf} hint="Как команда распределила действия между таймами. ▲/▼ — изменение во 2-м тайме." />
         </div>
       )}
+      </Block>
 
       {/* Физическая нагрузка: интенсивный бег по зонам скорости */}
       <Block page="match" id="speed-zones">
@@ -535,6 +539,7 @@ export default function MatchDetail() {
 
       <div className="match-detail__grid md-anchor reveal" id="md-detail">
         <div className="match-detail__center">
+          <Block page="match" id="breakdowns">
           <div className="card">
             <div className="page-section-title">Лидеры матча — наша команда</div>
             <div className="match-detail__breakdowns">
@@ -543,12 +548,14 @@ export default function MatchDetail() {
               <PlayerBreakdown title="Отборы" rows={topTackles} navigate={navigate} emptyText="нет отборов в этом матче" />
             </div>
           </div>
+          </Block>
 
           {/* Расширенные лидеры: угроза/прогрессия/дуэли/прессинг/бег + на 90′ */}
           <Block page="match" id="match-leaders"><MatchLeaders players={match.players} navigate={navigate} nameOf={shortNameFromPlayer} basis={matchMinutes(Number((match.teamId || '').match(/(?:19|20)\d{2}/)?.[0]))} /></Block>
 
           {/* Командный выхлоп vs сезон: метрика этого матча против СРЕДНЕГО по
               сезону (вместо бесполезных «N из N» бубликов без соперника). */}
+          <Block page="match" id="match-vs-season">
           {(() => {
             // teamAggregates-значения — объекты {value,…} или числа. Берём ПЕРВЫЙ
             // источник с положительным значением (не первый не-null): в урезанном
@@ -622,11 +629,12 @@ export default function MatchDetail() {
               </div>
             );
           })()}
+          </Block>
         </div>
 
         <div className="match-detail__right">
           {/* Игрок матча по модели вклада (рейтинг + голы/ассисты/угроза/реализация) */}
-          <ImpactMotm match={match} navigate={navigate} nameOf={shortNameFromPlayer} />
+          <Block page="match" id="impact-motm"><ImpactMotm match={match} navigate={navigate} nameOf={shortNameFromPlayer} /></Block>
           {seasonAvg && Number(seasonAvg._games || 0) > 1 && (
             <div className="card mvs">
               <div className="page-section-title">

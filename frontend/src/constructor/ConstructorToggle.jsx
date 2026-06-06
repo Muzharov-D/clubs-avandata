@@ -13,8 +13,23 @@ export default function ConstructorToggle() {
   const navigate = useNavigate();
 
   if (!canEdit) return null;
+  if (pathname.startsWith('/constructor')) return null; // уже в хабе
   const page = resolvePage(pathname);
-  if (!page) return null; // на этой странице нечего настраивать
+
+  // На странице без настраиваемых блоков — даём вход в хаб (конструктора нет
+  // в левом меню; единая точка доступа — шапка).
+  if (!page) {
+    return (
+      <button
+        type="button"
+        className="cstr-toggle cstr-toggle--ghost"
+        onClick={() => navigate('/constructor')}
+        title="Открыть конструктор кабинета"
+      >
+        ⚙ Конструктор
+      </button>
+    );
+  }
 
   return (
     <div className="cstr-toggle-wrap">

@@ -255,6 +255,7 @@ export default function MatchesDashboard() {
           </Block>
 
           {/* [3] Топ-5 — podium-reveal: #1 чемпион крупно, #2–5 каскадом */}
+          <Block page="matches" id="top5">
           {topRated.length > 0 && (
             <div className="card">
               <div className="page-section-title">Топ-5 по рейтингу сезона</div>
@@ -289,6 +290,7 @@ export default function MatchesDashboard() {
               )}
             </div>
           )}
+          </Block>
 
           {canUpload && (
             <div className="card">
