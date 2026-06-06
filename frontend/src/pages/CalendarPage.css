@@ -141,9 +141,14 @@
   text-align: left;
 }
 .cal-card__team-name {
+  /* Десктоп: имена соперников полные. Перенос на 2 строки вместо «СШОР Лид…»
+     (нельзя путать «СШОР Лидер» и «СШОР Лидер-Купчино»). Кламп — чтобы
+     длинное имя не растягивало карточку бесконечно. */
   overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  overflow-wrap: anywhere;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
 }
 .cal-card__shield {
   width: 28px;
