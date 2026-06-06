@@ -539,7 +539,9 @@ export default function MatchDetail() {
               сезону (вместо бесполезных «N из N» бубликов без соперника). */}
           {(() => {
             const defs = [
-              { label: 'Удары в створ',          get: (m) => num(m?.teamSummaryStats?.home?.shots?.onTarget) },
+              // teamAggregates — всегда НАША команда (не home/away): в выездных
+              // матчах teamSummaryStats.home = соперник, давал чужие удары в створ.
+              { label: 'Удары в створ',          get: (m) => num(m?.teamAggregates?.shooting?.onTarget) },
               { label: 'Прогрессивные передачи', get: (m) => num(m?.teamAggregates?.passes?.progressive) },
               { label: 'Отборы',                 get: (m) => num(m?.teamAggregates?.duels?.totalDuels ?? m?.teamAggregates?.recoveriesAndTackling?.tackle) },
               { label: 'Перехваты',              get: (m) => num(m?.teamAggregates?.positioning?.interceptions ?? m?.teamAggregates?.recoveriesAndTackling?.interception) },
