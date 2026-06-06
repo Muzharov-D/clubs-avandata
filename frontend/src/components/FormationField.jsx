@@ -148,17 +148,28 @@ function buildLayout(starters) {
   return placed;
 }
 
+// Порядок игрока ВНУТРИ линии слева→направо. Шкала 0..4:
+//  0 = край-лево, 1 = центр-лево, 2 = центр, 3 = центр-право, 4 = край-право.
+// Источники сигнала (в порядке приоритета): русский positionSlot из PDF →
+// кириллические коды SportVisor (Л../П../Ц..) → ЛАТИНСКИЕ коды (LCB/RCMF/LWB…).
+// Без латиницы все RCB/LCB/RWB/LWB считались «центром» и раскладывались по
+// минутам, а не по стороне → правый защитник мог встать слева (битая раскладка).
 function positionOrder(p) {
   const s = (p.positionSlot || '').toLowerCase();
   if (s.includes('лев')) return 0;
-  if (s.includes('прав')) return 2;
-  if (s.includes('центр') || s.includes('опорн') || s.includes('атакующ')) return 1;
+  if (s.includes('прав')) return 4;
+  if (s.includes('центр') || s.includes('опорн') || s.includes('атакующ')) return 2;
   // Русские коды (ЛЗ/ПН/ЦОП…): первая буква Л=лево, П=право, Ц=центр.
   const code = String(p.position || '').toUpperCase().trim();
   if (code.startsWith('Л')) return 0;
-  if (code.startsWith('П')) return 2;
-  if (code.startsWith('Ц')) return 1;
-  return 1;
+  if (code.startsWith('П')) return 4;
+  if (code.startsWith('Ц')) return 2;
+  // Латинские коды SportVisor (LCB/LCMF/LWB/LW/LB · RCB/RCMF/RWB/RW/RB):
+  // L/R = сторона; наличие C (центральная) сдвигает к центру (LCB ближе к
+  // центру, чем LWB/LB). Чистый центр (CB/DMF/CF/AMF/ST/GK) → 2.
+  if (code.startsWith('L')) return code.includes('C') ? 1 : 0;
+  if (code.startsWith('R')) return code.includes('C') ? 3 : 4;
+  return 2;
 }
 
 export default function FormationField({
