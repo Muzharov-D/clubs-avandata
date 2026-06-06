@@ -141,6 +141,9 @@
   grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
   gap: 16px;
   margin-bottom: 22px;
+  /* Карточки по натуральной высоте: бисварм (низкий, ~150px) не тянется под
+     высокий скаттер ролей — иначе под точками зияла пустая высота. */
+  align-items: start;
 }
 .match-detail__charts > .card { margin-bottom: 0; }
 @media (max-width: 768px) { .match-detail__charts { margin-bottom: 16px; } }

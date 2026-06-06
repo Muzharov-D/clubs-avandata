@@ -13,15 +13,12 @@
   font-weight: 600;
 }
 
-.stat-compare__home {
-  color: var(--accent-cyan);
-  text-align: left;
-}
+.stat-compare__home { text-align: left; }
+.stat-compare__away { text-align: right; }
 
-.stat-compare__away {
-  color: rgba(255, 255, 255, 0.7);
-  text-align: right;
-}
+/* Цвет — по «нашей» стороне (is-ours), не по home/away. */
+.stat-compare__row .is-ours { color: var(--accent-cyan); }
+.stat-compare__row .is-opp { color: rgba(255, 255, 255, 0.7); }
 
 .stat-compare__label {
   text-align: center;
@@ -39,15 +36,12 @@
   background: rgba(255, 255, 255, 0.06);
 }
 
-.stat-compare__bar-home {
-  background: linear-gradient(90deg, var(--accent-cyan), #2bc8ff);
-  height: 100%;
-}
+.stat-compare__bar-home,
+.stat-compare__bar-away { height: 100%; }
 
-.stat-compare__bar-away {
-  background: rgba(255, 255, 255, 0.18);
-  height: 100%;
-}
+/* Заливка — по «нашей» стороне. */
+.stat-compare__bar .is-ours { background: linear-gradient(90deg, var(--accent-cyan), #2bc8ff); }
+.stat-compare__bar .is-opp { background: rgba(255, 255, 255, 0.18); }
 
 @media (max-width: 768px) {
   .stat-compare { gap: 3px; padding: 3px 0; }

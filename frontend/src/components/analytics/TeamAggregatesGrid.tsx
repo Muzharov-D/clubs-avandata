@@ -96,9 +96,12 @@ function readVal(v: unknown): { val: number | null; suffix: string } {
 // счётные действия: «48,67 дуэлей» режет глаз тренеру, округляем до целого.
 const DECIMAL_KEYS = new Set(['expectedGoals', 'xG', 'avgShotDistance']);
 
-// PPDA выпилен целиком (слишком сложная метрика для тренера) — прячем во всех
-// агрегатных гридах: наш averagePPDA и oppda соперника.
-const HIDDEN_KEYS = new Set(['averagePPDA', 'averagePpda', 'oppda']);
+// Прячем во всех агрегатных гридах:
+//  - PPDA (averagePPDA/oppda) — слишком сложная метрика для тренера;
+//  - recoveriesAndTackling.interception (синг.) — это СУММА, дублирует
+//    positioning.interceptions (мн.) под тем же лейблом «Перехваты»; по решению
+//    оставляем 74 (positioning.interceptions), сумму прячем.
+const HIDDEN_KEYS = new Set(['averagePPDA', 'averagePpda', 'oppda', 'interception']);
 
 function fmtAggVal(k: string, val: number, suffix: string): string {
   // Дроби — с ТОЧКОЙ, как во всём UI (1.83, 6.9), не запятая ru-RU: на одной

@@ -296,6 +296,7 @@ export default function MatchDetail() {
 
   // Ориентация: какая сторона — наша (для подсветки кинетик-имени и счёта).
   const homeIsUs = match.homeTeam?.isOurTeam ?? !match.awayTeam?.isOurTeam;
+  const ourSideKey = homeIsUs ? 'home' : 'away';
   const usScore = homeIsUs ? sHome : sAway;
   const themScore = homeIsUs ? sAway : sHome;
 
@@ -415,18 +416,18 @@ export default function MatchDetail() {
           <span>{trimAgeStr(match.away) || 'Гости'}</span>
         </div>
         <div className="match-detail__stats">
-          <StatCompareBar label="Владение"          home={fmtNumOrDash(home.possessionPct, '%')} away={fmtNumOrDash(away.possessionPct, '%')} />
-          <StatCompareBar label="Удары"             home={fmtNumOrDash(home.shots?.total)}       away={fmtNumOrDash(away.shots?.total)} />
-          <StatCompareBar label="Удары в створ"     home={fmtNumOrDash(home.shots?.onTarget)}    away={fmtNumOrDash(away.shots?.onTarget)} />
-          <StatCompareBar label="xG"                home={fmtNumOrDash(home.expectedGoals)}      away={fmtNumOrDash(away.expectedGoals)} />
-          <StatCompareBar label="Передачи"          home={fmtNumOrDash(home.passes?.total)}      away={fmtNumOrDash(away.passes?.total)} />
-          <StatCompareBar label="Точные передачи"   home={fmtNumOrDash(home.passes?.successful)} away={fmtNumOrDash(away.passes?.successful)} />
-          <StatCompareBar label="Удары со штрафных" home={fmtNumOrDash(home.freeKickShots)}      away={fmtNumOrDash(away.freeKickShots)} />
-          <StatCompareBar label="Угловые"           home={fmtNumOrDash(home.corners?.total)}     away={fmtNumOrDash(away.corners?.total)} />
-          <StatCompareBar label="Нарушения"         home={fmtNumOrDash(home.fouls)}              away={fmtNumOrDash(away.fouls)} />
-          <StatCompareBar label="Жёлтые карточки"   home={fmtNumOrDash(home.yellowCards)}        away={fmtNumOrDash(away.yellowCards)} />
-          <StatCompareBar label="Красные карточки"  home={fmtNumOrDash(home.redCards)}           away={fmtNumOrDash(away.redCards)} />
-          <StatCompareBar label="Офсайды"           home={fmtNumOrDash(home.offsides)}           away={fmtNumOrDash(away.offsides)} />
+          <StatCompareBar label="Владение"          ourSide={ourSideKey} home={fmtNumOrDash(home.possessionPct, '%')} away={fmtNumOrDash(away.possessionPct, '%')} />
+          <StatCompareBar label="Удары"             ourSide={ourSideKey} home={fmtNumOrDash(home.shots?.total)}       away={fmtNumOrDash(away.shots?.total)} />
+          <StatCompareBar label="Удары в створ"     ourSide={ourSideKey} home={fmtNumOrDash(home.shots?.onTarget)}    away={fmtNumOrDash(away.shots?.onTarget)} />
+          <StatCompareBar label="xG"                ourSide={ourSideKey} home={fmtNumOrDash(home.expectedGoals)}      away={fmtNumOrDash(away.expectedGoals)} />
+          <StatCompareBar label="Передачи"          ourSide={ourSideKey} home={fmtNumOrDash(home.passes?.total)}      away={fmtNumOrDash(away.passes?.total)} />
+          <StatCompareBar label="Точные передачи"   ourSide={ourSideKey} home={fmtNumOrDash(home.passes?.successful)} away={fmtNumOrDash(away.passes?.successful)} />
+          <StatCompareBar label="Удары со штрафных" ourSide={ourSideKey} home={fmtNumOrDash(home.freeKickShots)}      away={fmtNumOrDash(away.freeKickShots)} />
+          <StatCompareBar label="Угловые"           ourSide={ourSideKey} home={fmtNumOrDash(home.corners?.total)}     away={fmtNumOrDash(away.corners?.total)} />
+          <StatCompareBar label="Нарушения"         ourSide={ourSideKey} home={fmtNumOrDash(home.fouls)}              away={fmtNumOrDash(away.fouls)} />
+          <StatCompareBar label="Жёлтые карточки"   ourSide={ourSideKey} home={fmtNumOrDash(home.yellowCards)}        away={fmtNumOrDash(away.yellowCards)} />
+          <StatCompareBar label="Красные карточки"  ourSide={ourSideKey} home={fmtNumOrDash(home.redCards)}           away={fmtNumOrDash(away.redCards)} />
+          <StatCompareBar label="Офсайды"           ourSide={ourSideKey} home={fmtNumOrDash(home.offsides)}           away={fmtNumOrDash(away.offsides)} />
         </div>
       </div>
 
