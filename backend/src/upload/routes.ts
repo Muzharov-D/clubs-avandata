@@ -187,11 +187,24 @@ export async function uploadRoutes(app: FastifyInstance) {
       // что и PDF → источник истины в мердже. Excel (legacy) → группы
       // passing/attacking/... → доливает недостающее.
       let excelData: SecondaryOutput | null = null;
+      // Командные агрегаты СУММОЙ из per-player CSV/xlsx — спасают команд-слой,
+      // когда PDF урезанный (25 стр. без детальных команд-страниц → teamAggregates
+      // из PDF пустые). Двуязычные заголовки (рус/англ). Best-effort.
+      let csvDerivedAgg: Record<string, Record<string, { value: number }>> | null = null;
       if (xlsxBuffer) {
         const script = secondaryKind === 'csv' ? 'parse_csv.py' : 'parse_excel.py';
         await runPython(PYTHON_BIN, [join(PARSERS_DIR, script), xlsxPath, xlsxOutPath], work);
         excelData = JSON.parse(await readFile(xlsxOutPath, 'utf-8')) as SecondaryOutput;
         logger.info({ matchId, kind: secondaryKind, players: excelData.players.length, cols: excelData.match.columnsCount }, '[upload] secondary stats parsed');
+        try {
+          const aggPath = join(work, 'csv_agg.json');
+          await runPython(PYTHON_BIN, [join(PARSERS_DIR, 'xlsx_aggregates.py'), xlsxPath, aggPath], work);
+          const parsed = JSON.parse(await readFile(aggPath, 'utf-8')) as { players: number; aggregates: Record<string, Record<string, { value: number }>> };
+          if (parsed.players > 0) csvDerivedAgg = parsed.aggregates;
+          logger.info({ matchId, csvAggPlayers: parsed.players }, '[upload] team aggregates derived from CSV/xlsx');
+        } catch (e) {
+          logger.warn({ matchId, err: (e as Error).message }, '[upload] CSV team-aggregates derive failed');
+        }
       }
 
       // ─── 2+3. Upsert players из Excel + дамп ростера для PDF parser ───
@@ -409,14 +422,28 @@ export async function uploadRoutes(app: FastifyInstance) {
           throwing:      { value: sumScalar('throwing', 'attack') },
         },
       };
-      // Если build_match вернул что-то — обогащаем (его данные приоритетнее),
-      // иначе используем derived. teamMaps идут в meta отдельно.
+      // Приоритет источников teamAggregates (от низшего к высшему):
+      //   rich-derived (из PDF-рейтингов; пусто на урезанном PDF)
+      //   < CSV-derived (сумма per-player; полная и чистая, спасает урезанный PDF)
+      //   < build_match (детальные команд-страницы PDF; есть только в полном отчёте).
+      // CSV перекрывает rich на уровне метрики ТОЛЬКО при value>0 (csv-нуль от
+      // отсутствующей колонки не должен затирать rich-значение). build_match
+      // (полный PDF) выигрывает всегда → у рабочих матчей поведение не меняется.
+      const richAgg = derivedAggregates as Record<string, Record<string, { value: number }>>;
+      const baseAgg: Record<string, Record<string, { value: number }>> = {};
+      for (const sec of new Set([...Object.keys(richAgg), ...Object.keys(csvDerivedAgg ?? {})])) {
+        const merged: Record<string, { value: number }> = { ...(richAgg[sec] ?? {}) };
+        for (const [metric, v] of Object.entries(csvDerivedAgg?.[sec] ?? {})) {
+          if (v.value > 0 || !(metric in merged)) merged[metric] = { value: v.value };
+        }
+        baseAgg[sec] = merged;
+      }
       const teamAggregatesMerged: Record<string, unknown> = {};
-      for (const [k, derived] of Object.entries(derivedAggregates)) {
+      for (const [k, base] of Object.entries(baseAgg)) {
         const existing = (pdfData.teamAggregates as Record<string, unknown>)?.[k];
         teamAggregatesMerged[k] = (existing && typeof existing === 'object' && Object.keys(existing).length > 0)
-          ? { ...derived, ...existing }
-          : derived;
+          ? { ...base, ...existing }
+          : base;
       }
 
       // ─── 4.7 Auto-derive teamAvgRatings из rich.radar
