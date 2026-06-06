@@ -6,12 +6,24 @@
  */
 import { num } from '../num';
 
-/** { ours, opp } PPDA из агрегатов матча. */
+/**
+ * Достоверное PPDA: число > 0 или null. НЕ приводим отсутствие к 0 —
+ * иначе карточка показывает ложный «PPDA 0.0». PPDA = пасы соперника на наше
+ * оборонительное действие; пасы соперника есть только на pressing-странице
+ * ПОЛНОГО PDF. У урезанного экспорта (25 стр.) их нет и из нашего CSV не
+ * вывести → честно отдаём null, чип PPDA скрывается, остаётся «прессинг-действий».
+ */
+function ppdaVal(v) {
+  const n = Number(v && typeof v === 'object' ? v.value : v);
+  return Number.isFinite(n) && n > 0 ? n : null;
+}
+
+/** { ours, opp } PPDA из агрегатов матча (null, если метрики нет). */
 export function teamPpda(match) {
   const ta = match?.teamAggregates || {};
   return {
-    ours: num(ta?.pressing?.averagePPDA),
-    opp: num(ta?.passes?.oppda),
+    ours: ppdaVal(ta?.pressing?.averagePPDA),
+    opp: ppdaVal(ta?.passes?.oppda),
   };
 }
 
