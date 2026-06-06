@@ -539,13 +539,25 @@ export default function MatchDetail() {
           {/* Командный выхлоп vs сезон: метрика этого матча против СРЕДНЕГО по
               сезону (вместо бесполезных «N из N» бубликов без соперника). */}
           {(() => {
+            // teamAggregates-значения — объекты {value,…} или числа. Берём ПЕРВЫЙ
+            // источник с положительным значением (не первый не-null): в урезанном
+            // экспорте основной ключ присутствует со значением 0 (duels.totalDuels
+            // = {value:0}, positioning.interceptions = 0), и `??` на него не падал
+            // → реальные Отборы/Перехваты из recoveriesAndTackling прятались.
+            const firstPositive = (...vals) => {
+              for (const v of vals) { const n = num(v); if (n > 0) return n; }
+              return 0;
+            };
             const defs = [
               // teamAggregates — всегда НАША команда (не home/away): в выездных
               // матчах teamSummaryStats.home = соперник, давал чужие удары в створ.
               { label: 'Удары в створ',          get: (m) => num(m?.teamAggregates?.shooting?.onTarget) },
               { label: 'Прогрессивные передачи', get: (m) => num(m?.teamAggregates?.passes?.progressive) },
-              { label: 'Отборы',                 get: (m) => num(m?.teamAggregates?.duels?.totalDuels ?? m?.teamAggregates?.recoveriesAndTackling?.tackle) },
-              { label: 'Перехваты',              get: (m) => num(m?.teamAggregates?.positioning?.interceptions ?? m?.teamAggregates?.recoveriesAndTackling?.interception) },
+              // Отборы = tackles (recoveriesAndTackling.tackle — корректный источник),
+              // duels.totalDuels — фолбэк. Перехваты = recoveriesAndTackling.interception
+              // (сумма, см. история фиксов), positioning.interceptions — фолбэк.
+              { label: 'Отборы',                 get: (m) => firstPositive(m?.teamAggregates?.recoveriesAndTackling?.tackle, m?.teamAggregates?.duels?.totalDuels) },
+              { label: 'Перехваты',              get: (m) => firstPositive(m?.teamAggregates?.recoveriesAndTackling?.interception, m?.teamAggregates?.positioning?.interceptions) },
               { label: 'Кроссы',                 get: (m) => num(m?.teamAggregates?.passes?.crosses) },
             ];
             const rows = defs.map((d) => {
