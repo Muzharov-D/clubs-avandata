@@ -1,6 +1,7 @@
 // Экран-хаб «Конструктор» — массовая настройка видимости блоков по всем
 // страницам сразу. Альтернатива режиму редактирования прямо на странице.
 
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { PAGES } from '../constructor/blockRegistry';
 import { useDashboardLayout } from '../constructor/DashboardLayoutContext';
@@ -8,7 +9,18 @@ import './ConstructorPage.css';
 
 export default function ConstructorPage() {
   const navigate = useNavigate();
-  const { layout, isVisible, setBlock, resetPage, resetAll } = useDashboardLayout();
+  const { layout, isVisible, setBlock, resetPage, resetAll, saveNow } = useDashboardLayout();
+  const [saveState, setSaveState] = useState('idle');
+  const handleSave = async () => {
+    setSaveState('saving');
+    try {
+      await saveNow();
+      setSaveState('saved');
+      setTimeout(() => setSaveState('idle'), 2000);
+    } catch {
+      setSaveState('idle');
+    }
+  };
 
   const totalHidden = Object.values(layout || {})
     .reduce((acc, page) => acc + Object.values(page || {}).filter((v) => v === false).length, 0);
@@ -23,15 +35,25 @@ export default function ConstructorPage() {
             подстроится под вас и сохранится на всех устройствах.
           </p>
         </div>
-        <button
-          type="button"
-          className="cstr-page__reset-all"
-          onClick={resetAll}
-          disabled={totalHidden === 0}
-          title="Показать все блоки на всех страницах"
-        >
-          Сбросить всё{totalHidden > 0 ? ` (${totalHidden})` : ''}
-        </button>
+        <div className="cstr-page__actions">
+          <button
+            type="button"
+            className={`cstr-page__save${saveState === 'saved' ? ' is-saved' : ''}`}
+            onClick={handleSave}
+            disabled={saveState === 'saving'}
+          >
+            {saveState === 'saving' ? 'Сохранение…' : saveState === 'saved' ? '✓ Сохранено' : 'Сохранить'}
+          </button>
+          <button
+            type="button"
+            className="cstr-page__reset-all"
+            onClick={resetAll}
+            disabled={totalHidden === 0}
+            title="Показать все блоки на всех страницах"
+          >
+            Сбросить всё{totalHidden > 0 ? ` (${totalHidden})` : ''}
+          </button>
+        </div>
       </header>
 
       <div className="cstr-page__grid">

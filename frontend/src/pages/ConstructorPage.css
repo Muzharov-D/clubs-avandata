@@ -40,6 +40,23 @@
 .cstr-page__reset-all:hover:not(:disabled) { border-color: var(--brand-primary); color: var(--text); }
 .cstr-page__reset-all:disabled { opacity: 0.45; cursor: default; }
 
+.cstr-page__actions { display: flex; align-items: center; gap: 10px; flex: none; }
+.cstr-page__save {
+  padding: 9px 18px;
+  border-radius: 999px;
+  border: 1px solid var(--brand-primary);
+  background: var(--brand-primary);
+  color: #fff;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: filter var(--dur-fast) var(--ease-out), background var(--dur-fast) var(--ease-out), border-color var(--dur-fast) var(--ease-out);
+}
+.cstr-page__save:hover:not(:disabled) { filter: brightness(1.08); }
+.cstr-page__save:disabled { opacity: 0.7; cursor: default; }
+.cstr-page__save.is-saved { background: var(--success); border-color: var(--success); }
+
 .cstr-page__grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
