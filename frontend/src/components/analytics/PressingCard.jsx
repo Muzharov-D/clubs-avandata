@@ -1,12 +1,11 @@
 /**
- * Прессинг и PPDA — ключевая метрика топ-аналитики, которая считалась на бэке,
- * но нигде не показывалась (критика 4, улучшение 36, вау 72/88).
- * PPDA = пасы соперника на одно оборонительное действие; ниже = агрессивнее.
+ * Прессинг. Сырой PPDA из блока убран (метрика на переосмыслении): тренеру
+ * число «меньше = лучше» нелогично на глаз. Интенсивность остаётся только в
+ * словесном вердикте и полосе «кто давил активнее» (производные от 1/PPDA, но
+ * без жаргон-числа); чипы — объём прессинга и линия отбора.
  */
 import { teamPpda, interpretPpda, pressingVolume, lineHeight } from '../../utils/analytics';
 import './analytics.css';
-
-function f1(v) { return v == null ? '—' : Number(v).toFixed(1); }
 
 export default function PressingCard({ match }) {
   if (!match) return null;
@@ -49,14 +48,10 @@ export default function PressingCard({ match }) {
         </div>
       )}
 
-      {/* PPDA и объём — деталь, мелким. */}
+      {/* Объём прессинга — деталь, мелким. PPDA убран из блока (переосмысление):
+          сырое «меньше = лучше» число тренеру на глаз нелогично; интенсивность
+          уходит в словесный вердикт и полосу «кто давил активнее» выше. */}
       <div className="an-chips" style={{ marginTop: 12 }}>
-        {ours != null && (
-          <span className="an-chip"><span className="an-chip__label">наш PPDA</span><span className="an-chip__val">{f1(ours)}</span></span>
-        )}
-        {opp != null && (
-          <span className="an-chip"><span className="an-chip__label">PPDA соперника</span><span className="an-chip__val">{f1(opp)}</span></span>
-        )}
         {vol.pressing > 0 && (
           <span className="an-chip"><span className="an-chip__label">прессинг-действий</span><span className="an-chip__val">{vol.pressing}</span></span>
         )}
@@ -68,11 +63,11 @@ export default function PressingCard({ match }) {
         )}
       </div>
 
-      <div className="an-note">
-        PPDA — пасы соперника на одно наше оборонительное действие: чем ниже, тем
-        агрессивнее прессинг. «Линия отбора» — где команда возвращает мяч (прокси
-        по третям поля).
-      </div>
+      {line && (
+        <div className="an-note">
+          «Линия отбора» — где команда возвращает мяч (прокси по третям поля).
+        </div>
+      )}
     </div>
   );
 }
