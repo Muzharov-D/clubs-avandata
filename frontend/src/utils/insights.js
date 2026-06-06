@@ -11,6 +11,8 @@
  *   opts.seasonAvg — { overall, attack, defence, fitness } средние по сезону (для «vs обычного»)
  *   opts.nameOf    — (player) => строка короткого имени
  */
+import { ourSideKey } from './analytics';
+
 function val(v) {
   if (v == null) return 0;
   if (typeof v === 'number') return v;
@@ -39,10 +41,13 @@ export function matchInsights(match, opts = {}) {
   const played = all.filter((p) => (p.minutes ?? 0) > 0);
   if (!played.length) return out;
 
-  const weAreHome = match.awayTeam?.isOurTeam ? false : true;
-  const s = match.score || {};
-  const us = weAreHome ? s.home : s.away;
-  const them = weAreHome ? s.away : s.home;
+  // Сторона «нашей» команды — через канонический ourSideKey (id-first флаги
+  // homeTeam/awayTeam.isOurTeam), а не ad-hoc по awayTeam: на выездных матчах
+  // home = соперник, и счёт/результат нельзя брать по home-слоту.
+  const { our } = ourSideKey(match);
+  const s = match.score || { home: match.scoreHome, away: match.scoreAway };
+  const us = our === 'home' ? s.home : s.away;
+  const them = our === 'home' ? s.away : s.home;
   const add = (tone, icon, text, weight) => out.push({ tone, icon, text, weight });
 
   // ── Результат с характером (не просто счёт) ──

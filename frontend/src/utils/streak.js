@@ -15,7 +15,9 @@ export function computeStreak(matches) {
   if (ourPlayed.length === 0) return { type: null, count: 0, recent: [] };
 
   function resultOf(m) {
-    const homeIsUs = isOurClub(m.home);
+    // id-first (наша сторона всегда несёт teamId), имя — лишь фолбэк для строк
+    // без id: на выезде home = соперник, нельзя слепо брать home-слот за наш.
+    const homeIsUs = (m.homeTeamId || m.awayTeamId) ? m.homeTeamId === m.teamId : isOurClub(m.home);
     const ourGoals = homeIsUs ? m.score.home : m.score.away;
     const themGoals = homeIsUs ? m.score.away : m.score.home;
     if (ourGoals > themGoals) return 'W';
