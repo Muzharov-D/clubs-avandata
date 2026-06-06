@@ -10,17 +10,26 @@ import './ConstructorPage.css';
 export default function ConstructorPage() {
   const navigate = useNavigate();
   const { layout, isVisible, setBlock, resetPage, resetAll, saveNow } = useDashboardLayout();
-  const [saveState, setSaveState] = useState('idle');
-  const handleSave = async () => {
-    setSaveState('saving');
+  // Статус сохранения с привязкой к источнику: 'all' (верхняя кнопка) или pageId
+  // (кнопка в шапке карточки) — чтобы «✓ Сохранено» загоралось там, где нажали.
+  const [saveState, setSaveState] = useState({ id: null, status: 'idle' });
+  const handleSave = async (id) => {
+    setSaveState({ id, status: 'saving' });
     try {
       await saveNow();
-      setSaveState('saved');
-      setTimeout(() => setSaveState('idle'), 2000);
+      setSaveState({ id, status: 'saved' });
+      setTimeout(() => setSaveState((s) => (s.id === id ? { id: null, status: 'idle' } : s)), 2000);
     } catch {
-      setSaveState('idle');
+      setSaveState({ id: null, status: 'idle' });
     }
   };
+  const saveLabel = (id) => {
+    if (saveState.id === id && saveState.status === 'saving') return 'Сохранение…';
+    if (saveState.id === id && saveState.status === 'saved') return '✓ Сохранено';
+    return 'Сохранить';
+  };
+  const isSaving = (id) => saveState.id === id && saveState.status === 'saving';
+  const isSaved = (id) => saveState.id === id && saveState.status === 'saved';
 
   const totalHidden = Object.values(layout || {})
     .reduce((acc, page) => acc + Object.values(page || {}).filter((v) => v === false).length, 0);
@@ -38,11 +47,11 @@ export default function ConstructorPage() {
         <div className="cstr-page__actions">
           <button
             type="button"
-            className={`cstr-page__save${saveState === 'saved' ? ' is-saved' : ''}`}
-            onClick={handleSave}
-            disabled={saveState === 'saving'}
+            className={`cstr-page__save${isSaved('all') ? ' is-saved' : ''}`}
+            onClick={() => handleSave('all')}
+            disabled={isSaving('all')}
           >
-            {saveState === 'saving' ? 'Сохранение…' : saveState === 'saved' ? '✓ Сохранено' : 'Сохранить'}
+            {saveLabel('all')}
           </button>
           <button
             type="button"
@@ -69,6 +78,15 @@ export default function ConstructorPage() {
                     {hiddenCount > 0 ? `Скрыто: ${hiddenCount} из ${page.blocks.length}` : 'Показаны все'}
                   </span>
                 </div>
+                <button
+                  type="button"
+                  className={`cstr-card__save${isSaved(page.id) ? ' is-saved' : ''}`}
+                  onClick={() => handleSave(page.id)}
+                  disabled={isSaving(page.id)}
+                  title="Сохранить изменения"
+                >
+                  {saveLabel(page.id)}
+                </button>
                 <button
                   type="button"
                   className="cstr-card__reset"

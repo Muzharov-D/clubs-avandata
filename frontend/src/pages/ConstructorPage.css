@@ -109,6 +109,25 @@
 .cstr-card__reset:hover:not(:disabled) { border-color: var(--brand-primary); color: var(--text); }
 .cstr-card__reset:disabled { opacity: 0.4; cursor: default; }
 
+/* Кнопка «Сохранить» в шапке карточки (рядом со «Сбросить») */
+.cstr-card__head { gap: 8px; }
+.cstr-card__save {
+  flex: none;
+  padding: 5px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--brand-primary);
+  background: var(--brand-primary);
+  color: #fff;
+  font-size: 0.74rem;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: filter var(--dur-fast) var(--ease-out), background var(--dur-fast) var(--ease-out), border-color var(--dur-fast) var(--ease-out);
+}
+.cstr-card__save:hover:not(:disabled) { filter: brightness(1.08); }
+.cstr-card__save:disabled { opacity: 0.7; cursor: default; }
+.cstr-card__save.is-saved { background: var(--success); border-color: var(--success); }
+
 .cstr-card__list {
   list-style: none;
   margin: 0;
