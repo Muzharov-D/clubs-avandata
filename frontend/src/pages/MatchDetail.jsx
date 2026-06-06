@@ -454,7 +454,7 @@ export default function MatchDetail() {
       {/* xG-панель: командный xG + контекст, вероятность исхода, xPTS, заслуженный счёт */}
       <div className="reveal" id="md-xg"><XgPanel match={match} /></div>
 
-      {/* Прессинг и PPDA */}
+      {/* Прессинг (объём; PPDA убран) */}
       <div className="reveal" id="md-press"><PressingCard match={match} /></div>
 
       {/* Стандарты, качество ударов, переходная угроза */}

@@ -5,7 +5,6 @@
  */
 import { M, played } from './metrics';
 import { teamXg, ourSideKey, finishing, deservedResult, playerXgModel } from './xg';
-import { teamPpda, interpretPpda } from './ppda';
 import { playerThreat } from './progression';
 
 function fmt1(v) {
@@ -63,12 +62,8 @@ export function coachDigest(match, opts = {}) {
     }
   }
 
-  // ── PPDA / прессинг (относительно соперника, не по взрослым порогам) ──
-  const { ours: ppda, opp: oppPpda } = teamPpda(match);
-  const interp = interpretPpda(ppda, oppPpda);
-  if (interp && ppda != null && oppPpda != null) {
-    out.push({ tone: interp.tone, icon: '🔥', text: `${interp.level} — PPDA ${fmt1(ppda)} против ${fmt1(oppPpda)}: ${interp.note}.` });
-  }
+  // Прессинг намеренно НЕ выносим в нарратив: PPDA убран целиком (слишком
+  // сложная метрика), а объём прессинг-действий показан в PressingCard.
 
   // Перекос по таймам намеренно НЕ дублируем тут — он есть в rule-based insights
   // (по конкретным метрикам) и в визуальной «Полосе темпа» (MomentumStrip).

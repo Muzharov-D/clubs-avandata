@@ -106,7 +106,6 @@ const AGG_KEY_LABELS = {
   toFinalThird: 'Передачи в финальную треть',
   crosses: 'Кроссы',
   goalKicks: 'Удары от ворот',
-  oppda: 'OPPDA',
   passesPerMinute: 'Передач в минуту',
   totalPasses: 'Всего передач',
   passAccuracy: 'Точность передач, %',
@@ -135,7 +134,6 @@ const AGG_KEY_LABELS = {
   // pressing (page 19)
   pressing: 'Прессинг',
   counterpressing: 'Контрпрессинг',
-  averagePPDA: 'Средний PPDA',
 
   // positioning (page 20)
   shotsAgainst: 'Удары против',
@@ -250,7 +248,8 @@ export default function ComparisonView() {
                 <div className="comparison-section__metrics">
                   {data ? (
                     Object.entries(data)
-                      .filter(([k]) => k !== 'mapImage')
+                      // PPDA выпилен целиком (слишком сложная метрика для тренера)
+                      .filter(([k]) => k !== 'mapImage' && k !== 'oppda' && k !== 'averagePPDA' && k !== 'averagePpda')
                       .map(([k, v]) => (
                         <div className="comparison-section__row" key={k}>
                           <span className="comparison-section__row-label">{prettyKey(k)}</span>

@@ -7,7 +7,6 @@
  * показатели и агрегаты.
  */
 import { num, matchesWord } from '../../utils/num';
-import { interpretPpda } from '../../utils/analytics/ppda';
 import './analytics.css';
 
 function v(x) { return x == null ? 0 : typeof x === 'object' ? Number(x.value ?? x.total ?? 0) : Number(x) || 0; }
@@ -58,13 +57,8 @@ export default function TeamIdentityCard({ aggregate, periodLabel = 'за сез
   const passVol = long + middle + short;
   const directness = passVol > 0 ? (long / passVol) * 100 : null;
 
-  // Прессинг: вердикт ОТНОСИТЕЛЬНО соперника (наш PPDA vs средний PPDA соперников
-  // за период — одна шкала), без взрослых абсолютных порогов и магического «15».
-  // Интенсивность-полоса = доля нашей агрессии отбора (1/PPDA) против соперника.
-  const ppda = num(ta.pressing?.averagePPDA);
-  const oppPpda = num(ta.passes?.oppda);
-  const press = ppda > 0 && oppPpda > 0 ? interpretPpda(ppda, oppPpda) : null;
-  const pressIntensity = press ? clamp(((1 / ppda) / ((1 / ppda) + (1 / oppPpda))) * 100) : null;
+  // Прессинг как строку портрета убрали вместе с PPDA (слишком сложная
+  // метрика). Объём прессинга показан отдельно в PressingCard на матче.
 
   // Острота: xG за матч (xG — принятое обозначение). Гард >6 — битый рейтинг.
   const xgRaw = num(our.expectedGoals);
@@ -88,13 +82,6 @@ export default function TeamIdentityCard({ aggregate, periodLabel = 'за сез
       word: directnessWord(directness),
       val: clamp(directness * 2.5), // визуальная шкала (20% длинных ≈ полная полоса)
       hint: `Длинных передач — ${Math.round(directness)}% от всех (≥18% — играем вертикально).`,
-    },
-    press && {
-      key: 'press',
-      label: 'Прессинг',
-      word: press.level,
-      val: pressIntensity ?? 0,
-      hint: press.note,
     },
     xg != null && {
       key: 'threat',

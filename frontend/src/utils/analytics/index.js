@@ -1,7 +1,7 @@
 /**
  * Единый аналитический слой Clubs · Avandata (миссия «Погнали», п.100).
  * Прозрачные модели на реальных полях SportVisor: per-90, перцентили,
- * xG/xT/xA/packing, PPDA/прессинг, PAdj-оборона, форма, role-fit, momentum,
+ * xG/xT/xA/packing, прессинг (объём, без PPDA), PAdj-оборона, форма, role-fit, momentum,
  * стандарты, нарратив. Питает MatchDetail / PlayerDetail / ClubDashboard.
  */
 export * from './metrics';

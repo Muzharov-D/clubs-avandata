@@ -39,7 +39,7 @@ const FIELD_RU: Record<string, string> = {
   total: 'Всего', successful: 'Точные', progressive: 'Прогрессивные',
   toFinalThird: 'В финальную треть', intoPenArea: 'В штрафную',
   crosses: 'Кроссы', keyPass: 'Ключевые', back: 'Назад', long: 'Длинные',
-  short: 'Короткие', middle: 'Средние', oppda: 'PPDA',
+  short: 'Короткие', middle: 'Средние',
   forward: 'Вперёд', sideways: 'Поперечные',
   // attacks
   assists: 'Ассисты', goalActions: 'Голевые действия', dribble: 'Дриблинг',
@@ -59,7 +59,6 @@ const FIELD_RU: Record<string, string> = {
   aerialDuels: 'Воздушные дуэли',
   // pressing
   pressing: 'Прессинг', counterpressing: 'Контр-прессинг',
-  averagePpda: 'Сред. PPDA', averagePPDA: 'Сред. PPDA',
   // positioning
   clearance: 'Выносы', blockedShot: 'Блок-удары', positionPlay: 'Поз. игра',
   fouls: 'Фолы', yellowCard: 'Жёлтые', redCard: 'Красные', shotsAgainst: 'Удары по воротам',
@@ -88,9 +87,13 @@ function readVal(v: unknown): { val: number | null; suffix: string } {
   return { val: null, suffix: '' };
 }
 
-// Поля-«ставки», которым осмысленна дробь (xG, дистанция удара, PPDA). Остальное —
+// Поля-«ставки», которым осмысленна дробь (xG, дистанция удара). Остальное —
 // счётные действия: «48,67 дуэлей» режет глаз тренеру, округляем до целого.
-const DECIMAL_KEYS = new Set(['expectedGoals', 'xG', 'avgShotDistance', 'averagePPDA', 'averagePpda', 'oppda']);
+const DECIMAL_KEYS = new Set(['expectedGoals', 'xG', 'avgShotDistance']);
+
+// PPDA выпилен целиком (слишком сложная метрика для тренера) — прячем во всех
+// агрегатных гридах: наш averagePPDA и oppda соперника.
+const HIDDEN_KEYS = new Set(['averagePPDA', 'averagePpda', 'oppda']);
 
 function fmtAggVal(k: string, val: number, suffix: string): string {
   // Дроби — с ТОЧКОЙ, как во всём UI (1.83, 6.9), не запятая ru-RU: на одной
@@ -105,7 +108,7 @@ function AggregateCard({ title, data }: { title: string; data: AnyObj }) {
   type Entry = { k: string; label: string; val: number; suffix: string };
   const bucket = new Map<string, Entry>();
   for (const [k, v] of Object.entries(data || {})) {
-    if (k === 'mapImage') continue;
+    if (k === 'mapImage' || HIDDEN_KEYS.has(k)) continue;
     const { val, suffix } = readVal(v);
     if (val == null || val === 0) continue;
     const label = fieldLabel(k);
@@ -141,7 +144,7 @@ export default function TeamAggregatesGrid({ aggregates, matchCount, periodLabel
   const meaningful = Object.entries(aggregates).filter(([, v]) => {
     if (!v || typeof v !== 'object') return false;
     return Object.entries(v).some(([k, x]) => {
-      if (k === 'mapImage') return false;
+      if (k === 'mapImage' || HIDDEN_KEYS.has(k)) return false;
       const { val } = readVal(x);
       return typeof val === 'number' && val > 0;
     });
