@@ -58,6 +58,23 @@ const POSITION_GROUPS = [
   },
 ];
 
+// Латинские коды SportVisor с флангом/линией (RCB, LCMF, RDMF, RWF, RAMF…),
+// которых нет в точных списках short → классифицируем по СТРУКТУРЕ кода.
+// Порядок проверок важен: GK → центр-нападение → вингер → атак.полузащ (AM) →
+// полузащита (любой M после AM) → защита (любой B, вкл. крайних RWB/LWB).
+// Возвращает индекс линии в POSITION_GROUPS [0:нап,1:вингер,2:ЦАП,3:ПЗ,4:ЗАЩ,5:ВР] или -1.
+function latinLine(code) {
+  const c = String(code || '').toUpperCase().replace(/[^A-Z]/g, '');
+  if (!c) return -1;
+  if (/^G?K$|GK/.test(c)) return 5;            // вратарь
+  if (/^(ST|CF|FW|F|CFW)$/.test(c)) return 0;  // центр-нападение
+  if (/(?:^|[RL])W[FM]?$/.test(c)) return 1;   // вингер (RW/LW/RWF/LWF) — но НЕ RWB
+  if (/AM/.test(c)) return 2;                  // атакующий полузащитник (CAM/RAMF…)
+  if (/M/.test(c)) return 3;                   // полузащита (CMF/RCMF/DMF/CDM/RM…)
+  if (/B/.test(c)) return 4;                   // защита (CB/RCB/RB/RWB/LWB…)
+  return -1;
+}
+
 // Определяем линию по любому доступному сигналу (positionSlot из PDF
 // formation, position/positionFull из роли игрока в players[]).
 function lineFor(p) {
@@ -72,7 +89,8 @@ function lineFor(p) {
     if (posFull && g.russian.some((m) => posFull === m.toLowerCase() || posFull.includes(m.toLowerCase()))) return i;
     if (g.re && (g.re.test(slot) || g.re.test(posFull))) return i;
   }
-  return -1;
+  // Фолбэк: латинский код с флангом (RCB/RCMF/RWF…) по структуре.
+  return latinLine(posShort);
 }
 
 function buildLayout(starters) {
