@@ -79,7 +79,7 @@ export default function ConstructorPage() {
                 })}
               </ul>
 
-              {page.route.indexOf(':') === -1 && (
+              {page.route && page.route.indexOf(':') === -1 && (
                 <button
                   type="button"
                   className="cstr-card__open"

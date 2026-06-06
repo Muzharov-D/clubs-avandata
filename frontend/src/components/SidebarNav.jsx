@@ -1,11 +1,13 @@
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { useDashboardLayout } from '../constructor/DashboardLayoutContext';
 import './SidebarNav.css';
 
 export default function SidebarNav() {
   const navigate = useNavigate();
   const { pathname } = useLocation();
   const { user, isPlayer, isCoach } = useAuth();
+  const { isVisible } = useDashboardLayout();
 
   // Аналитика и список Игроков — только тренеру (игроку нечего смотреть
   // в командных топах, MOTM и pivot-аналитике, по контракту он видит
@@ -28,10 +30,9 @@ export default function SidebarNav() {
     isCoach
       ? { id: 'load', label: 'Нагрузка', path: '/load', icon: '🏃' }
       : null,
-    isCoach
-      ? { id: 'constructor', label: 'Конструктор', path: '/constructor', icon: '⚙' }
-      : null,
-  ].filter(Boolean);
+  ].filter(Boolean)
+    // Конструктор: тренер может спрятать любой пункт меню (раздел «Левое меню»).
+    .filter((it) => isVisible('nav', it.id));
 
   function isActive(item) {
     if (item.id === 'club')      return pathname === '/club' || pathname === '/';
@@ -42,7 +43,6 @@ export default function SidebarNav() {
     if (item.id === 'me')        return pathname === item.path;
     if (item.id === 'players')   return pathname.startsWith('/players');
     if (item.id === 'load')      return pathname.startsWith('/load');
-    if (item.id === 'constructor') return pathname.startsWith('/constructor');
     return false;
   }
 

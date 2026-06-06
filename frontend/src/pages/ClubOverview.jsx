@@ -209,6 +209,7 @@ export default function ClubOverview() {
           ) : (
             <>
               {/* Сводные рейтинги за период */}
+              <Block page="analytics" id="season-ratings">
               <div>
                 <div className="page-section-title">Сводные рейтинги · {periodLabel} <span className="club-overview__sub">{matchCount} {matchesWord(matchCount)}</span></div>
                 <div className="club-overview__ratings">
@@ -218,8 +219,10 @@ export default function ClubOverview() {
                   <RatingCard label="Защита" value={ratings.defence} />
                 </div>
               </div>
+              </Block>
 
               {/* Ключевые показатели — в среднем за матч */}
+              <Block page="analytics" id="key-stats">
               <div>
                 <div className="page-section-title">Показатели · в среднем за матч</div>
                 <div className="club-overview__kpi">
@@ -235,6 +238,7 @@ export default function ClubOverview() {
                   <KpiCell label="Нарушения"      value={fmtAvg(num(our.fouls))} />
                 </div>
               </div>
+              </Block>
             </>
           )}
 
@@ -257,6 +261,7 @@ export default function ClubOverview() {
           <Block page="analytics" id="team-identity">{agg && <TeamIdentityCard aggregate={agg} periodLabel={`за ${periodLabel}`} />}</Block>
 
           {/* Сезонные лидеры — бомбардиры / ассистенты / рейтинг */}
+          <Block page="analytics" id="season-leaders">
           {leaders && (
             <div>
               <div className="page-section-title">Лидеры сезона</div>
@@ -267,6 +272,7 @@ export default function ClubOverview() {
               </div>
             </div>
           )}
+          </Block>
         </section>
       </div>
 

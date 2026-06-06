@@ -369,6 +369,7 @@ function SeasonTab({ identity, playerId, teamId, teamName, seasonPlayers, series
       )}
 
       {/* ОВЕРВЬЮ: 2 карточки в ряд (инфо · авто-биография) */}
+      <Block page="player" id="overview-info-bio">
       <Reveal variant="slide-up" duration={0.5}>
         <div className="player-detail__overview player-detail__overview--duo">
           <PlayerInfoCard identity={identity} teamName={teamName} />
@@ -378,6 +379,7 @@ function SeasonTab({ identity, playerId, teamId, teamName, seasonPlayers, series
           </div>
         </div>
       </Reveal>
+      </Block>
 
       {/* Посещаемость тренировок — появляется только если есть данные */}
       <Block page="player" id="attendance"><AttendanceBlock teamId={teamId} playerId={playerId} /></Block>
@@ -386,7 +388,7 @@ function SeasonTab({ identity, playerId, teamId, teamName, seasonPlayers, series
       <Block page="player" id="season-profile"><Reveal variant="slide-up" duration={0.5} delay={0.2}><SeasonProfileCard subject={identity} seasonPlayers={seasonPlayers} basis={basis} /></Reveal></Block>
 
       {/* Динамика по сезону — спарклайны рейтингов + лента матчей */}
-      <Reveal variant="slide-up" duration={0.5} delay={0.3}><PlayerTrendCard playerId={playerId} series={series} /></Reveal>
+      <Block page="player" id="trend"><Reveal variant="slide-up" duration={0.5} delay={0.3}><PlayerTrendCard playerId={playerId} series={series} /></Reveal></Block>
 
       {/* Форма: индекс свежих матчей, vs своё среднее, серия, траектория */}
       <Block page="player" id="form"><Reveal variant="slide-up" duration={0.5} delay={0.35}><PlayerFormCard playerId={playerId} series={series} /></Reveal></Block>
@@ -739,20 +741,23 @@ function MatchTab({ playerId, match, loading, allMatches, currentMatchId, setSel
       </div>
 
       {/* 4 RATING CARDS */}
+      <Block page="player" id="match-ratings">
       <div className="player-detail__ratings reveal">
         <RatingCard label="Общий" value={ratings.overall} />
         <RatingCard label="Фитнес" value={ratings.fitness} />
         <RatingCard label="Атака" value={ratings.attack} />
         <RatingCard label="Защита" value={ratings.defence} />
       </div>
+      </Block>
 
       {/* Продвинутые модельные метрики за матч (xG/xT/xA/packing/PAdj/win%) */}
-      <PlayerAdvancedCard player={player} squad={match.players} match={match} basis={basis} />
+      <Block page="player" id="match-advanced"><PlayerAdvancedCard player={player} squad={match.players} match={match} basis={basis} /></Block>
 
       </section>
 
       <section id="pd-profile" className="pd-section">
       {/* RIBBON: Лучший в команде (в этом матче) */}
+      <Block page="player" id="match-best-badges">
       {badges.length > 0 && (
         <div className="card player-detail__ribbon reveal">
           <div className="page-section-title">Лучший в команде <span className="an-model-tag">в этом матче</span></div>
@@ -770,6 +775,7 @@ function MatchTab({ playerId, match, loading, allMatches, currentMatchId, setSel
           </div>
         </div>
       )}
+      </Block>
 
       {/* PIZZA CHART — профиль по составу матча */}
       <Block page="player" id="pizza">
@@ -905,6 +911,7 @@ function MatchTab({ playerId, match, loading, allMatches, currentMatchId, setSel
 
       <section id="pd-physical" className="pd-section">
       {/* MAPS — тепловая карта движения */}
+      <Block page="player" id="match-heatmap">
       {player.maps?.fitnessHeatmap && (
         <div className="player-detail__maps">
           <div className="card player-detail__map-card player-detail__map-card--heat">
@@ -912,6 +919,7 @@ function MatchTab({ playerId, match, loading, allMatches, currentMatchId, setSel
           </div>
         </div>
       )}
+      </Block>
 
       <div className="pd-grid-2">
       {/* FITNESS — скрываем целиком если ни одна метрика не считалась (бенч) */}
@@ -934,6 +942,7 @@ function MatchTab({ playerId, match, loading, allMatches, currentMatchId, setSel
       </Block>
 
       {/* Зоны интенсивности */}
+      <Block page="player" id="match-speed-zones">
       {(() => {
         const z1 = num(fitnessStats.speed_4_5_5), z2 = num(fitnessStats.speed_5_5_7), z3 = num(fitnessStats.speed_7plus);
         if ((z1 || 0) + (z2 || 0) + (z3 || 0) <= 0 && (num(fitnessStats.totalDistance) || 0) <= 0) return null;
@@ -949,6 +958,7 @@ function MatchTab({ playerId, match, loading, allMatches, currentMatchId, setSel
           </div>
         );
       })()}
+      </Block>
 
       </div>
       </section>
@@ -956,6 +966,7 @@ function MatchTab({ playerId, match, loading, allMatches, currentMatchId, setSel
       <section id="pd-passing" className="pd-section">
       <div className="pd-grid-2">
       {/* Профиль передач */}
+      <Block page="player" id="match-pass-profile">
       {(() => {
         const a3 = player.stats?.attack3 || {};
         const a2 = player.stats?.attack2 || {};
@@ -974,13 +985,16 @@ function MatchTab({ playerId, match, loading, allMatches, currentMatchId, setSel
           </div>
         );
       })()}
+      </Block>
 
+      <Block page="player" id="match-halves">
       {halfRows.length > 0 && (
         <div className="card">
           <div className="page-section-title">По таймам — момент игры</div>
           <HalfSplitChart rows={halfRows} hint="Длина полос — доля действий в каждом тайме. ▲/▼ — изменение во 2-м тайме." />
         </div>
       )}
+      </Block>
 
       </div>
       </section>
