@@ -88,7 +88,18 @@ export async function listAll<T = unknown>(
     for (const item of items) all.push(item);
     const view = data['hydra:view'] ?? data.view;
     const nextRel = view?.['hydra:next'] ?? view?.next;
-    next = nextRel ? new URL(nextRel, ENDPOINT).toString() : null;
+    // hydra:next приходит как путь от FFSPB-корня («/api/...&page=N»). НЕ резолвим
+    // его относительно ENDPOINT: при работе через прокси (ENDPOINT=…/ffspb-api на
+    // Vercel) абсолютный «/api/...» увёл бы запрос на фронтовый rewrite (onrender),
+    // а не на FFSPB. Берём только параметр page и применяем к текущему url —
+    // host+path (прокси или прямой stat.ffspb.org) сохраняются, пагинация прозрачна.
+    if (nextRel) {
+      const np = new URL(String(nextRel), 'https://ffspb.local').searchParams.get('page');
+      if (np) { url.searchParams.set('page', np); next = url.toString(); }
+      else next = null;
+    } else {
+      next = null;
+    }
   }
   return all;
 }
