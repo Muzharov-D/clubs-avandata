@@ -3,18 +3,25 @@ import PlayerPhoto from './PlayerPhoto';
 import { shortNameFromPlayer, numberWithPos } from '../utils/players';
 import './LeaderMetricCard.css';
 
-export default function LeaderMetricCard({ label, value, suffix = '', player, locked = false }) {
+// Карточка лидера по метрике. По умолчанию — клик ведёт в профиль топ-1 игрока.
+// Если передан onSelect — клик раскрывает топ-5 команды по метрике (модалка);
+// тогда карточка показывает топ-1 как превью и подпись «топ-5 →».
+export default function LeaderMetricCard({ label, value, suffix = '', player, locked = false, onSelect }) {
   const navigate = useNavigate();
   function go() {
+    if (onSelect) { onSelect(); return; }
     if (locked) return;
     if (player?.id) navigate(`/players/${player.id}`);
   }
+  const clickable = !!onSelect || !locked;
   return (
     <div
-      className={'leader-card' + (locked ? ' leader-card--locked' : '')}
+      className={'leader-card' + (locked && !onSelect ? ' leader-card--locked' : '')}
       onClick={go}
-      role={locked ? undefined : 'button'}
-      title={locked ? 'Доступно только тренеру' : undefined}
+      role={clickable ? 'button' : undefined}
+      tabIndex={clickable ? 0 : undefined}
+      onKeyDown={(e) => { if (clickable && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); go(); } }}
+      title={!onSelect && locked ? 'Доступно только тренеру' : undefined}
     >
       <div className="leader-card__label">{label}</div>
       <div className="leader-card__body">
@@ -37,6 +44,7 @@ export default function LeaderMetricCard({ label, value, suffix = '', player, lo
             : (typeof value === 'number' && Number.isInteger(value) ? value.toLocaleString('ru-RU') : value)}{suffix}
         </div>
       </div>
+      {onSelect && <div className="leader-card__more">топ-5 →</div>}
     </div>
   );
 }
