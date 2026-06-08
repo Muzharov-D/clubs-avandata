@@ -65,6 +65,8 @@ function num(v) {
 
 // Единая обрезка возрастной группы — см. utils/teamName.
 import { trimAgeSuffix as trimAgeStr } from '../utils/teamName';
+// Командные показатели «матч против сезона» — единый источник метрик.
+import { buildTeamVsSeasonRows, otherMatchesCount } from '../utils/teamMatchMetrics';
 
 function bestPlayer(match) {
   if (!match?.players?.length) return null;
@@ -557,49 +559,9 @@ export default function MatchDetail() {
               сезону (вместо бесполезных «N из N» бубликов без соперника). */}
           <Block page="match" id="match-vs-season">
           {(() => {
-            // teamAggregates-значения — объекты {value,…} или числа. Берём ПЕРВЫЙ
-            // источник с положительным значением (не первый не-null): в урезанном
-            // экспорте основной ключ присутствует со значением 0 (duels.totalDuels
-            // = {value:0}, positioning.interceptions = 0), и `??` на него не падал
-            // → реальные Отборы/Перехваты из recoveriesAndTackling прятались.
-            const firstPositive = (...vals) => {
-              for (const v of vals) { const n = num(v); if (n > 0) return n; }
-              return 0;
-            };
-            // Дистанция в км (метры/1000, округление). 0 → скрыта ниже.
-            const km = (m) => { const d = num(m?.teamAggregates?.fitness?.totalDistance); return d > 0 ? Math.round(d / 1000) : 0; };
-            // teamAggregates — всегда НАША команда (не home/away): в выездных
-            // матчах teamSummaryStats.home = соперник, давал чужие удары в створ.
-            // Метрики тренерские, без жаргона; нулевые/отсутствующие авто-скрыты
-            // ниже (cur > 0), поэтому набор широкий — на полном экспорте грид
-            // насыщенный, на урезанном показывает только то, что реально есть.
-            const defs = [
-              // Атака
-              { label: 'Удары',                  get: (m) => num(m?.teamAggregates?.shooting?.shots ?? m?.teamAggregates?.shooting?.totalShots) },
-              { label: 'Удары в створ',          get: (m) => num(m?.teamAggregates?.shooting?.onTarget) },
-              { label: 'Касания в штрафной',     get: (m) => num(m?.teamAggregates?.attacks?.touchesInBox) },
-              { label: 'Обводки',                get: (m) => num(m?.teamAggregates?.attacks?.dribble) },
-              // Передачи
-              { label: 'Ключевые передачи',      get: (m) => num(m?.teamAggregates?.passes?.keyPass) },
-              { label: 'Точные передачи',        get: (m) => num(m?.teamAggregates?.passes?.successful) },
-              { label: 'Прогрессивные передачи', get: (m) => num(m?.teamAggregates?.passes?.progressive) },
-              { label: 'Кроссы',                 get: (m) => num(m?.teamAggregates?.passes?.crosses) },
-              // Оборона. Отборы = tackles (recoveriesAndTackling.tackle — корректный
-              // источник), duels.totalDuels — фолбэк. Перехваты = recoveriesAndTackling
-              // .interception (сумма, см. история фиксов), positioning — фолбэк.
-              { label: 'Отборы',                 get: (m) => firstPositive(m?.teamAggregates?.recoveriesAndTackling?.tackle, m?.teamAggregates?.duels?.totalDuels) },
-              { label: 'Перехваты',              get: (m) => firstPositive(m?.teamAggregates?.recoveriesAndTackling?.interception, m?.teamAggregates?.positioning?.interceptions) },
-              { label: 'Подборы',                get: (m) => num(m?.teamAggregates?.recoveriesAndTackling?.recovery) },
-              // Физика
-              { label: 'Дистанция, км',          get: km },
-            ];
-            const rows = defs.map((d) => {
-              const cur = d.get(match);
-              if (!(cur > 0)) return null;
-              const vals = allMatchData.map(d.get).filter((v) => v > 0);
-              const avg = vals.length >= 2 ? vals.reduce((a, b) => a + b, 0) / vals.length : null;
-              return { label: d.label, cur, avg };
-            }).filter(Boolean);
+            // Метрики и расчёт «матч против сезона» — единый источник
+            // (utils/teamMatchMetrics), общий с сезонной сводкой на /matches.
+            const rows = buildTeamVsSeasonRows(match, allMatchData);
             if (!rows.length) return null;
             return (
               <div className="card">
@@ -624,7 +586,7 @@ export default function MatchDetail() {
                   })}
                 </div>
                 {rows.some((r) => r.avg != null) && (
-                  <div className="md-insights__note" style={{ marginTop: 10 }}>Сравнение со средним по сезону ({allMatchData.length} {matchesWord(allMatchData.length)}). ▲/▼ — отклонение от обычного.</div>
+                  <div className="md-insights__note" style={{ marginTop: 10 }}>Сравнение со средним по остальным матчам сезона ({otherMatchesCount(match, allMatchData)}). ▲/▼ — отклонение от обычного.</div>
                 )}
               </div>
             );

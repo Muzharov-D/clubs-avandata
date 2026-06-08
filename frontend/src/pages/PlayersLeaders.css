@@ -103,6 +103,101 @@
   gap: 12px;
 }
 
+/* ─── Модалка «Топ-5 по метрике» ─── */
+.lt5-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(6, 8, 20, 0.7);
+  backdrop-filter: blur(4px);
+  animation: lt5-fade 0.15s ease;
+}
+@keyframes lt5-fade { from { opacity: 0; } to { opacity: 1; } }
+.lt5-dialog {
+  width: 100%;
+  max-width: 440px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg, 20px);
+  box-shadow: var(--shadow-lg);
+  overflow: hidden;
+  animation: lt5-rise 0.18s ease;
+}
+@keyframes lt5-rise { from { transform: translateY(10px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+.lt5-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px 18px;
+  border-bottom: 1px solid var(--border);
+}
+.lt5-head__title {
+  font-family: var(--font-display);
+  font-size: 16px;
+  font-weight: 700;
+}
+.lt5-close {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 4px 6px;
+  border-radius: var(--radius-sm, 9px);
+  transition: color 0.15s, background 0.15s;
+}
+.lt5-close:hover { color: var(--text); background: rgba(255, 255, 255, 0.06); }
+.lt5-list {
+  display: flex;
+  flex-direction: column;
+  padding: 8px;
+  gap: 4px;
+}
+.lt5-row {
+  display: grid;
+  grid-template-columns: 24px auto 1fr auto;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 10px;
+  border-radius: var(--radius);
+  transition: background 0.15s;
+}
+.lt5-row[role='button'] { cursor: pointer; }
+.lt5-row[role='button']:hover { background: rgba(34, 211, 238, 0.1); }
+.lt5-row--locked { opacity: 0.55; }
+.lt5-row__rank {
+  font-family: var(--font-display);
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--text-faint);
+  text-align: center;
+}
+.lt5-row__info { min-width: 0; }
+.lt5-row__name {
+  font-size: 14px;
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.lt5-row__pos {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+.lt5-row__value {
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--accent-cyan);
+  font-variant-numeric: tabular-nums;
+}
+
 .players-leaders__top--locked {
   cursor: default;
   opacity: 0.6;

@@ -45,8 +45,8 @@ import { shieldFor, normalizeTeamName as normLeague } from '../utils/legirus';
 import PlayerPhoto from '../components/PlayerPhoto';
 // @ts-ignore — legacy .jsx
 import OpponentPreview from '../components/OpponentPreview';
-// @ts-ignore — legacy .jsx
-import { playerArchetype } from '../components/analytics/PlayerDnaCard';
+// @ts-ignore — legacy .js
+import { ciesArchetype } from '../utils/ciesArchetype';
 import { useDocumentTitle } from '../hooks/useDocumentTitle';
 import { SplitText, AnimatedNumber, StaggerList } from '../components/motion';
 import './ClubDashboard.css';
@@ -230,12 +230,17 @@ export default function ClubDashboard() {
     return m;
   }, [latestMatch]);
 
-  // CIES-архетип каждого игрока (для подписи в плитке состава). Считаем по сырому
-  // сезонному пулу (перцентили внутри команды). basis 80 — молодёжный матч.
-  const archetypeById = useMemo(() => {
+  // Режим подписи роли в плитке состава: «Базовое» (линия) или «CIES» (амплуа по
+  // методике CIES). FM-движок ролей из состава убран — путал тренера: см.
+  // utils/ciesArchetype. Переключатель — табами в шапке блока «Состав».
+  const [roleMode, setRoleMode] = useState<'base' | 'cies'>('cies');
+
+  // CIES-амплуа каждого игрока — по сырому сезонному пулу (перцентили внутри
+  // команды). basis 80 — молодёжный матч. null → в плитке покажем базовую линию.
+  const ciesById = useMemo(() => {
     const m = new Map<string, string>();
     for (const p of seasonPlayers) {
-      const a = playerArchetype(p, seasonPlayers, 80);
+      const a = ciesArchetype(p, seasonPlayers, 80);
       if (a?.name) m.set(String((p as AnyObj).id), a.name);
     }
     return m;
@@ -712,14 +717,32 @@ export default function ClubDashboard() {
       <Block page="club" id="roster">
       <section className="cd__panel reveal" id="sec-roster">
         <div className="cd__panel-header">
-          <h2 className="cd__panel-title">
-            Состав{seasonRoster.length ? ` (${seasonRoster.length})` : ''}
-          </h2>
-          <span className="cd__panel-sub">
-            {seasonRoster.length
-              ? (seasonMatchCount > 0 ? `за сезон · ${seasonMatchCount} ${matchesWord(seasonMatchCount)}` : 'за сезон')
-              : 'нет загруженных разборов'}
-          </span>
+          <div className="cd__panel-headmain">
+            <h2 className="cd__panel-title">
+              Состав{seasonRoster.length ? ` (${seasonRoster.length})` : ''}
+            </h2>
+            <span className="cd__panel-sub">
+              {seasonRoster.length
+                ? (seasonMatchCount > 0 ? `за сезон · ${seasonMatchCount} ${matchesWord(seasonMatchCount)}` : 'за сезон')
+                : 'нет загруженных разборов'}
+            </span>
+          </div>
+          {seasonRoster.length > 0 && (
+            <div className="cd__roster-tabs" role="tablist" aria-label="Способ определения роли">
+              <button
+                type="button" role="tab" aria-selected={roleMode === 'base'}
+                className={'cd__roster-tab' + (roleMode === 'base' ? ' is-active' : '')}
+                onClick={() => setRoleMode('base')}
+                title="Базовое — линия игрока (вратарь / защитник / полузащитник / нападающий)"
+              >Базовое</button>
+              <button
+                type="button" role="tab" aria-selected={roleMode === 'cies'}
+                className={'cd__roster-tab' + (roleMode === 'cies' ? ' is-active' : '')}
+                onClick={() => setRoleMode('cies')}
+                title="CIES — амплуа по доминирующей навыковой области (методика CIES Football Observatory)"
+              >CIES</button>
+            </div>
+          )}
         </div>
         {(() => {
           // Состав tier-display: по линиям (вратари → защита → полузащита →
@@ -773,19 +796,28 @@ export default function ClubDashboard() {
                 </div>
                 <span className="cd__player-name">{surnameOf(p)}</span>
                 <span className="cd__player-number">#{p.number ?? '—'} · {sub}</span>
-                {archetypeById.get(String(p.playerId)) && (
-                  <span
-                    className="cd__player-arch"
-                    title={`CIES-профиль: ${archetypeById.get(String(p.playerId))}`}
-                    style={{
-                      fontSize: size === 80 ? '0.74rem' : '0.68rem', fontWeight: 600,
-                      color: 'var(--brand-accent, #38bdf8)', marginTop: 2, maxWidth: '100%',
-                      overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-                    }}
-                  >
-                    {archetypeById.get(String(p.playerId))}
-                  </span>
-                )}
+                {(() => {
+                  // «Базовое» — линия; «CIES» — амплуа (с откатом на линию, если
+                  // данных мало). Цвет роли: CIES — акцент бренда, базовое — нейтрально.
+                  const base = baseRoleLabel(grp);
+                  const label = roleMode === 'cies' ? (ciesById.get(String(p.playerId)) || base) : base;
+                  if (!label) return null;
+                  const isCies = roleMode === 'cies' && ciesById.has(String(p.playerId));
+                  return (
+                    <span
+                      className="cd__player-arch"
+                      title={isCies ? `CIES-амплуа: ${label}` : `Линия: ${label}`}
+                      style={{
+                        fontSize: size === 80 ? '0.74rem' : '0.68rem', fontWeight: 600,
+                        color: isCies ? 'var(--brand-accent, #38bdf8)' : 'var(--text-faint)',
+                        marginTop: 2, maxWidth: '100%',
+                        overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                      }}
+                    >
+                      {label}
+                    </span>
+                  );
+                })()}
               </div>
             );
           };
@@ -934,6 +966,18 @@ function posGroupLabel(grp: string): string {
     case 'mid': return 'полузащитник';
     case 'fwd': return 'нападающий';
     default: return 'полевой игрок';
+  }
+}
+
+/** Базовая роль (с заглавной) для подписи в плитке состава — таб «Базовое».
+ *  Без позиции (unknown) подписи не даём (null) — не пишем «полевой игрок». */
+function baseRoleLabel(grp: string): string | null {
+  switch (grp) {
+    case 'gk': return 'Вратарь';
+    case 'def': return 'Защитник';
+    case 'mid': return 'Полузащитник';
+    case 'fwd': return 'Нападающий';
+    default: return null;
   }
 }
 

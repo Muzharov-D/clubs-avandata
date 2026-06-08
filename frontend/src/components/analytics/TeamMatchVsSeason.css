@@ -1,0 +1,26 @@
+/* Командные показатели «матч против сезона» — самодостаточные стили (tmvs-*).
+   Портировано из MatchDetail (.md-out*), чтобы блок работал на любом экране. */
+.tmvs-output {
+  display: grid;
+  /* max 220px (не 1fr): при одной метрике на урезанном экспорте плитка не
+     растягивается на всю ширину карточки, а садится слева. */
+  grid-template-columns: repeat(auto-fit, minmax(150px, 220px));
+  gap: 10px;
+}
+.tmvs-out {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 12px 14px;
+  border-radius: var(--radius-sm);
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border);
+}
+.tmvs-out__label { font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.03em; }
+.tmvs-out__val { font-size: 26px; font-weight: 800; color: var(--text); font-variant-numeric: tabular-nums; line-height: 1.1; }
+.tmvs-out__cmp { font-size: 12px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.tmvs-out__cmp--up    { color: var(--rating-good, #7cb342); }
+.tmvs-out__cmp--down  { color: var(--rating-weak, #fb8c00); }
+.tmvs-out__cmp--flat  { color: var(--text-faint, #64748b); }
+.tmvs-out__cmp--muted { color: var(--text-faint, #64748b); font-weight: 400; }
+.tmvs-note { margin-top: 10px; font-size: 11px; color: var(--text-faint); }

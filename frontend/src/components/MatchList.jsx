@@ -6,8 +6,6 @@ import './MatchList.css';
 // Порог «старения» матча: матч старше 7 дней приглушаем (opacity 50%).
 const AGED_DAYS = 7;
 const DAY_MS = 24 * 60 * 60 * 1000;
-// Свежесть подсветки: самые последние N матчей выделяем cyan-границей.
-const RECENT_COUNT = 3;
 
 function fmtDate(iso) {
   if (!iso) return '';
@@ -46,20 +44,19 @@ export default function MatchList({ matches, teams, activeMatchId }) {
       </Reveal>
       {list.length > 0 && (
         <StaggerList speed="normal" whenInView className="match-list__items">
-          {list.map((m, i) => {
+          {list.map((m) => {
             // API возвращает m.home/m.away (имена), а не teamId. Fallback на
             // teamName() через id если есть, иначе на имя из API напрямую.
             const home = trimAgeStr(m.home || teamName(m.homeTeamId, m.homeTeamName) || 'Команда');
             const away = trimAgeStr(m.away || teamName(m.awayTeamId, m.awayTeamName) || 'Соперник');
             const isActive = m.id === activeMatchId || pathname === `/matches/${m.id}`;
-            // Список отсортирован от свежего к старому (matches[0] = последний),
-            // поэтому первые RECENT_COUNT — самые свежие.
-            const recent = i < RECENT_COUNT;
-            const aged = !recent && isAged(m.date);
+            // Все разобранные матчи равнозначны — без выделяющей подсветки. Только
+            // по-настоящему старый матч (>7 дней) приглушаем, чтобы взгляд цеплялся
+            // за актуальные. Cyan-грань «последних» убрана по просьбе тренера.
+            const aged = isAged(m.date);
             const cls = [
               'match-list__item',
               isActive ? 'match-list__item--active' : '',
-              recent ? 'match-list__item--recent' : '',
               aged ? 'match-list__item--aged' : '',
             ].filter(Boolean).join(' ');
             return (

@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, NavLink } from 'react-router-dom';
 import { useApi } from '../hooks/useApi';
 import { fetchPlayersSeason } from '../services/api';
@@ -14,17 +14,36 @@ import './PlayersLeaders.css';
 import './playersKinetic.css';
 import './PlayersRating.css';
 
-// Лидер сезона по метрике: максимум суммарного значения среди игравших.
-// Ноль/отрицательное — не лидер (артефакт бенча), карточка покажет пустое.
-function maxBy(items, getter) {
-  let best = null;
-  let bestVal = -Infinity;
-  for (const it of items) {
-    const v = Number(getter(it));
-    if (!Number.isNaN(v) && v > bestVal) { bestVal = v; best = { item: it, value: v }; }
-  }
-  if (!best || best.value <= 0) return null;
-  return best;
+// Метрики «лидеров по сумме за сезон». Все поля — реальные суммы из агрегата
+// /players/season (см. backend data/routes.ts). Порядок: атака → оборона →
+// объём → доступность. До 15 метрик (тренер просил расширить с 10).
+// ВАЖНО: key каждой метрики уникален (он же React-key карточки и id модалки).
+const METRIC_DEFS = [
+  // ── Атака ──
+  { key: 'goals',   label: 'Голы',              get: (p) => p.goals },
+  { key: 'gi',      label: 'Голевые действия',  get: (p) => (Number(p.goals) || 0) + (Number(p.assists) || 0) },
+  { key: 'assists', label: 'Голевые передачи',  get: (p) => p.assists },
+  { key: 'shots',   label: 'Удары',             get: (p) => p.shots },
+  { key: 'keyPass', label: 'Ключевые передачи', get: (p) => p.keyPass },
+  { key: 'dribble', label: 'Обводки',           get: (p) => p.dribble },
+  // ── Оборона ──
+  { key: 'tackle',       label: 'Отборы',       get: (p) => p.tackle },
+  { key: 'interception', label: 'Перехваты',    get: (p) => p.interception },
+  { key: 'recovery',     label: 'Возвраты',     get: (p) => p.recovery },
+  { key: 'duel',         label: 'Единоборства', get: (p) => p.duel },
+  { key: 'pressing',     label: 'Прессинг',     get: (p) => p.pressing },
+  // ── Объём ──
+  { key: 'distance',       label: 'Дистанция',        get: (p) => p.distance,       suffix: ' м' },
+  { key: 'sprintDistance', label: 'Спринт-дистанция', get: (p) => p.sprintDistance, suffix: ' м' },
+  // ── Доступность ──
+  { key: 'minutes', label: 'Игровые минуты',  get: (p) => p.minutes, suffix: ' мин' },
+  { key: 'matches', label: 'Сыгранные матчи', get: (p) => p.matches },
+];
+
+function fmtVal(value, suffix = '') {
+  if (value === null || value === undefined || Number.isNaN(Number(value))) return '—';
+  const n = Number(value);
+  return (Number.isInteger(n) ? n.toLocaleString('ru-RU') : n.toFixed(1)) + suffix;
 }
 
 function Subnav() {
@@ -42,6 +61,7 @@ export default function PlayersLeaders() {
   const navigate = useNavigate();
   const { canSeePlayer } = useAuth();
   const { selectedTeamId } = useTeam();
+  const [openKey, setOpenKey] = useState(null);
 
   // СЕЗОН, не последний матч: кто лучший по сумме за сезон (был источником
   // «последний матч» — нонсенс для «лидеров команды»).
@@ -56,18 +76,30 @@ export default function PlayersLeaders() {
     return [...rated].sort((a, b) => (b.avgOverall ?? 0) - (a.avgOverall ?? 0))[0] || null;
   }, [all]);
 
-  const leaders = useMemo(() => ([
-    ['Голы',                maxBy(all, (p) => p.goals)],
-    ['Голевые передачи',    maxBy(all, (p) => p.assists)],
-    ['Удары',               maxBy(all, (p) => p.shots)],
-    ['Ключевые передачи',   maxBy(all, (p) => p.keyPass)],
-    ['Обводки',             maxBy(all, (p) => p.dribble)],
-    ['Отборы',              maxBy(all, (p) => p.tackle)],
-    ['Перехваты',           maxBy(all, (p) => p.interception)],
-    ['Возвраты',            maxBy(all, (p) => p.recovery)],
-    ['Прессинг',            maxBy(all, (p) => p.pressing)],
-    ['Дистанция, м',        maxBy(all, (p) => p.distance)],
-  ]), [all]);
+  // Для каждой метрики — топ-5 команды по СУММЕ (только положительные значения).
+  // Метрики без ни одного игрока с показателем > 0 не показываем (нет данных).
+  const leaders = useMemo(() => (
+    METRIC_DEFS
+      .map((m) => {
+        const top = all
+          .map((p) => ({ player: p, value: Number(m.get(p)) || 0 }))
+          .filter((x) => x.value > 0)
+          .sort((a, b) => b.value - a.value)
+          .slice(0, 5);
+        return { ...m, top };
+      })
+      .filter((m) => m.top.length > 0)
+  ), [all]);
+
+  const openMetric = openKey ? (leaders.find((m) => m.key === openKey) || null) : null;
+
+  // Esc закрывает модалку топ-5.
+  useEffect(() => {
+    if (!openKey) return undefined;
+    const onKey = (e) => { if (e.key === 'Escape') setOpenKey(null); };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [openKey]);
 
   if (seasonRes.loading) return <div className="empty-state">Загрузка…</div>;
   if (!all.length) {
@@ -84,7 +116,7 @@ export default function PlayersLeaders() {
       <Subnav />
 
       <div className="players-leaders__scope" style={{ color: 'var(--text-faint)', fontSize: 13, margin: '4px 2px 14px' }}>
-        Лидеры по сумме за сезон
+        Лидеры по сумме за сезон · нажмите метрику — раскроется топ-5
       </div>
 
       {overall && (() => {
@@ -122,16 +154,76 @@ export default function PlayersLeaders() {
       })()}
 
       <StaggerList className="players-leaders__grid" speed="loose">
-        {leaders.map(([label, lead], i) => (
+        {leaders.map((m) => (
           <LeaderMetricCard
-            key={i}
-            label={label}
-            player={lead?.item}
-            value={lead?.value}
-            locked={lead?.item ? !canSeePlayer(lead.item.id) : false}
+            key={m.key}
+            label={m.label}
+            player={m.top[0]?.player}
+            value={m.top[0] ? fmtVal(m.top[0].value, m.suffix) : null}
+            onSelect={() => setOpenKey(m.key)}
           />
         ))}
       </StaggerList>
+
+      {openMetric && (
+        <LeadersTop5
+          metric={openMetric}
+          canSeePlayer={canSeePlayer}
+          onClose={() => setOpenKey(null)}
+          onPick={(id) => { setOpenKey(null); navigate(`/players/${id}`); }}
+        />
+      )}
+    </div>
+  );
+}
+
+// Модалка «Топ-5 по метрике»: список игроков с переходом в профиль (клик/Enter).
+// Заблокированных (родитель/игрок) показываем, но без перехода.
+function LeadersTop5({ metric, canSeePlayer, onClose, onPick }) {
+  const closeRef = useRef(null);
+  // Переводим фокус в диалог при открытии — иначе клавиатурный фокус остаётся на
+  // карточке-триггере и до содержимого модалки не добраться (aria-modal сам фокус
+  // не двигает). Esc-закрытие — на уровне страницы (родительский useEffect).
+  useEffect(() => { closeRef.current?.focus(); }, []);
+  return (
+    <div className="lt5-overlay" onClick={onClose}>
+      <div
+        className="lt5-dialog"
+        role="dialog"
+        aria-modal="true"
+        aria-label={`Топ-5 по метрике «${metric.label}»`}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="lt5-head">
+          <div className="lt5-head__title">Топ-5 · {metric.label}</div>
+          <button ref={closeRef} type="button" className="lt5-close" onClick={onClose} aria-label="Закрыть">✕</button>
+        </div>
+        <div className="lt5-list">
+          {metric.top.map((row, i) => {
+            const p = row.player;
+            const unlocked = canSeePlayer(p.id);
+            return (
+              <div
+                key={p.id}
+                className={'lt5-row' + (unlocked ? '' : ' lt5-row--locked')}
+                role={unlocked ? 'button' : undefined}
+                tabIndex={unlocked ? 0 : undefined}
+                onClick={() => { if (unlocked) onPick(p.id); }}
+                onKeyDown={(e) => { if (unlocked && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); onPick(p.id); } }}
+                title={unlocked ? `Профиль: ${shortNameFromPlayer(p)}` : 'Доступно только тренеру'}
+              >
+                <div className="lt5-row__rank">{i + 1}</div>
+                <PlayerPhoto player={p} size={40} />
+                <div className="lt5-row__info">
+                  <div className="lt5-row__name">{shortNameFromPlayer(p)}</div>
+                  <div className="lt5-row__pos">{numberWithPos(p.number, p.positionFull || p.position)}</div>
+                </div>
+                <div className="lt5-row__value">{fmtVal(row.value, metric.suffix)}</div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
     </div>
   );
 }
