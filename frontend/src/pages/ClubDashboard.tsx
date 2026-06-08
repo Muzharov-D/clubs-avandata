@@ -23,8 +23,10 @@ import { useNavigate } from 'react-router-dom';
 import { useReveal } from '../hooks/useReveal';
 import {
   fetchTeams, fetchMatches, fetchMatch, fetchStandings, fetchCalendar, fetchMatchAggregate,
-  fetchPlayersSeason,
+  fetchPlayersSeason, refreshFfspbData,
 } from '../services/api';
+// @ts-ignore — legacy .jsx
+import { toast } from '../components/Toast';
 // @ts-ignore — legacy
 import { useAuth } from '../contexts/AuthContext';
 // @ts-ignore — legacy
@@ -85,6 +87,10 @@ export default function ClubDashboard() {
   const [seasonAgg, setSeasonAgg]         = useState<AnyObj | null>(null);
   const [loading, setLoading]         = useState(true);
   const [error, setError]             = useState<string | null>(null);
+  // Ручное обновление данных турнира (FFSPB). reloadKey форсит рефетч дашборда
+  // после успешного синка — крутим его в deps главного useEffect.
+  const [reloadKey, setReloadKey]     = useState(0);
+  const [refreshing, setRefreshing]   = useState(false);
 
   useEffect(() => {
     if (!user) return;
@@ -142,7 +148,7 @@ export default function ClubDashboard() {
       }
     })();
     return () => { cancelled = true; };
-  }, [user, selectedTeamId]);
+  }, [user, selectedTeamId, reloadKey]);
 
   // Имя нашей команды для сравнений «наш матч» / «наша строка таблицы».
   // Берём из выбранной команды (а не хардкод «Зенит»), fallback на team из БД.
@@ -310,6 +316,34 @@ export default function ClubDashboard() {
 
   const clubLogo = shieldFor(team.name);
 
+  // Кнопку обновления показываем только тренерам. Сервер дополнительно страхует
+  // (роль + провайдер ffspb); для manual-клубов вернёт понятную ошибку.
+  const role = (user as { role?: string } | null)?.role;
+  const canRefresh = role === 'head_coach' || role === 'team_coach';
+  const lastSync = (standings as AnyObj)?.lastUpdated ?? null;
+  const formatSync = (iso: string | null): string => {
+    if (!iso) return '';
+    try {
+      return new Date(iso).toLocaleString('ru-RU', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+    } catch { return ''; }
+  };
+  const handleRefresh = async () => {
+    if (refreshing || !team) return;
+    setRefreshing(true);
+    try {
+      const res = await refreshFfspbData(team.ageGroup) as { calendarMatches?: number; standingsUpdated?: boolean };
+      const n = res.calendarMatches ?? 0;
+      const parts = [`${n} ${matchesWord(n)}`];
+      if (res.standingsUpdated) parts.push('таблица');
+      toast.success(`Данные обновлены: ${parts.join(', ')}`);
+      setReloadKey((k) => k + 1);
+    } catch (e) {
+      toast.error((e as Error).message || 'Не удалось обновить данные');
+    } finally {
+      setRefreshing(false);
+    }
+  };
+
   return (
     <div className="cd kinetic" ref={cdRef} data-testid="club-dashboard">
       <div className="cd__bg-glow" aria-hidden />
@@ -334,6 +368,24 @@ export default function ClubDashboard() {
             </div>
           </div>
         </div>
+
+        {canRefresh && (
+          <div className="cd__header-actions">
+            <button
+              type="button"
+              className="cd__refresh"
+              onClick={handleRefresh}
+              disabled={refreshing}
+              title="Подтянуть свежие матчи и таблицу из FFSPB"
+            >
+              <span className={`cd__refresh-ic${refreshing ? ' is-spin' : ''}`} aria-hidden>↻</span>
+              <span>{refreshing ? 'Обновляем…' : 'Обновить данные'}</span>
+            </button>
+            {lastSync && !refreshing && (
+              <div className="cd__refresh-meta">обновлено {formatSync(lastSync)}</div>
+            )}
+          </div>
+        )}
       </header>
 
       {/* Якорная навигация — разбивает «стену карточек», даёт быстрый переход.
