@@ -31,6 +31,30 @@
 
 import { num } from './num';
 
+// ─────────────────────────────────────────────────────────────────────────
+// ТАРИФ: какие dotted-ключи метрик ПЛАТНЫЕ (вне free-набора 37).
+// free = событийные счётчики (голы/удары/отборы/дриблинг/пасы прогрессивные/
+// фолы/карты/ошибки/вратарское/стандарты). PAID = физика, xG/xA, владение и
+// КАЧЕСТВО/ОБЪЁМ паса (всего/длинные/вперёд/в фин.треть/принятые/разрезающие/
+// навесы/касания в штрафной/packing), входы в штрафную, ускорения/прогр. рывок.
+// Единый источник истины для пиццы (шаблон/кастом/CIES) и прочих экранов.
+export const PAID_PIZZA_KEYS = new Set([
+  'attack1.xG', 'attack1.xA',
+  'attack2.intoPenArea', 'attack2.cross', 'attack2.passPacking', 'attack2.throughPass',
+  'attack2.passToFinalThird', 'attack2.progressiveRun', 'attack2.pass',
+  'attack3.passForward', 'attack3.passBack', 'attack3.passSideways', 'attack3.passShort',
+  'attack3.passMiddle', 'attack3.passLong', 'attack3.touchesInPenArea', 'attack3.receivedPass',
+  'attack4.dribblePacking',
+  'attack5.entriesInBox', 'attack5.acceleration',
+]);
+
+/** true — метрика платная (физика по префиксу fitness. + список выше). */
+export function isPaidStatKey(key) {
+  if (!key) return false;
+  if (key.startsWith('fitness.')) return true;
+  return PAID_PIZZA_KEYS.has(key);
+}
+
 export const POSITION_OPTIONS = [
   { value: 'FWD', label: 'Нападающий' },
   { value: 'MID', label: 'Полузащитник' },

@@ -25,7 +25,7 @@ import HalfSplitChart from '../components/HalfSplitChart';
 import SpeedZones from '../components/SpeedZones';
 import PassProfile from '../components/PassProfile';
 import { num, percentileRank, formatRaw } from '../utils/num';
-import { POSITION_OPTIONS, PIZZA_VS_LABEL, TEMPLATES, getStatValue, positionGroup, CIES_GROUPS, CIES_METRIC_BY_KEY } from '../utils/pizzaTemplates';
+import { POSITION_OPTIONS, PIZZA_VS_LABEL, TEMPLATES, getStatValue, positionGroup, CIES_GROUPS, CIES_METRIC_BY_KEY, isPaidStatKey } from '../utils/pizzaTemplates';
 import Block from '../constructor/Block';
 import './PlayerDetail.css';
 
@@ -141,7 +141,9 @@ function deltaArrow(first, second) {
 export default function PlayerDetail() {
   const { playerId } = useParams();
   const navigate = useNavigate();
-  const { user, isPlayer } = useAuth();
+  const { user, isPlayer, tenant } = useAuth();
+  // На free пиццу строим ТОЛЬКО из free-метрик (платные оси не показываем).
+  const isPaidPlan = tenant?.plan === 'paid';
 
   useEffect(() => {
     if (isPlayer && user?.playerId && user.playerId !== playerId) {
@@ -638,7 +640,9 @@ function MatchTab({ playerId, match, loading, allMatches, currentMatchId, setSel
   const pizzaTemplate = TEMPLATES[pizzaPos];
   const peers = match.players || [];
   const allSlicesRaw = pizzaTemplate
-    ? pizzaTemplate.slices.map((s) => {
+    ? pizzaTemplate.slices
+      .filter((s) => isPaidPlan || !isPaidStatKey(s.key))
+      .map((s) => {
         const myValue = getStatValue(player, s.key);
         const allValues = peers.map((p) => getStatValue(p, s.key));
         const pct = percentileRank(myValue, allValues, !!s.inverse);
@@ -657,10 +661,11 @@ function MatchTab({ playerId, match, loading, allMatches, currentMatchId, setSel
     { value: 'attack',  label: 'Атака',   count: groupCounts.attack },
     { value: 'defence', label: 'Оборона', count: groupCounts.defence },
     { value: 'fitness', label: 'Фитнес',  count: groupCounts.fitness },
-  ];
+  ].filter((t) => t.value === 'all' || t.count > 0);
 
   // Свои метрики (CIES): пицца из выбранных тренером показателей.
   const customSlices = Array.from(customKeys)
+    .filter((key) => isPaidPlan || !isPaidStatKey(key))
     .map((key) => {
       const meta = CIES_METRIC_BY_KEY[key];
       if (!meta) return null;
@@ -848,11 +853,15 @@ function MatchTab({ playerId, match, loading, allMatches, currentMatchId, setSel
               )}
             </div>
             <div className="player-detail__cies-groups">
-              {CIES_GROUPS.map((g) => (
+              {CIES_GROUPS.map((g) => {
+                // На free платные показатели даже не предлагаем выбрать.
+                const groupMetrics = g.metrics.filter((m) => isPaidPlan || !isPaidStatKey(m.key));
+                if (groupMetrics.length === 0) return null;
+                return (
                 <div className="player-detail__cies-group" key={g.id}>
                   <div className={`player-detail__cies-group-title player-detail__cies-group-title--${g.color}`}>{g.label}</div>
                   <div className="player-detail__cies-chips">
-                    {g.metrics.map((m) => {
+                    {groupMetrics.map((m) => {
                       const hasData = peers.some((p) => Number(num(getStatValue(p, m.key)) ?? 0) > 0);
                       const isOn = customKeys.has(m.key);
                       // При достижении потолка чипы, которые ещё не выбраны, блокируются.
@@ -880,7 +889,8 @@ function MatchTab({ playerId, match, loading, allMatches, currentMatchId, setSel
                     })}
                   </div>
                 </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         )}
