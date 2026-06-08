@@ -367,8 +367,9 @@ function SeasonTab({ identity, playerId, teamId, teamName, seasonPlayers, series
       {/* ГЕРОЙ-ЦЕНТР: расширенная ДНК-карта — сразу после вкладок, до инфо-блоков */}
       <Block page="player" id="dna"><Reveal variant="slide-up" duration={0.4}>{dnaCard}</Reveal></Block>
 
-      {/* Fallback-шапка, если сезонного пула для ДНК недостаточно */}
-      {(!Array.isArray(seasonPlayers) || seasonPlayers.length < 4) && (
+      {/* Fallback-шапка: если пула для ДНК мало ИЛИ на free (ДНК-карта gated —
+          без этой шапки free-сезон остался бы без героя с именем/фото/рейтингом). */}
+      {(!isPaidPlan || !Array.isArray(seasonPlayers) || seasonPlayers.length < 4) && (
         <div className="card player-detail__hero player-detail__hero--season">
           <PlayerPhoto player={identity} size={120} />
           <div className="player-detail__hero-info">
