@@ -11,9 +11,13 @@
 // периода, список матчей) НЕ оборачиваем — их в реестре нет.
 
 /**
- * @typedef {{ id: string, label: string, hint?: string }} BlockDef
+ * @typedef {{ id: string, label: string, hint?: string, minPlan?: 'paid' }} BlockDef
  * @typedef {{ id: string, label: string, route: string, icon?: string,
  *             match: (pathname: string) => boolean, blocks: BlockDef[] }} PageDef
+ *
+ * minPlan: 'paid' — блок строится на платных метриках (xG, физика, хитмапы) и на
+ * тарифе 'free' СКРЫТ полностью (см. Block.jsx). Остальные блоки доступны всем —
+ * «урезаемые» сами показывают меньше, т.к. free-данные не содержат платных метрик.
  */
 
 /** @type {PageDef[]} */
@@ -66,8 +70,8 @@ export const PAGES = [
       { id: 'key-stats', label: 'Показатели за матч' },
       { id: 'season-trend', label: 'Сезонная форма (тренд)' },
       { id: 'team-aggregates', label: 'Детальная статистика' },
-      { id: 'team-season-analytics', label: 'xG-аналитика сезона' },
-      { id: 'team-identity', label: 'Стиль игры' },
+      { id: 'team-season-analytics', label: 'xG-аналитика сезона', minPlan: 'paid' },
+      { id: 'team-identity', label: 'Стиль игры', minPlan: 'paid' },
       { id: 'season-leaders', label: 'Лидеры сезона' },
     ],
   },
@@ -83,14 +87,14 @@ export const PAGES = [
       { id: 'squad-heatmap', label: 'Тепловая карта состава' },
       { id: 'stat-compare', label: 'Командная статистика' },
       { id: 'beeswarm', label: 'Распределение оценок и роли' },
-      { id: 'xg', label: 'xG (ожидаемые голы)' },
+      { id: 'xg', label: 'xG (ожидаемые голы)', minPlan: 'paid' },
       { id: 'pressing', label: 'Прессинг' },
       { id: 'set-pieces', label: 'Стандарты и удары' },
       { id: 'insights', label: 'Ключевые выводы' },
       { id: 'timeline', label: 'Хроника матча' },
       { id: 'momentum', label: 'Импульс по таймам' },
       { id: 'half-split', label: 'Динамика по таймам' },
-      { id: 'speed-zones', label: 'Физическая нагрузка' },
+      { id: 'speed-zones', label: 'Физическая нагрузка', minPlan: 'paid' },
       { id: 'formation', label: 'Расстановка' },
       { id: 'breakdowns', label: 'Лидеры матча (голы/пасы/отборы)' },
       { id: 'match-leaders', label: 'Расширенные лидеры матча' },
@@ -117,13 +121,13 @@ export const PAGES = [
       { id: 'attendance', label: 'Посещаемость' },
       { id: 'attack-split', label: 'Атака (детализация)' },
       { id: 'defence-split', label: 'Оборона (детализация)' },
-      { id: 'fitness', label: 'Фитнес' },
+      { id: 'fitness', label: 'Фитнес', minPlan: 'paid' },
       { id: 'match-ratings', label: 'Матч — рейтинги' },
       { id: 'match-advanced', label: 'Матч — продвинутые метрики' },
       { id: 'match-best-badges', label: 'Матч — лучший в команде' },
-      { id: 'match-heatmap', label: 'Матч — тепловая карта' },
-      { id: 'match-speed-zones', label: 'Матч — зоны интенсивности' },
-      { id: 'match-pass-profile', label: 'Матч — профиль передач' },
+      { id: 'match-heatmap', label: 'Матч — тепловая карта', minPlan: 'paid' },
+      { id: 'match-speed-zones', label: 'Матч — зоны интенсивности', minPlan: 'paid' },
+      { id: 'match-pass-profile', label: 'Матч — профиль передач', minPlan: 'paid' },
       { id: 'match-halves', label: 'Матч — по таймам' },
     ],
   },
@@ -158,4 +162,10 @@ export function getPage(pageId) {
 export function blockLabel(pageId, blockId) {
   const pg = getPage(pageId);
   return pg?.blocks.find((b) => b.id === blockId)?.label || blockId;
+}
+
+/** Минимальный тариф блока: 'paid' (скрыт на free) или undefined (доступен всем). */
+export function blockMinPlan(pageId, blockId) {
+  const pg = getPage(pageId);
+  return pg?.blocks.find((b) => b.id === blockId)?.minPlan;
 }

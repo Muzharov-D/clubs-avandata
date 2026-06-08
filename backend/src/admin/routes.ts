@@ -250,7 +250,7 @@ export async function adminRoutes(app: FastifyInstance) {
     status: z.enum(['active', 'suspended', 'archived']).optional(),
     brand: z.record(z.string(), z.unknown()).optional(),
     features: z.record(z.string(), z.unknown()).optional(),
-    plan: z.string().optional(),
+    plan: z.enum(['free', 'paid']).optional(),
     dataProvider: z.enum(['ffspb', 'yfl', 'manual']).optional(),
     providerConfig: z.record(z.string(), z.unknown()).optional(),
   });
