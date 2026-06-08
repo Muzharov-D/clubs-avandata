@@ -6,16 +6,24 @@
 import { useState } from 'react';
 import { M, played } from '../../utils/analytics';
 import { playerThreat } from '../../utils/analytics';
+import { useAuth } from '../../contexts/AuthContext';
 import PlayerPhoto from '../PlayerPhoto';
 import './analytics.css';
 
+// paid: true — модельные/платные показатели (угроза=xT, прогрессия с прогр.рывком/
+// в фин.треть, дуэли, интенс. бег=физика). На free показываем только наши метрики.
 const METRICS = [
   { id: 'ga', label: 'Гол+пас', get: (p) => M.goals(p) + M.assists(p), digits: 0 },
-  { id: 'threat', label: 'Угроза', model: true, get: (p) => playerThreat(p), digits: 1 },
-  { id: 'progression', label: 'Прогрессия', get: (p) => M.progressivePass(p) + M.progressiveRun(p) + M.passToFinalThird(p), digits: 0 },
-  { id: 'duel', label: 'Единоборства', get: (p) => M.duel(p), digits: 0 },
+  { id: 'shots', label: 'Удары', get: (p) => M.shots(p), digits: 0 },
+  { id: 'keyPass', label: 'Ключевые', get: (p) => M.keyPass(p), digits: 0 },
+  { id: 'dribble', label: 'Обводки', get: (p) => M.dribble(p), digits: 0 },
+  { id: 'tackle', label: 'Отборы', get: (p) => M.tackle(p), digits: 0 },
+  { id: 'interception', label: 'Перехваты', get: (p) => M.interception(p), digits: 0 },
   { id: 'press', label: 'Прессинг', get: (p) => M.pressing(p) + M.counterpressing(p), digits: 0 },
-  { id: 'dist', label: 'Интенс. бег', get: (p) => M.hsr(p), digits: 1 },
+  { id: 'threat', label: 'Угроза', model: true, paid: true, get: (p) => playerThreat(p), digits: 1 },
+  { id: 'progression', label: 'Прогрессия', paid: true, get: (p) => M.progressivePass(p) + M.progressiveRun(p) + M.passToFinalThird(p), digits: 0 },
+  { id: 'duel', label: 'Единоборства', paid: true, get: (p) => M.duel(p), digits: 0 },
+  { id: 'dist', label: 'Интенс. бег', paid: true, get: (p) => M.hsr(p), digits: 1 },
 ];
 
 function fmt(v, digits) {
@@ -26,8 +34,13 @@ function fmt(v, digits) {
 }
 
 export default function MatchLeaders({ players, navigate, nameOf }) {
+  const { tenant } = useAuth();
+  const isPaidPlan = tenant?.plan === 'paid';
+  // На free — только наши (free) метрики; платные/модельные скрыты.
+  const metrics = METRICS.filter((m) => isPaidPlan || !m.paid);
   const [metricId, setMetricId] = useState('ga');
-  const metric = METRICS.find((m) => m.id === metricId) || METRICS[0];
+  const selected = METRICS.find((m) => m.id === metricId);
+  const metric = (selected && (isPaidPlan || !selected.paid)) ? selected : metrics[0];
 
   const squad = (players || []).filter(played);
   const rows = squad
@@ -48,7 +61,7 @@ export default function MatchLeaders({ players, navigate, nameOf }) {
 
       <div className="an-leaders__filterlabel">Ранжировать по показателю:</div>
       <div className="an-leaders__tabs" role="tablist">
-        {METRICS.map((m) => (
+        {metrics.map((m) => (
           <button
             key={m.id}
             type="button"

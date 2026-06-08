@@ -99,7 +99,7 @@ export const PAGES = [
       { id: 'breakdowns', label: 'Лидеры матча (голы/пасы/отборы)' },
       { id: 'match-leaders', label: 'Расширенные лидеры матча' },
       { id: 'match-vs-season', label: 'Матч против сезона', minPlan: 'paid' },
-      { id: 'impact-motm', label: 'Вклад и лучший игрок' },
+      { id: 'impact-motm', label: 'Вклад и лучший игрок', minPlan: 'paid' },
     ],
   },
   {
