@@ -3,7 +3,6 @@ import { useApi } from '../hooks/useApi';
 import { fetchTeams, fetchMatches, fetchMatchAggregate, fetchPlayersSeason } from '../services/api';
 import { useTeam } from '../contexts/TeamContext';
 import { useDocumentTitle } from '../hooks/useDocumentTitle';
-import MatchList from '../components/MatchList';
 import RatingCard from '../components/RatingCard';
 import PlayerPhoto from '../components/PlayerPhoto';
 import RatingPill from '../components/RatingPill';
@@ -83,8 +82,6 @@ export default function ClubOverview() {
   const ourTeam = selectedTeam || teams.find((t) => t.id === selectedTeamId) || teams.find((t) => t.isOurTeam);
   const matches = matchesRes.data?.matches || [];
   const seasonPlayers = seasonRes.data?.players || [];
-  // Подсветка последнего матча в списке (без отдельного fetch — берём из списка).
-  const lastMatchId = matches[0]?.id;
 
   const record = useMemo(() => seasonRecord(matches), [matches]);
 
@@ -101,10 +98,6 @@ export default function ClubOverview() {
   return (
     <div className="page club-overview">
       <div className="club-overview__grid">
-        <aside className="club-overview__col-left">
-          <MatchList matches={matches} teams={teams} activeMatchId={lastMatchId} />
-        </aside>
-
         <section className="club-overview__col-right">
           {/* HERO: команда + сезонная запись */}
           <div className="club-overview__hero">

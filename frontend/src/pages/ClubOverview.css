@@ -7,8 +7,8 @@
 
 .club-overview__grid {
   display: grid;
-  /* Левая колонка списка матчей — узкая, чтобы основной контент не уезжал. */
-  grid-template-columns: 240px minmax(0, 1fr);
+  /* Список матчей убран с /analytics (дублировал /matches) — контент во всю ширину. */
+  grid-template-columns: minmax(0, 1fr);
   gap: 20px;
 }
 
