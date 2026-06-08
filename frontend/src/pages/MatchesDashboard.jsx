@@ -88,7 +88,9 @@ export default function MatchesDashboard() {
     Promise.all(matches.map((m) => fetchMatch(m.id).catch(() => null)))
       .then((results) => { if (!cancelled) setAllMatches(results.filter(Boolean)); });
     return () => { cancelled = true; };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps — matchIdsKey = стабильный
+    // строковый proxy массива matches; зависеть от самого массива → перезагрузка на
+    // каждый ререндер (новая ссылка), хотя состав id не менялся.
   }, [matchIdsKey]);
 
   const homeScore = lastMatch?.score?.home;
@@ -188,7 +190,7 @@ export default function MatchesDashboard() {
             <Reveal variant="slide-up" duration={0.55} delay={0.3}>
               <div className="card">
                 <div className="page-section-title">Тепловая карта состава · последний матч</div>
-                <SquadHeatmap players={lastMatch.players} />
+                <SquadHeatmap players={heatPlayers} />
               </div>
             </Reveal>
           )}

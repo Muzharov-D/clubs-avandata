@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, NavLink } from 'react-router-dom';
 import { useApi } from '../hooks/useApi';
 import { fetchPlayersSeason } from '../services/api';
@@ -17,6 +17,7 @@ import './PlayersRating.css';
 // Метрики «лидеров по сумме за сезон». Все поля — реальные суммы из агрегата
 // /players/season (см. backend data/routes.ts). Порядок: атака → оборона →
 // объём → доступность. До 15 метрик (тренер просил расширить с 10).
+// ВАЖНО: key каждой метрики уникален (он же React-key карточки и id модалки).
 const METRIC_DEFS = [
   // ── Атака ──
   { key: 'goals',   label: 'Голы',              get: (p) => p.goals },
@@ -90,7 +91,7 @@ export default function PlayersLeaders() {
       .filter((m) => m.top.length > 0)
   ), [all]);
 
-  const openMetric = useMemo(() => leaders.find((m) => m.key === openKey) || null, [leaders, openKey]);
+  const openMetric = openKey ? (leaders.find((m) => m.key === openKey) || null) : null;
 
   // Esc закрывает модалку топ-5.
   useEffect(() => {
@@ -179,8 +180,13 @@ export default function PlayersLeaders() {
 // Модалка «Топ-5 по метрике»: список игроков с переходом в профиль (клик/Enter).
 // Заблокированных (родитель/игрок) показываем, но без перехода.
 function LeadersTop5({ metric, canSeePlayer, onClose, onPick }) {
+  const closeRef = useRef(null);
+  // Переводим фокус в диалог при открытии — иначе клавиатурный фокус остаётся на
+  // карточке-триггере и до содержимого модалки не добраться (aria-modal сам фокус
+  // не двигает). Esc-закрытие — на уровне страницы (родительский useEffect).
+  useEffect(() => { closeRef.current?.focus(); }, []);
   return (
-    <div className="lt5-overlay" onClick={onClose} role="presentation">
+    <div className="lt5-overlay" onClick={onClose}>
       <div
         className="lt5-dialog"
         role="dialog"
@@ -190,7 +196,7 @@ function LeadersTop5({ metric, canSeePlayer, onClose, onPick }) {
       >
         <div className="lt5-head">
           <div className="lt5-head__title">Топ-5 · {metric.label}</div>
-          <button type="button" className="lt5-close" onClick={onClose} aria-label="Закрыть">✕</button>
+          <button ref={closeRef} type="button" className="lt5-close" onClick={onClose} aria-label="Закрыть">✕</button>
         </div>
         <div className="lt5-list">
           {metric.top.map((row, i) => {

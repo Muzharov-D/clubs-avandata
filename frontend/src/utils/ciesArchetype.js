@@ -46,22 +46,35 @@ function ciesAreas(pct) {
   };
 }
 
+// Группа-линия (GK/DEF/MID/FWD) по детальной линии lineOf.
+function groupOf(line) {
+  if (line === 'GK') return 'GK';
+  if (line.startsWith('DEF')) return 'DEF';
+  if (line.startsWith('MID')) return 'MID';
+  return 'FWD';
+}
+
 // Доминирующая линия игрока по минутам (из распределения позиций сезона).
+// Минуты суммируем ПО ГРУППЕ (MID_DEF/MID_C/MID_ATT → один MID), иначе игрок,
+// размазанный по подлиниям центра, мог проиграть одной чужой линии с меньшей
+// суммой минут. wide — если бо́льшая часть минут группы сыграна на фланге.
 // Возвращает { group: GK|DEF|MID|FWD, wide: bool } или null.
 function dominantLine(positions) {
   const list = Array.isArray(positions) ? positions.filter((p) => p && p.code && lineOf(p.code)) : [];
   if (!list.length) return null;
-  const byLine = new Map();
+  const groupMin = new Map();
+  const wideMin = new Map();
   for (const p of list) {
     const ln = lineOf(p.code);
-    byLine.set(ln, (byLine.get(ln) || 0) + (Number(p.minutes) || 0));
+    const g = groupOf(ln);
+    const m = Number(p.minutes) || 0;
+    groupMin.set(g, (groupMin.get(g) || 0) + m);
+    if (ln === 'DEF_W' || ln === 'FWD_W') wideMin.set(g, (wideMin.get(g) || 0) + m);
   }
-  const dom = [...byLine.entries()].sort((a, b) => b[1] - a[1])[0]?.[0];
-  if (!dom) return null;
-  if (dom === 'GK') return { group: 'GK', wide: false };
-  if (dom.startsWith('DEF')) return { group: 'DEF', wide: dom === 'DEF_W' };
-  if (dom.startsWith('MID')) return { group: 'MID', wide: false };
-  return { group: 'FWD', wide: dom === 'FWD_W' };
+  const group = [...groupMin.entries()].sort((a, b) => b[1] - a[1])[0]?.[0];
+  if (!group) return null;
+  const wide = (wideMin.get(group) || 0) > (groupMin.get(group) || 0) / 2;
+  return { group, wide };
 }
 
 // Выбор «победителя» среди вариантов { score, ...payload }; null-score пропускаем.

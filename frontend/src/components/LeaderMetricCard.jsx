@@ -22,6 +22,7 @@ export default function LeaderMetricCard({ label, value, suffix = '', player, lo
       tabIndex={clickable ? 0 : undefined}
       onKeyDown={(e) => { if (clickable && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); go(); } }}
       title={!onSelect && locked ? 'Доступно только тренеру' : undefined}
+      aria-label={onSelect ? `${label} — показать топ-5` : undefined}
     >
       <div className="leader-card__label">{label}</div>
       <div className="leader-card__body">
@@ -44,7 +45,7 @@ export default function LeaderMetricCard({ label, value, suffix = '', player, lo
             : (typeof value === 'number' && Number.isInteger(value) ? value.toLocaleString('ru-RU') : value)}{suffix}
         </div>
       </div>
-      {onSelect && <div className="leader-card__more">топ-5 →</div>}
+      {onSelect && <div className="leader-card__more" aria-hidden="true">топ-5 →</div>}
     </div>
   );
 }
