@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState } from 'react';
+import { createContext, useCallback, useContext, useEffect, useState } from 'react';
 import { fetchMe, login as apiLogin, logout as apiLogout, getToken } from '../services/api';
 import { applyTheme, resetTheme } from '../tenant/applyTheme';
 import { setClubHints, clearClubHints, setOurLogo, clearOurLogo } from '../utils/legirus';
@@ -41,6 +41,33 @@ export function AuthProvider({ children }) {
       .finally(() => setLoading(false));
   }, []);
 
+  // Тихо перечитать профиль/тенант (тариф, бренд) без перезагрузки страницы.
+  // Не трогаем loading и не сбрасываем user при разовой ошибке — это фоновый рефетч.
+  const refreshTenant = useCallback(() => {
+    if (!getToken()) return;
+    fetchMe()
+      .then((res) => {
+        setUser(res.user);
+        if (res.tenant !== undefined) {
+          setTenant(res.tenant);
+          saveTenant(res.tenant);
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  // Авто-рефетч тарифа/бренда без F5: когда вкладка снова в фокусе (например,
+  // platform_admin переключил тариф клуба в другой вкладке).
+  useEffect(() => {
+    const onFocus = () => { if (document.visibilityState !== 'hidden') refreshTenant(); };
+    window.addEventListener('focus', onFocus);
+    document.addEventListener('visibilitychange', onFocus);
+    return () => {
+      window.removeEventListener('focus', onFocus);
+      document.removeEventListener('visibilitychange', onFocus);
+    };
+  }, [refreshTenant]);
+
   // Применяем брендинг тенанта (CSS-переменные + favicon + title)
   // + регистрируем имена «нашего» клуба для isOurClub() во всех компонентах
   useEffect(() => {
@@ -66,6 +93,7 @@ export function AuthProvider({ children }) {
     user,
     tenant,
     loading,
+    refreshTenant,
     isAuthenticated: !!user,
     isCoach,
     isPlayer,

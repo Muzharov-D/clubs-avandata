@@ -1,17 +1,17 @@
-import {
-  createContext,
-  useCallback,
-  useContext,
-  useEffect,
-  useRef,
-  useState,
-  type ReactNode,
-} from 'react';
-import { api } from '../api/client';
-import { useAuth } from '../auth/AuthProvider';
-import { applyTheme, resetTheme } from './applyTheme';
+import type { ReactNode } from 'react';
+// @ts-ignore — живой провайдер тенанта/тарифа лежит в legacy .jsx
+import { useAuth } from '../contexts/AuthContext';
 import type { Tenant } from './types';
 
+/**
+ * useTenant — тонкий адаптер над ЖИВЫМ AuthContext.
+ *
+ * Тенант (с тарифом `plan`) и брендинг приходят из /auth/me и /login и хранятся
+ * в `contexts/AuthContext`. Отдельный TenantProvider больше НЕ монтируется —
+ * раньше он был объявлен, но не вставлен в дерево, из-за чего `useTenant()`
+ * всегда возвращал `null`, план считался `free`, и платные блоки прятались
+ * даже на paid-клубе («разница 0»). Теперь источник тарифа один — AuthContext.
+ */
 interface TenantContextValue {
   tenant: Tenant | null;
   loading: boolean;
@@ -19,87 +19,25 @@ interface TenantContextValue {
   refreshTenant: () => void;
 }
 
-const TenantContext = createContext<TenantContextValue>({
-  tenant: null,
-  loading: false,
-  refreshTenant: () => {},
-});
-
-export function TenantProvider({ children }: { children: ReactNode }) {
-  const { user } = useAuth();
-  const [tenant, setTenant] = useState<Tenant | null>(null);
-  const [loading, setLoading] = useState(false);
-  const tenantId = user?.tenantId;
-  // Держим последний tenantId в ref, чтобы слушатели focus/visibility
-  // не пересоздавались на каждый рендер.
-  const tenantIdRef = useRef<string | undefined>(tenantId);
-  tenantIdRef.current = tenantId;
-
-  const fetchTenant = useCallback((id: string) => {
-    setLoading(true);
-    return api<Tenant>(`/tenant/${id}`, { auth: false })
-      .then((t) => {
-        setTenant(t);
-        applyTheme(t.brand, t.slug);
-      })
-      .catch(() => {
-        // не сбрасываем уже загруженный клуб при разовой сетевой ошибке рефетча
-      })
-      .finally(() => setLoading(false));
-  }, []);
-
-  const refreshTenant = useCallback(() => {
-    const id = tenantIdRef.current;
-    if (id) void fetchTenant(id);
-  }, [fetchTenant]);
-
-  useEffect(() => {
-    if (!tenantId) {
-      setTenant(null);
-      resetTheme();
-      return;
-    }
-    let cancelled = false;
-    setLoading(true);
-    api<Tenant>(`/tenant/${tenantId}`, { auth: false })
-      .then((t) => {
-        if (cancelled) return;
-        setTenant(t);
-        applyTheme(t.brand, t.slug);
-      })
-      .catch(() => {
-        if (cancelled) return;
-        setTenant(null);
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [tenantId]);
-
-  // Авто-рефетч тарифа/бренда без F5: когда вкладка снова в фокусе
-  // (например, platform_admin переключил тариф в другой вкладке).
-  useEffect(() => {
-    const onFocus = () => {
-      if (document.visibilityState !== 'hidden') refreshTenant();
-    };
-    window.addEventListener('focus', onFocus);
-    document.addEventListener('visibilitychange', onFocus);
-    return () => {
-      window.removeEventListener('focus', onFocus);
-      document.removeEventListener('visibilitychange', onFocus);
-    };
-  }, [refreshTenant]);
-
-  return (
-    <TenantContext.Provider value={{ tenant, loading, refreshTenant }}>
-      {children}
-    </TenantContext.Provider>
-  );
+interface AuthShape {
+  tenant: Tenant | null;
+  loading: boolean;
+  refreshTenant?: () => void;
 }
 
 export function useTenant(): TenantContextValue {
-  return useContext(TenantContext);
+  const auth = useAuth() as AuthShape;
+  return {
+    tenant: auth.tenant ?? null,
+    loading: auth.loading ?? false,
+    refreshTenant: auth.refreshTenant ?? (() => {}),
+  };
+}
+
+/**
+ * Совместимость: брендинг/тенант обеспечивает AuthProvider, поэтому обёртка —
+ * passthrough. Оставлена, чтобы не ломать возможные импорты `TenantProvider`.
+ */
+export function TenantProvider({ children }: { children: ReactNode }) {
+  return <>{children}</>;
 }

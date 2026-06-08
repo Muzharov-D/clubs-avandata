@@ -2,6 +2,7 @@ import { Outlet } from 'react-router-dom';
 import AppHeader from '../components/AppHeader';
 import SidebarNav from '../components/SidebarNav';
 import ImpersonationBanner from '../components/ImpersonationBanner';
+import TryAdvancedCta from '../components/TryAdvancedCta';
 
 // ИИ-агент полностью удалён в Sprint 2 cleanup. Будет переписан под LLM
 // (Claude/GPT) с retrieval по матчам сезона — см. HANDOFF.md, Точки роста.
@@ -17,6 +18,7 @@ export default function MainLayout() {
           <Outlet />
         </main>
       </div>
+      <TryAdvancedCta />
     </div>
   );
 }
