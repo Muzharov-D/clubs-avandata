@@ -25,7 +25,7 @@ import HalfSplitChart from '../components/HalfSplitChart';
 import SpeedZones from '../components/SpeedZones';
 import PassProfile from '../components/PassProfile';
 import { num, percentileRank, formatRaw } from '../utils/num';
-import { POSITION_OPTIONS, PIZZA_VS_LABEL, TEMPLATES, getStatValue, positionGroup, CIES_GROUPS, CIES_METRIC_BY_KEY, isPaidStatKey } from '../utils/pizzaTemplates';
+import { POSITION_OPTIONS, PIZZA_VS_LABEL, TEMPLATES, getStatValue, positionGroup, CIES_GROUPS, CIES_METRIC_BY_KEY, isPaidStatKey, KEY_FREE_SLICES } from '../utils/pizzaTemplates';
 import Block from '../constructor/Block';
 import './PlayerDetail.css';
 
@@ -654,8 +654,11 @@ function MatchTab({ playerId, match, loading, allMatches, currentMatchId, setSel
   // Pizza slices: для каждой метрики шаблона percentile vs ВСЕЙ команды матча.
   const pizzaTemplate = TEMPLATES[pizzaPos];
   const peers = match.players || [];
-  const allSlicesRaw = pizzaTemplate
-    ? pizzaTemplate.slices
+  // На FREE — фиксированный набор ключевых free-метрик (одинаков для всех позиций);
+  // на paid — позиционный шаблон.
+  const baseSlices = isPaidPlan ? (pizzaTemplate?.slices || []) : KEY_FREE_SLICES;
+  const allSlicesRaw = baseSlices.length
+    ? baseSlices
       .filter((s) => isPaidPlan || !isPaidStatKey(s.key))
       .map((s) => {
         const myValue = getStatValue(player, s.key);

@@ -55,6 +55,19 @@ export function isPaidStatKey(key) {
   return PAID_PIZZA_KEYS.has(key);
 }
 
+// FREE-пицца: фиксированный набор КЛЮЧЕВЫХ бесплатных метрик (одинаковый для всех
+// позиций, без позиционного шаблона). Все ключи — free (см. isPaidStatKey).
+export const KEY_FREE_SLICES = [
+  { axis: 'Голы',              group: 'attack',  key: 'attack4.goal' },
+  { axis: 'Ассисты',           group: 'attack',  key: 'attack1.assist' },
+  { axis: 'Удары',             group: 'attack',  key: 'attack4.shot' },
+  { axis: 'Ключевые передачи', group: 'attack',  key: 'attack1.keyPass' },
+  { axis: 'Обводки',           group: 'attack',  key: 'attack4.dribble' },
+  { axis: 'Отборы',            group: 'defence', key: 'defence1.tackle' },
+  { axis: 'Перехваты',         group: 'defence', key: 'defence1.interception' },
+  { axis: 'Прессинг',          group: 'defence', key: 'defence2.pressing' },
+];
+
 export const POSITION_OPTIONS = [
   { value: 'FWD', label: 'Нападающий' },
   { value: 'MID', label: 'Полузащитник' },
