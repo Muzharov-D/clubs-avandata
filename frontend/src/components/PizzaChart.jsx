@@ -215,9 +215,13 @@ export default function PizzaChart({
         )}
       </svg>
       <div className="pizza-chart__legend">
-        <span><span className="pizza-chart__dot" style={{ background: GROUP_COLORS.attack.fill }} />{GROUP_COLORS.attack.label}</span>
-        <span><span className="pizza-chart__dot" style={{ background: GROUP_COLORS.defence.fill }} />{GROUP_COLORS.defence.label}</span>
-        <span><span className="pizza-chart__dot" style={{ background: GROUP_COLORS.fitness.fill }} />{GROUP_COLORS.fitness.label}</span>
+        {['attack', 'defence', 'fitness']
+          // Показываем в легенде только группы, которые реально есть в слайсах —
+          // иначе на free «Фитнес» висел бы без единой оси (метрика платная).
+          .filter((g) => slices.some((s) => s.group === g))
+          .map((g) => (
+            <span key={g}><span className="pizza-chart__dot" style={{ background: GROUP_COLORS[g].fill }} />{GROUP_COLORS[g].label}</span>
+          ))}
       </div>
     </div>
   );

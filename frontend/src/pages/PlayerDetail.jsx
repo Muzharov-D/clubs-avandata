@@ -716,7 +716,9 @@ function MatchTab({ playerId, match, loading, allMatches, currentMatchId, setSel
   const navSections = [
     { id: 'pd-overview', label: 'Обзор',   show: true },
     { id: 'pd-profile',  label: 'Профиль', show: peers.length >= 2 || badges.length > 0 },
-    { id: 'pd-physical', label: 'Фитнес',  show: hasHeatmap || hasFitness || hasZones },
+    // Фитнес — платный раздел: на free всё его содержимое gated, нав-ссылка вела
+    // бы в пустую секцию.
+    { id: 'pd-physical', label: 'Фитнес',  show: isPaidPlan && (hasHeatmap || hasFitness || hasZones) },
     { id: 'pd-passing',  label: 'Пас',     show: hasPass || hasHalves },
     { id: 'pd-details',  label: 'Детали',  show: hasSplits },
   ].filter((s) => s.show);
