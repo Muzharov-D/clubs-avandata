@@ -2,6 +2,10 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "rewrites": [
     {
+      "source": "/ffspb-api/:path*",
+      "destination": "https://stat.ffspb.org/api/:path*"
+    },
+    {
       "source": "/api/:path*",
       "destination": "https://clubs-avandata-api.onrender.com/api/:path*"
     },
