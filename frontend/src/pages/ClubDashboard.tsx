@@ -239,6 +239,9 @@ export default function ClubDashboard() {
   // методике CIES). FM-движок ролей из состава убран — путал тренера: см.
   // utils/ciesArchetype. Переключатель — табами в шапке блока «Состав».
   const [roleMode, setRoleMode] = useState<'base' | 'cies'>('cies');
+  // CIES-амплуа — платная аналитика (перцентили по навыковым областям, вкл. физику).
+  // На free доступно только «Базовое» (линия), переключатель скрыт.
+  const effRoleMode: 'base' | 'cies' = isPaidPlan ? roleMode : 'base';
 
   // CIES-амплуа каждого игрока — по сырому сезонному пулу (перцентили внутри
   // команды). basis 80 — молодёжный матч. null → в плитке покажем базовую линию.
@@ -732,7 +735,7 @@ export default function ClubDashboard() {
                 : 'нет загруженных разборов'}
             </span>
           </div>
-          {seasonRoster.length > 0 && (
+          {seasonRoster.length > 0 && isPaidPlan && (
             <div className="cd__roster-tabs" role="tablist" aria-label="Способ определения роли">
               <button
                 type="button" role="tab" aria-selected={roleMode === 'base'}
@@ -805,9 +808,9 @@ export default function ClubDashboard() {
                   // «Базовое» — линия; «CIES» — амплуа (с откатом на линию, если
                   // данных мало). Цвет роли: CIES — акцент бренда, базовое — нейтрально.
                   const base = baseRoleLabel(grp);
-                  const label = roleMode === 'cies' ? (ciesById.get(String(p.playerId)) || base) : base;
+                  const label = effRoleMode === 'cies' ? (ciesById.get(String(p.playerId)) || base) : base;
                   if (!label) return null;
-                  const isCies = roleMode === 'cies' && ciesById.has(String(p.playerId));
+                  const isCies = effRoleMode === 'cies' && ciesById.has(String(p.playerId));
                   return (
                     <span
                       className="cd__player-arch"

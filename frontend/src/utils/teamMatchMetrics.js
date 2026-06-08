@@ -39,24 +39,25 @@ function km(m) {
 // поэтому набор широкий — на полном экспорте грид насыщенный, на урезанном
 // показывает только то, что реально есть.
 // paid: true — метрика на платных данных (касания в штрафной, качество паса,
-// кроссы, физика). На free скрыта (см. buildTeamVsSeasonRows).
+// кроссы, физика). На free скрыта. group — для free-свёртки в 2 показателя
+// (Атака / Оборона), см. buildTeamVsSeasonRows.
 export const TEAM_VS_SEASON_DEFS = [
   // Атака
-  { label: 'Удары',                  get: (m) => num(m?.teamAggregates?.shooting?.shots ?? m?.teamAggregates?.shooting?.totalShots) },
-  { label: 'Удары в створ',          get: (m) => num(m?.teamAggregates?.shooting?.onTarget) },
-  { label: 'Касания в штрафной',     get: (m) => num(m?.teamAggregates?.attacks?.touchesInBox), paid: true },
-  { label: 'Обводки',                get: (m) => num(m?.teamAggregates?.attacks?.dribble) },
+  { label: 'Удары',                  group: 'attack',  get: (m) => num(m?.teamAggregates?.shooting?.shots ?? m?.teamAggregates?.shooting?.totalShots) },
+  { label: 'Удары в створ',          group: 'attack',  get: (m) => num(m?.teamAggregates?.shooting?.onTarget) },
+  { label: 'Касания в штрафной',     group: 'attack',  get: (m) => num(m?.teamAggregates?.attacks?.touchesInBox), paid: true },
+  { label: 'Обводки',                group: 'attack',  get: (m) => num(m?.teamAggregates?.attacks?.dribble) },
   // Передачи
-  { label: 'Ключевые передачи',      get: (m) => num(m?.teamAggregates?.passes?.keyPass) },
-  { label: 'Точные передачи',        get: (m) => num(m?.teamAggregates?.passes?.successful), paid: true },
-  { label: 'Прогрессивные передачи', get: (m) => num(m?.teamAggregates?.passes?.progressive) },
-  { label: 'Кроссы',                 get: (m) => num(m?.teamAggregates?.passes?.crosses), paid: true },
+  { label: 'Ключевые передачи',      group: 'attack',  get: (m) => num(m?.teamAggregates?.passes?.keyPass) },
+  { label: 'Точные передачи',        group: 'attack',  get: (m) => num(m?.teamAggregates?.passes?.successful), paid: true },
+  { label: 'Прогрессивные передачи', group: 'attack',  get: (m) => num(m?.teamAggregates?.passes?.progressive) },
+  { label: 'Кроссы',                 group: 'attack',  get: (m) => num(m?.teamAggregates?.passes?.crosses), paid: true },
   // Оборона
-  { label: 'Отборы',                 get: (m) => firstPositive(m?.teamAggregates?.recoveriesAndTackling?.tackle, m?.teamAggregates?.duels?.totalDuels) },
-  { label: 'Перехваты',              get: (m) => firstPositive(m?.teamAggregates?.recoveriesAndTackling?.interception, m?.teamAggregates?.positioning?.interceptions) },
-  { label: 'Подборы',                get: (m) => num(m?.teamAggregates?.recoveriesAndTackling?.recovery) },
+  { label: 'Отборы',                 group: 'defence', get: (m) => firstPositive(m?.teamAggregates?.recoveriesAndTackling?.tackle, m?.teamAggregates?.duels?.totalDuels) },
+  { label: 'Перехваты',              group: 'defence', get: (m) => firstPositive(m?.teamAggregates?.recoveriesAndTackling?.interception, m?.teamAggregates?.positioning?.interceptions) },
+  { label: 'Подборы',                group: 'defence', get: (m) => num(m?.teamAggregates?.recoveriesAndTackling?.recovery) },
   // Физика (платное)
-  { label: 'Дистанция, км',          get: km, paid: true },
+  { label: 'Дистанция, км',          group: 'fitness', get: km, paid: true },
 ];
 
 /**
@@ -81,7 +82,27 @@ export function otherMatchesCount(match, allMatches) {
 export function buildTeamVsSeasonRows(match, allMatches, isPaidPlan = false) {
   const data = Array.isArray(allMatches) ? allMatches : [];
   const others = data.filter((m) => m && m.id !== match?.id);
-  return TEAM_VS_SEASON_DEFS.filter((d) => isPaidPlan || !d.paid).map((d) => {
+
+  // На FREE — не детальные метрики (их в бесплатном экспорте нет), а 2 сводных
+  // показателя из БАЗОВЫХ free-метрик: «Атака» и «Оборона» (сумма событий
+  // группы), тоже против среднего по остальным матчам сезона.
+  if (!isPaidPlan) {
+    const freeDefs = TEAM_VS_SEASON_DEFS.filter((d) => !d.paid);
+    const sumGroup = (m, g) =>
+      freeDefs.filter((d) => d.group === g).reduce((s, d) => s + (Number(d.get(m)) || 0), 0);
+    return [
+      { label: 'Атака', group: 'attack' },
+      { label: 'Оборона', group: 'defence' },
+    ].map((g) => {
+      const cur = sumGroup(match, g.group);
+      if (!(cur > 0)) return null;
+      const vals = others.map((m) => sumGroup(m, g.group)).filter((v) => v > 0);
+      const avg = vals.length >= 2 ? vals.reduce((a, b) => a + b, 0) / vals.length : null;
+      return { label: g.label, cur, avg };
+    }).filter(Boolean);
+  }
+
+  return TEAM_VS_SEASON_DEFS.map((d) => {
     const cur = d.get(match);
     if (!(cur > 0)) return null;
     const vals = others.map(d.get).filter((v) => v > 0);
