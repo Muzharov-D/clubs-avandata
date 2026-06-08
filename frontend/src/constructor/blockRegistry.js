@@ -84,8 +84,8 @@ export const PAGES = [
     match: (p) => /^\/matches\/[^/]+$/.test(p),
     blocks: [
       { id: 'team-ratings', label: 'Рейтинги команды' },
-      { id: 'squad-heatmap', label: 'Тепловая карта состава' },
-      { id: 'stat-compare', label: 'Командная статистика' },
+      { id: 'squad-heatmap', label: 'Тепловая карта состава', minPlan: 'paid' },
+      { id: 'stat-compare', label: 'Командная статистика', minPlan: 'paid' },
       { id: 'beeswarm', label: 'Распределение оценок и роли' },
       { id: 'xg', label: 'xG (ожидаемые голы)', minPlan: 'paid' },
       { id: 'pressing', label: 'Прессинг' },
@@ -140,7 +140,7 @@ export const PAGES = [
     blocks: [
       { id: 'last-match', label: 'Сводка последнего матча' },
       { id: 'team-vs-season', label: 'Командные показатели против сезона' },
-      { id: 'squad-heatmap', label: 'Тепловая карта состава' },
+      { id: 'squad-heatmap', label: 'Тепловая карта состава', minPlan: 'paid' },
     ],
   },
   // Примечание: /trainings — это список тренировок + модалка посещаемости,

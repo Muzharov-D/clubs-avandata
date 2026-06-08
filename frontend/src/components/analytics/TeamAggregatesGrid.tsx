@@ -16,7 +16,18 @@ interface Props {
   aggregates?: Record<string, AnyObj> | null;
   matchCount?: number;
   periodLabel?: string;
+  /** На free платные секции/поля (физика, xG, владение, качество паса) скрыты. */
+  isPaidPlan?: boolean;
 }
+
+// Тариф: секции целиком платные (скрываются на free).
+const PAID_SECTIONS = new Set(['passes', 'possession', 'fitness']);
+// Платные поля внутри free-секций (shooting/attacks): xG, касания/входы в штрафную,
+// дистанция удара. Скрываются на free поштучно.
+const PAID_FIELDS = new Set([
+  'expectedGoals', 'xG', 'avgShotDistance',
+  'touchesInBox', 'entriesInBox',
+]);
 
 const SECTION_TITLES: Record<string, string> = {
   shooting: 'Удары и реализация',
@@ -111,12 +122,13 @@ function fmtAggVal(k: string, val: number, suffix: string): string {
   return Math.round(val).toLocaleString('ru-RU');
 }
 
-function AggregateCard({ title, data }: { title: string; data: AnyObj }) {
+function AggregateCard({ title, data, isPaidPlan }: { title: string; data: AnyObj; isPaidPlan?: boolean }) {
   // Дедуп по русскому лейблу — оставляем макс (interception vs interceptions).
   type Entry = { k: string; label: string; val: number; suffix: string };
   const bucket = new Map<string, Entry>();
   for (const [k, v] of Object.entries(data || {})) {
     if (k === 'mapImage' || HIDDEN_KEYS.has(k)) continue;
+    if (!isPaidPlan && PAID_FIELDS.has(k)) continue;
     const { val, suffix } = readVal(v);
     if (val == null || val === 0) continue;
     const label = fieldLabel(k);
@@ -146,13 +158,15 @@ function AggregateCard({ title, data }: { title: string; data: AnyObj }) {
   );
 }
 
-export default function TeamAggregatesGrid({ aggregates, matchCount, periodLabel }: Props) {
+export default function TeamAggregatesGrid({ aggregates, matchCount, periodLabel, isPaidPlan }: Props) {
   if (!aggregates) return null;
   // Только секции с хотя бы одной значимой числовой записью.
-  const meaningful = Object.entries(aggregates).filter(([, v]) => {
+  const meaningful = Object.entries(aggregates).filter(([secKey, v]) => {
     if (!v || typeof v !== 'object') return false;
+    if (!isPaidPlan && PAID_SECTIONS.has(secKey)) return false; // free: платные секции скрыты
     return Object.entries(v).some(([k, x]) => {
       if (k === 'mapImage' || HIDDEN_KEYS.has(k)) return false;
+      if (!isPaidPlan && PAID_FIELDS.has(k)) return false;
       const { val } = readVal(x);
       return typeof val === 'number' && val > 0;
     });
@@ -166,7 +180,7 @@ export default function TeamAggregatesGrid({ aggregates, matchCount, periodLabel
       <div className="page-section-title">Детальная аналитика по секциям <span className="tag__sub">{sub}</span></div>
       <div className="tag__grid">
         {meaningful.map(([key, vals]) => (
-          <AggregateCard key={key} title={sectionTitle(key)} data={vals as AnyObj} />
+          <AggregateCard key={key} title={sectionTitle(key)} data={vals as AnyObj} isPaidPlan={isPaidPlan} />
         ))}
       </div>
     </div>

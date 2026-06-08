@@ -1,4 +1,5 @@
 import { buildTeamVsSeasonRows, otherMatchesCount } from '../../utils/teamMatchMetrics';
+import { useAuth } from '../../contexts/AuthContext';
 import './TeamMatchVsSeason.css';
 
 /**
@@ -11,7 +12,8 @@ import './TeamMatchVsSeason.css';
  * @param {string} [title] — заголовок секции.
  */
 export default function TeamMatchVsSeason({ match, allMatches, title = 'Командные показатели: матч против сезона' }) {
-  const rows = buildTeamVsSeasonRows(match, allMatches);
+  const { tenant } = useAuth();
+  const rows = buildTeamVsSeasonRows(match, allMatches, tenant?.plan === 'paid');
   if (!rows.length) return null;
   const baseCount = otherMatchesCount(match, allMatches);
   const hasAvg = rows.some((r) => r.avg != null);

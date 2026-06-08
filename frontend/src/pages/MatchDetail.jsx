@@ -97,7 +97,8 @@ export default function MatchDetail() {
   const navigate = useNavigate();
 
   const { selectedTeamId } = useTeam();
-  const { user } = useAuth();
+  const { user, tenant } = useAuth();
+  const isPaidPlan = tenant?.plan === 'paid';
   const canDelete = user?.role === 'head_coach' || user?.role === 'team_coach';
   const [confirmingDelete, setConfirmingDelete] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -561,7 +562,7 @@ export default function MatchDetail() {
           {(() => {
             // Метрики и расчёт «матч против сезона» — единый источник
             // (utils/teamMatchMetrics), общий с сезонной сводкой на /matches.
-            const rows = buildTeamVsSeasonRows(match, allMatchData);
+            const rows = buildTeamVsSeasonRows(match, allMatchData, isPaidPlan);
             if (!rows.length) return null;
             return (
               <div className="card">

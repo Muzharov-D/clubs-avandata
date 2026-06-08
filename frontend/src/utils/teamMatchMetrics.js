@@ -38,23 +38,25 @@ function km(m) {
 // Тренерские метрики без жаргона; нулевые/отсутствующие авто-скрыты (cur > 0),
 // поэтому набор широкий — на полном экспорте грид насыщенный, на урезанном
 // показывает только то, что реально есть.
+// paid: true — метрика на платных данных (касания в штрафной, качество паса,
+// кроссы, физика). На free скрыта (см. buildTeamVsSeasonRows).
 export const TEAM_VS_SEASON_DEFS = [
   // Атака
   { label: 'Удары',                  get: (m) => num(m?.teamAggregates?.shooting?.shots ?? m?.teamAggregates?.shooting?.totalShots) },
   { label: 'Удары в створ',          get: (m) => num(m?.teamAggregates?.shooting?.onTarget) },
-  { label: 'Касания в штрафной',     get: (m) => num(m?.teamAggregates?.attacks?.touchesInBox) },
+  { label: 'Касания в штрафной',     get: (m) => num(m?.teamAggregates?.attacks?.touchesInBox), paid: true },
   { label: 'Обводки',                get: (m) => num(m?.teamAggregates?.attacks?.dribble) },
   // Передачи
   { label: 'Ключевые передачи',      get: (m) => num(m?.teamAggregates?.passes?.keyPass) },
-  { label: 'Точные передачи',        get: (m) => num(m?.teamAggregates?.passes?.successful) },
+  { label: 'Точные передачи',        get: (m) => num(m?.teamAggregates?.passes?.successful), paid: true },
   { label: 'Прогрессивные передачи', get: (m) => num(m?.teamAggregates?.passes?.progressive) },
-  { label: 'Кроссы',                 get: (m) => num(m?.teamAggregates?.passes?.crosses) },
+  { label: 'Кроссы',                 get: (m) => num(m?.teamAggregates?.passes?.crosses), paid: true },
   // Оборона
   { label: 'Отборы',                 get: (m) => firstPositive(m?.teamAggregates?.recoveriesAndTackling?.tackle, m?.teamAggregates?.duels?.totalDuels) },
   { label: 'Перехваты',              get: (m) => firstPositive(m?.teamAggregates?.recoveriesAndTackling?.interception, m?.teamAggregates?.positioning?.interceptions) },
   { label: 'Подборы',                get: (m) => num(m?.teamAggregates?.recoveriesAndTackling?.recovery) },
-  // Физика
-  { label: 'Дистанция, км',          get: km },
+  // Физика (платное)
+  { label: 'Дистанция, км',          get: km, paid: true },
 ];
 
 /**
@@ -76,10 +78,10 @@ export function otherMatchesCount(match, allMatches) {
  * @param {Array} allMatches — все разобранные матчи сезона (детально).
  * @returns {{label:string, cur:number, avg:number|null}[]}
  */
-export function buildTeamVsSeasonRows(match, allMatches) {
+export function buildTeamVsSeasonRows(match, allMatches, isPaidPlan = false) {
   const data = Array.isArray(allMatches) ? allMatches : [];
   const others = data.filter((m) => m && m.id !== match?.id);
-  return TEAM_VS_SEASON_DEFS.map((d) => {
+  return TEAM_VS_SEASON_DEFS.filter((d) => isPaidPlan || !d.paid).map((d) => {
     const cur = d.get(match);
     if (!(cur > 0)) return null;
     const vals = others.map(d.get).filter((v) => v > 0);

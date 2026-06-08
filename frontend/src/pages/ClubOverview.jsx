@@ -9,6 +9,7 @@ import RatingPill from '../components/RatingPill';
 import TeamSeasonAnalytics from '../components/analytics/TeamSeasonAnalytics';
 import TeamIdentityCard from '../components/analytics/TeamIdentityCard';
 import TeamAggregatesGrid from '../components/analytics/TeamAggregatesGrid';
+import { useAuth } from '../contexts/AuthContext';
 import SeasonTrendCard from '../components/analytics/SeasonTrendCard';
 import Block from '../constructor/Block';
 import { isOurClub, shieldFor } from '../utils/legirus';
@@ -65,6 +66,9 @@ export default function ClubOverview() {
   useDocumentTitle('Аналитика сезона');
   const navigate = useNavigate();
   const { selectedTeamId, selectedTeam } = useTeam();
+  const { tenant } = useAuth();
+  // На free платные метрики (физика/xG/владение/качество паса) не показываем нигде.
+  const isPaidPlan = tenant?.plan === 'paid';
 
   const [period, setPeriod] = useState('season');
 
@@ -207,7 +211,7 @@ export default function ClubOverview() {
                 <div className="page-section-title">Сводные рейтинги · {periodLabel} <span className="club-overview__sub">{matchCount} {matchesWord(matchCount)}</span></div>
                 <div className="club-overview__ratings">
                   <RatingCard label="Общий" value={ratings.overall} />
-                  <RatingCard label="Фитнес" value={ratings.fitness} />
+                  {isPaidPlan && <RatingCard label="Фитнес" value={ratings.fitness} />}
                   <RatingCard label="Атака" value={ratings.attack} />
                   <RatingCard label="Защита" value={ratings.defence} />
                 </div>
@@ -221,12 +225,12 @@ export default function ClubOverview() {
                 <div className="club-overview__kpi">
                   <KpiCell label="Голы за матч"   value={record.played ? (record.gf / record.played).toFixed(1) : '—'} accent="gold" />
                   <KpiCell label="Пропуск/матч"   value={record.played ? (record.ga / record.played).toFixed(1) : '—'} />
-                  <KpiCell label="Владение, %"    value={fmtAvg(our.possessionPct)} />
+                  {isPaidPlan && <KpiCell label="Владение, %"    value={fmtAvg(our.possessionPct)} />}
                   <KpiCell label="Удары"          value={fmtAvg(num(our.shots?.total))} />
                   <KpiCell label="Удары в створ"  value={fmtAvg(num(our.shots?.onTarget))} />
-                  <KpiCell label="xG"             value={fmtAvg(num(our.expectedGoals), 2)} />
-                  <KpiCell label="Передачи"       value={fmtAvg(num(our.passes?.total))} />
-                  <KpiCell label="% точных"       value={fmtAvg(num(our.passes?.accuracy))} suffix="%" />
+                  {isPaidPlan && <KpiCell label="xG"             value={fmtAvg(num(our.expectedGoals), 2)} />}
+                  {isPaidPlan && <KpiCell label="Передачи"       value={fmtAvg(num(our.passes?.total))} />}
+                  {isPaidPlan && <KpiCell label="% точных"       value={fmtAvg(num(our.passes?.accuracy))} suffix="%" />}
                   <KpiCell label="Угловые"        value={fmtAvg(num(our.corners?.total))} />
                   <KpiCell label="Нарушения"      value={fmtAvg(num(our.fouls))} />
                 </div>
@@ -242,7 +246,7 @@ export default function ClubOverview() {
 
           {/* Детальная аналитика по секциям — глубина за период (перенос с /club) */}
           <Block page="analytics" id="team-aggregates">
-            <TeamAggregatesGrid aggregates={agg?.teamAggregates} matchCount={matchCount} periodLabel={periodLabel} />
+            <TeamAggregatesGrid aggregates={agg?.teamAggregates} matchCount={matchCount} periodLabel={periodLabel} isPaidPlan={isPaidPlan} />
           </Block>
 
           {/* xG-аналитика сезона (модель, по всем матчам) */}
