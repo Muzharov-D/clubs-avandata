@@ -16,11 +16,13 @@ import './playersKinetic.css';
 
 // Группы метрик: Общее + 3 модуля. Рейтинги (primary) — средние за сезон (0–10,
 // цветные), остальное — суммы за сезон. ЯКОРЬ — СЕЗОН, не последний матч.
+// paid: true — группа/метрика на платных данных (физика). На free скрыта целиком
+// (free-набор не содержит физики — ни дистанции, ни фитнес-рейтинга).
 const GROUPS = [
   { id: 'general', label: 'Общее' },
   { id: 'attack',  label: 'Атака' },
   { id: 'defence', label: 'Защита' },
-  { id: 'fitness', label: 'Фитнес' },
+  { id: 'fitness', label: 'Фитнес', paid: true },
 ];
 
 // Поля сезонного агрегата (fetchPlayersSeason): avg*-рейтинги + суммы действий.
@@ -47,9 +49,9 @@ const METRICS = [
   { id: 'pressing',     group: 'defence', label: 'Прессинг',       unit: '', digits: 0, path: (p) => p.pressing },
 
   // ── Фитнес ──
-  { id: 'fitness',    group: 'fitness', label: 'Фитнес рейтинг',  unit: '',   digits: 1, primary: true, path: (p) => p.avgFitness },
-  { id: 'distance',   group: 'fitness', label: 'Дистанция',        unit: ' м', digits: 0, path: (p) => p.distance },
-  { id: 'sprintDist', group: 'fitness', label: 'Спринт-дистанция', unit: ' м', digits: 0, path: (p) => p.sprintDistance },
+  { id: 'fitness',    group: 'fitness', label: 'Фитнес рейтинг',  unit: '',   digits: 1, primary: true, paid: true, path: (p) => p.avgFitness },
+  { id: 'distance',   group: 'fitness', label: 'Дистанция',        unit: ' м', digits: 0, paid: true, path: (p) => p.distance },
+  { id: 'sprintDist', group: 'fitness', label: 'Спринт-дистанция', unit: ' м', digits: 0, paid: true, path: (p) => p.sprintDistance },
 ];
 
 function fmt(value, digits, unit) {
@@ -63,8 +65,13 @@ function fmt(value, digits, unit) {
 export default function PlayersRating() {
   useDocumentTitle('Рейтинг игроков');
   const navigate = useNavigate();
-  const { canSeePlayer } = useAuth();
+  const { canSeePlayer, tenant } = useAuth();
   const { selectedTeamId } = useTeam();
+  const isPaid = tenant?.plan === 'paid';
+  // На free платные группы/метрики (физика) скрыты полностью — единый гейт,
+  // а не точечное скрытие блока. Тариф один источник: tenant.plan.
+  const groups = GROUPS.filter((g) => isPaid || !g.paid);
+  const metrics = METRICS.filter((m) => isPaid || !m.paid);
 
   // СЕЗОН, не последний матч.
   const seasonRes = useApi(
@@ -83,7 +90,9 @@ export default function PlayersRating() {
     return ['all', ...Array.from(set)];
   }, [players]);
 
-  const metric = METRICS.find((m) => m.id === metricId) || METRICS[0];
+  // Если выбранная метрика платная, а тариф free — откатываемся на дефолтную.
+  const selected = METRICS.find((m) => m.id === metricId);
+  const metric = (selected && (isPaid || !selected.paid)) ? selected : metrics[0];
 
   const rows = useMemo(() => {
     const filtered = posFilter === 'all'
@@ -141,11 +150,11 @@ export default function PlayersRating() {
         <div className="players-rating__controls-row players-rating__controls-row--metrics">
           <div className="players-rating__controls-label">Метрика</div>
           <div className="players-rating__metric-groups">
-            {GROUPS.map((g) => (
+            {groups.map((g) => (
               <div className="players-rating__metric-group" key={g.id}>
                 <div className="players-rating__group-label">{g.label}</div>
                 <div className="players-rating__chips">
-                  {METRICS.filter((m) => m.group === g.id).map((m) => (
+                  {metrics.filter((m) => m.group === g.id).map((m) => (
                     <button
                       key={m.id}
                       className={'chip' + (m.id === metricId ? ' chip--active' : '') + (m.primary ? ' chip--primary' : '')}
