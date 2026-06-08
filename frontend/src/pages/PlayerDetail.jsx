@@ -561,6 +561,8 @@ function seasonBio(identity, totals, series, seasonPlayers, basis = 90, isPaidPl
    Разбор конкретного матча: рейтинги, продвинутые метрики, пицца по составу,
    role-fit, фитнес, тепловая карта, сплиты по таймам. */
 function MatchTab({ playerId, match, loading, allMatches, currentMatchId, setSelectedMatchId, labels, basis = 90 }) {
+  const { tenant } = useAuth();
+  const isPaidPlan = tenant?.plan === 'paid';
   // Pizza chart: выбор позиционного шаблона и фильтр группы — состояние вкладки.
   const player = useMemo(
     () => (match?.players || []).find((p) => p.id === playerId),
