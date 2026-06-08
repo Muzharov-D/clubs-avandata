@@ -45,12 +45,6 @@
   border-color: color-mix(in srgb, var(--accent-cyan) 60%, transparent);
 }
 
-/* Последние 3 матча — самые свежие: cyan-грань слева, полная яркость. */
-.match-list__item--recent {
-  border-left: 2px solid var(--accent-cyan);
-  opacity: 1;
-}
-
 /* Старые матчи (>7 дней) — приглушены, уводим в фон. */
 .match-list__item--aged {
   opacity: 0.5;
