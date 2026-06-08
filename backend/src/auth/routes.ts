@@ -111,7 +111,7 @@ export async function authRoutes(app: FastifyInstance) {
     });
 
     // Загружаем tenant info — фронт нуждается в displayName/brand для UI.
-    let tenant: { slug: string; name: string; displayName: string; brand: unknown } | null = null;
+    let tenant: { slug: string; name: string; displayName: string; brand: unknown; plan: string } | null = null;
     if (user.tenantId) {
       const tenantRows = await withBypassRLS((tx) =>
         tx.select({
@@ -119,6 +119,7 @@ export async function authRoutes(app: FastifyInstance) {
           name: tenants.name,
           displayName: tenants.displayName,
           brand: tenants.brand,
+          plan: tenants.plan,
         }).from(tenants).where(eq(tenants.slug, user.tenantId!)).limit(1),
       );
       tenant = tenantRows[0] ?? null;
@@ -258,12 +259,13 @@ export async function authRoutes(app: FastifyInstance) {
     // Сессия «просмотр клуба» (platform_admin → view-as-tenant): контекст берём
     // из токена, а не из БД-записи админа (иначе фронт «откатится» в админку).
     if (req.user.imp) {
-      let tenant: { slug: string; name: string; displayName: string; brand: unknown } | null = null;
+      let tenant: { slug: string; name: string; displayName: string; brand: unknown; plan: string } | null = null;
       if (req.user.tenantId) {
         const tRows = await withBypassRLS((tx) =>
           tx.select({
             slug: tenants.slug, name: tenants.name,
             displayName: tenants.displayName, brand: tenants.brand,
+            plan: tenants.plan,
           }).from(tenants).where(eq(tenants.slug, req.user!.tenantId!)).limit(1),
         );
         tenant = tRows[0] ?? null;
@@ -290,7 +292,7 @@ export async function authRoutes(app: FastifyInstance) {
     const u = userRows[0];
     if (!u) throw new UnauthorizedError('user not found');
 
-    let tenant: { slug: string; name: string; displayName: string; brand: unknown } | null = null;
+    let tenant: { slug: string; name: string; displayName: string; brand: unknown; plan: string } | null = null;
     if (u.tenantId) {
       const tRows = await withBypassRLS((tx) =>
         tx.select({
@@ -298,6 +300,7 @@ export async function authRoutes(app: FastifyInstance) {
           name: tenants.name,
           displayName: tenants.displayName,
           brand: tenants.brand,
+          plan: tenants.plan,
         }).from(tenants).where(eq(tenants.slug, u.tenantId!)).limit(1),
       );
       tenant = tRows[0] ?? null;
