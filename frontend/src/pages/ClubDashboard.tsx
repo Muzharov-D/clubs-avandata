@@ -64,7 +64,12 @@ interface Team {
 
 export default function ClubDashboard() {
   const navigate = useNavigate();
-  const { user } = useAuth() as { user: { tenantId?: string | null; fullName?: string } | null };
+  const { user, tenant } = useAuth() as {
+    user: { tenantId?: string | null; fullName?: string } | null;
+    tenant: { plan?: string } | null;
+  };
+  // На free платная физика (Фитнес-рейтинг) скрыта.
+  const isPaidPlan = tenant?.plan === 'paid';
   const { selectedTeam, selectedTeamId } = useTeam() as { selectedTeam: Team | null; selectedTeamId: string | null };
   useDocumentTitle(selectedTeam?.name ? `${selectedTeam.name} — Клуб` : 'Клуб');
 
@@ -486,7 +491,7 @@ export default function ClubDashboard() {
               { label: 'Атака', val: Number(tar.attack ?? 0) },
               { label: 'Защита', val: Number(tar.defence ?? 0) },
               { label: 'Фитнес', val: Number(tar.fitness ?? 0) },
-            ].filter((l) => l.val > 0);
+            ].filter((l) => l.val > 0 && (isPaidPlan || l.label !== 'Фитнес'));
             const col = ratingColor(ov);
             return (
               <div className="cd__kpi-card cd__kpi-card--metric">

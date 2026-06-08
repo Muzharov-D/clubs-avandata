@@ -749,7 +749,7 @@ function MatchTab({ playerId, match, loading, allMatches, currentMatchId, setSel
       <Block page="player" id="match-ratings">
       <div className="player-detail__ratings reveal">
         <RatingCard label="Общий" value={ratings.overall} />
-        <RatingCard label="Фитнес" value={ratings.fitness} />
+        {isPaidPlan && <RatingCard label="Фитнес" value={ratings.fitness} />}
         <RatingCard label="Атака" value={ratings.attack} />
         <RatingCard label="Защита" value={ratings.defence} />
       </div>
