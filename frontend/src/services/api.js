@@ -262,6 +262,30 @@ export const fetchCupList = () => fetchJson('/data/cup');
 export const fetchCalendar = (ageGroup) => fetchJson(`/data/calendar/${encodeURIComponent(ageGroup)}`);
 export const fetchCalendarList = () => fetchJson('/data/calendar');
 
+// Ручное обновление данных турнира из FFSPB (календарь + таблица) — кнопка тренера
+// на дашборде (авто-cron на проде выключен). Идём НАПРЯМУЮ к Render (минуя Vercel
+// proxy: он рвёт rewrite >30с, а синк возраста с Render бывает до ~40с). Таймаут 120с.
+export async function refreshFfspbData(age) {
+  const token = getToken();
+  const headers = { 'Content-Type': 'application/json' };
+  if (token) headers.Authorization = `Bearer ${token}`;
+  const url = `${DIRECT_PREFIX}/data/refresh${age ? `?age=${encodeURIComponent(age)}` : ''}`;
+  let res;
+  try {
+    res = await fetchWithTimeout(url, { method: 'POST', headers, credentials: 'include' }, 120_000);
+  } catch (e) {
+    if (e.name === 'AbortError') throw new Error('Обновление заняло слишком долго. Попробуйте ещё раз.');
+    throw new Error('Не удалось связаться с сервером. Проверьте интернет.');
+  }
+  if (!res.ok) {
+    const text = await res.text().catch(() => '');
+    let msg = `Не удалось обновить данные (${res.status})`;
+    try { msg = JSON.parse(text).error || msg; } catch (_) { if (text) msg = text; }
+    throw new Error(msg);
+  }
+  return res.json();
+}
+
 // === Trainings (Sprint 5.1) ===
 export const fetchTrainingsByTeam = (teamId, params = {}) => {
   const q = new URLSearchParams();

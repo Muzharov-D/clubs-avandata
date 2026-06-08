@@ -1,6 +1,8 @@
 import type { FastifyInstance } from 'fastify';
+import { eq } from 'drizzle-orm';
 import { authenticate } from '../auth/middleware.js';
-import { withTenant } from '../db/tenantContext.js';
+import { withTenant, withBypassRLS } from '../db/tenantContext.js';
+import { tenants } from '../db/schema/tenants.js';
 import { UnauthorizedError, NotFoundError, BadRequestError } from '../shared/errors.js';
 import { adaptPlayerForLegirus } from './legirusAdapter.js';
 import { computeDataQuality } from './dataQuality.js';
@@ -8,6 +10,9 @@ import { statField, statFieldTotal } from '../shared/statValue.js';
 import { resolveOurExtId, markOurStandingsRow } from './ourTeam.js';
 import { applyFixtureDates, type DatedMatchRow } from './matchDate.js';
 import { linkFfspbFixture } from '../upload/ffspbMatchLink.js';
+import { isFfspbConfigured } from '../services/ffspbApi.js';
+import { syncTenantCalendarTournament } from '../services/calendarService.js';
+import { syncTenantStandings } from '../services/standingsService.js';
 import {
   aggregateTeamStats,
   type AggregatePeriod,
@@ -752,6 +757,69 @@ export async function dataRoutes(app: FastifyInstance) {
       );
       return rows;
     });
+  });
+
+  // Ручное обновление данных турнира из FFSPB (календарь лиги/кубка + таблица).
+  // Замена авто-cron'а (на проде он выключен, START_CRONS=false) — тренер сам
+  // тянет свежий тур и таблицу кнопкой в дашборде. Tenant из JWT (обновляем
+  // ТОЛЬКО свой клуб, не из URL); age — из query (по умолчанию все возрасты).
+  // Синхронно: календарь первым (быстрый /api/matches), таблица после (медленный
+  // /api/standings — может не успеть, тогда standingsUpdated=false, но календарь
+  // уже залит). Идёт напрямую к Render (фронт минует Vercel-proxy >30с).
+  app.post<{ Querystring: { age?: string } }>('/refresh', async (req) => {
+    const slug = tenantId(req);
+    const role = req.user?.role;
+    if (role !== 'head_coach' && role !== 'team_coach') {
+      throw new UnauthorizedError('обновлять данные турнира могут только тренеры');
+    }
+    if (!isFfspbConfigured()) {
+      throw new BadRequestError('FFSPB не настроен на сервере', 'FFSPB_NOT_CONFIGURED');
+    }
+    const trows = await withBypassRLS((tx) =>
+      tx.select().from(tenants).where(eq(tenants.slug, slug)).limit(1),
+    );
+    const tenant = trows[0];
+    if (!tenant) throw new NotFoundError('клуб не найден');
+    if (tenant.dataProvider !== 'ffspb') {
+      throw new BadRequestError('Обновление доступно только для клубов на данных FFSPB', 'WRONG_PROVIDER');
+    }
+    const cfg = (tenant.providerConfig ?? {}) as {
+      ourMatcher?: string;
+      season?: string;
+      tournaments?: Record<string, { leagueId?: string | number | null; cupId?: string | number | null }>;
+    };
+    const ourMatcher = cfg.ourMatcher ?? tenant.displayName;
+    const season = cfg.season ?? new Date().getFullYear().toString();
+    let tournaments = Object.entries(cfg.tournaments ?? {});
+    const age = req.query.age;
+    if (age) tournaments = tournaments.filter(([a]) => a === age);
+    if (tournaments.length === 0) {
+      throw new BadRequestError('Для этого возраста не настроены турниры FFSPB', 'NO_TOURNAMENTS');
+    }
+
+    let calendarMatches = 0;
+    let standingsUpdated = false;
+    for (const [ageGroup, tids] of tournaments) {
+      if (tids.leagueId) {
+        const r = await syncTenantCalendarTournament({
+          tenantSlug: slug, ageGroup, season, tournamentId: tids.leagueId, tournament: 'league', ourMatcher,
+        });
+        if (r.ok) calendarMatches += r.count ?? 0;
+      }
+      if (tids.cupId) {
+        const r = await syncTenantCalendarTournament({
+          tenantSlug: slug, ageGroup, season, tournamentId: tids.cupId, tournament: 'cup', ourMatcher,
+        });
+        if (r.ok) calendarMatches += r.count ?? 0;
+      }
+      if (tids.leagueId) {
+        const r = await syncTenantStandings({
+          tenantSlug: slug, ageGroup, tournamentId: tids.leagueId, season, ourMatcher,
+        });
+        if (r.ok) standingsUpdated = true;
+      }
+    }
+    return { ok: true, ages: tournaments.map(([a]) => a), calendarMatches, standingsUpdated };
   });
 
   app.get('/metrics', async () => {
