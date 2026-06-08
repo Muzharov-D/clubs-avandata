@@ -84,6 +84,15 @@ function OwnPlayerOnly({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
+// Платные модули (Календарь / Тренировки / Нагрузка) на free недоступны —
+// прямой переход редиректит в /club. На время загрузки тенанта не редиректим.
+function PaidOnly({ children }: { children: React.ReactNode }) {
+  const { tenant, loading } = useAuth() as { tenant: { plan?: string } | null; loading: boolean };
+  if (loading) return null;
+  if (tenant?.plan !== 'paid') return <Navigate to="/club" replace />;
+  return <>{children}</>;
+}
+
 function PlatformAdminOnly({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth() as { user: any; loading: boolean };
   // Пока auth резолвится (fetchMe), НЕ редиректим — иначе прямой переход на
@@ -144,12 +153,12 @@ export function App() {
                     <Route path="/analytics/team" element={<CoachOnly><ComparisonView /></CoachOnly>} />
                     <Route path="/matches" element={<MatchesDashboard />} />
                     <Route path="/matches/:matchId" element={<MatchDetail />} />
-                    <Route path="/calendar" element={<CalendarPage />} />
-                    <Route path="/trainings" element={<CoachOnly><TrainingsPage /></CoachOnly>} />
+                    <Route path="/calendar" element={<PaidOnly><CalendarPage /></PaidOnly>} />
+                    <Route path="/trainings" element={<PaidOnly><CoachOnly><TrainingsPage /></CoachOnly></PaidOnly>} />
                     <Route path="/players" element={<CoachOnly><PlayersLeaders /></CoachOnly>} />
                     <Route path="/players/rating" element={<CoachOnly><PlayersRating /></CoachOnly>} />
                     <Route path="/players/compare" element={<CoachOnly><PlayerCompare /></CoachOnly>} />
-                    <Route path="/load" element={<CoachOnly><LoadControl /></CoachOnly>} />
+                    <Route path="/load" element={<PaidOnly><CoachOnly><LoadControl /></CoachOnly></PaidOnly>} />
                     {/* PlayerDetail.jsx — 1:1 копия Легируса с pizza-chart, фото, бейджами */}
                     <Route path="/players/:playerId" element={<OwnPlayerOnly><PlayerDetail /></OwnPlayerOnly>} />
                     <Route path="/constructor" element={<CoachOnly><ConstructorPage /></CoachOnly>} />

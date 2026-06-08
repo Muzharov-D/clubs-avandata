@@ -6,8 +6,11 @@ import './SidebarNav.css';
 export default function SidebarNav() {
   const navigate = useNavigate();
   const { pathname } = useLocation();
-  const { user, isPlayer, isCoach } = useAuth();
+  const { user, isPlayer, isCoach, tenant } = useAuth();
   const { isVisible } = useDashboardLayout();
+  // На free тариф — только аналитический core. Календарь / Тренировки / Нагрузка
+  // — платные модули, в меню не показываем (и роуты закрыты, см. App.tsx).
+  const isPaidPlan = tenant?.plan === 'paid';
 
   // Аналитика и список Игроков — только тренеру (игроку нечего смотреть
   // в командных топах, MOTM и pivot-аналитике, по контракту он видит
@@ -18,8 +21,10 @@ export default function SidebarNav() {
       ? { id: 'analytics', label: 'Аналитика', path: '/analytics', icon: '◉' }
       : null,
     { id: 'matches',   label: 'Матчи',      path: '/matches',   icon: '⚽' },
-    { id: 'calendar',  label: 'Календарь',  path: '/calendar',  icon: '📅' },
-    isCoach
+    isPaidPlan
+      ? { id: 'calendar',  label: 'Календарь',  path: '/calendar',  icon: '📅' }
+      : null,
+    isCoach && isPaidPlan
       ? { id: 'trainings', label: 'Тренировки', path: '/trainings', icon: '🎯' }
       : null,
     isPlayer && user?.playerId
@@ -27,7 +32,7 @@ export default function SidebarNav() {
       : isCoach
         ? { id: 'players', label: 'Игроки', path: '/players', icon: '👤' }
         : null,
-    isCoach
+    isCoach && isPaidPlan
       ? { id: 'load', label: 'Нагрузка', path: '/load', icon: '🏃' }
       : null,
   ].filter(Boolean)
