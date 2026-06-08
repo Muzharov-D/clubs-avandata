@@ -1,0 +1,35 @@
+/* FreeMatchInsights — словесные выводы матча на free. */
+
+.free-ins__list {
+  list-style: none;
+  margin: 8px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.free-ins__item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  background: var(--surface-2, rgba(127, 127, 127, 0.06));
+  border-left: 3px solid var(--border, rgba(127, 127, 127, 0.2));
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+.free-ins__item--good { border-left-color: var(--success, #22c55e); }
+.free-ins__item--warn {
+  border-left-color: var(--warning, #f59e0b);
+  background: var(--surface-warn, rgba(220, 120, 40, 0.07));
+}
+.free-ins__item--neutral { border-left-color: var(--text-muted, #94a3b8); }
+
+.free-ins__icon {
+  font-size: 1.05rem;
+  line-height: 1.3;
+  flex: 0 0 auto;
+}
+.free-ins__text { font-weight: 500; }

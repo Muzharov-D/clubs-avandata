@@ -5,7 +5,7 @@ import { fetchMatch, fetchMatches, fetchMetrics, fetchPlayer, fetchPlayersSeason
 import { compoundAt, matchMinutes } from '../utils/analytics';
 import { seasonPercentiles } from '../utils/playerRoles';
 import PlayerAdvancedCard from '../components/analytics/PlayerAdvancedCard';
-import FreeImpactCard from '../components/analytics/FreeImpactCard';
+import FreeImpactCard, { FreeSeasonImpactCard } from '../components/analytics/FreeImpactCard';
 import SeasonPercentileCard from '../components/analytics/SeasonPercentileCard';
 import SeasonProfileCard from '../components/analytics/SeasonProfileCard';
 import PlayerDnaCard from '../components/analytics/PlayerDnaCard';
@@ -398,6 +398,15 @@ function SeasonTab({ identity, playerId, teamId, teamName, seasonPlayers, series
 
       {/* Посещаемость тренировок — появляется только если есть данные */}
       <Block page="player" id="attendance"><AttendanceBlock teamId={teamId} playerId={playerId} /></Block>
+
+      {/* free-нативная сезонная эффективность — из плоского сезонного субъекта.
+          На paid не нужна (есть ДНК/role-fit), показываем только на free. */}
+      {!isPaidPlan && (() => {
+        const meSeason = Array.isArray(seasonPlayers) ? seasonPlayers.find((s) => s.id === playerId) : null;
+        return meSeason ? (
+          <Reveal variant="slide-up" duration={0.5} delay={0.15}><FreeSeasonImpactCard subject={meSeason} /></Reveal>
+        ) : null;
+      })()}
 
       {/* Радар-витрина: сезонная пицца (за матч vs позиционный пул) */}
       <Block page="player" id="season-profile"><Reveal variant="slide-up" duration={0.5} delay={0.2}><SeasonProfileCard subject={identity} seasonPlayers={seasonPlayers} basis={basis} isPaidPlan={isPaidPlan} /></Reveal></Block>

@@ -29,6 +29,7 @@ import MomentumStrip from '../components/analytics/MomentumStrip';
 import ImpactMotm from '../components/analytics/ImpactMotm';
 import MatchLeaders from '../components/analytics/MatchLeaders';
 import FreeTeamStatsCard from '../components/analytics/FreeTeamStatsCard';
+import FreeMatchInsights from '../components/analytics/FreeMatchInsights';
 import Block from '../constructor/Block';
 import SetPieceShotCard from '../components/analytics/SetPieceShotCard';
 import { coachDigest, matchMinutes } from '../utils/analytics';
@@ -384,6 +385,8 @@ export default function MatchDetail() {
           ['md-xg', 'xG', true],
           ['md-press', 'Прессинг'],
           ['md-insights', 'Выводы', true],
+          // free-версия выводов (4-й элемент = только-free пункт).
+          ['md-free-insights', 'Выводы', false, true],
           ['md-momentum', 'Динамика', true],
           ['md-half', 'По таймам'],
           ['md-fitness', 'Фитнес', true],
@@ -392,8 +395,8 @@ export default function MatchDetail() {
           // 'md-maps' (Командные карты) временно скрыт — пока выводим только
           // тепловую карту игрока (на странице игрока). Командные карты добавим
           // позже, когда определимся, какие из них показывать.
-          // 3-й элемент = платный раздел: на free пункт меню скрыт (блок и так gated).
-        ].filter(([, , paid]) => isPaidPlan || !paid).map(([id, label]) => (
+          // 3-й элемент = платный раздел (скрыт на free); 4-й = только-free пункт.
+        ].filter(([, , paid, freeOnly]) => (isPaidPlan ? !freeOnly : !paid)).map(([id, label]) => (
           <a key={id} href={`#${id}`} className="md-secnav__link">{label}</a>
         ))}
       </nav>
@@ -501,6 +504,10 @@ export default function MatchDetail() {
         </div>
       )}
       </Block>
+
+      {/* free-версия выводов: на месте платных «Ключевых выводов» — честные
+          словесные выводы из free-метрик. */}
+      {!isPaidPlan && <FreeMatchInsights match={match} />}
 
       {/* Хроника матча — только если голы сходятся со счётом (см. timeline) */}
       <Block page="match" id="timeline"><MatchTimeline events={timeline} /></Block>
