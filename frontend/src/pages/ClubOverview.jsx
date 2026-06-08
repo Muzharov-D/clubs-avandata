@@ -9,6 +9,7 @@ import RatingPill from '../components/RatingPill';
 import TeamSeasonAnalytics from '../components/analytics/TeamSeasonAnalytics';
 import TeamIdentityCard from '../components/analytics/TeamIdentityCard';
 import TeamAggregatesGrid from '../components/analytics/TeamAggregatesGrid';
+import { FreeTeamSeasonCard } from '../components/analytics/FreeImpactCard';
 import { useAuth } from '../contexts/AuthContext';
 import SeasonTrendCard from '../components/analytics/SeasonTrendCard';
 import Block from '../constructor/Block';
@@ -243,6 +244,9 @@ export default function ClubOverview() {
           <Block page="analytics" id="season-trend">
             <SeasonTrendCard matches={matches} />
           </Block>
+
+          {/* free-нативная командная эффективность за сезон — хедлайн над агрегатом */}
+          {!isPaidPlan && <FreeTeamSeasonCard teamAggregates={agg?.teamAggregates} periodLabel={periodLabel} />}
 
           {/* Детальная аналитика по секциям — глубина за период (перенос с /club) */}
           <Block page="analytics" id="team-aggregates">
