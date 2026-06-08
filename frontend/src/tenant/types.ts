@@ -14,4 +14,6 @@ export interface Tenant {
   displayName: string;
   status: 'active' | 'suspended' | 'archived';
   brand: TenantBrand;
+  // Тариф клуба: на 'free' платные блоки дашборда скрыты (см. blockRegistry minPlan).
+  plan?: 'free' | 'paid';
 }

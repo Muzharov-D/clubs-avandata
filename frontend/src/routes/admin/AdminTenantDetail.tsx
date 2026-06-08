@@ -59,6 +59,23 @@ export function AdminTenantDetail() {
     },
   });
 
+  // Тариф клуба — из списка всех клубов (admin /tenants отдаёт plan). PATCH тенанта.
+  const tenantsKey = ['admin', 'tenants'];
+  const tenantQuery = useQuery({
+    queryKey: tenantsKey,
+    queryFn: () => api<{ tenants: Array<{ slug: string; plan?: string }> }>('/admin/tenants'),
+  });
+  const plan = (tenantQuery.data?.tenants.find((t) => t.slug === slug)?.plan ?? 'free') as 'free' | 'paid';
+  const planMut = useMutation({
+    mutationFn: (next: 'free' | 'paid') =>
+      api(`/admin/tenants/${slug}`, { method: 'PATCH', body: { plan: next } }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: tenantsKey });
+      toast.success('Тариф клуба обновлён');
+    },
+    onError: (err) => toast.error(err instanceof ApiError ? err.message : 'Не удалось сменить тариф'),
+  });
+
   const teams = data?.teams ?? [];
 
   return (
@@ -82,6 +99,42 @@ export function AdminTenantDetail() {
           {provision.isPending ? 'Провижн…' : 'Провизионировать из турниров'}
         </button>
       </header>
+
+      <div
+        className="surface"
+        style={{ marginBottom: 16, display: 'flex', alignItems: 'center', gap: 16, padding: '12px 16px', flexWrap: 'wrap' }}
+      >
+        <div style={{ flex: 1, minWidth: 180 }}>
+          <div style={{ fontWeight: 600, fontSize: 14 }}>Тариф клуба</div>
+          <div style={{ fontSize: 12, color: '#94a3b8' }}>
+            На «Бесплатном» платные блоки (xG, физнагрузка, тепловые карты, профиль передач) скрыты у клуба.
+          </div>
+        </div>
+        <div
+          role="tablist"
+          aria-label="Тариф клуба"
+          style={{ display: 'inline-flex', gap: 2, padding: 3, background: 'rgba(255,255,255,0.04)', border: '1px solid var(--border)', borderRadius: 999 }}
+        >
+          {(['free', 'paid'] as const).map((p) => (
+            <button
+              key={p}
+              type="button"
+              role="tab"
+              aria-selected={plan === p}
+              onClick={() => plan !== p && planMut.mutate(p)}
+              disabled={planMut.isPending}
+              style={{
+                border: 0, cursor: planMut.isPending ? 'default' : 'pointer',
+                padding: '6px 16px', borderRadius: 999, fontSize: 13, fontWeight: 600,
+                background: plan === p ? (p === 'paid' ? '#22c55e' : 'rgba(148,163,184,0.25)') : 'transparent',
+                color: plan === p ? (p === 'paid' ? '#04210f' : '#e2e8f0') : '#94a3b8',
+              }}
+            >
+              {p === 'free' ? 'Бесплатный' : 'Платный'}
+            </button>
+          ))}
+        </div>
+      </div>
 
       {isLoading && <div style={{ color: '#94a3b8' }}>Загрузка…</div>}
       {error && <div style={{ color: '#f87171' }}>Ошибка загрузки команд</div>}

@@ -20,6 +20,8 @@ export async function tenantRoutes(app: FastifyInstance) {
         displayName: tenants.displayName,
         status: tenants.status,
         brand: tenants.brand,
+        // Тариф клуба (free | paid) — фронт по нему гейтит платные блоки дашборда.
+        plan: tenants.plan,
       })
       .from(tenants)
       .where(eq(tenants.slug, req.params.slug))

@@ -10,7 +10,8 @@
 // режима НЕ перемонтирует тяжёлые графики.
 
 import { useDashboardLayout } from './DashboardLayoutContext';
-import { blockLabel } from './blockRegistry';
+import { useTenant } from '../tenant/TenantProvider';
+import { blockLabel, blockMinPlan } from './blockRegistry';
 import './Block.css';
 
 /**
@@ -18,8 +19,14 @@ import './Block.css';
  */
 export default function Block({ page, id, children }) {
   const { isVisible, editMode, canEdit, toggle } = useDashboardLayout();
+  const { tenant } = useTenant();
   const visible = isVisible(page, id);
   const editing = editMode && canEdit;
+
+  // Тарифный гейт: платный блок на free-клубе скрыт ПОЛНОСТЬЮ (даже в конструкторе)
+  // — клуб не может его включить. Метрики для него в free-выгрузке отсутствуют.
+  const planLocked = blockMinPlan(page, id) === 'paid' && (tenant?.plan ?? 'free') !== 'paid';
+  if (planLocked) return null;
 
   if (!editing && !visible) return null;
 
