@@ -21,7 +21,6 @@ import MatchDetail from './pages/MatchDetail';
 import ComparisonView from './pages/ComparisonView';
 import PlayersLeaders from './pages/PlayersLeaders';
 import PlayersRating from './pages/PlayersRating';
-import DemoAnalytics from './pages/DemoAnalytics';
 import PlayerDetail from './pages/PlayerDetail';
 // @ts-ignore — legacy .jsx
 import PlayerCompare from './pages/PlayerCompare';
@@ -125,12 +124,6 @@ export function App() {
                   <Route path="/public/team/:age/league" element={<LeagueFixture />} />
                   {/* Multi-tenant public — главное для родителя */}
                   <Route path="/m/:slug/team/:age" element={<PublicTenantTeam />} />
-
-                  {/* Кино-демо расширенной аналитики (апселл free → paid), полноэкранно */}
-                  <Route
-                    path="/demo-analytics"
-                    element={<ProtectedRoute roles={[]}><DemoAnalytics /></ProtectedRoute>}
-                  />
 
                   {/* Платформенный админ (Clubs Avandata) */}
                   <Route

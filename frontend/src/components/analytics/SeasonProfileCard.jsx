@@ -30,15 +30,17 @@ function fmt90(v) {
   return v.toFixed(v >= 10 ? 0 : 1);
 }
 
-export default function SeasonProfileCard({ subject, seasonPlayers, basis = 90 }) {
+export default function SeasonProfileCard({ subject, seasonPlayers, basis = 90, isPaidPlan = true }) {
   if (!subject || !Array.isArray(seasonPlayers) || seasonPlayers.length < 4) return null;
 
   // Единый источник: тот же пул/порог/сглаживание, что у «ДНК» и «Перцентиля».
   const sp = seasonPercentiles(subject, seasonPlayers, basis);
   if (!sp) return null;
 
+  // На free физику (дистанция) не показываем — но радар из free-метрик честный.
+  const metrics = isPaidPlan ? SEASON_METRICS : SEASON_METRICS.filter((m) => m.group !== 'fitness');
   // Слайс — только если метрика есть в источнике (в пуле кто-то её набирал).
-  const slices = SEASON_METRICS.map((m) => {
+  const slices = metrics.map((m) => {
     const r = sp.byKey[m.key];
     if (!r) return null;
     return { axis: m.label, group: m.group, value: r.pct, displayValue: m.fmt ? m.fmt(r.raw90) : fmt90(r.raw90) };
