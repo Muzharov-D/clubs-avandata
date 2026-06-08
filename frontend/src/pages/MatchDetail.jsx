@@ -378,19 +378,20 @@ export default function MatchDetail() {
       <nav className="md-secnav" aria-label="Разделы разбора">
         {[
           ['md-ratings', 'Рейтинги'],
-          ['md-roles', 'Состав и роли'],
-          ['md-xg', 'xG'],
+          ['md-roles', 'Состав и роли', true],
+          ['md-xg', 'xG', true],
           ['md-press', 'Прессинг'],
-          ['md-insights', 'Выводы'],
-          ['md-momentum', 'Динамика'],
+          ['md-insights', 'Выводы', true],
+          ['md-momentum', 'Динамика', true],
           ['md-half', 'По таймам'],
-          ['md-fitness', 'Фитнес'],
-          ['md-heatmap', 'Тепловая карта'],
+          ['md-fitness', 'Фитнес', true],
+          ['md-heatmap', 'Тепловая карта', true],
           ['md-detail', 'Детали'],
           // 'md-maps' (Командные карты) временно скрыт — пока выводим только
           // тепловую карту игрока (на странице игрока). Командные карты добавим
           // позже, когда определимся, какие из них показывать.
-        ].map(([id, label]) => (
+          // 3-й элемент = платный раздел: на free пункт меню скрыт (блок и так gated).
+        ].filter(([, , paid]) => isPaidPlan || !paid).map(([id, label]) => (
           <a key={id} href={`#${id}`} className="md-secnav__link">{label}</a>
         ))}
       </nav>
