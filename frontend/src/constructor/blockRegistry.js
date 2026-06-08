@@ -86,7 +86,8 @@ export const PAGES = [
       { id: 'team-ratings', label: 'Рейтинги команды' },
       { id: 'squad-heatmap', label: 'Тепловая карта состава', minPlan: 'paid' },
       { id: 'stat-compare', label: 'Командная статистика', minPlan: 'paid' },
-      { id: 'beeswarm', label: 'Распределение оценок и роли', minPlan: 'paid' },
+      // На оценках, не на платных метриках → free-нативен (графики разброса/ролей).
+      { id: 'beeswarm', label: 'Распределение оценок и роли' },
       { id: 'xg', label: 'xG (ожидаемые голы)', minPlan: 'paid' },
       { id: 'pressing', label: 'Прессинг' },
       { id: 'set-pieces', label: 'Стандарты и удары', minPlan: 'paid' },

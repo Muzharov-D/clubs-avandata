@@ -379,7 +379,8 @@ export default function MatchDetail() {
       <nav className="md-secnav" aria-label="Разделы разбора">
         {[
           ['md-ratings', 'Рейтинги'],
-          ['md-roles', 'Состав и роли', true],
+          // Состав/роли — графики на ОЦЕНКАХ (не платные метрики) → free-нативны.
+          ['md-roles', 'Состав и роли'],
           ['md-xg', 'xG', true],
           ['md-press', 'Прессинг'],
           ['md-insights', 'Выводы', true],
