@@ -399,7 +399,7 @@ export default function MatchDetail() {
       <Block page="match" id="team-ratings">
       <div className="match-detail__ratings" id="md-ratings">
         <RatingCard label="Общий" value={teamRatings.overall} />
-        <RatingCard label="Фитнес" value={teamRatings.fitness} />
+        {isPaidPlan && <RatingCard label="Фитнес" value={teamRatings.fitness} />}
         <RatingCard label="Атака" value={teamRatings.attack} />
         <RatingCard label="Защита" value={teamRatings.defence} />
       </div>
@@ -610,7 +610,7 @@ export default function MatchDetail() {
                   ['Фитнес', 'fitness'],
                   ['Атака', 'attack'],
                   ['Защита', 'defence'],
-                ].map(([label, key]) => {
+                ].filter(([, key]) => isPaidPlan || key !== 'fitness').map(([label, key]) => {
                   const m = num(teamRatings[key]);
                   const s = seasonAvg[key];
                   if (m == null || s == null) return null;
