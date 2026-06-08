@@ -135,8 +135,8 @@ export const PAGES = [
     match: (p) => p === '/matches',
     blocks: [
       { id: 'last-match', label: 'Сводка последнего матча' },
-      { id: 'season-summary', label: 'Информация по сезону' },
-      { id: 'top5', label: 'Топ-5 по рейтингу сезона' },
+      { id: 'team-vs-season', label: 'Командные показатели против сезона' },
+      { id: 'squad-heatmap', label: 'Тепловая карта состава' },
     ],
   },
   // Примечание: /trainings — это список тренировок + модалка посещаемости,
