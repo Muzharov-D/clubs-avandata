@@ -220,8 +220,10 @@ export default function DemoAnalytics() {
           <div className="demo__stats">
             {PASS_PROFILE.map((s) => (
               <div className="demo__stat" key={s.label}>
-                <AnimatedNumber className="demo__stat-num" value={s.value} />
-                <span className="demo__stat-unit">{s.unit}</span>
+                <div className="demo__stat-top">
+                  <AnimatedNumber className="demo__stat-num" value={s.value} />
+                  {s.unit && <span className="demo__stat-unit">{s.unit}</span>}
+                </div>
                 <span className="demo__stat-cap">{s.label}</span>
               </div>
             ))}
