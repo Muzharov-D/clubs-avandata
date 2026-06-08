@@ -22,11 +22,22 @@ interface Props {
 
 // Тариф: секции целиком платные (скрываются на free).
 const PAID_SECTIONS = new Set(['passes', 'possession', 'fitness']);
-// Платные поля внутри free-секций (shooting/attacks): xG, касания/входы в штрафную,
-// дистанция удара. Скрываются на free поштучно.
-const PAID_FIELDS = new Set([
-  'expectedGoals', 'xG', 'avgShotDistance',
-  'touchesInBox', 'entriesInBox',
+// ALLOWLIST: на FREE показываем ТОЛЬКО поля из 37 бесплатных метрик; всё, чего
+// нет в этом наборе (дуэли, голевые действия, ассисты, возвраты, подборы,
+// переходы средней линии, ауты/штрафные/пенальти, удары головой и т.д.), —
+// скрываем. Ключи — как в FIELD_RU/агрегате.
+const FREE_AGG_FIELDS = new Set([
+  // удары и реализация
+  'shots', 'totalShots', 'onTarget', 'shotsOnTarget', 'goals',
+  // дриблинг (успешный)
+  'dribble',
+  // отборы / перехваты / прессинг / выносы / блоки
+  'tackle', 'interception', 'interceptions', 'pressing', 'counterpressing',
+  'clearance', 'blockedShot',
+  // нарушения / карты / стандарты / офсайды
+  'fouls', 'yellowCard', 'redCard', 'corner', 'corners', 'offsides',
+  // точные прогрессивные передачи
+  'progressive',
 ]);
 
 const SECTION_TITLES: Record<string, string> = {
@@ -128,7 +139,7 @@ function AggregateCard({ title, data, isPaidPlan }: { title: string; data: AnyOb
   const bucket = new Map<string, Entry>();
   for (const [k, v] of Object.entries(data || {})) {
     if (k === 'mapImage' || HIDDEN_KEYS.has(k)) continue;
-    if (!isPaidPlan && PAID_FIELDS.has(k)) continue;
+    if (!isPaidPlan && !FREE_AGG_FIELDS.has(k)) continue; // free: только 37 метрик
     const { val, suffix } = readVal(v);
     if (val == null || val === 0) continue;
     const label = fieldLabel(k);
@@ -166,7 +177,7 @@ export default function TeamAggregatesGrid({ aggregates, matchCount, periodLabel
     if (!isPaidPlan && PAID_SECTIONS.has(secKey)) return false; // free: платные секции скрыты
     return Object.entries(v).some(([k, x]) => {
       if (k === 'mapImage' || HIDDEN_KEYS.has(k)) return false;
-      if (!isPaidPlan && PAID_FIELDS.has(k)) return false;
+      if (!isPaidPlan && !FREE_AGG_FIELDS.has(k)) return false;
       const { val } = readVal(x);
       return typeof val === 'number' && val > 0;
     });
