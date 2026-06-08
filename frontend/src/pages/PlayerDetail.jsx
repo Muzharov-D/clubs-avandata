@@ -109,6 +109,15 @@ const DEFENCE_SPLIT_KEYS = [
   'Short goal kicks', 'Long goal kicks',
 ];
 
+// Платные ключи сплит-детализации (объём/качество паса, касания/входы в штрафную,
+// навесы, packing, спринты) — на free скрываем из «Атака/Оборона (детализация)».
+const PAID_SPLIT_KEYS = new Set([
+  'Pass with packing', 'Pass into pen. area', 'Cross', 'Entries in box',
+  'Sprint forward', 'Sprint back', 'Pass to final third', 'Pass', 'Pass forward',
+  'Pass back', 'Pass sideways', 'Pass short', 'Pass middle', 'Pass long',
+  'Touches in pen. area', 'Received pass', 'Dribble packing',
+]);
+
 // Fitness comes from stats.fitness, not splits.
 const FITNESS_ROWS = [
   ['Минут на поле',                'minutes'],
@@ -611,8 +620,8 @@ function MatchTab({ playerId, match, loading, allMatches, currentMatchId, setSel
   const splits = player.splits || {};
   const fitnessStats = player.stats?.fitness || {};
 
-  const attackRows = ATTACK_SPLIT_KEYS.filter((k) => splits[k]);
-  const defenceRows = DEFENCE_SPLIT_KEYS.filter((k) => splits[k]);
+  const attackRows = ATTACK_SPLIT_KEYS.filter((k) => splits[k] && (isPaidPlan || !PAID_SPLIT_KEYS.has(k)));
+  const defenceRows = DEFENCE_SPLIT_KEYS.filter((k) => splits[k] && (isPaidPlan || !PAID_SPLIT_KEYS.has(k)));
 
   // Бейджи «Лучший в команде» — топ-3 ранг по матчу.
   const all = match.players;
@@ -636,6 +645,7 @@ function MatchTab({ playerId, match, loading, allMatches, currentMatchId, setSel
     ['Tackle', 'Отборы'], ['Interception', 'Перехваты'], ['Recovery', 'Возвраты'], ['Duel', 'Единоборства'],
   ];
   const halfRows = HALF_VIZ
+    .filter(([k]) => isPaidPlan || !PAID_SPLIT_KEYS.has(k))
     .map(([k, label]) => ({ label, first: splits[k]?.first, second: splits[k]?.second }))
     .filter((r) => (Number(r.first) || 0) + (Number(r.second) || 0) > 0);
 
