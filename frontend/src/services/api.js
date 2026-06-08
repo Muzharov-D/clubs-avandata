@@ -267,7 +267,9 @@ export const fetchCalendarList = () => fetchJson('/data/calendar');
 // proxy: он рвёт rewrite >30с, а синк возраста с Render бывает до ~40с). Таймаут 120с.
 export async function refreshFfspbData(age) {
   const token = getToken();
-  const headers = { 'Content-Type': 'application/json' };
+  // Тела у запроса нет — НЕ заявляем Content-Type: application/json, иначе Fastify
+  // (FST_ERR_CTP_EMPTY_JSON_BODY) падает на пустом body. Только Authorization.
+  const headers = {};
   if (token) headers.Authorization = `Bearer ${token}`;
   const url = `${DIRECT_PREFIX}/data/refresh${age ? `?age=${encodeURIComponent(age)}` : ''}`;
   let res;
