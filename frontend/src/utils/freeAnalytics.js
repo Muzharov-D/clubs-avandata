@@ -175,7 +175,6 @@ export function freeMatchInsights(match) {
   const duelsWon = sum('defence2', 'duel');
   const beaten = sum('defence2', 'dribbleAgainst');
   const tackles = sum('defence1', 'tackle');
-  const interceptions = sum('defence1', 'interception');
   const dangerLoss = sum('attack4', 'dangerousLosesOnOwnHalf');
 
   // 1. Реализация ударов.
@@ -207,9 +206,10 @@ export function freeMatchInsights(match) {
     }
   }
 
-  // 4. Объём отбора (фактом, без вердикта).
-  if (tackles + interceptions >= 12) {
-    out.push({ tone: 'neutral', icon: '⚔', weight: 4, text: `Активный отбор — ${tackles} ${plural(tackles, 'отбор', 'отбора', 'отборов')} и ${interceptions} ${plural(interceptions, 'перехват', 'перехвата', 'перехватов')}.` });
+  // 4. Объём отбора (только отборы — перехваты в данных задвоены, не показываем
+  //    сырым числом, чтобы не вводить тренера в заблуждение «110 перехватов»).
+  if (tackles >= 15) {
+    out.push({ tone: 'neutral', icon: '⚔', weight: 4, text: `Высокий объём отбора — ${tackles} ${plural(tackles, 'отбор', 'отбора', 'отборов')} за матч.` });
   }
 
   // 5. Опасные потери у своих ворот.
