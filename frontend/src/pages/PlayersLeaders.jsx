@@ -32,9 +32,9 @@ const METRIC_DEFS = [
   { key: 'recovery',     label: 'Возвраты',     get: (p) => p.recovery },
   { key: 'duel',         label: 'Единоборства', get: (p) => p.duel },
   { key: 'pressing',     label: 'Прессинг',     get: (p) => p.pressing },
-  // ── Объём ──
-  { key: 'distance',       label: 'Дистанция',        get: (p) => p.distance,       suffix: ' м' },
-  { key: 'sprintDistance', label: 'Спринт-дистанция', get: (p) => p.sprintDistance, suffix: ' м' },
+  // ── Объём (физика — ПЛАТНОЕ: free-набор не содержит физических метрик) ──
+  { key: 'distance',       label: 'Дистанция',        get: (p) => p.distance,       suffix: ' м', paid: true },
+  { key: 'sprintDistance', label: 'Спринт-дистанция', get: (p) => p.sprintDistance, suffix: ' м', paid: true },
   // ── Доступность ──
   { key: 'minutes', label: 'Игровые минуты',  get: (p) => p.minutes, suffix: ' мин' },
   { key: 'matches', label: 'Сыгранные матчи', get: (p) => p.matches },
@@ -59,9 +59,11 @@ function Subnav() {
 export default function PlayersLeaders() {
   useDocumentTitle('Лидеры сезона');
   const navigate = useNavigate();
-  const { canSeePlayer } = useAuth();
+  const { canSeePlayer, tenant } = useAuth();
   const { selectedTeamId } = useTeam();
   const [openKey, setOpenKey] = useState(null);
+  // На free платные метрики (физика) не показываем — единый гейт по tenant.plan.
+  const isPaid = tenant?.plan === 'paid';
 
   // СЕЗОН, не последний матч: кто лучший по сумме за сезон (был источником
   // «последний матч» — нонсенс для «лидеров команды»).
@@ -80,6 +82,7 @@ export default function PlayersLeaders() {
   // Метрики без ни одного игрока с показателем > 0 не показываем (нет данных).
   const leaders = useMemo(() => (
     METRIC_DEFS
+      .filter((m) => isPaid || !m.paid)
       .map((m) => {
         const top = all
           .map((p) => ({ player: p, value: Number(m.get(p)) || 0 }))
@@ -89,7 +92,7 @@ export default function PlayersLeaders() {
         return { ...m, top };
       })
       .filter((m) => m.top.length > 0)
-  ), [all]);
+  ), [all, isPaid]);
 
   const openMetric = openKey ? (leaders.find((m) => m.key === openKey) || null) : null;
 
