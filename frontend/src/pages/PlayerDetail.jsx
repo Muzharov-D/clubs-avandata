@@ -322,10 +322,12 @@ export default function PlayerDetail() {
    шапка, ряд из 3 карточек (инфо · статистика плитками · авто-биография),
    радар-витрина и сезонная динамика. */
 function SeasonTab({ identity, playerId, teamId, teamName, seasonPlayers, series, seasonTotals, basis = 90 }) {
+  const { tenant } = useAuth();
+  const isPaidPlan = tenant?.plan === 'paid';
   const avg = seasonTotals?.avgOverall;
   const bio = useMemo(
-    () => seasonBio(identity, seasonTotals, series, seasonPlayers, basis),
-    [identity, seasonTotals, series, seasonPlayers, basis],
+    () => seasonBio(identity, seasonTotals, series, seasonPlayers, basis, isPaidPlan),
+    [identity, seasonTotals, series, seasonPlayers, basis, isPaidPlan],
   );
 
   // Позиционная строка героя ДНК: №7 · полузащитник · Легирус.
@@ -463,11 +465,12 @@ function PlayerInfoCard({ identity, teamName }) {
 // (тот же пул/порог/сглаживание, что у «ДНК», пиццы и «Перцентиль по сезону»).
 // Раньше bio считал сам по своему пулу/порогу → «лучший» получал то 97, то 96 —
 // теперь число гарантированно совпадает с карточками. Метки — из ROLE_METRICS.
-function bioStrengths(subject, seasonPlayers, basis) {
+function bioStrengths(subject, seasonPlayers, basis, isPaidPlan = false) {
   const sp = seasonPercentiles(subject, seasonPlayers, basis);
   if (!sp) return [];
   return sp.ranked
-    .filter((r) => r.pct >= 70)
+    // На free не называем платные сильные стороны (физика — «беговой объём»).
+    .filter((r) => r.pct >= 70 && (isPaidPlan || r.group !== 'fitness'))
     .slice(0, 2)
     .map((r) => `${r.label} (${r.pct}-й перцентиль)`);
 }
@@ -499,7 +502,7 @@ function inferRoleNoun(identity) {
 
 // Авто-биография по сезону (референс «Player Bio») — скаут-абзац из данных:
 // кто игрок, объём, результативность, сильные стороны, форма, последний матч.
-function seasonBio(identity, totals, series, seasonPlayers, basis = 90) {
+function seasonBio(identity, totals, series, seasonPlayers, basis = 90, isPaidPlan = false) {
   if (!totals || !totals.matches) return null;
   const explicitPos = identity.positionFull || identity.position;
   const pos = (explicitPos || inferRoleNoun(identity) || 'полевой игрок').toLowerCase();
@@ -527,7 +530,7 @@ function seasonBio(identity, totals, series, seasonPlayers, basis = 90) {
     parts.push('Результативными действиями в сезоне пока не отметился.');
   }
 
-  const strengths = bioStrengths(identity, seasonPlayers, basis);
+  const strengths = bioStrengths(identity, seasonPlayers, basis, isPaidPlan);
   if (strengths.length) parts.push(`Среди лучших в команде по: ${strengths.join(', ')}.`);
 
   const form = bioFormNote(series);

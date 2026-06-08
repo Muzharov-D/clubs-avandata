@@ -92,7 +92,7 @@ export const PAGES = [
       { id: 'set-pieces', label: 'Стандарты и удары' },
       { id: 'insights', label: 'Ключевые выводы' },
       { id: 'timeline', label: 'Хроника матча' },
-      { id: 'momentum', label: 'Импульс по таймам' },
+      { id: 'momentum', label: 'Импульс по таймам', minPlan: 'paid' },
       { id: 'half-split', label: 'Динамика по таймам' },
       { id: 'speed-zones', label: 'Физическая нагрузка', minPlan: 'paid' },
       { id: 'formation', label: 'Расстановка' },
