@@ -66,7 +66,7 @@ function num(v) {
 // Единая обрезка возрастной группы — см. utils/teamName.
 import { trimAgeSuffix as trimAgeStr } from '../utils/teamName';
 // Командные показатели «матч против сезона» — единый источник метрик.
-import { buildTeamVsSeasonRows } from '../utils/teamMatchMetrics';
+import { buildTeamVsSeasonRows, otherMatchesCount } from '../utils/teamMatchMetrics';
 
 function bestPlayer(match) {
   if (!match?.players?.length) return null;
@@ -586,7 +586,7 @@ export default function MatchDetail() {
                   })}
                 </div>
                 {rows.some((r) => r.avg != null) && (
-                  <div className="md-insights__note" style={{ marginTop: 10 }}>Сравнение со средним по сезону ({allMatchData.length} {matchesWord(allMatchData.length)}). ▲/▼ — отклонение от обычного.</div>
+                  <div className="md-insights__note" style={{ marginTop: 10 }}>Сравнение со средним по остальным матчам сезона ({otherMatchesCount(match, allMatchData)}). ▲/▼ — отклонение от обычного.</div>
                 )}
               </div>
             );

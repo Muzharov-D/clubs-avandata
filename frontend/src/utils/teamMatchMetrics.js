@@ -58,18 +58,31 @@ export const TEAM_VS_SEASON_DEFS = [
 ];
 
 /**
- * Строки «матч против сезона»: текущий матч + среднее по сезону (≥2 матча).
- * Метрика скрыта, если в текущем матче её нет (cur ≤ 0).
+ * Сколько ОСТАЛЬНЫХ матчей сезона формируют эталон (текущий исключён по id).
+ * Для подписи «среднее по остальным N матчам».
+ */
+export function otherMatchesCount(match, allMatches) {
+  const data = Array.isArray(allMatches) ? allMatches : [];
+  return data.filter((m) => m && m.id !== match?.id).length;
+}
+
+/**
+ * Строки «матч против сезона»: текущий матч + среднее по ОСТАЛЬНЫМ матчам сезона.
+ * Текущий (выбранный) матч исключаем из среднего по id — иначе он сам тянул бы
+ * эталон к своим значениям («6 ударов против среднего 6.0» вместо «против 4»).
+ * Среднее показываем при ≥2 остальных матчах; метрика скрыта, если в текущем
+ * матче её нет (cur ≤ 0).
  * @param {Object} match — матч (с teamAggregates).
  * @param {Array} allMatches — все разобранные матчи сезона (детально).
  * @returns {{label:string, cur:number, avg:number|null}[]}
  */
 export function buildTeamVsSeasonRows(match, allMatches) {
   const data = Array.isArray(allMatches) ? allMatches : [];
+  const others = data.filter((m) => m && m.id !== match?.id);
   return TEAM_VS_SEASON_DEFS.map((d) => {
     const cur = d.get(match);
     if (!(cur > 0)) return null;
-    const vals = data.map(d.get).filter((v) => v > 0);
+    const vals = others.map(d.get).filter((v) => v > 0);
     const avg = vals.length >= 2 ? vals.reduce((a, b) => a + b, 0) / vals.length : null;
     return { label: d.label, cur, avg };
   }).filter(Boolean);

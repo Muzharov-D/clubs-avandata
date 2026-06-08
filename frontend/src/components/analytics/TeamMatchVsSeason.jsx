@@ -1,5 +1,4 @@
-import { buildTeamVsSeasonRows } from '../../utils/teamMatchMetrics';
-import { matchesWord } from '../../utils/num';
+import { buildTeamVsSeasonRows, otherMatchesCount } from '../../utils/teamMatchMetrics';
 import './TeamMatchVsSeason.css';
 
 /**
@@ -14,7 +13,7 @@ import './TeamMatchVsSeason.css';
 export default function TeamMatchVsSeason({ match, allMatches, title = 'Командные показатели: матч против сезона' }) {
   const rows = buildTeamVsSeasonRows(match, allMatches);
   if (!rows.length) return null;
-  const seasonCount = Array.isArray(allMatches) ? allMatches.length : 0;
+  const baseCount = otherMatchesCount(match, allMatches);
   const hasAvg = rows.some((r) => r.avg != null);
   return (
     <div className="card">
@@ -40,7 +39,7 @@ export default function TeamMatchVsSeason({ match, allMatches, title = 'Кома
       </div>
       {hasAvg && (
         <div className="tmvs-note">
-          Сравнение со средним по сезону ({seasonCount} {matchesWord(seasonCount)}). ▲/▼ — отклонение от обычного.
+          Сравнение со средним по остальным матчам сезона ({baseCount}). ▲/▼ — отклонение от обычного.
         </div>
       )}
     </div>
