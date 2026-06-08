@@ -5,6 +5,7 @@ import { fetchMatch, fetchMatches, fetchMetrics, fetchPlayer, fetchPlayersSeason
 import { compoundAt, matchMinutes } from '../utils/analytics';
 import { seasonPercentiles } from '../utils/playerRoles';
 import PlayerAdvancedCard from '../components/analytics/PlayerAdvancedCard';
+import FreeImpactCard from '../components/analytics/FreeImpactCard';
 import SeasonPercentileCard from '../components/analytics/SeasonPercentileCard';
 import SeasonProfileCard from '../components/analytics/SeasonProfileCard';
 import PlayerDnaCard from '../components/analytics/PlayerDnaCard';
@@ -366,8 +367,9 @@ function SeasonTab({ identity, playerId, teamId, teamName, seasonPlayers, series
       {/* ГЕРОЙ-ЦЕНТР: расширенная ДНК-карта — сразу после вкладок, до инфо-блоков */}
       <Block page="player" id="dna"><Reveal variant="slide-up" duration={0.4}>{dnaCard}</Reveal></Block>
 
-      {/* Fallback-шапка, если сезонного пула для ДНК недостаточно */}
-      {(!Array.isArray(seasonPlayers) || seasonPlayers.length < 4) && (
+      {/* Fallback-шапка: если пула для ДНК мало ИЛИ на free (ДНК-карта gated —
+          без этой шапки free-сезон остался бы без героя с именем/фото/рейтингом). */}
+      {(!isPaidPlan || !Array.isArray(seasonPlayers) || seasonPlayers.length < 4) && (
         <div className="card player-detail__hero player-detail__hero--season">
           <PlayerPhoto player={identity} size={120} />
           <div className="player-detail__hero-info">
@@ -398,7 +400,7 @@ function SeasonTab({ identity, playerId, teamId, teamName, seasonPlayers, series
       <Block page="player" id="attendance"><AttendanceBlock teamId={teamId} playerId={playerId} /></Block>
 
       {/* Радар-витрина: сезонная пицца (за матч vs позиционный пул) */}
-      <Block page="player" id="season-profile"><Reveal variant="slide-up" duration={0.5} delay={0.2}><SeasonProfileCard subject={identity} seasonPlayers={seasonPlayers} basis={basis} /></Reveal></Block>
+      <Block page="player" id="season-profile"><Reveal variant="slide-up" duration={0.5} delay={0.2}><SeasonProfileCard subject={identity} seasonPlayers={seasonPlayers} basis={basis} isPaidPlan={isPaidPlan} /></Reveal></Block>
 
       {/* Динамика по сезону — спарклайны рейтингов + лента матчей */}
       <Block page="player" id="trend"><Reveal variant="slide-up" duration={0.5} delay={0.3}><PlayerTrendCard playerId={playerId} series={series} /></Reveal></Block>
@@ -407,7 +409,7 @@ function SeasonTab({ identity, playerId, teamId, teamName, seasonPlayers, series
       <Block page="player" id="form"><Reveal variant="slide-up" duration={0.5} delay={0.35}><PlayerFormCard playerId={playerId} series={series} /></Reveal></Block>
 
       {/* Перцентиль vs сезонный позиционный пул (за матч) — детальные полосы */}
-      <Block page="player" id="season-percentile"><Reveal variant="slide-up" duration={0.5} delay={0.4}><SeasonPercentileCard subject={identity} seasonPlayers={seasonPlayers} basis={basis} /></Reveal></Block>
+      <Block page="player" id="season-percentile"><Reveal variant="slide-up" duration={0.5} delay={0.4}><SeasonPercentileCard subject={identity} seasonPlayers={seasonPlayers} basis={basis} isPaidPlan={isPaidPlan} /></Reveal></Block>
 
       {/* Ролевой профиль — ранжированный fit по ролям (тот же движок, что «ДНК») */}
       <Block page="player" id="role-fit"><Reveal variant="slide-up" duration={0.5} delay={0.5}><RoleFitCard subject={identity} seasonPlayers={seasonPlayers} basis={basis} /></Reveal></Block>
@@ -775,6 +777,10 @@ function MatchTab({ playerId, match, loading, allMatches, currentMatchId, setSel
 
       {/* Продвинутые модельные метрики за матч (xG/xT/xA/packing/PAdj/win%) */}
       <Block page="player" id="match-advanced"><PlayerAdvancedCard player={player} squad={match.players} match={match} basis={basis} /></Block>
+
+      {/* free-нативный флагман: на месте платных модельных метрик — честная
+          эффективность/надёжность из реально собираемых free-метрик. */}
+      {!isPaidPlan && <FreeImpactCard stats={player.stats} />}
 
       </section>
 

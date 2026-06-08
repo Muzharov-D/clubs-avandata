@@ -111,8 +111,10 @@ export const PAGES = [
     match: (p) => /^\/players\/(?!rating$|compare$)[^/]+$/.test(p),
     blocks: [
       { id: 'pizza', label: 'Пицца-чарт' },
-      { id: 'season-percentile', label: 'Перцентили сезона', minPlan: 'paid' },
-      { id: 'season-profile', label: 'Профиль-радар', minPlan: 'paid' },
+      // Перцентили/радар: free-нативны — на free строятся из free-метрик (без
+      // физики). Компоненты дропают платную ось (distance) по isPaidPlan.
+      { id: 'season-percentile', label: 'Перцентили сезона' },
+      { id: 'season-profile', label: 'Профиль-радар' },
       { id: 'dna', label: 'ДНК игрока', minPlan: 'paid' },
       { id: 'overview-info-bio', label: 'Инфо об игроке + биография' },
       { id: 'trend', label: 'Динамика по сезону' },

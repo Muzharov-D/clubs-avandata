@@ -48,14 +48,16 @@ function PctRow({ r, basis }) {
   );
 }
 
-export default function SeasonPercentileCard({ subject, seasonPlayers, basis = 90 }) {
+export default function SeasonPercentileCard({ subject, seasonPlayers, basis = 90, isPaidPlan = true }) {
   if (!subject || !Array.isArray(seasonPlayers) || seasonPlayers.length < 4) return null;
 
   // Единый источник: тот же пул/порог/сглаживание, что у «ДНК» и пиццы.
   const sp = seasonPercentiles(subject, seasonPlayers, basis);
   if (!sp) return null;
 
-  const rows = METRICS.map((m) => {
+  // На free дистанцию (физика — платная) не показываем.
+  const metrics = isPaidPlan ? METRICS : METRICS.filter((m) => m.key !== 'distance');
+  const rows = metrics.map((m) => {
     const r = sp.byKey[m.key];
     if (!r) return null;
     return { ...m, pct: r.pct, raw90: r.raw90 };

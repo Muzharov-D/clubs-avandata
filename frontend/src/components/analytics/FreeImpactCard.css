@@ -1,0 +1,55 @@
+/* FreeImpactCard — free-нативный блок «Эффективность и надёжность». */
+
+.free-impact__group {
+  margin-top: 14px;
+}
+.free-impact__group:first-of-type {
+  margin-top: 10px;
+}
+
+.free-impact__group-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  opacity: 0.78;
+  margin-bottom: 8px;
+}
+.free-impact__group-label--attack  { color: var(--accent-attack, var(--brand-primary)); }
+.free-impact__group-label--defence { color: var(--accent-defence, var(--brand-accent)); }
+.free-impact__group-label--reliab  { color: var(--text-muted); }
+
+.free-impact__tiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 10px;
+}
+
+.free-impact__tile {
+  background: var(--surface-2, rgba(127, 127, 127, 0.06));
+  border: 1px solid var(--border, rgba(127, 127, 127, 0.14));
+  border-radius: var(--radius-sm);
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.free-impact__tile--warn {
+  background: var(--surface-warn, rgba(220, 120, 40, 0.07));
+}
+
+.free-impact__tile-value {
+  font-size: 1.5rem;
+  font-weight: 800;
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+}
+.free-impact__tile-label {
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+.free-impact__tile-sub {
+  font-size: 0.7rem;
+  opacity: 0.62;
+  margin-top: 2px;
+}

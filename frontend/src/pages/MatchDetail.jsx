@@ -28,6 +28,7 @@ import PressingCard from '../components/analytics/PressingCard';
 import MomentumStrip from '../components/analytics/MomentumStrip';
 import ImpactMotm from '../components/analytics/ImpactMotm';
 import MatchLeaders from '../components/analytics/MatchLeaders';
+import FreeTeamStatsCard from '../components/analytics/FreeTeamStatsCard';
 import Block from '../constructor/Block';
 import SetPieceShotCard from '../components/analytics/SetPieceShotCard';
 import { coachDigest, matchMinutes } from '../utils/analytics';
@@ -441,6 +442,16 @@ export default function MatchDetail() {
         </div>
       </div>
       </Block>
+
+      {/* free-нативная сводка: на месте платного «мы против соперника» —
+          только НАШИ честные free-метрики + дисциплина (без сравнения с соперником). */}
+      {!isPaidPlan && (
+        <FreeTeamStatsCard
+          our={ourSideKey === 'home' ? home : away}
+          goals={usScore}
+          conceded={themScore}
+        />
+      )}
 
       {/* Два аналитических распределения рядом: beeswarm (распределение оценок)
           + scatter (роли). Раньше шли стопкой во всю ширину, график занимал
