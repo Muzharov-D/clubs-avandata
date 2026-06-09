@@ -79,6 +79,13 @@ function CoachOnly({ children }: { children: React.ReactNode }) {
   return <Navigate to="/club" replace />;
 }
 
+// Клубный кабинет — только старшему тренеру; остальные тренеры → на свою команду.
+function HeadCoachOnly({ children }: { children: React.ReactNode }) {
+  const { isHeadCoach } = useAuth() as { isHeadCoach: boolean };
+  if (isHeadCoach) return <>{children}</>;
+  return <Navigate to="/club" replace />;
+}
+
 function OwnPlayerOnly({ children }: { children: React.ReactNode }) {
   const { isPlayer, user } = useAuth() as { isPlayer: boolean; user: any };
   const { playerId: routePlayerId } = useParams();
@@ -147,7 +154,7 @@ export function App() {
                   {/* Авторизованный кабинет клуба */}
                   <Route element={<ProtectedRoute roles={[]}><MainLayout /></ProtectedRoute>}>
                     <Route path="/club" element={<ClubDashboard />} />
-                    <Route path="/club-hub" element={<CoachOnly><ClubHub /></CoachOnly>} />
+                    <Route path="/club-hub" element={<HeadCoachOnly><ClubHub /></HeadCoachOnly>} />
                     <Route path="/analytics" element={<CoachOnly><ClubOverview /></CoachOnly>} />
                     <Route path="/analytics/team" element={<CoachOnly><ComparisonView /></CoachOnly>} />
                     <Route path="/matches" element={<MatchesDashboard />} />

@@ -107,7 +107,7 @@ export default function ClubHub() {
                     {t.trend > 0 ? '▲' : '▼'} {Math.abs(t.trend).toFixed(1)}
                   </span>
                 )}
-                <span className="club-hub__mc">{t.matchCount} {matchesWord(t.matchCount)}</span>
+                <span className="club-hub__mc">{t.matchCount ?? 0} {matchesWord(t.matchCount ?? 0)}</span>
               </div>
 
               {lm ? (

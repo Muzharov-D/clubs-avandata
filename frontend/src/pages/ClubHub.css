@@ -40,7 +40,7 @@
 .club-hub__card-meta{display:flex;align-items:center;gap:12px;font-size:.78rem;color:var(--text-muted)}
 .club-hub__trend{font-weight:700}
 .club-hub__trend.is-up{color:var(--success,#22c55e)}
-.club-hub__trend.is-down{color:var(--warning,#f59e0b)}
+.club-hub__trend.is-down{color:var(--danger,#ef4444)}
 .club-hub__mc{font-weight:600}
 
 .club-hub__last{
