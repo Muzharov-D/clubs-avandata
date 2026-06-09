@@ -100,6 +100,24 @@ export default function ClubHub() {
         </div>
       </div>
 
+      {/* ТРЕБУЕТ ВНИМАНИЯ — флаги как список действий */}
+      {teams.some((t) => (t.flags || []).length > 0) && (
+        <>
+          <div className="page-section-title">Требует внимания</div>
+          <div className="club-hub__alerts">
+            {teams.filter((t) => (t.flags || []).length > 0).map((t) => (
+              <button type="button" key={t.id} className="club-hub__alert" onClick={() => openTeam(t.id)}>
+                <span className="club-hub__alert-team">{teamLabel(t)}</span>
+                <span className="club-hub__alert-flags">
+                  {t.flags.map((f) => <span key={f} className="club-hub__flag">⚠ {f}</span>)}
+                </span>
+                <span className="club-hub__alert-go">Открыть →</span>
+              </button>
+            ))}
+          </div>
+        </>
+      )}
+
       {/* ПУЛЬС КЛУБА */}
       <div className="page-section-title">Пульс клуба</div>
       <div className="club-hub__pulse">
@@ -202,6 +220,29 @@ export default function ClubHub() {
           );
         })}
       </div>
+
+      {/* ТРЕНЕРСКИЙ СОСТАВ */}
+      {teams.some((t) => t.headCoach) && (
+        <>
+          <div className="page-section-title">Тренерский состав</div>
+          <div className="club-hub__staff card">
+            {teams.filter((t) => t.headCoach).map((t) => (
+              <button type="button" key={t.id} className="club-hub__staffrow" onClick={() => openTeam(t.id)}>
+                <span className="club-hub__staff-coach">{t.headCoach}</span>
+                <span className="club-hub__staff-team">{teamLabel(t)}</span>
+                <span className="club-hub__staff-meta">
+                  {t.avgOverall != null && <span className={`club-hub__vval--${tone(t.avgOverall)}`}>{t.avgOverall.toFixed(1)}</span>}
+                  {t.trend != null && t.trend !== 0 && (
+                    <span className={`club-hub__trend ${t.trend > 0 ? 'is-up' : 'is-down'}`} style={{ marginLeft: 8 }}>
+                      {t.trend > 0 ? '▲' : '▼'} {Math.abs(t.trend).toFixed(1)}
+                    </span>
+                  )}
+                </span>
+              </button>
+            ))}
+          </div>
+        </>
+      )}
     </div>
   );
 }
