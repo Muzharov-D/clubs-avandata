@@ -93,7 +93,32 @@
 .club-hub__vfill--na{background:var(--border,rgba(127,127,127,.2))}
 .club-hub__vval{font-size:.95rem;font-weight:800;text-align:right;font-variant-numeric:tabular-nums}
 
+/* ─── табы метрик вертикали ─── */
+.club-hub__vtabs{display:inline-flex;gap:4px;margin-left:12px;vertical-align:middle}
+.club-hub__vtab{font:inherit;font-size:.72rem;font-weight:700;cursor:pointer;color:var(--text-muted);
+  background:var(--surface-2,rgba(127,127,127,.08));border:1px solid var(--border,rgba(127,127,127,.14));
+  border-radius:999px;padding:3px 11px;transition:.15s}
+.club-hub__vtab:hover{color:var(--text)}
+.club-hub__vtab.is-active{background:var(--brand-primary);border-color:var(--brand-primary);color:#fff}
+
+/* ─── восходящие игроки клуба ─── */
+.club-hub__talent{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:10px;margin-bottom:26px}
+.club-hub__player{display:flex;align-items:center;gap:12px;text-align:left;cursor:pointer;font:inherit;color:inherit;
+  background:var(--surface,rgba(127,127,127,.04));border:1px solid var(--border,rgba(127,127,127,.14));
+  border-radius:var(--radius,14px);padding:10px 12px;transition:.15s}
+.club-hub__player:hover{border-color:var(--brand-primary);transform:translateY(-1px)}
+.club-hub__player-info{flex:1;min-width:0}
+.club-hub__player-name{font-size:.92rem;font-weight:800;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.club-hub__up{font-size:.62rem;font-weight:800;color:#06231a;background:#34d399;border-radius:999px;padding:2px 7px}
+.club-hub__player-meta{font-size:.74rem;color:var(--text-muted);margin-top:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.club-hub__player-stats{display:flex;gap:10px;font-size:.72rem;color:var(--text-muted);margin-top:3px;font-weight:600}
+.club-hub__player-stats .is-up{color:var(--success,#22c55e)}
+.club-hub__player-stats .is-down{color:var(--danger,#ef4444)}
+.club-hub__player-rating{font-size:1.25rem;font-weight:800;line-height:1;font-variant-numeric:tabular-nums;
+  padding:4px 9px;border-radius:var(--radius-sm,9px);flex:0 0 auto}
+
 @media (max-width:640px){
+  .club-hub__talent{grid-template-columns:1fr}
   .club-hub__hero{flex-direction:column;align-items:flex-start}
   .club-hub__vrow{grid-template-columns:96px 1fr 38px}
 }

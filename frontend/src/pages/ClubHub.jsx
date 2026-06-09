@@ -12,14 +12,24 @@
  *
  * Данные — из /data/club/summary (агрегат поверх matches.team_avg_ratings).
  */
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useApi } from '../hooks/useApi';
 import { useAuth } from '../contexts/AuthContext';
 import { useTeam } from '../contexts/TeamContext';
-import { fetchClubSummary } from '../services/api';
+import { fetchClubSummary, fetchClubTalent } from '../services/api';
 import { useDocumentTitle } from '../hooks/useDocumentTitle';
+import PlayerPhoto from '../components/PlayerPhoto';
 import { num } from '../utils/num';
 import './ClubHub.css';
+
+// Метрики «Вертикали развития» — общий/атака/оборона по командам (с бэка).
+const V_METRICS = [
+  { key: 'overall', label: 'Общий' },
+  { key: 'attack', label: 'Атака' },
+  { key: 'defence', label: 'Оборона' },
+];
+const V_KEY = { overall: 'avgOverall', attack: 'avgAttack', defence: 'avgDefence' };
 
 // Тон рейтинга для цвета (как в остальном UI: зелёный — топ, красный — низ).
 function tone(v) {
@@ -49,6 +59,9 @@ export default function ClubHub() {
 
   const res = useApi(() => fetchClubSummary().catch(() => ({ teams: [] })), []);
   const teams = res.data?.teams || [];
+  const talentRes = useApi(() => fetchClubTalent().catch(() => ({ players: [] })), []);
+  const talent = talentRes.data?.players || [];
+  const [vMetric, setVMetric] = useState('overall');
 
   const openTeam = (id) => { select(id); navigate('/club'); };
 
@@ -131,21 +144,61 @@ export default function ClubHub() {
         })}
       </div>
 
+      {/* ВОСХОДЯЩИЕ ИГРОКИ КЛУБА (кадровый резерв) */}
+      {talent.length > 0 && (
+        <>
+          <div className="page-section-title">Восходящие игроки клуба <span className="club-hub__sub">лучшие по рейтингу сезона</span></div>
+          <div className="club-hub__talent">
+            {talent.slice(0, 12).map((p) => (
+              <button type="button" key={p.id} className="club-hub__player" onClick={() => navigate(`/players/${p.id}`)}>
+                <PlayerPhoto player={p} size={44} />
+                <div className="club-hub__player-info">
+                  <div className="club-hub__player-name">
+                    {p.fullName}
+                    {p.aboveTeam && <span className="club-hub__up" title="Заметно выше среднего своей команды — кандидат двигать выше">▲ выше команды</span>}
+                  </div>
+                  <div className="club-hub__player-meta">{[p.teamLabel, p.position].filter(Boolean).join(' · ')}</div>
+                  <div className="club-hub__player-stats">
+                    {(p.goals > 0 || p.assists > 0) && <span>{p.goals} г · {p.assists} п</span>}
+                    {p.trend != null && p.trend !== 0 && (
+                      <span className={p.trend > 0 ? 'is-up' : 'is-down'}>{p.trend > 0 ? '▲' : '▼'} {Math.abs(p.trend).toFixed(1)}</span>
+                    )}
+                    <span>{p.matches} {matchesWord(p.matches)}</span>
+                  </div>
+                </div>
+                <div className={`club-hub__player-rating club-hub__rating--${tone(p.avgOverall)}`}>{p.avgOverall != null ? p.avgOverall.toFixed(1) : '—'}</div>
+              </button>
+            ))}
+          </div>
+        </>
+      )}
+
       {/* ВЕРТИКАЛЬ РАЗВИТИЯ */}
-      <div className="page-section-title">Вертикаль развития <span className="club-hub__sub">средний рейтинг по возрастам</span></div>
+      <div className="page-section-title">Вертикаль развития
+        <span className="club-hub__vtabs">
+          {V_METRICS.map((m) => (
+            <button key={m.key} type="button"
+              className={`club-hub__vtab${vMetric === m.key ? ' is-active' : ''}`}
+              onClick={() => setVMetric(m.key)}>{m.label}</button>
+          ))}
+        </span>
+      </div>
       <div className="club-hub__vertical card">
-        {teams.map((t) => (
-          <button type="button" key={t.id} className="club-hub__vrow" onClick={() => openTeam(t.id)}>
-            <span className="club-hub__vname">{teamLabel(t)}</span>
-            <span className="club-hub__vtrack">
-              <span
-                className={`club-hub__vfill club-hub__vfill--${tone(t.avgOverall)}`}
-                style={{ width: `${t.avgOverall != null ? Math.round((t.avgOverall / maxRating) * 100) : 0}%` }}
-              />
-            </span>
-            <span className={`club-hub__vval club-hub__vval--${tone(t.avgOverall)}`}>{t.avgOverall != null ? t.avgOverall.toFixed(1) : '—'}</span>
-          </button>
-        ))}
+        {teams.map((t) => {
+          const v = t[V_KEY[vMetric]];
+          return (
+            <button type="button" key={t.id} className="club-hub__vrow" onClick={() => openTeam(t.id)}>
+              <span className="club-hub__vname">{teamLabel(t)}</span>
+              <span className="club-hub__vtrack">
+                <span
+                  className={`club-hub__vfill club-hub__vfill--${tone(v)}`}
+                  style={{ width: `${v != null ? Math.round((v / maxRating) * 100) : 0}%` }}
+                />
+              </span>
+              <span className={`club-hub__vval club-hub__vval--${tone(v)}`}>{v != null ? v.toFixed(1) : '—'}</span>
+            </button>
+          );
+        })}
       </div>
     </div>
   );

@@ -101,7 +101,7 @@ export async function dataRoutes(app: FastifyInstance) {
         teamId: string; date: string | null; homeTeamId: string | null;
         home: string | null; away: string | null;
         scoreHome: number | null; scoreAway: number | null;
-        teamAvg: { overall?: number } | null;
+        teamAvg: { overall?: number; attack?: number; defence?: number; fitness?: number } | null;
       }
       const byTeam = new Map<string, MRow[]>();
       for (const m of matchesRes.rows as MRow[]) {
@@ -119,6 +119,14 @@ export async function dataRoutes(app: FastifyInstance) {
           .map((m) => Number(m.teamAvg?.overall))
           .filter((v) => Number.isFinite(v) && v > 0);
         const avgOverall = rated.length ? r2(rated.reduce((a, b) => a + b, 0) / rated.length) : null;
+        // Средние по линиям — для «Вертикали развития» (Общий/Атака/Оборона/Физ).
+        const avgField = (key: 'attack' | 'defence' | 'fitness'): number | null => {
+          const v = ms.map((m) => Number(m.teamAvg?.[key])).filter((x) => Number.isFinite(x) && x > 0);
+          return v.length ? r2(v.reduce((a, b) => a + b, 0) / v.length) : null;
+        };
+        const avgAttack = avgField('attack');
+        const avgDefence = avgField('defence');
+        const avgFitness = avgField('fitness');
         const lastOverall = rated.length ? rated[0] : null;
         // Тренд: последний матч против среднего по ОСТАЛЬНЫМ (иначе последний
         // входит в своё же среднее → смещение к нулю на малом числе матчей).
@@ -148,10 +156,114 @@ export async function dataRoutes(app: FastifyInstance) {
         return {
           id, name: t.name, ageGroup: t.ageGroup, ageLabel: t.ageLabel,
           year: t.year, headCoach: t.headCoach,
-          matchCount: ms.length, avgOverall, trend, lastMatch, flags,
+          matchCount: ms.length, avgOverall, avgAttack, avgDefence, avgFitness,
+          trend, lastMatch, flags,
         };
       });
       return { teams };
+    });
+  });
+
+  // Кадровый резерв клуба: топ-игроки по ВСЕМ командам (сезонный рейтинг),
+  // для старшего тренера. Флаг aboveTeam — игрок заметно выше среднего своей
+  // команды (кандидат «двигать выше»). Поверх существующих данных.
+  app.get('/club/talent', async (req) => {
+    const slug = tenantId(req);
+    return withTenant(slug, async (_tx, conn) => {
+      const teamsRes = await conn.query(
+        `SELECT id, name, age_label AS "ageLabel" FROM teams
+          WHERE tenant_id = $1 AND active = TRUE`,
+        [slug],
+      );
+      const tLabel = new Map<string, string>();
+      for (const t of teamsRes.rows as Array<Record<string, unknown>>) {
+        tLabel.set(String(t.id), String(t.ageLabel ?? t.name ?? t.id));
+      }
+
+      const { rows } = await conn.query(
+        `SELECT mp.player_id AS "playerId", p.full_name AS "fullName", p.photo_url AS "photoUrl",
+                mp.position, mp.minutes, mp.ratings, mp.stats, m.team_id AS "teamId"
+           FROM match_players mp
+           JOIN matches m ON m.id = mp.match_id AND m.tenant_id = $1
+           JOIN players p ON p.id = mp.player_id
+          WHERE mp.tenant_id = $1
+          ORDER BY m.match_date DESC NULLS LAST`,
+        [slug],
+      );
+      interface PRow {
+        playerId: string; fullName: string | null; photoUrl: string | null;
+        position: string | null; minutes: number | null;
+        ratings: { overall?: number } | null; stats: unknown; teamId: string | null;
+      }
+      interface Agg {
+        id: string; fullName: string; photoUrl: string | null;
+        matches: number; minutes: number; ratedOveralls: number[];
+        goals: number; assists: number;
+        teamMin: Map<string, number>; posMin: Map<string, number>;
+      }
+      const byId = new Map<string, Agg>();
+      for (const r of rows as PRow[]) {
+        const id = String(r.playerId);
+        let a = byId.get(id);
+        if (!a) {
+          a = { id, fullName: String(r.fullName ?? ''), photoUrl: r.photoUrl ?? null,
+                matches: 0, minutes: 0, ratedOveralls: [], goals: 0, assists: 0,
+                teamMin: new Map(), posMin: new Map() };
+          byId.set(id, a);
+        }
+        a.matches += 1;
+        const mins = Number(r.minutes ?? 0);
+        a.minutes += mins;
+        const w = mins > 0 ? mins : 1;
+        const ov = Number(r.ratings?.overall ?? 0);
+        if (ov > 0) a.ratedOveralls.push(ov); // строки date DESC → массив тоже DESC
+        if (r.teamId) a.teamMin.set(String(r.teamId), (a.teamMin.get(String(r.teamId)) ?? 0) + w);
+        if (r.position && String(r.position).trim()) {
+          const c = String(r.position).trim().toUpperCase();
+          a.posMin.set(c, (a.posMin.get(c) ?? 0) + w);
+        }
+        a.goals += statField(r.stats, 'attack', 'goal');
+        a.assists += statField(r.stats, 'attack', 'assist');
+      }
+      const r2 = (n: number): number => Math.round(n * 100) / 100;
+      const r1 = (n: number): number => Math.round(n * 10) / 10;
+      const top = (m: Map<string, number>): string | null =>
+        [...m.entries()].sort((x, y) => y[1] - x[1])[0]?.[0] ?? null;
+
+      const players = [...byId.values()].map((a) => {
+        const rated = a.ratedOveralls;
+        const avgOverall = rated.length ? r2(rated.reduce((x, y) => x + y, 0) / rated.length) : null;
+        const last = rated.length ? rated[0] : null;
+        const prior = rated.slice(1);
+        const priorAvg = prior.length ? prior.reduce((x, y) => x + y, 0) / prior.length : null;
+        const trend = last != null && priorAvg != null ? r1(last - priorAvg) : null;
+        const teamId = top(a.teamMin);
+        const posCode = top(a.posMin);
+        return {
+          id: a.id, fullName: a.fullName, photoUrl: a.photoUrl,
+          matches: a.matches, minutes: a.minutes, avgOverall, trend,
+          goals: a.goals, assists: a.assists,
+          teamId, teamLabel: teamId ? (tLabel.get(teamId) ?? null) : null,
+          position: posCode ? (posFullFromCode(posCode) ?? posCode) : null,
+          positionCode: posCode,
+        };
+      }).filter((p) => p.avgOverall != null);
+
+      // Среднее по команде → флаг «заметно выше своей команды» (кандидат выше).
+      const teamAcc = new Map<string, { sum: number; n: number }>();
+      for (const p of players) {
+        if (!p.teamId || p.avgOverall == null) continue;
+        const t = teamAcc.get(p.teamId) ?? { sum: 0, n: 0 };
+        t.sum += p.avgOverall; t.n += 1; teamAcc.set(p.teamId, t);
+      }
+      const withFlag = players.map((p) => {
+        const ta = p.teamId ? teamAcc.get(p.teamId) : null;
+        const teamMean = ta && ta.n ? ta.sum / ta.n : null;
+        const aboveTeam = teamMean != null && p.avgOverall != null && (p.avgOverall - teamMean) >= 0.5;
+        return { ...p, aboveTeam };
+      }).sort((x, y) => (y.avgOverall ?? 0) - (x.avgOverall ?? 0));
+
+      return { players: withFlag };
     });
   });
 
