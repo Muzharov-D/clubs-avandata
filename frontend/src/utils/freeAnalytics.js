@@ -29,7 +29,9 @@ const DEF_ACTION_KEYS = [
   'defence1.tackle', 'defence1.interception', 'defence1.recovery',
   'defence1.clearance', 'defence1.blockedShot',
 ];
-const LOSS_KEYS = ['attack4.lostBall', 'attack3.technicalMistake', 'attack4.loseOnOwnHalf'];
+// loseOnOwnHalf — ПОДМНОЖЕСТВО lostBall (потери именно на своей половине), не
+// складываем оба, иначе двойной счёт. Берём общие потери + технический брак.
+const LOSS_KEYS = ['attack4.lostBall', 'attack3.technicalMistake'];
 const BEATEN_KEY = 'defence2.dribbleAgainst';
 const DANGER_LOSS_KEY = 'attack4.dangerousLosesOnOwnHalf';
 
@@ -72,7 +74,7 @@ export function freePlayerImpact(stats) {
 export function hasFreeImpact(impact) {
   if (!impact) return false;
   return (impact.shots + impact.goalContributions + impact.chances
-    + impact.defActions + impact.losses + impact.beaten) > 0;
+    + impact.defActions + impact.losses + impact.beaten + impact.dangerLosses) > 0;
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -156,6 +158,9 @@ function plural(n, one, few, many) {
 export function freeMatchInsights(match) {
   const out = [];
   if (!match) return out;
+  // Без признака нашей стороны (homeTeam/awayTeam.isOurTeam) ourSideKey по дефолту
+  // даёт 'home' → голы/пропущенные могут перепутаться. Лучше не выводить, чем врать.
+  if (!match.homeTeam && !match.awayTeam) return out;
   const { our } = ourSideKey(match);
   const side = match?.teamSummaryStats?.[our] || {};
   const homeIsUs = our === 'home';

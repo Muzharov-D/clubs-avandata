@@ -120,7 +120,11 @@ export async function dataRoutes(app: FastifyInstance) {
           .filter((v) => Number.isFinite(v) && v > 0);
         const avgOverall = rated.length ? r2(rated.reduce((a, b) => a + b, 0) / rated.length) : null;
         const lastOverall = rated.length ? rated[0] : null;
-        const trend = lastOverall != null && avgOverall != null ? r1(lastOverall - avgOverall) : null;
+        // Тренд: последний матч против среднего по ОСТАЛЬНЫМ (иначе последний
+        // входит в своё же среднее → смещение к нулю на малом числе матчей).
+        const priorRated = rated.slice(1);
+        const priorAvg = priorRated.length ? priorRated.reduce((a, b) => a + b, 0) / priorRated.length : null;
+        const trend = lastOverall != null && priorAvg != null ? r1(lastOverall - priorAvg) : null;
 
         const last = ms[0] ?? null;
         let lastMatch: Record<string, unknown> | null = null;
@@ -487,7 +491,7 @@ export async function dataRoutes(app: FastifyInstance) {
                 m.home_team_name, m.away_team_name, m.score_home, m.score_away,
                 mp.minutes, mp.ratings, mp.stats
            FROM match_players mp
-           JOIN matches m ON m.id = mp.match_id
+           JOIN matches m ON m.id = mp.match_id AND m.tenant_id = $1
           WHERE mp.tenant_id = $1 AND mp.player_id = $2
           ORDER BY m.match_date ASC NULLS LAST`,
         [slug, pid],
@@ -597,7 +601,7 @@ export async function dataRoutes(app: FastifyInstance) {
         `SELECT mp.player_id, p.full_name AS "fullName", p.number, mp.position, p.photo_url AS "photoUrl",
                 mp.minutes, mp.ratings, mp.stats, mp.radar, m.match_date
            FROM match_players mp
-           JOIN matches m ON m.id = mp.match_id
+           JOIN matches m ON m.id = mp.match_id AND m.tenant_id = $1
            JOIN players p ON p.id = mp.player_id
           WHERE mp.tenant_id = $1 AND m.team_id = $2
           ORDER BY m.match_date ASC NULLS LAST`,
