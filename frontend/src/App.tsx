@@ -16,6 +16,8 @@ import SetPassword from './pages/SetPassword';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import ClubOverview from './pages/ClubOverview';
 import ClubDashboard from './pages/ClubDashboard';
+// @ts-ignore — legacy .jsx
+import ClubHub from './pages/ClubHub';
 import MatchesDashboard from './pages/MatchesDashboard';
 import MatchDetail from './pages/MatchDetail';
 import ComparisonView from './pages/ComparisonView';
@@ -62,6 +64,9 @@ function RootRoute() {
   if (user.role === 'player' && user.playerId) {
     return <Navigate to={`/players/${user.playerId}`} replace />;
   }
+  // Старший тренер клуба приземляется в клубный обзор (кабинет), а не на
+  // конкретную команду — у него работа сквозная по всем возрастам.
+  if (user.role === 'head_coach') return <Navigate to="/club-hub" replace />;
   return <Navigate to="/club" replace />;
 }
 
@@ -71,6 +76,13 @@ function CoachOnly({ children }: { children: React.ReactNode }) {
   if (isPlayer && user?.playerId) {
     return <Navigate to={`/players/${user.playerId}`} replace />;
   }
+  return <Navigate to="/club" replace />;
+}
+
+// Клубный кабинет — только старшему тренеру; остальные тренеры → на свою команду.
+function HeadCoachOnly({ children }: { children: React.ReactNode }) {
+  const { isHeadCoach } = useAuth() as { isHeadCoach: boolean };
+  if (isHeadCoach) return <>{children}</>;
   return <Navigate to="/club" replace />;
 }
 
@@ -142,6 +154,7 @@ export function App() {
                   {/* Авторизованный кабинет клуба */}
                   <Route element={<ProtectedRoute roles={[]}><MainLayout /></ProtectedRoute>}>
                     <Route path="/club" element={<ClubDashboard />} />
+                    <Route path="/club-hub" element={<HeadCoachOnly><ClubHub /></HeadCoachOnly>} />
                     <Route path="/analytics" element={<CoachOnly><ClubOverview /></CoachOnly>} />
                     <Route path="/analytics/team" element={<CoachOnly><ComparisonView /></CoachOnly>} />
                     <Route path="/matches" element={<MatchesDashboard />} />

@@ -6,7 +6,7 @@ import './SidebarNav.css';
 export default function SidebarNav() {
   const navigate = useNavigate();
   const { pathname } = useLocation();
-  const { user, isPlayer, isCoach, tenant } = useAuth();
+  const { user, isPlayer, isCoach, isHeadCoach, tenant } = useAuth();
   const { isVisible } = useDashboardLayout();
   // На free тариф — только аналитический core. Календарь / Тренировки / Нагрузка
   // — платные модули, в меню не показываем (и роуты закрыты, см. App.tsx).
@@ -16,7 +16,11 @@ export default function SidebarNav() {
   // в командных топах, MOTM и pivot-аналитике, по контракту он видит
   // только себя).
   const navItems = [
-    { id: 'club',      label: 'Клуб',       path: '/club',      icon: '🏆' },
+    // Старший тренер: клубный обзорный кабинет над командными экранами.
+    isHeadCoach
+      ? { id: 'hub', label: 'Обзор клуба', path: '/club-hub', icon: '🏛️' }
+      : null,
+    { id: 'club',      label: isHeadCoach ? 'Команда' : 'Клуб', path: '/club', icon: '🏆' },
     isCoach
       ? { id: 'analytics', label: 'Аналитика', path: '/analytics', icon: '◉' }
       : null,
@@ -40,6 +44,7 @@ export default function SidebarNav() {
     .filter((it) => isVisible('nav', it.id));
 
   function isActive(item) {
+    if (item.id === 'hub')       return pathname.startsWith('/club-hub');
     if (item.id === 'club')      return pathname === '/club' || pathname === '/';
     if (item.id === 'analytics') return pathname.startsWith('/analytics');
     if (item.id === 'matches')   return pathname.startsWith('/matches');
