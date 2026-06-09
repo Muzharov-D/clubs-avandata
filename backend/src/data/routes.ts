@@ -73,6 +73,84 @@ export async function dataRoutes(app: FastifyInstance) {
     });
   });
 
+  // Клубный обзор для старшего тренера: сводка по ВСЕМ командам клуба.
+  // Агрегат поверх существующих данных (teams + matches.team_avg_ratings),
+  // без новых таблиц. Рейтинг команды = среднее overall по разобранным матчам;
+  // тренд = последний матч против сезонного среднего; флаги — «где горит».
+  app.get('/club/summary', async (req) => {
+    const slug = tenantId(req);
+    return withTenant(slug, async (_tx, conn) => {
+      const teamsRes = await conn.query(
+        `SELECT id, name, age_group AS "ageGroup", age_label AS "ageLabel",
+                year, head_coach AS "headCoach"
+           FROM teams WHERE tenant_id = $1 AND active = TRUE
+           ORDER BY year DESC NULLS LAST, age_group`,
+        [slug],
+      );
+      const matchesRes = await conn.query(
+        `SELECT team_id AS "teamId", match_date AS "date",
+                home_team_id AS "homeTeamId", home_team_name AS "home",
+                away_team_name AS "away", score_home AS "scoreHome",
+                score_away AS "scoreAway", team_avg_ratings AS "teamAvg"
+           FROM matches WHERE tenant_id = $1
+           ORDER BY match_date DESC NULLS LAST`,
+        [slug],
+      );
+
+      interface MRow {
+        teamId: string; date: string | null; homeTeamId: string | null;
+        home: string | null; away: string | null;
+        scoreHome: number | null; scoreAway: number | null;
+        teamAvg: { overall?: number } | null;
+      }
+      const byTeam = new Map<string, MRow[]>();
+      for (const m of matchesRes.rows as MRow[]) {
+        const arr = byTeam.get(m.teamId) ?? [];
+        arr.push(m);
+        byTeam.set(m.teamId, arr);
+      }
+      const r2 = (n: number): number => Math.round(n * 100) / 100;
+      const r1 = (n: number): number => Math.round(n * 10) / 10;
+
+      const teams = (teamsRes.rows as Array<Record<string, unknown>>).map((t) => {
+        const id = String(t.id);
+        const ms = byTeam.get(id) ?? []; // отсортированы по дате DESC
+        const rated = ms
+          .map((m) => Number(m.teamAvg?.overall))
+          .filter((v) => Number.isFinite(v) && v > 0);
+        const avgOverall = rated.length ? r2(rated.reduce((a, b) => a + b, 0) / rated.length) : null;
+        const lastOverall = rated.length ? rated[0] : null;
+        const trend = lastOverall != null && avgOverall != null ? r1(lastOverall - avgOverall) : null;
+
+        const last = ms[0] ?? null;
+        let lastMatch: Record<string, unknown> | null = null;
+        if (last) {
+          const weHome = last.homeTeamId === id; // FK на нашу команду в home/away
+          const us = Number(weHome ? last.scoreHome : last.scoreAway) || 0;
+          const them = Number(weHome ? last.scoreAway : last.scoreHome) || 0;
+          lastMatch = {
+            date: last.date, us, them,
+            opp: weHome ? last.away : last.home,
+            outcome: us > them ? 'W' : us < them ? 'L' : 'D',
+          };
+        }
+
+        const flags: string[] = [];
+        if (ms.length === 0) flags.push('нет матчей');
+        else if (ms.length < 2) flags.push('мало данных');
+        if (ms.length > 0 && rated.length === 0) flags.push('нет рейтингов');
+        if (trend != null && trend <= -0.4) flags.push('спад формы');
+
+        return {
+          id, name: t.name, ageGroup: t.ageGroup, ageLabel: t.ageLabel,
+          year: t.year, headCoach: t.headCoach,
+          matchCount: ms.length, avgOverall, trend, lastMatch, flags,
+        };
+      });
+      return { teams };
+    });
+  });
+
   app.get<{ Querystring: { teamId?: string } }>('/players', async (req) => {
     const slug = tenantId(req);
     const teamId = req.query.teamId;

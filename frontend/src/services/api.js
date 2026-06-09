@@ -232,6 +232,8 @@ export async function exitImpersonation() {
 
 // Data
 export const fetchTeams = () => fetchJson('/data/teams');
+// Клубный обзор (кабинет старшего тренера): сводка по всем командам клуба.
+export const fetchClubSummary = () => fetchJson('/data/club/summary');
 export const fetchPlayers = (teamId) =>
   fetchJson(`/data/players${teamId ? `?teamId=${encodeURIComponent(teamId)}` : ''}`);
 export const fetchMatches = (teamId) =>
