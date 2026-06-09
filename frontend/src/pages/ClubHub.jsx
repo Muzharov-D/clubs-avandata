@@ -155,7 +155,9 @@ export default function ClubHub() {
                 <div className="club-hub__player-info">
                   <div className="club-hub__player-name">
                     {p.fullName}
-                    {p.aboveTeam && <span className="club-hub__up" title="Заметно выше среднего своей команды — кандидат двигать выше">▲ выше команды</span>}
+                    {/* Бейдж осмыслен только при нескольких командах: при одной
+                        весь топ закономерно выше среднего → шум. */}
+                    {p.aboveTeam && teams.length > 1 && <span className="club-hub__up" title="Заметно выше среднего своей команды — кандидат двигать выше">▲ выше команды</span>}
                   </div>
                   <div className="club-hub__player-meta">{[p.teamLabel, p.position].filter(Boolean).join(' · ')}</div>
                   <div className="club-hub__player-stats">
