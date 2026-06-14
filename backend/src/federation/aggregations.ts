@@ -103,3 +103,41 @@ export async function federationClubs(conn: PoolClient): Promise<FederationClubR
     coverage: r.coverage == null ? null : Number(r.coverage),
   }));
 }
+
+export interface FederationCompetition {
+  ageGroup: string;
+  season: string;
+  leagueName: string | null;
+  /** Строки таблицы (открытый слой — ВСЕ клубы турнира). Форма строки гибкая. */
+  table: Array<Record<string, unknown>>;
+}
+
+/**
+ * Сводные турнирные таблицы по возрастам (Эпик 3, FR11) — открытый слой:
+ * table_data содержит все клубы турнира, в т.ч. не на платформе. Берём последнюю
+ * синхронизацию (fetched_at) на каждый возраст среди клубов-членов федерации.
+ */
+export async function federationCompetitions(conn: PoolClient): Promise<FederationCompetition[]> {
+  const q = await conn.query<{
+    age_group: string; season: string; league_name: string | null; table_data: unknown;
+  }>(
+    `SELECT DISTINCT ON (age_group) age_group, season, league_name, table_data
+       FROM standings
+      WHERE ${FED_MEMBERSHIP_SQL}
+      ORDER BY age_group, fetched_at DESC`,
+  );
+  return q.rows.map((r) => {
+    const td = r.table_data as { table?: unknown } | unknown[] | null;
+    const table = Array.isArray(td)
+      ? (td as Array<Record<string, unknown>>)
+      : td && typeof td === 'object' && Array.isArray((td as { table?: unknown }).table)
+        ? ((td as { table: Array<Record<string, unknown>> }).table)
+        : [];
+    return {
+      ageGroup: r.age_group,
+      season: r.season,
+      leagueName: r.league_name ?? null,
+      table,
+    };
+  });
+}
