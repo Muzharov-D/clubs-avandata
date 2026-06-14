@@ -193,3 +193,58 @@ export async function federationDataQuality(conn: PoolClient): Promise<Federatio
     };
   });
 }
+
+export interface FederationAgeEffect {
+  /** Распределение по кварталам рождения по региону (эталон — 25% каждый). */
+  region: { q1: number; q2: number; q3: number; q4: number; total: number };
+  /** Перекос по клубам: доля Q1 (рождённых в начале года). */
+  clubs: Array<{ slug: string; name: string; total: number; q1Pct: number | null }>;
+}
+
+/**
+ * Относительный возрастной эффект (Эпик 6, FR21) — распределение игроков по
+ * кварталам рождения по региону и перекос по клубам (доля Q1). Обезличенно:
+ * только счётчики и проценты, без имён. Эталон равномерности — 25% на квартал;
+ * перекос к Q1 = смещение отбора в пользу более зрелых.
+ */
+export async function federationAgeEffect(conn: PoolClient): Promise<FederationAgeEffect> {
+  const regionQ = await conn.query<{ q: number; n: number }>(
+    `SELECT extract(quarter from birth_date)::int AS q, count(*)::int AS n
+       FROM players
+      WHERE ${FED_MEMBERSHIP_SQL} AND birth_date IS NOT NULL
+      GROUP BY q`,
+  );
+  const region = { q1: 0, q2: 0, q3: 0, q4: 0, total: 0 };
+  for (const r of regionQ.rows) {
+    const n = Number(r.n);
+    region.total += n;
+    const q = Number(r.q);
+    if (q === 1) region.q1 = n;
+    else if (q === 2) region.q2 = n;
+    else if (q === 3) region.q3 = n;
+    else if (q === 4) region.q4 = n;
+  }
+
+  const clubsQ = await conn.query<{ slug: string; name: string; total: number; q1: number }>(
+    `SELECT t.slug, t.display_name AS name,
+       (SELECT count(*)::int FROM players p WHERE p.tenant_id = t.slug AND p.birth_date IS NOT NULL) AS total,
+       (SELECT count(*)::int FROM players p WHERE p.tenant_id = t.slug AND extract(quarter from p.birth_date) = 1) AS q1
+     FROM tenants t
+     WHERE t.slug IN (
+       SELECT tenant_slug FROM federation_tenants
+        WHERE federation_slug = current_setting('app.federation_id', true) AND tier = 'full'
+     )
+     ORDER BY t.display_name`,
+  );
+  const clubs = clubsQ.rows.map((r) => {
+    const total = Number(r.total);
+    return {
+      slug: r.slug,
+      name: r.name,
+      total,
+      q1Pct: total === 0 ? null : Math.round((Number(r.q1) / total) * 100),
+    };
+  });
+
+  return { region, clubs };
+}

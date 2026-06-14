@@ -7,6 +7,7 @@ import {
   federationClubs,
   federationCompetitions,
   federationDataQuality,
+  federationAgeEffect,
 } from './aggregations.js';
 
 /**
@@ -53,5 +54,12 @@ export async function federationRoutes(app: FastifyInstance) {
     return await withFederation(federationId, async (_tx, conn) => ({
       clubs: await federationDataQuality(conn),
     }));
+  });
+
+  /** GET /api/v1/federation/age-effect — относительный возрастной эффект (FR21). */
+  app.get('/age-effect', async (req) => {
+    const federationId = req.user?.federationId;
+    if (!federationId) throw new BadRequestError('no federation context', 'NO_FEDERATION');
+    return await withFederation(federationId, (_tx, conn) => federationAgeEffect(conn));
   });
 }
