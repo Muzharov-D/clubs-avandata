@@ -9,13 +9,37 @@ interface FedAuth {
   logout: () => void;
 }
 
-const ACTIVE = [
-  { to: '/federation', end: true, label: 'Обзор региона' },
-  { to: '/federation/clubs', end: false, label: 'Клубы' },
-  { to: '/federation/competitions', end: false, label: 'Соревнования' },
+interface NavItem {
+  to?: string;
+  end?: boolean;
+  label: string;
+  soon?: string;
+}
+const NAV: Array<{ title: string; items: NavItem[] }> = [
+  {
+    title: 'Обзор',
+    items: [
+      { to: '/federation', end: true, label: 'Обзор региона' },
+      { to: '/federation/clubs', label: 'Клубы' },
+      { to: '/federation/competitions', label: 'Соревнования' },
+    ],
+  },
+  {
+    title: 'Качество',
+    items: [
+      { to: '/federation/data-quality', label: 'Целостность данных' },
+      { label: 'Бенчмаркинг', soon: 'F3' },
+    ],
+  },
+  {
+    title: 'Талант и развитие',
+    items: [
+      { label: 'Игроки', soon: 'F2' },
+      { label: 'Развитие', soon: 'F2' },
+      { label: 'Возрастной эффект', soon: 'F2' },
+    ],
+  },
 ];
-const SOON_TALENT = ['Игроки', 'Развитие', 'Возрастной эффект'];
-const SOON_QUALITY = ['Целостность данных', 'Бенчмаркинг'];
 
 /**
  * Оболочка кабинета федерации (federation_admin) — read-only, тёмная тема.
@@ -47,16 +71,20 @@ export function FederationLayout() {
         </Link>
 
         <nav style={{ display: 'flex', flexDirection: 'column', gap: 3 }} aria-label="Меню федерации">
-          <GroupTitle>Обзор</GroupTitle>
-          {ACTIVE.map((it) => (
-            <NavLink key={it.to} to={it.to} end={it.end} style={({ isActive }) => navStyle(isActive)}>
-              {it.label}
-            </NavLink>
+          {NAV.map((group) => (
+            <div key={group.title}>
+              <GroupTitle>{group.title}</GroupTitle>
+              {group.items.map((it) =>
+                it.to ? (
+                  <NavLink key={it.label} to={it.to} end={it.end} style={({ isActive }) => navStyle(isActive)}>
+                    {it.label}
+                  </NavLink>
+                ) : (
+                  <SoonItem key={it.label} label={it.label} phase={it.soon ?? ''} />
+                ),
+              )}
+            </div>
           ))}
-          <GroupTitle>Талант и развитие</GroupTitle>
-          {SOON_TALENT.map((l) => <SoonItem key={l} label={l} phase="F2" />)}
-          <GroupTitle>Качество</GroupTitle>
-          {SOON_QUALITY.map((l) => <SoonItem key={l} label={l} phase="F3" />)}
         </nav>
 
         <div style={{ marginTop: 'auto', paddingTop: 14, borderTop: '1px solid var(--border)' }}>

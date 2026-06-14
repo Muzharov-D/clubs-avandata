@@ -51,6 +51,7 @@ import { FederationLayout } from './routes/federation/FederationLayout';
 import { FederationOverview } from './routes/federation/Overview';
 import { FederationClubs } from './routes/federation/Clubs';
 import { FederationCompetitions } from './routes/federation/Competitions';
+import { FederationDataQuality } from './routes/federation/DataQuality';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -180,6 +181,7 @@ export function App() {
                     <Route index element={<FederationOverview />} />
                     <Route path="clubs" element={<FederationClubs />} />
                     <Route path="competitions" element={<FederationCompetitions />} />
+                    <Route path="data-quality" element={<FederationDataQuality />} />
                     <Route path="*" element={<Navigate to="/federation" replace />} />
                   </Route>
 

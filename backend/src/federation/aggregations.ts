@@ -141,3 +141,55 @@ export async function federationCompetitions(conn: PoolClient): Promise<Federati
     };
   });
 }
+
+export interface FederationDataQualityRow {
+  slug: string;
+  name: string;
+  players: number;
+  /** Полнота паспортизации в % (или null, если игроков нет). */
+  birthPct: number | null;
+  photoPct: number | null;
+  positionPct: number | null;
+  consentPct: number | null;
+}
+
+/**
+ * Целостность данных и согласия по клубам (Эпик 4, FR14–16). Полнота
+ * паспортизации (дата рождения / фото / позиция / согласие) — ОБЕЗЛИЧЕННЫЕ
+ * счётчики и проценты. Именные данные ребёнка федерации в F1 не отдаются вообще
+ * (нет per-player эндпоинтов) → гейт согласия FR17 соблюдён by design.
+ */
+export async function federationDataQuality(conn: PoolClient): Promise<FederationDataQualityRow[]> {
+  const q = await conn.query<{
+    slug: string; name: string; players: string;
+    with_birth: string; with_photo: string; with_position: string; with_consent: string;
+  }>(
+    `SELECT
+       t.slug,
+       t.display_name AS name,
+       (SELECT count(*)::int FROM players p WHERE p.tenant_id = t.slug) AS players,
+       (SELECT count(*)::int FROM players p WHERE p.tenant_id = t.slug AND p.birth_date IS NOT NULL) AS with_birth,
+       (SELECT count(*)::int FROM players p WHERE p.tenant_id = t.slug AND p.photo_url IS NOT NULL AND p.photo_url <> '') AS with_photo,
+       (SELECT count(*)::int FROM players p WHERE p.tenant_id = t.slug AND p.position IS NOT NULL AND p.position <> '') AS with_position,
+       (SELECT count(*)::int FROM players p WHERE p.tenant_id = t.slug AND p.data_consent = true) AS with_consent
+     FROM tenants t
+     WHERE t.slug IN (
+       SELECT tenant_slug FROM federation_tenants
+        WHERE federation_slug = current_setting('app.federation_id', true) AND tier = 'full'
+     )
+     ORDER BY t.display_name`,
+  );
+  return q.rows.map((r) => {
+    const players = Number(r.players);
+    const pct = (n: string): number | null => (players === 0 ? null : Math.round((Number(n) / players) * 100));
+    return {
+      slug: r.slug,
+      name: r.name,
+      players,
+      birthPct: pct(r.with_birth),
+      photoPct: pct(r.with_photo),
+      positionPct: pct(r.with_position),
+      consentPct: pct(r.with_consent),
+    };
+  });
+}
