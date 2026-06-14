@@ -53,6 +53,7 @@ import { FederationClubs } from './routes/federation/Clubs';
 import { FederationCompetitions } from './routes/federation/Competitions';
 import { FederationDataQuality } from './routes/federation/DataQuality';
 import { FederationAgeEffect } from './routes/federation/AgeEffect';
+import { FederationTalent } from './routes/federation/Talent';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -184,6 +185,7 @@ export function App() {
                     <Route path="competitions" element={<FederationCompetitions />} />
                     <Route path="data-quality" element={<FederationDataQuality />} />
                     <Route path="age-effect" element={<FederationAgeEffect />} />
+                    <Route path="talent" element={<FederationTalent />} />
                     <Route path="*" element={<Navigate to="/federation" replace />} />
                   </Route>
 

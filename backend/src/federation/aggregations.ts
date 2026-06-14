@@ -1,5 +1,5 @@
 import type { PoolClient } from 'pg';
-import { FED_MEMBERSHIP_SQL } from './membership.js';
+import { FED_MEMBERSHIP_SQL, fedMembershipFilter } from './membership.js';
 
 export interface FederationOverview {
   /** Честный охват: всего клубов-членов, из них на глубине (paid) и на базе (free). */
@@ -247,4 +247,58 @@ export async function federationAgeEffect(conn: PoolClient): Promise<FederationA
   });
 
   return { region, clubs };
+}
+
+export interface FederationPlayerRow {
+  /** Имя — только при согласии (data_consent); иначе null (обезличено). */
+  name: string | null;
+  club: string;
+  ageGroup: string;
+  position: string | null;
+  matches: number;
+  minutes: number;
+  rating: number | null;
+}
+
+/**
+ * Талант-пул региона (Эпик 5, FR18) — игроки, ранжированные по среднему
+ * индексу эффективности (ratings.overall, 0–10) из match_players. Фильтр по
+ * минимуму минут. Гейт согласия (FR19): имя отдаётся только при data_consent;
+ * без согласия игрок участвует в рейтинге обезличенно (club/возраст/позиция).
+ * Дедуп между клубами пока не делается — игрок за 2 клуба возможен дважды (TODO F2+).
+ */
+export async function federationTalentPool(conn: PoolClient, minMinutes: number): Promise<FederationPlayerRow[]> {
+  const q = await conn.query<{
+    name: string | null; club: string; age_group: string; position: string | null;
+    matches: number; minutes: number; rating: string | null;
+  }>(
+    `SELECT
+       CASE WHEN p.data_consent THEN p.full_name ELSE NULL END AS name,
+       t.display_name AS club,
+       tm.age_group,
+       p.position,
+       count(mp.match_id)::int AS matches,
+       coalesce(sum(mp.minutes), 0)::int AS minutes,
+       round(avg((mp.ratings->>'overall')::numeric), 2) AS rating
+     FROM players p
+     JOIN teams tm ON tm.id = p.team_id
+     JOIN tenants t ON t.slug = p.tenant_id
+     LEFT JOIN match_players mp ON mp.player_id = p.id AND jsonb_typeof(mp.ratings->'overall') = 'number'
+     WHERE ${fedMembershipFilter('p.tenant_id')}
+     GROUP BY p.id, p.full_name, p.data_consent, t.display_name, tm.age_group, p.position
+     HAVING round(avg((mp.ratings->>'overall')::numeric), 2) IS NOT NULL
+        AND coalesce(sum(mp.minutes), 0) >= $1
+     ORDER BY rating DESC NULLS LAST
+     LIMIT 200`,
+    [minMinutes],
+  );
+  return q.rows.map((r) => ({
+    name: r.name ?? null,
+    club: r.club,
+    ageGroup: r.age_group,
+    position: r.position ?? null,
+    matches: Number(r.matches),
+    minutes: Number(r.minutes),
+    rating: r.rating == null ? null : Number(r.rating),
+  }));
 }

@@ -16,6 +16,15 @@
  * Использование (raw SQL, как в data/routes.ts):
  *   `SELECT ... FROM teams WHERE ${FED_MEMBERSHIP_SQL} AND age_group = $1`
  */
-export const FED_MEMBERSHIP_SQL =
-  `tenant_id IN (SELECT tenant_slug FROM federation_tenants ` +
-  `WHERE federation_slug = current_setting('app.federation_id', true) AND tier = 'full')`;
+export function fedMembershipFilter(column = 'tenant_id'): string {
+  return (
+    `${column} IN (SELECT tenant_slug FROM federation_tenants ` +
+    `WHERE federation_slug = current_setting('app.federation_id', true) AND tier = 'full')`
+  );
+}
+
+/**
+ * Готовый фрагмент для unqualified колонки `tenant_id` (= `fedMembershipFilter()`).
+ * Для join'ов с неоднозначной колонкой используй `fedMembershipFilter('p.tenant_id')`.
+ */
+export const FED_MEMBERSHIP_SQL = fedMembershipFilter();
