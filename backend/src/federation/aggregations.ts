@@ -51,3 +51,55 @@ export async function federationOverview(conn: PoolClient): Promise<FederationOv
     matches: await countMembers('matches'),
   };
 }
+
+export interface FederationClubRow {
+  slug: string;
+  name: string;
+  /** Тариф = слой данных: 'free' (база, оплачено федерацией) | 'paid' (глубина). */
+  plan: string;
+  teams: number;
+  players: number;
+  matches: number;
+  /** Средний data_quality score по разобранным матчам (0–100) или null. */
+  coverage: number | null;
+}
+
+/**
+ * Реестр клубов-членов с показателями (Эпик 2, FR7). Один ряд на клуб:
+ * команды/игроки/матчи + охват данными (средний data_quality score). Клубы —
+ * только члены федерации (slug ∈ членство). Коррелированные подзапросы scoped
+ * на slug клуба, который уже ограничен членством.
+ */
+export async function federationClubs(conn: PoolClient): Promise<FederationClubRow[]> {
+  const q = await conn.query<{
+    slug: string; name: string; plan: string;
+    teams: string; players: string; matches: string; coverage: string | null;
+  }>(
+    `SELECT
+       t.slug,
+       t.display_name AS name,
+       t.plan,
+       (SELECT count(*)::int FROM teams te WHERE te.tenant_id = t.slug) AS teams,
+       (SELECT count(*)::int FROM players p WHERE p.tenant_id = t.slug) AS players,
+       (SELECT count(*)::int FROM matches m WHERE m.tenant_id = t.slug) AS matches,
+       (SELECT round(avg((m.data_quality->>'score')::numeric))::int
+          FROM matches m
+         WHERE m.tenant_id = t.slug
+           AND jsonb_typeof(m.data_quality->'score') = 'number') AS coverage
+     FROM tenants t
+     WHERE t.slug IN (
+       SELECT tenant_slug FROM federation_tenants
+        WHERE federation_slug = current_setting('app.federation_id', true) AND tier = 'full'
+     )
+     ORDER BY t.display_name`,
+  );
+  return q.rows.map((r) => ({
+    slug: r.slug,
+    name: r.name,
+    plan: r.plan,
+    teams: Number(r.teams),
+    players: Number(r.players),
+    matches: Number(r.matches),
+    coverage: r.coverage == null ? null : Number(r.coverage),
+  }));
+}

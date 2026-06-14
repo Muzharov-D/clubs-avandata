@@ -2,7 +2,7 @@ import type { FastifyInstance } from 'fastify';
 import { authenticate, authorize } from '../auth/middleware.js';
 import { withFederation } from '../db/tenantContext.js';
 import { BadRequestError } from '../shared/errors.js';
-import { federationOverview } from './aggregations.js';
+import { federationOverview, federationClubs } from './aggregations.js';
 
 /**
  * Роуты кабинета федерации — read-only, region-scoped (Эпик 1+).
@@ -21,5 +21,14 @@ export async function federationRoutes(app: FastifyInstance) {
     const federationId = req.user?.federationId;
     if (!federationId) throw new BadRequestError('no federation context', 'NO_FEDERATION');
     return await withFederation(federationId, (_tx, conn) => federationOverview(conn));
+  });
+
+  /** GET /api/v1/federation/clubs — реестр клубов-членов (FR7). */
+  app.get('/clubs', async (req) => {
+    const federationId = req.user?.federationId;
+    if (!federationId) throw new BadRequestError('no federation context', 'NO_FEDERATION');
+    return await withFederation(federationId, async (_tx, conn) => ({
+      clubs: await federationClubs(conn),
+    }));
   });
 }
