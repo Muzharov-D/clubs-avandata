@@ -302,3 +302,51 @@ export async function federationTalentPool(conn: PoolClient, minMinutes: number)
     rating: r.rating == null ? null : Number(r.rating),
   }));
 }
+
+export interface FederationProductivityRow {
+  slug: string;
+  name: string;
+  /** Игроки с игровыми минутами (активная глубина). */
+  activePlayers: number;
+  totalMinutes: number;
+  /** % минут у «молодых» — рождённых позже номинального года команды (играют на возраст старше). */
+  youngPct: number | null;
+}
+
+/**
+ * Продуктивность клубов (Эпик 6, FR22). Минуты молодых (игроки моложе
+ * номинального года команды → играют «на возраст старше», признак развития) и
+ * активная глубина состава. Год команды (teams.year) обязателен для расчёта
+ * «молодых»; для нечисловых возрастов вклад в young_minutes = 0.
+ */
+export async function federationProductivity(conn: PoolClient): Promise<FederationProductivityRow[]> {
+  const q = await conn.query<{
+    slug: string; name: string; active_players: number; total_minutes: number; young_minutes: number;
+  }>(
+    `SELECT
+       t.slug, t.display_name AS name,
+       count(DISTINCT mp.player_id)::int AS active_players,
+       coalesce(sum(mp.minutes), 0)::int AS total_minutes,
+       coalesce(sum(mp.minutes) FILTER (
+         WHERE tm.year IS NOT NULL AND p.birth_date IS NOT NULL
+           AND extract(year from p.birth_date) > tm.year
+       ), 0)::int AS young_minutes
+     FROM tenants t
+     JOIN players p ON p.tenant_id = t.slug
+     JOIN teams tm ON tm.id = p.team_id
+     JOIN match_players mp ON mp.player_id = p.id
+     WHERE ${fedMembershipFilter('t.slug')}
+     GROUP BY t.slug, t.display_name
+     ORDER BY t.display_name`,
+  );
+  return q.rows.map((r) => {
+    const total = Number(r.total_minutes);
+    return {
+      slug: r.slug,
+      name: r.name,
+      activePlayers: Number(r.active_players),
+      totalMinutes: total,
+      youngPct: total === 0 ? null : Math.round((Number(r.young_minutes) / total) * 100),
+    };
+  });
+}

@@ -9,6 +9,7 @@ import {
   federationDataQuality,
   federationAgeEffect,
   federationTalentPool,
+  federationProductivity,
 } from './aggregations.js';
 
 /**
@@ -72,6 +73,15 @@ export async function federationRoutes(app: FastifyInstance) {
     const minMinutes = Number.isFinite(raw) && raw > 0 ? Math.floor(raw) : 0;
     return await withFederation(federationId, async (_tx, conn) => ({
       players: await federationTalentPool(conn, minMinutes),
+    }));
+  });
+
+  /** GET /api/v1/federation/development — продуктивность клубов (FR22). */
+  app.get('/development', async (req) => {
+    const federationId = req.user?.federationId;
+    if (!federationId) throw new BadRequestError('no federation context', 'NO_FEDERATION');
+    return await withFederation(federationId, async (_tx, conn) => ({
+      clubs: await federationProductivity(conn),
     }));
   });
 }

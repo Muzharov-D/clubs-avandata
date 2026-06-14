@@ -35,7 +35,7 @@ const NAV: Array<{ title: string; items: NavItem[] }> = [
     title: 'Талант и развитие',
     items: [
       { to: '/federation/talent', label: 'Игроки' },
-      { label: 'Развитие', soon: 'F2' },
+      { to: '/federation/development', label: 'Развитие' },
       { to: '/federation/age-effect', label: 'Возрастной эффект' },
     ],
   },
