@@ -13,3 +13,7 @@ export * from './trainings.js';
 export * from './matchCallups.js';
 export * from './push.js';
 export * from './dashboardLayouts.js';
+
+// W4 — Федерация (слой регулятора над клубами-тенантами)
+export * from './federations.js';
+export * from './federationTenants.js';
