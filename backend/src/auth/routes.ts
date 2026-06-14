@@ -5,9 +5,10 @@ import { createHash } from 'node:crypto';
 import { eq, and, isNull } from 'drizzle-orm';
 import { env } from '../env.js';
 import { db } from '../db/client.js';
-import { users } from '../db/schema/users.js';
+import { users, type UserRole } from '../db/schema/users.js';
 import { refreshTokens } from '../db/schema/refreshTokens.js';
 import { tenants } from '../db/schema/tenants.js';
+import { federations } from '../db/schema/federations.js';
 import {
   signAccessToken,
   generateRefreshToken,
@@ -83,9 +84,10 @@ export async function authRoutes(app: FastifyInstance) {
     const accessToken = signAccessToken({
       sub: user.id,
       tenantId: user.tenantId,
-      role: user.role as 'platform_admin' | 'head_coach' | 'team_coach' | 'player',
+      role: user.role as UserRole,
       teamId: user.teamId,
       playerId: user.playerId,
+      federationId: user.federationSlug,
     });
 
     const { token: refreshToken, tokenHash } = generateRefreshToken();
@@ -214,9 +216,10 @@ export async function authRoutes(app: FastifyInstance) {
     const accessToken = signAccessToken({
       sub: user.id,
       tenantId: user.tenantId,
-      role: user.role as 'platform_admin' | 'head_coach' | 'team_coach' | 'player',
+      role: user.role as UserRole,
       teamId: user.teamId,
       playerId: user.playerId,
+      federationId: user.federationSlug,
     });
 
     reply.setCookie(REFRESH_COOKIE, newToken, {
@@ -306,11 +309,27 @@ export async function authRoutes(app: FastifyInstance) {
       tenant = tRows[0] ?? null;
     }
 
+    // Контекст федерации для federation_admin (read-only region-scoped).
+    let federation: { slug: string; name: string; region: string; brand: unknown } | null = null;
+    if (u.role === 'federation_admin' && u.federationSlug) {
+      const fRows = await withBypassRLS((tx) =>
+        tx.select({
+          slug: federations.slug,
+          name: federations.name,
+          region: federations.region,
+          brand: federations.brand,
+        }).from(federations).where(eq(federations.slug, u.federationSlug!)).limit(1),
+      );
+      federation = fRows[0] ?? null;
+    }
+
     return {
       tenant,
+      federation,
       user: {
         id: u.id,
         tenantId: u.tenantId,
+        federationId: u.federationSlug,
         email: u.email,
         username: u.username,
         fullName: u.fullName,
