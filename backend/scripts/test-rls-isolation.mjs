@@ -79,6 +79,53 @@ try {
     await appPool.end();
   }
 
+  // ══ Федерация: изоляция региона на app-фильтре членства (Story 0.7) ══
+  // federations/federation_tenants под bypass-only RLS; в контексте федерации
+  // bypass='on' → RLS на players обойдён, изоляцию даёт ИСКЛЮЧИТЕЛЬНО
+  // FED_MEMBERSHIP_SQL. Тест доказывает: фрагмент режет по членству, а его
+  // отсутствие = утечка чужого региона.
+  await admin.query(`DELETE FROM federations WHERE slug IN ('feda','fedb')`);
+  await admin.query(`INSERT INTO federations (slug, name, region) VALUES
+    ('feda','Fed A','Region A'), ('fedb','Fed B','Region B')`);
+  await admin.query(`INSERT INTO federation_tenants (federation_slug, tenant_slug, tier) VALUES
+    ('feda','rlsa','full'), ('fedb','rlsb','full')`);
+
+  // Тот же фрагмент, что в backend/src/federation/membership.ts.
+  const FED_MEMBERSHIP_SQL =
+    `tenant_id IN (SELECT tenant_slug FROM federation_tenants ` +
+    `WHERE federation_slug = current_setting('app.federation_id', true) AND tier = 'full')`;
+
+  const fedPool = new pg.Pool({ connectionString: appUrl.toString() });
+  const fc = await fedPool.connect();
+  try {
+    // Эмуляция withFederation: bypass='on' + app.federation_id=<fed>.
+    const fedPlayers = async () =>
+      (await fc.query(`SELECT id FROM players WHERE ${FED_MEMBERSHIP_SQL} ORDER BY id`)).rows.map((r) => r.id);
+
+    await fc.query(`SELECT set_config('app.bypass_rls','on',false)`);
+
+    await fc.query(`SELECT set_config('app.federation_id','feda',false)`);
+    const fa = await fedPlayers();
+    check('федерация A видит только клуб своего региона', fa.length === 1 && fa[0] === 'rlsa-p');
+
+    await fc.query(`SELECT set_config('app.federation_id','fedb',false)`);
+    const fb = await fedPlayers();
+    check('федерация B видит только клуб региона Б', fb.length === 1 && fb[0] === 'rlsb-p');
+
+    await fc.query(`SELECT set_config('app.federation_id','',false)`);
+    check('федерация без контекста — 0 строк (fail-closed)', (await fedPlayers()).length === 0);
+
+    // Контроль «забытого фильтра»: bypass='on' БЕЗ FED_MEMBERSHIP_SQL → виден
+    // чужой регион. Доказывает, что фрагмент обязателен в каждом SELECT.
+    await fc.query(`SELECT set_config('app.federation_id','feda',false)`);
+    const leak = (await fc.query(`SELECT id FROM players ORDER BY id`)).rows.map((r) => r.id);
+    check('контроль: без FED_MEMBERSHIP_SQL запрос НЕ изолирован', leak.length >= 2);
+  } finally {
+    fc.release();
+    await fedPool.end();
+  }
+  await admin.query(`DELETE FROM federations WHERE slug IN ('feda','fedb')`);
+
   // ── cleanup ──
   await admin.query(`DELETE FROM tenants WHERE slug IN ('rlsa','rlsb')`);
 } catch (e) {
