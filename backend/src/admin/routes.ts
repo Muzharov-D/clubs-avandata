@@ -7,6 +7,8 @@ import { withBypassRLS } from '../db/tenantContext.js';
 import { tenants } from '../db/schema/tenants.js';
 import { users } from '../db/schema/users.js';
 import { teams } from '../db/schema/teams.js';
+import { federations } from '../db/schema/federations.js';
+import { federationTenants } from '../db/schema/federationTenants.js';
 import { authenticate, authorize } from '../auth/middleware.js';
 import { signAccessToken } from '../auth/jwt.js';
 import { BadRequestError } from '../shared/errors.js';
@@ -142,6 +144,107 @@ export async function adminRoutes(app: FastifyInstance) {
     );
     return { tenants: rows };
   });
+
+  // ===========================================================================
+  // Федерации (Эпик 0, Story 0.5) — platform_admin создаёт федерацию и управляет
+  // членством клубов. federations/federation_tenants — bypass-only (не
+  // tenant-scoped), идут через withBypassRLS. FR25 (создание), FR26 (членство).
+  // ===========================================================================
+
+  const createFederationSchema = z.object({
+    slug: slugSchema,
+    name: z.string().min(1).max(120),
+    region: z.string().min(1).max(120),
+    parentBody: z.string().min(1).max(120).optional(),
+  });
+
+  /** GET /api/v1/admin/federations — список федераций. */
+  app.get('/federations', async () => {
+    const rows = await withBypassRLS((tx) =>
+      tx.select().from(federations).orderBy(federations.slug),
+    );
+    return { federations: rows };
+  });
+
+  /** POST /api/v1/admin/federations — создать федерацию (FR25). */
+  app.post('/federations', async (req) => {
+    const body = createFederationSchema.parse(req.body);
+    return await withBypassRLS(async (tx) => {
+      const existing = await tx
+        .select({ slug: federations.slug })
+        .from(federations)
+        .where(eq(federations.slug, body.slug))
+        .limit(1);
+      if (existing.length > 0) throw new BadRequestError('slug already exists', 'SLUG_EXISTS');
+      await tx.insert(federations).values({
+        slug: body.slug,
+        name: body.name,
+        region: body.region,
+        parentBody: body.parentBody ?? null,
+      });
+      return { federation: { slug: body.slug, name: body.name, region: body.region } };
+    });
+  });
+
+  /** GET /api/v1/admin/federations/:slug/members — клубы-члены федерации. */
+  app.get<{ Params: { slug: string } }>('/federations/:slug/members', async (req) => {
+    const { slug } = req.params;
+    const rows = await withBypassRLS((tx) =>
+      tx
+        .select()
+        .from(federationTenants)
+        .where(eq(federationTenants.federationSlug, slug))
+        .orderBy(federationTenants.tenantSlug),
+    );
+    return { members: rows };
+  });
+
+  const addMemberSchema = z.object({
+    tenantSlug: slugSchema,
+    tier: z.enum(['full', 'listed']).default('full'),
+  });
+
+  /** POST /api/v1/admin/federations/:slug/members — добавить клуб (FR26). Идемпотентно. */
+  app.post<{ Params: { slug: string } }>('/federations/:slug/members', async (req) => {
+    const { slug } = req.params;
+    const body = addMemberSchema.parse(req.body);
+    return await withBypassRLS(async (tx) => {
+      const fed = await tx
+        .select({ slug: federations.slug })
+        .from(federations)
+        .where(eq(federations.slug, slug))
+        .limit(1);
+      if (fed.length === 0) throw new BadRequestError('federation not found', 'FEDERATION_NOT_FOUND');
+      await tx
+        .insert(federationTenants)
+        .values({ federationSlug: slug, tenantSlug: body.tenantSlug, tier: body.tier })
+        .onConflictDoNothing({
+          target: [federationTenants.federationSlug, federationTenants.tenantSlug],
+        });
+      return { ok: true, member: { federationSlug: slug, tenantSlug: body.tenantSlug, tier: body.tier } };
+    });
+  });
+
+  /** DELETE /api/v1/admin/federations/:slug/members/:tenantSlug — убрать клуб (FR26). */
+  app.delete<{ Params: { slug: string; tenantSlug: string } }>(
+    '/federations/:slug/members/:tenantSlug',
+    async (req) => {
+      const { slug, tenantSlug } = req.params;
+      return await withBypassRLS(async (tx) => {
+        const deleted = await tx
+          .delete(federationTenants)
+          .where(
+            and(
+              eq(federationTenants.federationSlug, slug),
+              eq(federationTenants.tenantSlug, tenantSlug),
+            ),
+          )
+          .returning({ tenantSlug: federationTenants.tenantSlug });
+        if (deleted.length === 0) throw new BadRequestError('member not found', 'MEMBER_NOT_FOUND');
+        return { ok: true, removed: deleted[0]?.tenantSlug };
+      });
+    },
+  );
 
   /**
    * POST /api/v1/admin/tenants — создать клуб + head_coach.
