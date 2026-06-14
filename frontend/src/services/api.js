@@ -146,7 +146,7 @@ export async function login(loginOrEmail, password, tenantSlug) {
   const data = JSON.parse(text);
   setToken(data.accessToken);
   try { localStorage.setItem(USER_KEY, JSON.stringify(data.user)); } catch (_) {}
-  return { user: data.user, tenant: data.tenant ?? null };
+  return { user: data.user, tenant: data.tenant ?? null, federation: data.federation ?? null };
 }
 
 // Установка пароля по invite-ссылке (?token=...). Без авторизации.

@@ -46,6 +46,12 @@ import { AdminTenantsList } from './routes/admin/AdminTenantsList';
 import { AdminTenantNew } from './routes/admin/AdminTenantNew';
 import { AdminTenantDetail } from './routes/admin/AdminTenantDetail';
 
+// Кабинет федерации региона (federation_admin)
+import { FederationLayout } from './routes/federation/FederationLayout';
+import { FederationOverview } from './routes/federation/Overview';
+import { FederationClubs } from './routes/federation/Clubs';
+import { FederationCompetitions } from './routes/federation/Competitions';
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: { retry: 1, refetchOnWindowFocus: false, staleTime: 30_000 },
@@ -60,6 +66,7 @@ function RootRoute() {
   if (!user) return <AvandataLanding />;
   // platform_admin → в админку; обычный пользователь → в свой кабинет
   if (user.role === 'platform_admin') return <Navigate to="/admin" replace />;
+  if (user.role === 'federation_admin') return <Navigate to="/federation" replace />;
   // Игрок — сразу на свой профиль
   if (user.role === 'player' && user.playerId) {
     return <Navigate to={`/players/${user.playerId}`} replace />;
@@ -114,6 +121,16 @@ function PlatformAdminOnly({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
+function FederationOnly({ children }: { children: React.ReactNode }) {
+  const { user, loading } = useAuth() as { user: any; loading: boolean };
+  // Как PlatformAdminOnly: на время резолва auth не редиректим (иначе прямой
+  // переход на глубокий /federation/* роняет реального пользователя на /login).
+  if (loading) return null;
+  if (!user) return <Navigate to="/login" replace />;
+  if (user.role !== 'federation_admin') return <Navigate to="/club" replace />;
+  return <>{children}</>;
+}
+
 export function App() {
   return (
     <ErrorBoundary>
@@ -149,6 +166,21 @@ export function App() {
                     <Route index element={<AdminTenantsList />} />
                     <Route path="tenants/new" element={<AdminTenantNew />} />
                     <Route path="tenants/:slug" element={<AdminTenantDetail />} />
+                  </Route>
+
+                  {/* Кабинет федерации региона (federation_admin) */}
+                  <Route
+                    path="/federation"
+                    element={
+                      <FederationOnly>
+                        <FederationLayout />
+                      </FederationOnly>
+                    }
+                  >
+                    <Route index element={<FederationOverview />} />
+                    <Route path="clubs" element={<FederationClubs />} />
+                    <Route path="competitions" element={<FederationCompetitions />} />
+                    <Route path="*" element={<Navigate to="/federation" replace />} />
                   </Route>
 
                   {/* Авторизованный кабинет клуба */}

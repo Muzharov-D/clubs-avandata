@@ -127,15 +127,31 @@ export async function authRoutes(app: FastifyInstance) {
       tenant = tenantRows[0] ?? null;
     }
 
+    // Контекст федерации для federation_admin (region-scoped, read-only).
+    let federation: { slug: string; name: string; region: string; brand: unknown } | null = null;
+    if (user.role === 'federation_admin' && user.federationSlug) {
+      const fRows = await withBypassRLS((tx) =>
+        tx.select({
+          slug: federations.slug,
+          name: federations.name,
+          region: federations.region,
+          brand: federations.brand,
+        }).from(federations).where(eq(federations.slug, user.federationSlug!)).limit(1),
+      );
+      federation = fRows[0] ?? null;
+    }
+
     return {
       accessToken,
       tenant,
+      federation,
       user: {
         id: user.id,
         email: user.email,
         fullName: user.fullName,
         role: user.role,
         tenantId: user.tenantId,
+        federationId: user.federationSlug,
         teamId: user.teamId,
         playerId: user.playerId,
       },

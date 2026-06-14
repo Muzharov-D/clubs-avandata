@@ -25,6 +25,7 @@ function saveTenant(t) {
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [tenant, setTenant] = useState(storedTenant());
+  const [federation, setFederation] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -36,6 +37,7 @@ export function AuthProvider({ children }) {
           setTenant(res.tenant);
           saveTenant(res.tenant);
         }
+        if (res.federation !== undefined) setFederation(res.federation);
       })
       .catch(() => setUser(null))
       .finally(() => setLoading(false));
@@ -52,6 +54,7 @@ export function AuthProvider({ children }) {
           setTenant(res.tenant);
           saveTenant(res.tenant);
         }
+        if (res.federation !== undefined) setFederation(res.federation);
       })
       .catch(() => {});
   }, []);
@@ -92,6 +95,7 @@ export function AuthProvider({ children }) {
   const value = {
     user,
     tenant,
+    federation,
     loading,
     refreshTenant,
     isAuthenticated: !!user,
@@ -103,13 +107,14 @@ export function AuthProvider({ children }) {
       (user ? COACH_ROLES.has(user.role) : false) ||
       (user?.role === 'player' && user.playerId === playerId),
     login: async (u, p) => {
-      const { user: usr, tenant: t } = await apiLogin(u, p);
+      const { user: usr, tenant: t, federation: f } = await apiLogin(u, p);
       setUser(usr);
       setTenant(t ?? null);
       saveTenant(t ?? null);
+      setFederation(f ?? null);
       return usr;
     },
-    logout: () => { apiLogout(); saveTenant(null); setUser(null); setTenant(null); },
+    logout: () => { apiLogout(); saveTenant(null); setUser(null); setTenant(null); setFederation(null); },
   };
   return <AuthCtx.Provider value={value}>{children}</AuthCtx.Provider>;
 }
