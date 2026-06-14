@@ -28,7 +28,7 @@ const NAV: Array<{ title: string; items: NavItem[] }> = [
     title: 'Качество',
     items: [
       { to: '/federation/data-quality', label: 'Целостность данных' },
-      { label: 'Бенчмаркинг', soon: 'F3' },
+      { to: '/federation/benchmark', label: 'Бенчмаркинг' },
     ],
   },
   {

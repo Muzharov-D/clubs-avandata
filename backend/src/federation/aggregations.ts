@@ -350,3 +350,48 @@ export async function federationProductivity(conn: PoolClient): Promise<Federati
     };
   });
 }
+
+export interface FederationBenchmarkRow {
+  slug: string;
+  name: string;
+  plan: string;
+  players: number;
+  matches: number;
+  coverage: number | null;
+  avgRating: number | null;
+}
+
+/**
+ * Бенчмаркинг клубов (Эпик 7, FR24) — сводка ключевых KPI на клуб для сравнения
+ * и рэнкинга: игроки, матчи, охват данными, средний индекс эффективности.
+ * Источник экспорта CSV (FR23, на фронте).
+ */
+export async function federationBenchmark(conn: PoolClient): Promise<FederationBenchmarkRow[]> {
+  const q = await conn.query<{
+    slug: string; name: string; plan: string;
+    players: number; matches: number; coverage: number | null; avg_rating: string | null;
+  }>(
+    `SELECT
+       t.slug, t.display_name AS name, t.plan,
+       (SELECT count(*)::int FROM players p WHERE p.tenant_id = t.slug) AS players,
+       (SELECT count(*)::int FROM matches m WHERE m.tenant_id = t.slug) AS matches,
+       (SELECT round(avg((m.data_quality->>'score')::numeric))::int
+          FROM matches m
+         WHERE m.tenant_id = t.slug AND jsonb_typeof(m.data_quality->'score') = 'number') AS coverage,
+       (SELECT round(avg((mp.ratings->>'overall')::numeric), 2)
+          FROM match_players mp JOIN players p2 ON p2.id = mp.player_id
+         WHERE p2.tenant_id = t.slug AND jsonb_typeof(mp.ratings->'overall') = 'number') AS avg_rating
+     FROM tenants t
+     WHERE ${fedMembershipFilter('t.slug')}
+     ORDER BY t.display_name`,
+  );
+  return q.rows.map((r) => ({
+    slug: r.slug,
+    name: r.name,
+    plan: r.plan,
+    players: Number(r.players),
+    matches: Number(r.matches),
+    coverage: r.coverage == null ? null : Number(r.coverage),
+    avgRating: r.avg_rating == null ? null : Number(r.avg_rating),
+  }));
+}

@@ -10,6 +10,7 @@ import {
   federationAgeEffect,
   federationTalentPool,
   federationProductivity,
+  federationBenchmark,
 } from './aggregations.js';
 
 /**
@@ -82,6 +83,15 @@ export async function federationRoutes(app: FastifyInstance) {
     if (!federationId) throw new BadRequestError('no federation context', 'NO_FEDERATION');
     return await withFederation(federationId, async (_tx, conn) => ({
       clubs: await federationProductivity(conn),
+    }));
+  });
+
+  /** GET /api/v1/federation/benchmark — KPI-сравнение клубов (FR24). */
+  app.get('/benchmark', async (req) => {
+    const federationId = req.user?.federationId;
+    if (!federationId) throw new BadRequestError('no federation context', 'NO_FEDERATION');
+    return await withFederation(federationId, async (_tx, conn) => ({
+      clubs: await federationBenchmark(conn),
     }));
   });
 }
