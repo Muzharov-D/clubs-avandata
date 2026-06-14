@@ -87,3 +87,36 @@ export async function withBypassRLS<T>(
     conn.release();
   }
 }
+
+/**
+ * Run as a regional federation (federation_admin) — read-only, region-scoped.
+ *
+ * Ставит app.bypass_rls='on' (федерация читает МНОГО клубов сразу + bypass-only
+ * federation_tenants/federations) и app.federation_id=slug. РЕАЛЬНАЯ изоляция
+ * региона — НЕ через RLS, а на уровне запроса: каждый федеративный SELECT обязан
+ * включать `FED_MEMBERSHIP_SQL` (фильтр tenant_id по членству, читает
+ * app.federation_id). Без этого фрагмента запрос вернёт чужие клубы — поэтому он
+ * обязателен и проверяется тестом изоляции (Story 0.7). Сбрасываем оба флага в
+ * finally, чтобы переиспользованный из пула connection не унаследовал контекст.
+ *
+ * Read-only — соглашением: федеративные роуты не выставляют write-путей.
+ */
+export async function withFederation<T>(
+  federationSlug: string,
+  fn: (tx: NodePgDatabase<typeof schema>, conn: PoolClient) => Promise<T>,
+): Promise<T> {
+  const conn = await pool.connect();
+  try {
+    await conn.query(`SET row_security = on`);
+    await conn.query(`SELECT set_config('app.bypass_rls', 'on', false)`);
+    await conn.query(`SELECT set_config('app.federation_id', $1, false)`, [federationSlug]);
+    const tx = drizzle(conn, { schema });
+    return await fn(tx, conn);
+  } finally {
+    try {
+      await conn.query(`SELECT set_config('app.bypass_rls', 'off', false)`);
+      await conn.query(`SELECT set_config('app.federation_id', '', false)`);
+    } catch { /* ignore */ }
+    conn.release();
+  }
+}
