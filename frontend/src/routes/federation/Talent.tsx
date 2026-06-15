@@ -1,10 +1,12 @@
 import { useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { Link } from 'react-router-dom';
 import { api } from '../../api/client';
 import { ratingColor, tint } from './fedColors';
 import './federation.css';
 
 interface PlayerRow {
+  playerId: string;
   name: string | null;
   club: string;
   ageGroup: string;
@@ -17,6 +19,8 @@ interface PlayerRow {
   passing: number | null;
   fitness: number | null;
   creativity: number | null;
+  goals: number;
+  assists: number;
 }
 
 const MIN_OPTIONS = [0, 90, 270, 450];
@@ -92,7 +96,12 @@ export function FederationTalent() {
         <section className="fed-card fed-rise">
           <div className="fed-table" style={{ padding: '0 8px' }}>
             {shown.map((p, i) => (
-              <div key={i} className="fed-row">
+              <Link
+                key={p.playerId}
+                to={`/federation/players/${encodeURIComponent(p.playerId)}`}
+                className="fed-row fed-row--link"
+                style={{ textDecoration: 'none', color: 'inherit' }}
+              >
                 <span className="fed-faint fed-num" style={{ width: 26, fontSize: 12 }}>{i + 1}</span>
                 <span
                   className="fed-rate"
@@ -119,12 +128,14 @@ export function FederationTalent() {
                         <span key={l} className="fed-dim">{l}<b style={{ color: ratingColor(v) }}>{v.toFixed(1)}</b></span>
                       );
                     })}
+                    {p.goals > 0 && <span className="fed-dim">Голы<b style={{ color: 'var(--text)' }}>{p.goals}</b></span>}
+                    {p.assists > 0 && <span className="fed-dim">Пас<b style={{ color: 'var(--text)' }}>{p.assists}</b></span>}
                   </div>
                 </div>
                 <span className="fed-faint fed-num" style={{ fontSize: 11.5, whiteSpace: 'nowrap' }}>
                   {p.matches} м · {p.minutes}′
                 </span>
-              </div>
+              </Link>
             ))}
           </div>
         </section>

@@ -10,6 +10,7 @@ import {
   federationDataQuality,
   federationAgeEffect,
   federationTalentPool,
+  federationPlayerProfile,
   federationProductivity,
   federationBenchmark,
 } from './aggregations.js';
@@ -83,6 +84,19 @@ export async function federationRoutes(app: FastifyInstance) {
     return await withFederation(federationId, async (_tx, conn) => ({
       players: await federationTalentPool(conn, minMinutes),
     }));
+  });
+
+  /** GET /api/v1/federation/players/:id — детальный профиль игрока (дриллдаун). */
+  app.get('/players/:id', async (req, reply) => {
+    const federationId = req.user?.federationId;
+    if (!federationId) throw new BadRequestError('no federation context', 'NO_FEDERATION');
+    const { id } = req.params as { id: string };
+    const profile = await withFederation(federationId, (_tx, conn) => federationPlayerProfile(conn, id));
+    if (!profile) {
+      reply.code(404);
+      return { error: 'игрок не найден или вне федерации', code: 'PLAYER_NOT_FOUND' };
+    }
+    return profile;
   });
 
   /** GET /api/v1/federation/development — продуктивность клубов (FR22). */
