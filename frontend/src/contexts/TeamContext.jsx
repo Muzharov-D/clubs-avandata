@@ -23,8 +23,10 @@ export function TeamProvider({ children }) {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    // platform_admin не имеет tenant'a — пропускаем загрузку команд.
-    if (!user || user.role === 'platform_admin') {
+    // Команды грузят только клубные пользователи. Без-клубные роли
+    // (platform_admin, federation_admin) имеют tenantId=null — пропускаем,
+    // иначе /data/teams → 401 → глобальный logout → выкидывает на /login.
+    if (!user || !user.tenantId) {
       setTeams([]);
       setSelectedTeamId(null);
       return;
