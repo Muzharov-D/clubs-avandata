@@ -382,6 +382,86 @@ export async function federationTalentPool(conn: PoolClient, minMinutes: number)
   }));
 }
 
+export type PlayerLine = 'GK' | 'DEF' | 'MID' | 'FWD';
+export interface BestXIPlayer {
+  playerId: string;
+  name: string | null;
+  club: string;
+  ageGroup: string;
+  position: string | null;
+  line: PlayerLine;
+  rating: number;
+  /** Перцентиль рейтинга внутри своей линии по региону (выше = сильнее). */
+  pct: number;
+  minutes: number;
+  matches: number;
+}
+
+/** Грубое отображение позиции игрока в линию (RU-коды разных провайдеров). */
+const LINE_CASE = `CASE
+  WHEN p.position ILIKE 'ВР%' OR p.position ILIKE '%врат%' THEN 'GK'
+  WHEN p.position ILIKE '%НАП%' OR p.position ILIKE 'ЦН%' OR p.position ILIKE 'ЛН%' OR p.position ILIKE 'ПН%' OR p.position ILIKE 'ЛВ%' OR p.position ILIKE 'ПВ%' OR p.position ILIKE '%ФОР%' THEN 'FWD'
+  WHEN p.position ILIKE '%ЗАЩ%' OR p.position ILIKE 'ЦЗ%' OR p.position ILIKE 'ЛЗ%' OR p.position ILIKE 'ЛКЗ%' OR p.position ILIKE 'ПКЗ%' THEN 'DEF'
+  WHEN p.position ILIKE '%ПОЛ%' OR p.position ILIKE 'ЦОП%' OR p.position ILIKE 'ОПЗ%' OR p.position ILIKE 'ЦП%' OR p.position ILIKE 'ЛЦП%' OR p.position ILIKE 'ПЦП%' OR p.position ILIKE 'ВОП%' OR p.position ILIKE 'ПЗ%' THEN 'MID'
+  ELSE 'MID' END`;
+
+/**
+ * «Сборная региона по данным» (Открытие/killer-app монополии): объективно
+ * сильнейший состав 1-4-3-3 по среднему индексу внутри линии, с перцентилем по
+ * региону. Это умеет ТОЛЬКО держатель данных всех клубов — у клуба нет знаменателя.
+ * Имя — гейт согласия. Фильтр по минимуму минут.
+ */
+export async function federationBestXI(conn: PoolClient, minMinutes: number): Promise<BestXIPlayer[]> {
+  const q = await conn.query<{
+    player_id: string; name: string | null; club: string; age_group: string; position: string | null;
+    line: PlayerLine; rating: string; pct: number; minutes: number; matches: number;
+  }>(
+    `WITH agg AS (
+       SELECT p.id AS player_id,
+         CASE WHEN p.data_consent THEN p.full_name ELSE NULL END AS name,
+         t.display_name AS club, tm.age_group, p.position,
+         ${LINE_CASE} AS line,
+         count(mp.match_id)::int AS matches,
+         coalesce(sum(mp.minutes), 0)::int AS minutes,
+         round(avg((mp.ratings->>'overall')::numeric), 2) AS rating
+       FROM players p
+       JOIN teams tm ON tm.id = p.team_id
+       JOIN tenants t ON t.slug = p.tenant_id
+       LEFT JOIN match_players mp ON mp.player_id = p.id AND jsonb_typeof(mp.ratings->'overall') = 'number'
+       WHERE ${fedMembershipFilter('p.tenant_id')}
+       GROUP BY p.id, p.full_name, p.data_consent, t.display_name, tm.age_group, p.position
+       HAVING round(avg((mp.ratings->>'overall')::numeric), 2) IS NOT NULL
+          AND coalesce(sum(mp.minutes), 0) >= $1
+     ),
+     ranked AS (
+       SELECT agg.*,
+         round((percent_rank() OVER (PARTITION BY line ORDER BY rating)) * 100)::int AS pct,
+         row_number() OVER (PARTITION BY line ORDER BY rating DESC) AS rn
+       FROM agg
+     )
+     SELECT player_id, name, club, age_group, position, line, rating, pct, minutes, matches
+       FROM ranked
+      WHERE (line = 'GK' AND rn <= 1)
+         OR (line = 'DEF' AND rn <= 4)
+         OR (line = 'MID' AND rn <= 3)
+         OR (line = 'FWD' AND rn <= 3)
+      ORDER BY line, rn`,
+    [minMinutes],
+  );
+  return q.rows.map((r) => ({
+    playerId: r.player_id,
+    name: r.name ?? null,
+    club: r.club,
+    ageGroup: r.age_group,
+    position: r.position ?? null,
+    line: r.line,
+    rating: Number(r.rating),
+    pct: Number(r.pct),
+    minutes: Number(r.minutes),
+    matches: Number(r.matches),
+  }));
+}
+
 export interface FederationPlayerProfile {
   playerId: string;
   name: string | null;

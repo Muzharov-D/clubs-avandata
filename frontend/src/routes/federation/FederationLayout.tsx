@@ -32,6 +32,7 @@ const NAV: Array<{ title: string; items: NavItem[] }> = [
     items: [
       { to: '/federation/talent', label: 'Игроки', icon: 'M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM22 21v-2a4 4 0 0 0-3-3.87' },
       { to: '/federation/leaderboards', label: 'Лидерборды', icon: 'M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0V4zM5 6H3v1a3 3 0 0 0 3 3m12-4h2v1a3 3 0 0 1-3 3' },
+      { to: '/federation/best-xi', label: 'Сборная региона', icon: 'M12 2l2.9 6.3 6.9.8-5.1 4.7 1.4 6.8L12 17.8 5.9 20.6l1.4-6.8L2.2 9.1l6.9-.8z' },
       { to: '/federation/development', label: 'Развитие', icon: 'M23 6l-9.5 9.5-5-5L1 18M17 6h6v6' },
       { to: '/federation/age-effect', label: 'Возрастной эффект', icon: 'M3 3v18h18M7 13l3-3 3 3 5-6' },
     ],

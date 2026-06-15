@@ -11,6 +11,7 @@ import {
   federationAgeEffect,
   federationTalentPool,
   federationPlayerProfile,
+  federationBestXI,
   federationProductivity,
   federationWinDevelop,
   federationBenchmark,
@@ -106,6 +107,17 @@ export async function federationRoutes(app: FastifyInstance) {
     if (!federationId) throw new BadRequestError('no federation context', 'NO_FEDERATION');
     return await withFederation(federationId, async (_tx, conn) => ({
       clubs: await federationWinDevelop(conn),
+    }));
+  });
+
+  /** GET /api/v1/federation/best-xi?minMinutes=N — сборная региона по данным. */
+  app.get('/best-xi', async (req) => {
+    const federationId = req.user?.federationId;
+    if (!federationId) throw new BadRequestError('no federation context', 'NO_FEDERATION');
+    const raw = Number((req.query as { minMinutes?: string }).minMinutes);
+    const minMinutes = Number.isFinite(raw) && raw > 0 ? Math.floor(raw) : 0;
+    return await withFederation(federationId, async (_tx, conn) => ({
+      players: await federationBestXI(conn, minMinutes),
     }));
   });
 

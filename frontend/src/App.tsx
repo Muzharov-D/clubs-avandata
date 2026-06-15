@@ -59,6 +59,7 @@ import { FederationBenchmark } from './routes/federation/Benchmark';
 import { FederationLeaderboards } from './routes/federation/Leaderboards';
 import { FederationPlayerProfile } from './routes/federation/PlayerProfile';
 import { FederationDiscoveries } from './routes/federation/Discoveries';
+import { FederationBestXI } from './routes/federation/BestXI';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -192,6 +193,7 @@ export function App() {
                     <Route path="data-quality" element={<FederationDataQuality />} />
                     <Route path="age-effect" element={<FederationAgeEffect />} />
                     <Route path="talent" element={<FederationTalent />} />
+                    <Route path="best-xi" element={<FederationBestXI />} />
                     <Route path="players/:id" element={<FederationPlayerProfile />} />
                     <Route path="leaderboards" element={<FederationLeaderboards />} />
                     <Route path="development" element={<FederationDevelopment />} />

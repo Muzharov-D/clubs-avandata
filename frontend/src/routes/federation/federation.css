@@ -137,6 +137,27 @@
 /* рейтинг-пилюля 0–10 */
 .fed-rate { min-width: 40px; text-align: center; border-radius: var(--radius-sm); padding: 4px 0; font-family: var(--font-display); font-weight: 700; font-size: 14px; font-variant-numeric: tabular-nums; border: 1px solid transparent; }
 
+/* ---- Сборная региона (футбольное поле) ---- */
+.fed-pitch {
+  background:
+    radial-gradient(circle at 50% 46%, color-mix(in srgb, var(--success) 12%, transparent), transparent 58%),
+    linear-gradient(180deg, color-mix(in srgb, var(--success) 9%, var(--bg-surface)), var(--bg-surface));
+  border: 1px solid color-mix(in srgb, var(--success) 26%, var(--border));
+  border-radius: var(--radius); box-shadow: var(--shadow-sm);
+  padding: 24px 16px; display: flex; flex-direction: column; gap: 20px;
+}
+.fed-pitch__line { display: flex; justify-content: center; gap: 12px; flex-wrap: wrap; }
+.fed-xi {
+  width: 158px; background: color-mix(in srgb, var(--bg-surface) 86%, transparent);
+  border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 10px 12px;
+  text-decoration: none; color: inherit; backdrop-filter: blur(2px);
+  transition: border-color var(--dur-fast) var(--ease-out), transform var(--dur-fast) var(--ease-out);
+}
+@media (hover: hover) { .fed-xi:hover { border-color: var(--border-strong); transform: translateY(-2px); } }
+.fed-xi__top { display: flex; align-items: center; gap: 8px; }
+.fed-xi__name { font-weight: 600; font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.fed-xi__meta { font-size: 10.5px; color: var(--text-faint); margin-top: 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
 /* ---- Квадрант-матрица (Победа × Развитие) ---- */
 .fed-scatter { overflow: visible; }
 .fed-scatter__zone { font-size: 10.5px; font-weight: 600; opacity: 0.85; }
