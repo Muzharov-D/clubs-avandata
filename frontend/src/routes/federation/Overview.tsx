@@ -17,10 +17,29 @@ interface DqRow { slug: string; name: string; players: number; birthPct: number 
 interface ClubRow { slug: string; name: string; plan: string; teams: number; players: number; matches: number; coverage: number | null }
 interface RegionProfile {
   ratings: { overall: number | null; attack: number | null; defence: number | null; passing: number | null; fitness: number | null; creativity: number | null };
-  style: { possession: number | null; xg: number | null; shots: number | null; shotsOnTarget: number | null; passAccuracy: number | null; duelsWon: number | null; distanceKm: number | null };
+  style: {
+    shots: number | null; shotsOnTarget: number | null; dribbles: number | null;
+    keyPasses: number | null; progressivePasses: number | null;
+    tackles: number | null; interceptions: number | null; recoveries: number | null;
+    touchesInBox: number | null; accuratePasses: number | null; crosses: number | null; distanceKm: number | null;
+  };
   matchesRated: number;
   matchesStyled: number;
 }
+const STYLE_DEFS: Array<{ k: keyof RegionProfile['style']; l: string; accent: 'cyan' | 'gold' | 'green' | 'violet' | 'muted' }> = [
+  { k: 'shots', l: 'Удары', accent: 'gold' },
+  { k: 'shotsOnTarget', l: 'Удары в створ', accent: 'gold' },
+  { k: 'dribbles', l: 'Обводки', accent: 'violet' },
+  { k: 'keyPasses', l: 'Ключевые передачи', accent: 'cyan' },
+  { k: 'progressivePasses', l: 'Прогрессивные пасы', accent: 'cyan' },
+  { k: 'accuratePasses', l: 'Точные передачи', accent: 'cyan' },
+  { k: 'crosses', l: 'Кроссы', accent: 'cyan' },
+  { k: 'touchesInBox', l: 'Касания в штрафной', accent: 'violet' },
+  { k: 'tackles', l: 'Отборы', accent: 'green' },
+  { k: 'interceptions', l: 'Перехваты', accent: 'green' },
+  { k: 'recoveries', l: 'Подборы', accent: 'green' },
+  { k: 'distanceKm', l: 'Дистанция, км', accent: 'muted' },
+];
 
 /**
  * Обзор региона (Эпик 1, FR4–5) — лендинг кабинета. Три слоя:
@@ -154,6 +173,7 @@ function RegionProfileSection({ data, loading, matches, coverage }: { data?: Reg
     { label: 'Креатив', value: r.creativity },
   ] as RadarAxis[]).filter((a) => a.value != null);
   if (axes.length < 3) return null; // радар осмыслен от 3 измерений
+  const styleTiles = STYLE_DEFS.filter((d) => data.style[d.k] != null);
 
   return (
     <section className="fed-card fed-rise">
@@ -172,11 +192,22 @@ function RegionProfileSection({ data, loading, matches, coverage }: { data?: Reg
             </div>
             <p className="fed-faint" style={{ fontSize: 11.5, margin: '14px 2px 0', lineHeight: 1.55 }}>
               Радар — средний индекс эффективности региона (0–10) по измерениям игры.
-              Командный стиль (владение, xG, дистанция) добавится, когда клубы загрузят
-              матчи с расширенной командной статистикой.
             </p>
           </div>
         </div>
+
+        {styleTiles.length > 0 && (
+          <div style={{ marginTop: 20 }}>
+            <div className="fed-card__title" style={{ fontSize: 12, color: 'var(--text-muted)', fontWeight: 600 }}>
+              Стиль игры · в среднем за матч
+            </div>
+            <div className="fed-kpis">
+              {styleTiles.map((d) => (
+                <StatTile key={d.k} label={d.l} value={data.style[d.k] as number} accent={d.accent} />
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </section>
   );

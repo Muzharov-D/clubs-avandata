@@ -335,10 +335,12 @@ export interface FederationRegionProfile {
     overall: number | null; attack: number | null; defence: number | null;
     passing: number | null; fitness: number | null; creativity: number | null;
   };
-  /** Стиль игры региона (среднее по нашей стороне матча). */
+  /** Стиль игры региона — среднее за матч из team_aggregates (нашей команды). */
   style: {
-    possession: number | null; xg: number | null; shots: number | null; shotsOnTarget: number | null;
-    passAccuracy: number | null; duelsWon: number | null; distanceKm: number | null;
+    shots: number | null; shotsOnTarget: number | null; dribbles: number | null;
+    keyPasses: number | null; progressivePasses: number | null;
+    tackles: number | null; interceptions: number | null; recoveries: number | null;
+    touchesInBox: number | null; accuratePasses: number | null; crosses: number | null; distanceKm: number | null;
   };
   matchesRated: number;
   matchesStyled: number;
@@ -347,9 +349,9 @@ export interface FederationRegionProfile {
 /**
  * Профиль региона (реальная глубина) — 6-мерный рейтинг команд + стиль игры по
  * матчам клубов-членов. Рейтинги из matches.team_avg_ratings (готовое среднее
- * нашей команды по матчу); стиль из matches.team_summary_stats (наша сторона:
- * home, если выставлен home_team_id, иначе away). Все касты под guard'ом
- * jsonb_typeof='number' — как в остальных агрегатах.
+ * нашей команды по матчу); стиль из matches.team_aggregates (бэк нормализует к
+ * НАШЕЙ команде — не home/away; ключи как в клубном утиле teamMatchMetrics.js).
+ * Все касты под guard'ом jsonb_typeof — как в остальных агрегатах.
  */
 export async function federationRegionProfile(conn: PoolClient): Promise<FederationRegionProfile> {
   const r = (await conn.query<{
@@ -368,29 +370,37 @@ export async function federationRegionProfile(conn: PoolClient): Promise<Federat
      WHERE ${FED_MEMBERSHIP_SQL} AND team_avg_ratings IS NOT NULL`,
   )).rows[0];
 
-  // Стиль: значение лежит как {value:N} или {pct:N} → берём числовой лист с guard'ом.
-  const leaf = (path: string, kind: 'value' | 'pct', prec: number, scale = 1) =>
-    `round(avg(CASE WHEN jsonb_typeof(o->'${path}'->'${kind}')='number' THEN (o->'${path}'->>'${kind}')::numeric END)${scale !== 1 ? `/${scale}` : ''}, ${prec})`;
+  // Значение поля team_aggregates: объект {value}/{pct} ИЛИ скаляр-число.
+  const fv = (section: string, key: string) => {
+    const node = `team_aggregates->'${section}'->'${key}'`;
+    return `CASE
+      WHEN jsonb_typeof(${node})='number' THEN (${node}#>>'{}')::numeric
+      WHEN jsonb_typeof(${node}->'value')='number' THEN (${node}->>'value')::numeric
+      WHEN jsonb_typeof(${node}->'pct')='number' THEN (${node}->>'pct')::numeric END`;
+  };
   const s = (await conn.query<{
-    possession: string | null; xg: string | null; shots: string | null; shots_on_target: string | null;
-    pass_accuracy: string | null; duels_won: string | null; distance_km: string | null; matches_styled: number;
+    shots: string | null; shots_on_target: string | null; dribbles: string | null;
+    key_passes: string | null; progressive_passes: string | null;
+    tackles: string | null; interceptions: string | null; recoveries: string | null;
+    touches_in_box: string | null; accurate_passes: string | null; crosses: string | null;
+    distance_km: string | null; matches_styled: number;
   }>(
-    `WITH ours AS (
-       SELECT CASE WHEN home_team_id IS NOT NULL THEN team_summary_stats->'home'
-                   WHEN away_team_id IS NOT NULL THEN team_summary_stats->'away' END AS o
-       FROM matches
-       WHERE ${FED_MEMBERSHIP_SQL} AND team_summary_stats IS NOT NULL
-     )
-     SELECT
-       ${leaf('possession', 'value', 1)} AS possession,
-       ${leaf('xG', 'value', 2)} AS xg,
-       ${leaf('shotsTotal', 'value', 1)} AS shots,
-       ${leaf('shotsOnTarget', 'value', 1)} AS shots_on_target,
-       ${leaf('passAccuracy', 'pct', 0)} AS pass_accuracy,
-       ${leaf('duelsWon', 'pct', 0)} AS duels_won,
-       ${leaf('totalDistance', 'value', 1, 1000)} AS distance_km,
-       count(*) FILTER (WHERE o IS NOT NULL)::int AS matches_styled
-     FROM ours`,
+    `SELECT
+       round(avg(coalesce(${fv('shooting', 'shots')}, ${fv('shooting', 'totalShots')})), 1) AS shots,
+       round(avg(${fv('shooting', 'onTarget')}), 1) AS shots_on_target,
+       round(avg(${fv('attacks', 'dribble')}), 1) AS dribbles,
+       round(avg(${fv('passes', 'keyPass')}), 1) AS key_passes,
+       round(avg(${fv('passes', 'progressive')}), 1) AS progressive_passes,
+       round(avg(coalesce(${fv('recoveriesAndTackling', 'tackle')}, ${fv('duels', 'totalDuels')})), 1) AS tackles,
+       round(avg(coalesce(${fv('recoveriesAndTackling', 'interception')}, ${fv('positioning', 'interceptions')})), 1) AS interceptions,
+       round(avg(${fv('recoveriesAndTackling', 'recovery')}), 1) AS recoveries,
+       round(avg(${fv('attacks', 'touchesInBox')}), 1) AS touches_in_box,
+       round(avg(${fv('passes', 'successful')}), 1) AS accurate_passes,
+       round(avg(${fv('passes', 'crosses')}), 1) AS crosses,
+       round(avg(${fv('fitness', 'totalDistance')}) / 1000, 1) AS distance_km,
+       count(*) FILTER (WHERE team_aggregates IS NOT NULL)::int AS matches_styled
+     FROM matches
+     WHERE ${FED_MEMBERSHIP_SQL} AND team_aggregates IS NOT NULL`,
   )).rows[0];
 
   const n = (v: string | null | undefined) => (v == null ? null : Number(v));
@@ -400,8 +410,11 @@ export async function federationRegionProfile(conn: PoolClient): Promise<Federat
       passing: n(r?.passing), fitness: n(r?.fitness), creativity: n(r?.creativity),
     },
     style: {
-      possession: n(s?.possession), xg: n(s?.xg), shots: n(s?.shots), shotsOnTarget: n(s?.shots_on_target),
-      passAccuracy: n(s?.pass_accuracy), duelsWon: n(s?.duels_won), distanceKm: n(s?.distance_km),
+      shots: n(s?.shots), shotsOnTarget: n(s?.shots_on_target), dribbles: n(s?.dribbles),
+      keyPasses: n(s?.key_passes), progressivePasses: n(s?.progressive_passes),
+      tackles: n(s?.tackles), interceptions: n(s?.interceptions), recoveries: n(s?.recoveries),
+      touchesInBox: n(s?.touches_in_box), accuratePasses: n(s?.accurate_passes), crosses: n(s?.crosses),
+      distanceKm: n(s?.distance_km),
     },
     matchesRated: Number(r?.matches_rated ?? 0),
     matchesStyled: Number(s?.matches_styled ?? 0),
