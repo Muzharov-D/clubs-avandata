@@ -635,6 +635,67 @@ export async function federationProductivity(conn: PoolClient): Promise<Federati
   });
 }
 
+export interface FederationWinDevelopRow {
+  slug: string;
+  name: string;
+  /** Развитие (ось Y): доля минут молодых + контекст. */
+  youngPct: number | null;
+  totalMinutes: number;
+  activePlayers: number;
+  /** Результат (ось X): очки/игры → очки за игру (PPG) + лучшая позиция в таблице. */
+  points: number | null;
+  games: number | null;
+  ppg: number | null;
+  bestPos: number | null;
+}
+
+/**
+ * Матрица «Победа vs развитие» (Открытие 2). На клуб: результат (PPG из standings,
+ * строка isOurClub в последней таблице на возраст) × развитие (доля минут молодых
+ * из productivity). Связка, которой нет ни у одного клуба поодиночке — видна только
+ * региону. Robust к форме table_data (array | {table:[…]}).
+ */
+export async function federationWinDevelop(conn: PoolClient): Promise<FederationWinDevelopRow[]> {
+  const dev = await federationProductivity(conn);
+  const res = await conn.query<{ slug: string; points: number; games: number; best_pos: number | null }>(
+    `WITH latest AS (
+       SELECT DISTINCT ON (tenant_id, age_group) tenant_id, table_data
+         FROM standings
+        WHERE ${FED_MEMBERSHIP_SQL}
+        ORDER BY tenant_id, age_group, fetched_at DESC
+     )
+     SELECT l.tenant_id AS slug,
+       sum(CASE WHEN jsonb_typeof(row->'points')='number' THEN (row->>'points')::int ELSE 0 END)::int AS points,
+       sum(CASE WHEN jsonb_typeof(row->'games')='number' THEN (row->>'games')::int ELSE 0 END)::int AS games,
+       min(CASE WHEN jsonb_typeof(row->'pos')='number' THEN (row->>'pos')::int END)::int AS best_pos
+     FROM latest l,
+          jsonb_array_elements(
+            CASE WHEN jsonb_typeof(l.table_data)='array' THEN l.table_data
+                 WHEN jsonb_typeof(l.table_data->'table')='array' THEN l.table_data->'table'
+                 ELSE '[]'::jsonb END
+          ) AS row
+     WHERE (row->>'isOurClub') = 'true'
+     GROUP BY l.tenant_id`,
+  );
+  const bySlug = new Map(res.rows.map((r) => [r.slug, r]));
+  return dev.map((d) => {
+    const r = bySlug.get(d.slug);
+    const points = r ? Number(r.points) : null;
+    const games = r ? Number(r.games) : null;
+    return {
+      slug: d.slug,
+      name: d.name,
+      youngPct: d.youngPct,
+      totalMinutes: d.totalMinutes,
+      activePlayers: d.activePlayers,
+      points,
+      games,
+      ppg: games && games > 0 && points != null ? Math.round((points / games) * 100) / 100 : null,
+      bestPos: r && r.best_pos != null ? Number(r.best_pos) : null,
+    };
+  });
+}
+
 export interface FederationBenchmarkRow {
   slug: string;
   name: string;

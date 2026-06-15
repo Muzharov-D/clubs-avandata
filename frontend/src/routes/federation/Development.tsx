@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { StatTile } from '../../components/StatTile';
 import { api } from '../../api/client';
+import { FedScatter, type ScatterPoint } from './FedScatter';
 import './federation.css';
 
 interface ProdRow {
@@ -20,6 +21,18 @@ function youngColor(v: number | null): string {
   return 'var(--danger)';
 }
 
+interface WinDevRow {
+  slug: string; name: string; youngPct: number | null; totalMinutes: number; activePlayers: number;
+  points: number | null; games: number | null; ppg: number | null; bestPos: number | null;
+}
+
+/** Зона квадранта: PPG ≥1.5 (верх таблицы) × доля молодых ≥15%. */
+function zone(ppg: number, young: number): string {
+  return ppg >= 1.5
+    ? (young >= 15 ? 'побеждают и растят' : 'побеждают зрелостью состава')
+    : (young >= 15 ? 'растят, но не побеждают' : 'ни результата, ни развития');
+}
+
 /**
  * Развитие и продуктивность (Эпик 6, FR22). Минуты молодых (игроки моложе года
  * команды → играют на возраст старше, признак развития) + активная глубина.
@@ -36,6 +49,23 @@ export function FederationDevelopment() {
   const totalMin = clubs.reduce((s, c) => s + c.totalMinutes, 0);
   const youngMin = clubs.reduce((s, c) => s + ((c.youngPct ?? 0) / 100) * c.totalMinutes, 0);
   const regionYoung = totalMin ? Math.round((youngMin / totalMin) * 100) : 0;
+
+  const wd = useQuery({ queryKey: ['federation', 'win-develop'], queryFn: () => api<{ clubs: WinDevRow[] }>('/federation/win-develop') });
+  const plotted = (wd.data?.clubs ?? []).filter((c) => c.ppg != null && c.youngPct != null) as Array<WinDevRow & { ppg: number; youngPct: number }>;
+  const points: ScatterPoint[] = plotted.map((c) => ({ label: c.name, x: c.ppg, y: c.youngPct }));
+  const maxY = plotted.length ? Math.max(...plotted.map((c) => c.youngPct)) : 0;
+  const yMax = Math.max(20, Math.ceil((maxY * 1.25) / 5) * 5);
+  const matrixVerdict = (() => {
+    if (plotted.length === 0) return null;
+    if (plotted.length === 1) {
+      const c = plotted[0];
+      return `${c.name}: ${c.ppg} очка за игру, ${c.youngPct}% минут молодым — зона «${zone(c.ppg, c.youngPct)}».`;
+    }
+    const warn = plotted.filter((c) => c.ppg >= 1.5 && c.youngPct < 15).map((c) => c.name);
+    return warn.length
+      ? `${plotted.length} клубов на матрице. Берут результат зрелостью, а не развитием: ${warn.join(', ')}.`
+      : `${plotted.length} клубов размещены по результату и развитию.`;
+  })();
 
   return (
     <div>
@@ -59,6 +89,24 @@ export function FederationDevelopment() {
 
       {clubs.length > 0 && (
         <div className="fed-stack">
+          <section className="fed-card fed-rise">
+            <div className="fed-card__pad">
+              <div className="fed-card__title">Победа vs развитие <span className="fed-faint" style={{ fontWeight: 400 }}>результат × минуты молодым</span></div>
+              {points.length > 0 ? (
+                <div style={{ display: 'flex', justifyContent: 'center' }}>
+                  <FedScatter points={points} xMax={3} yMax={yMax} xMid={1.5} yMid={15} xLabel="Очки за игру" yLabel="Минуты молодым, %" quad={{ tr: 'растят и побеждают', tl: 'растят', br: 'зрелостью', bl: '—' }} />
+                </div>
+              ) : (
+                <div className="fed-note">Результаты из турнирных таблиц пока не размечены как «наш клуб» — матрица оживёт с разметкой результатов и новыми клубами.</div>
+              )}
+              {matrixVerdict && (
+                <p className="fed-finding__why" style={{ marginTop: 10 }}>
+                  {matrixVerdict} Кто высоко в таблице и низко по развитию — берёт результат зрелостью состава, а не растит игроков. Эту связку не видит ни один клуб поодиночке.
+                </p>
+              )}
+            </div>
+          </section>
+
           <div className="fed-kpis">
             <div className="fed-rise"><StatTile label="Клубов с минутами" value={clubs.length} accent="muted" /></div>
             <div className="fed-rise"><StatTile label="Минут молодых по региону" value={regionYoung} unit="%" accent="cyan" /></div>

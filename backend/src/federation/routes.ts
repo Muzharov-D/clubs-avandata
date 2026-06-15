@@ -12,6 +12,7 @@ import {
   federationTalentPool,
   federationPlayerProfile,
   federationProductivity,
+  federationWinDevelop,
   federationBenchmark,
 } from './aggregations.js';
 
@@ -97,6 +98,15 @@ export async function federationRoutes(app: FastifyInstance) {
       return { error: 'игрок не найден или вне федерации', code: 'PLAYER_NOT_FOUND' };
     }
     return profile;
+  });
+
+  /** GET /api/v1/federation/win-develop — матрица «Победа vs развитие» (Открытие 2). */
+  app.get('/win-develop', async (req) => {
+    const federationId = req.user?.federationId;
+    if (!federationId) throw new BadRequestError('no federation context', 'NO_FEDERATION');
+    return await withFederation(federationId, async (_tx, conn) => ({
+      clubs: await federationWinDevelop(conn),
+    }));
   });
 
   /** GET /api/v1/federation/development — продуктивность клубов (FR22). */
