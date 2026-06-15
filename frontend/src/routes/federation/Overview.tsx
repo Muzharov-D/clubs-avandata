@@ -38,6 +38,13 @@ export function FederationOverview() {
 
   const data = ov.data;
 
+  // Охват данными по региону — взвешенное среднее data_quality.score по числу матчей.
+  const clubsCov = cl.data?.clubs ?? [];
+  const covMatches = clubsCov.reduce((s, c) => s + (c.coverage != null ? c.matches : 0), 0);
+  const regionCoverage = covMatches
+    ? Math.round(clubsCov.reduce((s, c) => s + (c.coverage != null ? c.coverage * c.matches : 0), 0) / covMatches)
+    : null;
+
   return (
     <div>
       <header className="fed-head">
@@ -71,8 +78,8 @@ export function FederationOverview() {
             <div className="fed-rise"><StatTile label="Матчей разобрано" value={data.matches} accent="gold" /></div>
           </div>
 
-          {/* 2. Профиль качества и стиль игры региона (реальная глубина) */}
-          <RegionProfileSection data={rp.data} loading={rp.isLoading} />
+          {/* 2. Профиль качества региона — 6-мерный рейтинг (реальная глубина) */}
+          <RegionProfileSection data={rp.data} loading={rp.isLoading} matches={data.matches} coverage={regionCoverage} />
 
           {/* 3 + 4. Целостность данных + мини-реестр клубов */}
           <div className="fed-cols">
@@ -134,46 +141,40 @@ function QualityLine({ label, pct }: { label: string; pct: number | null }) {
   );
 }
 
-function RegionProfileSection({ data, loading }: { data?: RegionProfile; loading: boolean }) {
+function RegionProfileSection({ data, loading, matches, coverage }: { data?: RegionProfile; loading: boolean; matches?: number; coverage: number | null }) {
   if (loading) return <div className="fed-skeleton" style={{ height: 240 }} />;
   if (!data) return null;
-  const hasRatings = data.matchesRated > 0 && data.ratings.overall != null;
-  const hasStyle = data.matchesStyled > 0;
-  if (!hasRatings && !hasStyle) return null;
+  const r = data.ratings;
+  const axes = ([
+    { label: 'Общий', value: r.overall },
+    { label: 'Атака', value: r.attack },
+    { label: 'Оборона', value: r.defence },
+    { label: 'Пас', value: r.passing },
+    { label: 'Физика', value: r.fitness },
+    { label: 'Креатив', value: r.creativity },
+  ] as RadarAxis[]).filter((a) => a.value != null);
+  if (axes.length < 3) return null; // радар осмыслен от 3 измерений
 
-  const axes: RadarAxis[] = [
-    { label: 'Общий', value: data.ratings.overall },
-    { label: 'Атака', value: data.ratings.attack },
-    { label: 'Пас', value: data.ratings.passing },
-    { label: 'Креатив', value: data.ratings.creativity },
-    { label: 'Физика', value: data.ratings.fitness },
-    { label: 'Оборона', value: data.ratings.defence },
-  ];
-  const st = data.style;
   return (
     <section className="fed-card fed-rise">
       <div className="fed-card__pad">
         <div className="fed-card__title">
-          Профиль качества и стиль игры
-          <span className="fed-faint" style={{ fontWeight: 400 }}>
-            {hasRatings ? `${data.matchesRated} матчей с рейтингом` : `${data.matchesStyled} матчей`}
-          </span>
+          Профиль качества региона
+          <span className="fed-faint" style={{ fontWeight: 400 }}>{data.matchesRated} матчей с рейтингом</span>
         </div>
         <div className="fed-profile">
-          {hasRatings ? <FedRadar data={axes} /> : <div className="fed-note">Нет матчей с рейтингом игроков</div>}
-          <div className="fed-kpis" style={{ flex: 1 }}>
-            {hasStyle ? (
-              <>
-                <StatTile label="Владение" value={st.possession ?? 0} unit="%" accent="cyan" />
-                <StatTile label="xG за матч" value={st.xg ?? 0} accent="gold" />
-                <StatTile label="Удары" value={st.shots ?? 0} extra={st.shotsOnTarget != null ? `${st.shotsOnTarget} в створ` : undefined} accent="violet" />
-                <StatTile label="Точность паса" value={st.passAccuracy ?? 0} unit="%" accent="green" />
-                <StatTile label="Единоборства" value={st.duelsWon ?? 0} unit="%" accent="muted" />
-                <StatTile label="Дистанция" value={st.distanceKm ?? 0} unit="км" accent="cyan" />
-              </>
-            ) : (
-              <div className="fed-note">Командных метрик стиля пока нет в разобранных матчах.</div>
-            )}
+          <FedRadar data={axes} />
+          <div>
+            <div className="fed-kpis">
+              <StatTile label="Средний индекс" value={r.overall ?? 0} accent="cyan" />
+              {coverage != null && <StatTile label="Охват данными" value={coverage} unit="%" accent="green" />}
+              {matches != null && <StatTile label="Матчей разобрано" value={matches} accent="muted" />}
+            </div>
+            <p className="fed-faint" style={{ fontSize: 11.5, margin: '14px 2px 0', lineHeight: 1.55 }}>
+              Радар — средний индекс эффективности региона (0–10) по измерениям игры.
+              Командный стиль (владение, xG, дистанция) добавится, когда клубы загрузят
+              матчи с расширенной командной статистикой.
+            </p>
           </div>
         </div>
       </div>
