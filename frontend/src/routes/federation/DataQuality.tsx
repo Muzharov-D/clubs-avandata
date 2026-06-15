@@ -1,6 +1,8 @@
-import { type CSSProperties } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { StatTile } from '../../components/StatTile';
 import { api } from '../../api/client';
+import { healthColor } from './fedColors';
+import './federation.css';
 
 interface DQRow {
   slug: string;
@@ -12,20 +14,18 @@ interface DQRow {
   consentPct: number | null;
 }
 
-function pctColor(v: number): string {
-  if (v >= 80) return 'var(--rating-excellent, #2e7d32)';
-  if (v >= 60) return 'var(--rating-good, #7cb342)';
-  if (v >= 40) return 'var(--rating-ok, #fbc02d)';
-  if (v >= 20) return 'var(--rating-weak, #fb8c00)';
-  return 'var(--rating-poor, #d32f2f)';
-}
-
 const DIMS: Array<{ key: 'birthPct' | 'photoPct' | 'positionPct' | 'consentPct'; label: string }> = [
-  { key: 'birthPct', label: 'Дата рожд.' },
-  { key: 'photoPct', label: 'Фото' },
+  { key: 'consentPct', label: 'Согласие 152-ФЗ' },
+  { key: 'birthPct', label: 'Дата рождения' },
   { key: 'positionPct', label: 'Позиция' },
-  { key: 'consentPct', label: 'Согласие' },
+  { key: 'photoPct', label: 'Фото' },
 ];
+
+function weighted(rows: DQRow[], sel: (r: DQRow) => number | null): number | null {
+  const total = rows.reduce((s, r) => s + r.players, 0);
+  if (total === 0) return null;
+  return Math.round(rows.reduce((s, r) => s + r.players * (sel(r) ?? 0), 0) / total);
+}
 
 /**
  * Целостность данных и согласия (Эпик 4, FR14–16) — полнота паспортизации по
@@ -38,75 +38,74 @@ export function FederationDataQuality() {
   });
   const clubs = data?.clubs ?? [];
   const totalPlayers = clubs.reduce((a, c) => a + c.players, 0);
-  const consented = clubs.reduce(
-    (a, c) => a + (c.consentPct == null ? 0 : Math.round((c.consentPct / 100) * c.players)),
-    0,
-  );
-  const regionConsent = totalPlayers ? Math.round((consented / totalPlayers) * 100) : null;
+  const regionConsent = weighted(clubs, (r) => r.consentPct);
+  const regionProfile = weighted(clubs, (r) => {
+    const vals = [r.birthPct, r.positionPct, r.photoPct].filter((v): v is number => v != null);
+    return vals.length ? Math.round(vals.reduce((a, b) => a + b, 0) / vals.length) : null;
+  });
 
   return (
     <div>
-      <h1 style={titleStyle}>Целостность данных и согласия</h1>
-      <p style={subStyle}>Полнота паспортизации по клубам · обезличенно</p>
+      <header className="fed-head">
+        <div>
+          <h1 className="fed-title">Целостность данных и согласия</h1>
+          <p className="fed-sub">Полнота паспортизации по клубам · обезличенно (152-ФЗ)</p>
+        </div>
+      </header>
 
-      {isLoading && <div style={mutedBox}>Загрузка…</div>}
-      {error && <div style={{ ...mutedBox, color: 'var(--danger)' }}>Не удалось загрузить</div>}
-      {data && clubs.length === 0 && <div style={mutedBox}>Нет данных по клубам.</div>}
+      {isLoading && (
+        <div className="fed-kpis">{[0, 1, 2].map((i) => <div key={i} className="fed-skeleton" style={{ height: 96 }} />)}</div>
+      )}
+      {error && <div className="fed-note" style={{ color: 'var(--danger)' }}>Не удалось загрузить</div>}
+      {data && clubs.length === 0 && (
+        <div className="fed-empty"><div className="fed-empty__icon">🗂️</div>Нет данных по клубам.</div>
+      )}
 
       {clubs.length > 0 && (
-        <>
-          <div style={{ display: 'flex', gap: 12, margin: '16px 0', flexWrap: 'wrap' }}>
-            <Summary label="Игроков в реестре" value={String(totalPlayers)} />
-            <Summary
-              label="Согласий по региону"
-              value={regionConsent == null ? '—' : `${regionConsent}%`}
-              color={regionConsent == null ? undefined : pctColor(regionConsent)}
-            />
+        <div className="fed-stack">
+          <div className="fed-kpis">
+            <div className="fed-rise"><StatTile label="Игроков в реестре" value={totalPlayers} accent="muted" /></div>
+            <div className="fed-rise"><StatTile label="Согласие 152-ФЗ" value={regionConsent ?? 0} unit="%" accent="cyan" /></div>
+            <div className="fed-rise"><StatTile label="Полнота профилей" value={regionProfile ?? 0} unit="%" accent="violet" /></div>
           </div>
 
-          <div style={tableCard}>
-            {clubs.map((c) => (
-              <div key={c.slug} style={{ padding: '11px 0', borderBottom: '1px solid var(--border)' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
-                  <span style={{ fontWeight: 500 }}>{c.name}</span>
-                  <span style={{ color: 'var(--text-faint)', fontSize: 12, fontVariantNumeric: 'tabular-nums' }}>{c.players} игроков</span>
-                </div>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 10 }}>
-                  {DIMS.map((d) => {
-                    const v = c[d.key];
-                    return (
-                      <div key={d.label}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: 'var(--text-muted)', marginBottom: 3 }}>
-                          <span>{d.label}</span>
-                          <span style={{ fontVariantNumeric: 'tabular-nums' }}>{v == null ? '—' : `${v}%`}</span>
+          <section className="fed-card fed-rise">
+            <div className="fed-card__pad">
+              <div className="fed-card__title">Паспортизация по клубам</div>
+              {clubs.map((c, idx) => (
+                <div key={c.slug} style={{ padding: '14px 0', borderBottom: idx < clubs.length - 1 ? '1px solid var(--border)' : undefined }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 11 }}>
+                    <span style={{ fontWeight: 500 }}>{c.name}</span>
+                    <span className="fed-faint fed-num" style={{ fontSize: 12 }}>{c.players} игроков</span>
+                  </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '12px 22px' }}>
+                    {DIMS.map((d) => {
+                      const v = c[d.key];
+                      return (
+                        <div key={d.label}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, marginBottom: 5 }}>
+                            <span className="fed-muted">{d.label}</span>
+                            <span className="fed-num" style={{ color: v == null ? 'var(--text-faint)' : healthColor(v), fontWeight: 600 }}>
+                              {v == null ? '—' : `${v}%`}
+                            </span>
+                          </div>
+                          <span className="fed-meter">
+                            <span className="fed-meter__fill" style={{ width: `${v ?? 0}%`, background: healthColor(v) }} />
+                          </span>
                         </div>
-                        <span style={barTrack}>
-                          <span style={{ display: 'block', width: `${v ?? 0}%`, height: '100%', background: v == null ? 'transparent' : pctColor(v) }} />
-                        </span>
-                      </div>
-                    );
-                  })}
+                      );
+                    })}
+                  </div>
                 </div>
-              </div>
-            ))}
-          </div>
-        </>
+              ))}
+              <p className="fed-faint" style={{ fontSize: 11.5, margin: '14px 0 0', lineHeight: 1.5 }}>
+                Согласие 152-ФЗ открывает имя ребёнка только внутри клуба. Федерация видит
+                исключительно обезличенные доли — имена и контакты детей закрыты.
+              </p>
+            </div>
+          </section>
+        </div>
       )}
     </div>
   );
 }
-
-function Summary({ label, value, color }: { label: string; value: string; color?: string }) {
-  return (
-    <div style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)', borderRadius: 10, padding: '12px 14px', minWidth: 150 }}>
-      <div style={{ color: 'var(--text-muted)', fontSize: 12 }}>{label}</div>
-      <div style={{ fontFamily: 'var(--font-display, inherit)', fontWeight: 600, fontSize: 24, fontVariantNumeric: 'tabular-nums', color: color ?? 'var(--text)' }}>{value}</div>
-    </div>
-  );
-}
-
-const titleStyle: CSSProperties = { fontFamily: 'var(--font-display, inherit)', fontSize: 20, fontWeight: 600, margin: 0 };
-const subStyle: CSSProperties = { color: 'var(--text-muted)', fontSize: 13, marginTop: 4 };
-const mutedBox: CSSProperties = { marginTop: 16, color: 'var(--text-muted)', fontSize: 14 };
-const tableCard: CSSProperties = { background: 'var(--bg-surface)', border: '1px solid var(--border)', borderRadius: 12, padding: '4px 14px' };
-const barTrack: CSSProperties = { display: 'block', height: 5, borderRadius: 3, background: 'var(--bg-surface-2)', overflow: 'hidden' };

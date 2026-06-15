@@ -1,6 +1,8 @@
-import { type CSSProperties, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { api } from '../../api/client';
+import { ratingColor, tint } from './fedColors';
+import './federation.css';
 
 interface PlayerRow {
   name: string | null;
@@ -10,14 +12,6 @@ interface PlayerRow {
   matches: number;
   minutes: number;
   rating: number | null;
-}
-
-function ratingColor(v: number): string {
-  if (v >= 7.5) return 'var(--rating-excellent, #2e7d32)';
-  if (v >= 6.5) return 'var(--rating-good, #7cb342)';
-  if (v >= 5.5) return 'var(--rating-ok, #fbc02d)';
-  if (v >= 4) return 'var(--rating-weak, #fb8c00)';
-  return 'var(--rating-poor, #d32f2f)';
 }
 
 const MIN_OPTIONS = [0, 90, 270, 450];
@@ -43,79 +37,78 @@ export function FederationTalent() {
 
   return (
     <div>
-      <h1 style={titleStyle}>Игроки региона</h1>
-      <p style={subStyle}>Рейтинг по индексу эффективности · против пула региона</p>
+      <header className="fed-head">
+        <div>
+          <h1 className="fed-title">Игроки региона</h1>
+          <p className="fed-sub">Рейтинг по индексу эффективности · против всего пула региона</p>
+        </div>
+      </header>
 
-      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', margin: '14px 0', alignItems: 'center' }}>
-        <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>Мин. минут:</span>
-        {MIN_OPTIONS.map((m) => (
-          <button key={m} onClick={() => setMinMinutes(m)} style={chip(minMinutes === m)}>
-            {m === 0 ? 'все' : m}
-          </button>
-        ))}
+      <div style={{ display: 'flex', gap: 7, flexWrap: 'wrap', marginBottom: 16, alignItems: 'center' }}>
+        <span className="fed-faint" style={{ fontSize: 12 }}>Мин. минут:</span>
+        <div className="fed-tabs">
+          {MIN_OPTIONS.map((m) => (
+            <button key={m} onClick={() => setMinMinutes(m)} className={`fed-tab${minMinutes === m ? ' fed-tab--active' : ''}`}>
+              {m === 0 ? 'все' : m}
+            </button>
+          ))}
+        </div>
         {ages.length > 1 && (
           <>
-            <span style={{ fontSize: 12, color: 'var(--text-muted)', marginLeft: 8 }}>Возраст:</span>
-            <button onClick={() => setAgeFilter('all')} style={chip(ageFilter === 'all')}>все</button>
-            {ages.map((a) => (
-              <button key={a} onClick={() => setAgeFilter(a)} style={chip(ageFilter === a)}>{a}</button>
-            ))}
+            <span className="fed-faint" style={{ fontSize: 12, marginLeft: 6 }}>Возраст:</span>
+            <div className="fed-tabs">
+              <button onClick={() => setAgeFilter('all')} className={`fed-tab${ageFilter === 'all' ? ' fed-tab--active' : ''}`}>все</button>
+              {ages.map((a) => (
+                <button key={a} onClick={() => setAgeFilter(a)} className={`fed-tab${ageFilter === a ? ' fed-tab--active' : ''}`}>{a}</button>
+              ))}
+            </div>
           </>
         )}
       </div>
 
-      {isLoading && <div style={mutedBox}>Загрузка…</div>}
-      {error && <div style={{ ...mutedBox, color: 'var(--danger)' }}>Не удалось загрузить</div>}
-      {data && shown.length === 0 && <div style={mutedBox}>Нет игроков с рейтингом по этим фильтрам.</div>}
+      {isLoading && (
+        <section className="fed-card"><div className="fed-card__pad">
+          {[0, 1, 2, 3, 4].map((i) => <div key={i} className="fed-skeleton" style={{ height: 38, marginBottom: 8 }} />)}
+        </div></section>
+      )}
+      {error && <div className="fed-note" style={{ color: 'var(--danger)' }}>Не удалось загрузить</div>}
+      {data && shown.length === 0 && (
+        <div className="fed-empty"><div className="fed-empty__icon">🎯</div>Нет игроков с рейтингом по этим фильтрам.</div>
+      )}
 
       {shown.length > 0 && (
-        <div style={tableCard}>
-          {shown.map((p, i) => (
-            <div key={i} style={row}>
-              <span style={{ width: 26, color: 'var(--text-faint)', fontSize: 12, fontVariantNumeric: 'tabular-nums' }}>{i + 1}</span>
-              <span
-                style={{
-                  ...ratingPill,
-                  background: p.rating == null ? 'var(--bg-surface-2)' : ratingColor(p.rating),
-                  color: p.rating == null ? 'var(--text-muted)' : 'var(--ink-on-bright, #06283d)',
-                }}
-              >
-                {p.rating == null ? '—' : p.rating.toFixed(1)}
-              </span>
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                  {p.name ?? <span style={{ color: 'var(--text-faint)', fontStyle: 'italic' }}>без согласия</span>}
+        <section className="fed-card fed-rise">
+          <div className="fed-table" style={{ padding: '0 8px' }}>
+            {shown.map((p, i) => (
+              <div key={i} className="fed-row">
+                <span className="fed-faint fed-num" style={{ width: 26, fontSize: 12 }}>{i + 1}</span>
+                <span
+                  className="fed-rate"
+                  style={{
+                    flex: 'none',
+                    color: p.rating == null ? 'var(--text-faint)' : ratingColor(p.rating),
+                    background: p.rating == null ? 'var(--bg-surface-2)' : tint(ratingColor(p.rating)),
+                    borderColor: p.rating == null ? 'transparent' : tint(ratingColor(p.rating), 38),
+                  }}
+                >
+                  {p.rating == null ? '—' : p.rating.toFixed(1)}
+                </span>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div className="fed-row__name">
+                    {p.name ?? <span className="fed-faint" style={{ fontStyle: 'italic' }}>без согласия</span>}
+                  </div>
+                  <div className="fed-row__meta">
+                    {p.club} · {p.ageGroup}{p.position ? ` · ${p.position}` : ''}
+                  </div>
                 </div>
-                <div style={{ fontSize: 11, color: 'var(--text-faint)' }}>
-                  {p.club} · {p.ageGroup}{p.position ? ` · ${p.position}` : ''}
-                </div>
+                <span className="fed-faint fed-num" style={{ fontSize: 11.5, whiteSpace: 'nowrap' }}>
+                  {p.matches} м · {p.minutes}′
+                </span>
               </div>
-              <span style={{ fontSize: 11, color: 'var(--text-muted)', fontVariantNumeric: 'tabular-nums', textAlign: 'right', whiteSpace: 'nowrap' }}>
-                {p.matches} м · {p.minutes}′
-              </span>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        </section>
       )}
     </div>
   );
-}
-
-const titleStyle: CSSProperties = { fontFamily: 'var(--font-display, inherit)', fontSize: 20, fontWeight: 600, margin: 0 };
-const subStyle: CSSProperties = { color: 'var(--text-muted)', fontSize: 13, marginTop: 4 };
-const mutedBox: CSSProperties = { marginTop: 16, color: 'var(--text-muted)', fontSize: 14 };
-const tableCard: CSSProperties = { background: 'var(--bg-surface)', border: '1px solid var(--border)', borderRadius: 12, padding: '4px 14px' };
-const row: CSSProperties = { display: 'flex', alignItems: 'center', gap: 10, padding: '8px 0', borderBottom: '1px solid var(--border)' };
-const ratingPill: CSSProperties = {
-  width: 38, textAlign: 'center', borderRadius: 6, padding: '3px 0', fontSize: 13, fontWeight: 600,
-  fontVariantNumeric: 'tabular-nums', flex: 'none',
-};
-
-function chip(active: boolean): CSSProperties {
-  return {
-    padding: '4px 11px', borderRadius: 999, fontSize: 12, fontWeight: 500, cursor: 'pointer',
-    background: active ? 'rgba(37,99,235,0.16)' : 'transparent',
-    border: active ? '1px solid rgba(37,99,235,0.42)' : '1px solid var(--border)',
-    color: active ? 'var(--text)' : 'var(--text-muted)',
-  };
 }

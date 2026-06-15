@@ -1,7 +1,10 @@
-import { type CSSProperties } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { Link } from 'react-router-dom';
+import { StatTile } from '../../components/StatTile';
 import { api } from '../../api/client';
 import { useAuth } from '../../contexts/AuthContext';
+import { healthColor } from './fedColors';
+import './federation.css';
 
 interface OverviewData {
   clubs: { total: number; paid: number; free: number };
@@ -9,75 +12,155 @@ interface OverviewData {
   players: number;
   matches: number;
 }
+interface DqRow { slug: string; name: string; players: number; birthPct: number | null; photoPct: number | null; positionPct: number | null; consentPct: number | null }
+interface ClubRow { slug: string; name: string; plan: string; teams: number; players: number; matches: number; coverage: number | null }
 
 /**
- * Обзор региона (Эпик 1, FR4–5). KPI + честный охват (клубы региона с разбивкой
- * база/глубина — слои НЕ суммируются в одну цифру). Данные: /federation/overview.
+ * Обзор региона (Эпик 1, FR4–5) — лендинг кабинета. Три слоя:
+ *  1. KPI-ряд: честный охват клубов (база/глубина не суммируются) + StatTile.
+ *  2. Целостность данных по региону — взвешенные проценты паспортизации + согласие.
+ *  3. Мини-реестр клубов (топ по составу) со ссылкой в полный реестр.
+ * Данные: /federation/overview + /federation/data-quality + /federation/clubs.
  */
 export function FederationOverview() {
-  const { federation } = useAuth() as { federation: { region?: string } | null };
-  const { data, isLoading, error } = useQuery({
-    queryKey: ['federation', 'overview'],
-    queryFn: () => api<OverviewData>('/federation/overview'),
-  });
+  const { federation } = useAuth() as { federation: { region?: string; name?: string } | null };
+  const ov = useQuery({ queryKey: ['federation', 'overview'], queryFn: () => api<OverviewData>('/federation/overview') });
+  const dq = useQuery({ queryKey: ['federation', 'data-quality'], queryFn: () => api<{ clubs: DqRow[] }>('/federation/data-quality') });
+  const cl = useQuery({ queryKey: ['federation', 'clubs'], queryFn: () => api<{ clubs: ClubRow[] }>('/federation/clubs') });
+
+  const data = ov.data;
 
   return (
     <div>
-      <h1 style={titleStyle}>Обзор региона</h1>
-      <p style={subStyle}>{federation?.region ?? 'Регион'} · детско-юношеский футбол</p>
+      <header className="fed-head">
+        <div>
+          <h1 className="fed-title">Обзор региона</h1>
+          <p className="fed-sub">{federation?.region ?? federation?.name ?? 'Регион'} · детско-юношеский футбол</p>
+        </div>
+      </header>
 
-      {isLoading && <div style={mutedBox}>Загрузка…</div>}
-      {error && <div style={{ ...mutedBox, color: 'var(--danger)' }}>Не удалось загрузить данные</div>}
+      {ov.isLoading && (
+        <div className="fed-kpis">
+          {[0, 1, 2, 3].map((i) => <div key={i} className="fed-skeleton" style={{ height: 104 }} />)}
+        </div>
+      )}
+      {ov.error && <div className="fed-note" style={{ color: 'var(--danger)' }}>Не удалось загрузить данные региона</div>}
 
       {data && (
-        <div style={kpiGrid}>
-          <div style={{ ...cardStyle, borderColor: 'rgba(37,99,235,0.4)' }}>
-            <div style={kpiLabel}>Клубы региона</div>
-            <div style={kpiValue}>{data.clubs.total}</div>
-            <div style={{ display: 'flex', gap: 6, marginTop: 6, flexWrap: 'wrap' }}>
-              <span style={chipCyan}>{data.clubs.paid} на глубине</span>
-              <span style={chipMuted}>{data.clubs.free} базовый план</span>
+        <div className="fed-stack">
+          {/* 1. KPI-ряд */}
+          <div className="fed-kpis">
+            <div className="fed-coverage fed-rise">
+              <div className="fed-coverage__label">Клубы региона</div>
+              <div className="fed-coverage__value">{data.clubs.total}</div>
+              <div className="fed-coverage__split">
+                <span className="fed-chip fed-chip--deep">{data.clubs.paid} на глубине</span>
+                <span className="fed-chip fed-chip--base">{data.clubs.free} базовый слой</span>
+              </div>
             </div>
+            <div className="fed-rise"><StatTile label="Команд" value={data.teams} accent="muted" /></div>
+            <div className="fed-rise"><StatTile label="Игроков в реестре" value={data.players} accent="violet" /></div>
+            <div className="fed-rise"><StatTile label="Матчей разобрано" value={data.matches} accent="gold" /></div>
           </div>
-          <Kpi label="Команд" value={data.teams} />
-          <Kpi label="Игроков в реестре" value={data.players} />
-          <Kpi label="Матчей разобрано" value={data.matches} />
+
+          {/* 2 + 3. Целостность данных + мини-реестр клубов */}
+          <div className="fed-cols">
+            <DataQualityCard rows={dq.data?.clubs} loading={dq.isLoading} />
+            <ClubsCard rows={cl.data?.clubs} loading={cl.isLoading} />
+          </div>
         </div>
       )}
     </div>
   );
 }
 
-function Kpi({ label, value }: { label: string; value: number }) {
+/** Взвешенный по числу игроков процент по региону (полнота данных). */
+function weightedPct(rows: DqRow[], sel: (r: DqRow) => number | null): number | null {
+  const total = rows.reduce((s, r) => s + r.players, 0);
+  if (total === 0) return null;
+  const acc = rows.reduce((s, r) => s + r.players * (sel(r) ?? 0), 0);
+  return Math.round(acc / total);
+}
+
+function DataQualityCard({ rows, loading }: { rows?: DqRow[]; loading: boolean }) {
   return (
-    <div style={cardStyle}>
-      <div style={kpiLabel}>{label}</div>
-      <div style={kpiValue}>{value}</div>
+    <section className="fed-card fed-rise">
+      <div className="fed-card__pad">
+        <div className="fed-card__title">
+          Целостность данных
+          <Link to="/federation/data-quality" className="fed-link">По клубам →</Link>
+        </div>
+        {loading && <div className="fed-skeleton" style={{ height: 120 }} />}
+        {rows && rows.length === 0 && <div className="fed-note">Нет данных по клубам</div>}
+        {rows && rows.length > 0 && (
+          <div>
+            <QualityLine label="Согласие 152-ФЗ" pct={weightedPct(rows, (r) => r.consentPct)} />
+            <QualityLine label="Дата рождения" pct={weightedPct(rows, (r) => r.birthPct)} />
+            <QualityLine label="Позиция" pct={weightedPct(rows, (r) => r.positionPct)} />
+            <QualityLine label="Фото" pct={weightedPct(rows, (r) => r.photoPct)} />
+            <p className="fed-faint" style={{ fontSize: 11.5, margin: '12px 0 0', lineHeight: 1.5 }}>
+              Доля по региону, взвешенная по числу игроков. Именные данные детей закрыты —
+              федерация видит только обезличенную полноту.
+            </p>
+          </div>
+        )}
+      </div>
+    </section>
+  );
+}
+
+function QualityLine({ label, pct }: { label: string; pct: number | null }) {
+  return (
+    <div className="fed-dist__row" style={{ marginBottom: 11 }}>
+      <span className="fed-dist__label">{label}</span>
+      <span className="fed-meter">
+        <span className="fed-meter__fill" style={{ width: `${pct ?? 0}%`, background: healthColor(pct) }} />
+      </span>
+      <span className="fed-dist__val fed-num" style={{ width: 48, color: pct == null ? 'var(--text-faint)' : undefined }}>
+        {pct == null ? '—' : `${pct}%`}
+      </span>
     </div>
   );
 }
 
-const titleStyle: CSSProperties = { fontFamily: 'var(--font-display, inherit)', fontSize: 20, fontWeight: 600, margin: 0 };
-const subStyle: CSSProperties = { color: 'var(--text-muted)', fontSize: 13, marginTop: 4 };
-const mutedBox: CSSProperties = { marginTop: 16, color: 'var(--text-muted)', fontSize: 14 };
-const kpiGrid: CSSProperties = {
-  marginTop: 16, display: 'grid',
-  gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 12,
-};
-const cardStyle: CSSProperties = {
-  background: 'var(--bg-surface)', border: '1px solid var(--border)',
-  borderRadius: 10, padding: '12px 14px',
-};
-const kpiLabel: CSSProperties = { color: 'var(--text-muted)', fontSize: 12 };
-const kpiValue: CSSProperties = {
-  fontFamily: 'var(--font-display, inherit)', fontWeight: 600, fontSize: 26,
-  fontVariantNumeric: 'tabular-nums', lineHeight: 1.15, marginTop: 2,
-};
-const chipCyan: CSSProperties = {
-  fontSize: 10, color: 'var(--ink-on-bright, #06283d)', background: 'var(--accent-cyan, #22d3ee)',
-  borderRadius: 5, padding: '1px 6px', fontWeight: 500,
-};
-const chipMuted: CSSProperties = {
-  fontSize: 10, color: 'var(--text-muted)', border: '1px solid var(--border)',
-  borderRadius: 5, padding: '1px 6px',
-};
+function ClubsCard({ rows, loading }: { rows?: ClubRow[]; loading: boolean }) {
+  const top = rows ? [...rows].sort((a, b) => b.players - a.players).slice(0, 5) : [];
+  const more = rows ? rows.length - top.length : 0;
+  return (
+    <section className="fed-card fed-rise">
+      <div className="fed-card__pad">
+        <div className="fed-card__title">
+          Клубы региона
+          <Link to="/federation/clubs" className="fed-link">Весь реестр →</Link>
+        </div>
+        {loading && <div className="fed-skeleton" style={{ height: 120 }} />}
+        {rows && rows.length === 0 && <div className="fed-note">В регионе пока нет клубов</div>}
+        {top.length > 0 && (
+          <div>
+            {top.map((c) => (
+              <div className="fed-row" key={c.slug} style={{ padding: '10px 0' }}>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div className="fed-row__name">{c.name}</div>
+                  <div className="fed-row__meta">{c.teams} команд · {c.players} игроков · {c.matches} матчей</div>
+                </div>
+                <span className={`fed-tag fed-tag--${c.plan === 'paid' ? 'deep' : 'base'}`}>
+                  {c.plan === 'paid' ? 'глубина' : 'база'}
+                </span>
+                <div style={{ width: 92, display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <span className="fed-meter">
+                    <span className="fed-meter__fill" style={{ width: `${c.coverage ?? 0}%`, background: healthColor(c.coverage) }} />
+                  </span>
+                </div>
+              </div>
+            ))}
+            {more > 0 && (
+              <Link to="/federation/clubs" className="fed-link" style={{ display: 'inline-block', marginTop: 10 }}>
+                +{more} {more === 1 ? 'клуб' : 'клубов'} в реестре →
+              </Link>
+            )}
+          </div>
+        )}
+      </div>
+    </section>
+  );
+}

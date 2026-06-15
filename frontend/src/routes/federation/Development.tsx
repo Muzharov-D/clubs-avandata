@@ -1,6 +1,7 @@
-import { type CSSProperties } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { StatTile } from '../../components/StatTile';
 import { api } from '../../api/client';
+import './federation.css';
 
 interface ProdRow {
   slug: string;
@@ -10,12 +11,13 @@ interface ProdRow {
   youngPct: number | null;
 }
 
-function youngColor(v: number): string {
-  if (v >= 25) return 'var(--rating-excellent, #2e7d32)';
-  if (v >= 15) return 'var(--rating-good, #7cb342)';
-  if (v >= 7) return 'var(--rating-ok, #fbc02d)';
-  if (v >= 2) return 'var(--rating-weak, #fb8c00)';
-  return 'var(--rating-poor, #d32f2f)';
+/** Доля минут молодых: выше — лучше (клуб даёт играть на возраст старше). */
+function youngColor(v: number | null): string {
+  if (v == null) return 'var(--border-strong)';
+  if (v >= 25) return 'var(--success)';
+  if (v >= 12) return 'var(--accent-cyan)';
+  if (v >= 5) return 'var(--warning)';
+  return 'var(--danger)';
 }
 
 /**
@@ -27,51 +29,69 @@ export function FederationDevelopment() {
     queryKey: ['federation', 'development'],
     queryFn: () => api<{ clubs: ProdRow[] }>('/federation/development'),
   });
-  const clubs = (data?.clubs ?? []).filter((c) => c.totalMinutes > 0).sort((a, b) => (b.youngPct ?? 0) - (a.youngPct ?? 0));
+  const clubs = (data?.clubs ?? [])
+    .filter((c) => c.totalMinutes > 0)
+    .sort((a, b) => (b.youngPct ?? 0) - (a.youngPct ?? 0));
+
+  const totalMin = clubs.reduce((s, c) => s + c.totalMinutes, 0);
+  const youngMin = clubs.reduce((s, c) => s + ((c.youngPct ?? 0) / 100) * c.totalMinutes, 0);
+  const regionYoung = totalMin ? Math.round((youngMin / totalMin) * 100) : 0;
 
   return (
     <div>
-      <h1 style={titleStyle}>Развитие и продуктивность</h1>
-      <p style={subStyle}>Минуты молодых (играющих на возраст старше) и активная глубина состава</p>
+      <header className="fed-head">
+        <div>
+          <h1 className="fed-title">Развитие и продуктивность</h1>
+          <p className="fed-sub">Минуты молодых (играющих на возраст старше) и активная глубина состава</p>
+        </div>
+      </header>
 
-      {isLoading && <div style={mutedBox}>Загрузка…</div>}
-      {error && <div style={{ ...mutedBox, color: 'var(--danger)' }}>Не удалось загрузить</div>}
+      {isLoading && (
+        <div className="fed-kpis">{[0, 1].map((i) => <div key={i} className="fed-skeleton" style={{ height: 96 }} />)}</div>
+      )}
+      {error && <div className="fed-note" style={{ color: 'var(--danger)' }}>Не удалось загрузить</div>}
       {data && clubs.length === 0 && (
-        <div style={mutedBox}>Нет данных о минутах. Нужны разобранные матчи с минутами и заполненный год команды.</div>
+        <div className="fed-empty">
+          <div className="fed-empty__icon">📈</div>
+          Нет данных о минутах. Нужны разобранные матчи с минутами и заполненный год команды.
+        </div>
       )}
 
       {clubs.length > 0 && (
-        <div style={{ ...tableCard, marginTop: 16 }}>
-          <div style={{ ...row, color: 'var(--text-faint)', fontSize: 11, borderBottom: '1px solid var(--border)' }}>
-            <span style={{ flex: 1 }}>Клуб</span>
-            <span style={{ width: 70, textAlign: 'right' }}>Игроков</span>
-            <span style={{ width: 160 }}>Минуты молодых</span>
+        <div className="fed-stack">
+          <div className="fed-kpis">
+            <div className="fed-rise"><StatTile label="Клубов с минутами" value={clubs.length} accent="muted" /></div>
+            <div className="fed-rise"><StatTile label="Минут молодых по региону" value={regionYoung} unit="%" accent="cyan" /></div>
           </div>
-          {clubs.map((c) => (
-            <div key={c.slug} style={{ ...row, borderBottom: '1px solid var(--border)' }}>
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.name}</div>
-                <div style={{ fontSize: 11, color: 'var(--text-faint)' }}>{c.totalMinutes.toLocaleString('ru-RU')}′ всего</div>
+
+          <section className="fed-card fed-rise">
+            <div className="fed-table" style={{ padding: '0 8px' }}>
+              <div className="fed-row fed-row--head">
+                <span style={{ flex: 1 }}>Клуб</span>
+                <span className="fed-num" style={{ width: 84 }}>Игроков</span>
+                <span style={{ width: 168 }}>Минуты молодых</span>
               </div>
-              <span style={{ width: 70, textAlign: 'right', fontVariantNumeric: 'tabular-nums', fontSize: 13 }}>{c.activePlayers}</span>
-              <span style={{ width: 160, display: 'flex', alignItems: 'center', gap: 8 }}>
-                <span style={{ flex: 1, height: 6, background: 'var(--bg-surface-2)', borderRadius: 3, overflow: 'hidden' }}>
-                  <span style={{ display: 'block', width: `${c.youngPct ?? 0}%`, height: '100%', background: youngColor(c.youngPct ?? 0) }} />
-                </span>
-                <span style={{ width: 38, textAlign: 'right', fontSize: 12, color: 'var(--text-muted)', fontVariantNumeric: 'tabular-nums' }}>
-                  {c.youngPct == null ? '—' : `${c.youngPct}%`}
-                </span>
-              </span>
+              {clubs.map((c) => (
+                <div className="fed-row" key={c.slug}>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div className="fed-row__name">{c.name}</div>
+                    <div className="fed-row__meta">{c.totalMinutes.toLocaleString('ru-RU')}′ всего</div>
+                  </div>
+                  <span className="fed-num fed-muted" style={{ width: 84 }}>{c.activePlayers}</span>
+                  <span style={{ width: 168, display: 'flex', alignItems: 'center', gap: 9 }}>
+                    <span className="fed-meter">
+                      <span className="fed-meter__fill" style={{ width: `${Math.min(c.youngPct ?? 0, 100)}%`, background: youngColor(c.youngPct) }} />
+                    </span>
+                    <span className="fed-num fed-muted" style={{ width: 38 }}>
+                      {c.youngPct == null ? '—' : `${c.youngPct}%`}
+                    </span>
+                  </span>
+                </div>
+              ))}
             </div>
-          ))}
+          </section>
         </div>
       )}
     </div>
   );
 }
-
-const titleStyle: CSSProperties = { fontFamily: 'var(--font-display, inherit)', fontSize: 20, fontWeight: 600, margin: 0 };
-const subStyle: CSSProperties = { color: 'var(--text-muted)', fontSize: 13, marginTop: 4 };
-const mutedBox: CSSProperties = { marginTop: 16, color: 'var(--text-muted)', fontSize: 14 };
-const tableCard: CSSProperties = { background: 'var(--bg-surface)', border: '1px solid var(--border)', borderRadius: 12, padding: '4px 14px' };
-const row: CSSProperties = { display: 'flex', alignItems: 'center', gap: 12, padding: '9px 0' };

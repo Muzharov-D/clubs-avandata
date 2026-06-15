@@ -1,6 +1,7 @@
-import { type CSSProperties } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { api } from '../../api/client';
+import { healthColor } from './fedColors';
+import './federation.css';
 
 interface ClubRow {
   slug: string;
@@ -10,14 +11,6 @@ interface ClubRow {
   players: number;
   matches: number;
   coverage: number | null;
-}
-
-function coverageColor(v: number): string {
-  if (v >= 80) return 'var(--rating-excellent, #2e7d32)';
-  if (v >= 65) return 'var(--rating-good, #7cb342)';
-  if (v >= 45) return 'var(--rating-ok, #fbc02d)';
-  if (v >= 25) return 'var(--rating-weak, #fb8c00)';
-  return 'var(--rating-poor, #d32f2f)';
 }
 
 /**
@@ -33,72 +26,66 @@ export function FederationClubs() {
 
   return (
     <div>
-      <h1 style={titleStyle}>Клубы федерации</h1>
-      <p style={subStyle}>Реестр клубов-членов региона{data ? ` · ${clubs.length}` : ''}</p>
+      <header className="fed-head">
+        <div>
+          <h1 className="fed-title">Клубы федерации</h1>
+          <p className="fed-sub">Реестр клубов-членов региона{data ? ` · ${clubs.length}` : ''}</p>
+        </div>
+      </header>
 
-      {isLoading && <div style={mutedBox}>Загрузка…</div>}
-      {error && <div style={{ ...mutedBox, color: 'var(--danger)' }}>Не удалось загрузить реестр</div>}
+      {isLoading && (
+        <section className="fed-card"><div className="fed-card__pad">
+          {[0, 1, 2, 3].map((i) => <div key={i} className="fed-skeleton" style={{ height: 40, marginBottom: 8 }} />)}
+        </div></section>
+      )}
+      {error && <div className="fed-note" style={{ color: 'var(--danger)' }}>Не удалось загрузить реестр</div>}
       {data && clubs.length === 0 && (
-        <div style={mutedBox}>В федерации пока нет клубов. Заведите членство (админ) или запустите сид.</div>
+        <div className="fed-empty">
+          <div className="fed-empty__icon">⚽</div>
+          В регионе пока нет клубов-членов. Заведите членство через админку или запустите сид.
+        </div>
       )}
 
       {clubs.length > 0 && (
-        <div style={tableCard}>
-          <div style={{ ...rowStyle, color: 'var(--text-faint)', fontSize: 11, borderBottom: '1px solid var(--border)' }}>
-            <span style={{ flex: 1 }}>Клуб</span>
-            <span style={colNum}>Команд</span>
-            <span style={colNum}>Игроков</span>
-            <span style={{ width: 124 }}>Охват данными</span>
-            <span style={colNum}>Матчей</span>
-          </div>
-          {clubs.map((c) => (
-            <div key={c.slug} style={{ ...rowStyle, borderBottom: '1px solid var(--border)' }}>
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={clubName}>{c.name}</div>
-                <span style={c.plan === 'paid' ? planDeep : planBase}>
-                  {c.plan === 'paid' ? 'глубина' : 'базовый'}
-                </span>
+        <section className="fed-card fed-rise">
+          <div className="fed-table__scroll">
+            <div className="fed-table" style={{ padding: '0 8px' }}>
+              <div className="fed-row fed-row--head">
+                <span style={{ flex: 1 }}>Клуб</span>
+                <span className="fed-num" style={{ width: 72 }}>Команд</span>
+                <span className="fed-num" style={{ width: 72 }}>Игроков</span>
+                <span style={{ width: 156 }}>Охват данными</span>
+                <span className="fed-num" style={{ width: 72 }}>Матчей</span>
               </div>
-              <span style={colNumVal}>{c.teams}</span>
-              <span style={colNumVal}>{c.players}</span>
-              <span style={{ width: 124, display: 'flex', alignItems: 'center', gap: 6 }}>
-                {c.coverage == null ? (
-                  <span style={{ color: 'var(--text-faint)' }}>—</span>
-                ) : (
-                  <>
-                    <span style={barTrack}>
-                      <span style={{ display: 'block', width: `${c.coverage}%`, height: '100%', background: coverageColor(c.coverage) }} />
+              {clubs.map((c) => (
+                <div className="fed-row" key={c.slug}>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div className="fed-row__name">{c.name}</div>
+                    <span className={`fed-tag fed-tag--${c.plan === 'paid' ? 'deep' : 'base'}`} style={{ marginTop: 5, display: 'inline-block' }}>
+                      {c.plan === 'paid' ? 'глубина' : 'базовый слой'}
                     </span>
-                    <span style={{ fontSize: 11, color: 'var(--text-muted)', fontVariantNumeric: 'tabular-nums' }}>{c.coverage}%</span>
-                  </>
-                )}
-              </span>
-              <span style={colNumVal}>{c.matches}</span>
+                  </div>
+                  <span className="fed-num fed-muted" style={{ width: 72 }}>{c.teams}</span>
+                  <span className="fed-num fed-muted" style={{ width: 72 }}>{c.players}</span>
+                  <span style={{ width: 156, display: 'flex', alignItems: 'center', gap: 9 }}>
+                    {c.coverage == null ? (
+                      <span className="fed-faint">нет матчей</span>
+                    ) : (
+                      <>
+                        <span className="fed-meter">
+                          <span className="fed-meter__fill" style={{ width: `${c.coverage}%`, background: healthColor(c.coverage) }} />
+                        </span>
+                        <span className="fed-num fed-muted" style={{ width: 34 }}>{c.coverage}%</span>
+                      </>
+                    )}
+                  </span>
+                  <span className="fed-num fed-muted" style={{ width: 72 }}>{c.matches}</span>
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
+          </div>
+        </section>
       )}
     </div>
   );
 }
-
-const titleStyle: CSSProperties = { fontFamily: 'var(--font-display, inherit)', fontSize: 20, fontWeight: 600, margin: 0 };
-const subStyle: CSSProperties = { color: 'var(--text-muted)', fontSize: 13, marginTop: 4 };
-const mutedBox: CSSProperties = { marginTop: 16, color: 'var(--text-muted)', fontSize: 14 };
-const tableCard: CSSProperties = {
-  marginTop: 16, background: 'var(--bg-surface)', border: '1px solid var(--border)',
-  borderRadius: 12, padding: '4px 14px',
-};
-const rowStyle: CSSProperties = { display: 'flex', alignItems: 'center', gap: 12, padding: '9px 0' };
-const colNum: CSSProperties = { width: 64, textAlign: 'right' };
-const colNumVal: CSSProperties = { width: 64, textAlign: 'right', fontVariantNumeric: 'tabular-nums', fontSize: 13 };
-const clubName: CSSProperties = { fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' };
-const barTrack: CSSProperties = { flex: 1, height: 5, borderRadius: 3, background: 'var(--bg-surface-2)', overflow: 'hidden' };
-const planDeep: CSSProperties = {
-  fontSize: 10, color: 'var(--ink-on-bright, #06283d)', background: 'var(--accent-cyan, #22d3ee)',
-  borderRadius: 5, padding: '1px 6px', fontWeight: 500,
-};
-const planBase: CSSProperties = {
-  fontSize: 10, color: 'var(--text-muted)', border: '1px solid var(--border)',
-  borderRadius: 5, padding: '1px 6px',
-};
