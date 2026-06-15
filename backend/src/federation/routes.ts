@@ -4,6 +4,7 @@ import { withFederation } from '../db/tenantContext.js';
 import { BadRequestError } from '../shared/errors.js';
 import {
   federationOverview,
+  federationRegionProfile,
   federationClubs,
   federationCompetitions,
   federationDataQuality,
@@ -30,6 +31,13 @@ export async function federationRoutes(app: FastifyInstance) {
     const federationId = req.user?.federationId;
     if (!federationId) throw new BadRequestError('no federation context', 'NO_FEDERATION');
     return await withFederation(federationId, (_tx, conn) => federationOverview(conn));
+  });
+
+  /** GET /api/v1/federation/region-profile — 6-мерный профиль качества + стиль игры. */
+  app.get('/region-profile', async (req) => {
+    const federationId = req.user?.federationId;
+    if (!federationId) throw new BadRequestError('no federation context', 'NO_FEDERATION');
+    return await withFederation(federationId, (_tx, conn) => federationRegionProfile(conn));
   });
 
   /** GET /api/v1/federation/clubs — реестр клубов-членов (FR7). */

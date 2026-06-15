@@ -4,6 +4,7 @@ import { StatTile } from '../../components/StatTile';
 import { api } from '../../api/client';
 import { useAuth } from '../../contexts/AuthContext';
 import { healthColor } from './fedColors';
+import { FedRadar, type RadarAxis } from './FedRadar';
 import './federation.css';
 
 interface OverviewData {
@@ -14,6 +15,12 @@ interface OverviewData {
 }
 interface DqRow { slug: string; name: string; players: number; birthPct: number | null; photoPct: number | null; positionPct: number | null; consentPct: number | null }
 interface ClubRow { slug: string; name: string; plan: string; teams: number; players: number; matches: number; coverage: number | null }
+interface RegionProfile {
+  ratings: { overall: number | null; attack: number | null; defence: number | null; passing: number | null; fitness: number | null; creativity: number | null };
+  style: { possession: number | null; xg: number | null; shots: number | null; shotsOnTarget: number | null; passAccuracy: number | null; duelsWon: number | null; distanceKm: number | null };
+  matchesRated: number;
+  matchesStyled: number;
+}
 
 /**
  * Обзор региона (Эпик 1, FR4–5) — лендинг кабинета. Три слоя:
@@ -25,6 +32,7 @@ interface ClubRow { slug: string; name: string; plan: string; teams: number; pla
 export function FederationOverview() {
   const { federation } = useAuth() as { federation: { region?: string; name?: string } | null };
   const ov = useQuery({ queryKey: ['federation', 'overview'], queryFn: () => api<OverviewData>('/federation/overview') });
+  const rp = useQuery({ queryKey: ['federation', 'region-profile'], queryFn: () => api<RegionProfile>('/federation/region-profile') });
   const dq = useQuery({ queryKey: ['federation', 'data-quality'], queryFn: () => api<{ clubs: DqRow[] }>('/federation/data-quality') });
   const cl = useQuery({ queryKey: ['federation', 'clubs'], queryFn: () => api<{ clubs: ClubRow[] }>('/federation/clubs') });
 
@@ -63,7 +71,10 @@ export function FederationOverview() {
             <div className="fed-rise"><StatTile label="Матчей разобрано" value={data.matches} accent="gold" /></div>
           </div>
 
-          {/* 2 + 3. Целостность данных + мини-реестр клубов */}
+          {/* 2. Профиль качества и стиль игры региона (реальная глубина) */}
+          <RegionProfileSection data={rp.data} loading={rp.isLoading} />
+
+          {/* 3 + 4. Целостность данных + мини-реестр клубов */}
           <div className="fed-cols">
             <DataQualityCard rows={dq.data?.clubs} loading={dq.isLoading} />
             <ClubsCard rows={cl.data?.clubs} loading={cl.isLoading} />
@@ -120,6 +131,53 @@ function QualityLine({ label, pct }: { label: string; pct: number | null }) {
         {pct == null ? '—' : `${pct}%`}
       </span>
     </div>
+  );
+}
+
+function RegionProfileSection({ data, loading }: { data?: RegionProfile; loading: boolean }) {
+  if (loading) return <div className="fed-skeleton" style={{ height: 240 }} />;
+  if (!data) return null;
+  const hasRatings = data.matchesRated > 0 && data.ratings.overall != null;
+  const hasStyle = data.matchesStyled > 0;
+  if (!hasRatings && !hasStyle) return null;
+
+  const axes: RadarAxis[] = [
+    { label: 'Общий', value: data.ratings.overall },
+    { label: 'Атака', value: data.ratings.attack },
+    { label: 'Пас', value: data.ratings.passing },
+    { label: 'Креатив', value: data.ratings.creativity },
+    { label: 'Физика', value: data.ratings.fitness },
+    { label: 'Оборона', value: data.ratings.defence },
+  ];
+  const st = data.style;
+  return (
+    <section className="fed-card fed-rise">
+      <div className="fed-card__pad">
+        <div className="fed-card__title">
+          Профиль качества и стиль игры
+          <span className="fed-faint" style={{ fontWeight: 400 }}>
+            {hasRatings ? `${data.matchesRated} матчей с рейтингом` : `${data.matchesStyled} матчей`}
+          </span>
+        </div>
+        <div className="fed-profile">
+          {hasRatings ? <FedRadar data={axes} /> : <div className="fed-note">Нет матчей с рейтингом игроков</div>}
+          <div className="fed-kpis" style={{ flex: 1 }}>
+            {hasStyle ? (
+              <>
+                <StatTile label="Владение" value={st.possession ?? 0} unit="%" accent="cyan" />
+                <StatTile label="xG за матч" value={st.xg ?? 0} accent="gold" />
+                <StatTile label="Удары" value={st.shots ?? 0} extra={st.shotsOnTarget != null ? `${st.shotsOnTarget} в створ` : undefined} accent="violet" />
+                <StatTile label="Точность паса" value={st.passAccuracy ?? 0} unit="%" accent="green" />
+                <StatTile label="Единоборства" value={st.duelsWon ?? 0} unit="%" accent="muted" />
+                <StatTile label="Дистанция" value={st.distanceKm ?? 0} unit="км" accent="cyan" />
+              </>
+            ) : (
+              <div className="fed-note">Командных метрик стиля пока нет в разобранных матчах.</div>
+            )}
+          </div>
+        </div>
+      </div>
+    </section>
   );
 }
 

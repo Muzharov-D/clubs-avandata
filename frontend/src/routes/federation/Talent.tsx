@@ -12,9 +12,21 @@ interface PlayerRow {
   matches: number;
   minutes: number;
   rating: number | null;
+  attack: number | null;
+  defence: number | null;
+  passing: number | null;
+  fitness: number | null;
+  creativity: number | null;
 }
 
 const MIN_OPTIONS = [0, 90, 270, 450];
+const DIMS: Array<{ k: keyof PlayerRow; l: string }> = [
+  { k: 'attack', l: 'Атк' },
+  { k: 'defence', l: 'Обр' },
+  { k: 'passing', l: 'Пас' },
+  { k: 'fitness', l: 'Физ' },
+  { k: 'creativity', l: 'Крв' },
+];
 
 /**
  * Игроки региона / талант-пул (Эпик 5, FR18–19). Рейтинг по индексу
@@ -99,6 +111,14 @@ export function FederationTalent() {
                   </div>
                   <div className="fed-row__meta">
                     {p.club} · {p.ageGroup}{p.position ? ` · ${p.position}` : ''}
+                  </div>
+                  <div className="fed-dims">
+                    {DIMS.map(({ k, l }) => {
+                      const v = p[k] as number | null;
+                      return v == null ? null : (
+                        <span key={l} className="fed-dim">{l}<b style={{ color: ratingColor(v) }}>{v.toFixed(1)}</b></span>
+                      );
+                    })}
                   </div>
                 </div>
                 <span className="fed-faint fed-num" style={{ fontSize: 11.5, whiteSpace: 'nowrap' }}>

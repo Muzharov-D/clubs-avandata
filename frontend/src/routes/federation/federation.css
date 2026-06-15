@@ -120,6 +120,20 @@
 /* рейтинг-пилюля 0–10 */
 .fed-rate { min-width: 40px; text-align: center; border-radius: var(--radius-sm); padding: 4px 0; font-family: var(--font-display); font-weight: 700; font-size: 14px; font-variant-numeric: tabular-nums; border: 1px solid transparent; }
 
+/* ---- Радар рейтинга ---- */
+.fed-radar { overflow: visible; display: block; }
+.fed-radar__lbl { font-size: 10.5px; fill: var(--text-muted); font-weight: 500; }
+.fed-radar__val { fill: var(--text); font-weight: 700; font-variant-numeric: tabular-nums; }
+
+/* профиль региона: радар + плитки стиля */
+.fed-profile { display: grid; grid-template-columns: 250px 1fr; gap: 22px; align-items: center; }
+@media (max-width: 720px) { .fed-profile { grid-template-columns: 1fr; justify-items: center; } }
+
+/* мини-измерения в карточке игрока (Атк/Обр/Пас/Физ/Крв) */
+.fed-dims { display: flex; flex-wrap: wrap; gap: 4px 12px; margin-top: 6px; }
+.fed-dim { font-size: 11px; color: var(--text-faint); font-variant-numeric: tabular-nums; }
+.fed-dim b { font-weight: 700; margin-left: 3px; }
+
 /* ---- Таблица данных (сортируемый бенчмаркинг) ---- */
 .fed-dt { width: 100%; border-collapse: collapse; font-size: 13px; }
 .fed-dt th {

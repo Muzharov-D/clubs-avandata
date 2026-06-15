@@ -12,13 +12,18 @@ interface BenchRow {
   matches: number;
   coverage: number | null;
   avgRating: number | null;
+  attack: number | null;
+  defence: number | null;
+  passing: number | null;
 }
 
-type SortKey = 'name' | 'players' | 'matches' | 'coverage' | 'avgRating';
+type SortKey = 'name' | 'players' | 'matches' | 'coverage' | 'avgRating' | 'attack' | 'defence' | 'passing';
 
 function exportCsv(rows: BenchRow[]) {
-  const header = ['Клуб', 'Тариф', 'Игроков', 'Матчей', 'Охват %', 'Ср. рейтинг'];
-  const lines = rows.map((r) => [r.name, r.plan, r.players, r.matches, r.coverage ?? '', r.avgRating ?? ''].join(';'));
+  const header = ['Клуб', 'Тариф', 'Игроков', 'Матчей', 'Охват %', 'Ср. индекс', 'Атака', 'Оборона', 'Пас'];
+  const lines = rows.map((r) =>
+    [r.name, r.plan, r.players, r.matches, r.coverage ?? '', r.avgRating ?? '', r.attack ?? '', r.defence ?? '', r.passing ?? ''].join(';'),
+  );
   // BOM — чтобы Excel правильно открыл кириллицу в UTF-8.
   const csv = ['﻿' + header.join(';'), ...lines].join('\n');
   const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
@@ -64,6 +69,9 @@ export function FederationBenchmark() {
     { key: 'matches', label: 'Матчей' },
     { key: 'coverage', label: 'Охват' },
     { key: 'avgRating', label: 'Ср. индекс' },
+    { key: 'attack', label: 'Атака' },
+    { key: 'defence', label: 'Оборона' },
+    { key: 'passing', label: 'Пас' },
   ];
   const arrow = (k: SortKey) => (sortKey === k ? (dir === -1 ? ' ↓' : ' ↑') : '');
 
@@ -130,6 +138,11 @@ export function FederationBenchmark() {
                         </span>
                       )}
                     </td>
+                    {([c.attack, c.defence, c.passing] as Array<number | null>).map((v, j) => (
+                      <td key={j} style={{ color: v == null ? 'var(--text-faint)' : ratingColor(v), fontWeight: 600 }}>
+                        {v == null ? '—' : v.toFixed(1)}
+                      </td>
+                    ))}
                   </tr>
                 ))}
               </tbody>

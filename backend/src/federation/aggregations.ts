@@ -258,6 +258,19 @@ export interface FederationPlayerRow {
   matches: number;
   minutes: number;
   rating: number | null;
+  /** Профиль рейтинга по 6 измерениям (среднее по матчам, 0–10) — реальная глубина. */
+  attack: number | null;
+  defence: number | null;
+  passing: number | null;
+  fitness: number | null;
+  creativity: number | null;
+}
+
+/** Среднее по числовому ключу ratings/team_avg_ratings с учётом legacy-алиаса. */
+function avgRatingExpr(col: string, key: string, alias?: string): string {
+  const a = `jsonb_typeof(${col}->'${key}')='number' THEN (${col}->>'${key}')::numeric`;
+  const b = alias ? ` WHEN jsonb_typeof(${col}->'${alias}')='number' THEN (${col}->>'${alias}')::numeric` : '';
+  return `round(avg(CASE WHEN ${a}${b} END), 2)`;
 }
 
 /**
@@ -271,6 +284,8 @@ export async function federationTalentPool(conn: PoolClient, minMinutes: number)
   const q = await conn.query<{
     name: string | null; club: string; age_group: string; position: string | null;
     matches: number; minutes: number; rating: string | null;
+    attack: string | null; defence: string | null; passing: string | null;
+    fitness: string | null; creativity: string | null;
   }>(
     `SELECT
        CASE WHEN p.data_consent THEN p.full_name ELSE NULL END AS name,
@@ -279,7 +294,12 @@ export async function federationTalentPool(conn: PoolClient, minMinutes: number)
        p.position,
        count(mp.match_id)::int AS matches,
        coalesce(sum(mp.minutes), 0)::int AS minutes,
-       round(avg((mp.ratings->>'overall')::numeric), 2) AS rating
+       round(avg((mp.ratings->>'overall')::numeric), 2) AS rating,
+       ${avgRatingExpr('mp.ratings', 'attack', 'attacking')} AS attack,
+       ${avgRatingExpr('mp.ratings', 'defence', 'defending')} AS defence,
+       ${avgRatingExpr('mp.ratings', 'passing')} AS passing,
+       ${avgRatingExpr('mp.ratings', 'fitness')} AS fitness,
+       ${avgRatingExpr('mp.ratings', 'creativity')} AS creativity
      FROM players p
      JOIN teams tm ON tm.id = p.team_id
      JOIN tenants t ON t.slug = p.tenant_id
@@ -292,6 +312,7 @@ export async function federationTalentPool(conn: PoolClient, minMinutes: number)
      LIMIT 200`,
     [minMinutes],
   );
+  const n = (v: string | null) => (v == null ? null : Number(v));
   return q.rows.map((r) => ({
     name: r.name ?? null,
     club: r.club,
@@ -299,8 +320,92 @@ export async function federationTalentPool(conn: PoolClient, minMinutes: number)
     position: r.position ?? null,
     matches: Number(r.matches),
     minutes: Number(r.minutes),
-    rating: r.rating == null ? null : Number(r.rating),
+    rating: n(r.rating),
+    attack: n(r.attack),
+    defence: n(r.defence),
+    passing: n(r.passing),
+    fitness: n(r.fitness),
+    creativity: n(r.creativity),
   }));
+}
+
+export interface FederationRegionProfile {
+  /** Профиль качества региона по 6 измерениям (среднее team_avg_ratings по матчам, 0–10). */
+  ratings: {
+    overall: number | null; attack: number | null; defence: number | null;
+    passing: number | null; fitness: number | null; creativity: number | null;
+  };
+  /** Стиль игры региона (среднее по нашей стороне матча). */
+  style: {
+    possession: number | null; xg: number | null; shots: number | null; shotsOnTarget: number | null;
+    passAccuracy: number | null; duelsWon: number | null; distanceKm: number | null;
+  };
+  matchesRated: number;
+  matchesStyled: number;
+}
+
+/**
+ * Профиль региона (реальная глубина) — 6-мерный рейтинг команд + стиль игры по
+ * матчам клубов-членов. Рейтинги из matches.team_avg_ratings (готовое среднее
+ * нашей команды по матчу); стиль из matches.team_summary_stats (наша сторона:
+ * home, если выставлен home_team_id, иначе away). Все касты под guard'ом
+ * jsonb_typeof='number' — как в остальных агрегатах.
+ */
+export async function federationRegionProfile(conn: PoolClient): Promise<FederationRegionProfile> {
+  const r = (await conn.query<{
+    overall: string | null; attack: string | null; defence: string | null;
+    passing: string | null; fitness: string | null; creativity: string | null; matches_rated: number;
+  }>(
+    `SELECT
+       ${avgRatingExpr('team_avg_ratings', 'overall')} AS overall,
+       ${avgRatingExpr('team_avg_ratings', 'attack', 'attacking')} AS attack,
+       ${avgRatingExpr('team_avg_ratings', 'defence', 'defending')} AS defence,
+       ${avgRatingExpr('team_avg_ratings', 'passing')} AS passing,
+       ${avgRatingExpr('team_avg_ratings', 'fitness')} AS fitness,
+       ${avgRatingExpr('team_avg_ratings', 'creativity')} AS creativity,
+       count(*) FILTER (WHERE jsonb_typeof(team_avg_ratings->'overall')='number')::int AS matches_rated
+     FROM matches
+     WHERE ${FED_MEMBERSHIP_SQL} AND team_avg_ratings IS NOT NULL`,
+  )).rows[0];
+
+  // Стиль: значение лежит как {value:N} или {pct:N} → берём числовой лист с guard'ом.
+  const leaf = (path: string, kind: 'value' | 'pct', prec: number, scale = 1) =>
+    `round(avg(CASE WHEN jsonb_typeof(o->'${path}'->'${kind}')='number' THEN (o->'${path}'->>'${kind}')::numeric END)${scale !== 1 ? `/${scale}` : ''}, ${prec})`;
+  const s = (await conn.query<{
+    possession: string | null; xg: string | null; shots: string | null; shots_on_target: string | null;
+    pass_accuracy: string | null; duels_won: string | null; distance_km: string | null; matches_styled: number;
+  }>(
+    `WITH ours AS (
+       SELECT CASE WHEN home_team_id IS NOT NULL THEN team_summary_stats->'home'
+                   WHEN away_team_id IS NOT NULL THEN team_summary_stats->'away' END AS o
+       FROM matches
+       WHERE ${FED_MEMBERSHIP_SQL} AND team_summary_stats IS NOT NULL
+     )
+     SELECT
+       ${leaf('possession', 'value', 1)} AS possession,
+       ${leaf('xG', 'value', 2)} AS xg,
+       ${leaf('shotsTotal', 'value', 1)} AS shots,
+       ${leaf('shotsOnTarget', 'value', 1)} AS shots_on_target,
+       ${leaf('passAccuracy', 'pct', 0)} AS pass_accuracy,
+       ${leaf('duelsWon', 'pct', 0)} AS duels_won,
+       ${leaf('totalDistance', 'value', 1, 1000)} AS distance_km,
+       count(*) FILTER (WHERE o IS NOT NULL)::int AS matches_styled
+     FROM ours`,
+  )).rows[0];
+
+  const n = (v: string | null | undefined) => (v == null ? null : Number(v));
+  return {
+    ratings: {
+      overall: n(r?.overall), attack: n(r?.attack), defence: n(r?.defence),
+      passing: n(r?.passing), fitness: n(r?.fitness), creativity: n(r?.creativity),
+    },
+    style: {
+      possession: n(s?.possession), xg: n(s?.xg), shots: n(s?.shots), shotsOnTarget: n(s?.shots_on_target),
+      passAccuracy: n(s?.pass_accuracy), duelsWon: n(s?.duels_won), distanceKm: n(s?.distance_km),
+    },
+    matchesRated: Number(r?.matches_rated ?? 0),
+    matchesStyled: Number(s?.matches_styled ?? 0),
+  };
 }
 
 export interface FederationProductivityRow {
@@ -359,6 +464,9 @@ export interface FederationBenchmarkRow {
   matches: number;
   coverage: number | null;
   avgRating: number | null;
+  attack: number | null;
+  defence: number | null;
+  passing: number | null;
 }
 
 /**
@@ -367,9 +475,15 @@ export interface FederationBenchmarkRow {
  * Источник экспорта CSV (FR23, на фронте).
  */
 export async function federationBenchmark(conn: PoolClient): Promise<FederationBenchmarkRow[]> {
+  // Корр. подзапрос среднего рейтинга по клубу для измерения key (с алиасом).
+  const clubRating = (key: string, alias?: string) =>
+    `(SELECT round(avg(CASE WHEN jsonb_typeof(mp.ratings->'${key}')='number' THEN (mp.ratings->>'${key}')::numeric` +
+    (alias ? ` WHEN jsonb_typeof(mp.ratings->'${alias}')='number' THEN (mp.ratings->>'${alias}')::numeric` : '') +
+    ` END), 2) FROM match_players mp JOIN players p2 ON p2.id = mp.player_id WHERE p2.tenant_id = t.slug)`;
   const q = await conn.query<{
     slug: string; name: string; plan: string;
     players: number; matches: number; coverage: number | null; avg_rating: string | null;
+    attack: string | null; defence: string | null; passing: string | null;
   }>(
     `SELECT
        t.slug, t.display_name AS name, t.plan,
@@ -378,13 +492,15 @@ export async function federationBenchmark(conn: PoolClient): Promise<FederationB
        (SELECT round(avg((m.data_quality->>'score')::numeric))::int
           FROM matches m
          WHERE m.tenant_id = t.slug AND jsonb_typeof(m.data_quality->'score') = 'number') AS coverage,
-       (SELECT round(avg((mp.ratings->>'overall')::numeric), 2)
-          FROM match_players mp JOIN players p2 ON p2.id = mp.player_id
-         WHERE p2.tenant_id = t.slug AND jsonb_typeof(mp.ratings->'overall') = 'number') AS avg_rating
+       ${clubRating('overall')} AS avg_rating,
+       ${clubRating('attack', 'attacking')} AS attack,
+       ${clubRating('defence', 'defending')} AS defence,
+       ${clubRating('passing')} AS passing
      FROM tenants t
      WHERE ${fedMembershipFilter('t.slug')}
      ORDER BY t.display_name`,
   );
+  const n = (v: string | null) => (v == null ? null : Number(v));
   return q.rows.map((r) => ({
     slug: r.slug,
     name: r.name,
@@ -392,6 +508,9 @@ export async function federationBenchmark(conn: PoolClient): Promise<FederationB
     players: Number(r.players),
     matches: Number(r.matches),
     coverage: r.coverage == null ? null : Number(r.coverage),
-    avgRating: r.avg_rating == null ? null : Number(r.avg_rating),
+    avgRating: n(r.avg_rating),
+    attack: n(r.attack),
+    defence: n(r.defence),
+    passing: n(r.passing),
   }));
 }
