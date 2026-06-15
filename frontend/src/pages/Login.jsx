@@ -17,7 +17,10 @@ export default function Login() {
 
   // Если уже залогинен — перекидываем по роли (без захода в форму).
   if (user) {
-    const dest = user.role === 'platform_admin' ? '/admin' : '/club';
+    const dest =
+      user.role === 'platform_admin' ? '/admin'
+      : user.role === 'federation_admin' ? '/federation'
+      : '/club';
     return <Navigate to={dest} replace />;
   }
 
@@ -35,6 +38,8 @@ export default function Login() {
       let target;
       if (loggedUser?.role === 'platform_admin') {
         target = '/admin';
+      } else if (loggedUser?.role === 'federation_admin') {
+        target = '/federation';
       } else if (loggedUser?.role === 'player' && loggedUser?.playerId) {
         target = `/players/${loggedUser.playerId}`;
       } else {
