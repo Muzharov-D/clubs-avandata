@@ -67,6 +67,23 @@
 /* ---- KPI-сетка (под StatTile) ---- */
 .fed-kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px; }
 
+/* ---- Открытия региона (находки-вердикты) ---- */
+.fed-findings { display: grid; gap: 14px; }
+.fed-finding {
+  background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius);
+  box-shadow: var(--shadow-sm); padding: 20px 22px;
+}
+.fed-finding--hero {
+  border-color: color-mix(in srgb, var(--accent-cyan) 30%, var(--border));
+  background: linear-gradient(180deg, color-mix(in srgb, var(--accent-cyan) 6%, var(--bg-surface)), var(--bg-surface));
+}
+.fed-finding__kicker { font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent-cyan); font-weight: 600; display: flex; align-items: center; gap: 7px; }
+.fed-finding__verdict { font-family: var(--font-display); font-size: 20px; font-weight: 700; line-height: 1.28; letter-spacing: -0.01em; margin: 9px 0 0; text-wrap: balance; }
+.fed-finding--hero .fed-finding__verdict { font-size: 26px; }
+.fed-finding__why { color: var(--text-muted); font-size: 12.5px; margin-top: 9px; line-height: 1.5; max-width: 72ch; }
+.fed-finding__body { margin-top: 16px; }
+.fed-finding__foot { margin-top: 14px; }
+
 /* ---- Две колонки карточек (дашборд) ---- */
 .fed-cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 14px; align-items: start; }
 .fed-link {

@@ -14,7 +14,8 @@ const NAV: Array<{ title: string; items: NavItem[] }> = [
   {
     title: 'Обзор',
     items: [
-      { to: '/federation', end: true, label: 'Обзор региона', icon: 'M3 12l9-9 9 9M5 10v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V10' },
+      { to: '/federation', end: true, label: 'Открытия региона', icon: 'M9 18h6M10 22h4M12 2a7 7 0 0 0-4 12.6c.6.5 1 1.2 1 2V17h6v-.4c0-.8.4-1.5 1-2A7 7 0 0 0 12 2z' },
+      { to: '/federation/summary', label: 'Сводка', icon: 'M3 12l9-9 9 9M5 10v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V10' },
       { to: '/federation/clubs', label: 'Клубы', icon: 'M12 3l8 4v6c0 4-3.5 7-8 8-4.5-1-8-4-8-8V7l8-4z' },
       { to: '/federation/competitions', label: 'Соревнования', icon: 'M7 4h10v4a5 5 0 0 1-10 0V4zM5 6H3v1a3 3 0 0 0 3 3m12-4h2v1a3 3 0 0 1-3 3M9 21h6M12 14v7' },
     ],

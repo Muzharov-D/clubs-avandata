@@ -58,6 +58,7 @@ import { FederationDevelopment } from './routes/federation/Development';
 import { FederationBenchmark } from './routes/federation/Benchmark';
 import { FederationLeaderboards } from './routes/federation/Leaderboards';
 import { FederationPlayerProfile } from './routes/federation/PlayerProfile';
+import { FederationDiscoveries } from './routes/federation/Discoveries';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -184,7 +185,8 @@ export function App() {
                       </FederationOnly>
                     }
                   >
-                    <Route index element={<FederationOverview />} />
+                    <Route index element={<FederationDiscoveries />} />
+                    <Route path="summary" element={<FederationOverview />} />
                     <Route path="clubs" element={<FederationClubs />} />
                     <Route path="competitions" element={<FederationCompetitions />} />
                     <Route path="data-quality" element={<FederationDataQuality />} />
