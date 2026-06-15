@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { api } from '../../api/client';
-import { ratingColor, tint } from './fedColors';
+import { ratingColor, tint, healthColor } from './fedColors';
 import './federation.css';
 
 interface PlayerRow {
@@ -32,6 +32,12 @@ const DIMS: Array<{ k: keyof PlayerRow; l: string }> = [
   { k: 'creativity', l: 'Крв' },
 ];
 
+/** Бейдж перцентиля рейтинга внутри возраста по региону. */
+function AgePct({ pct }: { pct?: number }) {
+  if (pct == null) return null;
+  return <span className="fed-dim" style={{ fontWeight: 600 }}>перц. возраста<b style={{ color: healthColor(pct), marginLeft: 3 }}>{pct}</b></span>;
+}
+
 /**
  * Игроки региона / талант-пул (Эпик 5, FR18–19). Рейтинг по индексу
  * эффективности (0–10) из match_players, фильтры мин.минут и возраст. Имя — только
@@ -50,6 +56,24 @@ export function FederationTalent() {
     () => (ageFilter === 'all' ? players : players.filter((p) => p.ageGroup === ageFilter)),
     [players, ageFilter],
   );
+  // Перцентиль рейтинга внутри возраста по региону (знаменатель — есть только у федерации).
+  const pctByPlayer = useMemo(() => {
+    const m = new Map<string, number>();
+    const byAge = new Map<string, PlayerRow[]>();
+    for (const p of players) {
+      if (p.rating == null) continue;
+      const arr = byAge.get(p.ageGroup);
+      if (arr) arr.push(p); else byAge.set(p.ageGroup, [p]);
+    }
+    for (const cohort of byAge.values()) {
+      if (cohort.length < 2) continue;
+      for (const p of cohort) {
+        const below = cohort.filter((x) => (x.rating ?? 0) < (p.rating ?? 0)).length;
+        m.set(p.playerId, Math.round((below / (cohort.length - 1)) * 100));
+      }
+    }
+    return m;
+  }, [players]);
 
   return (
     <div>
@@ -122,6 +146,7 @@ export function FederationTalent() {
                     {p.club} · {p.ageGroup}{p.position ? ` · ${p.position}` : ''}
                   </div>
                   <div className="fed-dims">
+                    <AgePct pct={pctByPlayer.get(p.playerId)} />
                     {DIMS.map(({ k, l }) => {
                       const v = p[k] as number | null;
                       return v == null ? null : (

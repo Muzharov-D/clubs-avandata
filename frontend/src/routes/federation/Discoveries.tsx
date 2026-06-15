@@ -12,6 +12,7 @@ interface AgeEffect { region: { q1: number; q2: number; q3: number; q4: number; 
 interface DevRow { slug: string; name: string; activePlayers: number; totalMinutes: number; youngPct: number | null }
 interface TalentRow { playerId: string; name: string | null; club: string; ageGroup: string; position: string | null; rating: number | null }
 interface RegionProfile { ratings: { overall: number | null; attack: number | null; defence: number | null; passing: number | null; fitness: number | null; creativity: number | null }; matchesRated: number }
+interface BenchRow { slug: string; name: string; attack: number | null; defence: number | null; passing: number | null }
 
 const Q_LABELS = ['Q1 · янв–мар', 'Q2 · апр–июн', 'Q3 · июл–сен', 'Q4 · окт–дек'];
 
@@ -28,9 +29,14 @@ export function FederationDiscoveries() {
   const dev = useQuery({ queryKey: ['federation', 'development'], queryFn: () => api<{ clubs: DevRow[] }>('/federation/development') });
   const tal = useQuery({ queryKey: ['federation', 'talent', 0], queryFn: () => api<{ players: TalentRow[] }>('/federation/talent?minMinutes=0') });
   const rp = useQuery({ queryKey: ['federation', 'region-profile'], queryFn: () => api<RegionProfile>('/federation/region-profile') });
+  const bm = useQuery({ queryKey: ['federation', 'benchmark'], queryFn: () => api<{ clubs: BenchRow[] }>('/federation/benchmark') });
 
   const clubsTotal = ov.data?.clubs.total ?? 0;
   const loading = ov.isLoading || ae.isLoading || dev.isLoading || tal.isLoading || rp.isLoading;
+
+  // Диверсия стиля: разброс атаки между клубами (моно- vs многостилье). Нужно ≥2 клуба.
+  const atks = (bm.data?.clubs ?? []).map((c) => c.attack).filter((v): v is number => v != null);
+  const styleSpread = atks.length >= 2 ? Math.round((Math.max(...atks) - Math.min(...atks)) * 10) / 10 : null;
 
   return (
     <div>
@@ -50,7 +56,7 @@ export function FederationDiscoveries() {
           <AgeLeakFinding data={ae.data} />
           <DevelopFinding clubs={dev.data?.clubs} clubsTotal={clubsTotal} />
           <HiddenMiddleFinding players={tal.data?.players} clubsTotal={clubsTotal} />
-          <StyleDnaFinding rp={rp.data} clubsTotal={clubsTotal} />
+          <StyleDnaFinding rp={rp.data} clubsTotal={clubsTotal} spread={styleSpread} />
 
           <p className="fed-faint" style={{ fontSize: 12, lineHeight: 1.55, marginTop: 4 }}>
             Каркас «Открытий» построен на данных {clubsTotal === 1 ? 'одного клуба' : `${clubsTotal} клубов`} — на малой выборке узор тонкий
@@ -187,7 +193,7 @@ function HiddenMiddleFinding({ players, clubsTotal }: { players?: TalentRow[]; c
   );
 }
 
-function StyleDnaFinding({ rp, clubsTotal }: { rp?: RegionProfile; clubsTotal: number }) {
+function StyleDnaFinding({ rp, clubsTotal, spread }: { rp?: RegionProfile; clubsTotal: number; spread?: number | null }) {
   const rt = rp?.ratings;
   if (!rt || rt.overall == null) {
     return <Finding kicker="🧬 Открытие 4 · ДНК региона" verdict="Нет разобранных матчей для профиля игры" why="Каким футболом играет регион — видно в сумме рейтингов команд по матчам." to="/federation/benchmark" cta="Бенчмаркинг" />;
@@ -212,7 +218,11 @@ function StyleDnaFinding({ rp, clubsTotal }: { rp?: RegionProfile; clubsTotal: n
     <Finding
       kicker="🧬 Открытие 4 · ДНК региона"
       verdict={verdict}
-      why={`Каким футболом играет регион в целом и не сходятся ли все школы в одну монокультуру — видно только в сумме по клубам.${clubsTotal <= 1 ? ' Разнообразие школ проявится с ростом числа клубов.' : ''}`}
+      why={`Каким футболом играет регион в целом и не сходятся ли все школы в одну монокультуру — видно только в сумме по клубам.${
+        spread != null
+          ? ` Разброс атаки между клубами — ${spread} балла: регион ${spread >= 1 ? 'разнообразен по школам' : 'склонен к монокультуре'}.`
+          : clubsTotal <= 1 ? ' Разнообразие школ проявится с ростом числа клубов.' : ''
+      }`}
       to="/federation/benchmark"
       cta="Сравнить клубы"
     >
