@@ -2,8 +2,10 @@ import type { FastifyInstance } from 'fastify';
 import { authenticate, authorize } from '../auth/middleware.js';
 import { withFederation } from '../db/tenantContext.js';
 import { BadRequestError } from '../shared/errors.js';
+import { registryFor } from './registry.js';
 import {
   federationOverview,
+  federationRegionMap,
   federationRegionProfile,
   federationClubs,
   federationCompetitions,
@@ -35,6 +37,16 @@ export async function federationRoutes(app: FastifyInstance) {
     const federationId = req.user?.federationId;
     if (!federationId) throw new BadRequestError('no federation context', 'NO_FEDERATION');
     return await withFederation(federationId, (_tx, conn) => federationOverview(conn));
+  });
+
+  /** GET /api/v1/federation/region-map — перепись региона (живые счётчики) + реестр кадров. */
+  app.get('/region-map', async (req) => {
+    const federationId = req.user?.federationId;
+    if (!federationId) throw new BadRequestError('no federation context', 'NO_FEDERATION');
+    return await withFederation(federationId, async (_tx, conn) => ({
+      ...(await federationRegionMap(conn)),
+      registry: registryFor(federationId),
+    }));
   });
 
   /** GET /api/v1/federation/region-profile — 6-мерный профиль качества + стиль игры. */

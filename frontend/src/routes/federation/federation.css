@@ -67,6 +67,10 @@
 /* ---- KPI-сетка (под StatTile) ---- */
 .fed-kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px; }
 
+/* ---- Перепись региона (крупные счётчики) ---- */
+.fed-census { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 12px; }
+.fed-census__cell { min-width: 0; }
+
 /* ---- Открытия региона (находки-вердикты) ---- */
 .fed-findings { display: grid; gap: 14px; }
 .fed-finding {

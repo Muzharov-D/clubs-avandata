@@ -52,6 +52,108 @@ export async function federationOverview(conn: PoolClient): Promise<FederationOv
   };
 }
 
+export interface FederationRegionMap {
+  players: number;
+  clubs: { total: number; paid: number; free: number };
+  teams: number;
+  /** Соревнования = различимые возрасты-первенства в standings. */
+  competitions: number;
+  /** Лиги/дивизионы = различимые league_name (fallback — competitions). */
+  leagues: number;
+  /** Список возрастов региона (сорт.). */
+  ageGroups: string[];
+  /** Разобранных матчей в базе. */
+  matches: number;
+  /** Всего голов (из протоколов событий, дедуп по матчу). */
+  goals: number;
+  /** Разрез по возрастам: команды и футболисты. */
+  byAge: Array<{ ageGroup: string; teams: number; players: number }>;
+}
+
+/**
+ * Карта/перепись региона (слой №1, «что у меня есть») — живые счётчики из данных:
+ * футболисты/клубы/команды/соревнования/матчи/голы + разрез по возрастам. Тренеры
+ * и судьи здесь НЕ считаются — их региональные числа лежат в административном
+ * реестре федерации (registry.ts), мерджатся в роуте. Изоляция — FED_MEMBERSHIP_SQL.
+ */
+export async function federationRegionMap(conn: PoolClient): Promise<FederationRegionMap> {
+  const clubsQ = await conn.query<{ plan: string; n: string }>(
+    `SELECT plan, count(*)::int AS n FROM tenants
+      WHERE slug IN (
+        SELECT tenant_slug FROM federation_tenants
+         WHERE federation_slug = current_setting('app.federation_id', true) AND tier = 'full'
+      )
+      GROUP BY plan`,
+  );
+  let total = 0, paid = 0, free = 0;
+  for (const r of clubsQ.rows) {
+    const n = Number(r.n);
+    total += n;
+    if (r.plan === 'paid') paid += n; else free += n;
+  }
+
+  const countMembers = async (table: 'teams' | 'players' | 'matches'): Promise<number> => {
+    const q = await conn.query<{ n: string }>(`SELECT count(*)::int AS n FROM ${table} WHERE ${FED_MEMBERSHIP_SQL}`);
+    return Number(q.rows[0]?.n ?? 0);
+  };
+
+  const comp = (await conn.query<{ ages: string; leagues: string }>(
+    `SELECT count(DISTINCT age_group)::int AS ages,
+            count(DISTINCT NULLIF(league_name, ''))::int AS leagues
+       FROM standings WHERE ${FED_MEMBERSHIP_SQL}`,
+  )).rows[0];
+
+  const byAgeQ = await conn.query<{ age_group: string; teams: string; players: string }>(
+    `SELECT tm.age_group,
+            count(DISTINCT tm.id)::int AS teams,
+            count(DISTINCT p.id)::int AS players
+       FROM teams tm
+       LEFT JOIN players p ON p.team_id = tm.id
+      WHERE ${fedMembershipFilter('tm.tenant_id')} AND tm.age_group IS NOT NULL
+      GROUP BY tm.age_group
+      ORDER BY tm.age_group`,
+  );
+  const byAge = byAgeQ.rows.map((r) => ({ ageGroup: r.age_group, teams: Number(r.teams), players: Number(r.players) }));
+
+  const agesQ = await conn.query<{ age_group: string }>(
+    `SELECT DISTINCT age_group FROM standings
+      WHERE ${FED_MEMBERSHIP_SQL} AND age_group IS NOT NULL ORDER BY age_group`,
+  );
+  let ageGroups = agesQ.rows.map((r) => r.age_group);
+  if (ageGroups.length === 0) ageGroups = byAge.map((a) => a.ageGroup);
+
+  const goalsQ = await conn.query<{ goals: string }>(
+    `WITH ev AS (
+       SELECT DISTINCT ON (COALESCE(NULLIF(ext_match_id, ''), id::text)) events_data
+         FROM calendar
+        WHERE ${FED_MEMBERSHIP_SQL} AND events_data IS NOT NULL
+        ORDER BY COALESCE(NULLIF(ext_match_id, ''), id::text), events_fetched_at DESC NULLS LAST
+     )
+     SELECT count(*)::int AS goals FROM ev,
+       jsonb_array_elements(
+         CASE WHEN jsonb_typeof(ev.events_data)='array' THEN ev.events_data
+              WHEN jsonb_typeof(ev.events_data->'events')='array' THEN ev.events_data->'events'
+              ELSE '[]'::jsonb END
+       ) AS e
+      WHERE (e->>'kind' IN ('goal', 'penalty') OR e->>'type' = 'goal')
+        AND coalesce(e->>'kind', '') <> 'own_goal'`,
+  );
+
+  const ages = Number(comp?.ages ?? 0);
+  const leaguesRaw = Number(comp?.leagues ?? 0);
+  return {
+    players: await countMembers('players'),
+    clubs: { total, paid, free },
+    teams: await countMembers('teams'),
+    competitions: ages,
+    leagues: leaguesRaw > 0 ? leaguesRaw : ages,
+    ageGroups,
+    matches: await countMembers('matches'),
+    goals: Number(goalsQ.rows[0]?.goals ?? 0),
+    byAge,
+  };
+}
+
 export interface FederationClubRow {
   slug: string;
   name: string;
