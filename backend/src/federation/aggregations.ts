@@ -266,17 +266,12 @@ export interface FederationPlayerRow {
   passing: number | null;
   fitness: number | null;
   creativity: number | null;
-  /** Суммарные события за период (для скаут-таблицы и лидербордов). */
+  /** Суммарные события — ТОЛЬКО 37 базовых метрик (платные закрыты для федерации). */
   goals: number;
-  assists: number;
-  keyPasses: number;
   shots: number;
   dribbles: number;
   tackles: number;
   interceptions: number;
-  recoveries: number;
-  distanceM: number;
-  sprints: number;
 }
 
 /** Среднее по числовому ключу ratings/team_avg_ratings с учётом legacy-алиаса. */
@@ -315,8 +310,7 @@ export async function federationTalentPool(conn: PoolClient, minMinutes: number)
     matches: number; minutes: number; rating: string | null;
     attack: string | null; defence: string | null; passing: string | null;
     fitness: string | null; creativity: string | null;
-    goals: number; assists: number; key_passes: number; shots: number; dribbles: number;
-    tackles: number; interceptions: number; recoveries: number; distance_m: number; sprints: number;
+    goals: number; shots: number; dribbles: number; tackles: number; interceptions: number;
   }>(
     `SELECT
        p.id AS player_id,
@@ -333,15 +327,10 @@ export async function federationTalentPool(conn: PoolClient, minMinutes: number)
        ${avgRatingExpr('mp.ratings', 'fitness')} AS fitness,
        ${avgRatingExpr('mp.ratings', 'creativity')} AS creativity,
        ${sumStat('attack', 'goal')}::int AS goals,
-       ${sumStat('attack', 'assist')}::int AS assists,
-       ${sumStat('attack', 'keyPass')}::int AS key_passes,
        ${sumStat('attack', 'shot', true)}::int AS shots,
        ${sumStat('attack', 'dribble')}::int AS dribbles,
        ${sumStat('defence', 'tackle')}::int AS tackles,
-       ${sumStat('defence', 'interception')}::int AS interceptions,
-       ${sumStat('defence', 'recovery')}::int AS recoveries,
-       ${sumStat('fitness', 'totalDistance')}::int AS distance_m,
-       ${sumStat('fitness', 'sprintsCount')}::int AS sprints
+       ${sumStat('defence', 'interception')}::int AS interceptions
      FROM players p
      JOIN teams tm ON tm.id = p.team_id
      JOIN tenants t ON t.slug = p.tenant_id
@@ -370,15 +359,10 @@ export async function federationTalentPool(conn: PoolClient, minMinutes: number)
     fitness: n(r.fitness),
     creativity: n(r.creativity),
     goals: Number(r.goals),
-    assists: Number(r.assists),
-    keyPasses: Number(r.key_passes),
     shots: Number(r.shots),
     dribbles: Number(r.dribbles),
     tackles: Number(r.tackles),
     interceptions: Number(r.interceptions),
-    recoveries: Number(r.recoveries),
-    distanceM: Number(r.distance_m),
-    sprints: Number(r.sprints),
   }));
 }
 
@@ -477,9 +461,8 @@ export interface FederationPlayerProfile {
     passing: number | null; fitness: number | null; creativity: number | null;
   };
   totals: {
-    goals: number; assists: number; keyPasses: number; shots: number; dribbles: number;
-    progressivePasses: number; tackles: number; interceptions: number; recoveries: number;
-    distanceM: number; sprints: number;
+    goals: number; shots: number; dribbles: number; progressivePasses: number;
+    tackles: number; interceptions: number;
   };
   /** Тренд индекса по матчам (по дате) — для спарклайна. */
   trend: Array<{ date: string | null; overall: number }>;
@@ -499,9 +482,8 @@ export async function federationPlayerProfile(conn: PoolClient, playerId: string
     position_full: string | null; birth_year: number | null; matches: number; minutes: number;
     overall: string | null; attack: string | null; defence: string | null;
     passing: string | null; fitness: string | null; creativity: string | null;
-    goals: number; assists: number; key_passes: number; shots: number; dribbles: number;
-    progressive: number; tackles: number; interceptions: number; recoveries: number;
-    distance_m: number; sprints: number; split_first: string | null; split_second: string | null;
+    goals: number; shots: number; dribbles: number; progressive: number;
+    tackles: number; interceptions: number; split_first: string | null; split_second: string | null;
   }>(
     `SELECT
        CASE WHEN p.data_consent THEN p.full_name ELSE NULL END AS name,
@@ -516,16 +498,11 @@ export async function federationPlayerProfile(conn: PoolClient, playerId: string
        ${avgRatingExpr('mp.ratings', 'fitness')} AS fitness,
        ${avgRatingExpr('mp.ratings', 'creativity')} AS creativity,
        ${sumStat('attack', 'goal')}::int AS goals,
-       ${sumStat('attack', 'assist')}::int AS assists,
-       ${sumStat('attack', 'keyPass')}::int AS key_passes,
        ${sumStat('attack', 'shot', true)}::int AS shots,
        ${sumStat('attack', 'dribble')}::int AS dribbles,
        ${sumStat('attack', 'progressivePass')}::int AS progressive,
        ${sumStat('defence', 'tackle')}::int AS tackles,
        ${sumStat('defence', 'interception')}::int AS interceptions,
-       ${sumStat('defence', 'recovery')}::int AS recoveries,
-       ${sumStat('fitness', 'totalDistance')}::int AS distance_m,
-       ${sumStat('fitness', 'sprintsCount')}::int AS sprints,
        round(avg(CASE WHEN jsonb_typeof(mp.splits->'rating'->'first')='number' THEN (mp.splits->'rating'->>'first')::numeric END), 2) AS split_first,
        round(avg(CASE WHEN jsonb_typeof(mp.splits->'rating'->'second')='number' THEN (mp.splits->'rating'->>'second')::numeric END), 2) AS split_second
      FROM players p
@@ -565,10 +542,8 @@ export async function federationPlayerProfile(conn: PoolClient, playerId: string
       passing: n(row.passing), fitness: n(row.fitness), creativity: n(row.creativity),
     },
     totals: {
-      goals: Number(row.goals), assists: Number(row.assists), keyPasses: Number(row.key_passes),
-      shots: Number(row.shots), dribbles: Number(row.dribbles), progressivePasses: Number(row.progressive),
-      tackles: Number(row.tackles), interceptions: Number(row.interceptions), recoveries: Number(row.recoveries),
-      distanceM: Number(row.distance_m), sprints: Number(row.sprints),
+      goals: Number(row.goals), shots: Number(row.shots), dribbles: Number(row.dribbles),
+      progressivePasses: Number(row.progressive), tackles: Number(row.tackles), interceptions: Number(row.interceptions),
     },
     trend: tr.rows.map((x) => ({ date: x.date ? new Date(x.date).toISOString() : null, overall: Number(x.overall) })),
     splits: sf == null && ss == null ? null : { first: sf, second: ss },
@@ -581,12 +556,10 @@ export interface FederationRegionProfile {
     overall: number | null; attack: number | null; defence: number | null;
     passing: number | null; fitness: number | null; creativity: number | null;
   };
-  /** Стиль игры региона — среднее за матч из team_aggregates (нашей команды). */
+  /** Стиль игры региона — ТОЛЬКО 37 базовых метрик (платные секции закрыты). */
   style: {
     shots: number | null; shotsOnTarget: number | null; dribbles: number | null;
-    keyPasses: number | null; progressivePasses: number | null;
-    tackles: number | null; interceptions: number | null; recoveries: number | null;
-    touchesInBox: number | null; accuratePasses: number | null; crosses: number | null; distanceKm: number | null;
+    progressivePasses: number | null; tackles: number | null; interceptions: number | null;
   };
   matchesRated: number;
   matchesStyled: number;
@@ -626,24 +599,16 @@ export async function federationRegionProfile(conn: PoolClient): Promise<Federat
   };
   const s = (await conn.query<{
     shots: string | null; shots_on_target: string | null; dribbles: string | null;
-    key_passes: string | null; progressive_passes: string | null;
-    tackles: string | null; interceptions: string | null; recoveries: string | null;
-    touches_in_box: string | null; accurate_passes: string | null; crosses: string | null;
-    distance_km: string | null; matches_styled: number;
+    progressive_passes: string | null; tackles: string | null; interceptions: string | null;
+    matches_styled: number;
   }>(
     `SELECT
        round(avg(coalesce(${fv('shooting', 'shots')}, ${fv('shooting', 'totalShots')})), 1) AS shots,
        round(avg(${fv('shooting', 'onTarget')}), 1) AS shots_on_target,
        round(avg(${fv('attacks', 'dribble')}), 1) AS dribbles,
-       round(avg(${fv('passes', 'keyPass')}), 1) AS key_passes,
        round(avg(${fv('passes', 'progressive')}), 1) AS progressive_passes,
        round(avg(coalesce(${fv('recoveriesAndTackling', 'tackle')}, ${fv('duels', 'totalDuels')})), 1) AS tackles,
        round(avg(coalesce(${fv('recoveriesAndTackling', 'interception')}, ${fv('positioning', 'interceptions')})), 1) AS interceptions,
-       round(avg(${fv('recoveriesAndTackling', 'recovery')}), 1) AS recoveries,
-       round(avg(${fv('attacks', 'touchesInBox')}), 1) AS touches_in_box,
-       round(avg(${fv('passes', 'successful')}), 1) AS accurate_passes,
-       round(avg(${fv('passes', 'crosses')}), 1) AS crosses,
-       round(avg(${fv('fitness', 'totalDistance')}) / 1000, 1) AS distance_km,
        count(*) FILTER (WHERE team_aggregates IS NOT NULL)::int AS matches_styled
      FROM matches
      WHERE ${FED_MEMBERSHIP_SQL} AND team_aggregates IS NOT NULL`,
@@ -657,10 +622,7 @@ export async function federationRegionProfile(conn: PoolClient): Promise<Federat
     },
     style: {
       shots: n(s?.shots), shotsOnTarget: n(s?.shots_on_target), dribbles: n(s?.dribbles),
-      keyPasses: n(s?.key_passes), progressivePasses: n(s?.progressive_passes),
-      tackles: n(s?.tackles), interceptions: n(s?.interceptions), recoveries: n(s?.recoveries),
-      touchesInBox: n(s?.touches_in_box), accuratePasses: n(s?.accurate_passes), crosses: n(s?.crosses),
-      distanceKm: n(s?.distance_km),
+      progressivePasses: n(s?.progressive_passes), tackles: n(s?.tackles), interceptions: n(s?.interceptions),
     },
     matchesRated: Number(r?.matches_rated ?? 0),
     matchesStyled: Number(s?.matches_styled ?? 0),

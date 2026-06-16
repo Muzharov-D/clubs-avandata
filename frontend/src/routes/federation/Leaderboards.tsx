@@ -12,26 +12,20 @@ interface PlayerRow {
   position: string | null;
   rating: number | null;
   goals: number;
-  assists: number;
-  keyPasses: number;
   dribbles: number;
   tackles: number;
   interceptions: number;
-  distanceM: number;
 }
 
-type NumKey = 'goals' | 'assists' | 'rating' | 'keyPasses' | 'dribbles' | 'tackles' | 'interceptions' | 'distanceM';
+type NumKey = 'goals' | 'rating' | 'dribbles' | 'tackles' | 'interceptions';
 interface Board { k: NumKey; title: string; fmt: (v: number) => string; rated?: boolean }
 
 const BOARDS: Board[] = [
   { k: 'goals', title: 'Бомбардиры', fmt: (v) => String(v) },
-  { k: 'assists', title: 'Ассистенты', fmt: (v) => String(v) },
   { k: 'rating', title: 'Индекс эффективности', fmt: (v) => v.toFixed(1), rated: true },
-  { k: 'keyPasses', title: 'Ключевые передачи', fmt: (v) => String(v) },
   { k: 'dribbles', title: 'Дриблинг', fmt: (v) => String(v) },
   { k: 'tackles', title: 'Отборы', fmt: (v) => String(v) },
   { k: 'interceptions', title: 'Перехваты', fmt: (v) => String(v) },
-  { k: 'distanceM', title: 'Дистанция', fmt: (v) => `${Math.round(v / 1000)} км` },
 ];
 
 /** Лидерборды региона — топ игроков по ключевым метрикам. Клик по строке → профиль. */

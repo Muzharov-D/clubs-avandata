@@ -19,9 +19,8 @@ interface Profile {
   minutes: number;
   ratings: { overall: number | null; attack: number | null; defence: number | null; passing: number | null; fitness: number | null; creativity: number | null };
   totals: {
-    goals: number; assists: number; keyPasses: number; shots: number; dribbles: number;
-    progressivePasses: number; tackles: number; interceptions: number; recoveries: number;
-    distanceM: number; sprints: number;
+    goals: number; shots: number; dribbles: number; progressivePasses: number;
+    tackles: number; interceptions: number;
   };
   trend: Array<{ date: string | null; overall: number }>;
   splits: { first: number | null; second: number | null } | null;
@@ -29,15 +28,11 @@ interface Profile {
 
 const METRICS: Array<{ k: keyof Profile['totals']; l: string; accent: 'gold' | 'cyan' | 'violet' | 'green' | 'muted' }> = [
   { k: 'goals', l: 'Голы', accent: 'gold' },
-  { k: 'assists', l: 'Ассисты', accent: 'gold' },
-  { k: 'keyPasses', l: 'Ключевые передачи', accent: 'cyan' },
   { k: 'progressivePasses', l: 'Прогрессивные пасы', accent: 'cyan' },
   { k: 'shots', l: 'Удары', accent: 'violet' },
   { k: 'dribbles', l: 'Обводки', accent: 'violet' },
   { k: 'tackles', l: 'Отборы', accent: 'green' },
   { k: 'interceptions', l: 'Перехваты', accent: 'green' },
-  { k: 'recoveries', l: 'Подборы', accent: 'green' },
-  { k: 'sprints', l: 'Спринты', accent: 'muted' },
 ];
 
 /** Профиль игрока (дриллдаун из талант-пула). Реальная скаут-карточка. */
@@ -72,7 +67,6 @@ function ProfileBody({ p }: { p: Profile }) {
   const trend = p.trend.map((t) => t.overall);
   const per90 = (total: number) => (p.minutes > 0 ? Math.round((total / p.minutes) * 90 * 100) / 100 : null);
   const tiles = METRICS.filter((m) => p.totals[m.k] > 0);
-  const distanceKm = p.totals.distanceM > 0 ? Math.round(p.totals.distanceM / 100) / 10 : 0;
 
   return (
     <>
@@ -126,7 +120,7 @@ function ProfileBody({ p }: { p: Profile }) {
         </div>
       </div>
 
-      {(tiles.length > 0 || distanceKm > 0) && (
+      {tiles.length > 0 && (
         <section className="fed-card fed-rise">
           <div className="fed-card__pad">
             <div className="fed-card__title">Вклад за период · всего (и за 90 минут)</div>
@@ -136,9 +130,6 @@ function ProfileBody({ p }: { p: Profile }) {
                 const p90 = per90(total);
                 return <StatTile key={m.k} label={m.l} value={total} extra={p90 != null ? `${p90} за 90` : undefined} accent={m.accent} />;
               })}
-              {distanceKm > 0 && (
-                <StatTile label="Дистанция" value={distanceKm} unit="км" extra={p.matches ? `${(Math.round((distanceKm / p.matches) * 10) / 10)} км/матч` : undefined} accent="cyan" />
-              )}
             </div>
           </div>
         </section>

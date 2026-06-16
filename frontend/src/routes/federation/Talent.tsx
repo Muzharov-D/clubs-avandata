@@ -20,7 +20,6 @@ interface PlayerRow {
   fitness: number | null;
   creativity: number | null;
   goals: number;
-  assists: number;
 }
 
 const MIN_OPTIONS = [0, 90, 270, 450];
@@ -154,7 +153,6 @@ export function FederationTalent() {
                       );
                     })}
                     {p.goals > 0 && <span className="fed-dim">Голы<b style={{ color: 'var(--text)' }}>{p.goals}</b></span>}
-                    {p.assists > 0 && <span className="fed-dim">Пас<b style={{ color: 'var(--text)' }}>{p.assists}</b></span>}
                   </div>
                 </div>
                 <span className="fed-faint fed-num" style={{ fontSize: 11.5, whiteSpace: 'nowrap' }}>

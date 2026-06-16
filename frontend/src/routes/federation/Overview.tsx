@@ -19,9 +19,7 @@ interface RegionProfile {
   ratings: { overall: number | null; attack: number | null; defence: number | null; passing: number | null; fitness: number | null; creativity: number | null };
   style: {
     shots: number | null; shotsOnTarget: number | null; dribbles: number | null;
-    keyPasses: number | null; progressivePasses: number | null;
-    tackles: number | null; interceptions: number | null; recoveries: number | null;
-    touchesInBox: number | null; accuratePasses: number | null; crosses: number | null; distanceKm: number | null;
+    progressivePasses: number | null; tackles: number | null; interceptions: number | null;
   };
   matchesRated: number;
   matchesStyled: number;
@@ -30,15 +28,9 @@ const STYLE_DEFS: Array<{ k: keyof RegionProfile['style']; l: string; accent: 'c
   { k: 'shots', l: 'Удары', accent: 'gold' },
   { k: 'shotsOnTarget', l: 'Удары в створ', accent: 'gold' },
   { k: 'dribbles', l: 'Обводки', accent: 'violet' },
-  { k: 'keyPasses', l: 'Ключевые передачи', accent: 'cyan' },
   { k: 'progressivePasses', l: 'Прогрессивные пасы', accent: 'cyan' },
-  { k: 'accuratePasses', l: 'Точные передачи', accent: 'cyan' },
-  { k: 'crosses', l: 'Кроссы', accent: 'cyan' },
-  { k: 'touchesInBox', l: 'Касания в штрафной', accent: 'violet' },
   { k: 'tackles', l: 'Отборы', accent: 'green' },
   { k: 'interceptions', l: 'Перехваты', accent: 'green' },
-  { k: 'recoveries', l: 'Подборы', accent: 'green' },
-  { k: 'distanceKm', l: 'Дистанция, км', accent: 'muted' },
 ];
 
 /**
