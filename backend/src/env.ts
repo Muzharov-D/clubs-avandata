@@ -32,6 +32,11 @@ const envSchema = z.object({
   BIGBRO_ENDPOINT: z.string().url().default('https://api.bigbro.ai/backend'),
   BIGBRO_USERNAME: z.string().optional(),
   BIGBRO_PASSWORD: z.string().optional(),
+
+  // АванДата-портал — «моя база» разобранных матчей и игроков (только чтение).
+  AVANDATA_ENDPOINT: z.string().url().default('https://back.avandata.ru'),
+  AVANDATA_EMAIL: z.string().optional(),
+  AVANDATA_PASSWORD: z.string().optional(),
 });
 
 const parsed = envSchema.safeParse(process.env);

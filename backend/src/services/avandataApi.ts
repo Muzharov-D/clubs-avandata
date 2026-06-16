@@ -1,0 +1,117 @@
+import { env } from '../env.js';
+import { logger } from '../shared/logger.js';
+
+/**
+ * Клиент API АванДата-портала (back.avandata.ru) — «моя база» разобранных матчей
+ * и игроков. Поток: login (JWT access ~15 мин + refresh ~7 дней) → каталог
+ * (сезоны/турниры/дивизионы) → матчи (с привязкой к FFSPB-id) → игроки по матчам.
+ *
+ * Только ЧТЕНИЕ. Креды — строго server-side в ENV (AVANDATA_EMAIL/PASSWORD).
+ * Токен короткий → кэшируем с запасом и форсим перелогин на 401.
+ */
+const ENDPOINT = env.AVANDATA_ENDPOINT.replace(/\/+$/, '');
+const FETCH_TIMEOUT_MS = 30_000;
+// access живёт ~15 мин — обновляем с запасом (13 мин) и принудительно на 401.
+const TOKEN_TTL_MS = 13 * 60 * 1000;
+
+export function isAvandataConfigured(): boolean {
+  return !!(env.AVANDATA_EMAIL && env.AVANDATA_PASSWORD);
+}
+
+let cachedToken: { access: string; expiresAt: number } | null = null;
+
+async function login(force = false): Promise<string> {
+  if (!isAvandataConfigured()) throw new Error('AVANDATA_EMAIL/PASSWORD не заданы в env');
+  if (!force && cachedToken && cachedToken.expiresAt > Date.now()) return cachedToken.access;
+  const res = await fetch(`${ENDPOINT}/auth/login`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email: env.AVANDATA_EMAIL, password: env.AVANDATA_PASSWORD }),
+    signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
+  });
+  if (!res.ok) {
+    const t = await res.text().catch(() => '');
+    throw new Error(`avandata auth ${res.status}: ${t.slice(0, 200)}`);
+  }
+  const data = (await res.json()) as { accessToken?: string };
+  if (!data.accessToken) throw new Error('avandata auth: нет accessToken в ответе');
+  cachedToken = { access: data.accessToken, expiresAt: Date.now() + TOKEN_TTL_MS };
+  return data.accessToken;
+}
+
+/** Авторизованный JSON-GET с одним авто-перелогином на 401. */
+export async function authedGet<T = unknown>(path: string, retried = false): Promise<T> {
+  const token = await login();
+  const res = await fetch(`${ENDPOINT}${path}`, {
+    headers: { Accept: 'application/json', Authorization: `Bearer ${token}` },
+    signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
+  });
+  if (res.status === 401 && !retried) {
+    await login(true);
+    return authedGet<T>(path, true);
+  }
+  if (!res.ok) {
+    const t = await res.text().catch(() => '');
+    throw new Error(`avandata ${res.status} ${path}: ${t.slice(0, 200)}`);
+  }
+  return (await res.json()) as T;
+}
+
+// ---- Каталог ----
+export interface AvDivision { id: number; title: string; toursCount: number; lastPlayedTour: number }
+export interface AvTournament {
+  id: number; title: string;
+  dateBirthFrom: number; dateBirthTo: number; category: string;
+  divisions: AvDivision[];
+}
+export interface AvSeason { id: number; title: string; year: number; tournaments: AvTournament[] }
+
+export async function getSeasons(): Promise<AvSeason[]> {
+  const data = await authedGet<{ seasons?: AvSeason[] }>('/ffspb-portal/getSeasonsList');
+  return data.seasons ?? [];
+}
+
+// ---- Матчи ----
+export interface AvMatchTeam { id: number | null; title: string; logoUrl?: string | null; score?: number | null }
+export interface AvMatch {
+  id: number;
+  /** Привязка к FFSPB — ключ дедупа между источниками. */
+  ffspbMatchId: number | null;
+  ffspbMatchIdInfo?: { inner: number; outter: string } | null;
+  title: string;
+  ownTeam: AvMatchTeam;
+  guestTeam: AvMatchTeam;
+  dateTime: string;
+  status: string;
+}
+
+export interface AvTourStats {
+  totalMatches: number; totalGoals: number; averageGoalsPerMatch: number;
+  totalYellowCards: number; totalRedCards: number;
+  allMatchesAnalyzed: boolean; analyzedMatches: number; totalPlayersPlayed: number;
+}
+
+const q = (params: Record<string, string | number>): string =>
+  Object.entries(params).map(([k, v]) => `${k}=${encodeURIComponent(String(v))}`).join('&');
+
+export async function getTourStatistics(tournamentId: number, divisionId: number, tour: number): Promise<AvTourStats> {
+  return authedGet<AvTourStats>(`/ffspb-portal/matches/getTourStatistics?${q({ tournamentId, divisionId, tour })}`);
+}
+
+export async function getMatches(tournamentId: number, divisionId: number, tour: number): Promise<AvMatch[]> {
+  const data = await authedGet<{ matches?: AvMatch[] }>(`/ffspb-portal/matches/getListMatches?${q({ tournamentId, divisionId, tour })}`);
+  return data.matches ?? [];
+}
+
+// ---- Игроки (наполняются на разобранных матчах) ----
+/** Игроки, сгруппированные по амплуа (форма уточняется на разобранном туре). */
+export async function getPlayersByRole(seasonId: number, tournamentId: number, divisionId: number, tour: number): Promise<unknown> {
+  return authedGet(`/ffspb-portal/players/by-role?${q({ seasonId, tournamentId, divisionId, tour })}`);
+}
+
+/** Лидеры игроков по типам событий (рейтинг + 37 базовых метрик). */
+export async function getPlayersByEventType(seasonId: number, tournamentId: number, divisionId: number, tour: number): Promise<unknown> {
+  return authedGet(`/ffspb-portal/players/by-event-type?${q({ seasonId, tournamentId, divisionId, tour })}`);
+}
+
+logger.debug({ configured: isAvandataConfigured() }, 'avandataApi loaded');
