@@ -14,6 +14,7 @@ import {
   federationBestXI,
   federationProductivity,
   federationWinDevelop,
+  federationScorers,
   federationBenchmark,
 } from './aggregations.js';
 
@@ -128,6 +129,13 @@ export async function federationRoutes(app: FastifyInstance) {
     return await withFederation(federationId, async (_tx, conn) => ({
       clubs: await federationProductivity(conn),
     }));
+  });
+
+  /** GET /api/v1/federation/scorers — бомбардиры/ассистенты региона (открытый FFSPB). */
+  app.get('/scorers', async (req) => {
+    const federationId = req.user?.federationId;
+    if (!federationId) throw new BadRequestError('no federation context', 'NO_FEDERATION');
+    return await withFederation(federationId, (_tx, conn) => federationScorers(conn));
   });
 
   /** GET /api/v1/federation/benchmark — KPI-сравнение клубов (FR24). */

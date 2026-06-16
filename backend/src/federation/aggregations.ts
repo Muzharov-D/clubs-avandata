@@ -738,6 +738,59 @@ export async function federationWinDevelop(conn: PoolClient): Promise<Federation
   });
 }
 
+export interface FederationScorer {
+  player: string;
+  club: string | null;
+  goals: number;
+  assists: number;
+}
+
+/**
+ * Бомбардиры и ассистенты региона (ОТКРЫТЫЙ слой FFSPB). Голы/ассисты собираются
+ * из событий матчей (calendar.events_data: тип 'goal' с полями player/assist/team)
+ * по всем клубам-членам. Дедуп по матчу — общий fixture двух клубов считается раз.
+ * Имена — открытые данные FFSPB (не наша PII), гейт согласия не нужен. Рейтинга нет.
+ */
+export async function federationScorers(conn: PoolClient): Promise<{ scorers: FederationScorer[]; assisters: FederationScorer[] }> {
+  const CTE = `
+    WITH ev AS (
+      SELECT DISTINCT ON (COALESCE(NULLIF(ext_match_id, ''), id::text))
+             home_team, away_team, events_data
+        FROM calendar
+       WHERE ${FED_MEMBERSHIP_SQL} AND events_data IS NOT NULL
+       ORDER BY COALESCE(NULLIF(ext_match_id, ''), id::text), events_fetched_at DESC NULLS LAST
+    ),
+    goals AS (
+      SELECT
+        nullif(trim(e->>'player'), '') AS scorer,
+        nullif(trim(e->>'assist'), '') AS assister,
+        CASE WHEN e->>'team' = 'home' THEN ev.home_team ELSE ev.away_team END AS club
+      FROM ev,
+           jsonb_array_elements(
+             CASE WHEN jsonb_typeof(ev.events_data->'events')='array' THEN ev.events_data->'events'
+                  WHEN jsonb_typeof(ev.events_data)='array' THEN ev.events_data
+                  ELSE '[]'::jsonb END
+           ) AS e
+      WHERE e->>'type' = 'goal'
+    )`;
+  const sc = await conn.query<{ player: string; club: string | null; goals: number }>(
+    `${CTE}
+     SELECT scorer AS player, max(club) AS club, count(*)::int AS goals
+       FROM goals WHERE scorer IS NOT NULL
+      GROUP BY scorer ORDER BY goals DESC, scorer LIMIT 30`,
+  );
+  const as = await conn.query<{ player: string; club: string | null; assists: number }>(
+    `${CTE}
+     SELECT assister AS player, max(club) AS club, count(*)::int AS assists
+       FROM goals WHERE assister IS NOT NULL
+      GROUP BY assister ORDER BY assists DESC, assister LIMIT 30`,
+  );
+  return {
+    scorers: sc.rows.map((r) => ({ player: r.player, club: r.club, goals: Number(r.goals), assists: 0 })),
+    assisters: as.rows.map((r) => ({ player: r.player, club: r.club, goals: 0, assists: Number(r.assists) })),
+  };
+}
+
 export interface FederationBenchmarkRow {
   slug: string;
   name: string;

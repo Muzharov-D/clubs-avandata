@@ -18,6 +18,7 @@ const NAV: Array<{ title: string; items: NavItem[] }> = [
       { to: '/federation/summary', label: 'Сводка', icon: 'M3 12l9-9 9 9M5 10v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V10' },
       { to: '/federation/clubs', label: 'Клубы', icon: 'M12 3l8 4v6c0 4-3.5 7-8 8-4.5-1-8-4-8-8V7l8-4z' },
       { to: '/federation/competitions', label: 'Соревнования', icon: 'M7 4h10v4a5 5 0 0 1-10 0V4zM5 6H3v1a3 3 0 0 0 3 3m12-4h2v1a3 3 0 0 1-3 3M9 21h6M12 14v7' },
+      { to: '/federation/scorers', label: 'Бомбардиры', icon: 'M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zM12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8z' },
     ],
   },
   {
