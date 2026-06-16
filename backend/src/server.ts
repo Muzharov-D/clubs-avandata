@@ -14,6 +14,7 @@ import { trainingsRoutes } from './trainings/routes.js';
 import { callupsRoutes } from './callups/routes.js';
 import { dashboardRoutes } from './dashboard/routes.js';
 import { federationRoutes } from './federation/routes.js';
+import { videoRoutes } from './modules/video/routes.js';
 import { closePool } from './db/client.js';
 import { runMigrations } from './db/migrate.js';
 import { startCrons, stopCrons } from './cron/runner.js';
@@ -71,6 +72,7 @@ async function buildServer() {
   await app.register(callupsRoutes, { prefix: '/api/v1' });
   await app.register(dashboardRoutes, { prefix: '/api/v1' });
   await app.register(federationRoutes, { prefix: '/api/v1/federation' });
+  await app.register(videoRoutes, { prefix: '/api/v1' });
 
   return app;
 }

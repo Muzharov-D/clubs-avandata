@@ -27,6 +27,11 @@ const envSchema = z.object({
     .default('false'),
   FFSPB_API_KEY: z.string().optional(),
   FFSPB_ENDPOINT: z.string().url().default('https://stat.ffspb.org/api'),
+
+  // bigbro.ai — заказ обработки видео матчей (коллеги, разбирающие записи).
+  BIGBRO_ENDPOINT: z.string().url().default('https://api.bigbro.ai/backend'),
+  BIGBRO_USERNAME: z.string().optional(),
+  BIGBRO_PASSWORD: z.string().optional(),
 });
 
 const parsed = envSchema.safeParse(process.env);
