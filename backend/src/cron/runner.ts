@@ -5,6 +5,7 @@ import { tenants, type Tenant } from '../db/schema/tenants.js';
 import { logger } from '../shared/logger.js';
 import { syncTenantStandings } from '../services/standingsService.js';
 import { syncTenantCalendarTournament } from '../services/calendarService.js';
+import { syncTenantEvents } from '../services/matchEventsService.js';
 
 /**
  * Multi-tenant cron runner.
@@ -102,6 +103,23 @@ async function tickCalendar() {
 }
 
 // ============================================================================
+// Events (протоколы матчей → calendar.events_data; источник бомбардиров региона)
+// ============================================================================
+
+async function tickEvents() {
+  const list = await activeFfspbTenants();
+  for (const t of list) {
+    if (t.status !== 'active') continue;
+    try {
+      const n = await syncTenantEvents(t.slug);
+      if (n > 0) logger.info({ tenant: t.slug, matches: n }, 'events synced');
+    } catch (e) {
+      logger.warn({ err: e instanceof Error ? e.message : String(e), tenant: t.slug }, 'events tick failed');
+    }
+  }
+}
+
+// ============================================================================
 // Wiring
 // ============================================================================
 
@@ -115,6 +133,7 @@ interface CronJob {
 const JOBS: CronJob[] = [
   { name: 'standings', intervalMs: 30 * 60_000, initialDelayMs: 5_000,  run: tickStandings },
   { name: 'calendar',  intervalMs: 30 * 60_000, initialDelayMs: 8_000,  run: tickCalendar  },
+  { name: 'events',    intervalMs: 6 * 60 * 60_000, initialDelayMs: 12_000, run: tickEvents },
 ];
 
 export function startCrons() {

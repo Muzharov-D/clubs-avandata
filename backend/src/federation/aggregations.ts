@@ -762,16 +762,18 @@ export async function federationScorers(conn: PoolClient): Promise<{ scorers: Fe
     ),
     goals AS (
       SELECT
-        nullif(trim(e->>'player'), '') AS scorer,
-        nullif(trim(e->>'assist'), '') AS assister,
-        CASE WHEN e->>'team' = 'home' THEN ev.home_team ELSE ev.away_team END AS club
+        coalesce(nullif(trim(e->>'playerName'), ''), nullif(trim(e->>'player'), '')) AS scorer,
+        coalesce(nullif(trim(e->>'assistName'), ''), nullif(trim(e->>'assist'), '')) AS assister,
+        CASE WHEN e->>'team' IN ('host', 'home') THEN ev.home_team ELSE ev.away_team END AS club
       FROM ev,
            jsonb_array_elements(
-             CASE WHEN jsonb_typeof(ev.events_data->'events')='array' THEN ev.events_data->'events'
-                  WHEN jsonb_typeof(ev.events_data)='array' THEN ev.events_data
+             CASE WHEN jsonb_typeof(ev.events_data)='array' THEN ev.events_data
+                  WHEN jsonb_typeof(ev.events_data->'events')='array' THEN ev.events_data->'events'
                   ELSE '[]'::jsonb END
            ) AS e
-      WHERE e->>'type' = 'goal'
+      -- Реальная форма FFSPB: kind ∈ (goal,penalty), own_goal НЕ в актив; сид-форма: type='goal'.
+      WHERE (e->>'kind' IN ('goal', 'penalty') OR e->>'type' = 'goal')
+        AND coalesce(e->>'kind', '') <> 'own_goal'
     )`;
   const sc = await conn.query<{ player: string; club: string | null; goals: number }>(
     `${CTE}
