@@ -7,7 +7,7 @@
  */
 import {
   isAvandataConfigured, getSeasons, getTourStatistics, getMatches,
-  getPlayersByRole, getPlayersByEventType,
+  getPlayersByRole, getPlayersByEventType, authedGet,
 } from '../services/avandataApi.js';
 
 function trunc(v: unknown, n = 1400): string {
@@ -67,6 +67,32 @@ async function main(): Promise<void> {
   console.log(`\n[ИГРОКИ by-role]:\n` + trunc(byRole));
   const byEvent = await getPlayersByEventType(found.seasonId, found.tournamentId, found.divisionId, found.tour);
   console.log(`\n[ИГРОКИ by-event-type]:\n` + trunc(byEvent));
+
+  // Достаём id игрока и матча, чтобы найти ГЛУБОКИЙ профиль (все метрики/таймы).
+  const roleArr = byRole as Array<{ topPlayers?: Array<{ id?: number }> }>;
+  const pid = roleArr.flatMap((g) => g.topPlayers ?? []).map((p) => p.id).find((x) => x != null);
+  const mid = matches[0]?.id;
+  console.log(`\n=== ЗОНД ГЛУБОКОГО ПРОФИЛЯ (playerId=${pid}, matchId=${mid}) ===`);
+  const cand = [
+    `/ffspb-portal/players/${pid}`,
+    `/ffspb-portal/players/${pid}/summary`,
+    `/ffspb-portal/player-summaries/${pid}`,
+    `/ffspb-portal/players/${pid}/stats`,
+    `/ffspb-portal/matches/${mid}/players`,
+    `/ffspb-portal/matches/${mid}/player/${pid}`,
+    `/ffspb-portal/players/${pid}/matches/${mid}`,
+    `/ffspb-portal/matches/${mid}/playerStatistics`,
+    `/ffspb-portal/matches/${mid}/lineup`,
+    `/ffspb-portal/matches/${mid}/getMatchPlayers`,
+  ];
+  for (const path of cand) {
+    try {
+      const r = await authedGet(path);
+      console.log(`  ✓ ${path}\n      ${trunc(r, 600)}`);
+    } catch (e) {
+      console.log(`  · ${path} → ${(e as Error).message.slice(0, 70)}`);
+    }
+  }
 }
 
 main().then(() => process.exit(0)).catch((e) => { console.error('ОШИБКА:', e); process.exit(1); });

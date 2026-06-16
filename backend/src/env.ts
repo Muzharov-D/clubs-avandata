@@ -34,7 +34,10 @@ const envSchema = z.object({
   BIGBRO_PASSWORD: z.string().optional(),
 
   // АванДата-портал — «моя база» разобранных матчей и игроков (только чтение).
+  // Авторизация: предпочтительно AVANDATA_API_KEY (заголовок X-API-Key), иначе
+  // email/password (JWT). База API — back.avandata.ru (app.avandata.ru — это SPA).
   AVANDATA_ENDPOINT: z.string().url().default('https://back.avandata.ru'),
+  AVANDATA_API_KEY: z.string().optional(),
   AVANDATA_EMAIL: z.string().optional(),
   AVANDATA_PASSWORD: z.string().optional(),
 });

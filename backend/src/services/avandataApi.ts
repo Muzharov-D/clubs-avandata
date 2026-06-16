@@ -15,8 +15,10 @@ const FETCH_TIMEOUT_MS = 30_000;
 const TOKEN_TTL_MS = 13 * 60 * 1000;
 
 export function isAvandataConfigured(): boolean {
-  return !!(env.AVANDATA_EMAIL && env.AVANDATA_PASSWORD);
+  return !!(env.AVANDATA_API_KEY || (env.AVANDATA_EMAIL && env.AVANDATA_PASSWORD));
 }
+
+const hasKey = (): boolean => !!env.AVANDATA_API_KEY;
 
 let cachedToken: { access: string; expiresAt: number } | null = null;
 
@@ -39,14 +41,19 @@ async function login(force = false): Promise<string> {
   return data.accessToken;
 }
 
-/** Авторизованный JSON-GET с одним авто-перелогином на 401. */
+/** Заголовки авторизации: API-ключ (X-API-Key) приоритетно, иначе Bearer (login). */
+async function authHeader(force = false): Promise<Record<string, string>> {
+  if (hasKey()) return { 'X-API-Key': env.AVANDATA_API_KEY as string };
+  return { Authorization: `Bearer ${await login(force)}` };
+}
+
+/** Авторизованный JSON-GET. На 401 — один перелогин (только для password-режима). */
 export async function authedGet<T = unknown>(path: string, retried = false): Promise<T> {
-  const token = await login();
   const res = await fetch(`${ENDPOINT}${path}`, {
-    headers: { Accept: 'application/json', Authorization: `Bearer ${token}` },
+    headers: { Accept: 'application/json', ...(await authHeader()) },
     signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
   });
-  if (res.status === 401 && !retried) {
+  if (res.status === 401 && !retried && !hasKey()) {
     await login(true);
     return authedGet<T>(path, true);
   }
