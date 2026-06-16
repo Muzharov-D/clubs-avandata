@@ -110,6 +110,22 @@ export async function getMatches(tournamentId: number, divisionId: number, tour:
   return data.matches ?? [];
 }
 
+// ---- Клубы и команды ----
+export interface AvClub { id: number; title: string; logoUrl?: string | null; tournaments?: Array<{ id: number; title: string; dateBirthFrom?: string | number }> }
+export async function getClubList(seasonId: number, divisionId: number): Promise<AvClub[]> {
+  const data = await authedGet<{ clubs?: AvClub[] }>(`/ffspb-portal/clubs/${seasonId}/getClubList?${q({ divisionId })}`);
+  return data.clubs ?? [];
+}
+
+export interface AvTeamForTournament {
+  id: number; title: string;
+  team?: { id: number; title: string; logoUrl?: string | null; teamForTournamentId?: number };
+}
+export async function getTeamsList(tournamentId: number, divisionId: number, tour: number): Promise<AvTeamForTournament[]> {
+  const data = await authedGet<{ teamsForTournament?: AvTeamForTournament[] }>(`/ffspb-portal/teams/getTeamsList?${q({ tournamentId, divisionId, tour })}`);
+  return data.teamsForTournament ?? [];
+}
+
 // ---- Игроки (наполняются на разобранных матчах) ----
 /** Игроки, сгруппированные по амплуа (форма уточняется на разобранном туре). */
 export async function getPlayersByRole(seasonId: number, tournamentId: number, divisionId: number, tour: number): Promise<unknown> {
