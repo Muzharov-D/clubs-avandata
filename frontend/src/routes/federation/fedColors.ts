@@ -20,6 +20,19 @@ export function ratingColor(v: number | null): string {
   return 'var(--danger)';
 }
 
+/**
+ * Цвет перцентиля 0–100 (место игрока в пуле сравнения). Скаут-шкала:
+ * чем выше игрок относительно сверстников — тем «теплее» к успеху.
+ *  ≥75 элита · 50–74 выше среднего · 25–49 ниже среднего · <25 слабая зона.
+ */
+export function pctColor(pct: number | null): string {
+  if (pct == null) return 'var(--text-faint)';
+  if (pct >= 75) return 'var(--success)';
+  if (pct >= 50) return 'var(--accent-cyan)';
+  if (pct >= 25) return 'var(--warning)';
+  return 'var(--danger)';
+}
+
 /** Мягкая заливка под цвет (для пилюль рейтинга). */
 export function tint(color: string, pct = 16): string {
   return `color-mix(in srgb, ${color} ${pct}%, transparent)`;

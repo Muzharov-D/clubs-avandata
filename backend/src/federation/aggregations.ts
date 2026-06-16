@@ -270,6 +270,7 @@ export interface FederationPlayerRow {
   goals: number;
   shots: number;
   dribbles: number;
+  progressivePasses: number;
   tackles: number;
   interceptions: number;
 }
@@ -310,7 +311,7 @@ export async function federationTalentPool(conn: PoolClient, minMinutes: number)
     matches: number; minutes: number; rating: string | null;
     attack: string | null; defence: string | null; passing: string | null;
     fitness: string | null; creativity: string | null;
-    goals: number; shots: number; dribbles: number; tackles: number; interceptions: number;
+    goals: number; shots: number; dribbles: number; progressive: number; tackles: number; interceptions: number;
   }>(
     `SELECT
        p.id AS player_id,
@@ -329,6 +330,7 @@ export async function federationTalentPool(conn: PoolClient, minMinutes: number)
        ${sumStat('attack', 'goal')}::int AS goals,
        ${sumStat('attack', 'shot', true)}::int AS shots,
        ${sumStat('attack', 'dribble')}::int AS dribbles,
+       ${sumStat('attack', 'progressivePass')}::int AS progressive,
        ${sumStat('defence', 'tackle')}::int AS tackles,
        ${sumStat('defence', 'interception')}::int AS interceptions
      FROM players p
@@ -361,6 +363,7 @@ export async function federationTalentPool(conn: PoolClient, minMinutes: number)
     goals: Number(r.goals),
     shots: Number(r.shots),
     dribbles: Number(r.dribbles),
+    progressivePasses: Number(r.progressive),
     tackles: Number(r.tackles),
     interceptions: Number(r.interceptions),
   }));
