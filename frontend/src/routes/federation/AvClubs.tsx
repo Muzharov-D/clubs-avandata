@@ -65,8 +65,8 @@ export function FederationAvClubs() {
             </div>
           </div>
           {shown.map((r, i) => (
-            <div key={`${r.id}-${r.division}`} className={`av-trow${i === 0 ? ' av-trow--lead' : ''}`} style={{ gridTemplateColumns: '26px 28px 1fr 96px 1fr 76px' }}>
-              <span className="av-trow__rank">{i + 1}</span>
+            <div key={`${r.id}-${r.division}`} className={`av-trow t-pow${i === 0 ? ' av-trow--lead' : ''}`}>
+              <span className={`av-trow__rank${i < 3 ? ` av-trow__rank--${i + 1}` : ''}`}>{i + 1}</span>
               <ClubShield name={r.name} logoUrl={r.logo} size={26} />
               <span className="av-trow__name" title={r.name}>{r.name}</span>
               <span className="av-chip av-chip--cyan" style={{ justifySelf: 'start' }}>{r.division}</span>

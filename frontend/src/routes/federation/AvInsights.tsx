@@ -84,7 +84,7 @@ export function FederationAvInsights() {
               {tc.data.clubs.slice(0, 6).map((c) => {
                 const max = Math.max(...tc.data!.clubs.map((x) => x.n), 1);
                 return (
-                  <div key={c.club} className="av-trow" style={{ gridTemplateColumns: '24px 1fr 1fr 46px' }}>
+                  <div key={c.club} className="av-trow t-mono">
                     <ClubShield name={c.club} logoUrl={c.logo} size={22} />
                     <span className="av-trow__name">{c.club}</span>
                     <span className="av-meter"><span className="av-meter__fill" style={{ width: `${(c.n / max) * 100}%`, background: 'var(--av-magenta)' }} /></span>
@@ -105,8 +105,8 @@ export function FederationAvInsights() {
         {pq.isLoading ? <div className="av-skeleton" style={{ height: 200 }} /> : (
           <div className="av-cols-2" style={{ gap: 8 }}>
             {top.map((p, i) => (
-              <Link key={p.id} to={`/federation/players/${p.id}`} className="av-trow av-trow--link" style={{ gridTemplateColumns: '24px 26px 1fr auto', textDecoration: 'none', color: 'inherit' }}>
-                <span className="av-trow__rank" style={{ color: i < 3 ? 'var(--av-cyan)' : undefined }}>{i + 1}</span>
+              <Link key={p.id} to={`/federation/players/${p.id}`} className="av-trow t-board av-trow--link">
+                <span className={`av-trow__rank${i < 3 ? ` av-trow__rank--${i + 1}` : ''}`}>{i + 1}</span>
                 <ClubShield name={p.club ?? p.name} logoUrl={p.clubLogo} size={24} />
                 <div style={{ minWidth: 0 }}><div className="av-trow__name">{p.name}</div><div className="av-trow__meta">{p.club ?? '—'}{p.position ? ` · ${p.position}` : ''}</div></div>
                 <span className="av-rate">{p.rating}</span>

@@ -43,14 +43,17 @@ export function FederationAvHome() {
       {ov.error && <div className="av-surface av-pad av-note av-rise" style={{ color: 'var(--av-danger)' }}>База разборов недоступна — задан ли <code>AVANDATA_API_KEY</code> на сервере?</div>}
 
       {/* Пульс региона */}
-      {ov.isLoading ? <div className="av-skeleton av-rise" style={{ height: 104 }} /> : d && (
-        <div className="av-pulse av-rise">
-          <Stat label="Игроки в реестре" value={d.players} tone="cyan" />
-          <Stat label="Команды" value={d.teams} tone="blue" extra={`${d.tournaments} турниров`} />
-          <Stat label="Матчи" value={d.matches} tone="violet" extra={`${num(d.analyzed)} разобрано`} />
-          <Stat label="Голы" value={d.goals} tone="success" />
-          <Stat label="Дивизионы" value={d.divisions.length} tone="magenta" extra={d.divisions.slice(0, 2).join(' · ')} />
-        </div>
+      {ov.isLoading ? <div className="av-skeleton av-rise" style={{ height: 124 }} /> : d && (
+        <section className="av-rise">
+          <div className="av-band"><span className="av-band__t">Пульс региона · сезон 2026</span><span className="av-band__line" /></div>
+          <div className="av-pulse">
+            <Stat label="Игроки в реестре" value={d.players} tone="cyan" />
+            <Stat label="Команды" value={d.teams} tone="blue" extra={`${d.tournaments} турниров`} />
+            <Stat label="Матчи" value={d.matches} tone="violet" extra={`${num(d.analyzed)} разобрано`} />
+            <Stat label="Голы" value={d.goals} tone="success" />
+            <Stat label="Дивизионы" value={d.divisions.length} tone="magenta" extra={d.divisions.slice(0, 2).join(' · ')} />
+          </div>
+        </section>
       )}
 
       {/* Последние результаты */}
@@ -72,7 +75,7 @@ export function FederationAvHome() {
       </section>
 
       {/* Таблицы + рейтинг клубов */}
-      <div className="av-cols-2 av-rise">
+      <div className="av-cols-main av-rise">
         <section className="av-surface av-pad-lg">
           <div className="av-section">
             <div>
@@ -135,22 +138,21 @@ function Fixture({ m }: { m: ResultMatch }) {
   );
 }
 
-const STAND_COLS = '22px 26px 1fr auto';
+const rankCls = (i: number) => `av-trow__rank${i < 3 ? ` av-trow__rank--${i + 1}` : ''}`;
+
 function StandingsBlock({ g }: { g: Group<StandRow> }) {
   return (
     <div className="av-group">
       <div className="av-group__head">
         <span className="av-group__name">{g.division}</span>
-        <span className="av-group__cols" style={{ gridTemplateColumns: 'repeat(6, 1.7rem)' }}>
-          <span>И</span><span>В</span><span>Н</span><span>П</span><span>±</span><span>ОЧ</span>
-        </span>
+        <span className="av-group__cols av-six"><span>И</span><span>В</span><span>Н</span><span>П</span><span>±</span><span>ОЧ</span></span>
       </div>
       {g.rows.map((r, i) => (
-        <div key={r.id} className={`av-trow${i === 0 ? ' av-trow--lead' : ''}`} style={{ gridTemplateColumns: STAND_COLS }}>
-          <span className="av-trow__rank">{i + 1}</span>
+        <div key={r.id} className={`av-trow t-stand${i === 0 ? ' av-trow--lead' : ''}`}>
+          <span className={rankCls(i)}>{i + 1}</span>
           <ClubShield name={r.name} logoUrl={r.logo} size={22} />
           <span className="av-trow__name" title={r.name}>{r.name}</span>
-          <span className="av-trow__stats" style={{ gridTemplateColumns: 'repeat(6, 1.7rem)' }}>
+          <span className="av-trow__stats av-six">
             <span className="av-dim">{r.played}</span><span>{r.won}</span><span>{r.drawn}</span><span>{r.lost}</span>
             <span className={r.goalDiff > 0 ? 'av-pos' : r.goalDiff < 0 ? 'av-neg' : 'av-dim'}>{pm(r.goalDiff)}</span>
             <span className="av-trow__pts">{r.points}</span>
@@ -161,7 +163,6 @@ function StandingsBlock({ g }: { g: Group<StandRow> }) {
   );
 }
 
-const RATE_COLS = '22px 26px 1fr 1fr 58px';
 function RatingsBlock({ g }: { g: Group<RatingRow> }) {
   const max = Math.max(...g.rows.map((r) => Math.abs(r.rating)), 1);
   return (
@@ -171,8 +172,8 @@ function RatingsBlock({ g }: { g: Group<RatingRow> }) {
         <span className="av-group__cols">Рейтинг</span>
       </div>
       {g.rows.map((r, i) => (
-        <div key={r.id} className={`av-trow${i === 0 ? ' av-trow--lead' : ''}`} style={{ gridTemplateColumns: RATE_COLS }}>
-          <span className="av-trow__rank">{i + 1}</span>
+        <div key={r.id} className={`av-trow t-rate${i === 0 ? ' av-trow--lead' : ''}`}>
+          <span className={rankCls(i)}>{i + 1}</span>
           <ClubShield name={r.name} logoUrl={r.logo} size={22} />
           <span className="av-trow__name" title={r.name}>{r.name}</span>
           <span className="av-meter"><span className="av-meter__fill" style={{ width: `${(Math.abs(r.rating) / max) * 100}%`, background: r.rating < 0 ? 'var(--av-danger)' : 'var(--av-cyan)' }} /></span>

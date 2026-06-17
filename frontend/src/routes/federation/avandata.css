@@ -256,6 +256,7 @@
    ПОЛЕ СБОРНОЙ РЕГИОНА (Team of region pitch)
    ============================================================================= */
 .av-pitch { position: relative; aspect-ratio: 4 / 5; border-radius: var(--av-r-lg); overflow: hidden; border: 1px solid rgba(94, 235, 252, 0.30); background: linear-gradient(180deg, rgba(48, 84, 255, 0.14), rgba(48, 84, 255, 0.05)); }
+.av-pitch > span { position: absolute; }
 .av-pitch__line { position: absolute; border-color: rgba(94, 235, 252, 0.28); }
 .av-pitch__mid { left: 0; right: 0; top: 50%; border-top: 1px solid rgba(94, 235, 252, 0.28); }
 .av-pitch__circle { left: 50%; top: 50%; width: 96px; height: 96px; border: 1px solid rgba(94, 235, 252, 0.28); border-radius: 50%; transform: translate(-50%, -50%); }
@@ -390,6 +391,53 @@
 .av-rise:nth-child(5) { animation-delay: 0.16s; }
 @keyframes av-rise { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
 @media (prefers-reduced-motion: reduce) { .av-rise, .av-meter__fill, .av-rae__fill, .av-cmp__fill, .av-metricbar__fill { animation: none !important; transition: none !important; } }
+
+/* =============================================================================
+   ФИКСЫ ПАРТИ-РАУНДА: grid-шаблоны строк (без инлайнов), медали, иерархия
+   ============================================================================= */
+/* готовые сетки строк таблиц — заменяют инлайновые gridTemplateColumns */
+.av-trow.t-stand { grid-template-columns: 22px 26px 1fr auto; }
+.av-trow.t-rate  { grid-template-columns: 22px 26px 1fr 1fr 58px; }
+.av-trow.t-reg   { grid-template-columns: 26px 28px 1fr auto; }
+.av-trow.t-pow   { grid-template-columns: 26px 28px 1fr 96px 1fr 76px; }
+.av-trow.t-mono  { grid-template-columns: 24px 1fr 1fr 46px; }
+.av-trow.t-board { grid-template-columns: 24px 26px 1fr auto; }
+.av-six { grid-template-columns: repeat(6, 1.7rem); }
+
+/* медали топ-3 — мгновенная иерархия в рейтингах/таблицах */
+.av-trow__rank--1 { color: #ffd36b; }
+.av-trow__rank--2 { color: #cdd6f4; }
+.av-trow__rank--3 { color: #e0a878; }
+.av-trow__rank--1, .av-trow__rank--2, .av-trow__rank--3 { font-weight: 700; }
+
+/* асимметричная главная сетка (таблицы шире рейтинга — ломаем клон-колонки) */
+.av-cols-main { display: grid; grid-template-columns: 1.3fr 1fr; gap: 20px; align-items: start; }
+@media (max-width: 1080px) { .av-cols-main { grid-template-columns: 1fr; } }
+
+/* липкая правая колонка (сборная/восходящие) — без инлайн-стиля */
+.av-sticky { position: sticky; top: 132px; display: grid; gap: 14px; }
+
+/* рамка-герой над пульсом */
+.av-band { display: flex; align-items: baseline; gap: 12px; margin-bottom: 12px; }
+.av-band__t { font-size: 11px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--av-text-dim); font-weight: 700; }
+.av-band__line { flex: 1; height: 1px; background: linear-gradient(90deg, rgba(94,235,252,0.25), transparent); }
+
+/* рейл восходящих (молодые таланты) */
+.av-rising { display: grid; gap: 2px; }
+.av-rising__row { display: grid; grid-template-columns: 38px 1fr auto; align-items: center; gap: 10px; padding: 7px 4px; border-bottom: 1px solid rgba(94,235,252,0.05); text-decoration: none; color: inherit; border-radius: 7px; transition: background 0.15s ease; }
+.av-rising__row:last-child { border-bottom: 0; }
+@media (hover: hover) { .av-rising__row:hover { background: rgba(255,255,255,0.04); } }
+.av-rising__name { font-weight: 500; font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.av-rising__meta { font-size: 10.5px; color: var(--av-text-dim); margin-top: 1px; }
+
+/* честная пометка усечения */
+.av-cap { font-size: 11.5px; color: var(--av-text-dim); line-height: 1.5; margin-top: 12px; }
+
+/* провизорный слот сборной (позиция добрана) */
+.av-slot__prov { font-size: 9px; color: var(--av-text-faint); }
+
+/* строки-ссылки: reset без инлайнов (Уинстон) */
+a.av-trow { text-decoration: none; color: inherit; }
 
 /* =============================================================================
    АДАПТИВ

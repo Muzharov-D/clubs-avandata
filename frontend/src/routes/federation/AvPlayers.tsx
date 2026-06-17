@@ -59,11 +59,22 @@ export function FederationAvPlayers() {
     const spare = rated.filter((p) => !used.has(p.id)).sort((a, b) => (b.rating as number) - (a.rating as number));
     return SLOTS.map((s) => {
       let pl = pick[s.line].shift();
-      if (!pl) pl = spare.shift();
-      return { ...s, player: pl };
+      let provisional = false;
+      if (!pl) { pl = spare.shift(); provisional = true; } // позиция дозаполнена — честно метим
+      return { ...s, player: pl, provisional };
     });
   }, [players]);
   const xiReady = xi.filter((s) => s.player).length >= 7;
+  const xiProvisional = xi.some((s) => s.player && s.provisional);
+
+  // Восходящие — высокий рейтинг среди МЛАДШИХ когорт (честный сигнал «кто растёт»).
+  const rising = useMemo(() => {
+    const rated = players.filter((p) => p.rating != null && p.birthYear != null);
+    if (rated.length < 3) return [];
+    const years = Array.from(new Set(rated.map((p) => p.birthYear!))).sort((a, b) => b - a);
+    const young = new Set(years.slice(0, 2));
+    return rated.filter((p) => young.has(p.birthYear!)).sort((a, b) => (b.rating ?? 0) - (a.rating ?? 0)).slice(0, 6);
+  }, [players]);
 
   return (
     <>
@@ -93,13 +104,14 @@ export function FederationAvPlayers() {
             <div className="av-pills" style={{ marginBottom: 14 }}>
               <button onClick={() => setClub('all')} className={`av-pill${club === 'all' ? ' av-pill--active' : ''}`}>все клубы</button>
               {clubs.slice(0, 18).map((c) => <button key={c} onClick={() => setClub(c)} className={`av-pill${club === c ? ' av-pill--active' : ''}`}>{c}</button>)}
+              {clubs.length > 18 && <span className="av-chip av-chip--dim" title="Видны первые 18 — остальные доступны поиском">+{clubs.length - 18} клубов</span>}
             </div>
           )}
 
           {isLoading ? [0, 1, 2, 3, 4, 5, 6].map((i) => <div key={i} className="av-skeleton" style={{ height: 42, marginBottom: 8 }} />)
             : shown.length === 0 ? <div className="av-empty"><div className="av-empty__icon">🎯</div>Никого не нашли по фильтру.</div>
               : shown.map((p, i) => (
-                <Link key={p.id} to={`/federation/players/${p.id}`} className="av-trow av-trow--link" style={{ gridTemplateColumns: '26px 28px 1fr auto', textDecoration: 'none', color: 'inherit' }}>
+                <Link key={p.id} to={`/federation/players/${p.id}`} className="av-trow t-reg av-trow--link">
                   <span className="av-trow__rank">{i + 1}</span>
                   <ClubShield name={p.club ?? p.name} logoUrl={p.clubLogo} size={26} />
                   <div style={{ minWidth: 0 }}>
@@ -109,10 +121,13 @@ export function FederationAvPlayers() {
                   <span className={`av-rate${p.rating != null && p.rating < 0 ? ' av-rate--neg' : ''}`}>{p.rating ?? '—'}</span>
                 </Link>
               ))}
+          {!isLoading && players.length > shown.length && (
+            <p className="av-cap">Показаны топ-{shown.length} из {players.length.toLocaleString('ru-RU')} по рейтингу — уточни клубом или поиском, чтобы увидеть остальных.</p>
+          )}
         </section>
 
-        {/* Сборная региона */}
-        <aside style={{ position: 'sticky', top: 130, display: 'grid', gap: 14 }}>
+        {/* Сборная региона + восходящие */}
+        <aside className="av-sticky">
           <section className="av-surface av-surface--feature av-pad-lg">
             <div className="av-section" style={{ marginBottom: 10 }}>
               <div>
@@ -123,21 +138,48 @@ export function FederationAvPlayers() {
             {isLoading ? <div className="av-skeleton" style={{ aspectRatio: '4 / 5' }} /> : !xiReady ? (
               <div className="av-note">Мало разобранных игроков по позициям для сборной.</div>
             ) : (
-              <div className="av-pitch">
-                <span className="av-pitch__circle" style={{ position: 'absolute' }} />
-                <span className="av-pitch__mid" style={{ position: 'absolute' }} />
-                <span className="av-pitch__box av-pitch__box--top" style={{ position: 'absolute' }} />
-                <span className="av-pitch__box av-pitch__box--bot" style={{ position: 'absolute' }} />
-                {xi.map((s, idx) => s.player && (
-                  <Link key={idx} to={`/federation/players/${s.player.id}`} className="av-slot" style={{ left: `${s.l}%`, top: `${s.t}%`, textDecoration: 'none', color: 'inherit' }}>
-                    <PlayerAvatar name={s.player.name} size={38} ring={s.line === 'FWD'} />
-                    <span className="av-slot__name" title={s.player.name}>{lastName(s.player.name)}</span>
-                    <span className="av-slot__rate">{s.player.rating}</span>
+              <>
+                <div className="av-pitch">
+                  <span className="av-pitch__circle" />
+                  <span className="av-pitch__mid" />
+                  <span className="av-pitch__box av-pitch__box--top" />
+                  <span className="av-pitch__box av-pitch__box--bot" />
+                  {xi.map((s, idx) => s.player && (
+                    <Link key={idx} to={`/federation/players/${s.player.id}`} className="av-slot" style={{ left: `${s.l}%`, top: `${s.t}%` }}>
+                      <PlayerAvatar name={s.player.name} size={38} ring={s.line === 'FWD'} />
+                      <span className="av-slot__name" title={s.player.name}>{lastName(s.player.name)}</span>
+                      <span className="av-slot__rate">{s.player.rating}</span>
+                      <span className="av-slot__prov">{s.provisional ? 'добор' : s.tag}</span>
+                    </Link>
+                  ))}
+                </div>
+                {xiProvisional && <p className="av-cap">«добор» — позиция дозаполнена лучшим доступным игроком (в данных нет явной позиции).</p>}
+              </>
+            )}
+          </section>
+
+          {rising.length > 0 && (
+            <section className="av-surface av-pad-lg">
+              <div className="av-section" style={{ marginBottom: 10 }}>
+                <div>
+                  <h2 className="av-section-title">Восходящие</h2>
+                  <p className="av-section-sub">Высокий рейтинг среди младших · {year == null ? 'младшие возрасты региона' : `${year} г.р.`}</p>
+                </div>
+              </div>
+              <div className="av-rising">
+                {rising.map((p) => (
+                  <Link key={p.id} to={`/federation/players/${p.id}`} className="av-rising__row">
+                    <PlayerAvatar name={p.name} size={32} />
+                    <div style={{ minWidth: 0 }}>
+                      <div className="av-rising__name">{p.name}</div>
+                      <div className="av-rising__meta">{p.club ?? '—'} · {p.birthYear} г.р.</div>
+                    </div>
+                    <span className="av-rate">{p.rating}</span>
                   </Link>
                 ))}
               </div>
-            )}
-          </section>
+            </section>
+          )}
         </aside>
       </div>
     </>
