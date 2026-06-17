@@ -32,15 +32,15 @@ export function FederationAvInsights() {
     <>
       <header className="av-head av-rise">
         <div className="av-head__l">
-          <h1 className="av-title">Справедливость и утечка</h1>
-          <p className="av-sub">Кого регион теряет — видно только над всеми клубами сразу</p>
+          <h1 className="av-title">Эффект возраста</h1>
+          <p className="av-sub">Эффект возраста рождения, сила дивизионов, концентрация талантов</p>
         </div>
-        <Link to="/federation/cohorts" className="av-link">По когортам →</Link>
+        <Link to="/federation/cohorts" className="av-link">Разбор по годам рождения →</Link>
       </header>
 
       {/* НАХОДКА 1 — Возрастная утечка (RAE), герой */}
       <section className="av-surface av-finding av-finding--hero av-pad-lg av-rise">
-        <span className="av-finding__kicker">⏳ Возрастная утечка · RAE</span>
+        <span className="av-finding__kicker">Эффект возраста рождения</span>
         {ae.isLoading ? <div className="av-skeleton" style={{ height: 240, marginTop: 14 }} /> : ae.data && (() => {
           const lost = ae.data.q4pct < 25 ? Math.round((ae.data.total * (25 - ae.data.q4pct)) / 100) : 0;
           return (
@@ -65,7 +65,7 @@ export function FederationAvInsights() {
       <div className="av-cols-2 av-rise">
         {/* НАХОДКА 2 — Пропасть лиг */}
         <section className="av-surface av-finding av-finding--cyan av-pad-lg">
-          <span className="av-finding__kicker">🪢 Пропасть лиг</span>
+          <span className="av-finding__kicker">Сила дивизионов</span>
           {ds.isLoading ? <div className="av-skeleton" style={{ height: 170, marginTop: 14 }} /> : divs.length >= 2 ? (
             <>
               <h2 className="av-verdict">{divs[0].division} сильнее {divs[1].division} в <b>{gap ?? '—'}×</b> по среднему рейтингу</h2>
@@ -87,7 +87,7 @@ export function FederationAvInsights() {
 
         {/* НАХОДКА 3 — Монополия таланта */}
         <section className="av-surface av-finding av-pad-lg">
-          <span className="av-finding__kicker">🏰 Монополия таланта</span>
+          <span className="av-finding__kicker">Концентрация талантов по клубам</span>
           {tc.isLoading ? <div className="av-skeleton" style={{ height: 170, marginTop: 14 }} /> : tc.data && (
             <>
               <h2 className="av-verdict">3 клуба держат <b>{tc.data.top3Share}%</b> сильнейших талантов региона</h2>
@@ -110,7 +110,7 @@ export function FederationAvInsights() {
 
       {/* НАХОДКА 4 — Невидимая середина */}
       <section className="av-surface av-finding av-finding--cyan av-pad-lg av-rise">
-        <span className="av-finding__kicker">🔦 Невидимая середина</span>
+        <span className="av-finding__kicker">Лучшие игроки региона</span>
         <h2 className="av-verdict">Сильнейшие региона — кто бы их ни воспитал</h2>
         <p className="av-why" style={{ marginBottom: 12 }}>Рейтинг талантов поверх клубных границ. Знаменатель есть только у федерации.</p>
         {pq.isLoading ? <div className="av-skeleton" style={{ height: 200 }} /> : (

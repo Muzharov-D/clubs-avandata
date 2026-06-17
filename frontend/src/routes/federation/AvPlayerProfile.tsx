@@ -28,7 +28,7 @@ export function FederationAvPlayerProfile() {
 
   return (
     <>
-      <Link to="/federation/players" className="av-link av-rise" style={{ marginBottom: 4 }}>← К талантам</Link>
+      <Link to="/federation/players" className="av-link av-rise" style={{ marginBottom: 4 }}>← К игрокам</Link>
       {isLoading && <div className="av-skeleton av-rise" style={{ height: 380 }} />}
       {error && <FedEmpty>Игрок не найден или вне региона.</FedEmpty>}
       {data && <Body p={data} />}
@@ -75,7 +75,7 @@ function Body({ p }: { p: Profile }) {
         <section className="av-surface av-pad-lg" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
           <div className="av-section" style={{ alignSelf: 'stretch' }}>
             <div>
-              <h2 className="av-section-title">Профиль действий</h2>
+              <h2 className="av-section-title">Профиль игрока</h2>
               <p className="av-section-sub">Реальные события матчей · длина луча = объём</p>
             </div>
           </div>
@@ -92,7 +92,7 @@ function Body({ p }: { p: Profile }) {
         <section className="av-surface av-pad-lg">
           <div className="av-section">
             <div>
-              <h2 className="av-section-title">Разбор по метрикам</h2>
+              <h2 className="av-section-title">Действия за сезон</h2>
               <p className="av-section-sub">{p.metrics.length} показателей · по объёму событий</p>
             </div>
           </div>

@@ -33,7 +33,7 @@ export function FederationAvCohorts() {
     <>
       <header className="av-head av-rise">
         <div className="av-head__l">
-          <h1 className="av-title">Регион по когортам</h1>
+          <h1 className="av-title">Возрастные группы региона</h1>
           <p className="av-sub">Каждый год рождения как организм · размер · возрастной перекос · класс · звезда. Клик — провалиться в когорту.</p>
         </div>
       </header>
@@ -78,7 +78,7 @@ export function FederationAvCohorts() {
 
                 {/* Звезда когорты */}
                 <div>
-                  <div className="av-cohort__lbl">Звезда когорты</div>
+                  <div className="av-cohort__lbl">Лучший игрок</div>
                   {c.top ? (
                     <Link className="av-cohort__star" to={`/federation/players/${c.top.id}`} onClick={(e) => e.stopPropagation()}>
                       <ClubShield name={c.top.club ?? c.top.name} logoUrl={c.top.clubLogo} size={30} />

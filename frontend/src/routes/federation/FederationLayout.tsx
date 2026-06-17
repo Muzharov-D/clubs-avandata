@@ -7,15 +7,16 @@ import './avandata.css';
 interface FedAuth { user: { fullName?: string; email?: string } | null; logout: () => void }
 
 const TABS: Array<{ to: string; end?: boolean; label: string }> = [
-  { to: '/federation', end: true, label: 'Состояние' },
-  { to: '/federation/players', label: 'Таланты' },
-  { to: '/federation/fairness', label: 'Справедливость' },
+  { to: '/federation', end: true, label: 'Обзор региона' },
+  { to: '/federation/players', label: 'Лучшие игроки' },
+  { to: '/federation/fairness', label: 'Эффект возраста' },
   { to: '/federation/clubs', label: 'Клубы' },
+  { to: '/federation/compare', label: 'Турниры' },
 ];
 
 /**
- * Оболочка кабинета в языке AvanData: ВЕРХНИЙ нав (полная ширина под контент) +
- * брендовый волновой фон + фильтр возрастов (год рождения), общий для всех экранов.
+ * Оболочка кабинета (дизайн-язык клубного фронта): верхний нав + CSS-glow фон +
+ * фильтр по году рождения, общий для всех экранов. Названия — чёткие, не эфемерные.
  */
 export function FederationLayout() {
   const { user, logout } = useAuth() as FedAuth;

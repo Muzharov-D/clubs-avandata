@@ -30,8 +30,8 @@ export function FederationAvClubs() {
     <>
       <header className="av-head av-rise">
         <div className="av-head__l">
-          <h1 className="av-title">Сила клубов</h1>
-          <p className="av-sub">Пауэр-рейтинг школ по данным разборов</p>
+          <h1 className="av-title">Клубы региона</h1>
+          <p className="av-sub">Рейтинг клубов по очкам · по дивизионам</p>
         </div>
       </header>
 
@@ -58,7 +58,7 @@ export function FederationAvClubs() {
       {cr.error && <FedError />}
       {cr.isLoading ? <section className="av-surface av-pad-lg av-rise"><div className="av-skeleton" style={{ height: 320 }} /></section> : (
         <section className="av-surface av-pad-lg av-rise">
-          <div className="av-section"><h2 className="av-section-title">Пауэр-рейтинг школ</h2></div>
+          <div className="av-section"><h2 className="av-section-title">Рейтинг клубов</h2></div>
           {shown.map((r, i) => (
             <div key={`${r.id}-${r.division}`} className={`av-trow t-pow${i === 0 ? ' av-trow--lead' : ''}`}>
               <span className={`av-trow__rank${i < 3 ? ` av-trow__rank--${i + 1}` : ''}`}>{i + 1}</span>

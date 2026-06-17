@@ -20,7 +20,7 @@ export function YearFilter() {
   const { year, setYear, years } = useFedYear();
   return (
     <div className="av-yearbar" role="tablist" aria-label="Год рождения">
-      <span className="av-yearbar__label">Возраст</span>
+      <span className="av-yearbar__label">Год рождения</span>
       <button className={`av-ychip${year == null ? ' av-ychip--active' : ''}`} onClick={() => setYear(null)}>Все</button>
       {years.map((y) => (
         <button key={y} className={`av-ychip${year === y ? ' av-ychip--active' : ''}`} onClick={() => setYear(y)}>{y}</button>

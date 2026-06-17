@@ -86,7 +86,7 @@ export function FederationAvPlayers() {
     <>
       <header className="av-head av-rise">
         <div className="av-head__l">
-          <h1 className="av-title">Таланты региона</h1>
+          <h1 className="av-title">Игроки региона</h1>
           <p className="av-sub">{players.length.toLocaleString('ru-RU')} разобранных игроков · клик → профиль</p>
         </div>
         <input className="av-search" placeholder="Поиск по имени…" value={qStr} onChange={(e) => setQStr(e.target.value)} />
@@ -97,7 +97,7 @@ export function FederationAvPlayers() {
       <div className="av-split av-rise">
         {/* Реестр */}
         <section className="av-surface av-pad-lg">
-          <div className="av-section"><h2 className="av-section-title">Реестр игроков</h2></div>
+          <div className="av-section"><h2 className="av-section-title">Рейтинг игроков</h2></div>
 
           {clubs.length > 1 && (
             <div className="av-pills" style={{ marginBottom: 14 }}>
@@ -130,7 +130,7 @@ export function FederationAvPlayers() {
           <section className="av-surface av-surface--feature av-pad-lg">
             <div className="av-section" style={{ marginBottom: 10 }}>
               <div>
-                <h2 className="av-section-title">Сборная региона</h2>
+                <h2 className="av-section-title">Лучшие игроки региона</h2>
                 <p className="av-section-sub">{xiPitchOk ? 'Лучшие по позициям' : 'Топ-11 по рейтингу'}</p>
               </div>
             </div>

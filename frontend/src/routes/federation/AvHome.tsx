@@ -24,7 +24,6 @@ const plMesto = (n: number) => { const a = n % 100, b = n % 10; if (a >= 11 && a
 // --- Значимые матчи: значимость на УРОВНЕ КОМАНДЫ (рейтинг+ранг в дивизионе с бэка) ---
 type SigTone = 'clash' | 'upset' | 'rout';
 interface KeyMatch extends ResultMatch { sig: number; tone: SigTone | null; label: string; why: string }
-const SIG_ICON: Record<SigTone, string> = { clash: '⚔️', upset: '🔥', rout: '💥' };
 
 /**
  * Состояние региона — главный, операционный экран: пульс Первенства, что только
@@ -79,10 +78,10 @@ export function FederationAvHome() {
     <>
       <header className="av-head av-rise">
         <div className="av-head__l">
-          <h1 className="av-title">Состояние региона</h1>
+          <h1 className="av-title">Обзор региона</h1>
           <p className="av-sub">Первенство СПб · сезон 2026</p>
         </div>
-        <Link to="/federation/cohorts" className="av-link">Регион по когортам →</Link>
+        <Link to="/federation/cohorts" className="av-link">Возрастные группы →</Link>
       </header>
 
       {ov.error && <FedError />}
@@ -110,9 +109,9 @@ export function FederationAvHome() {
       {/* Значимые матчи — курируем по значимости, а не валим лентой все 24 */}
       <section className="av-rise">
         <div className="av-section">
-          <h2 className="av-section-title">Значимые матчи</h2>
+          <h2 className="av-section-title">Ключевые матчи тура</h2>
           {keyMatches.length > 0 && results.length > keyMatches.length && (
-            <span className="av-section-sub" style={{ margin: 0 }}>битвы лидеров · сенсации · разгромы — из {results.length} сыгранных</span>
+            <span className="av-section-sub" style={{ margin: 0 }}>по разрыву в таблице, рейтинге и счёту · из {results.length} сыгранных</span>
           )}
         </div>
         {rs.isLoading ? <div className="av-skeleton" style={{ height: 140 }} />
@@ -124,11 +123,11 @@ export function FederationAvHome() {
       {/* Таблицы + рейтинг клубов */}
       <div className="av-cols-main av-rise">
         <section className="av-surface av-pad-lg">
-          <div className="av-section"><h2 className="av-section-title">Турнирные таблицы · Наградион</h2></div>
+          <div className="av-section"><h2 className="av-section-title">Турнирные таблицы</h2></div>
           {st.isLoading ? <Sk /> : (st.data?.groups ?? []).length === 0 ? <div className="av-note">Нет данных.</div> : (st.data?.groups ?? []).map((g) => <StandingsBlock key={g.division} g={g} />)}
         </section>
         <section className="av-surface av-pad-lg">
-          <div className="av-section"><h2 className="av-section-title">Рейтинг клубов · AvanData</h2></div>
+          <div className="av-section"><h2 className="av-section-title">Рейтинг клубов</h2></div>
           {cr.isLoading ? <Sk /> : (cr.data?.groups ?? []).length === 0 ? <div className="av-note">Нет данных.</div> : (cr.data?.groups ?? []).map((g) => <RatingsBlock key={g.division} g={g} />)}
         </section>
       </div>
@@ -154,7 +153,7 @@ function Fixture({ m }: { m: KeyMatch }) {
     <div className={`av-fixture${m.tone ? ` av-fixture--${m.tone}` : ''}`}>
       <div className="av-fixture__top">
         {m.tone
-          ? <span className={`av-sigtag av-sigtag--${m.tone}`}>{SIG_ICON[m.tone]} {m.label}</span>
+          ? <span className={`av-sigtag av-sigtag--${m.tone}`}>{m.label}</span>
           : <span className="av-fixture__age">{m.age} · {m.division}</span>}
         <span className="av-fixture__date">{fmtDate(m.date)}</span>
       </div>
