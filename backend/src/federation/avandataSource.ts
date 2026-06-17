@@ -249,11 +249,32 @@ export interface TalentConcentration {
   top5Share: number;
   clubs: Array<{ club: string; logo: string | null; n: number; share: number }>;
 }
+/** Имя реального клуба из названия команды-с-годом: «ФК Зенит 2012» → «ФК Зенит». */
+export const clubName = (team: string | null): string => (team ?? '').replace(/\s*20\d{2}\b.*$/, '').trim();
+
 export async function talentConcentration(seasonId: number, year?: number): Promise<TalentConcentration> {
   const players = await regionPlayers(seasonId, year);
-  const pool = players.filter((p) => p.rating != null).slice(0, Math.max(30, Math.round(players.length * 0.15)));
+  // Пул таланта = топ-30 по КАЖДОМУ возрасту (честно между когортами), объединяем.
+  const byYear = new Map<number, RegionPlayer[]>();
+  for (const p of players) {
+    if (p.rating == null) continue;
+    const y = p.birthYear ?? 0;
+    const arr = byYear.get(y) ?? [];
+    arr.push(p); byYear.set(y, arr);
+  }
+  const pool: RegionPlayer[] = [];
+  for (const arr of byYear.values()) {
+    arr.sort((a, b) => (b.rating as number) - (a.rating as number));
+    pool.push(...arr.slice(0, 30));
+  }
+  // Группируем по РЕАЛЬНОМУ клубу (срезаем год команды).
   const byClub = new Map<string, { club: string; logo: string | null; n: number }>();
-  for (const p of pool) { if (!p.club) continue; const e = byClub.get(p.club) ?? { club: p.club, logo: p.clubLogo, n: 0 }; e.n += 1; byClub.set(p.club, e); }
+  for (const p of pool) {
+    const club = clubName(p.club);
+    if (!club) continue;
+    const e = byClub.get(club) ?? { club, logo: p.clubLogo, n: 0 };
+    e.n += 1; byClub.set(club, e);
+  }
   const ranked = [...byClub.values()].sort((a, b) => b.n - a.n);
   const sum = (arr: typeof ranked) => arr.reduce((s, c) => s + c.n, 0);
   const total = sum(ranked) || 1;

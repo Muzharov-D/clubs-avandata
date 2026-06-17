@@ -82,6 +82,7 @@ export function FederationAvInsights() {
           {tc.isLoading ? <div className="av-skeleton" style={{ height: 160, marginTop: 12 }} /> : tc.data && (
             <>
               <h2 className="av-verdict av-verdict--magenta">3 клуба держат <b>{tc.data.top3Share}%</b> сильнейших талантов региона</h2>
+              <p className="av-why" style={{ marginBottom: 4 }}>Пул — топ-30 игроков каждого возраста ({tc.data.topPool} талантов), клубы схлопнуты в реальные (без года команды).</p>
               <div className="av-row-list" style={{ marginTop: 12 }}>
                 {tc.data.clubs.slice(0, 6).map((c) => {
                   const max = Math.max(...tc.data!.clubs.map((x) => x.n), 1);
