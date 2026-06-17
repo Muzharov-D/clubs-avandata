@@ -11,25 +11,18 @@ interface Overview { divisions: string[]; tournaments: number; teams: number; pl
 interface StandRow { id: number; name: string; logo: string | null; played: number; won: number; drawn: number; lost: number; goalDiff: number; points: number }
 interface RatingRow { id: number; name: string; logo: string | null; rating: number }
 interface Group<T> { division: string; rows: T[] }
-interface ResultMatch { id: number; age: string; division: string; date: string; home: { name: string; logo: string | null; score: number | null }; away: { name: string; logo: string | null; score: number | null } }
+interface ResultTeam { name: string; logo: string | null; score: number | null; rating: number | null; rank: number | null }
+interface ResultMatch { id: number; age: string; division: string; date: string; divTeams: number; home: ResultTeam; away: ResultTeam }
 interface AgeEffect { total: number; q1pct: number; q4pct: number; skew: number | null }
 
 const num = (n: number) => n.toLocaleString('ru-RU');
 const pm = (n: number) => (n > 0 ? `+${n}` : String(n));
 const fmtDate = (iso: string) => { try { return new Intl.DateTimeFormat('ru-RU', { day: 'numeric', month: 'short' }).format(new Date(iso)).replace('.', '').toUpperCase(); } catch { return ''; } };
 
-// --- Значимые матчи: джойн результата с рейтингом клуба по нормализованному имени ---
+// --- Значимые матчи: значимость на УРОВНЕ КОМАНДЫ (рейтинг+ранг в дивизионе с бэка) ---
 type SigTone = 'clash' | 'upset' | 'rout';
-interface KeyMatch extends ResultMatch { sig: number; tone: SigTone | null; label: string }
+interface KeyMatch extends ResultMatch { sig: number; tone: SigTone | null; label: string; why: string }
 const SIG_ICON: Record<SigTone, string> = { clash: '⚔️', upset: '🔥', rout: '💥' };
-// «ФК Зенит 2013» / «Алмаз-Антей» → единый ключ для матчинга result↔rating
-const normClub = (name: string): string => name.toLowerCase()
-  .replace(/[«»"']/g, '')
-  .replace(/^фк\s+/, '')            // «Автово» = «ФК Автово» (СШОР/СШ не трогаем — иначе Зенит-коллизия)
-  .replace(/\s*\d{4}\s*$/, '')      // срезаем год команды
-  .replace(/[-–—]/g, ' ')           // дефисы → пробел (Алмаз-Антей = Алмаз Антей)
-  .replace(/\s+/g, ' ')
-  .trim();
 
 /**
  * Состояние региона — главный, операционный экран: пульс Первенства, что только
@@ -47,42 +40,30 @@ export function FederationAvHome() {
   const results = rs.data?.results ?? [];
   const skew = ag.data?.skew ?? null;
 
-  // Рейтинг + ранг клуба по нормализованному имени (знаменатель, который есть только у федерации).
-  const clubInfo = useMemo(() => {
-    const rows = (cr.data?.groups ?? []).flatMap((g) => g.rows);
-    const sorted = [...rows].sort((a, b) => b.rating - a.rating);
-    const map = new Map<string, { rating: number; rank: number }>();
-    sorted.forEach((r, i) => { const k = normClub(r.name); if (!map.has(k)) map.set(k, { rating: r.rating, rank: i + 1 }); });
-    return { map, total: sorted.length };
-  }, [cr.data]);
-
-  // Значимые матчи: курируем по сигналам, а не валим всё подряд.
+  // Значимые матчи: значимость на КОМАНДНЫХ рейтингах, ранг — в дивизионе возраста.
   const keyMatches = useMemo(() => {
-    const { map, total } = clubInfo;
-    const topN = Math.max(4, Math.round(total * 0.25)); // верхняя четверть = «лидеры»
     const scored: KeyMatch[] = results.map((m) => {
-      const hs = m.home.score ?? 0, as = m.away.score ?? 0;
-      const margin = Math.abs(hs - as);
-      const H = map.get(normClub(m.home.name));
-      const A = map.get(normClub(m.away.name));
-      const decided = hs !== as;
-      const winner = hs > as ? H : A;
-      const loser = hs > as ? A : H;
-      const leaderRank = Math.max(topN, Math.round(total * 0.4)); // «лидер» = верхние ~40%
-      let sig = margin, tone: SigTone | null = null, label = '';
-      if (decided && winner && loser && winner.rating < loser.rating && loser.rank <= leaderRank) {
-        sig = 2000 + (loser.rating - winner.rating); tone = 'upset'; label = 'Сенсация'; // ниже рейтингом обыграл лидера
-      } else if (H && A && H.rank <= topN && A.rank <= topN) {
-        sig = 1000 + 1000 / (H.rank + A.rank); tone = 'clash'; label = 'Битва лидеров';
+      const hs = m.home.score ?? 0, as = m.away.score ?? 0, margin = Math.abs(hs - as), decided = hs !== as;
+      const H = m.home, A = m.away, divTeams = m.divTeams || 0;
+      const leaderRank = Math.max(3, Math.round(divTeams * 0.4)); // «лидер дивизиона» = верхние ~40%
+      const topRank = Math.max(2, Math.round(divTeams * 0.25));
+      const winner = hs > as ? H : A, loser = hs > as ? A : H;
+      let sig = margin, tone: SigTone | null = null, label = '', why = '';
+      if (decided && winner.rating != null && loser.rating != null && winner.rating < loser.rating && (loser.rank ?? 99) <= leaderRank) {
+        sig = 2000 + (loser.rating - winner.rating); tone = 'upset'; label = 'Сенсация';
+        why = `рейтинг ${num(winner.rating)} обыграл ${num(loser.rating)} · соперник #${loser.rank} дивизиона`;
+      } else if (H.rating != null && A.rating != null && (H.rank ?? 99) <= topRank && (A.rank ?? 99) <= topRank) {
+        sig = 1000 + 1000 / ((H.rank ?? 1) + (A.rank ?? 1)); tone = 'clash'; label = 'Битва лидеров';
+        why = `#${H.rank} против #${A.rank} дивизиона`;
       } else if (margin >= 6) {
         sig = 200 + margin; tone = 'rout'; label = 'Разгром';
+        why = `крупная победа · +${margin} в счёте`;
       }
-      return { ...m, sig, tone, label };
+      return { ...m, sig, tone, label, why };
     });
     const key = scored.filter((x) => x.label).sort((a, b) => b.sig - a.sig).slice(0, 8);
-    // фолбэк: если значимых нет (нет рейтингов) — просто свежие, без ярлыков
     return key.length ? key : scored.slice(0, 8);
-  }, [results, clubInfo]);
+  }, [results]);
 
   return (
     <>
@@ -185,7 +166,7 @@ function Fixture({ m }: { m: KeyMatch }) {
           <span className="av-fixture__team-name" title={m.away.name}>{m.away.name}</span>
         </span>
       </div>
-      {m.tone && <div className="av-fixture__foot">{m.age} · {m.division}</div>}
+      {m.tone && <div className="av-fixture__foot">{m.why || `${m.age} · ${m.division}`}</div>}
     </div>
   );
 }

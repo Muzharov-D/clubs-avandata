@@ -287,26 +287,46 @@ export async function talentConcentration(seasonId: number, year?: number): Prom
 }
 
 // ─── Состояние региона: последние результаты ────────────────────────────────
+export interface ResultTeam { name: string; logo: string | null; score: number | null; rating: number | null; rank: number | null; }
 export interface ResultMatch {
-  id: number; age: string; division: string; date: string;
-  home: { name: string; logo: string | null; score: number | null };
-  away: { name: string; logo: string | null; score: number | null };
+  id: number; age: string; division: string; date: string; divTeams: number;
+  home: ResultTeam; away: ResultTeam;
 }
+// «ФК Зенит 2013» / «Алмаз-Антей» → ключ для матчинга команды результата к рейтингу
+const normTeam = (s: string): string => s.toLowerCase()
+  .replace(/[«»"']/g, '').replace(/^фк\s+/, '').replace(/\s*\d{4}\s*$/, '').replace(/[-–—]/g, ' ').replace(/\s+/g, ' ').trim();
+
 export async function regionResults(seasonId: number, year?: number): Promise<ResultMatch[]> {
   return cached(`results:${seasonId}:${year ?? 0}`, 5 * 60 * 1000, async () => {
     let refs = await listTournaments(seasonId);
     if (year != null) refs = refs.filter((r) => r.ageFrom === year);
+    // Рейтинги команд по возрасту (per tournamentId) — значимость на УРОВНЕ КОМАНДЫ, не клуба.
+    const tids = [...new Set(refs.map((r) => r.tournamentId))];
+    const ratingsByTid = new Map<number, AvRatingTeam[]>();
+    await pmap(tids, 6, async (tid) => { ratingsByTid.set(tid, await getClubRatingsByTournament(seasonId, tid).catch(() => [])); });
     // status==='ready' = сыгранный матч (created/assigned — будущие). lastPlayedTour
     // ненадёжен, поэтому сканируем все туры и фильтруем по статусу.
     const jobs = refs.flatMap((ref) => Array.from({ length: Math.max(1, ref.lastPlayedTour) }, (_, i) => ({ ref, tour: i + 1 })));
     const lists = await pmap(jobs, 8, async ({ ref, tour }) => {
       try {
         const ms = await getMatches(ref.tournamentId, ref.divisionId, tour);
-        return ms.filter((m) => m.status === 'ready' && ((m.ownTeam.score ?? 0) + (m.guestTeam.score ?? 0)) > 0).map((m) => ({
-          id: m.id, age: ref.category, division: ref.divisionTitle, date: m.dateTime,
-          home: { name: m.ownTeam.title, logo: m.ownTeam.logoUrl ?? null, score: m.ownTeam.score ?? null },
-          away: { name: m.guestTeam.title, logo: m.guestTeam.logoUrl ?? null, score: m.guestTeam.score ?? null },
-        }));
+        // ранг в ДИВИЗИОНЕ этого возраста (соперники из одного дивизиона — сравнение честное)
+        const all = ratingsByTid.get(ref.tournamentId) ?? [];
+        const inDiv = all.filter((t) => t.division?.id === ref.divisionId);
+        const pool = [...(inDiv.length ? inDiv : all)].sort((a, b) => b.points - a.points);
+        const byId = new Map<number, { rating: number; rank: number }>();
+        const byName = new Map<string, { rating: number; rank: number }>();
+        pool.forEach((t, i) => { const info = { rating: t.points, rank: i + 1 }; byId.set(t.id, info); byName.set(normTeam(t.name), info); });
+        const divTeams = pool.length;
+        const look = (tm: { id: number | null; title: string }) => (tm.id != null ? byId.get(tm.id) : undefined) ?? byName.get(normTeam(tm.title)) ?? null;
+        return ms.filter((m) => m.status === 'ready' && ((m.ownTeam.score ?? 0) + (m.guestTeam.score ?? 0)) > 0).map((m) => {
+          const H = look(m.ownTeam), A = look(m.guestTeam);
+          return {
+            id: m.id, age: ref.category, division: ref.divisionTitle, date: m.dateTime, divTeams,
+            home: { name: m.ownTeam.title, logo: m.ownTeam.logoUrl ?? null, score: m.ownTeam.score ?? null, rating: H?.rating ?? null, rank: H?.rank ?? null },
+            away: { name: m.guestTeam.title, logo: m.guestTeam.logoUrl ?? null, score: m.guestTeam.score ?? null, rating: A?.rating ?? null, rank: A?.rank ?? null },
+          };
+        });
       } catch { return []; }
     });
     return lists.flat().sort((a, b) => (a.date < b.date ? 1 : -1)).slice(0, 24);
