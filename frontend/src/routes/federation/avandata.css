@@ -439,6 +439,14 @@
 /* строки-ссылки: reset без инлайнов (Уинстон) */
 a.av-trow { text-decoration: none; color: inherit; }
 
+/* сигнал федерации — маршрутизатор внимания на главном (Джон) */
+.av-signal { display: flex; align-items: center; gap: 14px; padding: 13px 18px; border-radius: var(--av-r); background: linear-gradient(135deg, rgba(255, 0, 153, 0.10), rgba(239, 241, 251, 0.02) 62%); border: 1px solid rgba(255, 0, 153, 0.28); }
+.av-signal__icon { font-size: 18px; flex: none; line-height: 1; }
+.av-signal__txt { font-size: 13px; color: var(--av-text-card); line-height: 1.45; min-width: 0; }
+.av-signal__txt b { color: var(--av-magenta); font-weight: 800; }
+.av-signal__cta { margin-left: auto; flex: none; }
+@media (max-width: 640px) { .av-signal { flex-wrap: wrap; } .av-signal__cta { margin-left: 0; } }
+
 /* =============================================================================
    АДАПТИВ
    ============================================================================= */

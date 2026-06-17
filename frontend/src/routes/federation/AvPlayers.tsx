@@ -66,6 +66,11 @@ export function FederationAvPlayers() {
   }, [players]);
   const xiReady = xi.filter((s) => s.player).length >= 7;
   const xiProvisional = xi.some((s) => s.player && s.provisional);
+  // Корневой фикс: если позиций в данных мало — расстановка превращается в шум.
+  // Честный фолбэк на «Топ-11 региона» списком, когда явных позиций < 6.
+  const xiReal = xi.filter((s) => s.player && !s.provisional).length;
+  const xiPitchOk = xiReady && xiReal >= 6;
+  const top11 = useMemo(() => players.filter((p) => p.rating != null).slice(0, 11), [players]);
 
   // Восходящие — высокий рейтинг среди МЛАДШИХ когорт (честный сигнал «кто растёт»).
   const rising = useMemo(() => {
@@ -132,12 +137,12 @@ export function FederationAvPlayers() {
             <div className="av-section" style={{ marginBottom: 10 }}>
               <div>
                 <h2 className="av-section-title">Сборная региона</h2>
-                <p className="av-section-sub">Лучшие по позициям · {year == null ? 'все возрасты' : `${year} г.р.`}</p>
+                <p className="av-section-sub">{xiPitchOk ? 'Лучшие по позициям' : 'Топ-11 по рейтингу'} · {year == null ? 'все возрасты' : `${year} г.р.`}</p>
               </div>
             </div>
             {isLoading ? <div className="av-skeleton" style={{ aspectRatio: '4 / 5' }} /> : !xiReady ? (
-              <div className="av-note">Мало разобранных игроков по позициям для сборной.</div>
-            ) : (
+              <div className="av-note">Мало разобранных игроков для сборной.</div>
+            ) : xiPitchOk ? (
               <>
                 <div className="av-pitch">
                   <span className="av-pitch__circle" />
@@ -154,6 +159,22 @@ export function FederationAvPlayers() {
                   ))}
                 </div>
                 {xiProvisional && <p className="av-cap">«добор» — позиция дозаполнена лучшим доступным игроком (в данных нет явной позиции).</p>}
+              </>
+            ) : (
+              <>
+                <div className="av-rising">
+                  {top11.map((p) => (
+                    <Link key={p.id} to={`/federation/players/${p.id}`} className="av-rising__row">
+                      <PlayerAvatar name={p.name} size={32} />
+                      <div style={{ minWidth: 0 }}>
+                        <div className="av-rising__name">{p.name}</div>
+                        <div className="av-rising__meta">{p.club ?? '—'}{p.position ? ` · ${p.position}` : ''}{p.birthYear ? ` · ${p.birthYear}` : ''}</div>
+                      </div>
+                      <span className="av-rate">{p.rating}</span>
+                    </Link>
+                  ))}
+                </div>
+                <p className="av-cap">Позиции игроков в данных не размечены — показываем топ-11 региона по рейтингу вместо расстановки.</p>
               </>
             )}
           </section>

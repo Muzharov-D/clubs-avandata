@@ -10,6 +10,7 @@ interface StandRow { id: number; name: string; logo: string | null; played: numb
 interface RatingRow { id: number; name: string; logo: string | null; rating: number }
 interface Group<T> { division: string; rows: T[] }
 interface ResultMatch { id: number; age: string; division: string; date: string; home: { name: string; logo: string | null; score: number | null }; away: { name: string; logo: string | null; score: number | null } }
+interface AgeEffect { total: number; q1pct: number; q4pct: number; skew: number | null }
 
 const num = (n: number) => n.toLocaleString('ru-RU');
 const pm = (n: number) => (n > 0 ? `+${n}` : String(n));
@@ -26,8 +27,10 @@ export function FederationAvHome() {
   const rs = useQuery({ queryKey: ['av', 'results', year], queryFn: () => api<{ results: ResultMatch[] }>(`/federation/av/results${q}`) });
   const st = useQuery({ queryKey: ['av', 'standings', year], queryFn: () => api<{ groups: Group<StandRow>[] }>(`/federation/av/standings${q}`) });
   const cr = useQuery({ queryKey: ['av', 'club-ratings', year], queryFn: () => api<{ groups: Group<RatingRow>[] }>(`/federation/av/club-ratings${q}`) });
+  const ag = useQuery({ queryKey: ['av', 'age', year], queryFn: () => api<AgeEffect>(`/federation/av/age-effect${q}`) });
   const d = ov.data;
   const results = rs.data?.results ?? [];
+  const skew = ag.data?.skew ?? null;
 
   return (
     <>
@@ -41,6 +44,15 @@ export function FederationAvHome() {
       </header>
 
       {ov.error && <div className="av-surface av-pad av-note av-rise" style={{ color: 'var(--av-danger)' }}>База разборов недоступна — задан ли <code>AVANDATA_API_KEY</code> на сервере?</div>}
+
+      {/* Сигнал федерации — что требует внимания прямо сейчас (маршрутизатор внимания) */}
+      {skew != null && skew >= 1.3 && (
+        <div className="av-signal av-rise">
+          <span className="av-signal__icon">⚠️</span>
+          <span className="av-signal__txt">Требует внимания: <b>возрастная утечка</b> — в начале года отобрано в <b>{skew}×</b> больше игроков, чем в конце. Регион тихо теряет поздно-рождённых.</span>
+          <Link to="/federation/fairness" className="av-link av-signal__cta">Разобрать →</Link>
+        </div>
+      )}
 
       {/* Пульс региона */}
       {ov.isLoading ? <div className="av-skeleton av-rise" style={{ height: 124 }} /> : d && (
