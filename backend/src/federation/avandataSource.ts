@@ -9,9 +9,14 @@
 import {
   isAvandataConfigured, getSeasons, getTeamsList, getTourStatistics, getPlayersByRole, getMatches,
   getFfspbStatistics, getFfspbStatisticsByTournament, getClubRatingsOverview, getClubRatingsByTournament,
-  getPlayerDetail, getPlayerEvents, getEventTypes, getAllPlayerSummaries,
+  getPlayerDetail, getPlayerEvents, getEventTypes, getAllPlayerSummaries, getMatchDetail,
   type AvSeason, type AvStatTeam, type AvRatingTeam, type AvEventType,
 } from '../services/avandataApi.js';
+
+/** Детали матча (сырой ответ базы) — форма уточняется по живому проб-запросу. */
+export async function regionMatchDetail(matchId: number): Promise<Record<string, unknown> | null> {
+  return cached(`match:${matchId}`, 10 * 60 * 1000, () => getMatchDetail(matchId));
+}
 
 export { isAvandataConfigured };
 

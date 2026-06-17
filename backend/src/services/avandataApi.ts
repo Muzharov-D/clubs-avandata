@@ -110,6 +110,17 @@ export async function getMatches(tournamentId: number, divisionId: number, tour:
   return data.matches ?? [];
 }
 
+/** Глубокий матч: счёт, карточки (игрок+минута), лучший игрок (рейтинг+топ-события),
+ *  ключевые события (own vs guest). Форма уточняется по живому ответу. */
+export async function getMatchDetail(matchId: number): Promise<Record<string, unknown> | null> {
+  try {
+    return await authedGet<Record<string, unknown>>(`/ffspb-portal/matches/${matchId}`);
+  } catch (e) {
+    logger.warn({ matchId, err: (e as Error).message }, '[avandata] match detail failed');
+    return null;
+  }
+}
+
 // ---- Клубы и команды ----
 export interface AvClub { id: number; title: string; logoUrl?: string | null; tournaments?: Array<{ id: number; title: string; dateBirthFrom?: string | number }> }
 export async function getClubList(seasonId: number, divisionId: number): Promise<AvClub[]> {
