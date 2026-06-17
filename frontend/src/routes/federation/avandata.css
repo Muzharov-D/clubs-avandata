@@ -17,6 +17,9 @@
   /* поверхности / фон */
   --av-bg: #0E1438;
   --av-bg-base: #0a0b22;
+  /* плотные тёмные панели — контент сидит ПОВЕРХ фона, а не тонет в волнах */
+  --av-panel: rgba(12, 17, 44, 0.62);
+  --av-panel-soft: rgba(12, 17, 44, 0.50);
   --av-ink-800: #171845;
   --av-ink-700: #1d1f55;
   /* акценты */
@@ -70,7 +73,7 @@
 .av-bg::after {
   content: ''; position: absolute; inset: 0;
   background: url('/brand/bg-waves.png') center/cover no-repeat;
-  opacity: 0.85; mix-blend-mode: screen;
+  opacity: 0.16; mix-blend-mode: normal; /* волны = тихая фоновая текстура, не лезут поверх контента */
 }
 
 /* =============================================================================
@@ -134,13 +137,13 @@
    СТЕКЛЯННЫЕ ПОВЕРХНОСТИ — 3 уровня + featured
    ============================================================================= */
 .av-surface {
-  position: relative; background: rgba(239, 241, 251, 0.04); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(94, 235, 252, 0.12); border-radius: var(--av-r); box-shadow: var(--av-shadow);
+  position: relative; background: var(--av-panel); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(94, 235, 252, 0.14); border-radius: var(--av-r); box-shadow: var(--av-shadow);
 }
-.av-surface-soft { background: rgba(239, 241, 251, 0.025); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); border: 1px solid rgba(255, 255, 255, 0.06); border-radius: var(--av-r-sm); }
+.av-surface-soft { background: var(--av-panel-soft); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); border: 1px solid rgba(255, 255, 255, 0.06); border-radius: var(--av-r-sm); }
 .av-surface-glow { border-color: rgba(94, 235, 252, 0.50); box-shadow: 0 0 28px rgba(94, 235, 252, 0.22), inset 0 0 0 1px rgba(255, 255, 255, 0.04); }
-/* featured: тонкая верхняя cyan-полоса + лёгкий внутренний градиент-блик */
-.av-surface--feature { overflow: hidden; background: linear-gradient(135deg, rgba(239, 241, 251, 0.06) 0%, rgba(239, 241, 251, 0.02) 100%); }
+/* featured: тонкая верхняя cyan-полоса + тёмная база с лёгким cyan-углом */
+.av-surface--feature { overflow: hidden; background: linear-gradient(135deg, rgba(94, 235, 252, 0.07) 0%, var(--av-panel) 58%); }
 .av-surface--feature::before { content: ''; position: absolute; left: 0; right: 0; top: 0; height: 2px; background: linear-gradient(90deg, transparent, var(--av-cyan), transparent); opacity: 0.7; }
 .av-pad { padding: 18px 20px; }
 .av-pad-lg { padding: 24px; }
@@ -203,7 +206,7 @@
 .av-fixtures { display: grid; grid-template-columns: repeat(auto-fill, minmax(268px, 1fr)); gap: 12px; }
 .av-fixture {
   display: flex; flex-direction: column; gap: 12px; padding: 14px 15px; text-decoration: none; color: inherit;
-  background: rgba(239, 241, 251, 0.035); border: 1px solid rgba(94, 235, 252, 0.10); border-radius: var(--av-r);
+  background: var(--av-panel-soft); border: 1px solid rgba(94, 235, 252, 0.10); border-radius: var(--av-r);
   transition: border-color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
 }
 @media (hover: hover) { .av-fixture:hover { border-color: rgba(94, 235, 252, 0.40); transform: translateY(-2px); box-shadow: 0 10px 26px rgba(4, 7, 24, 0.45); } }
@@ -300,7 +303,7 @@
    ВЕРДИКТ-НАХОДКИ (Справедливость) — редакционные приговоры
    ============================================================================= */
 .av-finding { position: relative; overflow: hidden; }
-.av-finding--hero { background: linear-gradient(135deg, rgba(255, 0, 153, 0.07) 0%, rgba(239, 241, 251, 0.03) 55%); border-color: rgba(255, 0, 153, 0.30); }
+.av-finding--hero { background: linear-gradient(135deg, rgba(255, 0, 153, 0.12) 0%, var(--av-panel) 55%); border-color: rgba(255, 0, 153, 0.30); }
 .av-finding--hero::before { content: ''; position: absolute; left: 0; right: 0; top: 0; height: 2px; background: linear-gradient(90deg, transparent, var(--av-magenta), transparent); opacity: 0.7; }
 .av-finding__kicker { display: inline-flex; align-items: center; gap: 8px; font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.12em; color: var(--av-magenta); }
 .av-finding--cyan .av-finding__kicker { color: var(--av-cyan); }
