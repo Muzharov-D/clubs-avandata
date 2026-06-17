@@ -208,6 +208,26 @@
 .av-cmp__fill { display: block; height: 100%; border-radius: 6px; transition: width 0.6s ease; }
 .av-cmp__val { font-family: var(--av-display); font-weight: 700; text-align: right; font-variant-numeric: tabular-nums; font-size: 14px; }
 
+/* ---- Состояние региона: карточки результатов ---- */
+.av-results-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 10px; }
+.av-result {
+  background: rgba(239, 241, 251, 0.04); border: 1px solid rgba(94, 235, 252, 0.1); border-radius: var(--av-radius-sm);
+  padding: 11px 13px; display: flex; flex-direction: column; gap: 9px;
+}
+.av-result__top { display: flex; align-items: center; justify-content: space-between; font-size: 9.5px; }
+.av-result__age { color: var(--av-accent); font-weight: 700; letter-spacing: 0.04em; }
+.av-result__date { color: var(--av-text-dim); }
+.av-result__body { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 8px; }
+.av-result__team { display: flex; align-items: center; gap: 7px; min-width: 0; font-size: 12px; }
+.av-result__team--away { justify-content: flex-end; }
+.av-result__team span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.av-result__score { font-family: var(--av-display); font-weight: 700; font-size: 17px; font-variant-numeric: tabular-nums; padding: 2px 9px; border-radius: 6px; background: rgba(255, 255, 255, 0.06); white-space: nowrap; }
+.av-result__w { color: var(--av-accent); }
+.av-result__l { color: var(--av-text-dim); }
+
+/* ---- Донат-кольцо (KPI/стат) ---- */
+.av-donut text { font-family: var(--av-display); }
+
 /* ---- Матрица когорт (телескоп: год рождения × сигналы) ---- */
 .av-cohorts { display: grid; gap: 12px; }
 .av-cohort {

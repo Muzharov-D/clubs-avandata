@@ -7,12 +7,10 @@ import './avandata.css';
 interface FedAuth { user: { fullName?: string; email?: string } | null; logout: () => void }
 
 const TABS: Array<{ to: string; end?: boolean; label: string }> = [
-  { to: '/federation', end: true, label: 'Когорты' },
-  { to: '/federation/overview', label: 'Обзор' },
-  { to: '/federation/clubs', label: 'Сила клубов' },
-  { to: '/federation/compare', label: 'Сравнение' },
-  { to: '/federation/players', label: 'Игроки' },
-  { to: '/federation/insights', label: 'Открытия' },
+  { to: '/federation', end: true, label: 'Состояние' },
+  { to: '/federation/players', label: 'Таланты' },
+  { to: '/federation/fairness', label: 'Справедливость' },
+  { to: '/federation/clubs', label: 'Клубы' },
 ];
 
 /**

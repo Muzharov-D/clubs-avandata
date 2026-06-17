@@ -26,7 +26,7 @@ export function FederationAvCohorts() {
   const { data, isLoading, error } = useQuery({ queryKey: ['av', 'cohorts'], queryFn: () => api<{ cohorts: Cohort[] }>('/federation/av/cohorts') });
   const cohorts = data?.cohorts ?? [];
 
-  function drill(year: number) { setYear(year); navigate('/federation/overview'); }
+  function drill(year: number) { setYear(year); navigate('/federation'); }
 
   return (
     <>

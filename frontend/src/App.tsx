@@ -181,13 +181,13 @@ export function App() {
                       </FederationOnly>
                     }
                   >
-                    <Route index element={<FederationAvCohorts />} />
-                    <Route path="overview" element={<FederationAvHome />} />
-                    <Route path="clubs" element={<FederationAvClubs />} />
-                    <Route path="compare" element={<FederationAvCompare />} />
+                    <Route index element={<FederationAvHome />} />
                     <Route path="players" element={<FederationAvPlayers />} />
                     <Route path="players/:id" element={<FederationAvPlayerProfile />} />
-                    <Route path="insights" element={<FederationAvInsights />} />
+                    <Route path="fairness" element={<FederationAvInsights />} />
+                    <Route path="clubs" element={<FederationAvClubs />} />
+                    <Route path="cohorts" element={<FederationAvCohorts />} />
+                    <Route path="compare" element={<FederationAvCompare />} />
                     <Route path="*" element={<Navigate to="/federation" replace />} />
                   </Route>
 

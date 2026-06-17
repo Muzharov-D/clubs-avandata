@@ -7,7 +7,7 @@
  * а по факту — getPlayersByRole возвращает игроков на разобранных турах.
  */
 import {
-  isAvandataConfigured, getSeasons, getTeamsList, getTourStatistics, getPlayersByRole,
+  isAvandataConfigured, getSeasons, getTeamsList, getTourStatistics, getPlayersByRole, getMatches,
   getFfspbStatistics, getFfspbStatisticsByTournament, getClubRatingsOverview, getClubRatingsByTournament,
   getPlayerDetail, getPlayerEvents, getEventTypes, getAllPlayerSummaries,
   type AvSeason, type AvStatTeam, type AvRatingTeam, type AvEventType,
@@ -284,6 +284,33 @@ export async function talentConcentration(seasonId: number, year?: number): Prom
     top5Share: Math.round((sum(ranked.slice(0, 5)) / total) * 100),
     clubs: ranked.slice(0, 10).map((c) => ({ club: c.club, logo: c.logo, n: c.n, share: Math.round((c.n / total) * 100) })),
   };
+}
+
+// ─── Состояние региона: последние результаты ────────────────────────────────
+export interface ResultMatch {
+  id: number; age: string; division: string; date: string;
+  home: { name: string; logo: string | null; score: number | null };
+  away: { name: string; logo: string | null; score: number | null };
+}
+export async function regionResults(seasonId: number, year?: number): Promise<ResultMatch[]> {
+  return cached(`results:${seasonId}:${year ?? 0}`, 5 * 60 * 1000, async () => {
+    let refs = await listTournaments(seasonId);
+    if (year != null) refs = refs.filter((r) => r.ageFrom === year);
+    // status==='ready' = сыгранный матч (created/assigned — будущие). lastPlayedTour
+    // ненадёжен, поэтому сканируем все туры и фильтруем по статусу.
+    const jobs = refs.flatMap((ref) => Array.from({ length: Math.max(1, ref.lastPlayedTour) }, (_, i) => ({ ref, tour: i + 1 })));
+    const lists = await pmap(jobs, 8, async ({ ref, tour }) => {
+      try {
+        const ms = await getMatches(ref.tournamentId, ref.divisionId, tour);
+        return ms.filter((m) => m.status === 'ready' && ((m.ownTeam.score ?? 0) + (m.guestTeam.score ?? 0)) > 0).map((m) => ({
+          id: m.id, age: ref.category, division: ref.divisionTitle, date: m.dateTime,
+          home: { name: m.ownTeam.title, logo: m.ownTeam.logoUrl ?? null, score: m.ownTeam.score ?? null },
+          away: { name: m.guestTeam.title, logo: m.guestTeam.logoUrl ?? null, score: m.guestTeam.score ?? null },
+        }));
+      } catch { return []; }
+    });
+    return lists.flat().sort((a, b) => (a.date < b.date ? 1 : -1)).slice(0, 24);
+  });
 }
 
 // ─── ТЕЛЕСКОП: матрица когорт (год рождения × сигналы) ───────────────────────

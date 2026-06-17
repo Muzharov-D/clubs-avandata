@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
+import { Link } from 'react-router-dom';
 import { api } from '../../api/client';
 import { ClubShield } from './ClubShield';
 import { useFedYear, yearQ } from './avYear';
@@ -8,15 +9,17 @@ interface Overview { divisions: string[]; tournaments: number; teams: number; pl
 interface StandRow { id: number; name: string; logo: string | null; played: number; won: number; drawn: number; lost: number; goalDiff: number; points: number }
 interface RatingRow { id: number; name: string; logo: string | null; rating: number }
 interface Group<T> { division: string; rows: T[] }
-interface DivStrength { division: string; clubs: number; avgRating: number | null; topRating: number | null; topClub: string | null }
+interface ResultMatch { id: number; age: string; division: string; date: string; home: { name: string; logo: string | null; score: number | null }; away: { name: string; logo: string | null; score: number | null } }
 
 const num = (n: number) => n.toLocaleString('ru-RU');
+const fmtDate = (iso: string) => { try { return new Intl.DateTimeFormat('ru-RU', { day: 'numeric', month: 'short' }).format(new Date(iso)).replace('.', '').toUpperCase(); } catch { return ''; } };
 
+/** Состояние региона — главный, операционный экран: что происходит в Первенстве. */
 export function FederationAvHome() {
   const { year } = useFedYear();
   const q = yearQ(year);
   const ov = useQuery({ queryKey: ['av', 'overview'], queryFn: () => api<Overview>('/federation/av/overview') });
-  const ds = useQuery({ queryKey: ['av', 'divstr', year], queryFn: () => api<{ divisions: DivStrength[] }>(`/federation/av/division-strength${q}`) });
+  const rs = useQuery({ queryKey: ['av', 'results', year], queryFn: () => api<{ results: ResultMatch[] }>(`/federation/av/results${q}`) });
   const st = useQuery({ queryKey: ['av', 'standings', year], queryFn: () => api<{ groups: Group<StandRow>[] }>(`/federation/av/standings${q}`) });
   const cr = useQuery({ queryKey: ['av', 'club-ratings', year], queryFn: () => api<{ groups: Group<RatingRow>[] }>(`/federation/av/club-ratings${q}`) });
   const d = ov.data;
@@ -25,9 +28,10 @@ export function FederationAvHome() {
     <>
       <header className="av-head av-rise">
         <div>
-          <h1 className="av-title">Обзор Первенства</h1>
-          <p className="av-sub">Санкт-Петербург · сезон 2026 · {year == null ? 'все возрасты' : `${year} г.р.`}</p>
+          <h1 className="av-title">Состояние региона</h1>
+          <p className="av-sub">Первенство СПб · сезон 2026 · {year == null ? 'все возрасты' : `${year} г.р.`}</p>
         </div>
+        <Link to="/federation/cohorts" className="av-link">Регион по когортам →</Link>
       </header>
 
       {ov.error && <div className="av-note" style={{ color: 'var(--av-danger)' }}>База недоступна — задан ли AVANDATA_API_KEY на сервере?</div>}
@@ -42,41 +46,43 @@ export function FederationAvHome() {
         </div>
       )}
 
-      {/* Сила лиг */}
+      {/* Последние результаты */}
       <section className="av-rise">
-        <h2 className="av-section-title" style={{ marginBottom: 10 }}>Сила лиг {year != null && <span className="av-dim" style={{ fontWeight: 400 }}>· {year} г.р.</span>}</h2>
-        {ds.isLoading ? <div className="av-skeleton" style={{ height: 120 }} /> : (
-          <div className="av-leagues">
-            {(ds.data?.divisions ?? []).map((l, i) => (
-              <div key={l.division} className={`av-surface av-league ${i === 0 ? 'av-surface--glow' : ''}`}>
-                <div className="av-league__name">{l.division}</div>
-                <div className="av-league__big" style={{ color: i === 0 ? 'var(--av-accent)' : 'var(--av-blue-glow)' }}>{l.avgRating != null ? num(l.avgRating) : '—'}</div>
-                <div className="av-league__sub">средний рейтинг · {l.clubs} клубов</div>
-                {l.topClub && <div className="av-dim" style={{ fontSize: 11.5, marginTop: 8 }}>лидер: <b style={{ color: 'var(--av-text-2)' }}>{l.topClub}</b> {l.topRating != null ? num(l.topRating) : ''}</div>}
-              </div>
-            ))}
+        <h2 className="av-section-title" style={{ marginBottom: 10 }}>Последние результаты{year != null && <span className="av-dim" style={{ fontWeight: 400 }}> · {year} г.р.</span>}</h2>
+        {rs.isLoading ? <div className="av-skeleton" style={{ height: 120 }} /> : (rs.data?.results ?? []).length === 0 ? (
+          <div className="av-note">Нет сыгранных матчей по фильтру.</div>
+        ) : (
+          <div className="av-results-grid">
+            {(rs.data?.results ?? []).map((m) => <ResultCard key={m.id} m={m} />)}
           </div>
         )}
       </section>
 
       <div className="av-cols av-rise">
         <section className="av-surface av-pad">
-          <div style={{ marginBottom: 12 }}>
-            <h2 className="av-section-title">Турнирные таблицы</h2>
-            <p className="av-section-sub">Статистика «Наградион» по дивизионам</p>
-          </div>
+          <div style={{ marginBottom: 12 }}><h2 className="av-section-title">Турнирные таблицы</h2><p className="av-section-sub">Статистика «Наградион» по дивизионам</p></div>
           {st.isLoading ? <Sk /> : (st.data?.groups ?? []).map((g) => <StandingsBlock key={g.division} g={g} />)}
         </section>
-
         <section className="av-surface av-pad">
-          <div style={{ marginBottom: 12 }}>
-            <h2 className="av-section-title">Рейтинг клубов · AvanData</h2>
-            <p className="av-section-sub">Сила школ по данным разборов</p>
-          </div>
+          <div style={{ marginBottom: 12 }}><h2 className="av-section-title">Рейтинг клубов · AvanData</h2><p className="av-section-sub">Сила школ по данным разборов</p></div>
           {cr.isLoading ? <Sk /> : (cr.data?.groups ?? []).map((g) => <RatingsBlock key={g.division} g={g} />)}
         </section>
       </div>
     </>
+  );
+}
+
+function ResultCard({ m }: { m: ResultMatch }) {
+  const hs = m.home.score ?? 0, as = m.away.score ?? 0;
+  return (
+    <div className="av-result">
+      <div className="av-result__top"><span className="av-result__age">{m.age} · {m.division}</span><span className="av-result__date">{fmtDate(m.date)}</span></div>
+      <div className="av-result__body">
+        <span className="av-result__team"><ClubShield name={m.home.name} logoUrl={m.home.logo} size={20} /><span title={m.home.name}>{m.home.name}</span></span>
+        <span className="av-result__score"><b className={hs >= as ? 'av-result__w' : 'av-result__l'}>{hs}</b>:<b className={as >= hs ? 'av-result__w' : 'av-result__l'}>{as}</b></span>
+        <span className="av-result__team av-result__team--away"><span title={m.away.name}>{m.away.name}</span><ClubShield name={m.away.name} logoUrl={m.away.logo} size={20} /></span>
+      </div>
+    </div>
   );
 }
 

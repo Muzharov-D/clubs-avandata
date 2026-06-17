@@ -31,9 +31,10 @@ export function FederationAvInsights() {
     <>
       <header className="av-head av-rise">
         <div>
-          <h1 className="av-title">Открытия региона</h1>
-          <p className="av-sub">Диагнозы, видимые только над всеми клубами разом · {year == null ? 'все возрасты' : `${year} г.р.`}</p>
+          <h1 className="av-title">Справедливость и утечка</h1>
+          <p className="av-sub">Кого регион теряет — диагнозы, видимые только над всеми клубами · {year == null ? 'все возрасты' : `${year} г.р.`}</p>
         </div>
+        <Link to="/federation/cohorts" className="av-link">По когортам →</Link>
       </header>
 
       {/* ВЫВОД 1 — Возрастная утечка (RAE) */}
