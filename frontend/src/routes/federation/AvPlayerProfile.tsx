@@ -1,8 +1,11 @@
+import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Link, useParams } from 'react-router-dom';
 import { api } from '../../api/client';
 import { ClubShield } from './ClubShield';
 import './avandata.css';
+
+interface PoolP { id: number; rating: number | null; birthYear: number | null }
 
 interface Metric { id: string; title: string; short: string; category: string; count: number; points: number }
 interface Profile {
@@ -33,6 +36,15 @@ export function FederationAvPlayerProfile() {
 
 function Body({ p }: { p: Profile }) {
   const top = p.metrics.slice(0, 16);
+  // Перцентиль рейтинга против всего пула региона (знаменатель есть только у федерации).
+  const pool = useQuery({ queryKey: ['av', 'players', null], queryFn: () => api<{ players: PoolP[] }>('/federation/av/players') });
+  const pct = useMemo(() => {
+    const list = (pool.data?.players ?? []).filter((x) => x.rating != null);
+    if (p.rating == null || list.length < 5) return null;
+    const below = list.filter((x) => (x.rating as number) < (p.rating as number)).length;
+    return Math.round((below / (list.length - 1)) * 100);
+  }, [pool.data, p.rating]);
+
   return (
     <>
       <header className="av-surface av-pad av-rise" style={{ display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap' }}>
@@ -43,6 +55,9 @@ function Body({ p }: { p: Profile }) {
             {p.position ?? 'позиция —'} · {p.club ?? '—'}
             {p.birthYear ? ` · ${p.birthYear} г.р.` : ''} · {p.matches} матч(а) · {p.totalEvents} событий
           </p>
+          {pct != null && (
+            <span className="av-chip av-chip--accent" style={{ marginTop: 8 }}>топ {Math.max(1, 100 - pct)}% региона по рейтингу</span>
+          )}
         </div>
         {p.rating != null && (
           <div style={{ textAlign: 'center' }}>
