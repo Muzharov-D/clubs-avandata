@@ -305,7 +305,9 @@ export async function uploadRoutes(app: FastifyInstance) {
 
       // Семантика: это вообще отчёт SportVisor? Если ни rich, ни legacy не нашли
       // игроков — отклоняем (Phase 1), чтобы не создавать пустой матч.
-      assertSportVisor(Object.keys(rich.radar).length, (pdfData.players ?? []).length);
+      // Считаем СПИСОК игроков (overall_meta), а не радар: отчёт может иметь
+      // игроков без рейтингов (формат без страницы рейтингов) — всё равно валиден.
+      assertSportVisor(Object.keys(rich.overall_meta).length, (pdfData.players ?? []).length);
 
       // ─── 4.5 Maps (best-effort) — cropпим ВСЕ heatmap/pass-карты из PDF в base64.
       // 9 командных карт + formation + per-player attack/heatmap. Storage в DB

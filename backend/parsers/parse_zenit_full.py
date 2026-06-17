@@ -32,6 +32,10 @@ POSITIONS = {'ВР','ЦЗ','ЛЗ','ПЗ','ЦОП','ЛЦП','ПЦП','ЦН','ЛН
 
 # (подстрока подзаголовка в lower, цель, колонки после «Мин» по порядку)
 PAGE_RULES = [
+    # Новый вариант отчёта SportVisor: страница рейтингов называется «Score All»
+    # с колонками «Avg. score / Fitness / Attack / Defence» (вместо «Performance
+    # index All» с «Overall / …Total»). Тот же radar — другой ярлык.
+    {'h': 'score all',                 't': 'radar',   'cols': ['overall','fitnessTotal','attackTotal','defenceTotal']},
     {'h': 'performance index all',     't': 'radar',   'cols': ['overall','fitnessTotal','attackTotal','defenceTotal']},
     {'h': 'performance index fitness', 't': 'radar',   'cols': ['fitnessRating','distance','intensity']},
     {'h': 'performance index attack',  't': 'radar',   'cols': ['attackRating','forwardPlay','possession','dribbling','shooting','setPiece']},
@@ -165,6 +169,9 @@ def rule_from_header(header_row):
     # Схлопываем пробелы/переносы: «Defence\nTotal» (перенос внутри ячейки) иначе
     # не находится как «defence total».
     h = re.sub(r'\s+', ' ', ' '.join(str(c or '') for c in header_row)).lower()
+    # Новый формат «Score All»: колонки «Avg. score Fitness Attack Defence».
+    if 'avg. score' in h or 'avg score' in h:
+        return _rule('score all')
     if 'overall' in h and 'attack total' in h and 'defence total' in h:
         return _rule('performance index all')
     if 'fitness total' in h:
