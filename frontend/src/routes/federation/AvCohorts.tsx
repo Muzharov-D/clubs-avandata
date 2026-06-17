@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Link, useNavigate } from 'react-router-dom';
 import { api } from '../../api/client';
 import { ClubShield } from './ClubShield';
+import { FedError } from './FedState';
 import { useFedYear } from './avYear';
 import './avandata.css';
 
@@ -38,7 +39,7 @@ export function FederationAvCohorts() {
         </div>
       </header>
 
-      {error && <div className="av-note" style={{ color: 'var(--av-danger)' }}>База недоступна — задан ли AVANDATA_API_KEY на сервере?</div>}
+      {error && <FedError />}
       {isLoading && <div className="av-cohorts">{[0, 1, 2, 3, 4, 5].map((i) => <div key={i} className="av-skeleton" style={{ height: 90 }} />)}</div>}
 
       {cohorts.length > 0 && (

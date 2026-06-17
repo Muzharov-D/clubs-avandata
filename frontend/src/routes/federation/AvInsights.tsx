@@ -42,13 +42,25 @@ export function FederationAvInsights() {
       {/* НАХОДКА 1 — Возрастная утечка (RAE), герой */}
       <section className="av-surface av-finding av-finding--hero av-pad-lg av-rise">
         <span className="av-finding__kicker">⏳ Возрастная утечка · RAE</span>
-        {ae.isLoading ? <div className="av-skeleton" style={{ height: 220, marginTop: 14 }} /> : ae.data && (
-          <>
-            <h2 className="av-verdict">Регион тихо теряет поздно-рождённых: в начале года рождается <b>{ae.data.skew ?? '—'}×</b> больше отобранных игроков, чем в конце</h2>
-            <p className="av-why">На <b style={{ color: 'var(--av-text)' }}>{num(ae.data.total)}</b> игроках с известной датой рождения. Эталон равномерности — 25% на квартал. Перекос к Q1 = смещение отбора в пользу тех, кто физически старше внутри своего возраста; поздних отсеивают, не замечая. Этот узор виден только на агрегате всего региона.</p>
-            <RaeBars quarters={ae.data.quarters} />
-          </>
-        )}
+        {ae.isLoading ? <div className="av-skeleton" style={{ height: 240, marginTop: 14 }} /> : ae.data && (() => {
+          const lost = ae.data.q4pct < 25 ? Math.round((ae.data.total * (25 - ae.data.q4pct)) / 100) : 0;
+          return (
+            <>
+              <div className="av-finding__top">
+                <div className="av-hero-fig">
+                  <span className="av-hero-fig__n">×{ae.data.skew ?? '—'}</span>
+                  <span className="av-hero-fig__l">перекос Q1 ⁄ Q4</span>
+                </div>
+                <div>
+                  <h2 className="av-verdict" style={{ marginTop: 0 }}>Регион тихо теряет поздно-рождённых: в начале года отбирают в <b>{ae.data.skew ?? '—'}×</b> больше игроков, чем в конце</h2>
+                  <p className="av-why">На <b style={{ color: 'var(--av-text)' }}>{num(ae.data.total)}</b> игроках с известной датой рождения. Эталон равномерности — 25% на квартал. Перекос к Q1 = отбор в пользу физически старших внутри возраста; поздних отсеивают, не замечая.</p>
+                  {lost > 0 && <p className="av-stakes">Ставка: ≈ <b>{num(lost)}</b> игроков поздних кварталов недосчитались относительно равномерности — отсеяны не по способностям, а по месяцу рождения.</p>}
+                </div>
+              </div>
+              <RaeBars quarters={ae.data.quarters} />
+            </>
+          );
+        })()}
       </section>
 
       <div className="av-cols-2 av-rise">

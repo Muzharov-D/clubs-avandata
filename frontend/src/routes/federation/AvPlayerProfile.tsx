@@ -4,6 +4,7 @@ import { Link, useParams } from 'react-router-dom';
 import { api } from '../../api/client';
 import { ClubShield } from './ClubShield';
 import { PlayerAvatar } from './PlayerAvatar';
+import { FedEmpty } from './FedState';
 import './avandata.css';
 
 interface PoolP { id: number; rating: number | null; birthYear: number | null }
@@ -29,7 +30,7 @@ export function FederationAvPlayerProfile() {
     <>
       <Link to="/federation/players" className="av-link av-rise" style={{ marginBottom: 4 }}>← К талантам</Link>
       {isLoading && <div className="av-skeleton av-rise" style={{ height: 380 }} />}
-      {error && <div className="av-empty av-rise"><div className="av-empty__icon">🔍</div>Игрок не найден или вне региона.</div>}
+      {error && <FedEmpty>Игрок не найден или вне региона.</FedEmpty>}
       {data && <Body p={data} />}
     </>
   );

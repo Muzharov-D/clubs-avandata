@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { api } from '../../api/client';
 import { ClubShield } from './ClubShield';
+import { FedError } from './FedState';
 import { useFedYear, yearQ } from './avYear';
 import './avandata.css';
 
@@ -62,7 +63,7 @@ export function FederationAvClubs() {
         </div>
       )}
 
-      {cr.error && <div className="av-surface av-pad av-note av-rise" style={{ color: 'var(--av-danger)' }}>База разборов недоступна — задан ли <code>AVANDATA_API_KEY</code> на сервере?</div>}
+      {cr.error && <FedError />}
       {cr.isLoading ? <section className="av-surface av-pad-lg av-rise"><div className="av-skeleton" style={{ height: 320 }} /></section> : (
         <section className="av-surface av-pad-lg av-rise">
           <div className="av-section">

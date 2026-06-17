@@ -439,6 +439,19 @@
 /* строки-ссылки: reset без инлайнов (Уинстон) */
 a.av-trow { text-decoration: none; color: inherit; }
 
+/* ставка-последствие в находке — стат в человеческую цену (София) */
+.av-stakes { margin-top: 14px; padding: 11px 15px; border-radius: var(--av-r-sm); background: rgba(255, 0, 153, 0.08); border-left: 3px solid var(--av-magenta); font-size: 12.5px; line-height: 1.5; color: var(--av-text-card); }
+.av-stakes b { color: var(--av-magenta); font-weight: 800; }
+.av-finding--cyan .av-stakes { background: rgba(94, 235, 252, 0.08); border-left-color: var(--av-cyan); }
+.av-finding--cyan .av-stakes b { color: var(--av-cyan); }
+
+/* фокус-число героя — тест трёх секунд (Караваджо) */
+.av-finding__top { display: flex; align-items: center; gap: 24px; flex-wrap: wrap; margin-top: 12px; }
+.av-finding__top > div:last-child { flex: 1; min-width: 280px; }
+.av-hero-fig { flex: none; text-align: center; min-width: 116px; }
+.av-hero-fig__n { display: block; font-family: var(--av-display); font-size: 62px; font-weight: 700; line-height: 0.9; color: var(--av-magenta); font-variant-numeric: tabular-nums; text-shadow: 0 0 30px rgba(255, 0, 153, 0.35); }
+.av-hero-fig__l { display: block; font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--av-text-dim); margin-top: 10px; }
+
 /* сигнал федерации — маршрутизатор внимания на главном (Джон) */
 .av-signal { display: flex; align-items: center; gap: 14px; padding: 13px 18px; border-radius: var(--av-r); background: linear-gradient(135deg, rgba(255, 0, 153, 0.10), rgba(239, 241, 251, 0.02) 62%); border: 1px solid rgba(255, 0, 153, 0.28); }
 .av-signal__icon { font-size: 18px; flex: none; line-height: 1; }

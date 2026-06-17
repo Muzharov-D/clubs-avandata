@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { api } from '../../api/client';
+import { FedError } from './FedState';
 import { useFedYear } from './avYear';
 import './avandata.css';
 
@@ -57,7 +58,7 @@ export function FederationAvCompare() {
           {refs.map((r) => <button key={r.key} onClick={() => toggle(r.key)} className={`av-pill${sel.includes(r.key) ? ' av-pill--active' : ''}`}>{r.title}</button>)}
         </div>
       )}
-      {tq.error && <div className="av-note" style={{ color: 'var(--av-danger)' }}>База недоступна — задан ли AVANDATA_API_KEY на сервере?</div>}
+      {tq.error && <FedError />}
 
       {/* легенда */}
       {items.length > 0 && (

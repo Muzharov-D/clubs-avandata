@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { api } from '../../api/client';
 import { ClubShield } from './ClubShield';
+import { FedError } from './FedState';
 import { useFedYear, yearQ } from './avYear';
 import './avandata.css';
 
@@ -43,7 +44,7 @@ export function FederationAvHome() {
         <Link to="/federation/cohorts" className="av-link">Регион по когортам →</Link>
       </header>
 
-      {ov.error && <div className="av-surface av-pad av-note av-rise" style={{ color: 'var(--av-danger)' }}>База разборов недоступна — задан ли <code>AVANDATA_API_KEY</code> на сервере?</div>}
+      {ov.error && <FedError />}
 
       {/* Сигнал федерации — что требует внимания прямо сейчас (маршрутизатор внимания) */}
       {skew != null && skew >= 1.3 && (

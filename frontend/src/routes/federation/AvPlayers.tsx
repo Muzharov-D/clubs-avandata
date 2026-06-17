@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import { api } from '../../api/client';
 import { ClubShield } from './ClubShield';
 import { PlayerAvatar } from './PlayerAvatar';
+import { FedError, FedEmpty } from './FedState';
 import { useFedYear, yearQ } from './avYear';
 import './avandata.css';
 
@@ -92,7 +93,7 @@ export function FederationAvPlayers() {
         <input className="av-search" placeholder="Поиск по имени…" value={qStr} onChange={(e) => setQStr(e.target.value)} />
       </header>
 
-      {error && <div className="av-surface av-pad av-note av-rise" style={{ color: 'var(--av-danger)' }}>База разборов недоступна — задан ли <code>AVANDATA_API_KEY</code> на сервере?</div>}
+      {error && <FedError />}
 
       <div className="av-split av-rise">
         {/* Реестр */}
@@ -114,7 +115,7 @@ export function FederationAvPlayers() {
           )}
 
           {isLoading ? [0, 1, 2, 3, 4, 5, 6].map((i) => <div key={i} className="av-skeleton" style={{ height: 42, marginBottom: 8 }} />)
-            : shown.length === 0 ? <div className="av-empty"><div className="av-empty__icon">🎯</div>Никого не нашли по фильтру.</div>
+            : shown.length === 0 ? <FedEmpty icon="🎯">Никого не нашли по фильтру.</FedEmpty>
               : shown.map((p, i) => (
                 <Link key={p.id} to={`/federation/players/${p.id}`} className="av-trow t-reg av-trow--link">
                   <span className="av-trow__rank">{i + 1}</span>
