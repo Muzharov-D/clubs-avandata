@@ -1,58 +1,64 @@
 /* =============================================================================
-   AvanData — дизайн-язык кабинета федерации (пересборка с нуля, v2).
-   Премиальный спорт-терминал. Перенят КРАФТ боевого фронта
-   (github.com/Muzharov-D/avandata-frontend), не только токены: трёхуровневое
-   стекло, Xolonium-цифры-табло, волновой брендовый фон, крафтовые модули
-   (фикстуры с гербами, табло-счёт, поле сборной, донат-пары, вердикт-находки).
-   Plain CSS (проект не на Tailwind). Всё scoped под .av-root.
-
-   Spacing-шкала строгая, шаг 4px: 4 · 8 · 12 · 16 · 20 · 24 · 32 · 40.
+   Кабинет федерации — ЕДИНЫЙ дизайн-язык с клубным фронтом (эталон).
+   Токены = алиасы глобальных (styles/index.css): 6 ступеней поверхностей,
+   Inter + Space Grotesk, тинтованные тени + ring, шкала рейтинга = смысл.
+   Дорого и СТАТИЧНО (анимация появления отключена). Plain CSS, scoped под .av-root.
+   Спека: docs/FED_OVERHAUL_SPEC.md.
    ============================================================================= */
-@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&display=swap');
-/* Цифры-«табло»: Rajdhani (надёжно из Google) с фолбэком на локальный Xolonium,
-   если установлен. Прежний cdnfonts-импорт Xolonium 404-ил — убран. */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap');
 
 .av-root {
-  /* поверхности / фон */
-  --av-bg: #0E1438;
-  --av-bg-base: #0a0b22;
-  /* плотные тёмные панели — контент сидит ПОВЕРХ фона, а не тонет в волнах */
-  --av-panel: rgba(12, 17, 44, 0.62);
-  --av-panel-soft: rgba(12, 17, 44, 0.50);
-  --av-ink-800: #171845;
-  --av-ink-700: #1d1f55;
-  /* акценты */
+  /* === алиасы клубных токенов (styles/index.css) === */
+  /* 6 ступеней глубины поверхностей */
+  --av-bg-page: var(--bg-page);
+  --av-bg-page-2: var(--bg-page-2);
+  --av-surface: var(--bg-surface);
+  --av-surface-2: var(--bg-surface-2);
+  --av-surface-3: var(--bg-surface-3);
+  --av-border: var(--border);
+  --av-border-strong: var(--border-strong);
+  /* совместимость: «панели» → непрозрачные поверхности */
+  --av-panel: var(--bg-surface);
+  --av-panel-soft: var(--bg-surface-2);
+  /* акцент — cyan signature федерации */
   --av-cyan: #5EEBFC;
   --av-cyan-deep: #23a3b9;
   --av-cyan-glow: #a4f4ff;
-  --av-blue: #3054FF;
+  --av-blue: var(--brand-primary);
   --av-blue-glow: #5e76ff;
-  --av-blue-deep: #091e80;
-  --av-magenta: #FF0099;
-  --av-magenta-deep: #85035D;
+  --av-blue-deep: #1e3a8a;
   --av-violet: #a78bfa;
-  /* текст: 5 уровней контраста */
-  --av-text: #FFFFFF;
-  --av-text-card: #EFF1FB;
-  --av-text-2: #b9bfe0;
-  --av-text-dim: #6f78a8;
-  --av-text-faint: #565f8c;
+  --av-magenta: #FF0099;      /* НЕ несущий — выводится из ролей в семантику */
+  --av-magenta-deep: #85035D;
+  /* текст — 4 уровня WCAG-AA эталона */
+  --av-text: var(--text);
+  --av-text-card: var(--text);
+  --av-text-2: var(--text-muted-strong);
+  --av-text-dim: var(--text-muted);
+  --av-text-faint: var(--text-faint);
   /* семантика */
-  --av-success: #34d399;
-  --av-warning: #fbbf24;
-  --av-danger: #FD0036;
-  /* геометрия */
-  --av-r-sm: 8px;
-  --av-r: 12px;
-  --av-r-lg: 16px;
-  /* шрифты */
-  --av-font: 'Montserrat', Roboto, -apple-system, 'Segoe UI', Arial, sans-serif;
-  --av-display: 'Rajdhani', 'Montserrat', sans-serif;
-  /* тени */
-  --av-shadow: 0 4px 4px rgba(0, 0, 0, 0.10);
-  --av-shadow-lg: 0 18px 50px rgba(4, 7, 24, 0.55);
-  --av-glow: 0 0 28px rgba(94, 235, 252, 0.25);
+  --av-success: var(--success);
+  --av-warning: var(--warning);
+  --av-danger: var(--danger);
+  /* шкала рейтинга (цвет = смысл) */
+  --av-rating-excellent: var(--rating-excellent);
+  --av-rating-good: var(--rating-good);
+  --av-rating-ok: var(--rating-ok);
+  --av-rating-weak: var(--rating-weak);
+  --av-rating-poor: var(--rating-poor);
+  --av-rating-none: var(--rating-none);
+  /* геометрия эталона */
+  --av-r-sm: var(--radius-sm);
+  --av-r: var(--radius);
+  --av-r-lg: var(--radius-lg);
+  /* шрифты эталона */
+  --av-font: var(--font);
+  --av-display: var(--font-display);
+  /* тени эталона — тинтованные + ring */
+  --av-shadow: var(--shadow);
+  --av-shadow-lg: var(--shadow-lg);
+  --av-ring: var(--ring);
+  --av-glow: var(--glow-subtle);
   /* алиасы обратной совместимости (старые имена в инлайн-стилях экранов) */
   --av-accent: var(--av-cyan);
   --av-accent-deep: var(--av-cyan-deep);
@@ -61,19 +67,17 @@
 }
 
 .av-root { font-family: var(--av-font); color: var(--av-text); -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; text-rendering: optimizeLegibility; }
-.av-root *::selection { background: rgba(94, 235, 252, 0.4); color: #fff; }
+.av-root *::selection { background: color-mix(in srgb, var(--av-cyan) 40%, transparent); color: #fff; }
 
 /* =============================================================================
-   ВОЛНОВОЙ БРЕНДОВЫЙ ФОН — две растровые подложки + screen-blend
+   ФОН — CSS radial-glow по углам (без растровых картинок)
    ============================================================================= */
 .av-bg {
-  position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden;
-  background: var(--av-bg-base) url('/brand/bg-base.png') center/cover no-repeat;
-}
-.av-bg::after {
-  content: ''; position: absolute; inset: 0;
-  background: url('/brand/bg-waves.png') center/cover no-repeat;
-  opacity: 0.16; mix-blend-mode: normal; /* волны = тихая фоновая текстура, не лезут поверх контента */
+  position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  background:
+    radial-gradient(1100px 560px at 88% -8%, color-mix(in srgb, var(--av-cyan) 8%, transparent), transparent 60%),
+    radial-gradient(900px 520px at -8% 108%, color-mix(in srgb, var(--av-blue) 9%, transparent), transparent 55%),
+    var(--av-bg-page);
 }
 
 /* =============================================================================
@@ -83,8 +87,8 @@
 
 .av-topbar {
   position: sticky; top: 0; z-index: 30; display: flex; align-items: center; gap: 24px;
-  padding: 12px 24px; background: rgba(10, 11, 34, 0.70); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
-  border-bottom: 1px solid rgba(94, 235, 252, 0.14);
+  padding: 12px 24px; background: color-mix(in srgb, var(--av-bg-page-2) 88%, transparent); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--av-border);
 }
 .av-brand { display: flex; align-items: center; gap: 11px; text-decoration: none; color: inherit; flex: none; }
 .av-brand img { width: 32px; height: 32px; object-fit: contain; filter: drop-shadow(0 0 10px rgba(94, 235, 252, 0.35)); }
@@ -111,7 +115,7 @@
 }
 
 /* подполоса фильтра возрастов */
-.av-subbar { position: sticky; top: 57px; z-index: 25; padding: 9px 24px; background: rgba(10, 11, 34, 0.50); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-bottom: 1px solid rgba(255, 255, 255, 0.06); }
+.av-subbar { position: sticky; top: 57px; z-index: 25; padding: 9px 24px; background: color-mix(in srgb, var(--av-bg-page) 82%, transparent); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-bottom: 1px solid var(--av-border); }
 .av-yearbar { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
 .av-yearbar__label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.10em; color: var(--av-text-faint); margin-right: 6px; }
 .av-ychip { font-family: var(--av-display); font-size: 13px; font-weight: 700; padding: 5px 13px; border-radius: var(--av-r-sm); color: var(--av-text-2); background: rgba(255, 255, 255, 0.04); border: 1px solid transparent; transition: all 0.15s ease; font-variant-numeric: tabular-nums; letter-spacing: 0.02em; }
@@ -134,17 +138,22 @@
 @media (hover: hover) { .av-link:hover { background: rgba(94, 235, 252, 0.10); border-color: rgba(94, 235, 252, 0.5); } }
 
 /* =============================================================================
-   СТЕКЛЯННЫЕ ПОВЕРХНОСТИ — 3 уровня + featured
+   ПОВЕРХНОСТИ — клубная «карта»: градиент-свет + тинт-тень + ring (непрозрачные)
    ============================================================================= */
 .av-surface {
-  position: relative; background: var(--av-panel); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(94, 235, 252, 0.14); border-radius: var(--av-r); box-shadow: var(--av-shadow);
+  position: relative;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--av-surface) 92%, #fff 3%), var(--av-surface));
+  border: 1px solid var(--av-border); border-radius: var(--av-r);
+  box-shadow: var(--av-shadow), var(--av-ring);
 }
-.av-surface-soft { background: var(--av-panel-soft); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); border: 1px solid rgba(255, 255, 255, 0.06); border-radius: var(--av-r-sm); }
-.av-surface-glow { border-color: rgba(94, 235, 252, 0.50); box-shadow: 0 0 28px rgba(94, 235, 252, 0.22), inset 0 0 0 1px rgba(255, 255, 255, 0.04); }
-/* featured: тонкая верхняя cyan-полоса + тёмная база с лёгким cyan-углом */
-.av-surface--feature { overflow: hidden; background: linear-gradient(135deg, rgba(94, 235, 252, 0.07) 0%, var(--av-panel) 58%); }
-.av-surface--feature::before { content: ''; position: absolute; left: 0; right: 0; top: 0; height: 2px; background: linear-gradient(90deg, transparent, var(--av-cyan), transparent); opacity: 0.7; }
+@media (hover: hover) {
+  a.av-surface:hover, button.av-surface:hover { border-color: var(--av-border-strong); box-shadow: var(--av-shadow-lg), var(--av-ring); }
+}
+.av-surface-soft { background: var(--av-surface-2); border: 1px solid var(--av-border); border-radius: var(--av-r-sm); }
+.av-surface-glow { border-color: var(--av-border-strong); box-shadow: var(--av-shadow-lg), var(--av-ring); }
+/* featured: тонкая верхняя cyan-полоса-индикатор */
+.av-surface--feature { overflow: hidden; }
+.av-surface--feature::before { content: ''; position: absolute; left: 0; right: 0; top: 0; height: 2px; background: linear-gradient(90deg, transparent, var(--av-cyan), transparent); opacity: 0.6; }
 .av-pad { padding: 18px 20px; }
 .av-pad-lg { padding: 24px; }
 
@@ -175,8 +184,7 @@
 .av-chip--magenta { background: rgba(255, 0, 153, 0.14); color: var(--av-magenta); border-color: rgba(255, 0, 153, 0.30); }
 .av-chip--danger { background: rgba(253, 0, 54, 0.14); color: var(--av-danger); border-color: rgba(253, 0, 54, 0.30); }
 .av-chip--dim { background: rgba(255, 255, 255, 0.04); color: var(--av-text-dim); border-color: rgba(255, 255, 255, 0.10); }
-.av-chip--pulse { animation: av-pulse 1.8s ease-in-out infinite; }
-@keyframes av-pulse { 50% { opacity: 0.55; } }
+.av-chip--pulse { } /* статично */
 
 /* =============================================================================
    ПУЛЬС РЕГИОНА — герой-полоса витальных показателей (главный экран)
@@ -206,10 +214,10 @@
 .av-fixtures { display: grid; grid-template-columns: repeat(auto-fill, minmax(268px, 1fr)); gap: 12px; }
 .av-fixture {
   display: flex; flex-direction: column; gap: 12px; padding: 14px 15px; text-decoration: none; color: inherit;
-  background: var(--av-panel-soft); border: 1px solid rgba(94, 235, 252, 0.10); border-radius: var(--av-r);
-  transition: border-color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
+  background: var(--av-surface-2); border: 1px solid var(--av-border); border-radius: var(--av-r);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
-@media (hover: hover) { .av-fixture:hover { border-color: rgba(94, 235, 252, 0.40); transform: translateY(-2px); box-shadow: 0 10px 26px rgba(4, 7, 24, 0.45); } }
+@media (hover: hover) { .av-fixture:hover { border-color: var(--av-border-strong); box-shadow: var(--av-shadow-lg), var(--av-ring); } }
 .av-fixture__top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
 .av-fixture__age { font-size: 9.5px; font-weight: 700; letter-spacing: 0.05em; color: var(--av-cyan); text-transform: uppercase; }
 .av-fixture__date { font-family: var(--av-display); font-size: 12px; font-weight: 700; letter-spacing: 0.04em; color: var(--av-text-2); font-variant-numeric: tabular-nums; }
@@ -343,8 +351,8 @@
    ТЕЛЕСКОП КОГОРТ — год рождения × сигналы
    ============================================================================= */
 .av-cohorts { display: grid; gap: 12px; }
-.av-cohort { display: grid; grid-template-columns: 92px 1.5fr 0.9fr 1.4fr; gap: 22px; align-items: center; padding: 16px 18px; cursor: pointer; text-align: left; width: 100%; transition: border-color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease; }
-@media (hover: hover) { .av-cohort:hover { border-color: rgba(94, 235, 252, 0.45); transform: translateY(-2px); box-shadow: 0 0 24px rgba(94, 235, 252, 0.12); } }
+.av-cohort { display: grid; grid-template-columns: 92px 1.5fr 0.9fr 1.4fr; gap: 22px; align-items: center; padding: 16px 18px; cursor: pointer; text-align: left; width: 100%; transition: border-color 0.15s ease, box-shadow 0.15s ease; }
+@media (hover: hover) { .av-cohort:hover { border-color: var(--av-border-strong); box-shadow: var(--av-shadow-lg), var(--av-ring); } }
 .av-cohort__year { font-family: var(--av-display); font-size: 32px; font-weight: 700; line-height: 1; color: var(--av-text); font-variant-numeric: tabular-nums; }
 .av-cohort__funnel { font-size: 10.5px; color: var(--av-text-dim); margin-top: 7px; }
 .av-cohort__lbl { font-size: 9px; text-transform: uppercase; letter-spacing: 0.07em; color: var(--av-text-faint); margin-bottom: 7px; }
@@ -397,13 +405,9 @@
 .av-skeleton { background: linear-gradient(90deg, rgba(255, 255, 255, 0.03) 25%, rgba(255, 255, 255, 0.07) 37%, rgba(255, 255, 255, 0.03) 63%); background-size: 400% 100%; animation: av-shimmer 1.4s ease-in-out infinite; border-radius: var(--av-r-sm); }
 @keyframes av-shimmer { 0% { background-position: 100% 0; } 100% { background-position: -100% 0; } }
 
-.av-rise { animation: av-rise 0.45s cubic-bezier(0.22, 1, 0.36, 1) both; }
-.av-rise:nth-child(2) { animation-delay: 0.04s; }
-.av-rise:nth-child(3) { animation-delay: 0.08s; }
-.av-rise:nth-child(4) { animation-delay: 0.12s; }
-.av-rise:nth-child(5) { animation-delay: 0.16s; }
-@keyframes av-rise { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
-@media (prefers-reduced-motion: reduce) { .av-rise, .av-meter__fill, .av-rae__fill, .av-cmp__fill, .av-metricbar__fill { animation: none !important; transition: none !important; } }
+/* СТАТИЧНО (директива владельца): анимация появления отключена, класс — no-op. */
+.av-rise { }
+@media (prefers-reduced-motion: reduce) { .av-meter__fill, .av-rae__fill, .av-cmp__fill, .av-metricbar__fill { transition: none !important; } }
 
 /* =============================================================================
    ФИКСЫ ПАРТИ-РАУНДА: grid-шаблоны строк (без инлайнов), медали, иерархия
