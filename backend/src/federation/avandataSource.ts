@@ -61,10 +61,15 @@ export async function listTournaments(seasonId: number): Promise<TournamentRef[]
   return out;
 }
 
+/** Года, временно скрытые из фильтра/когорт (мало разбора — позже отдельно). */
+const HIDDEN_YEARS = new Set<number>([2014]);
+
 /** Доступные года рождения (для фильтра возрастов), по убыванию. */
 export async function availableYears(seasonId: number): Promise<number[]> {
   const s = await season(seasonId);
-  return Array.from(new Set(s.tournaments.map((t) => t.dateBirthFrom))).sort((a, b) => b - a);
+  return Array.from(new Set(s.tournaments.map((t) => t.dateBirthFrom)))
+    .filter((y) => !HIDDEN_YEARS.has(y))
+    .sort((a, b) => b - a);
 }
 /** tournamentId для года рождения (по ageFrom). */
 async function tournamentIdForYear(seasonId: number, year: number): Promise<number | undefined> {
