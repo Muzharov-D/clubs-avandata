@@ -7,6 +7,7 @@ import {
   isAvandataConfigured, listTournaments, compareTournaments, regionOverview, regionPlayers,
   regionStandings, regionClubRatings, playerProfile, availableYears, divisionStrength,
   ageEffect, talentConcentration, cohortMatrix, regionResults, regionMatchDetail,
+  warmRegionMatchProtocols,
 } from './avandataSource.js';
 import {
   federationOverview,
@@ -128,7 +129,9 @@ export async function federationRoutes(app: FastifyInstance) {
   app.get('/av/results', async (req, reply) => {
     if (avOff(reply)) return { error: 'AVANDATA_API_KEY не задан', code: 'AVANDATA_OFF' };
     const season = Number((req.query as { season?: string }).season) || AV_SEASON;
-    return { season, results: await regionResults(season, yearOf(req), divisionOf(req)) };
+    const results = await regionResults(season, yearOf(req), divisionOf(req));
+    void warmRegionMatchProtocols(results.map((r) => r.id)); // фоновый пред-синк протоколов FFSPB
+    return { season, results };
   });
 
   /** GET /federation/av/matches/:id — детали матча (счёт, лучший игрок, события). */

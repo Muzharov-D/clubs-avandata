@@ -97,28 +97,10 @@ const personName = (p?: { surname?: string; firstName?: string; member?: FfProfi
 const GOAL_KIND: Record<number, MatchGoal['kind']> = { 0: 'goal', 1: 'own_goal', 2: 'penalty' };
 const CARD_KIND: Record<number, MatchCardEvent['kind']> = { 4: 'yellow', 5: 'red', 6: 'yellow_to_red' };
 
-type MatchExtras = Pick<MatchDetail, 'goals' | 'cards' | 'officials' | 'protocolUrl' | 'ffspbDebug'>;
-async function ffspbMatchExtras(matchId: number): Promise<MatchExtras> {
-  const empty: MatchExtras = { goals: [], cards: [], officials: null, protocolUrl: null };
-  if (!isFfspbConfigured()) return { ...empty, ffspbDebug: 'no-ffspb-key' };
-  let link = '';
-  try { link = String(((await authedGet(`/matches/${matchId}`)) as { linkToProtocol?: string }).linkToProtocol ?? ''); }
-  catch (e) { return { ...empty, ffspbDebug: `matches-link-failed: ${(e as Error).message.slice(0, 80)}` }; }
-  const ffspbId = link.match(/\/match\/(\d+)/)?.[1];
-  if (!ffspbId) return { ...empty, protocolUrl: link || null, ffspbDebug: 'no-ffspb-id-in-link' };
-  let fm: FfMatch;
-  try {
-    // stat.ffspb.org медленный/нестабильный с Render — НЕ держим модалку ради него.
-    // Софт-таймаут: FFSPB — обогащение (голы/судьи/тренеры), не блокер карточки.
-    fm = (await Promise.race([
-      ffspbGetMatch(ffspbId) as Promise<FfMatch>,
-      new Promise<never>((_, rej) => setTimeout(() => rej(new Error('soft-timeout 8s')), 8000)),
-    ]));
-  } catch (e) {
-    const msg = (e as Error).message.slice(0, 120);
-    logger.warn({ matchId, ffspbId, err: msg }, '[av] ffspb match detail unavailable (enrichment skipped)');
-    return { ...empty, protocolUrl: link, ffspbDebug: `ffspb-unavailable: ${msg}` };
-  }
+interface FfspbProtocol { goals: MatchGoal[]; cards: MatchCardEvent[]; officials: MatchOfficials }
+
+// Трансформ сырого FFSPB-матча в протокол (голы/карточки/судьи/тренеры).
+function transformFfspb(fm: FfMatch): FfspbProtocol {
   const hostId = fm.host?.['@id'];
   const side = (tid?: string): 'home' | 'away' => (tid && tid === hostId ? 'home' : 'away');
   const goals: MatchGoal[] = [];
@@ -139,17 +121,74 @@ async function ffspbMatchExtras(matchId: number): Promise<MatchExtras> {
     const person: MatchPerson = { name: personName(o.request), role: (o.request?.positionName ?? 'Тренер').trim() };
     (side(o.team?.['@id']) === 'home' ? homeCoaches : awayCoaches).push(person);
   }
-  return { goals, cards, officials: { referees, homeCoaches, awayCoaches }, protocolUrl: link, ffspbDebug: 'ok' };
+  return { goals, cards, officials: { referees, homeCoaches, awayCoaches } };
 }
 
-/** Детали матча: счёт, игрок матча, сравнение команд (avandata) + голы/карточки/судьи/тренеры (FFSPB). */
+// avandata /matches/{id}.linkToProtocol → URL протокола FFSPB (кэш 30 мин — стабилен).
+async function avMatchLink(matchId: number): Promise<string | null> {
+  return cached(`avlink:${matchId}`, 30 * 60 * 1000, async () => {
+    try { return String(((await authedGet(`/matches/${matchId}`)) as { linkToProtocol?: string }).linkToProtocol ?? '') || null; }
+    catch { return null; }
+  });
+}
+
+// ─── Пред-синк протоколов FFSPB (решение владельца «B») ───────────────────────
+// stat.ffspb.org медленный с Render (живой fetch таймаутит за 45с). Поэтому
+// протокол прогревается ФОНОМ с длинным таймаутом в тёплый кэш; модалка отдаёт
+// avandata-часть мгновенно, а голы/судьи/тренеры подтягиваются к следующему
+// запросу (фронт авто-переспрашивает, пока 'warming'). 6ч TTL.
+const ffspbWarm = new Map<number, { at: number; protocol: FfspbProtocol }>();
+const ffspbInflight = new Set<number>();
+const FFSPB_WARM_TTL = 6 * 60 * 60 * 1000;
+const FFSPB_WARM_TIMEOUT = 90_000;
+
+function warmFfspb(matchId: number, ffspbId: string): Promise<void> {
+  const hit = ffspbWarm.get(matchId);
+  if ((hit && Date.now() - hit.at < FFSPB_WARM_TTL) || ffspbInflight.has(matchId)) return Promise.resolve();
+  ffspbInflight.add(matchId);
+  return (async () => {
+    const fm = (await Promise.race([
+      ffspbGetMatch(ffspbId) as Promise<FfMatch>,
+      new Promise<never>((_, rej) => setTimeout(() => rej(new Error(`timeout ${FFSPB_WARM_TIMEOUT / 1000}s`)), FFSPB_WARM_TIMEOUT)),
+    ]));
+    ffspbWarm.set(matchId, { at: Date.now(), protocol: transformFfspb(fm) });
+    logger.info({ matchId, ffspbId }, '[av] ffspb protocol warmed');
+  })()
+    .catch((e) => logger.warn({ matchId, ffspbId, err: (e as Error).message.slice(0, 80) }, '[av] ffspb warm failed'))
+    .finally(() => ffspbInflight.delete(matchId));
+}
+
+/**
+ * Пред-синк протоколов для пачки матчей (фоном, ≤2 параллельно — щадим медленный
+ * FFSPB). matchIds — domainMatchId из regionResults. Делает первый клик мгновенным.
+ */
+export async function warmRegionMatchProtocols(matchIds: number[]): Promise<void> {
+  if (!isFfspbConfigured()) return;
+  await pmap(matchIds, 2, async (id) => {
+    const link = await avMatchLink(id).catch(() => null);
+    const ffspbId = link?.match(/\/match\/(\d+)/)?.[1];
+    if (ffspbId) await warmFfspb(id, ffspbId);
+  });
+}
+
+/** Детали матча: счёт, игрок матча, сравнение команд (avandata, мгновенно) +
+ *  голы/карточки/судьи/тренеры (FFSPB, тёплый кэш + фоновый прогрев). */
 export async function regionMatchDetail(matchId: number): Promise<MatchDetail | null> {
-  return cached(`match:${matchId}`, 10 * 60 * 1000, async () => {
-    const [raw, extras] = await Promise.all([
-      getMatchDetail(matchId) as Promise<RawMatch | null>,
-      ffspbMatchExtras(matchId),
-    ]);
-    if (!raw) return null;
+  const raw = await cached(`avmatch:${matchId}`, 10 * 60 * 1000, () => getMatchDetail(matchId) as Promise<RawMatch | null>);
+  if (!raw) return null;
+
+  // FFSPB-протокол: из тёплого кэша или запуск фонового прогрева.
+  const link = isFfspbConfigured() ? await avMatchLink(matchId) : null;
+  const ffspbId = link?.match(/\/match\/(\d+)/)?.[1] ?? null;
+  const warm = ffspbWarm.get(matchId);
+  const protocol = warm && Date.now() - warm.at < FFSPB_WARM_TTL ? warm.protocol : null;
+  let ffspbDebug: string;
+  if (protocol) ffspbDebug = 'warm';
+  else if (!isFfspbConfigured()) ffspbDebug = 'no-ffspb-key';
+  else if (!ffspbId) ffspbDebug = link ? 'no-ffspb-id' : 'no-link';
+  else { void warmFfspb(matchId, ffspbId); ffspbDebug = 'warming'; }
+
+  {
     const titleByType = new Map<string, string>();
     for (const k of raw.keyEvents ?? []) if (k.eventType) titleByType.set(k.eventType, k.title ?? k.eventType);
     const best: MatchBest | null = raw.bestMatchPlayer
@@ -172,13 +211,14 @@ export async function regionMatchDetail(matchId: number): Promise<MatchDetail | 
       })),
     }));
     // Карточки: предпочитаем FFSPB (с причиной), иначе — из avandata (всегда доступна).
-    const cards = extras.cards.length > 0 ? extras.cards : avandataCards(raw);
+    const cards = protocol && protocol.cards.length > 0 ? protocol.cards : avandataCards(raw);
     return {
       id: raw.domainMatchId ?? raw.id ?? matchId, title: raw.title ?? '',
       home: mapSide(raw.ownTeam), away: mapSide(raw.guestTeam), best, stats, leaders,
-      ...extras, cards,
+      goals: protocol?.goals ?? [], cards, officials: protocol?.officials ?? null,
+      protocolUrl: link, ffspbDebug,
     };
-  });
+  }
 }
 
 export { isAvandataConfigured };

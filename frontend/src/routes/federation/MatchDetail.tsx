@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { api } from '../../api/client';
@@ -33,10 +33,19 @@ const min = (m: number | null, added = false) => `${m ?? 0}${added ? '+' : ''}�
 
 /** Карточка матча по клику: счёт, голы, игрок матча, сравнение команд, карточки, судьи/тренеры. */
 export function MatchDetail({ base, onClose }: { base: MatchBase; onClose: () => void }) {
+  // Протокол FFSPB (голы/судьи/тренеры) прогревается на бэке фоном — пока 'warming',
+  // мягко переспрашиваем (до ~90с), чтобы они появились сами, без перекликивания.
+  const polls = useRef(0);
   const { data, isLoading, error } = useQuery({
     queryKey: ['av', 'match', base.id],
     queryFn: () => api<Detail>(`/federation/av/matches/${base.id}`),
+    refetchInterval: (q) => {
+      const d = q.state.data as Detail | undefined;
+      if (d?.ffspbDebug === 'warming' && polls.current < 10) { polls.current += 1; return 9000; }
+      return false;
+    },
   });
+  const warming = data?.ffspbDebug === 'warming';
 
   useEffect(() => {
     const prev = document.body.style.overflow;
@@ -91,6 +100,10 @@ export function MatchDetail({ base, onClose }: { base: MatchBase; onClose: () =>
 
         {data && (
           <>
+            {warming && goals.length === 0 && (
+              <div className="av-mwarming"><span className="av-mwarming__dot" />Протокол подгружается — голы, судьи и тренеры появятся через несколько секунд…</div>
+            )}
+
             {/* Голы */}
             {goals.length > 0 && (
               <section className="av-msection">
