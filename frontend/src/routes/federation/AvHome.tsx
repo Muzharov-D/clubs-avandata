@@ -18,6 +18,8 @@ interface AgeEffect { total: number; q1pct: number; q4pct: number; skew: number 
 const num = (n: number) => n.toLocaleString('ru-RU');
 const pm = (n: number) => (n > 0 ? `+${n}` : String(n));
 const fmtDate = (iso: string) => { try { return new Intl.DateTimeFormat('ru-RU', { day: 'numeric', month: 'short' }).format(new Date(iso)).replace('.', '').toUpperCase(); } catch { return ''; } };
+// склонение «место»: 1 место · 2–4 места · 5+ мест (с учётом 11–14)
+const plMesto = (n: number) => { const a = n % 100, b = n % 10; if (a >= 11 && a <= 14) return 'мест'; if (b === 1) return 'место'; if (b >= 2 && b <= 4) return 'места'; return 'мест'; };
 
 // --- Значимые матчи: значимость на УРОВНЕ КОМАНДЫ (рейтинг+ранг в дивизионе с бэка) ---
 type SigTone = 'clash' | 'upset' | 'rout';
@@ -58,7 +60,7 @@ export function FederationAvHome() {
         tone = 'upset'; label = 'Сенсация';
         sig = 3000 + (bigRank ? rankGap! * 60 : 0) + (bigRating ? Math.round(ratio! * 100) : 0);
         const parts: string[] = [];
-        if (bigRank) parts.push(`на ${rankGap} мест выше (#${lRank} в дивизионе)`);
+        if (bigRank) parts.push(`на ${rankGap} ${plMesto(rankGap!)} выше (#${lRank} в дивизионе)`);
         if (bigRating) parts.push(`рейтинг ×${ratio!.toFixed(1)}`);
         why = `обыграл соперника ${parts.join(' · ')}`;
       } else if (m.home.rating != null && m.away.rating != null && (m.home.rank ?? 99) <= topRank && (m.away.rank ?? 99) <= topRank) {
