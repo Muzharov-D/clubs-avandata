@@ -565,6 +565,70 @@ export async function regionResults(seasonId: number, year?: number, division?: 
   });
 }
 
+// ─── Профиль клуба (карточка клуба по клику) ─────────────────────────────────
+export interface ClubProfilePlayer { id: number; name: string; birthYear: number | null; position: string | null; rating: number | null }
+export interface ClubProfileMatch { id: number; age: string; date: string; opponent: string; opponentLogo: string | null; gf: number | null; ga: number | null; outcome: 'w' | 'd' | 'l' }
+export interface ClubProfile {
+  id: number; name: string; logo: string | null; division: string;
+  rating: number; rank: number; divisionSize: number;
+  teams: number; ageMin: number | null; ageMax: number | null;
+  squad: number; avgRating: number | null;
+  topPlayers: ClubProfilePlayer[];
+  talentShare: number | null; talentRank: number | null; talentClubs: number;
+  recentMatches: ClubProfileMatch[];
+}
+
+/** Карточка клуба: место в рейтинге лиги, команды/возрасты, лучшие игроки,
+ *  производство таланта (доля топ-пула лиги), последние матчи. Всё из avandata. */
+export async function regionClubProfile(seasonId: number, clubId: number): Promise<ClubProfile | null> {
+  const ratingGroups = await regionClubRatings(seasonId);
+  let found: { row: ClubRatingRow; rank: number; division: string; size: number } | null = null;
+  for (const g of ratingGroups) {
+    const idx = g.rows.findIndex((r) => r.id === clubId);
+    if (idx >= 0) { found = { row: g.rows[idx]!, rank: idx + 1, division: g.division, size: g.rows.length }; break; }
+  }
+  if (!found) return null;
+  const key = normTeam(found.row.name);
+  const divToken = /Высшая|Боброва/i.test(found.division) ? 'Высшая' : /Первая|Дементьева/i.test(found.division) ? 'Первая' : undefined;
+
+  const [players, conc, results] = await Promise.all([
+    regionPlayers(seasonId, undefined, divToken),
+    talentConcentration(seasonId, undefined, divToken),
+    regionResults(seasonId, undefined, divToken),
+  ]);
+
+  const mine = players.filter((p) => normTeam(clubName(p.club)) === key);
+  const rated = mine.filter((p) => p.rating != null).sort((a, b) => (b.rating as number) - (a.rating as number));
+  const years = mine.map((p) => p.birthYear).filter((y): y is number => y != null);
+  const ratings = rated.map((p) => p.rating as number);
+  const avgRating = ratings.length ? Math.round(ratings.reduce((a, b) => a + b, 0) / ratings.length) : null;
+
+  const concIdx = conc.clubs.findIndex((c) => normTeam(c.club) === key);
+  const concEntry = concIdx >= 0 ? conc.clubs[concIdx]! : null;
+
+  const recentMatches: ClubProfileMatch[] = [];
+  for (const m of results) {
+    const homeIs = normTeam(clubName(m.home.name)) === key;
+    const awayIs = normTeam(clubName(m.away.name)) === key;
+    if (!homeIs && !awayIs) continue;
+    const us = homeIs ? m.home : m.away, them = homeIs ? m.away : m.home;
+    const gf = us.score, ga = them.score;
+    const outcome: 'w' | 'd' | 'l' = gf == null || ga == null || gf === ga ? 'd' : gf > ga ? 'w' : 'l';
+    recentMatches.push({ id: m.id, age: m.age, date: m.date, opponent: them.name, opponentLogo: them.logo, gf, ga, outcome });
+    if (recentMatches.length >= 6) break;
+  }
+
+  return {
+    id: found.row.id, name: found.row.name, logo: found.row.logo, division: found.division,
+    rating: found.row.rating, rank: found.rank, divisionSize: found.size,
+    teams: new Set(years).size, ageMin: years.length ? Math.min(...years) : null, ageMax: years.length ? Math.max(...years) : null,
+    squad: mine.length, avgRating,
+    topPlayers: rated.slice(0, 5).map((p) => ({ id: p.id, name: p.name, birthYear: p.birthYear, position: p.position, rating: p.rating })),
+    talentShare: concEntry?.share ?? null, talentRank: concIdx >= 0 ? concIdx + 1 : null, talentClubs: conc.clubs.length,
+    recentMatches,
+  };
+}
+
 // ─── ТЕЛЕСКОП: матрица когорт (год рождения × сигналы) ───────────────────────
 export interface Cohort {
   year: number;

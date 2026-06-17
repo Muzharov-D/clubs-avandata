@@ -307,6 +307,39 @@
 .av-mwarming { display: flex; align-items: center; gap: 8px; margin-top: 14px; padding: 9px 12px; border-radius: var(--av-r-sm); font-size: 12px; color: var(--av-text-muted); background: rgba(94, 235, 252, 0.05); border: 1px solid color-mix(in srgb, var(--av-cyan) 18%, var(--av-border)); }
 .av-mwarming__dot { width: 7px; height: 7px; border-radius: 50%; background: var(--av-cyan); flex: none; opacity: 0.85; }
 
+/* ── Карточка клуба (модалка-инфографика) ─────────────────────────────────── */
+.av-cc { max-width: 600px; }
+.av-cc__head { display: flex; align-items: center; gap: 16px; padding-bottom: 18px; border-bottom: 1px solid var(--av-border); }
+.av-cc__name { font-family: var(--av-display); font-size: 26px; font-weight: 800; line-height: 1.05; color: var(--av-text); margin: 0 0 8px; letter-spacing: -0.01em; }
+.av-cc-roof { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 18px; }
+.av-cc-stat { padding: 14px 10px; border-radius: var(--av-r); background: var(--av-surface-2); border: 1px solid var(--av-border); text-align: center; }
+.av-cc-stat--hero { background: linear-gradient(160deg, color-mix(in srgb, var(--av-cyan) 16%, var(--av-surface-2)), var(--av-surface-2)); border-color: color-mix(in srgb, var(--av-cyan) 30%, var(--av-border)); }
+.av-cc-stat__label { font-size: 9.5px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--av-text-faint); font-weight: 700; }
+.av-cc-stat__value { font-family: var(--av-display); font-size: 27px; font-weight: 800; line-height: 1; color: var(--av-text); margin: 6px 0 4px; font-variant-numeric: tabular-nums; }
+.av-cc-stat--hero .av-cc-stat__value { color: var(--av-cyan); }
+.av-cc-stat__sub { font-size: 10px; color: var(--av-text-muted); }
+.av-cc-sec { margin-top: 20px; }
+.av-cc-sec__title { font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--av-text-muted); font-weight: 700; margin: 0 0 12px; }
+.av-cc-players { display: grid; grid-template-columns: repeat(auto-fill, minmax(168px, 1fr)); gap: 8px; }
+.av-cc-player { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 1px 10px; padding: 9px 12px; border-radius: var(--av-r-sm); background: var(--av-surface-2); border: 1px solid var(--av-border); text-decoration: none; transition: border-color 0.15s ease; }
+@media (hover: hover) { .av-cc-player:hover { border-color: var(--av-border-strong); } }
+.av-cc-player > :first-child { grid-row: span 2; }
+.av-cc-player__name { grid-column: 2; font-size: 12.5px; font-weight: 600; color: var(--av-text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.av-cc-player__meta { grid-column: 2; font-size: 10.5px; color: var(--av-text-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.av-cc-player__rate { grid-column: 3; grid-row: span 2; font-family: var(--av-display); font-weight: 800; font-size: 17px; font-variant-numeric: tabular-nums; }
+.av-cc-talent { display: flex; align-items: center; gap: 14px; margin: 0; font-size: 13px; color: var(--av-text-2); line-height: 1.4; }
+.av-cc-talent__big { font-family: var(--av-display); font-size: 34px; font-weight: 800; color: var(--av-warning); flex: none; line-height: 1; }
+.av-cc-form { display: flex; flex-direction: column; gap: 4px; }
+.av-cc-match { display: grid; grid-template-columns: 22px 22px 1fr auto auto auto; align-items: center; gap: 10px; padding: 6px 4px; }
+.av-cc-out { width: 22px; height: 22px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-family: var(--av-display); font-size: 12px; font-weight: 800; color: #06121f; }
+.av-cc-out--w { background: var(--av-success); }
+.av-cc-out--d { background: var(--av-text-faint); }
+.av-cc-out--l { background: var(--av-danger); }
+.av-cc-match__opp { font-size: 12.5px; color: var(--av-text-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.av-cc-match__age { font-size: 10px; color: var(--av-cyan); font-weight: 700; text-transform: uppercase; }
+.av-cc-match__score { font-family: var(--av-display); font-weight: 700; font-size: 14px; color: var(--av-text); font-variant-numeric: tabular-nums; }
+.av-cc-match__date { font-size: 11px; color: var(--av-text-faint); font-variant-numeric: tabular-nums; min-width: 42px; text-align: right; }
+
 /* =============================================================================
    ПРЕМИУМ-ТАБЛИЦА: дивизион-группа со строками-клубами (герб + форма)
    ============================================================================= */
@@ -320,6 +353,8 @@
 .av-trow:last-child { border-bottom: 0; }
 .av-trow--link { cursor: pointer; }
 @media (hover: hover) { .av-trow--link:hover { background: rgba(255, 255, 255, 0.04); } }
+.av-trow--btn { width: 100%; font: inherit; color: inherit; text-align: left; background: none; border: none; border-bottom: 1px solid rgba(94, 235, 252, 0.05); cursor: pointer; }
+@media (hover: hover) { .av-trow--btn:hover { background: rgba(255, 255, 255, 0.04); } }
 .av-trow--lead { background: linear-gradient(90deg, rgba(94, 235, 252, 0.10), transparent 70%); }
 .av-trow__rank { width: 22px; text-align: center; font-family: var(--av-display); font-weight: 700; font-size: 13px; color: var(--av-text-dim); font-variant-numeric: tabular-nums; }
 .av-trow--lead .av-trow__rank { color: var(--av-cyan); }

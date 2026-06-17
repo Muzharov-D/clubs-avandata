@@ -1,7 +1,8 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { api } from '../../api/client';
 import { ClubShield } from './ClubShield';
+import { ClubCard } from './ClubCard';
 import { FedError } from './FedState';
 import { useFedYear, yearQ, fedQ, inDivision } from './avYear';
 import './avandata.css';
@@ -21,6 +22,7 @@ export function FederationAvClubs() {
   const ds = useQuery({ queryKey: ['av', 'divstr', year], queryFn: () => api<{ divisions: DivStrength[] }>(`/federation/av/division-strength${q}`) });
   const tc = useQuery({ queryKey: ['av', 'conc', year, division], queryFn: () => api<Concentration>(`/federation/av/concentration${fedQ(year, division)}`) });
 
+  const [selectedClub, setSelectedClub] = useState<number | null>(null);
   const groups = cr.data?.groups ?? [];
   const all = useMemo(() => groups.flatMap((g) => g.rows.map((r) => ({ ...r, division: g.division }))).sort((a, b) => b.rating - a.rating), [groups]);
   const shown = all.filter((r) => inDivision(r.division, division));
@@ -82,17 +84,19 @@ export function FederationAvClubs() {
         <section className="av-surface av-pad-lg av-rise">
           <div className="av-section"><h2 className="av-section-title">Рейтинг клубов</h2></div>
           {shown.map((r, i) => (
-            <div key={`${r.id}-${r.division}`} className={`av-trow t-pow${i === 0 ? ' av-trow--lead' : ''}`}>
+            <button type="button" key={`${r.id}-${r.division}`} onClick={() => setSelectedClub(r.id)} className={`av-trow t-pow av-trow--btn${i === 0 ? ' av-trow--lead' : ''}`}>
               <span className={`av-trow__rank${i < 3 ? ` av-trow__rank--${i + 1}` : ''}`}>{i + 1}</span>
               <ClubShield name={r.name} logoUrl={r.logo} size={26} />
               <span className="av-trow__name" title={r.name}>{r.name}</span>
               <span className="av-chip av-chip--cyan" style={{ justifySelf: 'start' }}>{r.division}</span>
               <span className="av-meter"><span className="av-meter__fill" style={{ width: `${(Math.abs(r.rating) / max) * 100}%`, background: r.rating < 0 ? 'var(--av-danger)' : i === 0 ? 'var(--av-cyan)' : 'var(--av-blue-glow)' }} /></span>
               <span className={`av-rate${r.rating < 0 ? ' av-rate--neg' : ''}`}>{num(r.rating)}</span>
-            </div>
+            </button>
           ))}
         </section>
       )}
+
+      {selectedClub != null && <ClubCard clubId={selectedClub} onClose={() => setSelectedClub(null)} />}
     </>
   );
 }

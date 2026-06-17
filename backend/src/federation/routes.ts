@@ -7,7 +7,7 @@ import {
   isAvandataConfigured, listTournaments, compareTournaments, regionOverview, regionPlayers,
   regionStandings, regionClubRatings, playerProfile, availableYears, divisionStrength,
   ageEffect, talentConcentration, cohortMatrix, regionResults, regionMatchDetail,
-  warmRegionMatchProtocols,
+  warmRegionMatchProtocols, regionClubProfile,
 } from './avandataSource.js';
 import {
   federationOverview,
@@ -141,6 +141,16 @@ export async function federationRoutes(app: FastifyInstance) {
     const detail = await regionMatchDetail(id);
     if (!detail) { reply.code(404); return { error: 'матч не найден', code: 'MATCH_NOT_FOUND' }; }
     return detail;
+  });
+
+  /** GET /federation/av/clubs/:id — карточка клуба (рейтинг, команды, лучшие, производство, матчи). */
+  app.get('/av/clubs/:id', async (req, reply) => {
+    if (avOff(reply)) return { error: 'AVANDATA_API_KEY не задан', code: 'AVANDATA_OFF' };
+    const season = Number((req.query as { season?: string }).season) || AV_SEASON;
+    const id = Number((req.params as { id: string }).id);
+    const profile = await regionClubProfile(season, id);
+    if (!profile) { reply.code(404); return { error: 'клуб не найден', code: 'CLUB_NOT_FOUND' }; }
+    return profile;
   });
 
   /** GET /federation/av/cohorts — матрица когорт региона (год рождения × сигналы). */
