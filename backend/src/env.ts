@@ -27,6 +27,14 @@ const envSchema = z.object({
     .default('false'),
   FFSPB_API_KEY: z.string().optional(),
   FFSPB_ENDPOINT: z.string().url().default('https://stat.ffspb.org/api'),
+  // Протокол матча (голы/судьи/тренеры) из FFSPB в карточке матча федерации.
+  // По умолчанию OFF: stat.ffspb.org НЕДОСТУПЕН с Render (блок IP ДЦ). Включить,
+  // когда FFSPB_ENDPOINT указывает на достижимый прокси (РФ-регион) — тогда
+  // фоновый пред-синк протоколов оживёт без правок кода.
+  FFSPB_MATCH_PROTOCOL: z
+    .string()
+    .transform((v) => v === 'true' || v === '1' || v === 'on')
+    .default('false'),
 
   // bigbro.ai — заказ обработки видео матчей (коллеги, разбирающие записи).
   BIGBRO_ENDPOINT: z.string().url().default('https://api.bigbro.ai/backend'),

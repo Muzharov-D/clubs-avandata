@@ -14,6 +14,7 @@ import {
 } from '../services/avandataApi.js';
 import { getMatch as ffspbGetMatch, isFfspbConfigured } from '../services/ffspbApi.js';
 import { logger } from '../shared/logger.js';
+import { env } from '../env.js';
 
 // ─── Детали матча (для карточки матча по клику) ──────────────────────────────
 export interface MatchCard { player: string; minute: string }
@@ -169,7 +170,7 @@ function warmFfspb(matchId: number, ffspbId: string): Promise<void> {
  * FFSPB). matchIds — domainMatchId из regionResults. Делает первый клик мгновенным.
  */
 export async function warmRegionMatchProtocols(matchIds: number[]): Promise<void> {
-  if (!isFfspbConfigured()) return;
+  if (!env.FFSPB_MATCH_PROTOCOL || !isFfspbConfigured()) return;
   await pmap(matchIds, 2, async (id) => {
     const link = await avMatchLink(id).catch(() => null);
     const ffspbId = link?.match(/\/match\/(\d+)/)?.[1];
@@ -183,8 +184,10 @@ export async function regionMatchDetail(matchId: number): Promise<MatchDetail | 
   const raw = await cached(`avmatch:${matchId}`, 10 * 60 * 1000, () => getMatchDetail(matchId) as Promise<RawMatch | null>);
   if (!raw) return null;
 
-  // FFSPB-протокол: из тёплого кэша или запуск фонового прогрева.
-  const link = isFfspbConfigured() ? await avMatchLink(matchId) : null;
+  // Ссылка на протокол FFSPB — из avandata (доступна с Render), нужна всегда (кнопка «Протокол матча»).
+  const link = await avMatchLink(matchId);
+  // FFSPB-протокол (голы/судьи/тренеры): из тёплого кэша или фоновый прогрев — только если включён флаг
+  // FFSPB_MATCH_PROTOCOL (по умолчанию off: stat.ffspb.org недоступен с Render).
   const ffspbId = link?.match(/\/match\/(\d+)/)?.[1] ?? null;
   const warm = ffspbWarm.get(matchId);
   const protocol = warm && Date.now() - warm.at < FFSPB_WARM_TTL ? warm.protocol : null;
@@ -192,6 +195,7 @@ export async function regionMatchDetail(matchId: number): Promise<MatchDetail | 
   const recentlyFailed = failedAt != null && Date.now() - failedAt < FFSPB_FAIL_COOLDOWN;
   let ffspbDebug: string;
   if (protocol) ffspbDebug = 'warm';
+  else if (!env.FFSPB_MATCH_PROTOCOL) ffspbDebug = 'off'; // протокол выключен — карточка на avandata + ссылка
   else if (!isFfspbConfigured()) ffspbDebug = 'no-ffspb-key';
   else if (!ffspbId) ffspbDebug = link ? 'no-ffspb-id' : 'no-link';
   else if (recentlyFailed) ffspbDebug = 'unavailable'; // прогрев не пробился — не показываем «грузится», не долбим
