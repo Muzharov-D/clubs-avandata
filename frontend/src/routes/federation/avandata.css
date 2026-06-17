@@ -457,13 +457,16 @@
 .av-gap__x { font-family: var(--av-display); font-size: 24px; color: var(--av-text-faint); font-weight: 700; }
 
 /* распределение по кварталам с эталоном 25% (RAE) */
-.av-rae__row { display: grid; grid-template-columns: 96px 1fr 48px; align-items: center; gap: 12px; margin-bottom: 10px; }
+.av-rae__row { display: grid; grid-template-columns: 96px 1fr 48px 72px; align-items: center; gap: 12px; margin-bottom: 10px; }
 .av-rae__label { font-size: 12px; color: var(--av-text-2); }
 .av-rae__track { position: relative; height: 28px; border-radius: 6px; background: rgba(255, 255, 255, 0.05); overflow: hidden; }
 .av-rae__fill { display: block; height: 100%; border-radius: 6px; transition: width 0.7s ease; }
 .av-rae__ref { position: absolute; top: -4px; bottom: -4px; width: 2px; background: rgba(255, 255, 255, 0.55); z-index: 2; }
 .av-rae__reflabel { position: absolute; top: -17px; transform: translateX(-50%); font-size: 9px; color: var(--av-text-dim); white-space: nowrap; }
 .av-rae__val { font-family: var(--av-display); font-weight: 700; text-align: right; font-variant-numeric: tabular-nums; }
+.av-rae__delta { font-family: var(--av-display); font-weight: 800; font-size: 13px; text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.av-rae__delta i { font-style: normal; font-size: 9px; font-weight: 600; opacity: 0.7; }
+.av-rae__cap { margin: 14px 0 0; font-size: 11px; line-height: 1.5; color: var(--av-text-muted); }
 
 /* =============================================================================
    ТЕЛЕСКОП КОГОРТ — год рождения × сигналы

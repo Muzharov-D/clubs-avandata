@@ -115,6 +115,7 @@ function RaeBars({ quarters }: { quarters: Quarter[] }) {
     <div style={{ marginTop: 18 }}>
       {quarters.map((qd) => {
         const over = qd.pct >= 25;
+        const delta = Math.round((qd.pct - 25) * 10) / 10;
         return (
           <div key={qd.q} className="av-rae__row">
             <span className="av-rae__label">Q{qd.q} · {QLABEL[qd.q - 1]}</span>
@@ -124,9 +125,11 @@ function RaeBars({ quarters }: { quarters: Quarter[] }) {
               <span className="av-rae__fill" style={{ width: `${(qd.pct / scale) * 100}%`, background: over ? 'var(--av-magenta)' : 'var(--av-cyan)', opacity: over ? 1 : 0.7 }} />
             </span>
             <span className="av-rae__val" style={{ color: over ? 'var(--av-magenta)' : 'var(--av-cyan)' }}>{qd.pct}%</span>
+            <span className="av-rae__delta" style={{ color: delta > 0 ? 'var(--av-magenta)' : delta < 0 ? 'var(--av-danger)' : 'var(--av-text-muted)' }}>{delta > 0 ? '+' : ''}{delta}<i>&nbsp;п.п.</i></span>
           </div>
         );
       })}
+      <p className="av-rae__cap"><b style={{ color: 'var(--av-magenta)' }}>+п.п.</b> — отобрано БОЛЬШЕ эталона 25% (физически старшие), <b style={{ color: 'var(--av-danger)' }}>−п.п.</b> — недобор (теряем). Сумма отклонений = масштаб перекоса.</p>
     </div>
   );
 }
