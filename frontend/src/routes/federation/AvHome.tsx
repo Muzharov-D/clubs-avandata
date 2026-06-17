@@ -6,6 +6,7 @@ import { ClubShield } from './ClubShield';
 import { PlayerAvatar } from './PlayerAvatar';
 import { FedError } from './FedState';
 import { MatchDetail, type MatchBase } from './MatchDetail';
+import { ClubCard } from './ClubCard';
 import { ratingColor } from './ratings';
 import { useFedYear, yearQ, fedQ, inDivision } from './avYear';
 import './avandata.css';
@@ -43,6 +44,7 @@ export function FederationAvHome() {
   const { year, division } = useFedYear();
   const q = yearQ(year);
   const [selected, setSelected] = useState<ResultMatch | null>(null);
+  const [selectedClub, setSelectedClub] = useState<number | null>(null);
   const ov = useQuery({ queryKey: ['av', 'overview', division], queryFn: () => api<Overview>(`/federation/av/overview${fedQ(null, division)}`) });
   const rs = useQuery({ queryKey: ['av', 'results', year, division], queryFn: () => api<{ results: ResultMatch[] }>(`/federation/av/results${fedQ(year, division)}`) });
   const st = useQuery({ queryKey: ['av', 'standings', year], queryFn: () => api<{ groups: Group<StandRow>[] }>(`/federation/av/standings${q}`) });
@@ -168,11 +170,12 @@ export function FederationAvHome() {
         </section>
         <section className="av-surface av-pad-lg">
           <div className="av-section"><h2 className="av-section-title">Рейтинг клубов</h2></div>
-          {cr.isLoading ? <Sk /> : crGroups.length === 0 ? <div className="av-note">Нет данных.</div> : crGroups.map((g) => <RatingsBlock key={g.division} g={g} />)}
+          {cr.isLoading ? <Sk /> : crGroups.length === 0 ? <div className="av-note">Нет данных.</div> : crGroups.map((g) => <RatingsBlock key={g.division} g={g} onClub={setSelectedClub} />)}
         </section>
       </div>
 
       {selected && <MatchDetail base={toBase(selected)} onClose={() => setSelected(null)} />}
+      {selectedClub != null && <ClubCard clubId={selectedClub} onClose={() => setSelectedClub(null)} />}
     </>
   );
 }
@@ -244,7 +247,7 @@ function StandingsBlock({ g }: { g: Group<StandRow> }) {
   );
 }
 
-function RatingsBlock({ g }: { g: Group<RatingRow> }) {
+function RatingsBlock({ g, onClub }: { g: Group<RatingRow>; onClub: (id: number) => void }) {
   const max = Math.max(...g.rows.map((r) => Math.abs(r.rating)), 1);
   return (
     <div className="av-group">
@@ -253,13 +256,13 @@ function RatingsBlock({ g }: { g: Group<RatingRow> }) {
         <span className="av-group__cols">Рейтинг</span>
       </div>
       {g.rows.map((r, i) => (
-        <div key={r.id} className={`av-trow t-rate${i === 0 ? ' av-trow--lead' : ''}`}>
+        <button type="button" key={r.id} onClick={() => onClub(r.id)} className={`av-trow t-rate av-trow--btn${i === 0 ? ' av-trow--lead' : ''}`}>
           <span className={rankCls(i)}>{i + 1}</span>
           <ClubShield name={r.name} logoUrl={r.logo} size={22} />
           <span className="av-trow__name" title={r.name}>{r.name}</span>
           <span className="av-meter"><span className="av-meter__fill" style={{ width: `${(Math.abs(r.rating) / max) * 100}%`, background: r.rating < 0 ? 'var(--av-danger)' : 'var(--av-cyan)' }} /></span>
           <span className={`av-rate${r.rating < 0 ? ' av-rate--neg' : ''}`}>{num(r.rating)}</span>
-        </div>
+        </button>
       ))}
     </div>
   );
