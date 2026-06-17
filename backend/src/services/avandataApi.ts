@@ -176,7 +176,7 @@ export interface AvPlayerDetail { id: number; firstname: string; lastname: strin
 export async function getPlayerDetail(id: number): Promise<AvPlayerDetail | null> {
   try { return await authedGet<AvPlayerDetail>(`/players/${id}`); } catch { return null; }
 }
-export interface AvEvent { id: number; eventTypeId: string; points: number; mainPlayerId: number | null; matchId: number }
+export interface AvEvent { id: number; eventTypeId: string; points: number; mainPlayerId: number | null; matchId: number; date?: string; teamForTournamentId?: number | null }
 /** События игрока (пагинация по 100 — limit>100 запрещён API). */
 export async function getPlayerEvents(playerId: number): Promise<AvEvent[]> {
   const all: AvEvent[] = [];

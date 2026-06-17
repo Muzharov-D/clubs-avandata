@@ -77,7 +77,7 @@ export function MatchDetail({ base, onClose }: { base: MatchBase; onClose: () =>
 
         {/* Шапка: контекст + счёт */}
         <div className="av-mhead">
-          <div className="av-mhead__meta">{base.age} · {base.division} · {fmtDate(base.date)}</div>
+          <div className="av-mhead__meta">{[base.age, base.division, fmtDate(base.date)].filter(Boolean).join(' · ')}</div>
           <div className="av-mscore">
             <div className="av-mscore__team">
               <ClubShield name={base.home.name} logoUrl={base.home.logo} size={46} />

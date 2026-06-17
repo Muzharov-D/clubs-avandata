@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Link, useParams } from 'react-router-dom';
 import { api } from '../../api/client';
@@ -6,15 +6,25 @@ import { ClubShield } from './ClubShield';
 import { ratingColor } from './ratings';
 import { PlayerAvatar } from './PlayerAvatar';
 import { FedEmpty } from './FedState';
+import { MatchDetail, type MatchBase } from './MatchDetail';
 import './avandata.css';
 
 interface PoolP { id: number; rating: number | null; birthYear: number | null }
 interface Metric { id: string; title: string; short: string; category: string; count: number; points: number }
+interface PMatch {
+  id: number; date: string | null;
+  home: { name: string; logo: string | null; score: number | null };
+  away: { name: string; logo: string | null; score: number | null };
+  playerSide: 'home' | 'away' | null; rating: number | null;
+}
 interface Profile {
   id: number; name: string; club: string | null; clubLogo: string | null; position: string | null;
   birthDate: string | null; birthYear: number | null; rating: number | null;
-  matches: number; totalEvents: number; metrics: Metric[];
+  matches: number; totalEvents: number; metrics: Metric[]; recentMatches: PMatch[];
 }
+
+const fmtD = (iso: string | null) => { if (!iso) return ''; try { return new Intl.DateTimeFormat('ru-RU', { day: 'numeric', month: 'short' }).format(new Date(iso)).replace('.', ''); } catch { return ''; } };
+const toMatchBase = (m: PMatch): MatchBase => ({ id: m.id, age: '', division: '', date: m.date ?? '', home: m.home, away: m.away });
 
 const catColor = (c: string) => (c === 'attack' ? '#5EEBFC' : c === 'defense' ? '#FF0099' : '#3054FF');
 const catLabel = (c: string) => (c === 'attack' ? 'Атака' : c === 'defense' ? 'Оборона' : 'Развитие');
@@ -48,6 +58,7 @@ function Body({ p }: { p: Profile }) {
     return Math.round((below / (list.length - 1)) * 100);
   }, [pool.data, p.rating]);
   const topPct = pct != null ? Math.max(1, 100 - pct) : null;
+  const [selectedMatch, setSelectedMatch] = useState<PMatch | null>(null);
 
   return (
     <>
@@ -108,6 +119,36 @@ function Body({ p }: { p: Profile }) {
           ))}
         </section>
       </div>
+
+      {p.recentMatches.length > 0 && (
+        <section className="av-surface av-pad-lg av-rise">
+          <div className="av-section">
+            <div>
+              <h2 className="av-section-title">История матчей</h2>
+              <p className="av-section-sub">Рейтинг игрока в матче · клик → карточка матча</p>
+            </div>
+          </div>
+          <div className="av-pmatches">
+            {p.recentMatches.map((m, i) => (
+              <button type="button" key={i} className="av-pmatch" onClick={() => setSelectedMatch(m)}>
+                <span className="av-pmatch__date">{fmtD(m.date)}</span>
+                <span className={`av-pmatch__team av-pmatch__team--h${m.playerSide === 'home' ? ' av-pmatch__team--me' : ''}`}>
+                  <span className="av-pmatch__name" title={m.home.name}>{m.home.name}</span>
+                  <ClubShield name={m.home.name} logoUrl={m.home.logo} size={22} />
+                </span>
+                <span className="av-pmatch__score">{m.home.score ?? '–'}:{m.away.score ?? '–'}</span>
+                <span className={`av-pmatch__team av-pmatch__team--a${m.playerSide === 'away' ? ' av-pmatch__team--me' : ''}`}>
+                  <ClubShield name={m.away.name} logoUrl={m.away.logo} size={22} />
+                  <span className="av-pmatch__name" title={m.away.name}>{m.away.name}</span>
+                </span>
+                {m.rating != null && <span className="av-pmatch__rate" title="рейтинг игрока в матче" style={{ color: ratingColor(m.rating) }}>{m.rating}</span>}
+              </button>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {selectedMatch && <MatchDetail base={toMatchBase(selectedMatch)} onClose={() => setSelectedMatch(null)} />}
     </>
   );
 }

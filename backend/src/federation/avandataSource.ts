@@ -44,7 +44,7 @@ export interface MatchDetail {
 
 // Сырые формы ответа /ffspb-portal/matches/{id} (см. inspectMatchDetail.ts).
 interface RawCard { playerName?: string; matchTime?: string | number }
-interface RawSide { id?: number; title?: string; logoUrl?: string | null; score?: number; yellowCard?: RawCard[]; redCards?: RawCard[] }
+interface RawSide { id?: number; teamForTournamentId?: number; title?: string; logoUrl?: string | null; score?: number; yellowCard?: RawCard[]; redCards?: RawCard[] }
 interface RawTeamRef { title?: string }
 interface RawBest { id?: number; title?: string; team?: RawTeamRef; playerRoleName?: string; rating?: number; topEvents?: Array<{ eventType?: string; eventName?: string; count?: number }> }
 interface RawKeyEvent { ownTeam?: { eventsCount?: number }; guestTeam?: { eventsCount?: number }; eventType?: string; title?: string }
@@ -685,10 +685,17 @@ export async function cohortMatrix(seasonId: number): Promise<Cohort[]> {
 
 // ─── Профиль игрока + «пицца» из событий ─────────────────────────────────────
 export interface PlayerMetric { id: string; title: string; short: string; category: string; count: number; points: number; }
+export interface PlayerMatch {
+  id: number; date: string | null;
+  home: { name: string; logo: string | null; score: number | null };
+  away: { name: string; logo: string | null; score: number | null };
+  playerSide: 'home' | 'away' | null; rating: number | null;
+}
 export interface PlayerProfile {
   id: number; name: string; club: string | null; clubLogo: string | null; position: string | null;
   birthDate: string | null; birthYear: number | null; rating: number | null;
   matches: number; totalEvents: number; metrics: PlayerMetric[];
+  recentMatches: PlayerMatch[];
 }
 export async function playerProfile(seasonId: number, playerId: number): Promise<PlayerProfile | null> {
   const [players, detail, events, typesRaw] = await Promise.all([
@@ -714,12 +721,38 @@ export async function playerProfile(seasonId: number, playerId: number): Promise
   const totalPoints = metrics.reduce((s, m) => s + m.points, 0);
   if (!id0 && !detail && events.length === 0) return null;
   const name = id0?.name ?? (detail ? [detail.lastname, detail.firstname].filter(Boolean).join(' ') : `#${playerId}`);
+
+  // История матчей: группируем события по матчу (рейтинг в матче = сумма очков),
+  // сторону определяем по teamForTournamentId, соперника/счёт — из getMatchDetail.
+  const byMatch = new Map<number, { points: number; tft: number | null; date: string | null }>();
+  for (const e of events) {
+    const m = byMatch.get(e.matchId) ?? { points: 0, tft: e.teamForTournamentId ?? null, date: e.date ?? null };
+    m.points += e.points ?? 0;
+    if (e.teamForTournamentId != null) m.tft = e.teamForTournamentId;
+    if (e.date && (!m.date || e.date > m.date)) m.date = e.date;
+    byMatch.set(e.matchId, m);
+  }
+  const recentIds = [...byMatch.entries()].sort((a, b) => ((a[1].date ?? '') < (b[1].date ?? '') ? 1 : -1)).slice(0, 6);
+  const recentMatches = (await pmap(recentIds, 4, async ([mid, info]): Promise<PlayerMatch | null> => {
+    const md = (await cached(`avmatch:${mid}`, 10 * 60 * 1000, () => getMatchDetail(mid))) as RawMatch | null;
+    if (!md) return null;
+    const own = md.ownTeam, guest = md.guestTeam;
+    const side: 'home' | 'away' | null = info.tft != null && own?.teamForTournamentId === info.tft ? 'home'
+      : info.tft != null && guest?.teamForTournamentId === info.tft ? 'away' : null;
+    return {
+      id: md.domainMatchId ?? mid, date: info.date,
+      home: { name: own?.title ?? '—', logo: own?.logoUrl ?? null, score: own?.score ?? null },
+      away: { name: guest?.title ?? '—', logo: guest?.logoUrl ?? null, score: guest?.score ?? null },
+      playerSide: side, rating: Math.round(info.points),
+    };
+  })).filter((x): x is PlayerMatch => x != null);
+
   return {
     id: playerId, name, club: id0?.club ?? null, clubLogo: id0?.clubLogo ?? null,
     position: id0?.position ?? null,
     birthDate: detail?.dateOfBirth ?? null,
     birthYear: detail?.dateOfBirth ? new Date(detail.dateOfBirth).getUTCFullYear() : (id0?.birthYear ?? null),
     rating: id0?.rating ?? (events.length ? totalPoints : null),
-    matches: matchIds.size, totalEvents: events.length, metrics,
+    matches: matchIds.size, totalEvents: events.length, metrics, recentMatches,
   };
 }
