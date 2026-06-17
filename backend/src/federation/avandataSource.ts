@@ -13,6 +13,7 @@ import {
   type AvSeason, type AvStatTeam, type AvRatingTeam, type AvEventType,
 } from '../services/avandataApi.js';
 import { getMatch as ffspbGetMatch, isFfspbConfigured } from '../services/ffspbApi.js';
+import { logger } from '../shared/logger.js';
 
 // ─── Детали матча (для карточки матча по клику) ──────────────────────────────
 export interface MatchCard { player: string; minute: string }
@@ -37,6 +38,7 @@ export interface MatchDetail {
   cards: MatchCardEvent[];
   officials: MatchOfficials | null;
   protocolUrl: string | null;
+  ffspbDebug?: string; // диагностика источника протокола (временно, для прод-разбора)
 }
 
 // Сырые формы ответа /ffspb-portal/matches/{id} (см. inspectMatchDetail.ts).
@@ -80,18 +82,22 @@ const personName = (p?: { surname?: string; firstName?: string; member?: FfProfi
 const GOAL_KIND: Record<number, MatchGoal['kind']> = { 0: 'goal', 1: 'own_goal', 2: 'penalty' };
 const CARD_KIND: Record<number, MatchCardEvent['kind']> = { 4: 'yellow', 5: 'red', 6: 'yellow_to_red' };
 
-type MatchExtras = Pick<MatchDetail, 'goals' | 'cards' | 'officials' | 'protocolUrl'>;
+type MatchExtras = Pick<MatchDetail, 'goals' | 'cards' | 'officials' | 'protocolUrl' | 'ffspbDebug'>;
 async function ffspbMatchExtras(matchId: number): Promise<MatchExtras> {
   const empty: MatchExtras = { goals: [], cards: [], officials: null, protocolUrl: null };
-  if (!isFfspbConfigured()) return empty;
+  if (!isFfspbConfigured()) return { ...empty, ffspbDebug: 'no-ffspb-key' };
   let link = '';
   try { link = String(((await authedGet(`/matches/${matchId}`)) as { linkToProtocol?: string }).linkToProtocol ?? ''); }
-  catch { return empty; }
+  catch (e) { return { ...empty, ffspbDebug: `matches-link-failed: ${(e as Error).message.slice(0, 80)}` }; }
   const ffspbId = link.match(/\/match\/(\d+)/)?.[1];
-  if (!ffspbId) return { ...empty, protocolUrl: link || null };
+  if (!ffspbId) return { ...empty, protocolUrl: link || null, ffspbDebug: 'no-ffspb-id-in-link' };
   let fm: FfMatch;
   try { fm = (await ffspbGetMatch(ffspbId)) as FfMatch; }
-  catch { return { ...empty, protocolUrl: link }; }
+  catch (e) {
+    const msg = (e as Error).message.slice(0, 120);
+    logger.warn({ matchId, ffspbId, err: msg }, '[av] ffspb match detail failed');
+    return { ...empty, protocolUrl: link, ffspbDebug: `ffspb-fetch-failed: ${msg}` };
+  }
   const hostId = fm.host?.['@id'];
   const side = (tid?: string): 'home' | 'away' => (tid && tid === hostId ? 'home' : 'away');
   const goals: MatchGoal[] = [];
@@ -112,7 +118,7 @@ async function ffspbMatchExtras(matchId: number): Promise<MatchExtras> {
     const person: MatchPerson = { name: personName(o.request), role: (o.request?.positionName ?? 'Тренер').trim() };
     (side(o.team?.['@id']) === 'home' ? homeCoaches : awayCoaches).push(person);
   }
-  return { goals, cards, officials: { referees, homeCoaches, awayCoaches }, protocolUrl: link };
+  return { goals, cards, officials: { referees, homeCoaches, awayCoaches }, protocolUrl: link, ffspbDebug: 'ok' };
 }
 
 /** Детали матча: счёт, игрок матча, сравнение команд (avandata) + голы/карточки/судьи/тренеры (FFSPB). */

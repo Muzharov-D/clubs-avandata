@@ -17,7 +17,7 @@ interface Person { name: string; role: string }
 interface Officials { referees: Person[]; homeCoaches: Person[]; awayCoaches: Person[] }
 interface Detail {
   id: number; title: string; home: Side; away: Side; best: Best | null; stats: StatRow[];
-  goals: Goal[]; cards: CardEv[]; officials: Officials | null; protocolUrl: string | null;
+  goals: Goal[]; cards: CardEv[]; officials: Officials | null; protocolUrl: string | null; ffspbDebug?: string;
 }
 
 /** Базовый контекст из карточки результата — мгновенная шапка, пока грузится глубина. */
@@ -46,16 +46,24 @@ export function MatchDetail({ base, onClose }: { base: MatchBase; onClose: () =>
     return () => { document.body.style.overflow = prev; window.removeEventListener('keydown', onKey); };
   }, [onClose]);
 
-  const hs = base.home.score ?? data?.home.score ?? 0;
-  const as = base.away.score ?? data?.away.score ?? 0;
-  const cardsHome = data?.cards.filter((c) => c.team === 'home') ?? [];
-  const cardsAway = data?.cards.filter((c) => c.team === 'away') ?? [];
-  const off = data?.officials;
-  const hasOfficials = !!off && (off.referees.length > 0 || off.homeCoaches.length > 0 || off.awayCoaches.length > 0);
+  const hs = base.home.score ?? data?.home?.score ?? 0;
+  const as = base.away.score ?? data?.away?.score ?? 0;
+  // Защита от рассинхрона деплоя/частичного FFSPB: нормализуем массивы, чтобы
+  // отсутствие любого поля не валило страницу (error boundary).
+  const goals = data?.goals ?? [];
+  const stats = data?.stats ?? [];
+  const cards = data?.cards ?? [];
+  const topEvents = data?.best?.topEvents ?? [];
+  const cardsHome = cards.filter((c) => c.team === 'home');
+  const cardsAway = cards.filter((c) => c.team === 'away');
+  const refs = data?.officials?.referees ?? [];
+  const homeCoaches = data?.officials?.homeCoaches ?? [];
+  const awayCoaches = data?.officials?.awayCoaches ?? [];
+  const hasOfficials = refs.length > 0 || homeCoaches.length > 0 || awayCoaches.length > 0;
 
   return (
     <div className="av-modal__backdrop" onClick={onClose}>
-      <div className="av-modal av-surface" role="dialog" aria-modal="true" onClick={(e) => e.stopPropagation()}>
+      <div className="av-modal av-surface" role="dialog" aria-modal="true" data-ffspb={data?.ffspbDebug ?? ''} onClick={(e) => e.stopPropagation()}>
         <button className="av-modal__close" onClick={onClose} aria-label="Закрыть">×</button>
 
         {/* Шапка: контекст + счёт */}
@@ -84,11 +92,11 @@ export function MatchDetail({ base, onClose }: { base: MatchBase; onClose: () =>
         {data && (
           <>
             {/* Голы */}
-            {data.goals.length > 0 && (
+            {goals.length > 0 && (
               <section className="av-msection">
                 <h3 className="av-msection__title">Голы</h3>
                 <div className="av-goals">
-                  {data.goals.map((g, i) => (
+                  {goals.map((g, i) => (
                     <div key={i} className="av-goal">
                       <span className="av-goal__h">{g.team === 'home' && <><span className="av-goal__pl">{g.player}{goalSuffix(g)}{g.assist ? <i className="av-goal__as"> · {g.assist}</i> : null}</span><span className="av-goal__ball">⚽</span></>}</span>
                       <span className="av-goal__min">{min(g.minute, g.addedTime)}</span>
@@ -123,9 +131,9 @@ export function MatchDetail({ base, onClose }: { base: MatchBase; onClose: () =>
                   )}
                   <span className="av-rate av-mbest__rate" style={{ color: ratingColor(data.best.rating) }}>{data.best.rating ?? '—'}</span>
                 </div>
-                {data.best.topEvents.length > 0 && (
+                {topEvents.length > 0 && (
                   <div className="av-mbest__events">
-                    {data.best.topEvents.map((e) => (
+                    {topEvents.map((e) => (
                       <span key={e.eventType} className="av-chip av-chip--cyan">{e.name} · {e.count}</span>
                     ))}
                   </div>
@@ -134,11 +142,11 @@ export function MatchDetail({ base, onClose }: { base: MatchBase; onClose: () =>
             )}
 
             {/* Сравнение команд по событиям */}
-            {data.stats.length > 0 && (
+            {stats.length > 0 && (
               <section className="av-msection">
                 <h3 className="av-msection__title">Команды в матче</h3>
                 <div className="av-mstats">
-                  {data.stats.map((s) => {
+                  {stats.map((s) => {
                     const tot = s.home + s.away || 1;
                     const hWin = s.home >= s.away;
                     return (
@@ -160,7 +168,7 @@ export function MatchDetail({ base, onClose }: { base: MatchBase; onClose: () =>
             )}
 
             {/* Карточки */}
-            {data.cards.length > 0 && (
+            {cards.length > 0 && (
               <section className="av-msection">
                 <h3 className="av-msection__title">Карточки</h3>
                 <div className="av-mcards">
@@ -175,17 +183,17 @@ export function MatchDetail({ base, onClose }: { base: MatchBase; onClose: () =>
               <section className="av-msection">
                 <h3 className="av-msection__title">Судьи и тренеры</h3>
                 <div className="av-mofficials">
-                  {off!.referees.length > 0 && (
+                  {refs.length > 0 && (
                     <div className="av-moff__block">
                       <div className="av-moff__lbl">Судейство</div>
-                      {off!.referees.map((r, i) => (
+                      {refs.map((r, i) => (
                         <div key={i} className="av-moff__row"><span className="av-moff__role">{r.role}</span><span className="av-moff__name">{r.name}</span></div>
                       ))}
                     </div>
                   )}
                   <div className="av-moff__teams">
-                    <CoachBlock title={base.home.name} coaches={off!.homeCoaches} />
-                    <CoachBlock title={base.away.name} coaches={off!.awayCoaches} />
+                    <CoachBlock title={base.home.name} coaches={homeCoaches} />
+                    <CoachBlock title={base.away.name} coaches={awayCoaches} />
                   </div>
                 </div>
               </section>
