@@ -61,6 +61,21 @@ const mapSide = (s?: RawSide): MatchSide => ({
   yellow: mapCards(s?.yellowCard), red: mapCards(s?.redCards),
 });
 
+// Карточки прямо из avandata-детали (yellowCard/redCards с игроком+минутой) —
+// fallback, когда FFSPB-протокол недоступен (stat.ffspb.org таймаутит с Render).
+const avandataCards = (raw: RawMatch): MatchCardEvent[] => {
+  const out: MatchCardEvent[] = [];
+  const add = (team: 'home' | 'away', arr: RawCard[] | undefined, kind: 'yellow' | 'red') => {
+    for (const c of arr ?? []) {
+      const t = c.matchTime;
+      out.push({ team, player: c.playerName ?? '—', minute: t != null && t !== '' ? Number(t) : null, kind, reason: '' });
+    }
+  };
+  add('home', raw.ownTeam?.yellowCard, 'yellow'); add('home', raw.ownTeam?.redCards, 'red');
+  add('away', raw.guestTeam?.yellowCard, 'yellow'); add('away', raw.guestTeam?.redCards, 'red');
+  return out.sort((a, b) => (a.minute ?? 0) - (b.minute ?? 0));
+};
+
 // ── Протокол FFSPB: голы/карточки с авторами, судьи, тренеры ──────────────────
 // Мост: avandata /matches/{id}.linkToProtocol → stat.ffspb.org/.../match/{ffspbId}
 // → FFSPB /matches/{ffspbId}. eventType: 0 гол / 1 автогол / 2 пенальти / 4 ЖК /
@@ -92,11 +107,17 @@ async function ffspbMatchExtras(matchId: number): Promise<MatchExtras> {
   const ffspbId = link.match(/\/match\/(\d+)/)?.[1];
   if (!ffspbId) return { ...empty, protocolUrl: link || null, ffspbDebug: 'no-ffspb-id-in-link' };
   let fm: FfMatch;
-  try { fm = (await ffspbGetMatch(ffspbId)) as FfMatch; }
-  catch (e) {
+  try {
+    // stat.ffspb.org медленный/нестабильный с Render — НЕ держим модалку ради него.
+    // Софт-таймаут: FFSPB — обогащение (голы/судьи/тренеры), не блокер карточки.
+    fm = (await Promise.race([
+      ffspbGetMatch(ffspbId) as Promise<FfMatch>,
+      new Promise<never>((_, rej) => setTimeout(() => rej(new Error('soft-timeout 8s')), 8000)),
+    ]));
+  } catch (e) {
     const msg = (e as Error).message.slice(0, 120);
-    logger.warn({ matchId, ffspbId, err: msg }, '[av] ffspb match detail failed');
-    return { ...empty, protocolUrl: link, ffspbDebug: `ffspb-fetch-failed: ${msg}` };
+    logger.warn({ matchId, ffspbId, err: msg }, '[av] ffspb match detail unavailable (enrichment skipped)');
+    return { ...empty, protocolUrl: link, ffspbDebug: `ffspb-unavailable: ${msg}` };
   }
   const hostId = fm.host?.['@id'];
   const side = (tid?: string): 'home' | 'away' => (tid && tid === hostId ? 'home' : 'away');
@@ -150,10 +171,12 @@ export async function regionMatchDetail(matchId: number): Promise<MatchDetail | 
         role: p.playerRoleName ?? null, photo: p.playerPhotoUrl ?? null, count: p.eventsCount ?? 0,
       })),
     }));
+    // Карточки: предпочитаем FFSPB (с причиной), иначе — из avandata (всегда доступна).
+    const cards = extras.cards.length > 0 ? extras.cards : avandataCards(raw);
     return {
       id: raw.domainMatchId ?? raw.id ?? matchId, title: raw.title ?? '',
       home: mapSide(raw.ownTeam), away: mapSide(raw.guestTeam), best, stats, leaders,
-      ...extras,
+      ...extras, cards,
     };
   });
 }
