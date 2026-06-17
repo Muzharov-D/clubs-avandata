@@ -309,7 +309,8 @@ export async function cohortMatrix(seasonId: number): Promise<Cohort[]> {
         avgRating: ratings.length ? Math.round(ratings.reduce((a, b) => a + b, 0) / ratings.length) : null,
         top: t ? { id: t.id, name: t.name, club: t.club, clubLogo: t.clubLogo, rating: t.rating } : null,
       };
-    });
+      // Когорты с почти пустым разбором (напр. 2014) прячем — мало инфы, позже отдельно.
+    }).filter((c) => c.analyzed >= 10);
   });
 }
 
