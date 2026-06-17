@@ -45,15 +45,16 @@ export function FederationAvCompare() {
   return (
     <>
       <header className="av-head av-rise">
-        <div>
+        <div className="av-head__l">
+          <span className="av-kicker">Первенство СПб</span>
           <h1 className="av-title">Сравнение турниров</h1>
-          <p className="av-sub">Первенство СПб · выбери турниры — сила бок о бок</p>
+          <p className="av-sub">Выбери турниры — сила бок о бок</p>
         </div>
       </header>
 
       {tq.isLoading ? <div className="av-skeleton" style={{ height: 44 }} /> : (
-        <div className="av-tabs av-rise">
-          {refs.map((r) => <button key={r.key} onClick={() => toggle(r.key)} className={`av-tab${sel.includes(r.key) ? ' av-tab--active' : ''}`}>{r.title}</button>)}
+        <div className="av-pills av-rise">
+          {refs.map((r) => <button key={r.key} onClick={() => toggle(r.key)} className={`av-pill${sel.includes(r.key) ? ' av-pill--active' : ''}`}>{r.title}</button>)}
         </div>
       )}
       {tq.error && <div className="av-note" style={{ color: 'var(--av-danger)' }}>База недоступна — задан ли AVANDATA_API_KEY на сервере?</div>}
@@ -70,7 +71,7 @@ export function FederationAvCompare() {
       )}
 
       {cq.isLoading ? <section className="av-surface av-pad"><div className="av-skeleton" style={{ height: 320 }} /></section> : items.length > 0 && (
-        <div className="av-cols av-rise" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(380px, 1fr))' }}>
+        <div className="av-cols-2 av-rise" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(380px, 1fr))' }}>
           {METRICS.map((m) => {
             const max = Math.max(...items.map((it) => Number(it[m.k] ?? 0)), 0.0001);
             return (

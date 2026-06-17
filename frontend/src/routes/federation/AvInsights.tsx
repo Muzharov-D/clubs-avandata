@@ -15,6 +15,7 @@ interface Concentration { topPool: number; totalClubs: number; top3Share: number
 const num = (n: number) => n.toLocaleString('ru-RU');
 const QLABEL = ['янв–мар', 'апр–июн', 'июл–сен', 'окт–дек'];
 
+/** Справедливость и утечка — диагнозы, видимые только над всеми клубами региона. */
 export function FederationAvInsights() {
   const { year } = useFedYear();
   const q = yearQ(year);
@@ -30,40 +31,36 @@ export function FederationAvInsights() {
   return (
     <>
       <header className="av-head av-rise">
-        <div>
+        <div className="av-head__l">
+          <span className="av-kicker">Диагностика региона</span>
           <h1 className="av-title">Справедливость и утечка</h1>
-          <p className="av-sub">Кого регион теряет — диагнозы, видимые только над всеми клубами · {year == null ? 'все возрасты' : `${year} г.р.`}</p>
+          <p className="av-sub">Кого регион теряет — видно только над всеми клубами сразу · {year == null ? 'все возрасты' : `${year} г.р.`}</p>
         </div>
         <Link to="/federation/cohorts" className="av-link">По когортам →</Link>
       </header>
 
-      {/* ВЫВОД 1 — Возрастная утечка (RAE) */}
-      <section className="av-surface av-surface--glow av-pad av-rise">
-        <span className="av-chip av-chip--magenta">⏳ Возрастная утечка</span>
-        {ae.isLoading ? <div className="av-skeleton" style={{ height: 200, marginTop: 12 }} /> : ae.data && (
+      {/* НАХОДКА 1 — Возрастная утечка (RAE), герой */}
+      <section className="av-surface av-finding av-finding--hero av-pad-lg av-rise">
+        <span className="av-finding__kicker">⏳ Возрастная утечка · RAE</span>
+        {ae.isLoading ? <div className="av-skeleton" style={{ height: 220, marginTop: 14 }} /> : ae.data && (
           <>
-            <h2 className="av-verdict av-verdict--magenta">
-              Регион теряет поздно-рождённых: в начале года рождается <b>{ae.data.skew ?? '—'}×</b> больше игроков, чем в конце
-            </h2>
-            <p className="av-why">
-              На <b style={{ color: 'var(--av-text)' }}>{num(ae.data.total)}</b> игроках региона с известной датой. Эталон равномерности — 25% на квартал.
-              Перекос к Q1 = смещение отбора в пользу тех, кто физически старше внутри возраста; поздних — тихо отсеивают. Видно только на агрегате региона.
-            </p>
+            <h2 className="av-verdict">Регион тихо теряет поздно-рождённых: в начале года рождается <b>{ae.data.skew ?? '—'}×</b> больше отобранных игроков, чем в конце</h2>
+            <p className="av-why">На <b style={{ color: 'var(--av-text)' }}>{num(ae.data.total)}</b> игроках с известной датой рождения. Эталон равномерности — 25% на квартал. Перекос к Q1 = смещение отбора в пользу тех, кто физически старше внутри своего возраста; поздних отсеивают, не замечая. Этот узор виден только на агрегате всего региона.</p>
             <RaeBars quarters={ae.data.quarters} />
           </>
         )}
       </section>
 
-      <div className="av-cols av-rise">
-        {/* ВЫВОД 2 — Пропасть лиг */}
-        <section className="av-surface av-pad">
-          <span className="av-chip av-chip--accent">🪢 Пропасть лиг</span>
-          {ds.isLoading ? <div className="av-skeleton" style={{ height: 160, marginTop: 12 }} /> : divs.length >= 2 && (
+      <div className="av-cols-2 av-rise">
+        {/* НАХОДКА 2 — Пропасть лиг */}
+        <section className="av-surface av-finding av-finding--cyan av-pad-lg">
+          <span className="av-finding__kicker">🪢 Пропасть лиг</span>
+          {ds.isLoading ? <div className="av-skeleton" style={{ height: 170, marginTop: 14 }} /> : divs.length >= 2 ? (
             <>
-              <h2 className="av-verdict">Высшая Лига сильнее Первой в <b>{gap ?? '—'}×</b> по среднему рейтингу</h2>
-              <div className="av-gap" style={{ marginTop: 14 }}>
+              <h2 className="av-verdict">{divs[0].division} сильнее {divs[1].division} в <b>{gap ?? '—'}×</b> по среднему рейтингу</h2>
+              <div className="av-gap" style={{ marginTop: 16 }}>
                 <div className="av-gap__cell">
-                  <div className="av-gap__big" style={{ color: 'var(--av-accent)' }}>{num(divs[0].avgRating ?? 0)}</div>
+                  <div className="av-gap__big" style={{ color: 'var(--av-cyan)' }}>{num(divs[0].avgRating ?? 0)}</div>
                   <div className="av-gap__lbl">{divs[0].division}</div>
                 </div>
                 <span className="av-gap__x">×{gap}</span>
@@ -72,47 +69,46 @@ export function FederationAvInsights() {
                   <div className="av-gap__lbl">{divs[1].division}</div>
                 </div>
               </div>
-              <p className="av-why" style={{ marginTop: 12 }}>Талант сконцентрирован в верхнем дивизионе — разрыв между лигами огромный, середина проваливается.</p>
+              <p className="av-why" style={{ marginTop: 16 }}>Талант сконцентрирован в верхнем дивизионе — разрыв между лигами огромный, середина проваливается.</p>
             </>
-          )}
+          ) : <div className="av-note">Недостаточно дивизионов для сравнения.</div>}
         </section>
 
-        {/* ВЫВОД 3 — Монополия таланта */}
-        <section className="av-surface av-pad">
-          <span className="av-chip av-chip--magenta">🏰 Монополия таланта</span>
-          {tc.isLoading ? <div className="av-skeleton" style={{ height: 160, marginTop: 12 }} /> : tc.data && (
+        {/* НАХОДКА 3 — Монополия таланта */}
+        <section className="av-surface av-finding av-pad-lg">
+          <span className="av-finding__kicker">🏰 Монополия таланта</span>
+          {tc.isLoading ? <div className="av-skeleton" style={{ height: 170, marginTop: 14 }} /> : tc.data && (
             <>
-              <h2 className="av-verdict av-verdict--magenta">3 клуба держат <b>{tc.data.top3Share}%</b> сильнейших талантов региона</h2>
-              <p className="av-why" style={{ marginBottom: 4 }}>Пул — топ-30 игроков каждого возраста ({tc.data.topPool} талантов), клубы схлопнуты в реальные (без года команды).</p>
-              <div className="av-row-list" style={{ marginTop: 12 }}>
-                {tc.data.clubs.slice(0, 6).map((c) => {
-                  const max = Math.max(...tc.data!.clubs.map((x) => x.n), 1);
-                  return (
-                    <div key={c.club} className="av-row" style={{ gridTemplateColumns: '22px 1fr 70px 36px' }}>
-                      <ClubShield name={c.club} logoUrl={c.logo} size={20} />
-                      <span className="av-row__name">{c.club}</span>
-                      <span className="av-meter"><span className="av-meter__fill" style={{ width: `${(c.n / max) * 100}%`, background: 'var(--av-magenta)' }} /></span>
-                      <span className="av-num" style={{ textAlign: 'right', fontWeight: 700, color: 'var(--av-magenta)' }}>{c.share}%</span>
-                    </div>
-                  );
-                })}
-              </div>
+              <h2 className="av-verdict">3 клуба держат <b>{tc.data.top3Share}%</b> сильнейших талантов региона</h2>
+              <p className="av-why" style={{ marginBottom: 12 }}>Пул — топ-30 игроков каждого возраста ({tc.data.topPool} талантов), клубы схлопнуты в реальные школы (без года команды).</p>
+              {tc.data.clubs.slice(0, 6).map((c) => {
+                const max = Math.max(...tc.data!.clubs.map((x) => x.n), 1);
+                return (
+                  <div key={c.club} className="av-trow" style={{ gridTemplateColumns: '24px 1fr 1fr 46px' }}>
+                    <ClubShield name={c.club} logoUrl={c.logo} size={22} />
+                    <span className="av-trow__name">{c.club}</span>
+                    <span className="av-meter"><span className="av-meter__fill" style={{ width: `${(c.n / max) * 100}%`, background: 'var(--av-magenta)' }} /></span>
+                    <span className="av-num" style={{ textAlign: 'right', fontWeight: 700, color: 'var(--av-magenta)' }}>{c.share}%</span>
+                  </div>
+                );
+              })}
             </>
           )}
         </section>
       </div>
 
-      {/* ВЫВОД 4 — Невидимая середина */}
-      <section className="av-surface av-pad av-rise">
-        <span className="av-chip av-chip--success">🔦 Невидимая середина</span>
-        <h2 className="av-verdict">Сильнейшие игроки региона — кто бы их ни воспитал</h2>
-        {pq.isLoading ? <div className="av-skeleton" style={{ height: 180, marginTop: 10 }} /> : (
-          <div className="av-row-list" style={{ marginTop: 8 }}>
+      {/* НАХОДКА 4 — Невидимая середина */}
+      <section className="av-surface av-finding av-finding--cyan av-pad-lg av-rise">
+        <span className="av-finding__kicker">🔦 Невидимая середина</span>
+        <h2 className="av-verdict">Сильнейшие региона — кто бы их ни воспитал</h2>
+        <p className="av-why" style={{ marginBottom: 12 }}>Рейтинг талантов поверх клубных границ. Знаменатель есть только у федерации.</p>
+        {pq.isLoading ? <div className="av-skeleton" style={{ height: 200 }} /> : (
+          <div className="av-cols-2" style={{ gap: 8 }}>
             {top.map((p, i) => (
-              <Link key={p.id} to={`/federation/players/${p.id}`} className="av-row av-row--link" style={{ gridTemplateColumns: '1.6rem 24px 1fr auto', textDecoration: 'none', color: 'inherit' }}>
-                <span className="av-row__rank" style={{ color: i < 3 ? 'var(--av-accent)' : undefined }}>{i + 1}</span>
-                <ClubShield name={p.club ?? p.name} logoUrl={p.clubLogo} size={22} />
-                <div style={{ minWidth: 0 }}><div className="av-row__name">{p.name}</div><div className="av-row__meta">{p.club ?? '—'}{p.position ? ` · ${p.position}` : ''}</div></div>
+              <Link key={p.id} to={`/federation/players/${p.id}`} className="av-trow av-trow--link" style={{ gridTemplateColumns: '24px 26px 1fr auto', textDecoration: 'none', color: 'inherit' }}>
+                <span className="av-trow__rank" style={{ color: i < 3 ? 'var(--av-cyan)' : undefined }}>{i + 1}</span>
+                <ClubShield name={p.club ?? p.name} logoUrl={p.clubLogo} size={24} />
+                <div style={{ minWidth: 0 }}><div className="av-trow__name">{p.name}</div><div className="av-trow__meta">{p.club ?? '—'}{p.position ? ` · ${p.position}` : ''}</div></div>
                 <span className="av-rate">{p.rating}</span>
               </Link>
             ))}
@@ -127,7 +123,7 @@ function RaeBars({ quarters }: { quarters: Quarter[] }) {
   const maxPct = Math.max(...quarters.map((q) => q.pct), 25);
   const scale = Math.ceil((maxPct * 1.12) / 5) * 5;
   return (
-    <div style={{ marginTop: 16 }}>
+    <div style={{ marginTop: 18 }}>
       {quarters.map((qd) => {
         const over = qd.pct >= 25;
         return (
@@ -136,9 +132,9 @@ function RaeBars({ quarters }: { quarters: Quarter[] }) {
             <span className="av-rae__track">
               <span className="av-rae__ref" style={{ left: `${(25 / scale) * 100}%` }} />
               <span className="av-rae__reflabel" style={{ left: `${(25 / scale) * 100}%` }}>эталон 25%</span>
-              <span className="av-rae__fill" style={{ width: `${(qd.pct / scale) * 100}%`, background: over ? 'var(--av-magenta)' : 'var(--av-accent)', opacity: over ? 1 : 0.7 }} />
+              <span className="av-rae__fill" style={{ width: `${(qd.pct / scale) * 100}%`, background: over ? 'var(--av-magenta)' : 'var(--av-cyan)', opacity: over ? 1 : 0.7 }} />
             </span>
-            <span className="av-rae__val" style={{ color: over ? 'var(--av-magenta)' : 'var(--av-accent)' }}>{qd.pct}%</span>
+            <span className="av-rae__val" style={{ color: over ? 'var(--av-magenta)' : 'var(--av-cyan)' }}>{qd.pct}%</span>
           </div>
         );
       })}

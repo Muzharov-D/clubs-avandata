@@ -28,47 +28,52 @@ export function FederationAvClubs() {
   return (
     <>
       <header className="av-head av-rise">
-        <div>
+        <div className="av-head__l">
+          <span className="av-kicker">Производство таланта</span>
           <h1 className="av-title">Сила клубов</h1>
           <p className="av-sub">Пауэр-рейтинг школ по данным разборов · {year == null ? 'все возрасты' : `${year} г.р.`}</p>
         </div>
       </header>
 
-      {/* сила лиг */}
-      {ds.isLoading ? <div className="av-skeleton" style={{ height: 110 }} /> : (
+      {/* Сила лиг */}
+      {ds.isLoading ? <div className="av-skeleton av-rise" style={{ height: 116 }} /> : (
         <div className="av-leagues av-rise">
           {(ds.data?.divisions ?? []).map((l, i) => (
-            <div key={l.division} className={`av-surface av-league ${i === 0 ? 'av-surface--glow' : ''}`}>
+            <div key={l.division} className={`av-surface av-league${i === 0 ? ' av-surface-glow' : ''}`}>
               <div className="av-league__name">{l.division}</div>
-              <div className="av-league__big" style={{ color: i === 0 ? 'var(--av-accent)' : 'var(--av-blue-glow)' }}>{l.avgRating != null ? num(l.avgRating) : '—'}</div>
-              <div className="av-league__sub">средний рейтинг · {l.clubs} клубов</div>
+              <div className="av-league__big" style={{ color: i === 0 ? 'var(--av-cyan)' : 'var(--av-blue-glow)' }}>{l.avgRating != null ? num(l.avgRating) : '—'}</div>
+              <div className="av-league__sub">средний рейтинг · {l.clubs} клубов{l.topClub ? ` · лидер ${l.topClub}` : ''}</div>
             </div>
           ))}
         </div>
       )}
 
       {divisions.length > 1 && (
-        <div className="av-tabs av-rise">
-          <button onClick={() => setDiv('all')} className={`av-tab${div === 'all' ? ' av-tab--active' : ''}`}>все дивизионы</button>
-          {divisions.map((dn) => <button key={dn} onClick={() => setDiv(dn)} className={`av-tab${div === dn ? ' av-tab--active' : ''}`}>{dn}</button>)}
+        <div className="av-pills av-rise">
+          <button onClick={() => setDiv('all')} className={`av-pill${div === 'all' ? ' av-pill--active' : ''}`}>все дивизионы</button>
+          {divisions.map((dn) => <button key={dn} onClick={() => setDiv(dn)} className={`av-pill${div === dn ? ' av-pill--active' : ''}`}>{dn}</button>)}
         </div>
       )}
 
-      {cr.error && <div className="av-note" style={{ color: 'var(--av-danger)' }}>База недоступна — задан ли AVANDATA_API_KEY на сервере?</div>}
-      {cr.isLoading ? <section className="av-surface av-pad"><div className="av-skeleton" style={{ height: 300 }} /></section> : (
-        <section className="av-surface av-pad av-rise">
-          <div className="av-row-list">
-            {shown.map((r, i) => (
-              <div key={r.id} className="av-row" style={{ gridTemplateColumns: '2rem 26px 1fr 90px 1fr 80px' }}>
-                <span className="av-row__rank" style={{ color: i < 3 ? 'var(--av-accent)' : undefined, fontWeight: i < 3 ? 700 : 400 }}>{i + 1}</span>
-                <ClubShield name={r.name} logoUrl={r.logo} size={24} />
-                <span className="av-row__name" title={r.name}>{r.name}</span>
-                <span className="av-chip av-chip--accent" style={{ justifySelf: 'start' }}>{r.division}</span>
-                <span className="av-meter"><span className="av-meter__fill" style={{ width: `${(Math.abs(r.rating) / max) * 100}%`, background: r.rating < 0 ? 'var(--av-danger)' : i === 0 ? 'var(--av-accent)' : 'var(--av-blue-glow)' }} /></span>
-                <span className="av-num" style={{ textAlign: 'right', fontWeight: 700, color: r.rating < 0 ? 'var(--av-danger)' : 'var(--av-accent)', fontSize: 14 }}>{num(r.rating)}</span>
-              </div>
-            ))}
+      {cr.error && <div className="av-surface av-pad av-note av-rise" style={{ color: 'var(--av-danger)' }}>База разборов недоступна — задан ли <code>AVANDATA_API_KEY</code> на сервере?</div>}
+      {cr.isLoading ? <section className="av-surface av-pad-lg av-rise"><div className="av-skeleton" style={{ height: 320 }} /></section> : (
+        <section className="av-surface av-pad-lg av-rise">
+          <div className="av-section">
+            <div>
+              <h2 className="av-section-title">Пауэр-рейтинг школ</h2>
+              <p className="av-section-sub">{shown.length} клубов{div !== 'all' ? ` · ${div}` : ''}</p>
+            </div>
           </div>
+          {shown.map((r, i) => (
+            <div key={`${r.id}-${r.division}`} className={`av-trow${i === 0 ? ' av-trow--lead' : ''}`} style={{ gridTemplateColumns: '26px 28px 1fr 96px 1fr 76px' }}>
+              <span className="av-trow__rank">{i + 1}</span>
+              <ClubShield name={r.name} logoUrl={r.logo} size={26} />
+              <span className="av-trow__name" title={r.name}>{r.name}</span>
+              <span className="av-chip av-chip--cyan" style={{ justifySelf: 'start' }}>{r.division}</span>
+              <span className="av-meter"><span className="av-meter__fill" style={{ width: `${(Math.abs(r.rating) / max) * 100}%`, background: r.rating < 0 ? 'var(--av-danger)' : i === 0 ? 'var(--av-cyan)' : 'var(--av-blue-glow)' }} /></span>
+              <span className={`av-rate${r.rating < 0 ? ' av-rate--neg' : ''}`}>{num(r.rating)}</span>
+            </div>
+          ))}
         </section>
       )}
     </>

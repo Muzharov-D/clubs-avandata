@@ -3,10 +3,10 @@ import { useQuery } from '@tanstack/react-query';
 import { Link, useParams } from 'react-router-dom';
 import { api } from '../../api/client';
 import { ClubShield } from './ClubShield';
+import { PlayerAvatar } from './PlayerAvatar';
 import './avandata.css';
 
 interface PoolP { id: number; rating: number | null; birthYear: number | null }
-
 interface Metric { id: string; title: string; short: string; category: string; count: number; points: number }
 interface Profile {
   id: number; name: string; club: string | null; clubLogo: string | null; position: string | null;
@@ -15,6 +15,7 @@ interface Profile {
 }
 
 const catColor = (c: string) => (c === 'attack' ? '#5EEBFC' : c === 'defense' ? '#FF0099' : '#3054FF');
+const catLabel = (c: string) => (c === 'attack' ? 'Атака' : c === 'defense' ? 'Оборона' : 'Развитие');
 
 /** Профиль игрока + перцентильная «пицца» на РЕАЛЬНЫХ событиях (37 метрик). */
 export function FederationAvPlayerProfile() {
@@ -26,9 +27,9 @@ export function FederationAvPlayerProfile() {
 
   return (
     <>
-      <Link to="/federation/players" className="av-link" style={{ display: 'inline-block', marginBottom: 6 }}>← К игрокам</Link>
-      {isLoading && <div className="av-skeleton" style={{ height: 360 }} />}
-      {error && <div className="av-empty"><div className="av-empty__icon">🔍</div>Игрок не найден.</div>}
+      <Link to="/federation/players" className="av-link av-rise" style={{ marginBottom: 4 }}>← К талантам</Link>
+      {isLoading && <div className="av-skeleton av-rise" style={{ height: 380 }} />}
+      {error && <div className="av-empty av-rise"><div className="av-empty__icon">🔍</div>Игрок не найден или вне региона.</div>}
       {data && <Body p={data} />}
     </>
   );
@@ -36,7 +37,7 @@ export function FederationAvPlayerProfile() {
 
 function Body({ p }: { p: Profile }) {
   const top = p.metrics.slice(0, 16);
-  // Перцентиль рейтинга против всего пула региона (знаменатель есть только у федерации).
+  const metricMax = Math.max(...p.metrics.map((x) => x.count), 1);
   const pool = useQuery({ queryKey: ['av', 'players', null], queryFn: () => api<{ players: PoolP[] }>('/federation/av/players') });
   const pct = useMemo(() => {
     const list = (pool.data?.players ?? []).filter((x) => x.rating != null);
@@ -44,52 +45,65 @@ function Body({ p }: { p: Profile }) {
     const below = list.filter((x) => (x.rating as number) < (p.rating as number)).length;
     return Math.round((below / (list.length - 1)) * 100);
   }, [pool.data, p.rating]);
+  const topPct = pct != null ? Math.max(1, 100 - pct) : null;
 
   return (
     <>
-      <header className="av-surface av-pad av-rise" style={{ display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap' }}>
-        <ClubShield name={p.club ?? p.name} logoUrl={p.clubLogo} size={52} />
-        <div style={{ minWidth: 0, flex: 1 }}>
-          <h1 className="av-title" style={{ fontSize: 24 }}>{p.name}</h1>
-          <p className="av-sub">
-            {p.position ?? 'позиция —'} · {p.club ?? '—'}
-            {p.birthYear ? ` · ${p.birthYear} г.р.` : ''} · {p.matches} матч(а) · {p.totalEvents} событий
-          </p>
-          {pct != null && (
-            <span className="av-chip av-chip--accent" style={{ marginTop: 8 }}>топ {Math.max(1, 100 - pct)}% региона по рейтингу</span>
-          )}
+      <header className="av-surface av-surface--feature av-pad-lg av-phead av-rise">
+        <div style={{ position: 'relative', flex: 'none' }}>
+          <PlayerAvatar name={p.name} size={64} ring />
+          <span style={{ position: 'absolute', right: -4, bottom: -4 }}><ClubShield name={p.club ?? p.name} logoUrl={p.clubLogo} size={26} /></span>
+        </div>
+        <div className="av-phead__id">
+          <h1 className="av-phead__name">{p.name}</h1>
+          <p className="av-phead__meta">{p.position ?? 'позиция —'} · {p.club ?? '—'}{p.birthYear ? ` · ${p.birthYear} г.р.` : ''} · {p.matches} матч(а) · {p.totalEvents} событий</p>
+          <div className="av-phead__chips">
+            {topPct != null && <span className="av-pct"><b>топ {topPct}%</b><span>региона по рейтингу</span></span>}
+            {p.position && <span className="av-chip av-chip--dim">{p.position}</span>}
+          </div>
         </div>
         {p.rating != null && (
-          <div style={{ textAlign: 'center' }}>
-            <div className="av-dim" style={{ fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Рейтинг</div>
-            <div className="av-num" style={{ fontSize: 38, fontWeight: 700, color: p.rating < 0 ? 'var(--av-danger)' : 'var(--av-accent)', lineHeight: 1 }}>{p.rating}</div>
+          <div style={{ textAlign: 'center', marginLeft: 'auto', flex: 'none' }}>
+            <div className="av-dim" style={{ fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.07em' }}>Рейтинг</div>
+            <div className="av-num" style={{ fontSize: 44, fontWeight: 700, color: p.rating < 0 ? 'var(--av-danger)' : 'var(--av-cyan)', lineHeight: 1, marginTop: 4 }}>{p.rating}</div>
           </div>
         )}
       </header>
 
-      <div className="av-cols av-rise">
-        <section className="av-surface av-pad" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-          <div style={{ alignSelf: 'flex-start', marginBottom: 6 }}>
-            <h2 className="av-section-title">Профиль действий · «пицца»</h2>
-            <p className="av-section-sub">Реальные события матчей · циан = атака, маджента = оборона</p>
+      <div className="av-cols-2 av-rise">
+        <section className="av-surface av-pad-lg" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+          <div className="av-section" style={{ alignSelf: 'stretch' }}>
+            <div>
+              <h2 className="av-section-title">Профиль действий</h2>
+              <p className="av-section-sub">Реальные события матчей · длина луча = объём</p>
+            </div>
           </div>
-          {top.length >= 3 ? <Pizza metrics={top} /> : <div className="av-note">Мало событий для профиля.</div>}
+          {top.length >= 3 ? (
+            <>
+              <Pizza metrics={top} />
+              <div className="av-pizza-legend">
+                {['attack', 'defense', 'pass'].map((c) => <span key={c}><i style={{ background: catColor(c) }} />{catLabel(c)}</span>)}
+              </div>
+            </>
+          ) : <div className="av-note">Мало событий для профиля.</div>}
         </section>
 
-        <section className="av-surface av-pad">
-          <h2 className="av-section-title" style={{ marginBottom: 10 }}>Разбор по метрикам</h2>
-          <div className="av-row-list">
-            {p.metrics.map((m) => {
-              const max = Math.max(...p.metrics.map((x) => x.count), 1);
-              return (
-                <div key={m.id} className="av-row" style={{ gridTemplateColumns: '1fr 70px 44px' }}>
-                  <span className="av-row__name" style={{ fontWeight: 500 }}>{m.title}</span>
-                  <span className="av-meter"><span className="av-meter__fill" style={{ width: `${(m.count / max) * 100}%`, background: catColor(m.category) }} /></span>
-                  <span className="av-num" style={{ textAlign: 'right', fontWeight: 700, color: catColor(m.category) }}>{m.count}</span>
-                </div>
-              );
-            })}
+        <section className="av-surface av-pad-lg">
+          <div className="av-section">
+            <div>
+              <h2 className="av-section-title">Разбор по метрикам</h2>
+              <p className="av-section-sub">{p.metrics.length} показателей · по объёму событий</p>
+            </div>
           </div>
+          {p.metrics.map((m) => (
+            <div key={m.id} className="av-metricbar">
+              <div className="av-metricbar__l">
+                <span className="av-metricbar__name" title={m.title}>{m.title}</span>
+                <span className="av-metricbar__track"><span className="av-metricbar__fill" style={{ width: `${(m.count / metricMax) * 100}%`, background: catColor(m.category) }} /></span>
+              </div>
+              <span className="av-metricbar__val" style={{ color: catColor(m.category) }}>{m.count}</span>
+            </div>
+          ))}
         </section>
       </div>
     </>
@@ -97,7 +111,7 @@ function Body({ p }: { p: Profile }) {
 }
 
 function Pizza({ metrics }: { metrics: Metric[] }) {
-  const size = 340, cx = size / 2, cy = size / 2, R = size / 2 - 58;
+  const size = 320, cx = size / 2, cy = size / 2, R = size / 2 - 56;
   const n = metrics.length;
   const max = Math.max(...metrics.map((m) => m.count), 1);
   const step = 360 / n, gap = Math.min(2, step * 0.1);
@@ -107,7 +121,7 @@ function Pizza({ metrics }: { metrics: Metric[] }) {
     return `M ${cx} ${cy} L ${x0.toFixed(1)} ${y0.toFixed(1)} A ${r} ${r} 0 ${a1 - a0 > 180 ? 1 : 0} 1 ${x1.toFixed(1)} ${y1.toFixed(1)} Z`;
   };
   return (
-    <svg viewBox={`0 0 ${size} ${size}`} width={size} height={size} style={{ overflow: 'visible', display: 'block' }} role="img" aria-label="Профиль действий">
+    <svg viewBox={`0 0 ${size} ${size}`} width={size} height={size} className="av-pizza" role="img" aria-label="Профиль действий">
       {[0.25, 0.5, 0.75, 1].map((lv, i) => <circle key={i} cx={cx} cy={cy} r={R * lv} fill="none" stroke="rgba(94,235,252,0.12)" strokeWidth={1} opacity={i === 3 ? 0.8 : 0.5} />)}
       {metrics.map((m, i) => {
         const c = catColor(m.category);

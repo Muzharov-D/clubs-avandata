@@ -42,7 +42,7 @@ export function FederationLayout() {
             </Link>
             <nav className="av-topnav" aria-label="Разделы">
               {TABS.map((t) => (
-                <NavLink key={t.to} to={t.to} end={t.end} className={({ isActive }) => `av-tab${isActive ? ' av-tab--active' : ''}`}>
+                <NavLink key={t.to} to={t.to} end={t.end} className={({ isActive }) => `av-navtab${isActive ? ' av-navtab--active' : ''}`}>
                   {t.label}
                 </NavLink>
               ))}

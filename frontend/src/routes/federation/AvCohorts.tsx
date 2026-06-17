@@ -31,7 +31,8 @@ export function FederationAvCohorts() {
   return (
     <>
       <header className="av-head av-rise">
-        <div>
+        <div className="av-head__l">
+          <span className="av-kicker">Телескоп региона</span>
           <h1 className="av-title">Регион по когортам</h1>
           <p className="av-sub">Каждый год рождения как организм · размер · возрастной перекос · класс · звезда. Клик — провалиться в когорту.</p>
         </div>
@@ -47,7 +48,7 @@ export function FederationAvCohorts() {
             const q2q3 = rest; // средние кварталы
             const convPct = c.registry ? Math.round((c.analyzed / c.registry) * 100) : 0;
             return (
-              <button key={c.year} className="av-cohort" onClick={() => drill(c.year)}>
+              <button key={c.year} className="av-surface av-cohort" onClick={() => drill(c.year)}>
                 {/* Год + воронка */}
                 <div>
                   <div className="av-cohort__year">{c.year}</div>
@@ -56,7 +57,7 @@ export function FederationAvCohorts() {
 
                 {/* Возрастной перекос (RAE) */}
                 <div>
-                  <div className="av-cohort__block-label">Возрастной перекос</div>
+                  <div className="av-cohort__lbl">Возрастной перекос</div>
                   <div className="av-qbar" title={`Q1 ${c.q1pct}% · середина ${Math.round(q2q3)}% · Q4 ${c.q4pct}%`}>
                     <span style={{ width: `${c.q1pct}%`, background: 'var(--av-magenta)' }} />
                     <span style={{ width: `${q2q3}%`, background: 'rgba(255,255,255,0.18)' }} />
@@ -71,13 +72,13 @@ export function FederationAvCohorts() {
 
                 {/* Средний класс */}
                 <div>
-                  <div className="av-cohort__block-label">Средний класс</div>
+                  <div className="av-cohort__lbl">Средний класс</div>
                   <div className="av-cohort__class">{c.avgRating != null ? num(c.avgRating) : '—'}</div>
                 </div>
 
                 {/* Звезда когорты */}
                 <div>
-                  <div className="av-cohort__block-label">Звезда когорты</div>
+                  <div className="av-cohort__lbl">Звезда когорты</div>
                   {c.top ? (
                     <Link className="av-cohort__star" to={`/federation/players/${c.top.id}`} onClick={(e) => e.stopPropagation()}>
                       <ClubShield name={c.top.club ?? c.top.name} logoUrl={c.top.clubLogo} size={30} />

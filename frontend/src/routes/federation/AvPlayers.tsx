@@ -3,12 +3,33 @@ import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { api } from '../../api/client';
 import { ClubShield } from './ClubShield';
+import { PlayerAvatar } from './PlayerAvatar';
 import { useFedYear, yearQ } from './avYear';
 import './avandata.css';
 
 interface RPlayer { id: number; name: string; birthYear: number | null; position: string | null; club: string | null; clubLogo: string | null; rating: number | null }
 
-/** Игроки региона — реальный реестр Первенства, клик → профиль с «пиццей». */
+const lastName = (s: string) => { const w = s.trim().split(/\s+/); return w.length > 1 ? w[w.length - 1] : s; };
+
+type Line = 'GK' | 'DEF' | 'MID' | 'FWD';
+const lineOf = (pos: string | null): Line | null => {
+  const p = (pos ?? '').toLowerCase();
+  if (/врат/.test(p)) return 'GK';
+  if (/защит/.test(p)) return 'DEF';
+  if (/полуз/.test(p)) return 'MID';
+  if (/напад|форвард/.test(p)) return 'FWD';
+  return null;
+};
+
+// 4-3-3, координаты в % (атака вверх, ворота внизу)
+const SLOTS: Array<{ line: Line; l: number; t: number; tag: string }> = [
+  { line: 'GK', l: 50, t: 88, tag: 'ВРТ' },
+  { line: 'DEF', l: 14, t: 70, tag: 'ЗАЩ' }, { line: 'DEF', l: 38, t: 74, tag: 'ЗАЩ' }, { line: 'DEF', l: 62, t: 74, tag: 'ЗАЩ' }, { line: 'DEF', l: 86, t: 70, tag: 'ЗАЩ' },
+  { line: 'MID', l: 24, t: 50, tag: 'ПЗЩ' }, { line: 'MID', l: 50, t: 46, tag: 'ПЗЩ' }, { line: 'MID', l: 76, t: 50, tag: 'ПЗЩ' },
+  { line: 'FWD', l: 24, t: 24, tag: 'НАП' }, { line: 'FWD', l: 50, t: 20, tag: 'НАП' }, { line: 'FWD', l: 76, t: 24, tag: 'НАП' },
+];
+
+/** Таланты региона — реестр + «Сборная региона» (лучшие по позициям на данных). */
 export function FederationAvPlayers() {
   const { year } = useFedYear();
   const { data, isLoading, error } = useQuery({ queryKey: ['av', 'players', year], queryFn: () => api<{ players: RPlayer[] }>(`/federation/av/players${yearQ(year)}`) });
@@ -24,45 +45,101 @@ export function FederationAvPlayers() {
     return list.slice(0, 250);
   }, [players, club, qStr]);
 
+  // Сборная региона: лучшие по линиям на клиенте (знаменатель — у федерации).
+  const xi = useMemo(() => {
+    const rated = players.filter((p) => p.rating != null);
+    const byLine: Record<Line, RPlayer[]> = { GK: [], DEF: [], MID: [], FWD: [] };
+    for (const p of rated) { const l = lineOf(p.position); if (l) byLine[l].push(p); }
+    (Object.keys(byLine) as Line[]).forEach((l) => byLine[l].sort((a, b) => (b.rating as number) - (a.rating as number)));
+    const used = new Set<number>();
+    const need: Record<Line, number> = { GK: 1, DEF: 4, MID: 3, FWD: 3 };
+    const pick: Record<Line, RPlayer[]> = { GK: [], DEF: [], MID: [], FWD: [] };
+    (Object.keys(need) as Line[]).forEach((l) => { for (const p of byLine[l]) { if (pick[l].length >= need[l]) break; pick[l].push(p); used.add(p.id); } });
+    // добор недостающих из любых рейтинговых
+    const spare = rated.filter((p) => !used.has(p.id)).sort((a, b) => (b.rating as number) - (a.rating as number));
+    return SLOTS.map((s) => {
+      let pl = pick[s.line].shift();
+      if (!pl) pl = spare.shift();
+      return { ...s, player: pl };
+    });
+  }, [players]);
+  const xiReady = xi.filter((s) => s.player).length >= 7;
+
   return (
     <>
       <header className="av-head av-rise">
-        <div>
-          <h1 className="av-title">Игроки региона</h1>
-          <p className="av-sub">Первенство СПб · {players.length.toLocaleString('ru-RU')} разобранных игроков · клик → профиль</p>
+        <div className="av-head__l">
+          <span className="av-kicker">Скаутинг-борд федерации</span>
+          <h1 className="av-title">Таланты региона</h1>
+          <p className="av-sub">{players.length.toLocaleString('ru-RU')} разобранных игроков · {year == null ? 'все возрасты' : `${year} г.р.`} · клик → профиль</p>
         </div>
         <input className="av-search" placeholder="Поиск по имени…" value={qStr} onChange={(e) => setQStr(e.target.value)} />
       </header>
 
-      {clubs.length > 1 && (
-        <div className="av-tabs av-rise" style={{ marginBottom: 4 }}>
-          <button onClick={() => setClub('all')} className={`av-tab${club === 'all' ? ' av-tab--active' : ''}`}>все клубы</button>
-          {clubs.slice(0, 24).map((c) => <button key={c} onClick={() => setClub(c)} className={`av-tab${club === c ? ' av-tab--active' : ''}`}>{c}</button>)}
-        </div>
-      )}
+      {error && <div className="av-surface av-pad av-note av-rise" style={{ color: 'var(--av-danger)' }}>База разборов недоступна — задан ли <code>AVANDATA_API_KEY</code> на сервере?</div>}
 
-      {isLoading && <section className="av-surface av-pad">{[0, 1, 2, 3, 4, 5].map((i) => <div key={i} className="av-skeleton" style={{ height: 40, marginBottom: 8 }} />)}</section>}
-      {error && <div className="av-note" style={{ color: 'var(--av-danger)' }}>База недоступна — задан ли AVANDATA_API_KEY на сервере?</div>}
-      {data && shown.length === 0 && <div className="av-empty"><div className="av-empty__icon">🎯</div>Никого не нашли по фильтру.</div>}
-
-      {shown.length > 0 && (
-        <section className="av-surface av-pad av-rise">
-          <div className="av-row-list">
-            {shown.map((p, i) => (
-              <Link key={p.id} to={`/federation/players/${p.id}`} className="av-row av-row--link" style={{ gridTemplateColumns: '2rem 26px 1fr auto', textDecoration: 'none', color: 'inherit' }}>
-                <span className="av-row__rank">{i + 1}</span>
-                <ClubShield name={p.club ?? p.name} logoUrl={p.clubLogo} size={24} />
-                <div style={{ minWidth: 0 }}>
-                  <div className="av-row__name">{p.name}</div>
-                  <div className="av-row__meta">{p.club ?? '—'}{p.position ? ` · ${p.position}` : ''}{p.birthYear ? ` · ${p.birthYear}` : ''}</div>
-                </div>
-                <span className={`av-rate${p.rating != null && p.rating < 0 ? ' av-rate--neg' : ''}`}>{p.rating ?? '—'}</span>
-              </Link>
-            ))}
+      <div className="av-split av-rise">
+        {/* Реестр */}
+        <section className="av-surface av-pad-lg">
+          <div className="av-section">
+            <div>
+              <h2 className="av-section-title">Реестр игроков</h2>
+              <p className="av-section-sub">Ранжированы по рейтингу разборов</p>
+            </div>
+            {players.length > shown.length && <span className="av-chip av-chip--dim">топ {shown.length}</span>}
           </div>
-          {players.length > shown.length && <p className="av-dim" style={{ fontSize: 11.5, marginTop: 10 }}>Показаны топ-{shown.length} из {players.length.toLocaleString('ru-RU')} по рейтингу. Уточни клубом или поиском.</p>}
+
+          {clubs.length > 1 && (
+            <div className="av-pills" style={{ marginBottom: 14 }}>
+              <button onClick={() => setClub('all')} className={`av-pill${club === 'all' ? ' av-pill--active' : ''}`}>все клубы</button>
+              {clubs.slice(0, 18).map((c) => <button key={c} onClick={() => setClub(c)} className={`av-pill${club === c ? ' av-pill--active' : ''}`}>{c}</button>)}
+            </div>
+          )}
+
+          {isLoading ? [0, 1, 2, 3, 4, 5, 6].map((i) => <div key={i} className="av-skeleton" style={{ height: 42, marginBottom: 8 }} />)
+            : shown.length === 0 ? <div className="av-empty"><div className="av-empty__icon">🎯</div>Никого не нашли по фильтру.</div>
+              : shown.map((p, i) => (
+                <Link key={p.id} to={`/federation/players/${p.id}`} className="av-trow av-trow--link" style={{ gridTemplateColumns: '26px 28px 1fr auto', textDecoration: 'none', color: 'inherit' }}>
+                  <span className="av-trow__rank">{i + 1}</span>
+                  <ClubShield name={p.club ?? p.name} logoUrl={p.clubLogo} size={26} />
+                  <div style={{ minWidth: 0 }}>
+                    <div className="av-trow__name">{p.name}</div>
+                    <div className="av-trow__meta">{p.club ?? '—'}{p.position ? ` · ${p.position}` : ''}{p.birthYear ? ` · ${p.birthYear}` : ''}</div>
+                  </div>
+                  <span className={`av-rate${p.rating != null && p.rating < 0 ? ' av-rate--neg' : ''}`}>{p.rating ?? '—'}</span>
+                </Link>
+              ))}
         </section>
-      )}
+
+        {/* Сборная региона */}
+        <aside style={{ position: 'sticky', top: 130, display: 'grid', gap: 14 }}>
+          <section className="av-surface av-surface--feature av-pad-lg">
+            <div className="av-section" style={{ marginBottom: 10 }}>
+              <div>
+                <h2 className="av-section-title">Сборная региона</h2>
+                <p className="av-section-sub">Лучшие по позициям · {year == null ? 'все возрасты' : `${year} г.р.`}</p>
+              </div>
+            </div>
+            {isLoading ? <div className="av-skeleton" style={{ aspectRatio: '4 / 5' }} /> : !xiReady ? (
+              <div className="av-note">Мало разобранных игроков по позициям для сборной.</div>
+            ) : (
+              <div className="av-pitch">
+                <span className="av-pitch__circle" style={{ position: 'absolute' }} />
+                <span className="av-pitch__mid" style={{ position: 'absolute' }} />
+                <span className="av-pitch__box av-pitch__box--top" style={{ position: 'absolute' }} />
+                <span className="av-pitch__box av-pitch__box--bot" style={{ position: 'absolute' }} />
+                {xi.map((s, idx) => s.player && (
+                  <Link key={idx} to={`/federation/players/${s.player.id}`} className="av-slot" style={{ left: `${s.l}%`, top: `${s.t}%`, textDecoration: 'none', color: 'inherit' }}>
+                    <PlayerAvatar name={s.player.name} size={38} ring={s.line === 'FWD'} />
+                    <span className="av-slot__name" title={s.player.name}>{lastName(s.player.name)}</span>
+                    <span className="av-slot__rate">{s.player.rating}</span>
+                  </Link>
+                ))}
+              </div>
+            )}
+          </section>
+        </aside>
+      </div>
     </>
   );
 }

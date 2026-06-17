@@ -1,39 +1,68 @@
 /* =============================================================================
-   AvanData — дизайн-язык кабинета федерации. Перенесён 1:1 из боевого фронта
-   (github.com/Muzharov-D/avandata-frontend, токены из Figma SportData).
-   Премиальный спорт-терминал: navy + стеклянные карты + циан/маджента +
-   Xolonium-цифры + волновой брендовый фон. Plain CSS (проект не на Tailwind).
+   AvanData — дизайн-язык кабинета федерации (пересборка с нуля, v2).
+   Премиальный спорт-терминал. Перенят КРАФТ боевого фронта
+   (github.com/Muzharov-D/avandata-frontend), не только токены: трёхуровневое
+   стекло, Xolonium-цифры-табло, волновой брендовый фон, крафтовые модули
+   (фикстуры с гербами, табло-счёт, поле сборной, донат-пары, вердикт-находки).
+   Plain CSS (проект не на Tailwind). Всё scoped под .av-root.
+
+   Spacing-шкала строгая, шаг 4px: 4 · 8 · 12 · 16 · 20 · 24 · 32 · 40.
    ============================================================================= */
-@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap');
-@import url('https://fonts.cdnfonts.com/css/xolonium');
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&display=swap');
+/* Цифры-«табло»: Rajdhani (надёжно из Google) с фолбэком на локальный Xolonium,
+   если установлен. Прежний cdnfonts-импорт Xolonium 404-ил — убран. */
 
 .av-root {
+  /* поверхности / фон */
   --av-bg: #0E1438;
   --av-bg-base: #0a0b22;
   --av-ink-800: #171845;
   --av-ink-700: #1d1f55;
-  --av-ink-600: #272a72;
-  --av-accent: #5EEBFC;
-  --av-accent-deep: #23a3b9;
+  /* акценты */
+  --av-cyan: #5EEBFC;
+  --av-cyan-deep: #23a3b9;
+  --av-cyan-glow: #a4f4ff;
   --av-blue: #3054FF;
   --av-blue-glow: #5e76ff;
   --av-blue-deep: #091e80;
   --av-magenta: #FF0099;
   --av-magenta-deep: #85035D;
+  --av-violet: #a78bfa;
+  /* текст: 5 уровней контраста */
   --av-text: #FFFFFF;
   --av-text-card: #EFF1FB;
   --av-text-2: #b9bfe0;
   --av-text-dim: #6f78a8;
+  --av-text-faint: #565f8c;
+  /* семантика */
   --av-success: #34d399;
   --av-warning: #fbbf24;
   --av-danger: #FD0036;
-  --av-radius: 12px;
-  --av-radius-sm: 8px;
+  /* геометрия */
+  --av-r-sm: 8px;
+  --av-r: 12px;
+  --av-r-lg: 16px;
+  /* шрифты */
   --av-font: 'Montserrat', Roboto, -apple-system, 'Segoe UI', Arial, sans-serif;
-  --av-display: 'Xolonium', 'Orbitron', 'Rajdhani', sans-serif;
+  --av-display: 'Rajdhani', 'Montserrat', sans-serif;
+  /* тени */
+  --av-shadow: 0 4px 4px rgba(0, 0, 0, 0.10);
+  --av-shadow-lg: 0 18px 50px rgba(4, 7, 24, 0.55);
+  --av-glow: 0 0 28px rgba(94, 235, 252, 0.25);
+  /* алиасы обратной совместимости (старые имена в инлайн-стилях экранов) */
+  --av-accent: var(--av-cyan);
+  --av-accent-deep: var(--av-cyan-deep);
+  --av-radius: var(--av-r);
+  --av-radius-sm: var(--av-r-sm);
 }
 
-/* ---- Брендовый волновой фон (две растровые подложки, screen-blend) ---- */
+.av-root { font-family: var(--av-font); color: var(--av-text); -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; text-rendering: optimizeLegibility; }
+.av-root *::selection { background: rgba(94, 235, 252, 0.4); color: #fff; }
+
+/* =============================================================================
+   ВОЛНОВОЙ БРЕНДОВЫЙ ФОН — две растровые подложки + screen-blend
+   ============================================================================= */
 .av-bg {
   position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden;
   background: var(--av-bg-base) url('/brand/bg-base.png') center/cover no-repeat;
@@ -41,248 +70,335 @@
 .av-bg::after {
   content: ''; position: absolute; inset: 0;
   background: url('/brand/bg-waves.png') center/cover no-repeat;
-  opacity: 0.9; mix-blend-mode: screen;
+  opacity: 0.85; mix-blend-mode: screen;
 }
 
-/* ---- Оболочка: верхний нав (полная ширина под контент) ---- */
-.av-root { font-family: var(--av-font); color: var(--av-text); }
+/* =============================================================================
+   ОБОЛОЧКА — верхний нав
+   ============================================================================= */
 .av-app { position: relative; z-index: 1; min-height: 100vh; display: flex; flex-direction: column; }
 
 .av-topbar {
-  position: sticky; top: 0; z-index: 30; display: flex; align-items: center; gap: 22px;
-  padding: 10px 24px; background: rgba(10, 11, 34, 0.72); backdrop-filter: blur(20px);
+  position: sticky; top: 0; z-index: 30; display: flex; align-items: center; gap: 24px;
+  padding: 12px 24px; background: rgba(10, 11, 34, 0.70); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
   border-bottom: 1px solid rgba(94, 235, 252, 0.14);
 }
-.av-brand { display: flex; align-items: center; gap: 10px; text-decoration: none; color: inherit; flex: none; }
-.av-brand img { width: 30px; height: 30px; object-fit: contain; }
-.av-brand__name { font-weight: 800; font-size: 15px; line-height: 1.1; }
-.av-brand__name b { color: var(--av-accent); }
-.av-brand__sub { font-size: 9px; color: var(--av-text-dim); letter-spacing: 0.06em; text-transform: uppercase; }
-.av-topnav { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
-.av-topnav .av-tab { text-decoration: none; }
+.av-brand { display: flex; align-items: center; gap: 11px; text-decoration: none; color: inherit; flex: none; }
+.av-brand img { width: 32px; height: 32px; object-fit: contain; filter: drop-shadow(0 0 10px rgba(94, 235, 252, 0.35)); }
+.av-brand__name { font-weight: 800; font-size: 16px; line-height: 1.05; letter-spacing: -0.01em; }
+.av-brand__name b { color: var(--av-cyan); font-weight: 800; }
+.av-brand__sub { font-size: 9px; color: var(--av-text-dim); letter-spacing: 0.10em; text-transform: uppercase; margin-top: 2px; }
+.av-topnav { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
 .av-topbar__right { margin-left: auto; display: flex; align-items: center; gap: 12px; flex: none; }
 .av-topbar__who { font-size: 12px; color: var(--av-text-2); max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.av-logout { background: rgba(255, 255, 255, 0.04); color: var(--av-text-2); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: var(--av-radius-sm); padding: 6px 12px; font-size: 12.5px; }
-@media (hover: hover) { .av-logout:hover { color: var(--av-text); border-color: rgba(94, 235, 252, 0.4); } }
+.av-logout { background: rgba(255, 255, 255, 0.04); color: var(--av-text-2); border: 1px solid rgba(255, 255, 255, 0.10); border-radius: var(--av-r-sm); padding: 7px 13px; font-size: 12.5px; font-weight: 600; transition: all 0.15s ease; }
+@media (hover: hover) { .av-logout:hover { color: var(--av-text); border-color: rgba(94, 235, 252, 0.4); background: rgba(94, 235, 252, 0.08); } }
 
-.av-subbar { position: sticky; top: 51px; z-index: 25; padding: 8px 24px; background: rgba(10, 11, 34, 0.5); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(255, 255, 255, 0.06); }
-.av-yearbar { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
-.av-yearbar__label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--av-text-dim); margin-right: 4px; }
-.av-ychip { font-family: var(--av-display); font-size: 13px; font-weight: 700; padding: 4px 12px; border-radius: var(--av-radius-sm); color: var(--av-text-2); background: rgba(255, 255, 255, 0.04); border: 1px solid transparent; transition: all 0.15s ease; font-variant-numeric: tabular-nums; }
-@media (hover: hover) { .av-ychip:hover { color: var(--av-text); background: rgba(255, 255, 255, 0.08); } }
-.av-ychip--active { color: #06121f; background: var(--av-accent); border-color: var(--av-accent); box-shadow: 0 0 14px rgba(94, 235, 252, 0.35); }
-
-.av-content { flex: 1; min-width: 0; padding: 20px 24px 60px; }
-.av-page { max-width: 1340px; margin: 0 auto; display: grid; gap: 16px; }
-
-/* ---- Шапка экрана ---- */
-.av-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; }
-.av-title { font-family: var(--av-font); font-size: 23px; font-weight: 800; letter-spacing: -0.01em; margin: 0; line-height: 1.1; }
-.av-sub { color: var(--av-text-dim); font-size: 12px; margin: 5px 0 0; letter-spacing: 0.02em; }
-
-/* ---- Стеклянные поверхности ---- */
-.av-surface {
-  background: rgba(239, 241, 251, 0.04); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(94, 235, 252, 0.12); border-radius: var(--av-radius);
-  box-shadow: 0 4px 4px rgba(0, 0, 0, 0.1);
+/* верхний нав-таб (главная навигация) */
+.av-navtab {
+  position: relative; text-decoration: none; padding: 8px 14px; border-radius: var(--av-r-sm);
+  font-size: 13px; font-weight: 600; letter-spacing: 0.01em; color: var(--av-text-2);
+  border: 1px solid transparent; transition: all 0.15s ease; white-space: nowrap;
 }
-.av-surface--glow { border-color: rgba(94, 235, 252, 0.5); box-shadow: 0 0 28px rgba(94, 235, 252, 0.2), inset 0 0 0 1px rgba(255, 255, 255, 0.04); }
-.av-surface--magenta { border-color: rgba(255, 0, 153, 0.4); box-shadow: 0 0 28px rgba(255, 0, 153, 0.18); }
-.av-pad { padding: 16px 18px; }
+@media (hover: hover) { .av-navtab:hover { color: var(--av-text); background: rgba(255, 255, 255, 0.05); } }
+.av-navtab--active {
+  color: var(--av-text);
+  background: linear-gradient(135deg, rgba(94, 235, 252, 0.20) 0%, rgba(48, 84, 255, 0.20) 100%);
+  border-color: rgba(94, 235, 252, 0.40); box-shadow: 0 0 18px rgba(94, 235, 252, 0.15);
+}
 
+/* подполоса фильтра возрастов */
+.av-subbar { position: sticky; top: 57px; z-index: 25; padding: 9px 24px; background: rgba(10, 11, 34, 0.50); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-bottom: 1px solid rgba(255, 255, 255, 0.06); }
+.av-yearbar { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.av-yearbar__label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.10em; color: var(--av-text-faint); margin-right: 6px; }
+.av-ychip { font-family: var(--av-display); font-size: 13px; font-weight: 700; padding: 5px 13px; border-radius: var(--av-r-sm); color: var(--av-text-2); background: rgba(255, 255, 255, 0.04); border: 1px solid transparent; transition: all 0.15s ease; font-variant-numeric: tabular-nums; letter-spacing: 0.02em; }
+@media (hover: hover) { .av-ychip:hover { color: var(--av-text); background: rgba(255, 255, 255, 0.08); } }
+.av-ychip--active { color: #06121f; background: var(--av-cyan); border-color: var(--av-cyan); box-shadow: 0 0 14px rgba(94, 235, 252, 0.40); }
+
+.av-content { flex: 1; min-width: 0; padding: 24px; }
+.av-page { max-width: 1360px; margin: 0 auto; display: grid; gap: 20px; }
+
+/* =============================================================================
+   ШАПКА ЭКРАНА — крупный заголовок + кикер
+   ============================================================================= */
+.av-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+.av-head__l { min-width: 0; }
+.av-kicker { display: inline-flex; align-items: center; gap: 7px; font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.14em; color: var(--av-cyan); }
+.av-kicker::before { content: ''; width: 18px; height: 2px; border-radius: 2px; background: linear-gradient(90deg, var(--av-cyan), transparent); }
+.av-title { font-family: var(--av-font); font-size: 28px; font-weight: 800; letter-spacing: -0.02em; margin: 8px 0 0; line-height: 1.05; }
+.av-sub { color: var(--av-text-dim); font-size: 12.5px; margin: 6px 0 0; letter-spacing: 0.01em; }
+.av-link { color: var(--av-cyan); text-decoration: none; font-size: 12.5px; font-weight: 600; display: inline-flex; align-items: center; gap: 4px; padding: 7px 12px; border-radius: var(--av-r-sm); border: 1px solid rgba(94, 235, 252, 0.22); transition: all 0.15s ease; }
+@media (hover: hover) { .av-link:hover { background: rgba(94, 235, 252, 0.10); border-color: rgba(94, 235, 252, 0.5); } }
+
+/* =============================================================================
+   СТЕКЛЯННЫЕ ПОВЕРХНОСТИ — 3 уровня + featured
+   ============================================================================= */
+.av-surface {
+  position: relative; background: rgba(239, 241, 251, 0.04); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(94, 235, 252, 0.12); border-radius: var(--av-r); box-shadow: var(--av-shadow);
+}
+.av-surface-soft { background: rgba(239, 241, 251, 0.025); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); border: 1px solid rgba(255, 255, 255, 0.06); border-radius: var(--av-r-sm); }
+.av-surface-glow { border-color: rgba(94, 235, 252, 0.50); box-shadow: 0 0 28px rgba(94, 235, 252, 0.22), inset 0 0 0 1px rgba(255, 255, 255, 0.04); }
+/* featured: тонкая верхняя cyan-полоса + лёгкий внутренний градиент-блик */
+.av-surface--feature { overflow: hidden; background: linear-gradient(135deg, rgba(239, 241, 251, 0.06) 0%, rgba(239, 241, 251, 0.02) 100%); }
+.av-surface--feature::before { content: ''; position: absolute; left: 0; right: 0; top: 0; height: 2px; background: linear-gradient(90deg, transparent, var(--av-cyan), transparent); opacity: 0.7; }
+.av-pad { padding: 18px 20px; }
+.av-pad-lg { padding: 24px; }
+
+/* заголовок секции внутри панели */
+.av-section { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
 .av-section-title { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--av-text-card); margin: 0; }
-.av-section-sub { font-size: 10px; color: var(--av-text-dim); letter-spacing: 0.04em; margin: 3px 0 0; line-height: 1.5; }
+.av-section-sub { font-size: 10.5px; color: var(--av-text-dim); letter-spacing: 0.03em; margin: 4px 0 0; line-height: 1.5; }
 .av-muted { color: var(--av-text-2); }
 .av-dim { color: var(--av-text-dim); }
+.av-faint { color: var(--av-text-faint); }
 
-/* ---- Xolonium-цифры (табло) ---- */
-.av-num { font-family: var(--av-display); font-weight: 400; letter-spacing: 0.04em; font-variant-numeric: tabular-nums; }
+/* Xolonium-цифры (табло) */
+.av-num { font-family: var(--av-display); font-weight: 400; letter-spacing: 0.03em; font-variant-numeric: tabular-nums; }
 
-/* ---- Табы / пилюли ---- */
-.av-tabs { display: flex; gap: 6px; flex-wrap: wrap; }
-.av-tab {
-  padding: 6px 13px; border-radius: var(--av-radius-sm); font-size: 12px; font-weight: 600;
-  text-transform: uppercase; letter-spacing: 0.05em; color: var(--av-text-2);
-  background: rgba(255, 255, 255, 0.04); border: 1px solid transparent; transition: all 0.15s ease; white-space: nowrap;
-}
-@media (hover: hover) { .av-tab:hover { color: var(--av-text); background: rgba(255, 255, 255, 0.07); } }
-.av-tab--active {
-  color: var(--av-text);
-  background: linear-gradient(135deg, rgba(94, 235, 252, 0.35) 0%, rgba(48, 84, 255, 0.35) 100%);
-  border-color: rgba(94, 235, 252, 0.5); box-shadow: 0 0 16px rgba(94, 235, 252, 0.2);
-}
+/* =============================================================================
+   ТАБЫ / ПИЛЮЛИ (дивизионы, фильтры внутри экранов)
+   ============================================================================= */
+.av-pills { display: flex; gap: 6px; flex-wrap: wrap; }
+.av-pill { padding: 6px 13px; border-radius: var(--av-r-sm); font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--av-text-2); background: rgba(255, 255, 255, 0.04); border: 1px solid transparent; transition: all 0.15s ease; white-space: nowrap; }
+@media (hover: hover) { .av-pill:hover { color: var(--av-text); background: rgba(255, 255, 255, 0.07); } }
+.av-pill--active { color: var(--av-text); background: linear-gradient(135deg, rgba(94, 235, 252, 0.35) 0%, rgba(48, 84, 255, 0.35) 100%); border-color: rgba(94, 235, 252, 0.5); box-shadow: 0 0 16px rgba(94, 235, 252, 0.2); }
 
-/* ---- KPI крупные плитки ---- */
-.av-kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; }
-.av-kpi { padding: 16px 16px; }
-.av-kpi__label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--av-text-dim); }
-.av-kpi__value { font-family: var(--av-display); font-size: 34px; font-weight: 400; line-height: 1; margin-top: 8px; font-variant-numeric: tabular-nums; }
-.av-kpi__extra { font-size: 11px; color: var(--av-text-2); margin-top: 6px; }
-.av-kpi--accent .av-kpi__value { color: var(--av-accent); }
-.av-kpi--magenta .av-kpi__value { color: var(--av-magenta); }
-.av-kpi--success .av-kpi__value { color: var(--av-success); }
-.av-kpi--blue .av-kpi__value { color: var(--av-blue-glow); }
-
-/* ---- Рейтинг-пилюля ---- */
-.av-rate {
-  font-family: var(--av-display); font-weight: 700; font-variant-numeric: tabular-nums; text-align: center;
-  min-width: 44px; padding: 4px 8px; border-radius: var(--av-radius-sm); font-size: 14px;
-  background: rgba(94, 235, 252, 0.1); color: var(--av-accent); border: 1px solid rgba(94, 235, 252, 0.25);
-}
-.av-rate--neg { background: rgba(253, 0, 54, 0.1); color: var(--av-danger); border-color: rgba(253, 0, 54, 0.25); }
-
-/* ---- Чипы-статусы ---- */
+/* чипы-статусы */
 .av-chip { display: inline-flex; align-items: center; gap: 4px; font-size: 9.5px; text-transform: uppercase; letter-spacing: 0.06em; font-weight: 700; padding: 3px 8px; border-radius: 6px; border: 1px solid; white-space: nowrap; }
-.av-chip--accent { background: rgba(94, 235, 252, 0.12); color: var(--av-accent); border-color: rgba(94, 235, 252, 0.3); }
-.av-chip--success { background: rgba(52, 211, 153, 0.14); color: var(--av-success); border-color: rgba(52, 211, 153, 0.3); }
-.av-chip--warning { background: rgba(251, 191, 36, 0.14); color: var(--av-warning); border-color: rgba(251, 191, 36, 0.3); }
-.av-chip--magenta { background: rgba(255, 0, 153, 0.14); color: var(--av-magenta); border-color: rgba(255, 0, 153, 0.3); }
+.av-chip--cyan { background: rgba(94, 235, 252, 0.12); color: var(--av-cyan); border-color: rgba(94, 235, 252, 0.30); }
+.av-chip--success { background: rgba(52, 211, 153, 0.14); color: var(--av-success); border-color: rgba(52, 211, 153, 0.30); }
+.av-chip--warning { background: rgba(251, 191, 36, 0.14); color: var(--av-warning); border-color: rgba(251, 191, 36, 0.30); }
+.av-chip--magenta { background: rgba(255, 0, 153, 0.14); color: var(--av-magenta); border-color: rgba(255, 0, 153, 0.30); }
+.av-chip--danger { background: rgba(253, 0, 54, 0.14); color: var(--av-danger); border-color: rgba(253, 0, 54, 0.30); }
+.av-chip--dim { background: rgba(255, 255, 255, 0.04); color: var(--av-text-dim); border-color: rgba(255, 255, 255, 0.10); }
+.av-chip--pulse { animation: av-pulse 1.8s ease-in-out infinite; }
+@keyframes av-pulse { 50% { opacity: 0.55; } }
 
-/* ---- Таблица-реестр (строки с гербом) ---- */
-.av-row-list { display: flex; flex-direction: column; }
-.av-row {
-  display: grid; align-items: center; gap: 10px; padding: 8px 4px;
-  border-bottom: 1px solid rgba(94, 235, 252, 0.06); color: var(--av-text); font-size: 13.5px;
+/* =============================================================================
+   ПУЛЬС РЕГИОНА — герой-полоса витальных показателей (главный экран)
+   Stat-блоки с цветным рейлом слева и крупной Xolonium-цифрой.
+   ============================================================================= */
+.av-pulse { display: grid; grid-template-columns: repeat(auto-fit, minmax(168px, 1fr)); gap: 14px; }
+.av-stat { position: relative; padding: 16px 18px 16px 20px; overflow: hidden; }
+.av-stat::before { content: ''; position: absolute; left: 0; top: 14px; bottom: 14px; width: 3px; border-radius: 3px; background: var(--rail, var(--av-cyan)); box-shadow: 0 0 14px var(--rail, var(--av-cyan)); }
+.av-stat__label { font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--av-text-dim); }
+.av-stat__value { font-family: var(--av-display); font-size: 38px; font-weight: 700; line-height: 1; margin-top: 10px; font-variant-numeric: tabular-nums; color: var(--av-text); }
+.av-stat__extra { font-size: 11px; color: var(--av-text-2); margin-top: 8px; display: flex; align-items: center; gap: 6px; }
+.av-stat--cyan { --rail: var(--av-cyan); } .av-stat--cyan .av-stat__value { color: var(--av-cyan); }
+.av-stat--blue { --rail: var(--av-blue-glow); } .av-stat--blue .av-stat__value { color: var(--av-blue-glow); }
+.av-stat--magenta { --rail: var(--av-magenta); } .av-stat--magenta .av-stat__value { color: var(--av-magenta); }
+.av-stat--success { --rail: var(--av-success); } .av-stat--success .av-stat__value { color: var(--av-success); }
+.av-stat--violet { --rail: var(--av-violet); } .av-stat--violet .av-stat__value { color: var(--av-violet); }
+
+/* компактная KPI-плитка (вторичные метрики) */
+.av-kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; }
+.av-kpi { padding: 14px 16px; }
+.av-kpi__label { font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.07em; color: var(--av-text-dim); }
+.av-kpi__value { font-family: var(--av-display); font-size: 28px; font-weight: 700; line-height: 1; margin-top: 8px; font-variant-numeric: tabular-nums; }
+
+/* =============================================================================
+   ФИКСТУРА — карточка результата матча (крафт StadiumDayCard: гербы + табло)
+   ============================================================================= */
+.av-fixtures { display: grid; grid-template-columns: repeat(auto-fill, minmax(268px, 1fr)); gap: 12px; }
+.av-fixture {
+  display: flex; flex-direction: column; gap: 12px; padding: 14px 15px; text-decoration: none; color: inherit;
+  background: rgba(239, 241, 251, 0.035); border: 1px solid rgba(94, 235, 252, 0.10); border-radius: var(--av-r);
+  transition: border-color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
 }
-.av-row:last-child { border-bottom: 0; }
-.av-row--link { cursor: pointer; transition: background 0.15s ease; border-radius: 6px; }
-@media (hover: hover) { .av-row--link:hover { background: rgba(255, 255, 255, 0.04); } }
-.av-row__rank { color: var(--av-text-dim); font-size: 12px; text-align: right; font-variant-numeric: tabular-nums; width: 26px; }
-.av-row__name { font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
-.av-row__meta { font-size: 11px; color: var(--av-text-dim); margin-top: 1px; }
-.av-row__val { font-family: var(--av-display); font-weight: 700; text-align: right; font-variant-numeric: tabular-nums; color: var(--av-accent); }
+@media (hover: hover) { .av-fixture:hover { border-color: rgba(94, 235, 252, 0.40); transform: translateY(-2px); box-shadow: 0 10px 26px rgba(4, 7, 24, 0.45); } }
+.av-fixture__top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.av-fixture__age { font-size: 9.5px; font-weight: 700; letter-spacing: 0.05em; color: var(--av-cyan); text-transform: uppercase; }
+.av-fixture__date { font-family: var(--av-display); font-size: 12px; font-weight: 700; letter-spacing: 0.04em; color: var(--av-text-2); font-variant-numeric: tabular-nums; }
+.av-fixture__body { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 10px; }
+.av-fixture__team { display: flex; flex-direction: column; align-items: center; gap: 7px; min-width: 0; text-align: center; }
+.av-fixture__team-name { font-size: 11px; line-height: 1.2; color: var(--av-text-2); max-width: 92px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.av-fixture__score { display: flex; align-items: center; gap: 6px; font-family: var(--av-display); font-weight: 700; font-size: 24px; line-height: 1; font-variant-numeric: tabular-nums; }
+.av-fixture__score-w { color: var(--av-text); }
+.av-fixture__score-l { color: var(--av-text-faint); }
+.av-fixture__sep { color: var(--av-text-faint); font-size: 18px; }
 
-/* ---- Герб клуба (генеративный, см. ClubShield.tsx) ---- */
-.av-shield { display: inline-block; border-radius: 50%; object-fit: contain; background: rgba(255, 255, 255, 0.85); padding: 1px; }
+/* =============================================================================
+   ПРЕМИУМ-ТАБЛИЦА: дивизион-группа со строками-клубами (герб + форма)
+   ============================================================================= */
+.av-group { margin-bottom: 18px; }
+.av-group:last-child { margin-bottom: 0; }
+.av-group__head { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding-bottom: 8px; margin-bottom: 4px; border-bottom: 1px solid rgba(94, 235, 252, 0.16); }
+.av-group__name { color: var(--av-cyan); font-weight: 700; font-size: 12.5px; letter-spacing: 0.04em; text-transform: uppercase; }
+.av-group__cols { display: grid; gap: 0; font-size: 9.5px; letter-spacing: 0.05em; text-transform: uppercase; color: var(--av-text-faint); text-align: right; font-variant-numeric: tabular-nums; }
 
-/* ---- Данные-таблица (сортируемая) ---- */
-.av-dt { width: 100%; border-collapse: collapse; font-size: 13px; }
-.av-dt th {
-  text-align: right; padding: 9px 11px; font-weight: 700; font-size: 10px; letter-spacing: 0.06em;
-  text-transform: uppercase; color: var(--av-text-dim); white-space: nowrap; border-bottom: 1px solid rgba(94, 235, 252, 0.14);
-}
-.av-dt th:first-child, .av-dt td:first-child { text-align: left; }
-.av-dt td { padding: 11px; border-bottom: 1px solid rgba(94, 235, 252, 0.06); font-variant-numeric: tabular-nums; }
-.av-dt tbody tr:last-child td { border-bottom: 0; }
-@media (hover: hover) { .av-dt tbody tr:hover { background: rgba(255, 255, 255, 0.03); } }
-.av-dt__best { color: var(--av-accent); font-weight: 700; }
+.av-trow { display: grid; align-items: center; gap: 10px; padding: 8px 6px; border-radius: 7px; border-bottom: 1px solid rgba(94, 235, 252, 0.05); transition: background 0.15s ease; }
+.av-trow:last-child { border-bottom: 0; }
+.av-trow--link { cursor: pointer; }
+@media (hover: hover) { .av-trow--link:hover { background: rgba(255, 255, 255, 0.04); } }
+.av-trow--lead { background: linear-gradient(90deg, rgba(94, 235, 252, 0.10), transparent 70%); }
+.av-trow__rank { width: 22px; text-align: center; font-family: var(--av-display); font-weight: 700; font-size: 13px; color: var(--av-text-dim); font-variant-numeric: tabular-nums; }
+.av-trow--lead .av-trow__rank { color: var(--av-cyan); }
+.av-trow__name { font-weight: 500; font-size: 13.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+.av-trow__meta { font-size: 10.5px; color: var(--av-text-dim); margin-top: 1px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.av-trow__stats { display: grid; text-align: right; font-variant-numeric: tabular-nums; font-size: 12.5px; }
+.av-trow__stats span { color: var(--av-text-2); }
+.av-trow__pts { color: var(--av-cyan) !important; font-weight: 700; font-family: var(--av-display); }
+.av-pos { color: var(--av-success); } .av-neg { color: var(--av-danger); }
 
-/* ---- Метр (бар) ---- */
-.av-meter { height: 6px; border-radius: 3px; background: rgba(255, 255, 255, 0.08); overflow: hidden; }
-.av-meter__fill { display: block; height: 100%; border-radius: 3px; transition: width 0.5s ease; }
+/* =============================================================================
+   МЕТР / РЕЙТИНГ-ПИЛЮЛЯ
+   ============================================================================= */
+.av-meter { height: 6px; border-radius: 3px; background: rgba(255, 255, 255, 0.07); overflow: hidden; }
+.av-meter__fill { display: block; height: 100%; border-radius: 3px; transition: width 0.6s ease; background: var(--av-cyan); }
+.av-rate { font-family: var(--av-display); font-weight: 700; font-variant-numeric: tabular-nums; text-align: center; min-width: 46px; padding: 4px 9px; border-radius: var(--av-r-sm); font-size: 14px; background: rgba(94, 235, 252, 0.10); color: var(--av-cyan); border: 1px solid rgba(94, 235, 252, 0.25); }
+.av-rate--neg { background: rgba(253, 0, 54, 0.10); color: var(--av-danger); border-color: rgba(253, 0, 54, 0.25); }
 
-/* ---- Состояния ---- */
-.av-note { color: var(--av-text-2); font-size: 13.5px; padding: 12px 0; }
-.av-empty { padding: 40px 20px; text-align: center; color: var(--av-text-2); }
-.av-empty__icon { font-size: 28px; opacity: 0.7; margin-bottom: 8px; }
-.av-skeleton { background: linear-gradient(90deg, rgba(255,255,255,0.03) 25%, rgba(255,255,255,0.07) 37%, rgba(255,255,255,0.03) 63%); background-size: 400% 100%; animation: av-shimmer 1.4s ease-in-out infinite; border-radius: var(--av-radius-sm); }
-@keyframes av-shimmer { 0% { background-position: 100% 0; } 100% { background-position: -100% 0; } }
+/* герб клуба */
+.av-shield { display: inline-block; border-radius: 50%; object-fit: contain; background: rgba(255, 255, 255, 0.88); padding: 1px; box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.12); flex: none; }
 
-.av-search {
-  background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(94, 235, 252, 0.18);
-  border-radius: var(--av-radius-sm); padding: 8px 13px; font-size: 13px; color: var(--av-text);
-  font-family: var(--av-font); min-width: 200px; outline: none;
-}
-.av-search::placeholder { color: var(--av-text-dim); }
-.av-search:focus { border-color: rgba(94, 235, 252, 0.5); box-shadow: 0 0 12px rgba(94, 235, 252, 0.15); }
+/* =============================================================================
+   ПОЛЕ СБОРНОЙ РЕГИОНА (Team of region pitch)
+   ============================================================================= */
+.av-pitch { position: relative; aspect-ratio: 4 / 5; border-radius: var(--av-r-lg); overflow: hidden; border: 1px solid rgba(94, 235, 252, 0.30); background: linear-gradient(180deg, rgba(48, 84, 255, 0.14), rgba(48, 84, 255, 0.05)); }
+.av-pitch__line { position: absolute; border-color: rgba(94, 235, 252, 0.28); }
+.av-pitch__mid { left: 0; right: 0; top: 50%; border-top: 1px solid rgba(94, 235, 252, 0.28); }
+.av-pitch__circle { left: 50%; top: 50%; width: 96px; height: 96px; border: 1px solid rgba(94, 235, 252, 0.28); border-radius: 50%; transform: translate(-50%, -50%); }
+.av-pitch__box { left: 50%; width: 184px; height: 62px; transform: translateX(-50%); border: 1px solid rgba(94, 235, 252, 0.18); }
+.av-pitch__box--top { top: 0; border-top: 0; }
+.av-pitch__box--bot { bottom: 0; border-bottom: 0; }
+.av-slot { position: absolute; transform: translate(-50%, -50%); display: flex; flex-direction: column; align-items: center; gap: 3px; text-align: center; }
+.av-slot__name { font-size: 10px; font-weight: 600; max-width: 78px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-shadow: 0 1px 4px rgba(0, 0, 0, 0.6); }
+.av-slot__rate { font-family: var(--av-display); font-size: 10px; font-weight: 700; color: var(--av-cyan); font-variant-numeric: tabular-nums; }
+.av-slot__pos { position: absolute; left: 8px; font-size: 9px; font-weight: 700; letter-spacing: 0.10em; text-transform: uppercase; color: var(--av-text-faint); }
 
-.av-link { color: var(--av-accent); text-decoration: none; font-size: 12px; font-weight: 600; }
-@media (hover: hover) { .av-link:hover { color: var(--av-accent-deep); } }
+/* =============================================================================
+   ПРОФИЛЬ ИГРОКА — пицца / донат / лидерборд-метрики
+   ============================================================================= */
+.av-pizza, .av-radar, .av-donut { display: block; overflow: visible; }
+.av-donut text { font-family: var(--av-display); }
+.av-pizza-legend { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 6px 16px; margin-top: 12px; }
+.av-pizza-legend span { display: flex; align-items: center; gap: 7px; font-size: 11px; color: var(--av-text-2); }
+.av-pizza-legend i { width: 9px; height: 9px; border-radius: 2px; flex: none; }
 
-/* ---- Мотиво входа ---- */
-.av-rise { animation: av-rise 0.4s ease both; }
-@keyframes av-rise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
-@media (prefers-reduced-motion: reduce) { .av-rise, .av-meter__fill { animation: none; transition: none; } }
+.av-metricbar { display: grid; grid-template-columns: 1fr 38px; align-items: center; gap: 10px; padding: 5px 0; }
+.av-metricbar__l { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.av-metricbar__name { font-size: 12px; color: var(--av-text-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.av-metricbar__track { flex: 1; height: 7px; border-radius: 4px; background: rgba(255, 255, 255, 0.06); overflow: hidden; min-width: 40px; }
+.av-metricbar__fill { display: block; height: 100%; border-radius: 4px; transition: width 0.6s ease; }
+.av-metricbar__val { font-family: var(--av-display); font-weight: 700; font-size: 12.5px; text-align: right; font-variant-numeric: tabular-nums; color: var(--av-text); }
 
-/* ---- Две колонки ---- */
-.av-cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 16px; align-items: start; }
+/* перцентиль-чип в шапке профиля */
+.av-pct { display: inline-flex; align-items: baseline; gap: 5px; padding: 5px 11px; border-radius: var(--av-r-sm); background: rgba(94, 235, 252, 0.10); border: 1px solid rgba(94, 235, 252, 0.30); }
+.av-pct b { font-family: var(--av-display); font-size: 16px; font-weight: 700; color: var(--av-cyan); }
+.av-pct span { font-size: 11px; color: var(--av-text-2); }
 
-/* ---- Визуальное сравнение турниров (бары) ---- */
-.av-cmp { display: grid; gap: 16px; }
-.av-cmp__metric { }
-.av-cmp__head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 8px; }
-.av-cmp__name { font-size: 13px; font-weight: 700; color: var(--av-text-card); }
-.av-cmp__row { display: grid; grid-template-columns: 120px 1fr 64px; align-items: center; gap: 12px; margin-bottom: 7px; }
+/* шапка профиля игрока */
+.av-phead { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; }
+.av-phead__id { min-width: 0; }
+.av-phead__name { font-size: 26px; font-weight: 800; letter-spacing: -0.02em; margin: 0; line-height: 1.05; }
+.av-phead__meta { color: var(--av-text-dim); font-size: 12.5px; margin-top: 5px; }
+.av-phead__chips { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+
+/* =============================================================================
+   ВЕРДИКТ-НАХОДКИ (Справедливость) — редакционные приговоры
+   ============================================================================= */
+.av-finding { position: relative; overflow: hidden; }
+.av-finding--hero { background: linear-gradient(135deg, rgba(255, 0, 153, 0.07) 0%, rgba(239, 241, 251, 0.03) 55%); border-color: rgba(255, 0, 153, 0.30); }
+.av-finding--hero::before { content: ''; position: absolute; left: 0; right: 0; top: 0; height: 2px; background: linear-gradient(90deg, transparent, var(--av-magenta), transparent); opacity: 0.7; }
+.av-finding__kicker { display: inline-flex; align-items: center; gap: 8px; font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.12em; color: var(--av-magenta); }
+.av-finding--cyan .av-finding__kicker { color: var(--av-cyan); }
+.av-verdict { font-family: var(--av-font); font-weight: 800; font-size: 22px; line-height: 1.22; letter-spacing: -0.015em; margin: 12px 0 8px; text-wrap: balance; }
+.av-finding--hero .av-verdict { font-size: 26px; }
+.av-verdict b { color: var(--av-magenta); }
+.av-finding--cyan .av-verdict b { color: var(--av-cyan); }
+.av-why { color: var(--av-text-2); font-size: 12.5px; line-height: 1.55; max-width: 78ch; margin: 0; }
+
+/* большой контраст-разрыв (Q1 vs Q4, лига vs лига) */
+.av-gap { display: flex; align-items: center; gap: 20px; flex-wrap: wrap; }
+.av-gap__cell { text-align: center; }
+.av-gap__big { font-family: var(--av-display); font-size: 42px; font-weight: 700; line-height: 1; font-variant-numeric: tabular-nums; }
+.av-gap__lbl { font-size: 10.5px; color: var(--av-text-dim); text-transform: uppercase; letter-spacing: 0.06em; margin-top: 7px; }
+.av-gap__x { font-family: var(--av-display); font-size: 24px; color: var(--av-text-faint); font-weight: 700; }
+
+/* распределение по кварталам с эталоном 25% (RAE) */
+.av-rae__row { display: grid; grid-template-columns: 96px 1fr 48px; align-items: center; gap: 12px; margin-bottom: 10px; }
+.av-rae__label { font-size: 12px; color: var(--av-text-2); }
+.av-rae__track { position: relative; height: 28px; border-radius: 6px; background: rgba(255, 255, 255, 0.05); overflow: hidden; }
+.av-rae__fill { display: block; height: 100%; border-radius: 6px; transition: width 0.7s ease; }
+.av-rae__ref { position: absolute; top: -4px; bottom: -4px; width: 2px; background: rgba(255, 255, 255, 0.55); z-index: 2; }
+.av-rae__reflabel { position: absolute; top: -17px; transform: translateX(-50%); font-size: 9px; color: var(--av-text-dim); white-space: nowrap; }
+.av-rae__val { font-family: var(--av-display); font-weight: 700; text-align: right; font-variant-numeric: tabular-nums; }
+
+/* =============================================================================
+   ТЕЛЕСКОП КОГОРТ — год рождения × сигналы
+   ============================================================================= */
+.av-cohorts { display: grid; gap: 12px; }
+.av-cohort { display: grid; grid-template-columns: 92px 1.5fr 0.9fr 1.4fr; gap: 22px; align-items: center; padding: 16px 18px; cursor: pointer; text-align: left; width: 100%; transition: border-color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease; }
+@media (hover: hover) { .av-cohort:hover { border-color: rgba(94, 235, 252, 0.45); transform: translateY(-2px); box-shadow: 0 0 24px rgba(94, 235, 252, 0.12); } }
+.av-cohort__year { font-family: var(--av-display); font-size: 32px; font-weight: 700; line-height: 1; color: var(--av-text); font-variant-numeric: tabular-nums; }
+.av-cohort__funnel { font-size: 10.5px; color: var(--av-text-dim); margin-top: 7px; }
+.av-cohort__lbl { font-size: 9px; text-transform: uppercase; letter-spacing: 0.07em; color: var(--av-text-faint); margin-bottom: 7px; }
+.av-qbar { display: flex; height: 18px; border-radius: 5px; overflow: hidden; background: rgba(255, 255, 255, 0.05); }
+.av-qbar span { height: 100%; display: block; }
+.av-cohort__skew { display: inline-flex; align-items: baseline; gap: 6px; margin-top: 8px; font-size: 11px; color: var(--av-text-2); }
+.av-cohort__skew b { font-family: var(--av-display); font-size: 16px; }
+.av-cohort__class { font-family: var(--av-display); font-size: 26px; font-weight: 700; color: var(--av-cyan); font-variant-numeric: tabular-nums; line-height: 1; }
+.av-cohort__star { display: flex; align-items: center; gap: 9px; text-decoration: none; color: inherit; min-width: 0; }
+.av-cohort__star-name { font-weight: 600; font-size: 13.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.av-cohort__star-meta { font-size: 10.5px; color: var(--av-text-dim); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+@media (max-width: 860px) { .av-cohort { grid-template-columns: 1fr 1fr; gap: 14px; } }
+
+/* =============================================================================
+   СИЛА ДИВИЗИОНОВ / СРАВНЕНИЕ ТУРНИРОВ
+   ============================================================================= */
+.av-leagues { display: grid; grid-template-columns: repeat(auto-fit, minmax(232px, 1fr)); gap: 14px; }
+.av-league { padding: 18px 20px; }
+.av-league__name { font-size: 14px; font-weight: 700; color: var(--av-cyan); }
+.av-league__big { font-family: var(--av-display); font-size: 32px; font-weight: 700; line-height: 1; margin: 10px 0 2px; font-variant-numeric: tabular-nums; }
+.av-league__sub { font-size: 11.5px; color: var(--av-text-dim); }
+
+.av-cmp { display: grid; gap: 18px; }
+.av-cmp__head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 9px; }
+.av-cmp__name { font-size: 13px; font-weight: 700; color: var(--av-text-card); text-transform: uppercase; letter-spacing: 0.05em; }
+.av-cmp__row { display: grid; grid-template-columns: 128px 1fr 64px; align-items: center; gap: 12px; margin-bottom: 8px; }
 .av-cmp__label { font-size: 12px; color: var(--av-text-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .av-cmp__track { height: 22px; border-radius: 6px; background: rgba(255, 255, 255, 0.05); overflow: hidden; }
 .av-cmp__fill { display: block; height: 100%; border-radius: 6px; transition: width 0.6s ease; }
 .av-cmp__val { font-family: var(--av-display); font-weight: 700; text-align: right; font-variant-numeric: tabular-nums; font-size: 14px; }
 
-/* ---- Состояние региона: карточки результатов ---- */
-.av-results-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 10px; }
-.av-result {
-  background: rgba(239, 241, 251, 0.04); border: 1px solid rgba(94, 235, 252, 0.1); border-radius: var(--av-radius-sm);
-  padding: 11px 13px; display: flex; flex-direction: column; gap: 9px;
-}
-.av-result__top { display: flex; align-items: center; justify-content: space-between; font-size: 9.5px; }
-.av-result__age { color: var(--av-accent); font-weight: 700; letter-spacing: 0.04em; }
-.av-result__date { color: var(--av-text-dim); }
-.av-result__body { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 8px; }
-.av-result__team { display: flex; align-items: center; gap: 7px; min-width: 0; font-size: 12px; }
-.av-result__team--away { justify-content: flex-end; }
-.av-result__team span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.av-result__score { font-family: var(--av-display); font-weight: 700; font-size: 17px; font-variant-numeric: tabular-nums; padding: 2px 9px; border-radius: 6px; background: rgba(255, 255, 255, 0.06); white-space: nowrap; }
-.av-result__w { color: var(--av-accent); }
-.av-result__l { color: var(--av-text-dim); }
+/* =============================================================================
+   КОЛОНКИ / СЕТКИ
+   ============================================================================= */
+.av-cols-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 20px; align-items: start; }
+.av-split { display: grid; grid-template-columns: 1fr 540px; gap: 20px; align-items: start; }
+.av-split--rev { grid-template-columns: 420px 1fr; }
+@media (max-width: 1080px) { .av-split, .av-split--rev { grid-template-columns: 1fr; } }
 
-/* ---- Донат-кольцо (KPI/стат) ---- */
-.av-donut text { font-family: var(--av-display); }
+/* =============================================================================
+   ПОЛЯ ВВОДА / СОСТОЯНИЯ / СКЕЛЕТ / МОТИВО ВХОДА
+   ============================================================================= */
+.av-search { background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(94, 235, 252, 0.18); border-radius: var(--av-r-sm); padding: 9px 14px; font-size: 13px; color: var(--av-text); font-family: var(--av-font); min-width: 220px; outline: none; transition: all 0.15s ease; }
+.av-search::placeholder { color: var(--av-text-dim); }
+.av-search:focus { border-color: rgba(94, 235, 252, 0.5); box-shadow: 0 0 12px rgba(94, 235, 252, 0.15); }
 
-/* ---- Матрица когорт (телескоп: год рождения × сигналы) ---- */
-.av-cohorts { display: grid; gap: 12px; }
-.av-cohort {
-  display: grid; grid-template-columns: 96px 1.5fr 0.9fr 1.4fr; gap: 20px; align-items: center;
-  padding: 15px 18px; cursor: pointer; text-align: left; width: 100%;
-  background: rgba(239, 241, 251, 0.04); backdrop-filter: blur(20px);
-  border: 1px solid rgba(94, 235, 252, 0.12); border-radius: var(--av-radius);
-  transition: border-color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
-}
-@media (hover: hover) { .av-cohort:hover { border-color: rgba(94, 235, 252, 0.45); transform: translateY(-2px); box-shadow: 0 0 24px rgba(94, 235, 252, 0.12); } }
-.av-cohort__year { font-family: var(--av-display); font-size: 30px; font-weight: 700; line-height: 1; color: var(--av-text); font-variant-numeric: tabular-nums; }
-.av-cohort__funnel { font-size: 10.5px; color: var(--av-text-dim); margin-top: 6px; }
-.av-cohort__block-label { font-size: 9px; text-transform: uppercase; letter-spacing: 0.07em; color: var(--av-text-dim); margin-bottom: 6px; }
-.av-qbar { display: flex; height: 18px; border-radius: 5px; overflow: hidden; background: rgba(255, 255, 255, 0.05); }
-.av-qbar span { height: 100%; display: block; }
-.av-cohort__skew { display: inline-flex; align-items: baseline; gap: 6px; margin-top: 7px; font-size: 11px; color: var(--av-text-2); }
-.av-cohort__skew b { font-family: var(--av-display); font-size: 15px; }
-.av-cohort__class { font-family: var(--av-display); font-size: 26px; font-weight: 700; color: var(--av-accent); font-variant-numeric: tabular-nums; line-height: 1; }
-.av-cohort__star { display: flex; align-items: center; gap: 9px; text-decoration: none; color: inherit; min-width: 0; }
-.av-cohort__star-name { font-weight: 600; font-size: 13.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.av-cohort__star-meta { font-size: 10.5px; color: var(--av-text-dim); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-@media (max-width: 820px) { .av-cohort { grid-template-columns: 1fr 1fr; gap: 12px; } }
+.av-note { color: var(--av-text-2); font-size: 13.5px; padding: 14px 0; }
+.av-empty { padding: 48px 20px; text-align: center; color: var(--av-text-2); }
+.av-empty__icon { font-size: 30px; opacity: 0.6; margin-bottom: 10px; }
+.av-skeleton { background: linear-gradient(90deg, rgba(255, 255, 255, 0.03) 25%, rgba(255, 255, 255, 0.07) 37%, rgba(255, 255, 255, 0.03) 63%); background-size: 400% 100%; animation: av-shimmer 1.4s ease-in-out infinite; border-radius: var(--av-r-sm); }
+@keyframes av-shimmer { 0% { background-position: 100% 0; } 100% { background-position: -100% 0; } }
 
-/* ---- Вывод-вердикт (приговор системе) ---- */
-.av-verdict { font-family: var(--av-font); font-weight: 800; font-size: 22px; line-height: 1.25; letter-spacing: -0.01em; margin: 10px 0 6px; text-wrap: balance; }
-.av-verdict b { color: var(--av-accent); }
-.av-verdict--magenta b { color: var(--av-magenta); }
-.av-why { color: var(--av-text-2); font-size: 12.5px; line-height: 1.55; max-width: 76ch; margin: 0 0 14px; }
+.av-rise { animation: av-rise 0.45s cubic-bezier(0.22, 1, 0.36, 1) both; }
+.av-rise:nth-child(2) { animation-delay: 0.04s; }
+.av-rise:nth-child(3) { animation-delay: 0.08s; }
+.av-rise:nth-child(4) { animation-delay: 0.12s; }
+.av-rise:nth-child(5) { animation-delay: 0.16s; }
+@keyframes av-rise { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .av-rise, .av-meter__fill, .av-rae__fill, .av-cmp__fill, .av-metricbar__fill { animation: none !important; transition: none !important; } }
 
-/* ---- Распределение с эталоном (RAE) ---- */
-.av-rae__row { display: grid; grid-template-columns: 96px 1fr 52px; align-items: center; gap: 12px; margin-bottom: 9px; }
-.av-rae__label { font-size: 12px; color: var(--av-text-2); }
-.av-rae__track { position: relative; height: 26px; border-radius: 6px; background: rgba(255, 255, 255, 0.05); overflow: hidden; }
-.av-rae__fill { display: block; height: 100%; border-radius: 6px; transition: width 0.7s ease; }
-.av-rae__ref { position: absolute; top: -3px; bottom: -3px; width: 2px; background: rgba(255, 255, 255, 0.55); }
-.av-rae__reflabel { position: absolute; top: -16px; transform: translateX(-50%); font-size: 9px; color: var(--av-text-dim); white-space: nowrap; }
-.av-rae__val { font-family: var(--av-display); font-weight: 700; text-align: right; font-variant-numeric: tabular-nums; }
-
-/* ---- Большой контраст (разрыв) ---- */
-.av-gap { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; }
-.av-gap__cell { text-align: center; }
-.av-gap__big { font-family: var(--av-display); font-size: 38px; font-weight: 700; line-height: 1; font-variant-numeric: tabular-nums; }
-.av-gap__lbl { font-size: 11px; color: var(--av-text-dim); text-transform: uppercase; letter-spacing: 0.06em; margin-top: 6px; }
-.av-gap__x { font-family: var(--av-display); font-size: 22px; color: var(--av-text-dim); }
-
-/* ---- Сила лиг (карточки дивизионов) ---- */
-.av-leagues { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px; }
-.av-league { padding: 16px 18px; }
-.av-league__name { font-size: 14px; font-weight: 700; color: var(--av-accent); }
-.av-league__big { font-family: var(--av-display); font-size: 30px; font-weight: 700; line-height: 1; margin: 8px 0 2px; font-variant-numeric: tabular-nums; }
-.av-league__sub { font-size: 11.5px; color: var(--av-text-dim); }
-
+/* =============================================================================
+   АДАПТИВ
+   ============================================================================= */
 @media (max-width: 760px) {
-  .av-topbar { flex-wrap: wrap; gap: 12px; }
+  .av-topbar { flex-wrap: wrap; gap: 12px; padding: 10px 14px; }
   .av-topbar__right { margin-left: 0; }
+  .av-subbar { top: auto; padding: 8px 14px; }
   .av-content { padding: 16px 14px 48px; }
-  .av-cmp__row { grid-template-columns: 90px 1fr 52px; }
+  .av-title { font-size: 23px; }
+  .av-cmp__row { grid-template-columns: 96px 1fr 54px; }
 }
