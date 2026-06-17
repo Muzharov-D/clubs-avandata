@@ -50,24 +50,25 @@ export function FederationAvCohorts() {
             const convPct = c.registry ? Math.round((c.analyzed / c.registry) * 100) : 0;
             return (
               <button key={c.year} className="av-surface av-cohort" onClick={() => drill(c.year)}>
-                {/* Год + воронка */}
+                {/* Год + ГЕРОЙ-перекос + воронка */}
                 <div>
                   <div className="av-cohort__year">{c.year}</div>
+                  <div className="av-cohort__hero" style={{ color: skewColor(c.raeSkew) }}>×{c.raeSkew ?? '—'} <i>{skewVerdict(c.raeSkew)} перекос</i></div>
                   <div className="av-cohort__funnel">реестр <b style={{ color: 'var(--av-text-2)' }}>{num(c.registry)}</b> · разбор {c.analyzed} ({convPct}%)</div>
                 </div>
 
-                {/* Возрастной перекос (RAE) */}
+                {/* Распределение Q1 → Q4: пере-отбор старших vs потеря поздних */}
                 <div>
-                  <div className="av-cohort__lbl">Возрастной перекос</div>
+                  <div className="av-cohort__lbl">Распределение Q1 → Q4</div>
                   <div className="av-qbar" title={`Q1 ${c.q1pct}% · середина ${Math.round(q2q3)}% · Q4 ${c.q4pct}%`}>
                     <span style={{ width: `${c.q1pct}%`, background: 'var(--av-magenta)' }} />
                     <span style={{ width: `${q2q3}%`, background: 'rgba(255,255,255,0.18)' }} />
                     <span style={{ width: `${c.q4pct}%`, background: 'var(--av-accent)' }} />
                   </div>
-                  <div className="av-cohort__skew">
-                    <span>начало года ⁄ конец</span>
-                    <b style={{ color: skewColor(c.raeSkew) }}>×{c.raeSkew ?? '—'}</b>
-                    <span style={{ color: skewColor(c.raeSkew) }}>{skewVerdict(c.raeSkew)}</span>
+                  <div className="av-cohort__qends">
+                    <b style={{ color: 'var(--av-magenta)' }}>Q1 {c.q1pct}%</b>
+                    <span>отобрали ⁄ теряем</span>
+                    <b style={{ color: 'var(--av-danger)' }}>Q4 {c.q4pct}%</b>
                   </div>
                 </div>
 

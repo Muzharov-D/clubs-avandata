@@ -472,7 +472,7 @@
    ТЕЛЕСКОП КОГОРТ — год рождения × сигналы
    ============================================================================= */
 .av-cohorts { display: grid; gap: 12px; }
-.av-cohort { display: grid; grid-template-columns: 92px 1.5fr 0.9fr 1.4fr; gap: 22px; align-items: center; padding: 16px 18px; cursor: pointer; text-align: left; width: 100%; transition: border-color 0.15s ease, box-shadow 0.15s ease; }
+.av-cohort { display: grid; grid-template-columns: 118px 1.4fr 0.9fr 1.4fr; gap: 22px; align-items: center; padding: 16px 18px; cursor: pointer; text-align: left; width: 100%; transition: border-color 0.15s ease, box-shadow 0.15s ease; }
 @media (hover: hover) { .av-cohort:hover { border-color: var(--av-border-strong); box-shadow: var(--av-shadow-lg), var(--av-ring); } }
 .av-cohort__year { font-family: var(--av-display); font-size: 32px; font-weight: 700; line-height: 1; color: var(--av-text); font-variant-numeric: tabular-nums; }
 .av-cohort__funnel { font-size: 10.5px; color: var(--av-text-dim); margin-top: 7px; }
@@ -481,6 +481,10 @@
 .av-qbar span { height: 100%; display: block; }
 .av-cohort__skew { display: inline-flex; align-items: baseline; gap: 6px; margin-top: 8px; font-size: 11px; color: var(--av-text-2); }
 .av-cohort__skew b { font-family: var(--av-display); font-size: 16px; }
+.av-cohort__hero { font-family: var(--av-display); font-size: 26px; font-weight: 800; line-height: 1.05; margin-top: 6px; font-variant-numeric: tabular-nums; }
+.av-cohort__hero i { display: block; font-style: normal; font-size: 9.5px; font-weight: 600; letter-spacing: 0.02em; opacity: 0.85; }
+.av-cohort__qends { display: flex; align-items: baseline; justify-content: space-between; gap: 6px; margin-top: 9px; font-size: 10px; color: var(--av-text-muted); }
+.av-cohort__qends b { font-family: var(--av-display); font-size: 13px; }
 .av-cohort__class { font-family: var(--av-display); font-size: 26px; font-weight: 700; color: var(--av-cyan); font-variant-numeric: tabular-nums; line-height: 1; }
 .av-cohort__star { display: flex; align-items: center; gap: 9px; text-decoration: none; color: inherit; min-width: 0; }
 .av-cohort__star-name { font-weight: 600; font-size: 13.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
