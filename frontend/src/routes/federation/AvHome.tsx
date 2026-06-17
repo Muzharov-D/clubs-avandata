@@ -104,8 +104,8 @@ export function FederationAvHome() {
       {ov.isLoading ? <div className="av-skeleton av-rise" style={{ height: 110 }} /> : d && (
         <div className="av-pulse av-rise">
           <Stat label="Игроки в реестре" value={d.players} tone="cyan" />
-          <Stat label="Команды" value={d.teams} tone="blue" extra={`${d.tournaments} турниров`} />
-          <Stat label="Матчи" value={d.matches} tone="violet" extra={`${num(d.analyzed)} разобрано`} />
+          <Stat label="Команды" value={d.teams} tone="blue" />
+          <Stat label="Матчи" value={d.matches} tone="violet" />
           <Stat label="Голы" value={d.goals} tone="success" />
           <Stat label="Дивизионы" value={d.divisions.length} tone="magenta" />
         </div>
