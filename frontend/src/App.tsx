@@ -48,23 +48,11 @@ import { AdminTenantDetail } from './routes/admin/AdminTenantDetail';
 
 // Кабинет федерации региона (federation_admin)
 import { FederationLayout } from './routes/federation/FederationLayout';
-import { FederationRegionMap } from './routes/federation/RegionMap';
-import { FederationAvOverview } from './routes/federation/AvOverview';
+import { FederationAvHome } from './routes/federation/AvHome';
 import { FederationAvCompare } from './routes/federation/AvCompare';
 import { FederationAvPlayers } from './routes/federation/AvPlayers';
-import { FederationOverview } from './routes/federation/Overview';
-import { FederationClubs } from './routes/federation/Clubs';
-import { FederationCompetitions } from './routes/federation/Competitions';
-import { FederationDataQuality } from './routes/federation/DataQuality';
-import { FederationAgeEffect } from './routes/federation/AgeEffect';
-import { FederationTalent } from './routes/federation/Talent';
-import { FederationDevelopment } from './routes/federation/Development';
-import { FederationBenchmark } from './routes/federation/Benchmark';
-import { FederationLeaderboards } from './routes/federation/Leaderboards';
-import { FederationPlayerProfile } from './routes/federation/PlayerProfile';
-import { FederationDiscoveries } from './routes/federation/Discoveries';
-import { FederationBestXI } from './routes/federation/BestXI';
-import { FederationScorers } from './routes/federation/Scorers';
+import { FederationAvPlayerProfile } from './routes/federation/AvPlayerProfile';
+import { FederationAvInsights } from './routes/federation/AvInsights';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -191,23 +179,11 @@ export function App() {
                       </FederationOnly>
                     }
                   >
-                    <Route index element={<FederationDiscoveries />} />
-                    <Route path="live" element={<FederationAvOverview />} />
-                    <Route path="live/players" element={<FederationAvPlayers />} />
+                    <Route index element={<FederationAvHome />} />
                     <Route path="compare" element={<FederationAvCompare />} />
-                    <Route path="map" element={<FederationRegionMap />} />
-                    <Route path="summary" element={<FederationOverview />} />
-                    <Route path="clubs" element={<FederationClubs />} />
-                    <Route path="competitions" element={<FederationCompetitions />} />
-                    <Route path="scorers" element={<FederationScorers />} />
-                    <Route path="data-quality" element={<FederationDataQuality />} />
-                    <Route path="age-effect" element={<FederationAgeEffect />} />
-                    <Route path="talent" element={<FederationTalent />} />
-                    <Route path="best-xi" element={<FederationBestXI />} />
-                    <Route path="players/:id" element={<FederationPlayerProfile />} />
-                    <Route path="leaderboards" element={<FederationLeaderboards />} />
-                    <Route path="development" element={<FederationDevelopment />} />
-                    <Route path="benchmark" element={<FederationBenchmark />} />
+                    <Route path="players" element={<FederationAvPlayers />} />
+                    <Route path="players/:id" element={<FederationAvPlayerProfile />} />
+                    <Route path="insights" element={<FederationAvInsights />} />
                     <Route path="*" element={<Navigate to="/federation" replace />} />
                   </Route>
 

@@ -5,6 +5,7 @@ import { BadRequestError } from '../shared/errors.js';
 import { registryFor } from './registry.js';
 import {
   isAvandataConfigured, listTournaments, compareTournaments, regionOverview, regionPlayers,
+  regionStandings, regionClubRatings, playerProfile,
 } from './avandataSource.js';
 import {
   federationOverview,
@@ -80,6 +81,30 @@ export async function federationRoutes(app: FastifyInstance) {
     if (avOff(reply)) return { error: 'AVANDATA_API_KEY не задан', code: 'AVANDATA_OFF' };
     const season = Number((req.query as { season?: string }).season) || AV_SEASON;
     return { season, players: await regionPlayers(season) };
+  });
+
+  /** GET /federation/av/standings — турнирные таблицы клубов по дивизионам. */
+  app.get('/av/standings', async (req, reply) => {
+    if (avOff(reply)) return { error: 'AVANDATA_API_KEY не задан', code: 'AVANDATA_OFF' };
+    const season = Number((req.query as { season?: string }).season) || AV_SEASON;
+    return { season, groups: await regionStandings(season) };
+  });
+
+  /** GET /federation/av/club-ratings — рейтинг клубов АванДата по дивизионам. */
+  app.get('/av/club-ratings', async (req, reply) => {
+    if (avOff(reply)) return { error: 'AVANDATA_API_KEY не задан', code: 'AVANDATA_OFF' };
+    const season = Number((req.query as { season?: string }).season) || AV_SEASON;
+    return { season, groups: await regionClubRatings(season) };
+  });
+
+  /** GET /federation/av/players/:id — профиль игрока + «пицца» из событий. */
+  app.get('/av/players/:id', async (req, reply) => {
+    if (avOff(reply)) return { error: 'AVANDATA_API_KEY не задан', code: 'AVANDATA_OFF' };
+    const season = Number((req.query as { season?: string }).season) || AV_SEASON;
+    const id = Number((req.params as { id: string }).id);
+    const profile = await playerProfile(season, id);
+    if (!profile) { reply.code(404); return { error: 'игрок не найден', code: 'PLAYER_NOT_FOUND' }; }
+    return profile;
   });
 
   /** GET /api/v1/federation/region-map — перепись региона (живые счётчики) + реестр кадров. */

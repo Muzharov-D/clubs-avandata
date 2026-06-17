@@ -137,4 +137,41 @@ export async function getPlayersByEventType(seasonId: number, tournamentId: numb
   return authedGet(`/ffspb-portal/players/by-event-type?${q({ seasonId, tournamentId, divisionId, tour })}`);
 }
 
+// ---- Обзор: статистика (таблица) и рейтинги клубов АванДата ----
+export interface AvStatTeam {
+  id: number; name: string; logo?: string | null; division?: { id: number; name: string };
+  stats: { matchesPlayed: number; matchesWon: number; draw: number; defeat: number; differenceGoals: number; points: number };
+}
+export async function getFfspbStatistics(seasonId: number): Promise<AvStatTeam[]> {
+  const d = await authedGet<{ teams?: AvStatTeam[] }>(`/ffspb-portal/overview/${seasonId}/ffspbStatistics/overview`);
+  return d.teams ?? [];
+}
+export interface AvRatingTeam { id: number; name: string; logo?: string | null; division?: { id: number; name: string }; points: number }
+export async function getClubRatingsOverview(seasonId: number): Promise<AvRatingTeam[]> {
+  const d = await authedGet<{ teams?: AvRatingTeam[] }>(`/ffspb-portal/overview/${seasonId}/getTeamsRatings/overview`);
+  return d.teams ?? [];
+}
+
+// ---- Игрок: деталь (полная дата) + события (37 метрик) + расстановки ----
+export interface AvPlayerDetail { id: number; firstname: string; lastname: string; playerName?: string; number?: number; dateOfBirth?: string | null; teamId?: number; linkToProfile?: string | null }
+export async function getPlayerDetail(id: number): Promise<AvPlayerDetail | null> {
+  try { return await authedGet<AvPlayerDetail>(`/players/${id}`); } catch { return null; }
+}
+export interface AvEvent { id: number; eventTypeId: string; points: number; mainPlayerId: number | null; matchId: number }
+/** События игрока (пагинация по 100 — limit>100 запрещён API). */
+export async function getPlayerEvents(playerId: number): Promise<AvEvent[]> {
+  const all: AvEvent[] = [];
+  for (let page = 1; page <= 10; page++) {
+    const d = await authedGet<{ data?: AvEvent[]; meta?: { totalPages?: number } }>(`/events?mainPlayerId=${playerId}&limit=100&page=${page}`);
+    all.push(...(d.data ?? []));
+    if (!d.meta?.totalPages || page >= d.meta.totalPages) break;
+  }
+  return all;
+}
+export interface AvEventType { id: string; title: string; shortTitle?: string | null; points: number; eventTypeCategoryId?: string | null }
+export async function getEventTypes(): Promise<AvEventType[]> {
+  const d = await authedGet<{ data?: AvEventType[] }>(`/event-types?limit=80`);
+  return d.data ?? [];
+}
+
 logger.debug({ configured: isAvandataConfigured() }, 'avandataApi loaded');

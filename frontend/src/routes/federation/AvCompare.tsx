@@ -1,44 +1,30 @@
 import { useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { api } from '../../api/client';
-import './federation.css';
+import './avandata.css';
 
-interface TRef { key: string; title: string; fullTitle: string; category: string; divisionTitle: string; lastPlayedTour: number }
+interface TRef { key: string; title: string; lastPlayedTour: number }
 interface Agg {
-  ref: TRef;
-  teams: number; players: number; matches: number; analyzed: number; goals: number;
+  ref: TRef; teams: number; players: number; matches: number; analyzed: number; goals: number;
   goalsPerMatch: number | null; yellowPerMatch: number | null; avgRating: number | null;
 }
-
-type MetricKey = 'teams' | 'players' | 'matches' | 'analyzed' | 'goals' | 'goalsPerMatch' | 'yellowPerMatch' | 'avgRating';
-const METRICS: Array<{ k: MetricKey; l: string; dim?: boolean }> = [
-  { k: 'teams', l: 'Команды' },
-  { k: 'matches', l: 'Матчей' },
-  { k: 'analyzed', l: 'Разобрано' },
-  { k: 'goals', l: 'Голы' },
-  { k: 'goalsPerMatch', l: 'Голы / матч' },
-  { k: 'yellowPerMatch', l: 'Жёлтые / матч' },
-  { k: 'players', l: 'Игроки (разобр.)' },
-  { k: 'avgRating', l: 'Ср. рейтинг', dim: true },
+type MK = 'teams' | 'matches' | 'analyzed' | 'goals' | 'goalsPerMatch' | 'yellowPerMatch' | 'players' | 'avgRating';
+const METRICS: Array<{ k: MK; l: string }> = [
+  { k: 'teams', l: 'Команды' }, { k: 'matches', l: 'Матчей' }, { k: 'analyzed', l: 'Разобрано' },
+  { k: 'goals', l: 'Голы' }, { k: 'goalsPerMatch', l: 'Голы / матч' }, { k: 'yellowPerMatch', l: 'Жёлтые / матч' },
+  { k: 'players', l: 'Игроки' }, { k: 'avgRating', l: 'Ср. рейтинг' },
 ];
+const fmt = (v: number | null) => (v == null ? '—' : Number.isInteger(v) ? v.toLocaleString('ru-RU') : v.toFixed(2));
 
-const fmt = (v: number | null) => (v == null ? '—' : Number.isInteger(v) ? String(v) : v.toFixed(2));
-
-/**
- * Сравнение турниров между собой (реальная база Первенства). Выбираешь N
- * турниров×дивизионов — выровненные метрики бок о бок. Колонка под Вторую Лигу
- * (коллеги, PDF+CSV) встанет сюда же позже. Данные — прокси /federation/av/*.
- */
+/** Сравнение турниров между собой — реальное Первенство, бок о бок. */
 export function FederationAvCompare() {
   const tq = useQuery({ queryKey: ['av', 'tournaments'], queryFn: () => api<{ tournaments: TRef[] }>('/federation/av/tournaments') });
   const refs = tq.data?.tournaments ?? [];
   const [selected, setSelected] = useState<string[]>([]);
-
-  // дефолт — два первых турнира с сыгранными турами
   const sel = useMemo(() => {
     if (selected.length) return selected;
-    const withTours = refs.filter((r) => r.lastPlayedTour > 1).slice(0, 2).map((r) => r.key);
-    return withTours.length >= 2 ? withTours : refs.slice(0, 2).map((r) => r.key);
+    const wt = refs.filter((r) => r.lastPlayedTour > 1).slice(0, 3).map((r) => r.key);
+    return wt.length >= 2 ? wt : refs.slice(0, 2).map((r) => r.key);
   }, [selected, refs]);
 
   const cq = useQuery({
@@ -47,53 +33,33 @@ export function FederationAvCompare() {
     enabled: sel.length >= 1,
   });
   const items = cq.data?.items ?? [];
-
-  function toggle(key: string) {
-    const base = selected.length ? selected : sel;
-    setSelected(base.includes(key) ? base.filter((k) => k !== key) : [...base, key]);
-  }
-
-  // лучший в строке (макс), для жёлтых меньше = лучше — но просто подсветим макс нейтрально
-  const bestIdx = (k: MetricKey): number => {
-    let bi = -1, bv = -Infinity;
-    items.forEach((it, i) => { const v = it[k]; if (v != null && v > bv) { bv = v; bi = i; } });
-    return bi;
-  };
+  const toggle = (key: string) => { const base = selected.length ? selected : sel; setSelected(base.includes(key) ? base.filter((k) => k !== key) : [...base, key]); };
+  const bestIdx = (k: MK) => { let bi = -1, bv = -Infinity; items.forEach((it, i) => { const v = it[k]; if (v != null && v > bv) { bv = v; bi = i; } }); return bi; };
 
   return (
-    <div>
-      <header className="fed-head">
+    <>
+      <header className="av-head av-rise">
         <div>
-          <h1 className="fed-title">Сравнение турниров</h1>
-          <p className="fed-sub">Первенство СПб · реальная база разборов · выбери турниры для сравнения</p>
+          <h1 className="av-title">Сравнение турниров</h1>
+          <p className="av-sub">Первенство СПб · выбери турниры — метрики бок о бок</p>
         </div>
       </header>
 
-      {/* выбор турниров */}
-      {tq.isLoading ? <div className="fed-skeleton" style={{ height: 44, marginBottom: 16 }} /> : (
-        <div className="fed-tabs" style={{ marginBottom: 18 }}>
-          {refs.map((r) => (
-            <button key={r.key} onClick={() => toggle(r.key)} className={`fed-tab${sel.includes(r.key) ? ' fed-tab--active' : ''}`}>
-              {r.title}
-            </button>
-          ))}
+      {tq.isLoading ? <div className="av-skeleton" style={{ height: 44 }} /> : (
+        <div className="av-tabs av-rise">
+          {refs.map((r) => <button key={r.key} onClick={() => toggle(r.key)} className={`av-tab${sel.includes(r.key) ? ' av-tab--active' : ''}`}>{r.title}</button>)}
         </div>
       )}
+      {tq.error && <div className="av-note" style={{ color: 'var(--av-danger)' }}>База недоступна — задан ли AVANDATA_API_KEY на сервере?</div>}
 
-      {tq.error && <div className="fed-note" style={{ color: 'var(--danger)' }}>База недоступна — задан ли AVANDATA_API_KEY на сервере?</div>}
-
-      {sel.length < 1 ? (
-        <div className="fed-empty"><div className="fed-empty__icon">⚖️</div>Выбери хотя бы один турнир.</div>
-      ) : cq.isLoading ? (
-        <section className="fed-card"><div className="fed-card__pad"><div className="fed-skeleton" style={{ height: 260 }} /></div></section>
-      ) : (
-        <section className="fed-card fed-rise">
-          <div className="fed-table__scroll">
-            <table className="fed-dt">
+      {cq.isLoading ? <section className="av-surface av-pad"><div className="av-skeleton" style={{ height: 260 }} /></section> : items.length > 0 && (
+        <section className="av-surface av-pad av-rise">
+          <div style={{ overflowX: 'auto' }}>
+            <table className="av-dt">
               <thead>
                 <tr>
-                  <th style={{ minWidth: 160 }}>Показатель</th>
-                  {items.map((it) => <th key={it.ref.key} style={{ textAlign: 'right' }}>{it.ref.title}</th>)}
+                  <th style={{ minWidth: 150 }}>Показатель</th>
+                  {items.map((it) => <th key={it.ref.key}>{it.ref.title}</th>)}
                 </tr>
               </thead>
               <tbody>
@@ -101,11 +67,9 @@ export function FederationAvCompare() {
                   const bi = bestIdx(m.k);
                   return (
                     <tr key={m.k}>
-                      <td style={{ color: m.dim ? 'var(--text-muted)' : 'var(--text)' }}>{m.l}</td>
+                      <td className="av-muted">{m.l}</td>
                       {items.map((it, i) => (
-                        <td key={it.ref.key} style={{ textAlign: 'right', fontWeight: i === bi ? 700 : 400, color: i === bi ? 'var(--accent-cyan)' : undefined }}>
-                          {fmt(it[m.k])}
-                        </td>
+                        <td key={it.ref.key} className={i === bi ? 'av-dt__best av-num' : 'av-num'}>{fmt(it[m.k])}</td>
                       ))}
                     </tr>
                   );
@@ -113,14 +77,11 @@ export function FederationAvCompare() {
               </tbody>
             </table>
           </div>
-          <div className="fed-card__pad" style={{ paddingTop: 10 }}>
-            <p className="fed-faint" style={{ fontSize: 11.5, lineHeight: 1.5, margin: 0 }}>
-              Голы/матчи/карточки — по всем турам; игроки и рейтинг — только с разобранных матчей (наполняются по мере разбора).
-              Турнир «Вторая Лига» (коллеги) встанет колонкой здесь же после подключения их выгрузки.
-            </p>
-          </div>
+          <p className="av-dim" style={{ fontSize: 11.5, marginTop: 12, lineHeight: 1.5 }}>
+            Голы/матчи/карточки — по всем турам; игроки и рейтинг — с разобранных матчей. Турнир «Вторая Лига» (коллеги) встанет колонкой здесь же после подключения их выгрузки PDF+CSV.
+          </p>
         </section>
       )}
-    </div>
+    </>
   );
 }
