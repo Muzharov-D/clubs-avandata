@@ -37,9 +37,8 @@ export function FederationAvHome() {
     <>
       <header className="av-head av-rise">
         <div className="av-head__l">
-          <span className="av-kicker">Первенство СПб · сезон 2026</span>
           <h1 className="av-title">Состояние региона</h1>
-          <p className="av-sub">Операционная картина турниров · {year == null ? 'все возрасты' : `${year} г.р.`}</p>
+          <p className="av-sub">Первенство СПб · сезон 2026</p>
         </div>
         <Link to="/federation/cohorts" className="av-link">Регион по когортам →</Link>
       </header>
@@ -56,27 +55,20 @@ export function FederationAvHome() {
       )}
 
       {/* Пульс региона */}
-      {ov.isLoading ? <div className="av-skeleton av-rise" style={{ height: 124 }} /> : d && (
-        <section className="av-rise">
-          <div className="av-band"><span className="av-band__t">Пульс региона · сезон 2026</span><span className="av-band__line" /></div>
-          <div className="av-pulse">
-            <Stat label="Игроки в реестре" value={d.players} tone="cyan" />
-            <Stat label="Команды" value={d.teams} tone="blue" extra={`${d.tournaments} турниров`} />
-            <Stat label="Матчи" value={d.matches} tone="violet" extra={`${num(d.analyzed)} разобрано`} />
-            <Stat label="Голы" value={d.goals} tone="success" />
-            <Stat label="Дивизионы" value={d.divisions.length} tone="magenta" extra={d.divisions.slice(0, 2).join(' · ')} />
-          </div>
-        </section>
+      {ov.isLoading ? <div className="av-skeleton av-rise" style={{ height: 110 }} /> : d && (
+        <div className="av-pulse av-rise">
+          <Stat label="Игроки в реестре" value={d.players} tone="cyan" />
+          <Stat label="Команды" value={d.teams} tone="blue" extra={`${d.tournaments} турниров`} />
+          <Stat label="Матчи" value={d.matches} tone="violet" extra={`${num(d.analyzed)} разобрано`} />
+          <Stat label="Голы" value={d.goals} tone="success" />
+          <Stat label="Дивизионы" value={d.divisions.length} tone="magenta" />
+        </div>
       )}
 
       {/* Последние результаты */}
       <section className="av-rise">
         <div className="av-section">
-          <div>
-            <h2 className="av-section-title">Последние результаты</h2>
-            <p className="av-section-sub">Свежие сыгранные матчи Первенства{year != null && ` · ${year} г.р.`}</p>
-          </div>
-          {results.length > 0 && <span className="av-chip av-chip--dim">{results.length} матчей</span>}
+          <h2 className="av-section-title">Последние результаты</h2>
         </div>
         {rs.isLoading ? <div className="av-skeleton" style={{ height: 140 }} /> : results.length === 0 ? (
           <div className="av-surface av-pad av-note">Нет сыгранных матчей по выбранному фильтру.</div>
@@ -90,21 +82,11 @@ export function FederationAvHome() {
       {/* Таблицы + рейтинг клубов */}
       <div className="av-cols-main av-rise">
         <section className="av-surface av-pad-lg">
-          <div className="av-section">
-            <div>
-              <h2 className="av-section-title">Турнирные таблицы</h2>
-              <p className="av-section-sub">Официальный зачёт «Наградион»</p>
-            </div>
-          </div>
+          <div className="av-section"><h2 className="av-section-title">Турнирные таблицы · Наградион</h2></div>
           {st.isLoading ? <Sk /> : (st.data?.groups ?? []).length === 0 ? <div className="av-note">Нет данных.</div> : (st.data?.groups ?? []).map((g) => <StandingsBlock key={g.division} g={g} />)}
         </section>
         <section className="av-surface av-pad-lg">
-          <div className="av-section">
-            <div>
-              <h2 className="av-section-title">Рейтинг клубов · AvanData</h2>
-              <p className="av-section-sub">Сила школ по данным разборов</p>
-            </div>
-          </div>
+          <div className="av-section"><h2 className="av-section-title">Рейтинг клубов · AvanData</h2></div>
           {cr.isLoading ? <Sk /> : (cr.data?.groups ?? []).length === 0 ? <div className="av-note">Нет данных.</div> : (cr.data?.groups ?? []).map((g) => <RatingsBlock key={g.division} g={g} />)}
         </section>
       </div>

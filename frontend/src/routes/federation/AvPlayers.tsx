@@ -86,9 +86,8 @@ export function FederationAvPlayers() {
     <>
       <header className="av-head av-rise">
         <div className="av-head__l">
-          <span className="av-kicker">Скаутинг-борд федерации</span>
           <h1 className="av-title">Таланты региона</h1>
-          <p className="av-sub">{players.length.toLocaleString('ru-RU')} разобранных игроков · {year == null ? 'все возрасты' : `${year} г.р.`} · клик → профиль</p>
+          <p className="av-sub">{players.length.toLocaleString('ru-RU')} разобранных игроков · клик → профиль</p>
         </div>
         <input className="av-search" placeholder="Поиск по имени…" value={qStr} onChange={(e) => setQStr(e.target.value)} />
       </header>
@@ -98,13 +97,7 @@ export function FederationAvPlayers() {
       <div className="av-split av-rise">
         {/* Реестр */}
         <section className="av-surface av-pad-lg">
-          <div className="av-section">
-            <div>
-              <h2 className="av-section-title">Реестр игроков</h2>
-              <p className="av-section-sub">Ранжированы по рейтингу разборов</p>
-            </div>
-            {players.length > shown.length && <span className="av-chip av-chip--dim">топ {shown.length}</span>}
-          </div>
+          <div className="av-section"><h2 className="av-section-title">Реестр игроков</h2></div>
 
           {clubs.length > 1 && (
             <div className="av-pills" style={{ marginBottom: 14 }}>
@@ -138,7 +131,7 @@ export function FederationAvPlayers() {
             <div className="av-section" style={{ marginBottom: 10 }}>
               <div>
                 <h2 className="av-section-title">Сборная региона</h2>
-                <p className="av-section-sub">{xiPitchOk ? 'Лучшие по позициям' : 'Топ-11 по рейтингу'} · {year == null ? 'все возрасты' : `${year} г.р.`}</p>
+                <p className="av-section-sub">{xiPitchOk ? 'Лучшие по позициям' : 'Топ-11 по рейтингу'}</p>
               </div>
             </div>
             {isLoading ? <div className="av-skeleton" style={{ aspectRatio: '4 / 5' }} /> : !xiReady ? (
@@ -185,7 +178,7 @@ export function FederationAvPlayers() {
               <div className="av-section" style={{ marginBottom: 10 }}>
                 <div>
                   <h2 className="av-section-title">Восходящие</h2>
-                  <p className="av-section-sub">Высокий рейтинг среди младших · {year == null ? 'младшие возрасты региона' : `${year} г.р.`}</p>
+                  <p className="av-section-sub">Высокий рейтинг среди младших</p>
                 </div>
               </div>
               <div className="av-rising">

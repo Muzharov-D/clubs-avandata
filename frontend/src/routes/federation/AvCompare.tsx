@@ -47,7 +47,6 @@ export function FederationAvCompare() {
     <>
       <header className="av-head av-rise">
         <div className="av-head__l">
-          <span className="av-kicker">Первенство СПб</span>
           <h1 className="av-title">Сравнение турниров</h1>
           <p className="av-sub">Выбери турниры — сила бок о бок</p>
         </div>

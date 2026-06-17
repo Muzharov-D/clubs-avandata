@@ -32,9 +32,8 @@ export function FederationAvInsights() {
     <>
       <header className="av-head av-rise">
         <div className="av-head__l">
-          <span className="av-kicker">Диагностика региона</span>
           <h1 className="av-title">Справедливость и утечка</h1>
-          <p className="av-sub">Кого регион теряет — видно только над всеми клубами сразу · {year == null ? 'все возрасты' : `${year} г.р.`}</p>
+          <p className="av-sub">Кого регион теряет — видно только над всеми клубами сразу</p>
         </div>
         <Link to="/federation/cohorts" className="av-link">По когортам →</Link>
       </header>

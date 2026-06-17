@@ -33,7 +33,6 @@ export function FederationAvCohorts() {
     <>
       <header className="av-head av-rise">
         <div className="av-head__l">
-          <span className="av-kicker">Телескоп региона</span>
           <h1 className="av-title">Регион по когортам</h1>
           <p className="av-sub">Каждый год рождения как организм · размер · возрастной перекос · класс · звезда. Клик — провалиться в когорту.</p>
         </div>

@@ -23,13 +23,6 @@ export function FederationAvClubs() {
   const groups = cr.data?.groups ?? [];
   const divisions = groups.map((g) => g.division);
   const all = useMemo(() => groups.flatMap((g) => g.rows.map((r) => ({ ...r, division: g.division }))).sort((a, b) => b.rating - a.rating), [groups]);
-  // Перцентиль-в-регионе — метрика, которую может посчитать ТОЛЬКО федерация (знаменатель = все школы).
-  const regionPct = useMemo(() => {
-    const m = new Map<string, number>();
-    const n = all.length;
-    all.forEach((r, i) => m.set(`${r.id}-${r.division}`, n > 1 ? Math.round(((n - 1 - i) / (n - 1)) * 100) : 100));
-    return m;
-  }, [all]);
   const shown = div === 'all' ? all : all.filter((r) => r.division === div);
   const max = Math.max(...shown.map((r) => Math.abs(r.rating)), 1);
 
@@ -37,9 +30,8 @@ export function FederationAvClubs() {
     <>
       <header className="av-head av-rise">
         <div className="av-head__l">
-          <span className="av-kicker">Производство таланта</span>
           <h1 className="av-title">Сила клубов</h1>
-          <p className="av-sub">Пауэр-рейтинг школ по данным разборов · {year == null ? 'все возрасты' : `${year} г.р.`}</p>
+          <p className="av-sub">Пауэр-рейтинг школ по данным разборов</p>
         </div>
       </header>
 
@@ -66,28 +58,17 @@ export function FederationAvClubs() {
       {cr.error && <FedError />}
       {cr.isLoading ? <section className="av-surface av-pad-lg av-rise"><div className="av-skeleton" style={{ height: 320 }} /></section> : (
         <section className="av-surface av-pad-lg av-rise">
-          <div className="av-section">
-            <div>
-              <h2 className="av-section-title">Пауэр-рейтинг школ</h2>
-              <p className="av-section-sub">{shown.length} клубов{div !== 'all' ? ` · ${div}` : ''}</p>
+          <div className="av-section"><h2 className="av-section-title">Пауэр-рейтинг школ</h2></div>
+          {shown.map((r, i) => (
+            <div key={`${r.id}-${r.division}`} className={`av-trow t-pow${i === 0 ? ' av-trow--lead' : ''}`}>
+              <span className={`av-trow__rank${i < 3 ? ` av-trow__rank--${i + 1}` : ''}`}>{i + 1}</span>
+              <ClubShield name={r.name} logoUrl={r.logo} size={26} />
+              <span className="av-trow__name" title={r.name}>{r.name}</span>
+              <span className="av-chip av-chip--cyan" style={{ justifySelf: 'start' }}>{r.division}</span>
+              <span className="av-meter"><span className="av-meter__fill" style={{ width: `${(Math.abs(r.rating) / max) * 100}%`, background: r.rating < 0 ? 'var(--av-danger)' : i === 0 ? 'var(--av-cyan)' : 'var(--av-blue-glow)' }} /></span>
+              <span className={`av-rate${r.rating < 0 ? ' av-rate--neg' : ''}`}>{num(r.rating)}</span>
             </div>
-          </div>
-          {shown.map((r, i) => {
-            const pct = regionPct.get(`${r.id}-${r.division}`);
-            return (
-              <div key={`${r.id}-${r.division}`} className={`av-trow t-pow${i === 0 ? ' av-trow--lead' : ''}`}>
-                <span className={`av-trow__rank${i < 3 ? ` av-trow__rank--${i + 1}` : ''}`}>{i + 1}</span>
-                <ClubShield name={r.name} logoUrl={r.logo} size={26} />
-                <div style={{ minWidth: 0 }}>
-                  <div className="av-trow__name" title={r.name}>{r.name}</div>
-                  {pct != null && <div className="av-trow__meta">сильнее {pct}% школ региона</div>}
-                </div>
-                <span className="av-chip av-chip--cyan" style={{ justifySelf: 'start' }}>{r.division}</span>
-                <span className="av-meter"><span className="av-meter__fill" style={{ width: `${(Math.abs(r.rating) / max) * 100}%`, background: r.rating < 0 ? 'var(--av-danger)' : i === 0 ? 'var(--av-cyan)' : 'var(--av-blue-glow)' }} /></span>
-                <span className={`av-rate${r.rating < 0 ? ' av-rate--neg' : ''}`}>{num(r.rating)}</span>
-              </div>
-            );
-          })}
+          ))}
         </section>
       )}
     </>
