@@ -6,7 +6,7 @@ import { registryFor } from './registry.js';
 import {
   isAvandataConfigured, listTournaments, compareTournaments, regionOverview, regionPlayers,
   regionStandings, regionClubRatings, playerProfile, availableYears, divisionStrength,
-  ageEffect, talentConcentration,
+  ageEffect, talentConcentration, cohortMatrix,
 } from './avandataSource.js';
 import {
   federationOverview,
@@ -116,6 +116,13 @@ export async function federationRoutes(app: FastifyInstance) {
     if (avOff(reply)) return { error: 'AVANDATA_API_KEY не задан', code: 'AVANDATA_OFF' };
     const season = Number((req.query as { season?: string }).season) || AV_SEASON;
     return { season, divisions: await divisionStrength(season, yearOf(req)) };
+  });
+
+  /** GET /federation/av/cohorts — матрица когорт региона (год рождения × сигналы). */
+  app.get('/av/cohorts', async (req, reply) => {
+    if (avOff(reply)) return { error: 'AVANDATA_API_KEY не задан', code: 'AVANDATA_OFF' };
+    const season = Number((req.query as { season?: string }).season) || AV_SEASON;
+    return { season, cohorts: await cohortMatrix(season) };
   });
 
   /** GET /federation/av/age-effect?year= — возрастная утечка (RAE по полной дате). */

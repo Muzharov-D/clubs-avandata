@@ -260,6 +260,59 @@ export async function talentConcentration(seasonId: number, year?: number): Prom
   };
 }
 
+// ─── ТЕЛЕСКОП: матрица когорт (год рождения × сигналы) ───────────────────────
+export interface Cohort {
+  year: number;
+  registry: number;       // в реестре региона (полная база)
+  analyzed: number;       // разобрано (с рейтингом)
+  raeSkew: number | null; // перекос Q1/Q4
+  q1pct: number; q4pct: number;
+  avgRating: number | null;
+  top: { id: number; name: string; club: string | null; clubLogo: string | null; rating: number | null } | null;
+}
+export async function cohortMatrix(seasonId: number): Promise<Cohort[]> {
+  return cached(`cohorts:${seasonId}`, TTL, async () => {
+    const [summaries, players, years] = await Promise.all([
+      cached('summaries', TTL, () => getAllPlayerSummaries()),
+      regionPlayers(seasonId),
+      availableYears(seasonId),
+    ]);
+    const byYearQ = new Map<number, number[]>();
+    for (const s of summaries) {
+      if (!s.dateOfBirth) continue;
+      const d = new Date(s.dateOfBirth);
+      const y = d.getUTCFullYear();
+      const q = Math.floor(d.getUTCMonth() / 3);
+      const arr = byYearQ.get(y) ?? [0, 0, 0, 0];
+      arr[q] = (arr[q] ?? 0) + 1;
+      byYearQ.set(y, arr);
+    }
+    const byYearP = new Map<number, RegionPlayer[]>();
+    for (const p of players) {
+      if (p.birthYear == null) continue;
+      const arr = byYearP.get(p.birthYear) ?? [];
+      arr.push(p);
+      byYearP.set(p.birthYear, arr);
+    }
+    return years.map((y) => {
+      const qs = byYearQ.get(y) ?? [0, 0, 0, 0];
+      const reg = qs.reduce((a, b) => a + b, 0);
+      const q1 = reg ? ((qs[0] ?? 0) / reg) * 100 : 0;
+      const q4 = reg ? ((qs[3] ?? 0) / reg) * 100 : 0;
+      const ps = (byYearP.get(y) ?? []).filter((p) => p.rating != null).sort((a, b) => (b.rating as number) - (a.rating as number));
+      const ratings = ps.map((p) => p.rating as number);
+      const t = ps[0];
+      return {
+        year: y, registry: reg, analyzed: ps.length,
+        raeSkew: q4 > 0 ? Math.round((q1 / q4) * 100) / 100 : null,
+        q1pct: Math.round(q1 * 10) / 10, q4pct: Math.round(q4 * 10) / 10,
+        avgRating: ratings.length ? Math.round(ratings.reduce((a, b) => a + b, 0) / ratings.length) : null,
+        top: t ? { id: t.id, name: t.name, club: t.club, clubLogo: t.clubLogo, rating: t.rating } : null,
+      };
+    });
+  });
+}
+
 // ─── Профиль игрока + «пицца» из событий ─────────────────────────────────────
 export interface PlayerMetric { id: string; title: string; short: string; category: string; count: number; points: number; }
 export interface PlayerProfile {
