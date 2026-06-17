@@ -182,4 +182,18 @@ export async function getEventTypes(): Promise<AvEventType[]> {
   return d.data ?? [];
 }
 
+// ---- Реестр игроков с ПОЛНОЙ датой рождения (для RAE) ----
+export interface AvPlayerSummary { id: number; firstname: string; lastname: string; dateOfBirth: string | null }
+/** Все мастер-игроки региона с полной датой рождения (пагинация по 100). */
+export async function getAllPlayerSummaries(maxPages = 60): Promise<AvPlayerSummary[]> {
+  const all: AvPlayerSummary[] = [];
+  let totalPages = 1;
+  for (let page = 1; page <= Math.min(maxPages, totalPages); page++) {
+    const d = await authedGet<{ data?: AvPlayerSummary[]; meta?: { totalPages?: number } }>(`/player-summaries?limit=100&page=${page}`);
+    all.push(...(d.data ?? []));
+    totalPages = d.meta?.totalPages ?? 1;
+  }
+  return all;
+}
+
 logger.debug({ configured: isAvandataConfigured() }, 'avandataApi loaded');

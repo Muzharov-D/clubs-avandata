@@ -6,6 +6,7 @@ import { registryFor } from './registry.js';
 import {
   isAvandataConfigured, listTournaments, compareTournaments, regionOverview, regionPlayers,
   regionStandings, regionClubRatings, playerProfile, availableYears, divisionStrength,
+  ageEffect, talentConcentration,
 } from './avandataSource.js';
 import {
   federationOverview,
@@ -115,6 +116,20 @@ export async function federationRoutes(app: FastifyInstance) {
     if (avOff(reply)) return { error: 'AVANDATA_API_KEY не задан', code: 'AVANDATA_OFF' };
     const season = Number((req.query as { season?: string }).season) || AV_SEASON;
     return { season, divisions: await divisionStrength(season, yearOf(req)) };
+  });
+
+  /** GET /federation/av/age-effect?year= — возрастная утечка (RAE по полной дате). */
+  app.get('/av/age-effect', async (req, reply) => {
+    if (avOff(reply)) return { error: 'AVANDATA_API_KEY не задан', code: 'AVANDATA_OFF' };
+    const season = Number((req.query as { season?: string }).season) || AV_SEASON;
+    return await ageEffect(season, yearOf(req));
+  });
+
+  /** GET /federation/av/concentration?year= — монополия таланта. */
+  app.get('/av/concentration', async (req, reply) => {
+    if (avOff(reply)) return { error: 'AVANDATA_API_KEY не задан', code: 'AVANDATA_OFF' };
+    const season = Number((req.query as { season?: string }).season) || AV_SEASON;
+    return await talentConcentration(season, yearOf(req));
   });
 
   /** GET /federation/av/players/:id — профиль игрока + «пицца» из событий. */

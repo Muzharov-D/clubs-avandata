@@ -9,7 +9,7 @@
 import {
   isAvandataConfigured, getSeasons, getTeamsList, getTourStatistics, getPlayersByRole,
   getFfspbStatistics, getFfspbStatisticsByTournament, getClubRatingsOverview, getClubRatingsByTournament,
-  getPlayerDetail, getPlayerEvents, getEventTypes,
+  getPlayerDetail, getPlayerEvents, getEventTypes, getAllPlayerSummaries,
   type AvSeason, type AvStatTeam, type AvRatingTeam, type AvEventType,
 } from '../services/avandataApi.js';
 
@@ -207,6 +207,57 @@ export async function regionPlayers(seasonId: number, year?: number): Promise<Re
     });
     return [...byId.values()].sort((a, b) => (b.rating ?? -1e9) - (a.rating ?? -1e9));
   });
+}
+
+// ─── ВЫВОДЫ: возрастная утечка (RAE) ────────────────────────────────────────
+export interface AgeEffect {
+  total: number;
+  quarters: Array<{ q: number; n: number; pct: number }>;
+  q1pct: number; q4pct: number;
+  /** Перекос Q1→Q4: во сколько раз больше рождённых в начале года. */
+  skew: number | null;
+}
+export async function ageEffect(seasonId: number, year?: number): Promise<AgeEffect> {
+  return cached(`age:${seasonId}:${year ?? 0}`, TTL, async () => {
+    const all = await cached('summaries', TTL, () => getAllPlayerSummaries());
+    const counts = [0, 0, 0, 0];
+    let total = 0;
+    for (const p of all) {
+      if (!p.dateOfBirth) continue;
+      const d = new Date(p.dateOfBirth);
+      const y = d.getUTCFullYear();
+      if (year != null && y !== year) continue;
+      const q = Math.floor(d.getUTCMonth() / 3); // 0..3
+      counts[q] = (counts[q] ?? 0) + 1; total += 1;
+    }
+    const quarters = counts.map((n, i) => ({ q: i + 1, n, pct: total ? Math.round((n / total) * 1000) / 10 : 0 }));
+    const q1 = quarters[0]?.pct ?? 0, q4 = quarters[3]?.pct ?? 0;
+    return { total, quarters, q1pct: q1, q4pct: q4, skew: q4 > 0 ? Math.round((q1 / q4) * 100) / 100 : null };
+  });
+}
+
+// ─── ВЫВОДЫ: монополия / концентрация таланта ────────────────────────────────
+export interface TalentConcentration {
+  topPool: number;        // размер «топ-пула» (рассмотренных талантов)
+  totalClubs: number;
+  top3Share: number;      // % топ-талантов в 3 сильнейших клубах
+  top5Share: number;
+  clubs: Array<{ club: string; logo: string | null; n: number; share: number }>;
+}
+export async function talentConcentration(seasonId: number, year?: number): Promise<TalentConcentration> {
+  const players = await regionPlayers(seasonId, year);
+  const pool = players.filter((p) => p.rating != null).slice(0, Math.max(30, Math.round(players.length * 0.15)));
+  const byClub = new Map<string, { club: string; logo: string | null; n: number }>();
+  for (const p of pool) { if (!p.club) continue; const e = byClub.get(p.club) ?? { club: p.club, logo: p.clubLogo, n: 0 }; e.n += 1; byClub.set(p.club, e); }
+  const ranked = [...byClub.values()].sort((a, b) => b.n - a.n);
+  const sum = (arr: typeof ranked) => arr.reduce((s, c) => s + c.n, 0);
+  const total = sum(ranked) || 1;
+  return {
+    topPool: pool.length, totalClubs: ranked.length,
+    top3Share: Math.round((sum(ranked.slice(0, 3)) / total) * 100),
+    top5Share: Math.round((sum(ranked.slice(0, 5)) / total) * 100),
+    clubs: ranked.slice(0, 10).map((c) => ({ club: c.club, logo: c.logo, n: c.n, share: Math.round((c.n / total) * 100) })),
+  };
 }
 
 // ─── Профиль игрока + «пицца» из событий ─────────────────────────────────────

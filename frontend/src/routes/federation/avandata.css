@@ -208,6 +208,28 @@
 .av-cmp__fill { display: block; height: 100%; border-radius: 6px; transition: width 0.6s ease; }
 .av-cmp__val { font-family: var(--av-display); font-weight: 700; text-align: right; font-variant-numeric: tabular-nums; font-size: 14px; }
 
+/* ---- Вывод-вердикт (приговор системе) ---- */
+.av-verdict { font-family: var(--av-font); font-weight: 800; font-size: 22px; line-height: 1.25; letter-spacing: -0.01em; margin: 10px 0 6px; text-wrap: balance; }
+.av-verdict b { color: var(--av-accent); }
+.av-verdict--magenta b { color: var(--av-magenta); }
+.av-why { color: var(--av-text-2); font-size: 12.5px; line-height: 1.55; max-width: 76ch; margin: 0 0 14px; }
+
+/* ---- Распределение с эталоном (RAE) ---- */
+.av-rae__row { display: grid; grid-template-columns: 96px 1fr 52px; align-items: center; gap: 12px; margin-bottom: 9px; }
+.av-rae__label { font-size: 12px; color: var(--av-text-2); }
+.av-rae__track { position: relative; height: 26px; border-radius: 6px; background: rgba(255, 255, 255, 0.05); overflow: hidden; }
+.av-rae__fill { display: block; height: 100%; border-radius: 6px; transition: width 0.7s ease; }
+.av-rae__ref { position: absolute; top: -3px; bottom: -3px; width: 2px; background: rgba(255, 255, 255, 0.55); }
+.av-rae__reflabel { position: absolute; top: -16px; transform: translateX(-50%); font-size: 9px; color: var(--av-text-dim); white-space: nowrap; }
+.av-rae__val { font-family: var(--av-display); font-weight: 700; text-align: right; font-variant-numeric: tabular-nums; }
+
+/* ---- Большой контраст (разрыв) ---- */
+.av-gap { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; }
+.av-gap__cell { text-align: center; }
+.av-gap__big { font-family: var(--av-display); font-size: 38px; font-weight: 700; line-height: 1; font-variant-numeric: tabular-nums; }
+.av-gap__lbl { font-size: 11px; color: var(--av-text-dim); text-transform: uppercase; letter-spacing: 0.06em; margin-top: 6px; }
+.av-gap__x { font-family: var(--av-display); font-size: 22px; color: var(--av-text-dim); }
+
 /* ---- Сила лиг (карточки дивизионов) ---- */
 .av-leagues { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px; }
 .av-league { padding: 16px 18px; }
