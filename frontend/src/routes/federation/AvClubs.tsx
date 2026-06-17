@@ -3,21 +3,23 @@ import { useQuery } from '@tanstack/react-query';
 import { api } from '../../api/client';
 import { ClubShield } from './ClubShield';
 import { FedError } from './FedState';
-import { useFedYear, yearQ, inDivision } from './avYear';
+import { useFedYear, yearQ, fedQ, inDivision } from './avYear';
 import './avandata.css';
 
 interface RatingRow { id: number; name: string; logo: string | null; rating: number }
 interface Group<T> { division: string; rows: T[] }
 interface DivStrength { division: string; clubs: number; avgRating: number | null; topRating: number | null; topClub: string | null }
+interface Concentration { topPool: number; totalClubs: number; top3Share: number; top5Share: number; clubs: Array<{ club: string; logo: string | null; n: number; share: number }> }
 
 const num = (n: number) => n.toLocaleString('ru-RU');
 
-/** Сила клубов — пауэр-рейтинг школ по данным разборов + сила лиг. */
+/** Клубы региона — рейтинг школ по данным + сила лиг + кто производит талант. */
 export function FederationAvClubs() {
   const { year, division } = useFedYear();
   const q = yearQ(year);
   const cr = useQuery({ queryKey: ['av', 'club-ratings', year], queryFn: () => api<{ groups: Group<RatingRow>[] }>(`/federation/av/club-ratings${q}`) });
   const ds = useQuery({ queryKey: ['av', 'divstr', year], queryFn: () => api<{ divisions: DivStrength[] }>(`/federation/av/division-strength${q}`) });
+  const tc = useQuery({ queryKey: ['av', 'conc', year, division], queryFn: () => api<Concentration>(`/federation/av/concentration${fedQ(year, division)}`) });
 
   const groups = cr.data?.groups ?? [];
   const all = useMemo(() => groups.flatMap((g) => g.rows.map((r) => ({ ...r, division: g.division }))).sort((a, b) => b.rating - a.rating), [groups]);
@@ -48,6 +50,32 @@ export function FederationAvClubs() {
           })}
         </div>
       )}
+
+      {/* Кто производит талант — концентрация сильнейших игроков лиги по школам */}
+      <section className="av-surface av-pad-lg av-rise">
+        <div className="av-section">
+          <h2 className="av-section-title">Кто производит талант</h2>
+          <span className="av-section-sub" style={{ margin: 0 }}>Доля сильнейших игроков {division} лиги по школам</span>
+        </div>
+        {tc.isLoading ? <div className="av-skeleton" style={{ height: 240 }} /> : tc.data && tc.data.clubs.length > 0 ? (() => {
+          const d = tc.data;
+          const maxN = Math.max(...d.clubs.map((c) => c.n), 1);
+          return (
+            <>
+              <h3 className="av-verdict" style={{ marginTop: 0 }}>3 клуба держат <b style={{ color: 'var(--av-warning)' }}>{d.top3Share}%</b> сильнейших талантов лиги</h3>
+              <p className="av-why" style={{ marginBottom: 14 }}>Пул — топ-30 игроков каждого возраста ({d.topPool} талантов из {d.totalClubs} школ); клубы схлопнуты в реальные школы (без года команды). Топ-5 школ — <b style={{ color: 'var(--av-text)' }}>{d.top5Share}%</b>.</p>
+              {d.clubs.slice(0, 10).map((c) => (
+                <div key={c.club} className="av-trow t-mono">
+                  <ClubShield name={c.club} logoUrl={c.logo} size={24} />
+                  <span className="av-trow__name" title={c.club}>{c.club}</span>
+                  <span className="av-meter"><span className="av-meter__fill" style={{ width: `${(c.n / maxN) * 100}%`, background: 'var(--av-warning)' }} /></span>
+                  <span className="av-num" style={{ textAlign: 'right', fontWeight: 700, color: 'var(--av-warning)' }}>{c.share}%</span>
+                </div>
+              ))}
+            </>
+          );
+        })() : <div className="av-note">Недостаточно разобранных игроков для оценки.</div>}
+      </section>
 
       {cr.error && <FedError />}
       {cr.isLoading ? <section className="av-surface av-pad-lg av-rise"><div className="av-skeleton" style={{ height: 320 }} /></section> : (

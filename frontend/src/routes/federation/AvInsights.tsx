@@ -11,7 +11,6 @@ interface RPlayer { id: number; name: string; position: string | null; club: str
 interface Quarter { q: number; n: number; pct: number }
 interface AgeEffect { total: number; quarters: Quarter[]; q1pct: number; q4pct: number; skew: number | null }
 interface DivStrength { division: string; clubs: number; avgRating: number | null; topClub: string | null }
-interface Concentration { topPool: number; totalClubs: number; top3Share: number; top5Share: number; clubs: Array<{ club: string; logo: string | null; n: number; share: number }> }
 
 const num = (n: number) => n.toLocaleString('ru-RU');
 const QLABEL = ['янв–мар', 'апр–июн', 'июл–сен', 'окт–дек'];
@@ -24,8 +23,7 @@ export function FederationAvInsights() {
   // RAE и «сила дивизионов» — кросс-дивизионные диагнозы (реестр без дивизиона / сравнение лиг), без фильтра.
   const ae = useQuery({ queryKey: ['av', 'age', year], queryFn: () => api<AgeEffect>(`/federation/av/age-effect${q}`) });
   const ds = useQuery({ queryKey: ['av', 'divstr', year], queryFn: () => api<{ divisions: DivStrength[] }>(`/federation/av/division-strength${q}`) });
-  // Концентрация и лучшие — внутри выбранной лиги.
-  const tc = useQuery({ queryKey: ['av', 'conc', year, division], queryFn: () => api<Concentration>(`/federation/av/concentration${fq}`) });
+  // Лучшие — внутри выбранной лиги.
   const pq = useQuery({ queryKey: ['av', 'players', year, division], queryFn: () => api<{ players: RPlayer[] }>(`/federation/av/players${fq}`) });
 
   const top = useMemo(() => (pq.data?.players ?? []).filter((p) => p.rating != null).slice(0, 8), [pq.data]);
@@ -37,7 +35,7 @@ export function FederationAvInsights() {
       <header className="av-head av-rise">
         <div className="av-head__l">
           <h1 className="av-title">Эффект возраста</h1>
-          <p className="av-sub">Эффект возраста рождения, сила дивизионов, концентрация талантов</p>
+          <p className="av-sub">Эффект возраста рождения и сила дивизионов</p>
         </div>
         <Link to="/federation/cohorts" className="av-link">Разбор по годам рождения →</Link>
       </header>
@@ -66,51 +64,27 @@ export function FederationAvInsights() {
         })()}
       </section>
 
-      <div className="av-cols-2 av-rise">
-        {/* НАХОДКА 2 — Пропасть лиг */}
-        <section className="av-surface av-finding av-finding--cyan av-pad-lg">
-          <span className="av-finding__kicker">Сила дивизионов</span>
-          {ds.isLoading ? <div className="av-skeleton" style={{ height: 170, marginTop: 14 }} /> : divs.length >= 2 ? (
-            <>
-              <h2 className="av-verdict">{divs[0].division} сильнее {divs[1].division} в <b>{gap ?? '—'}×</b> по среднему рейтингу</h2>
-              <div className="av-gap" style={{ marginTop: 16 }}>
-                <div className="av-gap__cell">
-                  <div className="av-gap__big" style={{ color: 'var(--av-cyan)' }}>{num(divs[0].avgRating ?? 0)}</div>
-                  <div className="av-gap__lbl">{divs[0].division}</div>
-                </div>
-                <span className="av-gap__x">×{gap}</span>
-                <div className="av-gap__cell">
-                  <div className="av-gap__big" style={{ color: 'var(--av-text-2)' }}>{num(divs[1].avgRating ?? 0)}</div>
-                  <div className="av-gap__lbl">{divs[1].division}</div>
-                </div>
+      {/* НАХОДКА 2 — Пропасть лиг (концентрация талантов переехала в «Клубы») */}
+      <section className="av-surface av-finding av-finding--cyan av-pad-lg av-rise">
+        <span className="av-finding__kicker">Сила дивизионов</span>
+        {ds.isLoading ? <div className="av-skeleton" style={{ height: 170, marginTop: 14 }} /> : divs.length >= 2 ? (
+          <>
+            <h2 className="av-verdict">{divs[0].division} сильнее {divs[1].division} в <b>{gap ?? '—'}×</b> по среднему рейтингу</h2>
+            <div className="av-gap" style={{ marginTop: 16 }}>
+              <div className="av-gap__cell">
+                <div className="av-gap__big" style={{ color: 'var(--av-cyan)' }}>{num(divs[0].avgRating ?? 0)}</div>
+                <div className="av-gap__lbl">{divs[0].division}</div>
               </div>
-              <p className="av-why" style={{ marginTop: 16 }}>Талант сконцентрирован в верхнем дивизионе — разрыв между лигами огромный, середина проваливается.</p>
-            </>
-          ) : <div className="av-note">Недостаточно дивизионов для сравнения.</div>}
-        </section>
-
-        {/* НАХОДКА 3 — Монополия таланта */}
-        <section className="av-surface av-finding av-pad-lg">
-          <span className="av-finding__kicker">Концентрация талантов по клубам</span>
-          {tc.isLoading ? <div className="av-skeleton" style={{ height: 170, marginTop: 14 }} /> : tc.data && (
-            <>
-              <h2 className="av-verdict">3 клуба держат <b>{tc.data.top3Share}%</b> сильнейших талантов региона</h2>
-              <p className="av-why" style={{ marginBottom: 12 }}>Пул — топ-30 игроков каждого возраста ({tc.data.topPool} талантов), клубы схлопнуты в реальные школы (без года команды).</p>
-              {tc.data.clubs.slice(0, 6).map((c) => {
-                const max = Math.max(...tc.data!.clubs.map((x) => x.n), 1);
-                return (
-                  <div key={c.club} className="av-trow t-mono">
-                    <ClubShield name={c.club} logoUrl={c.logo} size={22} />
-                    <span className="av-trow__name">{c.club}</span>
-                    <span className="av-meter"><span className="av-meter__fill" style={{ width: `${(c.n / max) * 100}%`, background: 'var(--av-magenta)' }} /></span>
-                    <span className="av-num" style={{ textAlign: 'right', fontWeight: 700, color: 'var(--av-magenta)' }}>{c.share}%</span>
-                  </div>
-                );
-              })}
-            </>
-          )}
-        </section>
-      </div>
+              <span className="av-gap__x">×{gap}</span>
+              <div className="av-gap__cell">
+                <div className="av-gap__big" style={{ color: 'var(--av-text-2)' }}>{num(divs[1].avgRating ?? 0)}</div>
+                <div className="av-gap__lbl">{divs[1].division}</div>
+              </div>
+            </div>
+            <p className="av-why" style={{ marginTop: 16 }}>Талант сконцентрирован в верхнем дивизионе — разрыв между лигами огромный, середина проваливается. Кто именно производит топ-талант — в разделе «Клубы».</p>
+          </>
+        ) : <div className="av-note">Недостаточно дивизионов для сравнения.</div>}
+      </section>
 
       {/* НАХОДКА 4 — Невидимая середина */}
       <section className="av-surface av-finding av-finding--cyan av-pad-lg av-rise">
