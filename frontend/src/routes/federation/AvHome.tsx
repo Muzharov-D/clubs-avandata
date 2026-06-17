@@ -40,29 +40,37 @@ export function FederationAvHome() {
   const results = rs.data?.results ?? [];
   const skew = ag.data?.skew ?? null;
 
-  // Значимые матчи: значимость на КОМАНДНЫХ рейтингах, ранг — в дивизионе возраста.
+  // Значимые матчи. Сенсация (правило владельца): победил слабейший, и соперник
+  // был ВДВОЕ выше рейтингом ИЛИ на ≥4 места выше в таблице дивизиона.
   const keyMatches = useMemo(() => {
     const scored: KeyMatch[] = results.map((m) => {
       const hs = m.home.score ?? 0, as = m.away.score ?? 0, margin = Math.abs(hs - as), decided = hs !== as;
-      const H = m.home, A = m.away, divTeams = m.divTeams || 0;
-      const leaderRank = Math.max(3, Math.round(divTeams * 0.4)); // «лидер дивизиона» = верхние ~40%
-      const topRank = Math.max(2, Math.round(divTeams * 0.25));
-      const winner = hs > as ? H : A, loser = hs > as ? A : H;
-      let sig = margin, tone: SigTone | null = null, label = '', why = '';
-      if (decided && winner.rating != null && loser.rating != null && winner.rating < loser.rating && (loser.rank ?? 99) <= leaderRank) {
-        sig = 2000 + (loser.rating - winner.rating); tone = 'upset'; label = 'Сенсация';
-        why = `рейтинг ${num(winner.rating)} обыграл ${num(loser.rating)} · соперник #${loser.rank} дивизиона`;
-      } else if (H.rating != null && A.rating != null && (H.rank ?? 99) <= topRank && (A.rank ?? 99) <= topRank) {
-        sig = 1000 + 1000 / ((H.rank ?? 1) + (A.rank ?? 1)); tone = 'clash'; label = 'Битва лидеров';
-        why = `#${H.rank} против #${A.rank} дивизиона`;
-      } else if (margin >= 6) {
-        sig = 200 + margin; tone = 'rout'; label = 'Разгром';
-        why = `крупная победа · +${margin} в счёте`;
+      const divTeams = m.divTeams || 0, homeWon = hs > as;
+      const wRank = homeWon ? m.home.rank : m.away.rank, lRank = homeWon ? m.away.rank : m.home.rank;
+      const wRat = homeWon ? m.home.rating : m.away.rating, lRat = homeWon ? m.away.rating : m.home.rating;
+      const rankGap = wRank != null && lRank != null ? wRank - lRank : null; // >0 = победитель НИЖЕ в таблице
+      const ratio = wRat != null && lRat != null && wRat > 0 ? lRat / wRat : null; // >1 = соперник сильнее
+      const bigRank = rankGap != null && rankGap >= 4;
+      const bigRating = ratio != null && ratio >= 2;
+      const topRank = Math.max(3, Math.round(divTeams * 0.25));
+      let sig = 0, tone: SigTone | null = null, label = '', why = '';
+      if (decided && (bigRank || bigRating)) {
+        tone = 'upset'; label = 'Сенсация';
+        sig = 3000 + (bigRank ? rankGap! * 60 : 0) + (bigRating ? Math.round(ratio! * 100) : 0);
+        const parts: string[] = [];
+        if (bigRank) parts.push(`на ${rankGap} мест выше (#${lRank} в дивизионе)`);
+        if (bigRating) parts.push(`рейтинг ×${ratio!.toFixed(1)}`);
+        why = `обыграл соперника ${parts.join(' · ')}`;
+      } else if (m.home.rating != null && m.away.rating != null && (m.home.rank ?? 99) <= topRank && (m.away.rank ?? 99) <= topRank) {
+        tone = 'clash'; label = 'Битва лидеров';
+        sig = 2000 + 1000 / ((m.home.rank ?? 1) + (m.away.rank ?? 1));
+        why = `#${m.home.rank} против #${m.away.rank} дивизиона`;
+      } else if (margin >= 9) {
+        tone = 'rout'; label = 'Разгром'; sig = 1000 + margin; why = ''; // счёт говорит сам, без тупого «+N»
       }
       return { ...m, sig, tone, label, why };
     });
-    const key = scored.filter((x) => x.label).sort((a, b) => b.sig - a.sig).slice(0, 8);
-    return key.length ? key : scored.slice(0, 8);
+    return scored.filter((x) => x.tone).sort((a, b) => b.sig - a.sig).slice(0, 8);
   }, [results]);
 
   return (
@@ -105,13 +113,10 @@ export function FederationAvHome() {
             <span className="av-section-sub" style={{ margin: 0 }}>битвы лидеров · сенсации · разгромы — из {results.length} сыгранных</span>
           )}
         </div>
-        {rs.isLoading ? <div className="av-skeleton" style={{ height: 140 }} /> : keyMatches.length === 0 ? (
-          <div className="av-surface av-pad av-note">Нет сыгранных матчей по выбранному фильтру.</div>
-        ) : (
-          <div className="av-fixtures">
-            {keyMatches.map((m) => <Fixture key={m.id} m={m} />)}
-          </div>
-        )}
+        {rs.isLoading ? <div className="av-skeleton" style={{ height: 140 }} />
+          : results.length === 0 ? <div className="av-surface av-pad av-note">Нет сыгранных матчей по выбранному фильтру.</div>
+          : keyMatches.length === 0 ? <div className="av-surface av-pad av-note">Ярких матчей по фильтру пока нет — результаты предсказуемы.</div>
+          : <div className="av-fixtures">{keyMatches.map((m) => <Fixture key={m.id} m={m} />)}</div>}
       </section>
 
       {/* Таблицы + рейтинг клубов */}
