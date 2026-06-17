@@ -13,9 +13,73 @@ import {
   type AvSeason, type AvStatTeam, type AvRatingTeam, type AvEventType,
 } from '../services/avandataApi.js';
 
-/** Детали матча (сырой ответ базы) — форма уточняется по живому проб-запросу. */
-export async function regionMatchDetail(matchId: number): Promise<Record<string, unknown> | null> {
-  return cached(`match:${matchId}`, 10 * 60 * 1000, () => getMatchDetail(matchId));
+// ─── Детали матча (для карточки матча по клику) ──────────────────────────────
+export interface MatchCard { player: string; minute: string }
+export interface MatchSide { id: number | null; name: string; logo: string | null; score: number | null; yellow: MatchCard[]; red: MatchCard[] }
+export interface MatchStatRow { eventType: string; title: string; home: number; away: number }
+export interface MatchTopEvent { eventType: string; name: string; count: number }
+export interface MatchBest { id: number | null; name: string; team: string | null; role: string | null; rating: number | null; topEvents: MatchTopEvent[] }
+export interface MatchLeader { id: number | null; name: string; team: string | null; role: string | null; photo: string | null; count: number }
+export interface MatchLeaderGroup { eventType: string; title: string; players: MatchLeader[] }
+export interface MatchDetail {
+  id: number; title: string;
+  home: MatchSide; away: MatchSide;
+  best: MatchBest | null;
+  stats: MatchStatRow[];
+  leaders: MatchLeaderGroup[];
+}
+
+// Сырые формы ответа /ffspb-portal/matches/{id} (см. inspectMatchDetail.ts).
+interface RawCard { playerName?: string; matchTime?: string | number }
+interface RawSide { id?: number; title?: string; logoUrl?: string | null; score?: number; yellowCard?: RawCard[]; redCards?: RawCard[] }
+interface RawTeamRef { title?: string }
+interface RawBest { id?: number; title?: string; team?: RawTeamRef; playerRoleName?: string; rating?: number; topEvents?: Array<{ eventType?: string; eventName?: string; count?: number }> }
+interface RawKeyEvent { ownTeam?: { eventsCount?: number }; guestTeam?: { eventsCount?: number }; eventType?: string; title?: string }
+interface RawLeaderPlayer { id?: number; title?: string; team?: RawTeamRef; playerRoleName?: string; playerPhotoUrl?: string | null; eventsCount?: number }
+interface RawLeaderGroup { eventType?: string; players?: RawLeaderPlayer[] }
+interface RawMatch {
+  id?: number; domainMatchId?: number; title?: string;
+  ownTeam?: RawSide; guestTeam?: RawSide; bestMatchPlayer?: RawBest;
+  keyEvents?: RawKeyEvent[]; bestPlayersByEvents?: RawLeaderGroup[];
+}
+
+const mapCards = (cs?: RawCard[]): MatchCard[] => (cs ?? []).map((c) => ({ player: c.playerName ?? '—', minute: String(c.matchTime ?? '') }));
+const mapSide = (s?: RawSide): MatchSide => ({
+  id: s?.id ?? null, name: s?.title ?? '—', logo: s?.logoUrl ?? null, score: s?.score ?? null,
+  yellow: mapCards(s?.yellowCard), red: mapCards(s?.redCards),
+});
+
+/** Детали матча: счёт, карточки, игрок матча, сравнение команд по событиям, лидеры. */
+export async function regionMatchDetail(matchId: number): Promise<MatchDetail | null> {
+  return cached(`match:${matchId}`, 10 * 60 * 1000, async () => {
+    const raw = (await getMatchDetail(matchId)) as RawMatch | null;
+    if (!raw) return null;
+    const titleByType = new Map<string, string>();
+    for (const k of raw.keyEvents ?? []) if (k.eventType) titleByType.set(k.eventType, k.title ?? k.eventType);
+    const best: MatchBest | null = raw.bestMatchPlayer
+      ? {
+          id: raw.bestMatchPlayer.id ?? null, name: raw.bestMatchPlayer.title ?? '—',
+          team: raw.bestMatchPlayer.team?.title ?? null, role: raw.bestMatchPlayer.playerRoleName ?? null,
+          rating: raw.bestMatchPlayer.rating ?? null,
+          topEvents: (raw.bestMatchPlayer.topEvents ?? []).map((e) => ({ eventType: e.eventType ?? '', name: e.eventName ?? '', count: e.count ?? 0 })),
+        }
+      : null;
+    const stats: MatchStatRow[] = (raw.keyEvents ?? []).map((k) => ({
+      eventType: k.eventType ?? '', title: k.title ?? k.eventType ?? '',
+      home: k.ownTeam?.eventsCount ?? 0, away: k.guestTeam?.eventsCount ?? 0,
+    }));
+    const leaders: MatchLeaderGroup[] = (raw.bestPlayersByEvents ?? []).map((g) => ({
+      eventType: g.eventType ?? '', title: titleByType.get(g.eventType ?? '') ?? g.eventType ?? '',
+      players: (g.players ?? []).map((p) => ({
+        id: p.id ?? null, name: p.title ?? '—', team: p.team?.title ?? null,
+        role: p.playerRoleName ?? null, photo: p.playerPhotoUrl ?? null, count: p.eventsCount ?? 0,
+      })),
+    }));
+    return {
+      id: raw.domainMatchId ?? raw.id ?? matchId, title: raw.title ?? '',
+      home: mapSide(raw.ownTeam), away: mapSide(raw.guestTeam), best, stats, leaders,
+    };
+  });
 }
 
 export { isAvandataConfigured };

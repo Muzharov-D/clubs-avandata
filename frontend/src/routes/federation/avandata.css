@@ -240,7 +240,50 @@
 .av-fixture--clash { border-color: color-mix(in srgb, var(--av-cyan) 32%, var(--av-border)); }
 .av-fixture--upset { border-color: color-mix(in srgb, var(--av-warning) 34%, var(--av-border)); }
 .av-fixture--rout  { border-color: var(--av-border-strong); }
+.av-fixture--link { width: 100%; font: inherit; text-align: left; cursor: pointer; }
 .av-fixture__foot { font-size: 9.5px; color: var(--av-text-faint); text-transform: uppercase; letter-spacing: 0.05em; }
+
+/* ── Карточка матча (модалка по клику) ────────────────────────────────────── */
+.av-modal__backdrop { position: fixed; inset: 0; z-index: 60; display: flex; align-items: flex-start; justify-content: center; padding: 48px 16px; background: rgba(4, 7, 16, 0.72); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); overflow-y: auto; }
+.av-modal { position: relative; width: 100%; max-width: 560px; padding: 22px 22px 24px; }
+.av-modal__close { position: absolute; top: 12px; right: 14px; width: 30px; height: 30px; border-radius: 8px; font-size: 22px; line-height: 1; color: var(--av-text-2); background: rgba(255, 255, 255, 0.05); border: 1px solid var(--av-border); cursor: pointer; transition: all 0.15s ease; }
+@media (hover: hover) { .av-modal__close:hover { color: var(--av-text); background: rgba(255, 255, 255, 0.10); } }
+.av-mhead { padding-bottom: 16px; border-bottom: 1px solid var(--av-border); }
+.av-mhead__meta { font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--av-cyan); font-weight: 700; margin-bottom: 12px; }
+.av-mscore { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 12px; }
+.av-mscore__team { display: flex; flex-direction: column; align-items: center; gap: 8px; min-width: 0; }
+.av-mscore__name { font-size: 12.5px; line-height: 1.25; text-align: center; color: var(--av-text); max-width: 150px; }
+.av-mscore__nums { display: flex; align-items: center; gap: 8px; font-family: var(--av-display); font-weight: 700; font-size: 38px; line-height: 1; font-variant-numeric: tabular-nums; }
+.av-mscore__w { color: var(--av-text); }
+.av-mscore__l { color: var(--av-text-faint); }
+.av-mscore__sep { color: var(--av-text-faint); font-size: 26px; }
+.av-msection { margin-top: 18px; }
+.av-msection__title { font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--av-text-muted); font-weight: 700; margin: 0 0 12px; }
+.av-mbest { display: flex; align-items: center; gap: 12px; }
+.av-mbest__id { display: flex; align-items: center; gap: 12px; min-width: 0; flex: 1; text-decoration: none; color: inherit; }
+.av-mbest__name { font-weight: 700; font-size: 15px; color: var(--av-text); }
+.av-mbest__meta { font-size: 12px; color: var(--av-text-muted); margin-top: 2px; }
+.av-mbest__rate { font-size: 24px; }
+.av-mbest__events { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
+.av-mstats { display: flex; flex-direction: column; gap: 11px; }
+.av-mstat { display: grid; grid-template-columns: 34px 1fr 34px; align-items: center; gap: 10px; }
+.av-mstat__n { font-family: var(--av-display); font-weight: 700; font-size: 15px; color: var(--av-text-2); text-align: center; font-variant-numeric: tabular-nums; }
+.av-mstat__n--w { color: var(--av-text); }
+.av-mstat__mid { display: flex; flex-direction: column; gap: 5px; }
+.av-mstat__title { font-size: 11px; color: var(--av-text-muted); text-align: center; }
+.av-mstat__bar { display: flex; height: 6px; border-radius: 3px; overflow: hidden; background: var(--av-border); }
+.av-mstat__fh { background: var(--av-cyan); }
+.av-mstat__fa { background: var(--av-text-faint); }
+.av-mcards { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.av-mcardcol { display: flex; flex-direction: column; gap: 7px; }
+.av-mcardcol--right { align-items: flex-end; }
+.av-mcardrow { display: flex; align-items: center; gap: 8px; }
+.av-mcardcol--right .av-mcardrow { flex-direction: row-reverse; }
+.av-mcardrow__name { font-size: 12.5px; color: var(--av-text-2); }
+.av-mcardrow__min { font-family: var(--av-display); font-size: 12px; color: var(--av-text-faint); font-variant-numeric: tabular-nums; }
+.av-card-pip { width: 11px; height: 14px; border-radius: 2px; flex: none; }
+.av-card-pip--yellow { background: var(--av-warning); }
+.av-card-pip--red { background: var(--av-danger); }
 
 /* =============================================================================
    ПРЕМИУМ-ТАБЛИЦА: дивизион-группа со строками-клубами (герб + форма)

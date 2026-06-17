@@ -1,10 +1,11 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { api } from '../../api/client';
 import { ClubShield } from './ClubShield';
 import { PlayerAvatar } from './PlayerAvatar';
 import { FedError } from './FedState';
+import { MatchDetail, type MatchBase } from './MatchDetail';
 import { ratingColor } from './ratings';
 import { useFedYear, yearQ, fedQ, inDivision } from './avYear';
 import './avandata.css';
@@ -32,9 +33,16 @@ interface KeyMatch extends ResultMatch { sig: number; tone: SigTone | null; labe
  * Состояние региона — главный, операционный экран: пульс Первенства, что только
  * что сыграли, и кто наверху таблиц/рейтинга. Первое, что открывает функционер.
  */
+const toBase = (m: ResultMatch): MatchBase => ({
+  id: m.id, age: m.age, division: m.division, date: m.date,
+  home: { name: m.home.name, logo: m.home.logo, score: m.home.score },
+  away: { name: m.away.name, logo: m.away.logo, score: m.away.score },
+});
+
 export function FederationAvHome() {
   const { year, division } = useFedYear();
   const q = yearQ(year);
+  const [selected, setSelected] = useState<ResultMatch | null>(null);
   const ov = useQuery({ queryKey: ['av', 'overview', division], queryFn: () => api<Overview>(`/federation/av/overview${fedQ(null, division)}`) });
   const rs = useQuery({ queryKey: ['av', 'results', year, division], queryFn: () => api<{ results: ResultMatch[] }>(`/federation/av/results${fedQ(year, division)}`) });
   const st = useQuery({ queryKey: ['av', 'standings', year], queryFn: () => api<{ groups: Group<StandRow>[] }>(`/federation/av/standings${q}`) });
@@ -149,7 +157,7 @@ export function FederationAvHome() {
         {rs.isLoading ? <div className="av-skeleton" style={{ height: 140 }} />
           : results.length === 0 ? <div className="av-surface av-pad av-note">Нет сыгранных матчей по выбранному фильтру.</div>
           : keyMatches.length === 0 ? <div className="av-surface av-pad av-note">Ярких матчей по фильтру пока нет — результаты предсказуемы.</div>
-          : <div className="av-fixtures">{keyMatches.map((m) => <Fixture key={m.id} m={m} />)}</div>}
+          : <div className="av-fixtures">{keyMatches.map((m) => <Fixture key={m.id} m={m} onOpen={setSelected} />)}</div>}
       </section>
 
       {/* Таблицы + рейтинг клубов */}
@@ -163,6 +171,8 @@ export function FederationAvHome() {
           {cr.isLoading ? <Sk /> : crGroups.length === 0 ? <div className="av-note">Нет данных.</div> : crGroups.map((g) => <RatingsBlock key={g.division} g={g} />)}
         </section>
       </div>
+
+      {selected && <MatchDetail base={toBase(selected)} onClose={() => setSelected(null)} />}
     </>
   );
 }
@@ -179,10 +189,10 @@ function Stat({ label, value, extra, tone }: { label: string; value: number; ext
   );
 }
 
-function Fixture({ m }: { m: KeyMatch }) {
+function Fixture({ m, onOpen }: { m: KeyMatch; onOpen: (m: KeyMatch) => void }) {
   const hs = m.home.score ?? 0, as = m.away.score ?? 0;
   return (
-    <div className={`av-fixture${m.tone ? ` av-fixture--${m.tone}` : ''}`}>
+    <button type="button" className={`av-fixture av-fixture--link${m.tone ? ` av-fixture--${m.tone}` : ''}`} onClick={() => onOpen(m)}>
       <div className="av-fixture__top">
         {m.tone
           ? <span className={`av-sigtag av-sigtag--${m.tone}`}>{m.label}</span>
@@ -205,7 +215,7 @@ function Fixture({ m }: { m: KeyMatch }) {
         </span>
       </div>
       {m.tone && <div className="av-fixture__foot">{m.why || `${m.age} · ${m.division}`}</div>}
-    </div>
+    </button>
   );
 }
 
