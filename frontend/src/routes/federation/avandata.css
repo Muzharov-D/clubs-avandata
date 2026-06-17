@@ -459,8 +459,9 @@
 /* честная пометка усечения */
 .av-cap { font-size: 11.5px; color: var(--av-text-dim); line-height: 1.5; margin-top: 12px; }
 
-/* провизорный слот сборной (позиция добрана) */
-.av-slot__prov { font-size: 9px; color: var(--av-text-faint); }
+/* метка позиции слота (ВРТ/ЗАЩ/ПЗЩ/НАП) + пустой слот (нет игрока на позиции) */
+.av-slot__prov { font-size: 9px; font-weight: 700; letter-spacing: 0.06em; color: var(--av-text-faint); }
+.av-slot__empty { width: 38px; height: 38px; border-radius: 50%; border: 1.5px dashed var(--av-border-strong); display: block; }
 
 /* строки-ссылки: reset без инлайнов (Уинстон) */
 a.av-trow { text-decoration: none; color: inherit; }

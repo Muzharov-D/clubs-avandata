@@ -17,8 +17,8 @@ type Line = 'GK' | 'DEF' | 'MID' | 'FWD';
 const lineOf = (pos: string | null): Line | null => {
   const p = (pos ?? '').toLowerCase();
   if (/врат/.test(p)) return 'GK';
-  if (/защит/.test(p)) return 'DEF';
-  if (/полуз/.test(p)) return 'MID';
+  if (/полуз/.test(p)) return 'MID';          // «полуЗАЩИТник» содержит «защит» — проверяем ПЕРВЫМ
+  if (/защит|фулбек/.test(p)) return 'DEF';
   if (/напад|форвард/.test(p)) return 'FWD';
   return null;
 };
@@ -47,32 +47,17 @@ export function FederationAvPlayers() {
     return list.slice(0, 250);
   }, [players, club, qStr]);
 
-  // Сборная региона: лучшие по линиям на клиенте (знаменатель — у федерации).
+  // Сборная региона: лучшие по РЕАЛЬНЫМ позициям. Без «добора» — пустой слот
+  // честно показывает перекос состава (нет вратарей / мало защитников и т.п.).
   const xi = useMemo(() => {
     const rated = players.filter((p) => p.rating != null);
     const byLine: Record<Line, RPlayer[]> = { GK: [], DEF: [], MID: [], FWD: [] };
     for (const p of rated) { const l = lineOf(p.position); if (l) byLine[l].push(p); }
     (Object.keys(byLine) as Line[]).forEach((l) => byLine[l].sort((a, b) => (b.rating as number) - (a.rating as number)));
-    const used = new Set<number>();
-    const need: Record<Line, number> = { GK: 1, DEF: 4, MID: 3, FWD: 3 };
-    const pick: Record<Line, RPlayer[]> = { GK: [], DEF: [], MID: [], FWD: [] };
-    (Object.keys(need) as Line[]).forEach((l) => { for (const p of byLine[l]) { if (pick[l].length >= need[l]) break; pick[l].push(p); used.add(p.id); } });
-    // добор недостающих из любых рейтинговых
-    const spare = rated.filter((p) => !used.has(p.id)).sort((a, b) => (b.rating as number) - (a.rating as number));
-    return SLOTS.map((s) => {
-      let pl = pick[s.line].shift();
-      let provisional = false;
-      if (!pl) { pl = spare.shift(); provisional = true; } // позиция дозаполнена — честно метим
-      return { ...s, player: pl, provisional };
-    });
+    const pool: Record<Line, RPlayer[]> = { GK: [...byLine.GK], DEF: [...byLine.DEF], MID: [...byLine.MID], FWD: [...byLine.FWD] };
+    return SLOTS.map((s) => ({ ...s, player: pool[s.line].shift() }));
   }, [players]);
-  const xiReady = xi.filter((s) => s.player).length >= 7;
-  const xiProvisional = xi.some((s) => s.player && s.provisional);
-  // Корневой фикс: если позиций в данных мало — расстановка превращается в шум.
-  // Честный фолбэк на «Топ-11 региона» списком, когда явных позиций < 6.
-  const xiReal = xi.filter((s) => s.player && !s.provisional).length;
-  const xiPitchOk = xiReady && xiReal >= 6;
-  const top11 = useMemo(() => players.filter((p) => p.rating != null).slice(0, 11), [players]);
+  const xiFilled = xi.filter((s) => s.player).length;
 
   // Восходящие — высокий рейтинг среди МЛАДШИХ когорт (честный сигнал «кто растёт»).
   const rising = useMemo(() => {
@@ -132,45 +117,31 @@ export function FederationAvPlayers() {
             <div className="av-section" style={{ marginBottom: 10 }}>
               <div>
                 <h2 className="av-section-title">Лучшие игроки региона</h2>
-                <p className="av-section-sub">{xiPitchOk ? 'Лучшие по позициям' : 'Топ-11 по рейтингу'}</p>
+                <p className="av-section-sub">Лучшие по реальным позициям · пустой слот = нет игрока</p>
               </div>
             </div>
-            {isLoading ? <div className="av-skeleton" style={{ aspectRatio: '4 / 5' }} /> : !xiReady ? (
+            {isLoading ? <div className="av-skeleton" style={{ aspectRatio: '4 / 5' }} /> : xiFilled < 4 ? (
               <div className="av-note">Мало разобранных игроков для сборной.</div>
-            ) : xiPitchOk ? (
-              <>
-                <div className="av-pitch">
-                  <span className="av-pitch__circle" />
-                  <span className="av-pitch__mid" />
-                  <span className="av-pitch__box av-pitch__box--top" />
-                  <span className="av-pitch__box av-pitch__box--bot" />
-                  {xi.map((s, idx) => s.player && (
-                    <Link key={idx} to={`/federation/players/${s.player.id}`} className="av-slot" style={{ left: `${s.l}%`, top: `${s.t}%` }}>
-                      <PlayerAvatar name={s.player.name} size={38} ring={s.line === 'FWD'} />
-                      <span className="av-slot__name" title={s.player.name}>{lastName(s.player.name)}</span>
-                      <span className="av-slot__rate" style={{ color: ratingColor(s.player.rating) }}>{s.player.rating}</span>
-                      <span className="av-slot__prov">{s.provisional ? 'добор' : s.tag}</span>
-                    </Link>
-                  ))}
-                </div>
-                {xiProvisional && <p className="av-cap">«добор» — позиция дозаполнена лучшим доступным игроком (в данных нет явной позиции).</p>}
-              </>
             ) : (
-              <>
-                <div className="av-rising">
-                  {top11.map((p) => (
-                    <Link key={p.id} to={`/federation/players/${p.id}`} className="av-rising__row">
-                      <PlayerAvatar name={p.name} size={32} />
-                      <div style={{ minWidth: 0 }}>
-                        <div className="av-rising__name">{p.name}</div>
-                        <div className="av-rising__meta">{p.club ?? '—'}{p.position ? ` · ${p.position}` : ''}{p.birthYear ? ` · ${p.birthYear}` : ''}</div>
-                      </div>
-                      <span className="av-rate" style={{ color: ratingColor(p.rating) }}>{p.rating}</span>
-                    </Link>
-                  ))}
-                </div>
-                <p className="av-cap">Позиции игроков в данных не размечены — показываем топ-11 региона по рейтингу вместо расстановки.</p>
-              </>
+              <div className="av-pitch">
+                <span className="av-pitch__circle" />
+                <span className="av-pitch__mid" />
+                <span className="av-pitch__box av-pitch__box--top" />
+                <span className="av-pitch__box av-pitch__box--bot" />
+                {xi.map((s, idx) => s.player ? (
+                  <Link key={idx} to={`/federation/players/${s.player.id}`} className="av-slot" style={{ left: `${s.l}%`, top: `${s.t}%` }}>
+                    <PlayerAvatar name={s.player.name} size={38} ring={s.line === 'GK'} />
+                    <span className="av-slot__name" title={s.player.name}>{lastName(s.player.name)}</span>
+                    <span className="av-slot__rate" style={{ color: ratingColor(s.player.rating) }}>{s.player.rating}</span>
+                    <span className="av-slot__prov">{s.tag}</span>
+                  </Link>
+                ) : (
+                  <span key={idx} className="av-slot" style={{ left: `${s.l}%`, top: `${s.t}%` }}>
+                    <span className="av-slot__empty" />
+                    <span className="av-slot__prov">{s.tag}</span>
+                  </span>
+                ))}
+              </div>
             )}
           </section>
 
