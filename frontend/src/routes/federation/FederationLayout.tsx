@@ -1,3 +1,4 @@
+import { Suspense } from 'react';
 import { NavLink, Outlet, useNavigate, useLocation, Link } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { toast } from '../../components/Toast';
@@ -64,7 +65,9 @@ export function FederationLayout() {
 
           <main className="av-content">
             <div className="av-page">
-              <Outlet />
+              <Suspense fallback={<div className="av-skeleton" style={{ height: 400 }} />}>
+                <Outlet />
+              </Suspense>
             </div>
           </main>
         </div>

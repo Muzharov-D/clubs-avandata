@@ -1,3 +1,4 @@
+import { lazy } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useParams } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
@@ -46,15 +47,16 @@ import { AdminTenantsList } from './routes/admin/AdminTenantsList';
 import { AdminTenantNew } from './routes/admin/AdminTenantNew';
 import { AdminTenantDetail } from './routes/admin/AdminTenantDetail';
 
-// Кабинет федерации региона (federation_admin)
+// Кабинет федерации региона (federation_admin) — оболочка eager, экраны lazy
+// (отдельные чанки: фед-код грузится только при заходе в /federation, не в клубный бандл).
 import { FederationLayout } from './routes/federation/FederationLayout';
-import { FederationAvCohorts } from './routes/federation/AvCohorts';
-import { FederationAvHome } from './routes/federation/AvHome';
-import { FederationAvClubs } from './routes/federation/AvClubs';
-import { FederationAvCompare } from './routes/federation/AvCompare';
-import { FederationAvPlayers } from './routes/federation/AvPlayers';
-import { FederationAvPlayerProfile } from './routes/federation/AvPlayerProfile';
-import { FederationAvInsights } from './routes/federation/AvInsights';
+const FederationAvCohorts = lazy(() => import('./routes/federation/AvCohorts').then((m) => ({ default: m.FederationAvCohorts })));
+const FederationAvHome = lazy(() => import('./routes/federation/AvHome').then((m) => ({ default: m.FederationAvHome })));
+const FederationAvClubs = lazy(() => import('./routes/federation/AvClubs').then((m) => ({ default: m.FederationAvClubs })));
+const FederationAvCompare = lazy(() => import('./routes/federation/AvCompare').then((m) => ({ default: m.FederationAvCompare })));
+const FederationAvPlayers = lazy(() => import('./routes/federation/AvPlayers').then((m) => ({ default: m.FederationAvPlayers })));
+const FederationAvPlayerProfile = lazy(() => import('./routes/federation/AvPlayerProfile').then((m) => ({ default: m.FederationAvPlayerProfile })));
+const FederationAvInsights = lazy(() => import('./routes/federation/AvInsights').then((m) => ({ default: m.FederationAvInsights })));
 
 const queryClient = new QueryClient({
   defaultOptions: {
