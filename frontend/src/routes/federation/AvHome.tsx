@@ -3,7 +3,9 @@ import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { api } from '../../api/client';
 import { ClubShield } from './ClubShield';
+import { PlayerAvatar } from './PlayerAvatar';
 import { FedError } from './FedState';
+import { ratingColor } from './ratings';
 import { useFedYear, yearQ } from './avYear';
 import './avandata.css';
 
@@ -14,6 +16,7 @@ interface Group<T> { division: string; rows: T[] }
 interface ResultTeam { name: string; logo: string | null; score: number | null; rating: number | null; rank: number | null }
 interface ResultMatch { id: number; age: string; division: string; date: string; divTeams: number; home: ResultTeam; away: ResultTeam }
 interface AgeEffect { total: number; q1pct: number; q4pct: number; skew: number | null }
+interface RPlayer { id: number; name: string; birthYear: number | null; position: string | null; club: string | null; clubLogo: string | null; rating: number | null }
 
 const num = (n: number) => n.toLocaleString('ru-RU');
 const pm = (n: number) => (n > 0 ? `+${n}` : String(n));
@@ -37,9 +40,11 @@ export function FederationAvHome() {
   const st = useQuery({ queryKey: ['av', 'standings', year], queryFn: () => api<{ groups: Group<StandRow>[] }>(`/federation/av/standings${q}`) });
   const cr = useQuery({ queryKey: ['av', 'club-ratings', year], queryFn: () => api<{ groups: Group<RatingRow>[] }>(`/federation/av/club-ratings${q}`) });
   const ag = useQuery({ queryKey: ['av', 'age', year], queryFn: () => api<AgeEffect>(`/federation/av/age-effect${q}`) });
+  const pl = useQuery({ queryKey: ['av', 'players', year], queryFn: () => api<{ players: RPlayer[] }>(`/federation/av/players${q}`) });
   const d = ov.data;
   const results = rs.data?.results ?? [];
   const skew = ag.data?.skew ?? null;
+  const topPlayers = (pl.data?.players ?? []).filter((p) => p.rating != null).slice(0, 8);
 
   // Значимые матчи. Сенсация (правило владельца): победил слабейший, и соперник
   // был ВДВОЕ выше рейтингом ИЛИ на ≥4 места выше в таблице дивизиона.
@@ -105,6 +110,31 @@ export function FederationAvHome() {
           <Stat label="Дивизионы" value={d.divisions.length} tone="magenta" />
         </div>
       )}
+
+      {/* Лучшие игроки региона — кто наши лучшие (вопрос №1 федерации) */}
+      <section className="av-rise">
+        <div className="av-section">
+          <h2 className="av-section-title">Лучшие игроки региона</h2>
+          <Link to="/federation/players" className="av-link">Все игроки →</Link>
+        </div>
+        {pl.isLoading ? <div className="av-skeleton" style={{ height: 140 }} /> : topPlayers.length === 0 ? (
+          <div className="av-surface av-pad av-note">Нет игроков с рейтингом по фильтру.</div>
+        ) : (
+          <div className="av-leaders">
+            {topPlayers.map((p, i) => (
+              <Link key={p.id} to={`/federation/players/${p.id}`} className="av-surface-soft av-leader">
+                <span className={`av-leader__rank${i < 3 ? ` av-trow__rank--${i + 1}` : ''}`}>{i + 1}</span>
+                <PlayerAvatar name={p.name} size={40} />
+                <div className="av-leader__id">
+                  <div className="av-leader__name">{p.name}</div>
+                  <div className="av-leader__meta">{p.club ?? '—'}{p.position ? ` · ${p.position}` : ''}{p.birthYear ? ` · ${p.birthYear}` : ''}</div>
+                </div>
+                <span className="av-leader__rate" style={{ color: ratingColor(p.rating) }}>{p.rating ?? '—'}</span>
+              </Link>
+            ))}
+          </div>
+        )}
+      </section>
 
       {/* Значимые матчи — курируем по значимости, а не валим лентой все 24 */}
       <section className="av-rise">
