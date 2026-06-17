@@ -139,7 +139,9 @@ async function avMatchLink(matchId: number): Promise<string | null> {
 // запросу (фронт авто-переспрашивает, пока 'warming'). 6ч TTL.
 const ffspbWarm = new Map<number, { at: number; protocol: FfspbProtocol }>();
 const ffspbInflight = new Set<number>();
+const ffspbFailed = new Map<number, number>(); // matchId → когда прогрев не пробился
 const FFSPB_WARM_TTL = 6 * 60 * 60 * 1000;
+const FFSPB_FAIL_COOLDOWN = 10 * 60 * 1000; // не долбить FFSPB и не показывать «грузится» 10 мин
 const FFSPB_WARM_TIMEOUT = 90_000;
 
 function warmFfspb(matchId: number, ffspbId: string): Promise<void> {
@@ -152,9 +154,13 @@ function warmFfspb(matchId: number, ffspbId: string): Promise<void> {
       new Promise<never>((_, rej) => setTimeout(() => rej(new Error(`timeout ${FFSPB_WARM_TIMEOUT / 1000}s`)), FFSPB_WARM_TIMEOUT)),
     ]));
     ffspbWarm.set(matchId, { at: Date.now(), protocol: transformFfspb(fm) });
+    ffspbFailed.delete(matchId);
     logger.info({ matchId, ffspbId }, '[av] ffspb protocol warmed');
   })()
-    .catch((e) => logger.warn({ matchId, ffspbId, err: (e as Error).message.slice(0, 80) }, '[av] ffspb warm failed'))
+    .catch((e) => {
+      ffspbFailed.set(matchId, Date.now());
+      logger.warn({ matchId, ffspbId, err: (e as Error).message.slice(0, 80) }, '[av] ffspb warm failed (stat.ffspb.org недоступен с Render?)');
+    })
     .finally(() => ffspbInflight.delete(matchId));
 }
 
@@ -182,10 +188,13 @@ export async function regionMatchDetail(matchId: number): Promise<MatchDetail | 
   const ffspbId = link?.match(/\/match\/(\d+)/)?.[1] ?? null;
   const warm = ffspbWarm.get(matchId);
   const protocol = warm && Date.now() - warm.at < FFSPB_WARM_TTL ? warm.protocol : null;
+  const failedAt = ffspbFailed.get(matchId);
+  const recentlyFailed = failedAt != null && Date.now() - failedAt < FFSPB_FAIL_COOLDOWN;
   let ffspbDebug: string;
   if (protocol) ffspbDebug = 'warm';
   else if (!isFfspbConfigured()) ffspbDebug = 'no-ffspb-key';
   else if (!ffspbId) ffspbDebug = link ? 'no-ffspb-id' : 'no-link';
+  else if (recentlyFailed) ffspbDebug = 'unavailable'; // прогрев не пробился — не показываем «грузится», не долбим
   else { void warmFfspb(matchId, ffspbId); ffspbDebug = 'warming'; }
 
   {
