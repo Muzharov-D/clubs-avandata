@@ -12,6 +12,14 @@ interface NavItem { to?: string; end?: boolean; label: string; icon: string; soo
 
 const NAV: Array<{ title: string; items: NavItem[] }> = [
   {
+    title: 'Первенство · реальные данные',
+    items: [
+      { to: '/federation/live', label: 'Обзор Первенства', icon: 'M3 13h2l2-8 4 16 3-10 2 4h4' },
+      { to: '/federation/compare', label: 'Сравнение турниров', icon: 'M9 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h4zM15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4zM12 3v18' },
+      { to: '/federation/live/players', label: 'Игроки (реальные)', icon: 'M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM22 21v-2a4 4 0 0 0-3-3.87' },
+    ],
+  },
+  {
     title: 'Обзор',
     items: [
       { to: '/federation/map', label: 'Карта региона', icon: 'M3 6l6-3 6 3 6-3v15l-6 3-6-3-6 3V6zM9 3v15M15 6v15' },

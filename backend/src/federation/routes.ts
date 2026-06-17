@@ -4,6 +4,9 @@ import { withFederation } from '../db/tenantContext.js';
 import { BadRequestError } from '../shared/errors.js';
 import { registryFor } from './registry.js';
 import {
+  isAvandataConfigured, listTournaments, compareTournaments, regionOverview, regionPlayers,
+} from './avandataSource.js';
+import {
   federationOverview,
   federationRegionMap,
   federationRegionProfile,
@@ -37,6 +40,46 @@ export async function federationRoutes(app: FastifyInstance) {
     const federationId = req.user?.federationId;
     if (!federationId) throw new BadRequestError('no federation context', 'NO_FEDERATION');
     return await withFederation(federationId, (_tx, conn) => federationOverview(conn));
+  });
+
+  // ---- Прокси к «нашей» базе разборов (back.avandata.ru) — реальное Первенство СПб ----
+  // Сезон 2026 (Первенство, 2 дивизиона). Данные читаются вживую, без записи в нашу БД.
+  const AV_SEASON = 2;
+  const avOff = (reply: import('fastify').FastifyReply): boolean => {
+    if (isAvandataConfigured()) return false;
+    reply.code(503);
+    return true;
+  };
+
+  /** GET /federation/av/tournaments — каталог турниров×дивизионов Первенства. */
+  app.get('/av/tournaments', async (req, reply) => {
+    if (avOff(reply)) return { error: 'AVANDATA_API_KEY не задан', code: 'AVANDATA_OFF' };
+    const season = Number((req.query as { season?: string }).season) || AV_SEASON;
+    return { season, tournaments: await listTournaments(season) };
+  });
+
+  /** GET /federation/av/overview — обзор региона из реальной базы (сумма по турнирам). */
+  app.get('/av/overview', async (req, reply) => {
+    if (avOff(reply)) return { error: 'AVANDATA_API_KEY не задан', code: 'AVANDATA_OFF' };
+    const season = Number((req.query as { season?: string }).season) || AV_SEASON;
+    return await regionOverview(season);
+  });
+
+  /** GET /federation/av/compare?keys=14:2,13:2 — сравнение турниров между собой. */
+  app.get('/av/compare', async (req, reply) => {
+    if (avOff(reply)) return { error: 'AVANDATA_API_KEY не задан', code: 'AVANDATA_OFF' };
+    const qq = req.query as { season?: string; keys?: string };
+    const season = Number(qq.season) || AV_SEASON;
+    const keys = String(qq.keys ?? '').split(',').map((s) => s.trim()).filter(Boolean);
+    if (keys.length === 0) throw new BadRequestError('нужен ?keys=t:d,t:d', 'NO_KEYS');
+    return { season, items: await compareTournaments(season, keys) };
+  });
+
+  /** GET /federation/av/players — игроки региона из реальной базы (разобранные). */
+  app.get('/av/players', async (req, reply) => {
+    if (avOff(reply)) return { error: 'AVANDATA_API_KEY не задан', code: 'AVANDATA_OFF' };
+    const season = Number((req.query as { season?: string }).season) || AV_SEASON;
+    return { season, players: await regionPlayers(season) };
   });
 
   /** GET /api/v1/federation/region-map — перепись региона (живые счётчики) + реестр кадров. */
