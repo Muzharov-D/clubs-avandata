@@ -7,12 +7,18 @@ import { PlayerAvatar } from './PlayerAvatar';
 import { ratingColor } from './ratings';
 import './avandata.css';
 
-interface Card { player: string; minute: string }
-interface Side { id: number | null; name: string; logo: string | null; score: number | null; yellow: Card[]; red: Card[] }
+interface Side { id: number | null; name: string; logo: string | null; score: number | null }
 interface StatRow { eventType: string; title: string; home: number; away: number }
 interface TopEvent { eventType: string; name: string; count: number }
 interface Best { id: number | null; name: string; team: string | null; role: string | null; rating: number | null; topEvents: TopEvent[] }
-interface Detail { id: number; title: string; home: Side; away: Side; best: Best | null; stats: StatRow[]; leaders: unknown[] }
+interface Goal { team: 'home' | 'away'; player: string; minute: number | null; assist: string | null; kind: 'goal' | 'own_goal' | 'penalty'; addedTime: boolean }
+interface CardEv { team: 'home' | 'away'; player: string; minute: number | null; kind: 'yellow' | 'red' | 'yellow_to_red'; reason: string }
+interface Person { name: string; role: string }
+interface Officials { referees: Person[]; homeCoaches: Person[]; awayCoaches: Person[] }
+interface Detail {
+  id: number; title: string; home: Side; away: Side; best: Best | null; stats: StatRow[];
+  goals: Goal[]; cards: CardEv[]; officials: Officials | null; protocolUrl: string | null;
+}
 
 /** Базовый контекст из карточки результата — мгновенная шапка, пока грузится глубина. */
 export interface MatchBase {
@@ -22,8 +28,10 @@ export interface MatchBase {
 }
 
 const fmtDate = (iso: string) => { try { return new Intl.DateTimeFormat('ru-RU', { day: 'numeric', month: 'long' }).format(new Date(iso)); } catch { return ''; } };
+const goalSuffix = (g: Goal) => (g.kind === 'penalty' ? ' (пен)' : g.kind === 'own_goal' ? ' (аг)' : '');
+const min = (m: number | null, added = false) => `${m ?? 0}${added ? '+' : ''}′`;
 
-/** Карточка матча по клику: счёт, игрок матча, сравнение команд по событиям, карточки. */
+/** Карточка матча по клику: счёт, голы, игрок матча, сравнение команд, карточки, судьи/тренеры. */
 export function MatchDetail({ base, onClose }: { base: MatchBase; onClose: () => void }) {
   const { data, isLoading, error } = useQuery({
     queryKey: ['av', 'match', base.id],
@@ -38,21 +46,23 @@ export function MatchDetail({ base, onClose }: { base: MatchBase; onClose: () =>
     return () => { document.body.style.overflow = prev; window.removeEventListener('keydown', onKey); };
   }, [onClose]);
 
-  const home = data?.home;
-  const away = data?.away;
-  const hs = base.home.score ?? home?.score ?? 0;
-  const as = base.away.score ?? away?.score ?? 0;
+  const hs = base.home.score ?? data?.home.score ?? 0;
+  const as = base.away.score ?? data?.away.score ?? 0;
+  const cardsHome = data?.cards.filter((c) => c.team === 'home') ?? [];
+  const cardsAway = data?.cards.filter((c) => c.team === 'away') ?? [];
+  const off = data?.officials;
+  const hasOfficials = !!off && (off.referees.length > 0 || off.homeCoaches.length > 0 || off.awayCoaches.length > 0);
 
   return (
     <div className="av-modal__backdrop" onClick={onClose}>
       <div className="av-modal av-surface" role="dialog" aria-modal="true" onClick={(e) => e.stopPropagation()}>
         <button className="av-modal__close" onClick={onClose} aria-label="Закрыть">×</button>
 
-        {/* Шапка: контекст + счёт (мгновенно из base) */}
+        {/* Шапка: контекст + счёт */}
         <div className="av-mhead">
           <div className="av-mhead__meta">{base.age} · {base.division} · {fmtDate(base.date)}</div>
           <div className="av-mscore">
-            <div className="av-mscore__team av-mscore__team--h">
+            <div className="av-mscore__team">
               <ClubShield name={base.home.name} logoUrl={base.home.logo} size={46} />
               <span className="av-mscore__name" title={base.home.name}>{base.home.name}</span>
             </div>
@@ -61,7 +71,7 @@ export function MatchDetail({ base, onClose }: { base: MatchBase; onClose: () =>
               <span className="av-mscore__sep">:</span>
               <b className={as >= hs ? 'av-mscore__w' : 'av-mscore__l'}>{as}</b>
             </div>
-            <div className="av-mscore__team av-mscore__team--a">
+            <div className="av-mscore__team">
               <ClubShield name={base.away.name} logoUrl={base.away.logo} size={46} />
               <span className="av-mscore__name" title={base.away.name}>{base.away.name}</span>
             </div>
@@ -73,6 +83,22 @@ export function MatchDetail({ base, onClose }: { base: MatchBase; onClose: () =>
 
         {data && (
           <>
+            {/* Голы */}
+            {data.goals.length > 0 && (
+              <section className="av-msection">
+                <h3 className="av-msection__title">Голы</h3>
+                <div className="av-goals">
+                  {data.goals.map((g, i) => (
+                    <div key={i} className="av-goal">
+                      <span className="av-goal__h">{g.team === 'home' && <><span className="av-goal__pl">{g.player}{goalSuffix(g)}{g.assist ? <i className="av-goal__as"> · {g.assist}</i> : null}</span><span className="av-goal__ball">⚽</span></>}</span>
+                      <span className="av-goal__min">{min(g.minute, g.addedTime)}</span>
+                      <span className="av-goal__a">{g.team === 'away' && <><span className="av-goal__ball">⚽</span><span className="av-goal__pl">{g.player}{goalSuffix(g)}{g.assist ? <i className="av-goal__as"> · {g.assist}</i> : null}</span></>}</span>
+                    </div>
+                  ))}
+                </div>
+              </section>
+            )}
+
             {/* Игрок матча */}
             {data.best && (
               <section className="av-msection">
@@ -134,15 +160,40 @@ export function MatchDetail({ base, onClose }: { base: MatchBase; onClose: () =>
             )}
 
             {/* Карточки */}
-            {(home?.yellow.length || home?.red.length || away?.yellow.length || away?.red.length) ? (
+            {data.cards.length > 0 && (
               <section className="av-msection">
                 <h3 className="av-msection__title">Карточки</h3>
                 <div className="av-mcards">
-                  <CardCol side={home} align="left" />
-                  <CardCol side={away} align="right" />
+                  <CardCol cards={cardsHome} align="left" />
+                  <CardCol cards={cardsAway} align="right" />
                 </div>
               </section>
-            ) : null}
+            )}
+
+            {/* Судьи и тренеры */}
+            {hasOfficials && (
+              <section className="av-msection">
+                <h3 className="av-msection__title">Судьи и тренеры</h3>
+                <div className="av-mofficials">
+                  {off!.referees.length > 0 && (
+                    <div className="av-moff__block">
+                      <div className="av-moff__lbl">Судейство</div>
+                      {off!.referees.map((r, i) => (
+                        <div key={i} className="av-moff__row"><span className="av-moff__role">{r.role}</span><span className="av-moff__name">{r.name}</span></div>
+                      ))}
+                    </div>
+                  )}
+                  <div className="av-moff__teams">
+                    <CoachBlock title={base.home.name} coaches={off!.homeCoaches} />
+                    <CoachBlock title={base.away.name} coaches={off!.awayCoaches} />
+                  </div>
+                </div>
+              </section>
+            )}
+
+            {data.protocolUrl && (
+              <a className="av-mprotocol" href={data.protocolUrl} target="_blank" rel="noreferrer">Протокол матча на stat.ffspb.org →</a>
+            )}
           </>
         )}
       </div>
@@ -150,17 +201,27 @@ export function MatchDetail({ base, onClose }: { base: MatchBase; onClose: () =>
   );
 }
 
-function CardCol({ side, align }: { side?: Side; align: 'left' | 'right' }) {
-  if (!side) return <div />;
-  const rows = [...side.red.map((c) => ({ ...c, kind: 'red' as const })), ...side.yellow.map((c) => ({ ...c, kind: 'yellow' as const }))];
+const CARD_CLS: Record<CardEv['kind'], string> = { yellow: 'yellow', red: 'red', yellow_to_red: 'red' };
+function CardCol({ cards, align }: { cards: CardEv[]; align: 'left' | 'right' }) {
   return (
     <div className={`av-mcardcol av-mcardcol--${align}`}>
-      {rows.length === 0 ? <span className="av-dim" style={{ fontSize: 12 }}>—</span> : rows.map((c, i) => (
-        <div key={i} className="av-mcardrow">
-          <span className={`av-card-pip av-card-pip--${c.kind}`} />
+      {cards.length === 0 ? <span className="av-dim" style={{ fontSize: 12 }}>—</span> : cards.map((c, i) => (
+        <div key={i} className="av-mcardrow" title={c.reason}>
+          <span className={`av-card-pip av-card-pip--${CARD_CLS[c.kind]}`} />
           <span className="av-mcardrow__name">{c.player}</span>
-          <span className="av-mcardrow__min">{c.minute}′</span>
+          <span className="av-mcardrow__min">{min(c.minute)}</span>
         </div>
+      ))}
+    </div>
+  );
+}
+
+function CoachBlock({ title, coaches }: { title: string; coaches: Person[] }) {
+  return (
+    <div className="av-moff__block">
+      <div className="av-moff__lbl" title={title}>{title}</div>
+      {coaches.length === 0 ? <span className="av-dim" style={{ fontSize: 12 }}>—</span> : coaches.map((c, i) => (
+        <div key={i} className="av-moff__row"><span className="av-moff__role">{c.role}</span><span className="av-moff__name">{c.name}</span></div>
       ))}
     </div>
   );

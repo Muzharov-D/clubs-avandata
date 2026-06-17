@@ -9,9 +9,10 @@
 import {
   isAvandataConfigured, getSeasons, getTeamsList, getTourStatistics, getPlayersByRole, getMatches,
   getFfspbStatistics, getFfspbStatisticsByTournament, getClubRatingsOverview, getClubRatingsByTournament,
-  getPlayerDetail, getPlayerEvents, getEventTypes, getAllPlayerSummaries, getMatchDetail,
+  getPlayerDetail, getPlayerEvents, getEventTypes, getAllPlayerSummaries, getMatchDetail, authedGet,
   type AvSeason, type AvStatTeam, type AvRatingTeam, type AvEventType,
 } from '../services/avandataApi.js';
+import { getMatch as ffspbGetMatch, isFfspbConfigured } from '../services/ffspbApi.js';
 
 // ─── Детали матча (для карточки матча по клику) ──────────────────────────────
 export interface MatchCard { player: string; minute: string }
@@ -21,12 +22,21 @@ export interface MatchTopEvent { eventType: string; name: string; count: number 
 export interface MatchBest { id: number | null; name: string; team: string | null; role: string | null; rating: number | null; topEvents: MatchTopEvent[] }
 export interface MatchLeader { id: number | null; name: string; team: string | null; role: string | null; photo: string | null; count: number }
 export interface MatchLeaderGroup { eventType: string; title: string; players: MatchLeader[] }
+// Протокол FFSPB (голы/карточки/судьи/тренеры) — подтягивается через ffspbMatchId.
+export interface MatchGoal { team: 'home' | 'away'; player: string; minute: number | null; assist: string | null; kind: 'goal' | 'own_goal' | 'penalty'; addedTime: boolean }
+export interface MatchCardEvent { team: 'home' | 'away'; player: string; minute: number | null; kind: 'yellow' | 'red' | 'yellow_to_red'; reason: string }
+export interface MatchPerson { name: string; role: string }
+export interface MatchOfficials { referees: MatchPerson[]; homeCoaches: MatchPerson[]; awayCoaches: MatchPerson[] }
 export interface MatchDetail {
   id: number; title: string;
   home: MatchSide; away: MatchSide;
   best: MatchBest | null;
   stats: MatchStatRow[];
   leaders: MatchLeaderGroup[];
+  goals: MatchGoal[];
+  cards: MatchCardEvent[];
+  officials: MatchOfficials | null;
+  protocolUrl: string | null;
 }
 
 // Сырые формы ответа /ffspb-portal/matches/{id} (см. inspectMatchDetail.ts).
@@ -49,10 +59,69 @@ const mapSide = (s?: RawSide): MatchSide => ({
   yellow: mapCards(s?.yellowCard), red: mapCards(s?.redCards),
 });
 
-/** Детали матча: счёт, карточки, игрок матча, сравнение команд по событиям, лидеры. */
+// ── Протокол FFSPB: голы/карточки с авторами, судьи, тренеры ──────────────────
+// Мост: avandata /matches/{id}.linkToProtocol → stat.ffspb.org/.../match/{ffspbId}
+// → FFSPB /matches/{ffspbId}. eventType: 0 гол / 1 автогол / 2 пенальти / 4 ЖК /
+// 5 КК / 6 2ЖК→удаление. Команда события → home/away по host @id.
+interface FfProfile { surname?: string; firstName?: string }
+interface FfAuthor { surname?: string; firstName?: string; member?: FfProfile }
+interface FfEvent { eventType?: number; minute?: number | null; addedTime?: boolean; comment?: string; team?: { '@id'?: string }; author?: FfAuthor; assist?: FfAuthor | null }
+interface FfReferee { refereeTypeName?: string; profile?: FfProfile }
+interface FfOfficialReq { positionName?: string; surname?: string; firstName?: string }
+interface FfOfficial { request?: FfOfficialReq; team?: { '@id'?: string } }
+interface FfMatch { host?: { '@id'?: string }; events?: FfEvent[]; matchReferees?: FfReferee[]; participatedOfficials?: FfOfficial[] }
+
+const personName = (p?: { surname?: string; firstName?: string; member?: FfProfile } | null): string => {
+  if (!p) return '—';
+  const last = p.surname || p.member?.surname || '';
+  const first = p.firstName || p.member?.firstName || '';
+  return (last + (first ? ` ${first.slice(0, 1)}.` : '')).trim() || '—';
+};
+const GOAL_KIND: Record<number, MatchGoal['kind']> = { 0: 'goal', 1: 'own_goal', 2: 'penalty' };
+const CARD_KIND: Record<number, MatchCardEvent['kind']> = { 4: 'yellow', 5: 'red', 6: 'yellow_to_red' };
+
+type MatchExtras = Pick<MatchDetail, 'goals' | 'cards' | 'officials' | 'protocolUrl'>;
+async function ffspbMatchExtras(matchId: number): Promise<MatchExtras> {
+  const empty: MatchExtras = { goals: [], cards: [], officials: null, protocolUrl: null };
+  if (!isFfspbConfigured()) return empty;
+  let link = '';
+  try { link = String(((await authedGet(`/matches/${matchId}`)) as { linkToProtocol?: string }).linkToProtocol ?? ''); }
+  catch { return empty; }
+  const ffspbId = link.match(/\/match\/(\d+)/)?.[1];
+  if (!ffspbId) return { ...empty, protocolUrl: link || null };
+  let fm: FfMatch;
+  try { fm = (await ffspbGetMatch(ffspbId)) as FfMatch; }
+  catch { return { ...empty, protocolUrl: link }; }
+  const hostId = fm.host?.['@id'];
+  const side = (tid?: string): 'home' | 'away' => (tid && tid === hostId ? 'home' : 'away');
+  const goals: MatchGoal[] = [];
+  const cards: MatchCardEvent[] = [];
+  for (const e of fm.events ?? []) {
+    if (e.eventType == null) continue;
+    const gk = GOAL_KIND[e.eventType];
+    const ck = CARD_KIND[e.eventType];
+    if (gk) goals.push({ team: side(e.team?.['@id']), player: personName(e.author), minute: e.minute ?? null, assist: e.assist ? personName(e.assist) : null, kind: gk, addedTime: !!e.addedTime });
+    else if (ck) cards.push({ team: side(e.team?.['@id']), player: personName(e.author), minute: e.minute ?? null, kind: ck, reason: e.comment ?? '' });
+  }
+  goals.sort((a, b) => (a.minute ?? 0) - (b.minute ?? 0));
+  cards.sort((a, b) => (a.minute ?? 0) - (b.minute ?? 0));
+  const referees: MatchPerson[] = (fm.matchReferees ?? []).map((r) => ({ name: personName(r.profile), role: r.refereeTypeName ?? 'Судья' }));
+  const homeCoaches: MatchPerson[] = [];
+  const awayCoaches: MatchPerson[] = [];
+  for (const o of fm.participatedOfficials ?? []) {
+    const person: MatchPerson = { name: personName(o.request), role: (o.request?.positionName ?? 'Тренер').trim() };
+    (side(o.team?.['@id']) === 'home' ? homeCoaches : awayCoaches).push(person);
+  }
+  return { goals, cards, officials: { referees, homeCoaches, awayCoaches }, protocolUrl: link };
+}
+
+/** Детали матча: счёт, игрок матча, сравнение команд (avandata) + голы/карточки/судьи/тренеры (FFSPB). */
 export async function regionMatchDetail(matchId: number): Promise<MatchDetail | null> {
   return cached(`match:${matchId}`, 10 * 60 * 1000, async () => {
-    const raw = (await getMatchDetail(matchId)) as RawMatch | null;
+    const [raw, extras] = await Promise.all([
+      getMatchDetail(matchId) as Promise<RawMatch | null>,
+      ffspbMatchExtras(matchId),
+    ]);
     if (!raw) return null;
     const titleByType = new Map<string, string>();
     for (const k of raw.keyEvents ?? []) if (k.eventType) titleByType.set(k.eventType, k.title ?? k.eventType);
@@ -78,6 +147,7 @@ export async function regionMatchDetail(matchId: number): Promise<MatchDetail | 
     return {
       id: raw.domainMatchId ?? raw.id ?? matchId, title: raw.title ?? '',
       home: mapSide(raw.ownTeam), away: mapSide(raw.guestTeam), best, stats, leaders,
+      ...extras,
     };
   });
 }
