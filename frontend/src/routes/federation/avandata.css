@@ -221,6 +221,16 @@
 .av-fixture__score-l { color: var(--av-text-faint); }
 .av-fixture__sep { color: var(--av-text-faint); font-size: 18px; }
 
+/* значимые матчи — тег значимости + акцент рамки по типу */
+.av-sigtag { display: inline-flex; align-items: center; gap: 5px; font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.04em; }
+.av-sigtag--clash { color: var(--av-cyan); }
+.av-sigtag--upset { color: var(--av-magenta); }
+.av-sigtag--rout  { color: var(--av-warning); }
+.av-fixture--clash { border-color: rgba(94, 235, 252, 0.32); }
+.av-fixture--upset { border-color: rgba(255, 0, 153, 0.36); }
+.av-fixture--rout  { border-color: rgba(251, 191, 36, 0.30); }
+.av-fixture__foot { font-size: 9.5px; color: var(--av-text-faint); text-transform: uppercase; letter-spacing: 0.05em; }
+
 /* =============================================================================
    ПРЕМИУМ-ТАБЛИЦА: дивизион-группа со строками-клубами (герб + форма)
    ============================================================================= */

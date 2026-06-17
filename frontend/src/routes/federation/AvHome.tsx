@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { api } from '../../api/client';
@@ -17,6 +18,19 @@ const num = (n: number) => n.toLocaleString('ru-RU');
 const pm = (n: number) => (n > 0 ? `+${n}` : String(n));
 const fmtDate = (iso: string) => { try { return new Intl.DateTimeFormat('ru-RU', { day: 'numeric', month: 'short' }).format(new Date(iso)).replace('.', '').toUpperCase(); } catch { return ''; } };
 
+// --- Значимые матчи: джойн результата с рейтингом клуба по нормализованному имени ---
+type SigTone = 'clash' | 'upset' | 'rout';
+interface KeyMatch extends ResultMatch { sig: number; tone: SigTone | null; label: string }
+const SIG_ICON: Record<SigTone, string> = { clash: '⚔️', upset: '🔥', rout: '💥' };
+// «ФК Зенит 2013» / «Алмаз-Антей» → единый ключ для матчинга result↔rating
+const normClub = (name: string): string => name.toLowerCase()
+  .replace(/[«»"']/g, '')
+  .replace(/^фк\s+/, '')            // «Автово» = «ФК Автово» (СШОР/СШ не трогаем — иначе Зенит-коллизия)
+  .replace(/\s*\d{4}\s*$/, '')      // срезаем год команды
+  .replace(/[-–—]/g, ' ')           // дефисы → пробел (Алмаз-Антей = Алмаз Антей)
+  .replace(/\s+/g, ' ')
+  .trim();
+
 /**
  * Состояние региона — главный, операционный экран: пульс Первенства, что только
  * что сыграли, и кто наверху таблиц/рейтинга. Первое, что открывает функционер.
@@ -32,6 +46,43 @@ export function FederationAvHome() {
   const d = ov.data;
   const results = rs.data?.results ?? [];
   const skew = ag.data?.skew ?? null;
+
+  // Рейтинг + ранг клуба по нормализованному имени (знаменатель, который есть только у федерации).
+  const clubInfo = useMemo(() => {
+    const rows = (cr.data?.groups ?? []).flatMap((g) => g.rows);
+    const sorted = [...rows].sort((a, b) => b.rating - a.rating);
+    const map = new Map<string, { rating: number; rank: number }>();
+    sorted.forEach((r, i) => { const k = normClub(r.name); if (!map.has(k)) map.set(k, { rating: r.rating, rank: i + 1 }); });
+    return { map, total: sorted.length };
+  }, [cr.data]);
+
+  // Значимые матчи: курируем по сигналам, а не валим всё подряд.
+  const keyMatches = useMemo(() => {
+    const { map, total } = clubInfo;
+    const topN = Math.max(4, Math.round(total * 0.25)); // верхняя четверть = «лидеры»
+    const scored: KeyMatch[] = results.map((m) => {
+      const hs = m.home.score ?? 0, as = m.away.score ?? 0;
+      const margin = Math.abs(hs - as);
+      const H = map.get(normClub(m.home.name));
+      const A = map.get(normClub(m.away.name));
+      const decided = hs !== as;
+      const winner = hs > as ? H : A;
+      const loser = hs > as ? A : H;
+      const leaderRank = Math.max(topN, Math.round(total * 0.4)); // «лидер» = верхние ~40%
+      let sig = margin, tone: SigTone | null = null, label = '';
+      if (decided && winner && loser && winner.rating < loser.rating && loser.rank <= leaderRank) {
+        sig = 2000 + (loser.rating - winner.rating); tone = 'upset'; label = 'Сенсация'; // ниже рейтингом обыграл лидера
+      } else if (H && A && H.rank <= topN && A.rank <= topN) {
+        sig = 1000 + 1000 / (H.rank + A.rank); tone = 'clash'; label = 'Битва лидеров';
+      } else if (margin >= 6) {
+        sig = 200 + margin; tone = 'rout'; label = 'Разгром';
+      }
+      return { ...m, sig, tone, label };
+    });
+    const key = scored.filter((x) => x.label).sort((a, b) => b.sig - a.sig).slice(0, 8);
+    // фолбэк: если значимых нет (нет рейтингов) — просто свежие, без ярлыков
+    return key.length ? key : scored.slice(0, 8);
+  }, [results, clubInfo]);
 
   return (
     <>
@@ -65,16 +116,19 @@ export function FederationAvHome() {
         </div>
       )}
 
-      {/* Последние результаты */}
+      {/* Значимые матчи — курируем по значимости, а не валим лентой все 24 */}
       <section className="av-rise">
         <div className="av-section">
-          <h2 className="av-section-title">Последние результаты</h2>
+          <h2 className="av-section-title">Значимые матчи</h2>
+          {keyMatches.length > 0 && results.length > keyMatches.length && (
+            <span className="av-section-sub" style={{ margin: 0 }}>битвы лидеров · сенсации · разгромы — из {results.length} сыгранных</span>
+          )}
         </div>
-        {rs.isLoading ? <div className="av-skeleton" style={{ height: 140 }} /> : results.length === 0 ? (
+        {rs.isLoading ? <div className="av-skeleton" style={{ height: 140 }} /> : keyMatches.length === 0 ? (
           <div className="av-surface av-pad av-note">Нет сыгранных матчей по выбранному фильтру.</div>
         ) : (
           <div className="av-fixtures">
-            {results.map((m) => <Fixture key={m.id} m={m} />)}
+            {keyMatches.map((m) => <Fixture key={m.id} m={m} />)}
           </div>
         )}
       </section>
@@ -106,12 +160,14 @@ function Stat({ label, value, extra, tone }: { label: string; value: number; ext
   );
 }
 
-function Fixture({ m }: { m: ResultMatch }) {
+function Fixture({ m }: { m: KeyMatch }) {
   const hs = m.home.score ?? 0, as = m.away.score ?? 0;
   return (
-    <div className="av-fixture">
+    <div className={`av-fixture${m.tone ? ` av-fixture--${m.tone}` : ''}`}>
       <div className="av-fixture__top">
-        <span className="av-fixture__age">{m.age} · {m.division}</span>
+        {m.tone
+          ? <span className={`av-sigtag av-sigtag--${m.tone}`}>{SIG_ICON[m.tone]} {m.label}</span>
+          : <span className="av-fixture__age">{m.age} · {m.division}</span>}
         <span className="av-fixture__date">{fmtDate(m.date)}</span>
       </div>
       <div className="av-fixture__body">
@@ -129,6 +185,7 @@ function Fixture({ m }: { m: ResultMatch }) {
           <span className="av-fixture__team-name" title={m.away.name}>{m.away.name}</span>
         </span>
       </div>
+      {m.tone && <div className="av-fixture__foot">{m.age} · {m.division}</div>}
     </div>
   );
 }
