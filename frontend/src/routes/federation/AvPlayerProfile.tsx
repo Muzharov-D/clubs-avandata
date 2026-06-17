@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Link, useParams } from 'react-router-dom';
 import { api } from '../../api/client';
 import { ClubShield } from './ClubShield';
+import { ratingColor } from './ratings';
 import { PlayerAvatar } from './PlayerAvatar';
 import { FedEmpty } from './FedState';
 import './avandata.css';
@@ -66,7 +67,7 @@ function Body({ p }: { p: Profile }) {
         {p.rating != null && (
           <div style={{ textAlign: 'center', marginLeft: 'auto', flex: 'none' }}>
             <div className="av-dim" style={{ fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.07em' }}>Рейтинг</div>
-            <div className="av-num" style={{ fontSize: 44, fontWeight: 700, color: p.rating < 0 ? 'var(--av-danger)' : 'var(--av-cyan)', lineHeight: 1, marginTop: 4 }}>{p.rating}</div>
+            <div className="av-num" style={{ fontSize: 44, fontWeight: 700, color: ratingColor(p.rating), lineHeight: 1, marginTop: 4 }}>{p.rating}</div>
           </div>
         )}
       </header>

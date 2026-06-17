@@ -5,6 +5,7 @@ import { api } from '../../api/client';
 import { ClubShield } from './ClubShield';
 import { PlayerAvatar } from './PlayerAvatar';
 import { FedError, FedEmpty } from './FedState';
+import { ratingColor } from './ratings';
 import { useFedYear, yearQ } from './avYear';
 import './avandata.css';
 
@@ -117,7 +118,7 @@ export function FederationAvPlayers() {
                     <div className="av-trow__name">{p.name}</div>
                     <div className="av-trow__meta">{p.club ?? '—'}{p.position ? ` · ${p.position}` : ''}{p.birthYear ? ` · ${p.birthYear}` : ''}</div>
                   </div>
-                  <span className={`av-rate${p.rating != null && p.rating < 0 ? ' av-rate--neg' : ''}`}>{p.rating ?? '—'}</span>
+                  <span className="av-rate" style={{ color: ratingColor(p.rating) }}>{p.rating ?? '—'}</span>
                 </Link>
               ))}
           {!isLoading && players.length > shown.length && (
@@ -147,7 +148,7 @@ export function FederationAvPlayers() {
                     <Link key={idx} to={`/federation/players/${s.player.id}`} className="av-slot" style={{ left: `${s.l}%`, top: `${s.t}%` }}>
                       <PlayerAvatar name={s.player.name} size={38} ring={s.line === 'FWD'} />
                       <span className="av-slot__name" title={s.player.name}>{lastName(s.player.name)}</span>
-                      <span className="av-slot__rate">{s.player.rating}</span>
+                      <span className="av-slot__rate" style={{ color: ratingColor(s.player.rating) }}>{s.player.rating}</span>
                       <span className="av-slot__prov">{s.provisional ? 'добор' : s.tag}</span>
                     </Link>
                   ))}
@@ -164,7 +165,7 @@ export function FederationAvPlayers() {
                         <div className="av-rising__name">{p.name}</div>
                         <div className="av-rising__meta">{p.club ?? '—'}{p.position ? ` · ${p.position}` : ''}{p.birthYear ? ` · ${p.birthYear}` : ''}</div>
                       </div>
-                      <span className="av-rate">{p.rating}</span>
+                      <span className="av-rate" style={{ color: ratingColor(p.rating) }}>{p.rating}</span>
                     </Link>
                   ))}
                 </div>

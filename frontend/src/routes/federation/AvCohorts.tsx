@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Link, useNavigate } from 'react-router-dom';
 import { api } from '../../api/client';
 import { ClubShield } from './ClubShield';
+import { ratingColor } from './ratings';
 import { FedError } from './FedState';
 import { useFedYear } from './avYear';
 import './avandata.css';
@@ -73,7 +74,7 @@ export function FederationAvCohorts() {
                 {/* Средний класс */}
                 <div>
                   <div className="av-cohort__lbl">Средний класс</div>
-                  <div className="av-cohort__class">{c.avgRating != null ? num(c.avgRating) : '—'}</div>
+                  <div className="av-cohort__class" style={{ color: ratingColor(c.avgRating) }}>{c.avgRating != null ? num(c.avgRating) : '—'}</div>
                 </div>
 
                 {/* Звезда когорты */}
@@ -86,7 +87,7 @@ export function FederationAvCohorts() {
                         <div className="av-cohort__star-name">{c.top.name}</div>
                         <div className="av-cohort__star-meta">{c.top.club ?? '—'}</div>
                       </div>
-                      <span className="av-rate" style={{ marginLeft: 'auto' }}>{c.top.rating}</span>
+                      <span className="av-rate" style={{ marginLeft: 'auto', color: ratingColor(c.top.rating) }}>{c.top.rating}</span>
                     </Link>
                   ) : <div className="av-dim" style={{ fontSize: 12 }}>нет разбора</div>}
                 </div>

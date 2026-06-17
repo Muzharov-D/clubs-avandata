@@ -196,11 +196,9 @@
 .av-stat__label { font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--av-text-dim); }
 .av-stat__value { font-family: var(--av-display); font-size: 38px; font-weight: 700; line-height: 1; margin-top: 10px; font-variant-numeric: tabular-nums; color: var(--av-text); }
 .av-stat__extra { font-size: 11px; color: var(--av-text-2); margin-top: 8px; display: flex; align-items: center; gap: 6px; }
-.av-stat--cyan { --rail: var(--av-cyan); } .av-stat--cyan .av-stat__value { color: var(--av-cyan); }
-.av-stat--blue { --rail: var(--av-blue-glow); } .av-stat--blue .av-stat__value { color: var(--av-blue-glow); }
-.av-stat--magenta { --rail: var(--av-magenta); } .av-stat--magenta .av-stat__value { color: var(--av-magenta); }
-.av-stat--success { --rail: var(--av-success); } .av-stat--success .av-stat__value { color: var(--av-success); }
-.av-stat--violet { --rail: var(--av-violet); } .av-stat--violet .av-stat__value { color: var(--av-violet); }
+/* монохром: рейл cyan, число белое (цвет — только на смысловых метриках) */
+.av-stat--cyan, .av-stat--blue, .av-stat--magenta, .av-stat--success, .av-stat--violet { --rail: var(--av-cyan); }
+.av-stat__value { color: var(--av-text); }
 
 /* компактная KPI-плитка (вторичные метрики) */
 .av-kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; }
@@ -232,11 +230,11 @@
 /* значимые матчи — тег значимости + акцент рамки по типу */
 .av-sigtag { display: inline-flex; align-items: center; gap: 5px; font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.04em; }
 .av-sigtag--clash { color: var(--av-cyan); }
-.av-sigtag--upset { color: var(--av-magenta); }
-.av-sigtag--rout  { color: var(--av-warning); }
-.av-fixture--clash { border-color: rgba(94, 235, 252, 0.32); }
-.av-fixture--upset { border-color: rgba(255, 0, 153, 0.36); }
-.av-fixture--rout  { border-color: rgba(251, 191, 36, 0.30); }
+.av-sigtag--upset { color: var(--av-warning); }
+.av-sigtag--rout  { color: var(--av-text-dim); }
+.av-fixture--clash { border-color: color-mix(in srgb, var(--av-cyan) 32%, var(--av-border)); }
+.av-fixture--upset { border-color: color-mix(in srgb, var(--av-warning) 34%, var(--av-border)); }
+.av-fixture--rout  { border-color: var(--av-border-strong); }
 .av-fixture__foot { font-size: 9.5px; color: var(--av-text-faint); text-transform: uppercase; letter-spacing: 0.05em; }
 
 /* =============================================================================
@@ -267,8 +265,9 @@
    ============================================================================= */
 .av-meter { height: 6px; border-radius: 3px; background: rgba(255, 255, 255, 0.07); overflow: hidden; }
 .av-meter__fill { display: block; height: 100%; border-radius: 3px; transition: width 0.6s ease; background: var(--av-cyan); }
-.av-rate { font-family: var(--av-display); font-weight: 700; font-variant-numeric: tabular-nums; text-align: center; min-width: 46px; padding: 4px 9px; border-radius: var(--av-r-sm); font-size: 14px; background: rgba(94, 235, 252, 0.10); color: var(--av-cyan); border: 1px solid rgba(94, 235, 252, 0.25); }
-.av-rate--neg { background: rgba(253, 0, 54, 0.10); color: var(--av-danger); border-color: rgba(253, 0, 54, 0.25); }
+/* пилюля рейтинга — тинт следует за currentColor (ratingColor задаёт смысл) */
+.av-rate { font-family: var(--av-display); font-weight: 700; font-variant-numeric: tabular-nums; text-align: center; min-width: 46px; padding: 4px 9px; border-radius: var(--av-r-sm); font-size: 14px; color: var(--av-cyan); background: color-mix(in srgb, currentColor 12%, transparent); border: 1px solid color-mix(in srgb, currentColor 26%, transparent); }
+.av-rate--neg { color: var(--av-danger); }
 
 /* герб клуба */
 .av-shield { display: inline-block; border-radius: 50%; object-fit: contain; background: rgba(255, 255, 255, 0.88); padding: 1px; box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.12); flex: none; }
@@ -321,13 +320,13 @@
    ВЕРДИКТ-НАХОДКИ (Справедливость) — редакционные приговоры
    ============================================================================= */
 .av-finding { position: relative; overflow: hidden; }
-.av-finding--hero { background: linear-gradient(135deg, rgba(255, 0, 153, 0.12) 0%, var(--av-panel) 55%); border-color: rgba(255, 0, 153, 0.30); }
-.av-finding--hero::before { content: ''; position: absolute; left: 0; right: 0; top: 0; height: 2px; background: linear-gradient(90deg, transparent, var(--av-magenta), transparent); opacity: 0.7; }
-.av-finding__kicker { display: inline-flex; align-items: center; gap: 8px; font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.12em; color: var(--av-magenta); }
+.av-finding--hero { background: linear-gradient(135deg, color-mix(in srgb, var(--av-warning) 11%, var(--av-surface)) 0%, var(--av-surface) 55%); border-color: color-mix(in srgb, var(--av-warning) 30%, var(--av-border)); }
+.av-finding--hero::before { content: ''; position: absolute; left: 0; right: 0; top: 0; height: 2px; background: linear-gradient(90deg, transparent, var(--av-warning), transparent); opacity: 0.7; }
+.av-finding__kicker { display: inline-flex; align-items: center; gap: 8px; font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.12em; color: var(--av-warning); }
 .av-finding--cyan .av-finding__kicker { color: var(--av-cyan); }
 .av-verdict { font-family: var(--av-font); font-weight: 800; font-size: 22px; line-height: 1.22; letter-spacing: -0.015em; margin: 12px 0 8px; text-wrap: balance; }
 .av-finding--hero .av-verdict { font-size: 26px; }
-.av-verdict b { color: var(--av-magenta); }
+.av-verdict b { color: var(--av-warning); }
 .av-finding--cyan .av-verdict b { color: var(--av-cyan); }
 .av-why { color: var(--av-text-2); font-size: 12.5px; line-height: 1.55; max-width: 78ch; margin: 0; }
 
@@ -457,8 +456,8 @@
 a.av-trow { text-decoration: none; color: inherit; }
 
 /* ставка-последствие в находке — стат в человеческую цену (София) */
-.av-stakes { margin-top: 14px; padding: 11px 15px; border-radius: var(--av-r-sm); background: rgba(255, 0, 153, 0.08); border-left: 3px solid var(--av-magenta); font-size: 12.5px; line-height: 1.5; color: var(--av-text-card); }
-.av-stakes b { color: var(--av-magenta); font-weight: 800; }
+.av-stakes { margin-top: 14px; padding: 11px 15px; border-radius: var(--av-r-sm); background: color-mix(in srgb, var(--av-warning) 8%, transparent); border-left: 3px solid var(--av-warning); font-size: 12.5px; line-height: 1.5; color: var(--av-text-card); }
+.av-stakes b { color: var(--av-warning); font-weight: 800; }
 .av-finding--cyan .av-stakes { background: rgba(94, 235, 252, 0.08); border-left-color: var(--av-cyan); }
 .av-finding--cyan .av-stakes b { color: var(--av-cyan); }
 
@@ -470,10 +469,10 @@ a.av-trow { text-decoration: none; color: inherit; }
 .av-hero-fig__l { display: block; font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--av-text-dim); margin-top: 10px; }
 
 /* сигнал федерации — маршрутизатор внимания на главном (Джон) */
-.av-signal { display: flex; align-items: center; gap: 14px; padding: 13px 18px; border-radius: var(--av-r); background: linear-gradient(135deg, rgba(255, 0, 153, 0.10), rgba(239, 241, 251, 0.02) 62%); border: 1px solid rgba(255, 0, 153, 0.28); }
+.av-signal { display: flex; align-items: center; gap: 14px; padding: 13px 18px; border-radius: var(--av-r); background: color-mix(in srgb, var(--av-warning) 9%, var(--av-surface)); border: 1px solid color-mix(in srgb, var(--av-warning) 28%, var(--av-border)); }
 .av-signal__icon { font-size: 18px; flex: none; line-height: 1; }
 .av-signal__txt { font-size: 13px; color: var(--av-text-card); line-height: 1.45; min-width: 0; }
-.av-signal__txt b { color: var(--av-magenta); font-weight: 800; }
+.av-signal__txt b { color: var(--av-warning); font-weight: 800; }
 .av-signal__cta { margin-left: auto; flex: none; }
 @media (max-width: 640px) { .av-signal { flex-wrap: wrap; } .av-signal__cta { margin-left: 0; } }
 

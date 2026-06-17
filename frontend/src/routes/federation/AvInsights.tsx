@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { api } from '../../api/client';
 import { ClubShield } from './ClubShield';
+import { ratingColor } from './ratings';
 import { useFedYear, yearQ } from './avYear';
 import './avandata.css';
 
@@ -120,7 +121,7 @@ export function FederationAvInsights() {
                 <span className={`av-trow__rank${i < 3 ? ` av-trow__rank--${i + 1}` : ''}`}>{i + 1}</span>
                 <ClubShield name={p.club ?? p.name} logoUrl={p.clubLogo} size={24} />
                 <div style={{ minWidth: 0 }}><div className="av-trow__name">{p.name}</div><div className="av-trow__meta">{p.club ?? '—'}{p.position ? ` · ${p.position}` : ''}</div></div>
-                <span className="av-rate">{p.rating}</span>
+                <span className="av-rate" style={{ color: ratingColor(p.rating) }}>{p.rating}</span>
               </Link>
             ))}
           </div>
