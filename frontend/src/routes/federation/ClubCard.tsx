@@ -39,7 +39,7 @@ export function ClubCard({ clubId, onClose }: { clubId: number; onClose: () => v
 
   return (
     <div className="av-modal__backdrop" onClick={onClose}>
-      <div className="av-modal av-cc av-surface" role="dialog" aria-modal="true" onClick={(e) => e.stopPropagation()}>
+      <div className="av-modal av-cc av-surface" role="dialog" aria-modal="true" aria-labelledby="av-cc-title" onClick={(e) => e.stopPropagation()}>
         <button className="av-modal__close" onClick={onClose} aria-label="Закрыть">×</button>
 
         {isLoading && <div className="av-skeleton" style={{ height: 420 }} />}
@@ -50,7 +50,7 @@ export function ClubCard({ clubId, onClose }: { clubId: number; onClose: () => v
             <header className="av-cc__head">
               <ClubShield name={data.name} logoUrl={data.logo} size={62} />
               <div style={{ minWidth: 0 }}>
-                <h2 className="av-cc__name" title={data.name}>{data.name}</h2>
+                <h2 className="av-cc__name" id="av-cc-title" title={data.name}>{data.name}</h2>
                 <span className="av-chip av-chip--cyan">{data.division}</span>
               </div>
             </header>

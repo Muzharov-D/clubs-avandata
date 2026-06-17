@@ -26,8 +26,9 @@ interface Profile {
 const fmtD = (iso: string | null) => { if (!iso) return ''; try { return new Intl.DateTimeFormat('ru-RU', { day: 'numeric', month: 'short' }).format(new Date(iso)).replace('.', ''); } catch { return ''; } };
 const toMatchBase = (m: PMatch): MatchBase => ({ id: m.id, age: '', division: '', date: m.date ?? '', home: m.home, away: m.away });
 
-const catColor = (c: string) => (c === 'attack' ? '#5EEBFC' : c === 'defense' ? '#FF0099' : '#3054FF');
+const catColor = (c: string) => (c === 'attack' ? 'var(--av-cat-attack)' : c === 'defense' ? 'var(--av-cat-defense)' : 'var(--av-cat-pass)');
 const catLabel = (c: string) => (c === 'attack' ? 'Атака' : c === 'defense' ? 'Оборона' : 'Развитие');
+const plMatch = (n: number) => { const a = n % 100, b = n % 10; if (a >= 11 && a <= 14) return 'матчей'; if (b === 1) return 'матч'; if (b >= 2 && b <= 4) return 'матча'; return 'матчей'; };
 
 /** Профиль игрока + перцентильная «пицца» на РЕАЛЬНЫХ событиях (37 метрик). */
 export function FederationAvPlayerProfile() {
@@ -55,9 +56,9 @@ function Body({ p }: { p: Profile }) {
     const list = (pool.data?.players ?? []).filter((x) => x.rating != null);
     if (p.rating == null || list.length < 5) return null;
     const below = list.filter((x) => (x.rating as number) < (p.rating as number)).length;
-    return Math.round((below / (list.length - 1)) * 100);
+    return Math.round((below / Math.max(1, list.length - 1)) * 100);
   }, [pool.data, p.rating]);
-  const topPct = pct != null ? Math.max(1, 100 - pct) : null;
+  const topPct = pct != null ? Math.max(1, Math.min(100, 100 - pct)) : null;
   const [selectedMatch, setSelectedMatch] = useState<PMatch | null>(null);
 
   return (
@@ -69,7 +70,7 @@ function Body({ p }: { p: Profile }) {
         </div>
         <div className="av-phead__id">
           <h1 className="av-phead__name">{p.name}</h1>
-          <p className="av-phead__meta">{p.position ?? 'позиция —'} · {p.club ?? '—'}{p.birthYear ? ` · ${p.birthYear} г.р.` : ''} · {p.matches} матч(а) · {p.totalEvents} событий</p>
+          <p className="av-phead__meta">{p.position ?? 'позиция —'} · {p.club ?? '—'}{p.birthYear ? ` · ${p.birthYear} г.р.` : ''} · {p.matches} {plMatch(p.matches)} · {p.totalEvents} событий</p>
           <div className="av-phead__chips">
             {topPct != null && <span className="av-pct"><b>топ {topPct}%</b><span>региона по рейтингу</span></span>}
             {p.position && <span className="av-chip av-chip--dim">{p.position}</span>}
@@ -154,6 +155,7 @@ function Body({ p }: { p: Profile }) {
 }
 
 function Pizza({ metrics }: { metrics: Metric[] }) {
+  if (metrics.length === 0) return <div className="av-note">Нет событий для профиля.</div>;
   const size = 320, cx = size / 2, cy = size / 2, R = size / 2 - 56;
   const n = metrics.length;
   const max = Math.max(...metrics.map((m) => m.count), 1);

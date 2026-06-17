@@ -40,6 +40,11 @@
   --av-success: var(--success);
   --av-warning: var(--warning);
   --av-danger: var(--danger);
+  /* категории действий (профиль игрока) + палитра сравнения турниров — токены, а не хардкод в компонентах */
+  --av-cat-attack: #5EEBFC; --av-cat-defense: #FF0099; --av-cat-pass: #3054FF;
+  --av-chart-1: #5EEBFC; --av-chart-2: #FF0099; --av-chart-3: #3054FF; --av-chart-4: #34d399; --av-chart-5: #fbbf24; --av-chart-6: #a78bfa;
+  /* медали топ-3 */
+  --av-rank-1: #ffd36b; --av-rank-2: #cdd6f4; --av-rank-3: #e0a878;
   /* шкала рейтинга (цвет = смысл) */
   --av-rating-excellent: var(--rating-excellent);
   --av-rating-good: var(--rating-good);
@@ -549,9 +554,15 @@
 .av-six { grid-template-columns: repeat(6, 1.7rem); }
 
 /* медали топ-3 — мгновенная иерархия в рейтингах/таблицах */
-.av-trow__rank--1 { color: #ffd36b; }
-.av-trow__rank--2 { color: #cdd6f4; }
-.av-trow__rank--3 { color: #e0a878; }
+.av-trow__rank--1 { color: var(--av-rank-1); }
+.av-trow__rank--2 { color: var(--av-rank-2); }
+.av-trow__rank--3 { color: var(--av-rank-3); }
+/* Доступность: видимый фокус на всех кликабельных (кнопки, ссылки, строки-кнопки) */
+.av-root a:focus-visible, .av-root button:focus-visible { outline: 2px solid var(--av-cyan); outline-offset: 2px; border-radius: var(--av-r-sm); }
+/* Дропдаун-фильтр (вместо облака пилюль) */
+.av-select { display: block; width: 100%; max-width: 440px; margin-bottom: 14px; padding: 9px 36px 9px 13px; font-family: var(--av-font); font-size: 13px; font-weight: 600; color: var(--av-text); background-color: var(--av-surface-2); border: 1px solid var(--av-border); border-radius: var(--av-r-sm); cursor: pointer; -webkit-appearance: none; appearance: none; background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='none' stroke='%235EEBFC' stroke-width='2' stroke-linecap='round'><path d='M2 4l4 4 4-4'/></svg>"); background-repeat: no-repeat; background-position: right 13px center; }
+.av-select:focus-visible { outline: 2px solid var(--av-cyan); outline-offset: 2px; }
+.av-select option { background: var(--av-bg-page); color: var(--av-text); }
 .av-trow__rank--1, .av-trow__rank--2, .av-trow__rank--3 { font-weight: 700; }
 
 /* асимметричная главная сетка (таблицы шире рейтинга — ломаем клон-колонки) */

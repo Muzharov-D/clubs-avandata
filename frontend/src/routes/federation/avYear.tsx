@@ -40,7 +40,7 @@ export function DivisionFilter() {
     <div className="av-divbar" role="tablist" aria-label="Дивизион">
       <span className="av-yearbar__label">Лига</span>
       {DIVISIONS.map((d) => (
-        <button key={d} className={`av-dchip${division === d ? ' av-dchip--active' : ''}`} onClick={() => setDivision(d)}>{d}</button>
+        <button key={d} aria-label={`Лига: ${d}`} aria-pressed={division === d} className={`av-dchip${division === d ? ' av-dchip--active' : ''}`} onClick={() => setDivision(d)}>{d}</button>
       ))}
     </div>
   );
@@ -52,9 +52,9 @@ export function YearFilter() {
   return (
     <div className="av-yearbar" role="tablist" aria-label="Год рождения">
       <span className="av-yearbar__label">Год рождения</span>
-      <button className={`av-ychip${year == null ? ' av-ychip--active' : ''}`} onClick={() => setYear(null)}>Все</button>
+      <button aria-label="Год рождения: все" aria-pressed={year == null} className={`av-ychip${year == null ? ' av-ychip--active' : ''}`} onClick={() => setYear(null)}>Все</button>
       {years.map((y) => (
-        <button key={y} className={`av-ychip${year === y ? ' av-ychip--active' : ''}`} onClick={() => setYear(y)}>{y}</button>
+        <button key={y} aria-label={`Год рождения: ${y}`} aria-pressed={year === y} className={`av-ychip${year === y ? ' av-ychip--active' : ''}`} onClick={() => setYear(y)}>{y}</button>
       ))}
     </div>
   );

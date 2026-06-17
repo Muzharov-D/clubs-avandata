@@ -72,7 +72,7 @@ export function MatchDetail({ base, onClose }: { base: MatchBase; onClose: () =>
 
   return (
     <div className="av-modal__backdrop" onClick={onClose}>
-      <div className="av-modal av-surface" role="dialog" aria-modal="true" data-ffspb={data?.ffspbDebug ?? ''} onClick={(e) => e.stopPropagation()}>
+      <div className="av-modal av-surface" role="dialog" aria-modal="true" aria-label={`Матч: ${base.home.name} — ${base.away.name}`} data-ffspb={data?.ffspbDebug ?? ''} onClick={(e) => e.stopPropagation()}>
         <button className="av-modal__close" onClick={onClose} aria-label="Закрыть">×</button>
 
         {/* Шапка: контекст + счёт */}

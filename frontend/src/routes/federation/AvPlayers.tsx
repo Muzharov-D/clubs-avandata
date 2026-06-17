@@ -86,11 +86,10 @@ export function FederationAvPlayers() {
           <div className="av-section"><h2 className="av-section-title">Рейтинг игроков</h2></div>
 
           {clubs.length > 1 && (
-            <div className="av-pills" style={{ marginBottom: 14 }}>
-              <button onClick={() => setClub('all')} className={`av-pill${club === 'all' ? ' av-pill--active' : ''}`}>все клубы</button>
-              {clubs.slice(0, 18).map((c) => <button key={c} onClick={() => setClub(c)} className={`av-pill${club === c ? ' av-pill--active' : ''}`}>{c}</button>)}
-              {clubs.length > 18 && <span className="av-chip av-chip--dim" title="Видны первые 18 — остальные доступны поиском">+{clubs.length - 18} клубов</span>}
-            </div>
+            <select className="av-select" value={club} onChange={(e) => setClub(e.target.value)} aria-label="Фильтр по клубу">
+              <option value="all">Все клубы ({clubs.length})</option>
+              {clubs.map((c) => <option key={c} value={c}>{c}</option>)}
+            </select>
           )}
 
           {isLoading ? [0, 1, 2, 3, 4, 5, 6].map((i) => <div key={i} className="av-skeleton" style={{ height: 42, marginBottom: 8 }} />)

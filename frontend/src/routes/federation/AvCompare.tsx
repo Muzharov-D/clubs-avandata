@@ -19,7 +19,7 @@ const METRICS: Array<{ k: MK; l: string; hint: string }> = [
   { k: 'matches', l: 'Матчей', hint: 'объём' },
   { k: 'yellowPerMatch', l: 'Жёлтых на матч', hint: 'жёсткость' },
 ];
-const COLORS = ['#5EEBFC', '#FF0099', '#3054FF', '#34d399', '#fbbf24', '#a78bfa'];
+const COLORS = ['var(--av-chart-1)', 'var(--av-chart-2)', 'var(--av-chart-3)', 'var(--av-chart-4)', 'var(--av-chart-5)', 'var(--av-chart-6)'];
 const fmt = (v: number | null) => (v == null ? '—' : Number.isInteger(v) ? v.toLocaleString('ru-RU') : v.toFixed(2));
 
 export function FederationAvCompare() {
@@ -57,7 +57,7 @@ export function FederationAvCompare() {
           {refs.map((r) => <button key={r.key} onClick={() => toggle(r.key)} className={`av-pill${sel.includes(r.key) ? ' av-pill--active' : ''}`}>{r.title}</button>)}
         </div>
       )}
-      {tq.error && <FedError />}
+      {(tq.error || cq.error) && <FedError subject="Сравнение турниров" />}
 
       {/* легенда */}
       {items.length > 0 && (

@@ -22,6 +22,8 @@ interface RPlayer { id: number; name: string; birthYear: number | null; position
 
 const num = (n: number) => n.toLocaleString('ru-RU');
 const pm = (n: number) => (n > 0 ? `+${n}` : String(n));
+// «Александр Суслов» → «Суслов А.» — фамилия (идентификатор) не теряется при обрезке
+const shortName = (s: string) => { const w = s.trim().split(/\s+/); return w.length > 1 ? `${w[w.length - 1]} ${w[0][0]}.` : s; };
 const fmtDate = (iso: string) => { try { return new Intl.DateTimeFormat('ru-RU', { day: 'numeric', month: 'short' }).format(new Date(iso)).replace('.', '').toUpperCase(); } catch { return ''; } };
 // склонение «место»: 1 место · 2–4 места · 5+ мест (с учётом 11–14)
 const plMesto = (n: number) => { const a = n % 100, b = n % 10; if (a >= 11 && a <= 14) return 'мест'; if (b === 1) return 'место'; if (b >= 2 && b <= 4) return 'места'; return 'мест'; };
@@ -138,7 +140,7 @@ export function FederationAvHome() {
                 <span className={`av-leader__rank${i < 3 ? ` av-trow__rank--${i + 1}` : ''}`}>{i + 1}</span>
                 <PlayerAvatar name={p.name} size={40} />
                 <div className="av-leader__id">
-                  <div className="av-leader__name">{p.name}</div>
+                  <div className="av-leader__name" title={p.name}>{shortName(p.name)}</div>
                   <div className="av-leader__meta">{p.club ?? '—'}{p.position ? ` · ${p.position}` : ''}{p.birthYear ? ` · ${p.birthYear}` : ''}</div>
                 </div>
                 <span className="av-leader__rate" style={{ color: ratingColor(p.rating) }}>{p.rating ?? '—'}</span>

@@ -74,6 +74,7 @@ export function FederationAvClubs() {
                   <span className="av-num" style={{ textAlign: 'right', fontWeight: 700, color: 'var(--av-warning)' }}>{c.share}%</span>
                 </div>
               ))}
+              {d.totalClubs > d.clubs.slice(0, 10).length && <p className="av-cap">Показаны 10 школ-производителей из {d.totalClubs}.</p>}
             </>
           );
         })() : <div className="av-note">Недостаточно разобранных игроков для оценки.</div>}
