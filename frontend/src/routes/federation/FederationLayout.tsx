@@ -1,7 +1,7 @@
-import { NavLink, Outlet, useNavigate, Link } from 'react-router-dom';
+import { NavLink, Outlet, useNavigate, useLocation, Link } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { toast } from '../../components/Toast';
-import { FedYearProvider, YearFilter } from './avYear';
+import { FedYearProvider, YearFilter, DivisionFilter } from './avYear';
 import './avandata.css';
 
 interface FedAuth { user: { fullName?: string; email?: string } | null; logout: () => void }
@@ -21,6 +21,9 @@ const TABS: Array<{ to: string; end?: boolean; label: string }> = [
 export function FederationLayout() {
   const { user, logout } = useAuth() as FedAuth;
   const navigate = useNavigate();
+  const { pathname } = useLocation();
+  // Дивизион инертен на телескопе когорт (region-wide) и на сравнении турниров (там лиги уже рядом).
+  const showDivision = !/\/federation\/(cohorts|compare)$/.test(pathname);
   function handleLogout() {
     logout();
     toast.info('Вы вышли из кабинета');
@@ -55,6 +58,7 @@ export function FederationLayout() {
           </header>
 
           <div className="av-subbar">
+            {showDivision && <DivisionFilter />}
             <YearFilter />
           </div>
 

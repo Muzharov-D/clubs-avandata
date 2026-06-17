@@ -6,7 +6,7 @@ import { ClubShield } from './ClubShield';
 import { PlayerAvatar } from './PlayerAvatar';
 import { FedError } from './FedState';
 import { ratingColor } from './ratings';
-import { useFedYear, yearQ } from './avYear';
+import { useFedYear, yearQ, fedQ, inDivision } from './avYear';
 import './avandata.css';
 
 interface Overview { divisions: string[]; tournaments: number; teams: number; players: number; matches: number; analyzed: number; goals: number }
@@ -33,16 +33,18 @@ interface KeyMatch extends ResultMatch { sig: number; tone: SigTone | null; labe
  * что сыграли, и кто наверху таблиц/рейтинга. Первое, что открывает функционер.
  */
 export function FederationAvHome() {
-  const { year } = useFedYear();
+  const { year, division } = useFedYear();
   const q = yearQ(year);
-  const ov = useQuery({ queryKey: ['av', 'overview'], queryFn: () => api<Overview>('/federation/av/overview') });
-  const rs = useQuery({ queryKey: ['av', 'results', year], queryFn: () => api<{ results: ResultMatch[] }>(`/federation/av/results${q}`) });
+  const ov = useQuery({ queryKey: ['av', 'overview', division], queryFn: () => api<Overview>(`/federation/av/overview${fedQ(null, division)}`) });
+  const rs = useQuery({ queryKey: ['av', 'results', year, division], queryFn: () => api<{ results: ResultMatch[] }>(`/federation/av/results${fedQ(year, division)}`) });
   const st = useQuery({ queryKey: ['av', 'standings', year], queryFn: () => api<{ groups: Group<StandRow>[] }>(`/federation/av/standings${q}`) });
   const cr = useQuery({ queryKey: ['av', 'club-ratings', year], queryFn: () => api<{ groups: Group<RatingRow>[] }>(`/federation/av/club-ratings${q}`) });
   const ag = useQuery({ queryKey: ['av', 'age', year], queryFn: () => api<AgeEffect>(`/federation/av/age-effect${q}`) });
-  const pl = useQuery({ queryKey: ['av', 'players', year], queryFn: () => api<{ players: RPlayer[] }>(`/federation/av/players${q}`) });
+  const pl = useQuery({ queryKey: ['av', 'players', year, division], queryFn: () => api<{ players: RPlayer[] }>(`/federation/av/players${fedQ(year, division)}`) });
   const d = ov.data;
   const results = rs.data?.results ?? [];
+  const stGroups = (st.data?.groups ?? []).filter((g) => inDivision(g.division, division));
+  const crGroups = (cr.data?.groups ?? []).filter((g) => inDivision(g.division, division));
   const skew = ag.data?.skew ?? null;
   const topPlayers = (pl.data?.players ?? []).filter((p) => p.rating != null).slice(0, 8);
 
@@ -107,7 +109,7 @@ export function FederationAvHome() {
           <Stat label="Команды" value={d.teams} tone="blue" />
           <Stat label="Матчи" value={d.matches} tone="violet" />
           <Stat label="Голы" value={d.goals} tone="success" />
-          <Stat label="Дивизионы" value={d.divisions.length} tone="magenta" />
+          <Stat label="Турниры" value={d.tournaments} tone="magenta" />
         </div>
       )}
 
@@ -154,11 +156,11 @@ export function FederationAvHome() {
       <div className="av-cols-main av-rise">
         <section className="av-surface av-pad-lg">
           <div className="av-section"><h2 className="av-section-title">Турнирные таблицы</h2></div>
-          {st.isLoading ? <Sk /> : (st.data?.groups ?? []).length === 0 ? <div className="av-note">Нет данных.</div> : (st.data?.groups ?? []).map((g) => <StandingsBlock key={g.division} g={g} />)}
+          {st.isLoading ? <Sk /> : stGroups.length === 0 ? <div className="av-note">Нет данных.</div> : stGroups.map((g) => <StandingsBlock key={g.division} g={g} />)}
         </section>
         <section className="av-surface av-pad-lg">
           <div className="av-section"><h2 className="av-section-title">Рейтинг клубов</h2></div>
-          {cr.isLoading ? <Sk /> : (cr.data?.groups ?? []).length === 0 ? <div className="av-note">Нет данных.</div> : (cr.data?.groups ?? []).map((g) => <RatingsBlock key={g.division} g={g} />)}
+          {cr.isLoading ? <Sk /> : crGroups.length === 0 ? <div className="av-note">Нет данных.</div> : crGroups.map((g) => <RatingsBlock key={g.division} g={g} />)}
         </section>
       </div>
     </>

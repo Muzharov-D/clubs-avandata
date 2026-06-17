@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import { api } from '../../api/client';
 import { ClubShield } from './ClubShield';
 import { ratingColor } from './ratings';
-import { useFedYear, yearQ } from './avYear';
+import { useFedYear, yearQ, fedQ } from './avYear';
 import './avandata.css';
 
 interface RPlayer { id: number; name: string; position: string | null; club: string | null; clubLogo: string | null; rating: number | null }
@@ -18,12 +18,15 @@ const QLABEL = ['янв–мар', 'апр–июн', 'июл–сен', 'окт
 
 /** Справедливость и утечка — диагнозы, видимые только над всеми клубами региона. */
 export function FederationAvInsights() {
-  const { year } = useFedYear();
+  const { year, division } = useFedYear();
   const q = yearQ(year);
+  const fq = fedQ(year, division);
+  // RAE и «сила дивизионов» — кросс-дивизионные диагнозы (реестр без дивизиона / сравнение лиг), без фильтра.
   const ae = useQuery({ queryKey: ['av', 'age', year], queryFn: () => api<AgeEffect>(`/federation/av/age-effect${q}`) });
   const ds = useQuery({ queryKey: ['av', 'divstr', year], queryFn: () => api<{ divisions: DivStrength[] }>(`/federation/av/division-strength${q}`) });
-  const tc = useQuery({ queryKey: ['av', 'conc', year], queryFn: () => api<Concentration>(`/federation/av/concentration${q}`) });
-  const pq = useQuery({ queryKey: ['av', 'players', year], queryFn: () => api<{ players: RPlayer[] }>(`/federation/av/players${q}`) });
+  // Концентрация и лучшие — внутри выбранной лиги.
+  const tc = useQuery({ queryKey: ['av', 'conc', year, division], queryFn: () => api<Concentration>(`/federation/av/concentration${fq}`) });
+  const pq = useQuery({ queryKey: ['av', 'players', year, division], queryFn: () => api<{ players: RPlayer[] }>(`/federation/av/players${fq}`) });
 
   const top = useMemo(() => (pq.data?.players ?? []).filter((p) => p.rating != null).slice(0, 8), [pq.data]);
   const divs = ds.data?.divisions ?? [];

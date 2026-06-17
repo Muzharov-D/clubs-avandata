@@ -64,7 +64,7 @@ export async function federationRoutes(app: FastifyInstance) {
   app.get('/av/overview', async (req, reply) => {
     if (avOff(reply)) return { error: 'AVANDATA_API_KEY не задан', code: 'AVANDATA_OFF' };
     const season = Number((req.query as { season?: string }).season) || AV_SEASON;
-    return await regionOverview(season);
+    return await regionOverview(season, divisionOf(req));
   });
 
   /** GET /federation/av/compare?keys=14:2,13:2 — сравнение турниров между собой. */
@@ -83,6 +83,12 @@ export async function federationRoutes(app: FastifyInstance) {
     return Number.isFinite(y) && y > 1900 ? y : undefined;
   };
 
+  // Дивизион из query (Высшая/Первая лига); пусто = все дивизионы (режим сравнения).
+  const divisionOf = (req: { query: unknown }): string | undefined => {
+    const d = String((req.query as { division?: string }).division ?? '').trim();
+    return d || undefined;
+  };
+
   /** GET /federation/av/years — доступные года рождения для фильтра. */
   app.get('/av/years', async (req, reply) => {
     if (avOff(reply)) return { error: 'AVANDATA_API_KEY не задан', code: 'AVANDATA_OFF' };
@@ -94,7 +100,7 @@ export async function federationRoutes(app: FastifyInstance) {
   app.get('/av/players', async (req, reply) => {
     if (avOff(reply)) return { error: 'AVANDATA_API_KEY не задан', code: 'AVANDATA_OFF' };
     const season = Number((req.query as { season?: string }).season) || AV_SEASON;
-    return { season, players: await regionPlayers(season, yearOf(req)) };
+    return { season, players: await regionPlayers(season, yearOf(req), divisionOf(req)) };
   });
 
   /** GET /federation/av/standings?year= — турнирные таблицы клубов по дивизионам. */
@@ -122,7 +128,7 @@ export async function federationRoutes(app: FastifyInstance) {
   app.get('/av/results', async (req, reply) => {
     if (avOff(reply)) return { error: 'AVANDATA_API_KEY не задан', code: 'AVANDATA_OFF' };
     const season = Number((req.query as { season?: string }).season) || AV_SEASON;
-    return { season, results: await regionResults(season, yearOf(req)) };
+    return { season, results: await regionResults(season, yearOf(req), divisionOf(req)) };
   });
 
   /** GET /federation/av/matches/:id — детали матча (счёт, лучший игрок, события). */
@@ -152,7 +158,7 @@ export async function federationRoutes(app: FastifyInstance) {
   app.get('/av/concentration', async (req, reply) => {
     if (avOff(reply)) return { error: 'AVANDATA_API_KEY не задан', code: 'AVANDATA_OFF' };
     const season = Number((req.query as { season?: string }).season) || AV_SEASON;
-    return await talentConcentration(season, yearOf(req));
+    return await talentConcentration(season, yearOf(req), divisionOf(req));
   });
 
   /** GET /federation/av/players/:id — профиль игрока + «пицца» из событий. */

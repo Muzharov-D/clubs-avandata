@@ -1,9 +1,9 @@
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { api } from '../../api/client';
 import { ClubShield } from './ClubShield';
 import { FedError } from './FedState';
-import { useFedYear, yearQ } from './avYear';
+import { useFedYear, yearQ, inDivision } from './avYear';
 import './avandata.css';
 
 interface RatingRow { id: number; name: string; logo: string | null; rating: number }
@@ -14,16 +14,14 @@ const num = (n: number) => n.toLocaleString('ru-RU');
 
 /** Сила клубов — пауэр-рейтинг школ по данным разборов + сила лиг. */
 export function FederationAvClubs() {
-  const { year } = useFedYear();
+  const { year, division } = useFedYear();
   const q = yearQ(year);
   const cr = useQuery({ queryKey: ['av', 'club-ratings', year], queryFn: () => api<{ groups: Group<RatingRow>[] }>(`/federation/av/club-ratings${q}`) });
   const ds = useQuery({ queryKey: ['av', 'divstr', year], queryFn: () => api<{ divisions: DivStrength[] }>(`/federation/av/division-strength${q}`) });
-  const [div, setDiv] = useState<string>('all');
 
   const groups = cr.data?.groups ?? [];
-  const divisions = groups.map((g) => g.division);
   const all = useMemo(() => groups.flatMap((g) => g.rows.map((r) => ({ ...r, division: g.division }))).sort((a, b) => b.rating - a.rating), [groups]);
-  const shown = div === 'all' ? all : all.filter((r) => r.division === div);
+  const shown = all.filter((r) => inDivision(r.division, division));
   const max = Math.max(...shown.map((r) => Math.abs(r.rating)), 1);
 
   return (
@@ -31,27 +29,23 @@ export function FederationAvClubs() {
       <header className="av-head av-rise">
         <div className="av-head__l">
           <h1 className="av-title">Клубы региона</h1>
-          <p className="av-sub">Рейтинг клубов по очкам · по дивизионам</p>
+          <p className="av-sub">Рейтинг клубов по очкам · {division} лига</p>
         </div>
       </header>
 
-      {/* Сила лиг */}
+      {/* Сила лиг — прямое сравнение дивизионов (обе лиги рядом); выбранная подсвечена */}
       {ds.isLoading ? <div className="av-skeleton av-rise" style={{ height: 116 }} /> : (
         <div className="av-leagues av-rise">
-          {(ds.data?.divisions ?? []).map((l, i) => (
-            <div key={l.division} className={`av-surface av-league${i === 0 ? ' av-surface-glow' : ''}`}>
-              <div className="av-league__name">{l.division}</div>
-              <div className="av-league__big" style={{ color: i === 0 ? 'var(--av-cyan)' : 'var(--av-blue-glow)' }}>{l.avgRating != null ? num(l.avgRating) : '—'}</div>
-              <div className="av-league__sub">средний рейтинг · {l.clubs} клубов{l.topClub ? ` · лидер ${l.topClub}` : ''}</div>
-            </div>
-          ))}
-        </div>
-      )}
-
-      {divisions.length > 1 && (
-        <div className="av-pills av-rise">
-          <button onClick={() => setDiv('all')} className={`av-pill${div === 'all' ? ' av-pill--active' : ''}`}>все дивизионы</button>
-          {divisions.map((dn) => <button key={dn} onClick={() => setDiv(dn)} className={`av-pill${div === dn ? ' av-pill--active' : ''}`}>{dn}</button>)}
+          {(ds.data?.divisions ?? []).map((l) => {
+            const sel = inDivision(l.division, division);
+            return (
+              <div key={l.division} className={`av-surface av-league${sel ? ' av-surface-glow' : ''}`}>
+                <div className="av-league__name">{l.division}</div>
+                <div className="av-league__big" style={{ color: sel ? 'var(--av-cyan)' : 'var(--av-blue-glow)' }}>{l.avgRating != null ? num(l.avgRating) : '—'}</div>
+                <div className="av-league__sub">средний рейтинг · {l.clubs} клубов{l.topClub ? ` · лидер ${l.topClub}` : ''}</div>
+              </div>
+            );
+          })}
         </div>
       )}
 

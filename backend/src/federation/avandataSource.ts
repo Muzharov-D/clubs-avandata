@@ -133,9 +133,18 @@ export interface RegionOverview {
   divisions: string[]; tournaments: number; teams: number; players: number;
   matches: number; analyzed: number; goals: number; byTournament: TournamentAgg[];
 }
-export async function regionOverview(seasonId: number): Promise<RegionOverview> {
-  return cached(`overview:${seasonId}`, TTL, async () => {
-    const refs = await listTournaments(seasonId);
+// Классификация дивизиона по названию турнира — единый источник истины и для
+// группировки (groupByDivision), и для фильтра. 'Высшая'/'Первая' приходят с фронта.
+const DIV_RE: Record<string, RegExp> = { 'Высшая': /Высшая|Боброва/i, 'Первая': /Первая|Дементьева/i };
+export const matchesDivision = (title: string, division: string): boolean => {
+  const re = DIV_RE[division];
+  return re ? re.test(title) : title.toLowerCase().includes(division.toLowerCase());
+};
+
+export async function regionOverview(seasonId: number, division?: string): Promise<RegionOverview> {
+  return cached(`overview:${seasonId}:${division ?? ''}`, TTL, async () => {
+    let refs = await listTournaments(seasonId);
+    if (division) refs = refs.filter((r) => matchesDivision(r.divisionTitle, division));
     const aggs = await pmap(refs, 4, (r) => tournamentAggregate(seasonId, r));
     const sum = (sel: (a: TournamentAgg) => number) => aggs.reduce((s, a) => s + sel(a), 0);
     return {
@@ -197,10 +206,11 @@ function groupByDivision<T extends { division: string }>(rows: T[], sortKey: (r:
 
 // ─── Игроки региона (с разобранных матчей, все туры) ─────────────────────────
 export interface RegionPlayer { id: number; name: string; birthYear: number | null; position: string | null; club: string | null; clubLogo: string | null; rating: number | null; }
-export async function regionPlayers(seasonId: number, year?: number): Promise<RegionPlayer[]> {
-  return cached(`players:${seasonId}:${year ?? 0}`, TTL, async () => {
+export async function regionPlayers(seasonId: number, year?: number, division?: string): Promise<RegionPlayer[]> {
+  return cached(`players:${seasonId}:${year ?? 0}:${division ?? ''}`, TTL, async () => {
     let refs = await listTournaments(seasonId);
     if (year != null) refs = refs.filter((r) => r.ageFrom === year);
+    if (division) refs = refs.filter((r) => matchesDivision(r.divisionTitle, division));
     const byId = new Map<number, RegionPlayer>();
     const jobs: Array<{ t: number; d: number; tour: number }> = [];
     for (const ref of refs) for (let tour = 1; tour <= Math.max(1, ref.lastPlayedTour); tour++) jobs.push({ t: ref.tournamentId, d: ref.divisionId, tour });
@@ -257,8 +267,8 @@ export interface TalentConcentration {
 /** Имя реального клуба из названия команды-с-годом: «ФК Зенит 2012» → «ФК Зенит». */
 export const clubName = (team: string | null): string => (team ?? '').replace(/\s*20\d{2}\b.*$/, '').trim();
 
-export async function talentConcentration(seasonId: number, year?: number): Promise<TalentConcentration> {
-  const players = await regionPlayers(seasonId, year);
+export async function talentConcentration(seasonId: number, year?: number, division?: string): Promise<TalentConcentration> {
+  const players = await regionPlayers(seasonId, year, division);
   // Пул таланта = топ-30 по КАЖДОМУ возрасту (честно между когортами), объединяем.
   const byYear = new Map<number, RegionPlayer[]>();
   for (const p of players) {
@@ -301,10 +311,11 @@ export interface ResultMatch {
 const normTeam = (s: string): string => s.toLowerCase()
   .replace(/[«»"']/g, '').replace(/^фк\s+/, '').replace(/\s*\d{4}\s*$/, '').replace(/[-–—]/g, ' ').replace(/\s+/g, ' ').trim();
 
-export async function regionResults(seasonId: number, year?: number): Promise<ResultMatch[]> {
-  return cached(`results:${seasonId}:${year ?? 0}`, 5 * 60 * 1000, async () => {
+export async function regionResults(seasonId: number, year?: number, division?: string): Promise<ResultMatch[]> {
+  return cached(`results:${seasonId}:${year ?? 0}:${division ?? ''}`, 5 * 60 * 1000, async () => {
     let refs = await listTournaments(seasonId);
     if (year != null) refs = refs.filter((r) => r.ageFrom === year);
+    if (division) refs = refs.filter((r) => matchesDivision(r.divisionTitle, division));
     // Рейтинги команд по возрасту (per tournamentId) — значимость на УРОВНЕ КОМАНДЫ, не клуба.
     const tids = [...new Set(refs.map((r) => r.tournamentId))];
     const ratingsByTid = new Map<number, AvRatingTeam[]>();

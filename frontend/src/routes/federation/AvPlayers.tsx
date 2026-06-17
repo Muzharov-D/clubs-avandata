@@ -6,7 +6,7 @@ import { ClubShield } from './ClubShield';
 import { PlayerAvatar } from './PlayerAvatar';
 import { FedError, FedEmpty } from './FedState';
 import { ratingColor } from './ratings';
-import { useFedYear, yearQ } from './avYear';
+import { useFedYear, fedQ } from './avYear';
 import './avandata.css';
 
 interface RPlayer { id: number; name: string; birthYear: number | null; position: string | null; club: string | null; clubLogo: string | null; rating: number | null }
@@ -33,8 +33,8 @@ const SLOTS: Array<{ line: Line; l: number; t: number; tag: string }> = [
 
 /** Таланты региона — реестр + «Сборная региона» (лучшие по позициям на данных). */
 export function FederationAvPlayers() {
-  const { year } = useFedYear();
-  const { data, isLoading, error } = useQuery({ queryKey: ['av', 'players', year], queryFn: () => api<{ players: RPlayer[] }>(`/federation/av/players${yearQ(year)}`) });
+  const { year, division } = useFedYear();
+  const { data, isLoading, error } = useQuery({ queryKey: ['av', 'players', year, division], queryFn: () => api<{ players: RPlayer[] }>(`/federation/av/players${fedQ(year, division)}`) });
   const players = data?.players ?? [];
   const [club, setClub] = useState('all');
   const [qStr, setQStr] = useState('');
