@@ -399,18 +399,13 @@
 /* =============================================================================
    ПОЛЕ СБОРНОЙ РЕГИОНА (Team of region pitch)
    ============================================================================= */
-.av-pitch { position: relative; aspect-ratio: 4 / 5; border-radius: var(--av-r-lg); overflow: hidden; border: 1px solid rgba(94, 235, 252, 0.30); background: linear-gradient(180deg, rgba(48, 84, 255, 0.14), rgba(48, 84, 255, 0.05)); }
-.av-pitch > span { position: absolute; }
-.av-pitch__line { position: absolute; border-color: rgba(94, 235, 252, 0.28); }
-.av-pitch__mid { left: 0; right: 0; top: 50%; border-top: 1px solid rgba(94, 235, 252, 0.28); }
-.av-pitch__circle { left: 50%; top: 50%; width: 96px; height: 96px; border: 1px solid rgba(94, 235, 252, 0.28); border-radius: 50%; transform: translate(-50%, -50%); }
-.av-pitch__box { left: 50%; width: 184px; height: 62px; transform: translateX(-50%); border: 1px solid rgba(94, 235, 252, 0.18); }
-.av-pitch__box--top { top: 0; border-top: 0; }
-.av-pitch__box--bot { bottom: 0; border-bottom: 0; }
-.av-slot { position: absolute; transform: translate(-50%, -50%); display: flex; flex-direction: column; align-items: center; gap: 3px; text-align: center; }
-.av-slot__name { font-size: 10px; font-weight: 600; max-width: 78px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-shadow: 0 1px 4px rgba(0, 0, 0, 0.6); }
-.av-slot__rate { font-family: var(--av-display); font-size: 10px; font-weight: 700; color: var(--av-cyan); font-variant-numeric: tabular-nums; }
-.av-slot__pos { position: absolute; left: 8px; font-size: 9px; font-weight: 700; letter-spacing: 0.10em; text-transform: uppercase; color: var(--av-text-faint); }
+.av-pitch { position: relative; aspect-ratio: 4 / 5; border-radius: var(--av-r-lg); overflow: hidden; box-shadow: var(--av-shadow), inset 0 0 70px rgba(0, 0, 0, 0.4); }
+.av-pitch__field { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.av-slot { position: absolute; transform: translate(-50%, -50%); display: flex; flex-direction: column; align-items: center; gap: 5px; text-align: center; z-index: 2; text-decoration: none; }
+.av-slot__node { position: relative; display: block; filter: drop-shadow(0 3px 7px rgba(0, 0, 0, 0.55)); transition: transform 0.15s ease; }
+@media (hover: hover) { .av-slot--filled:hover .av-slot__node { transform: translateY(-3px); } }
+.av-slot__badge { position: absolute; bottom: -5px; right: -7px; min-width: 22px; padding: 1px 4px; font-family: var(--av-display); font-size: 11px; font-weight: 800; line-height: 1.45; text-align: center; background: rgba(8, 12, 20, 0.92); border: 1.5px solid rgba(255, 255, 255, 0.16); border-radius: 7px; font-variant-numeric: tabular-nums; }
+.av-slot__name { font-size: 10.5px; font-weight: 700; color: #fff; background: rgba(0, 0, 0, 0.5); padding: 2px 8px; border-radius: 6px; white-space: nowrap; max-width: 94px; overflow: hidden; text-overflow: ellipsis; }
 
 /* =============================================================================
    ПРОФИЛЬ ИГРОКА — пицца / донат / лидерборд-метрики
@@ -599,8 +594,8 @@
 .av-cap { font-size: 11.5px; color: var(--av-text-dim); line-height: 1.5; margin-top: 12px; }
 
 /* метка позиции слота (ВРТ/ЗАЩ/ПЗЩ/НАП) + пустой слот (нет игрока на позиции) */
-.av-slot__prov { font-size: 9px; font-weight: 700; letter-spacing: 0.06em; color: var(--av-text-faint); }
-.av-slot__empty { width: 38px; height: 38px; border-radius: 50%; border: 1.5px dashed var(--av-border-strong); display: block; }
+.av-slot__tag { font-size: 9px; font-weight: 700; letter-spacing: 0.06em; color: rgba(255, 255, 255, 0.6); text-transform: uppercase; }
+.av-slot__empty { width: 44px; height: 44px; border-radius: 50%; border: 2px dashed rgba(255, 255, 255, 0.32); display: block; }
 
 /* строки-ссылки: reset без инлайнов (Уинстон) */
 a.av-trow { text-decoration: none; color: inherit; }

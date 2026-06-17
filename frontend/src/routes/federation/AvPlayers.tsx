@@ -123,21 +123,37 @@ export function FederationAvPlayers() {
               <div className="av-note">Мало разобранных игроков для сборной.</div>
             ) : (
               <div className="av-pitch">
-                <span className="av-pitch__circle" />
-                <span className="av-pitch__mid" />
-                <span className="av-pitch__box av-pitch__box--top" />
-                <span className="av-pitch__box av-pitch__box--bot" />
+                <svg className="av-pitch__field" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+                  <defs>
+                    <linearGradient id="av-grass" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="#176b3c" /><stop offset="50%" stopColor="#0e4d2a" /><stop offset="100%" stopColor="#176b3c" />
+                    </linearGradient>
+                  </defs>
+                  <rect x="0" y="0" width="100" height="100" fill="url(#av-grass)" />
+                  {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map((i) => <rect key={i} x="0" y={i * 10} width="100" height="10" fill={i % 2 ? 'rgba(255,255,255,0.035)' : 'rgba(0,0,0,0.07)'} />)}
+                  <g fill="none" stroke="rgba(255,255,255,0.5)" strokeWidth="0.4">
+                    <rect x="2" y="2" width="96" height="96" />
+                    <line x1="2" y1="50" x2="98" y2="50" />
+                    <circle cx="50" cy="50" r="9" />
+                    <rect x="24" y="2" width="52" height="14" />
+                    <rect x="38" y="2" width="24" height="5.5" />
+                    <rect x="24" y="84" width="52" height="14" />
+                    <rect x="38" y="92.5" width="24" height="5.5" />
+                  </g>
+                  <circle cx="50" cy="50" r="0.7" fill="rgba(255,255,255,0.5)" />
+                </svg>
                 {xi.map((s, idx) => s.player ? (
-                  <Link key={idx} to={`/federation/players/${s.player.id}`} className="av-slot" style={{ left: `${s.l}%`, top: `${s.t}%` }}>
-                    <PlayerAvatar name={s.player.name} size={38} ring={s.line === 'GK'} />
-                    <span className="av-slot__name" title={s.player.name}>{lastName(s.player.name)}</span>
-                    <span className="av-slot__rate" style={{ color: ratingColor(s.player.rating) }}>{s.player.rating}</span>
-                    <span className="av-slot__prov">{s.tag}</span>
+                  <Link key={idx} to={`/federation/players/${s.player.id}`} className="av-slot av-slot--filled" style={{ left: `${s.l}%`, top: `${s.t}%` }} title={s.player.name}>
+                    <span className="av-slot__node">
+                      <PlayerAvatar name={s.player.name} size={46} ring={s.line === 'GK'} />
+                      <span className="av-slot__badge" style={{ color: ratingColor(s.player.rating) }}>{s.player.rating}</span>
+                    </span>
+                    <span className="av-slot__name">{lastName(s.player.name)}</span>
                   </Link>
                 ) : (
                   <span key={idx} className="av-slot" style={{ left: `${s.l}%`, top: `${s.t}%` }}>
                     <span className="av-slot__empty" />
-                    <span className="av-slot__prov">{s.tag}</span>
+                    <span className="av-slot__tag">{s.tag}</span>
                   </span>
                 ))}
               </div>
