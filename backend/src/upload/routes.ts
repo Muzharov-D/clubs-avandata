@@ -173,7 +173,10 @@ export async function uploadRoutes(app: FastifyInstance) {
 
     const work = join(tmpdir(), `sv-upload-${matchId}`);
     const pdfPath  = join(work, 'input.pdf');
-    const xlsxPath = join(work, 'input.xlsx');
+    // Вторичный файл сохраняем с ПРАВИЛЬНЫМ расширением: парсеры роутят по нему
+    // (.csv → csv-текст, .xlsx → openpyxl). Раньше всё писалось в input.xlsx →
+    // CSV уходил в openpyxl → _validate_archive падал (exit 1, 500 на любой CSV).
+    const xlsxPath = join(work, secondaryKind === 'csv' ? 'input.csv' : 'input.xlsx');
     const pdfOutPath  = join(work, 'pdf.json');
     const xlsxOutPath = join(work, 'excel.json');
     const dataDir = join(work, 'data');
