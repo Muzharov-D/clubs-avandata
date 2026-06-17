@@ -8,7 +8,8 @@
  */
 import {
   isAvandataConfigured, getSeasons, getTeamsList, getTourStatistics, getPlayersByRole,
-  getFfspbStatistics, getClubRatingsOverview, getPlayerDetail, getPlayerEvents, getEventTypes,
+  getFfspbStatistics, getFfspbStatisticsByTournament, getClubRatingsOverview, getClubRatingsByTournament,
+  getPlayerDetail, getPlayerEvents, getEventTypes,
   type AvSeason, type AvStatTeam, type AvRatingTeam, type AvEventType,
 } from '../services/avandataApi.js';
 
@@ -58,6 +59,17 @@ export async function listTournaments(seasonId: number): Promise<TournamentRef[]
     });
   }
   return out;
+}
+
+/** Доступные года рождения (для фильтра возрастов), по убыванию. */
+export async function availableYears(seasonId: number): Promise<number[]> {
+  const s = await season(seasonId);
+  return Array.from(new Set(s.tournaments.map((t) => t.dateBirthFrom))).sort((a, b) => b - a);
+}
+/** tournamentId для года рождения (по ageFrom). */
+async function tournamentIdForYear(seasonId: number, year: number): Promise<number | undefined> {
+  const s = await season(seasonId);
+  return s.tournaments.find((t) => t.dateBirthFrom === year)?.id;
 }
 
 // ─── Игроки тура (общая сборка) ──────────────────────────────────────────────
@@ -130,9 +142,10 @@ export interface ClubStandRow { id: number; name: string; logo: string | null; d
 export interface ClubRatingRow { id: number; name: string; logo: string | null; division: string; rating: number; }
 export interface DivisionGroup<T> { division: string; rows: T[]; }
 
-export async function regionStandings(seasonId: number): Promise<DivisionGroup<ClubStandRow>[]> {
-  return cached(`standings:${seasonId}`, TTL, async () => {
-    const teams = await getFfspbStatistics(seasonId);
+export async function regionStandings(seasonId: number, year?: number): Promise<DivisionGroup<ClubStandRow>[]> {
+  return cached(`standings:${seasonId}:${year ?? 0}`, TTL, async () => {
+    const tid = year != null ? await tournamentIdForYear(seasonId, year) : undefined;
+    const teams = tid ? await getFfspbStatisticsByTournament(seasonId, tid) : await getFfspbStatistics(seasonId);
     return groupByDivision(teams.map((t: AvStatTeam) => ({
       id: t.id, name: t.name, logo: t.logo ?? null, division: t.division?.name ?? 'Лига',
       played: t.stats.matchesPlayed, won: t.stats.matchesWon, drawn: t.stats.draw, lost: t.stats.defeat,
@@ -140,12 +153,27 @@ export async function regionStandings(seasonId: number): Promise<DivisionGroup<C
     })), (r) => r.points);
   });
 }
-export async function regionClubRatings(seasonId: number): Promise<DivisionGroup<ClubRatingRow>[]> {
-  return cached(`clubratings:${seasonId}`, TTL, async () => {
-    const teams = await getClubRatingsOverview(seasonId);
+export async function regionClubRatings(seasonId: number, year?: number): Promise<DivisionGroup<ClubRatingRow>[]> {
+  return cached(`clubratings:${seasonId}:${year ?? 0}`, TTL, async () => {
+    const tid = year != null ? await tournamentIdForYear(seasonId, year) : undefined;
+    const teams = tid ? await getClubRatingsByTournament(seasonId, tid) : await getClubRatingsOverview(seasonId);
     return groupByDivision(teams.map((t: AvRatingTeam) => ({
       id: t.id, name: t.name, logo: t.logo ?? null, division: t.division?.name ?? 'Лига', rating: t.points,
     })), (r) => r.rating);
+  });
+}
+
+// ─── Сила лиг (дивизионов) — для «силы клубов/лиг» ───────────────────────────
+export interface DivisionStrength { division: string; clubs: number; avgRating: number | null; topRating: number | null; topClub: string | null; }
+export async function divisionStrength(seasonId: number, year?: number): Promise<DivisionStrength[]> {
+  const groups = await regionClubRatings(seasonId, year);
+  return groups.map((g) => {
+    const ratings = g.rows.map((r) => r.rating).filter((x) => Number.isFinite(x));
+    return {
+      division: g.division, clubs: g.rows.length,
+      avgRating: ratings.length ? Math.round(ratings.reduce((a, b) => a + b, 0) / ratings.length) : null,
+      topRating: g.rows[0]?.rating ?? null, topClub: g.rows[0]?.name ?? null,
+    };
   });
 }
 function groupByDivision<T extends { division: string }>(rows: T[], sortKey: (r: T) => number): DivisionGroup<T>[] {
@@ -159,9 +187,10 @@ function groupByDivision<T extends { division: string }>(rows: T[], sortKey: (r:
 
 // ─── Игроки региона (с разобранных матчей, все туры) ─────────────────────────
 export interface RegionPlayer { id: number; name: string; birthYear: number | null; position: string | null; club: string | null; clubLogo: string | null; rating: number | null; }
-export async function regionPlayers(seasonId: number): Promise<RegionPlayer[]> {
-  return cached(`players:${seasonId}`, TTL, async () => {
-    const refs = await listTournaments(seasonId);
+export async function regionPlayers(seasonId: number, year?: number): Promise<RegionPlayer[]> {
+  return cached(`players:${seasonId}:${year ?? 0}`, TTL, async () => {
+    let refs = await listTournaments(seasonId);
+    if (year != null) refs = refs.filter((r) => r.ageFrom === year);
     const byId = new Map<number, RegionPlayer>();
     const jobs: Array<{ t: number; d: number; tour: number }> = [];
     for (const ref of refs) for (let tour = 1; tour <= Math.max(1, ref.lastPlayedTour); tour++) jobs.push({ t: ref.tournamentId, d: ref.divisionId, tour });

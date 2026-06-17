@@ -44,46 +44,36 @@
   opacity: 0.9; mix-blend-mode: screen;
 }
 
-/* ---- Оболочка ---- */
+/* ---- Оболочка: верхний нав (полная ширина под контент) ---- */
 .av-root { font-family: var(--av-font); color: var(--av-text); }
-.av-shell { position: relative; z-index: 1; min-height: 100vh; display: flex; }
-.av-aside {
-  width: 248px; flex: none; position: sticky; top: 0; align-self: flex-start; height: 100vh;
-  display: flex; flex-direction: column; padding: 18px 14px; gap: 4px;
-  background: rgba(10, 11, 34, 0.55); backdrop-filter: blur(20px);
-  border-right: 1px solid rgba(94, 235, 252, 0.12);
-}
-.av-brand { display: flex; align-items: center; gap: 11px; padding: 4px 6px 14px; text-decoration: none; color: inherit; }
-.av-brand img { width: 34px; height: 34px; object-fit: contain; }
-.av-brand__name { font-weight: 800; font-size: 15px; letter-spacing: 0.01em; }
-.av-brand__name b { color: var(--av-accent); }
-.av-brand__sub { font-size: 10px; color: var(--av-text-dim); letter-spacing: 0.06em; text-transform: uppercase; }
+.av-app { position: relative; z-index: 1; min-height: 100vh; display: flex; flex-direction: column; }
 
-.av-nav { display: flex; flex-direction: column; gap: 2px; overflow-y: auto; margin-top: 6px; }
-.av-nav__group { font-size: 9.5px; letter-spacing: 0.1em; color: var(--av-text-dim); text-transform: uppercase; padding: 14px 10px 5px; }
-.av-nav__link {
-  display: flex; align-items: center; gap: 11px; padding: 9px 11px; border-radius: var(--av-radius-sm);
-  font-size: 13.5px; color: var(--av-text-2); text-decoration: none; border: 1px solid transparent;
-  transition: all 0.15s ease;
+.av-topbar {
+  position: sticky; top: 0; z-index: 30; display: flex; align-items: center; gap: 22px;
+  padding: 10px 24px; background: rgba(10, 11, 34, 0.72); backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(94, 235, 252, 0.14);
 }
-@media (hover: hover) { .av-nav__link:hover { background: rgba(255, 255, 255, 0.05); color: var(--av-text); } }
-.av-nav__link--active {
-  color: var(--av-text); font-weight: 600;
-  background: linear-gradient(135deg, rgba(94, 235, 252, 0.22) 0%, rgba(48, 84, 255, 0.22) 100%);
-  border-color: rgba(94, 235, 252, 0.5);
-  box-shadow: 0 0 16px rgba(94, 235, 252, 0.15);
-}
-.av-nav__link svg { width: 17px; height: 17px; flex: none; opacity: 0.9; }
-.av-aside__foot { margin-top: auto; padding-top: 14px; border-top: 1px solid rgba(255, 255, 255, 0.08); }
-.av-aside__who { font-size: 12px; color: var(--av-text-2); margin-bottom: 9px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.av-logout {
-  width: 100%; background: rgba(255, 255, 255, 0.04); color: var(--av-text-2);
-  border: 1px solid rgba(255, 255, 255, 0.1); border-radius: var(--av-radius-sm); padding: 8px 10px; font-size: 13px;
-}
+.av-brand { display: flex; align-items: center; gap: 10px; text-decoration: none; color: inherit; flex: none; }
+.av-brand img { width: 30px; height: 30px; object-fit: contain; }
+.av-brand__name { font-weight: 800; font-size: 15px; line-height: 1.1; }
+.av-brand__name b { color: var(--av-accent); }
+.av-brand__sub { font-size: 9px; color: var(--av-text-dim); letter-spacing: 0.06em; text-transform: uppercase; }
+.av-topnav { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.av-topnav .av-tab { text-decoration: none; }
+.av-topbar__right { margin-left: auto; display: flex; align-items: center; gap: 12px; flex: none; }
+.av-topbar__who { font-size: 12px; color: var(--av-text-2); max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.av-logout { background: rgba(255, 255, 255, 0.04); color: var(--av-text-2); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: var(--av-radius-sm); padding: 6px 12px; font-size: 12.5px; }
 @media (hover: hover) { .av-logout:hover { color: var(--av-text); border-color: rgba(94, 235, 252, 0.4); } }
 
-.av-main { flex: 1; min-width: 0; padding: 22px 26px 60px; }
-.av-page { max-width: 1240px; margin: 0 auto; display: grid; gap: 16px; }
+.av-subbar { position: sticky; top: 51px; z-index: 25; padding: 8px 24px; background: rgba(10, 11, 34, 0.5); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(255, 255, 255, 0.06); }
+.av-yearbar { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.av-yearbar__label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--av-text-dim); margin-right: 4px; }
+.av-ychip { font-family: var(--av-display); font-size: 13px; font-weight: 700; padding: 4px 12px; border-radius: var(--av-radius-sm); color: var(--av-text-2); background: rgba(255, 255, 255, 0.04); border: 1px solid transparent; transition: all 0.15s ease; font-variant-numeric: tabular-nums; }
+@media (hover: hover) { .av-ychip:hover { color: var(--av-text); background: rgba(255, 255, 255, 0.08); } }
+.av-ychip--active { color: #06121f; background: var(--av-accent); border-color: var(--av-accent); box-shadow: 0 0 14px rgba(94, 235, 252, 0.35); }
+
+.av-content { flex: 1; min-width: 0; padding: 20px 24px 60px; }
+.av-page { max-width: 1340px; margin: 0 auto; display: grid; gap: 16px; }
 
 /* ---- Шапка экрана ---- */
 .av-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; }
@@ -207,9 +197,27 @@
 /* ---- Две колонки ---- */
 .av-cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 16px; align-items: start; }
 
-@media (max-width: 900px) {
-  .av-aside { width: 60px; padding: 14px 8px; }
-  .av-brand__name, .av-brand__sub, .av-nav__group, .av-nav__link span, .av-aside__who { display: none; }
-  .av-nav__link { justify-content: center; }
-  .av-main { padding: 18px 14px 48px; }
+/* ---- Визуальное сравнение турниров (бары) ---- */
+.av-cmp { display: grid; gap: 16px; }
+.av-cmp__metric { }
+.av-cmp__head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 8px; }
+.av-cmp__name { font-size: 13px; font-weight: 700; color: var(--av-text-card); }
+.av-cmp__row { display: grid; grid-template-columns: 120px 1fr 64px; align-items: center; gap: 12px; margin-bottom: 7px; }
+.av-cmp__label { font-size: 12px; color: var(--av-text-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.av-cmp__track { height: 22px; border-radius: 6px; background: rgba(255, 255, 255, 0.05); overflow: hidden; }
+.av-cmp__fill { display: block; height: 100%; border-radius: 6px; transition: width 0.6s ease; }
+.av-cmp__val { font-family: var(--av-display); font-weight: 700; text-align: right; font-variant-numeric: tabular-nums; font-size: 14px; }
+
+/* ---- Сила лиг (карточки дивизионов) ---- */
+.av-leagues { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px; }
+.av-league { padding: 16px 18px; }
+.av-league__name { font-size: 14px; font-weight: 700; color: var(--av-accent); }
+.av-league__big { font-family: var(--av-display); font-size: 30px; font-weight: 700; line-height: 1; margin: 8px 0 2px; font-variant-numeric: tabular-nums; }
+.av-league__sub { font-size: 11.5px; color: var(--av-text-dim); }
+
+@media (max-width: 760px) {
+  .av-topbar { flex-wrap: wrap; gap: 12px; }
+  .av-topbar__right { margin-left: 0; }
+  .av-content { padding: 16px 14px 48px; }
+  .av-cmp__row { grid-template-columns: 90px 1fr 52px; }
 }

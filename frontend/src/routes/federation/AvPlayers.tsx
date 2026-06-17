@@ -3,13 +3,15 @@ import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { api } from '../../api/client';
 import { ClubShield } from './ClubShield';
+import { useFedYear, yearQ } from './avYear';
 import './avandata.css';
 
 interface RPlayer { id: number; name: string; birthYear: number | null; position: string | null; club: string | null; clubLogo: string | null; rating: number | null }
 
 /** Игроки региона — реальный реестр Первенства, клик → профиль с «пиццей». */
 export function FederationAvPlayers() {
-  const { data, isLoading, error } = useQuery({ queryKey: ['av', 'players'], queryFn: () => api<{ players: RPlayer[] }>('/federation/av/players') });
+  const { year } = useFedYear();
+  const { data, isLoading, error } = useQuery({ queryKey: ['av', 'players', year], queryFn: () => api<{ players: RPlayer[] }>(`/federation/av/players${yearQ(year)}`) });
   const players = data?.players ?? [];
   const [club, setClub] = useState('all');
   const [qStr, setQStr] = useState('');

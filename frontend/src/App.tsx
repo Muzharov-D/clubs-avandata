@@ -49,6 +49,7 @@ import { AdminTenantDetail } from './routes/admin/AdminTenantDetail';
 // Кабинет федерации региона (federation_admin)
 import { FederationLayout } from './routes/federation/FederationLayout';
 import { FederationAvHome } from './routes/federation/AvHome';
+import { FederationAvClubs } from './routes/federation/AvClubs';
 import { FederationAvCompare } from './routes/federation/AvCompare';
 import { FederationAvPlayers } from './routes/federation/AvPlayers';
 import { FederationAvPlayerProfile } from './routes/federation/AvPlayerProfile';
@@ -180,6 +181,7 @@ export function App() {
                     }
                   >
                     <Route index element={<FederationAvHome />} />
+                    <Route path="clubs" element={<FederationAvClubs />} />
                     <Route path="compare" element={<FederationAvCompare />} />
                     <Route path="players" element={<FederationAvPlayers />} />
                     <Route path="players/:id" element={<FederationAvPlayerProfile />} />

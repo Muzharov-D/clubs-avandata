@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { api } from '../../api/client';
 import { ClubShield } from './ClubShield';
+import { useFedYear, yearQ } from './avYear';
 import './avandata.css';
 
 interface RPlayer { id: number; name: string; position: string | null; club: string | null; clubLogo: string | null; rating: number | null; birthYear: number | null }
@@ -11,7 +12,8 @@ interface Overview { byTournament: Agg[] }
 
 /** Открытия региона — находки, видимые только над всеми клубами разом. */
 export function FederationAvInsights() {
-  const pq = useQuery({ queryKey: ['av', 'players'], queryFn: () => api<{ players: RPlayer[] }>('/federation/av/players') });
+  const { year } = useFedYear();
+  const pq = useQuery({ queryKey: ['av', 'players', year], queryFn: () => api<{ players: RPlayer[] }>(`/federation/av/players${yearQ(year)}`) });
   const oq = useQuery({ queryKey: ['av', 'overview'], queryFn: () => api<Overview>('/federation/av/overview') });
   const players = pq.data?.players ?? [];
 

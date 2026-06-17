@@ -5,7 +5,7 @@ import { BadRequestError } from '../shared/errors.js';
 import { registryFor } from './registry.js';
 import {
   isAvandataConfigured, listTournaments, compareTournaments, regionOverview, regionPlayers,
-  regionStandings, regionClubRatings, playerProfile,
+  regionStandings, regionClubRatings, playerProfile, availableYears, divisionStrength,
 } from './avandataSource.js';
 import {
   federationOverview,
@@ -76,25 +76,45 @@ export async function federationRoutes(app: FastifyInstance) {
     return { season, items: await compareTournaments(season, keys) };
   });
 
-  /** GET /federation/av/players — игроки региона из реальной базы (разобранные). */
+  // Год рождения из query (фильтр возрастов); 0/пусто = все возрасты.
+  const yearOf = (req: { query: unknown }): number | undefined => {
+    const y = Number((req.query as { year?: string }).year);
+    return Number.isFinite(y) && y > 1900 ? y : undefined;
+  };
+
+  /** GET /federation/av/years — доступные года рождения для фильтра. */
+  app.get('/av/years', async (req, reply) => {
+    if (avOff(reply)) return { error: 'AVANDATA_API_KEY не задан', code: 'AVANDATA_OFF' };
+    const season = Number((req.query as { season?: string }).season) || AV_SEASON;
+    return { season, years: await availableYears(season) };
+  });
+
+  /** GET /federation/av/players?year= — игроки региона (опц. фильтр по возрасту). */
   app.get('/av/players', async (req, reply) => {
     if (avOff(reply)) return { error: 'AVANDATA_API_KEY не задан', code: 'AVANDATA_OFF' };
     const season = Number((req.query as { season?: string }).season) || AV_SEASON;
-    return { season, players: await regionPlayers(season) };
+    return { season, players: await regionPlayers(season, yearOf(req)) };
   });
 
-  /** GET /federation/av/standings — турнирные таблицы клубов по дивизионам. */
+  /** GET /federation/av/standings?year= — турнирные таблицы клубов по дивизионам. */
   app.get('/av/standings', async (req, reply) => {
     if (avOff(reply)) return { error: 'AVANDATA_API_KEY не задан', code: 'AVANDATA_OFF' };
     const season = Number((req.query as { season?: string }).season) || AV_SEASON;
-    return { season, groups: await regionStandings(season) };
+    return { season, groups: await regionStandings(season, yearOf(req)) };
   });
 
-  /** GET /federation/av/club-ratings — рейтинг клубов АванДата по дивизионам. */
+  /** GET /federation/av/club-ratings?year= — рейтинг клубов AvanData по дивизионам. */
   app.get('/av/club-ratings', async (req, reply) => {
     if (avOff(reply)) return { error: 'AVANDATA_API_KEY не задан', code: 'AVANDATA_OFF' };
     const season = Number((req.query as { season?: string }).season) || AV_SEASON;
-    return { season, groups: await regionClubRatings(season) };
+    return { season, groups: await regionClubRatings(season, yearOf(req)) };
+  });
+
+  /** GET /federation/av/division-strength?year= — сила лиг (дивизионов). */
+  app.get('/av/division-strength', async (req, reply) => {
+    if (avOff(reply)) return { error: 'AVANDATA_API_KEY не задан', code: 'AVANDATA_OFF' };
+    const season = Number((req.query as { season?: string }).season) || AV_SEASON;
+    return { season, divisions: await divisionStrength(season, yearOf(req)) };
   });
 
   /** GET /federation/av/players/:id — профиль игрока + «пицца» из событий. */

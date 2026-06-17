@@ -146,9 +146,17 @@ export async function getFfspbStatistics(seasonId: number): Promise<AvStatTeam[]
   const d = await authedGet<{ teams?: AvStatTeam[] }>(`/ffspb-portal/overview/${seasonId}/ffspbStatistics/overview`);
   return d.teams ?? [];
 }
+export async function getFfspbStatisticsByTournament(seasonId: number, tournamentId: number): Promise<AvStatTeam[]> {
+  const d = await authedGet<{ teams?: AvStatTeam[] }>(`/ffspb-portal/overview/${seasonId}/ffspbStatistics/${tournamentId}`);
+  return d.teams ?? [];
+}
 export interface AvRatingTeam { id: number; name: string; logo?: string | null; division?: { id: number; name: string }; points: number }
 export async function getClubRatingsOverview(seasonId: number): Promise<AvRatingTeam[]> {
   const d = await authedGet<{ teams?: AvRatingTeam[] }>(`/ffspb-portal/overview/${seasonId}/getTeamsRatings/overview`);
+  return d.teams ?? [];
+}
+export async function getClubRatingsByTournament(seasonId: number, tournamentId: number): Promise<AvRatingTeam[]> {
+  const d = await authedGet<{ teams?: AvRatingTeam[] }>(`/ffspb-portal/overview/${seasonId}/getTeamsRatings/${tournamentId}`);
   return d.teams ?? [];
 }
 
