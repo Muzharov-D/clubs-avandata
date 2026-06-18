@@ -7,7 +7,7 @@ import {
   isAvandataConfigured, listTournaments, compareTournaments, regionOverview, regionPlayers,
   regionStandings, regionClubRatings, playerProfile, availableYears, divisionStrength,
   ageEffect, talentConcentration, cohortMatrix, regionResults, regionMatchDetail,
-  warmRegionMatchProtocols, regionClubProfile,
+  warmRegionMatchProtocols, regionClubProfile, ffspbScanDebug,
 } from './avandataSource.js';
 import {
   federationOverview,
@@ -110,6 +110,13 @@ export async function federationRoutes(app: FastifyInstance) {
     const season = Number((req.query as { season?: string }).season) || AV_SEASON;
     const std = await regionStandings(season, yearOf(req));
     return { season, ...std }; // { groups, source, degraded, asOf }
+  });
+
+  /** ВРЕМЕННО: диагностика маппинга когорты→турнир ФФСПб. Удалить после отладки 2013. */
+  app.get('/av/_debug/ffspb-scan', async (req, reply) => {
+    if (avOff(reply)) return { error: 'AVANDATA_API_KEY не задан', code: 'AVANDATA_OFF' };
+    const year = Number((req.query as { year?: string }).year) || 2013;
+    return await ffspbScanDebug(year);
   });
 
   /** GET /federation/av/club-ratings?year= — рейтинг клубов AvanData по дивизионам. */
