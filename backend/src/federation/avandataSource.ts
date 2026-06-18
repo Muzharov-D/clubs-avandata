@@ -412,35 +412,44 @@ async function ffspbDirectStandings(seasonId: number, year: number): Promise<Div
   const ageM = (ref.fullTitle ?? '').match(/до (\d+) лет/) ?? (ref.category ?? '').match(/(\d+)/);
   const expectAge = ageM ? Number(ageM[1]) : null;
   const tid = FFSPB_SEED_TID + (year - FFSPB_SEED_YEAR);
-  if (expectAge != null) {                                // верификация когорты: отклоняем лишь явно ДРУГОЙ возраст
-    try {
-      const t = await ffspbApiGet(`/tournaments/${tid}`);
-      const found = String(t.name ?? t.title ?? '').match(/до (\d+) лет/);
-      if (found && Number(found[1]) !== expectAge) return null; // не та когорта → зеркало
-    } catch { /* не свериться — продолжаем по формуле */ }
-  }
-  const data = await ffspbApiGet(`/standings?tournament=${encodeURIComponent(`/api/tournaments/${tid}`)}&itemsPerPage=100`);
-  const groupsRaw = ((data['hydra:member'] ?? (data as { member?: unknown }).member ?? []) as FfspbApiGroup[]);
-  if (!groupsRaw.length) return null;
-  const nameToId = new Map<string, number>();             // имя ФФСПб → avandata id (для джойна с рейтингом)
+  // Vercel-прокси НЕ форвардит query → берём таблицу ПУТЕВЫМИ эндпоинтами:
+  // /tournaments/{id} даёт стадии (лиги) + название (для сверки когорты), затем
+  // /standings/{stageId}-1 — готовую группу. ?tournament=IRI через прокси не работает.
+  const t = await ffspbApiGet(`/tournaments/${tid}`);
+  const found = String(t.name ?? t.title ?? '').match(/до (\d+) лет/);
+  if (expectAge != null && found && Number(found[1]) !== expectAge) return null; // не та когорта → зеркало
+  const stages = (Array.isArray(t.stages) ? t.stages : []) as Array<{ id?: number; name?: string }>;
+  if (!stages.length) return null;
+  const nameToId = new Map<string, number>();             // имя ФФСПб → avandata id (джойн с рейтингом)
   try { const ratings = await regionClubRatings(seasonId, year); for (const g of ratings) for (const r of g.rows) nameToId.set(normTeam(r.name), r.id); } catch { /* без джойна */ }
+  const groups: DivisionGroup<ClubStandRow>[] = [];
+  for (const st of stages) {
+    if (st.id == null) continue;
+    // у стадии может быть несколько подтаблиц: /standings/{stageId}-{N}
+    // (напр. 83191-1 «Группа A» пустая + 83191-2 «Первая лига»). Берём непустые.
+    for (let sub = 1; sub <= 4; sub++) {
+      let g: FfspbApiGroup;
+      try { g = (await ffspbApiGet(`/standings/${st.id}-${sub}`)) as unknown as FfspbApiGroup; } catch { break; }
+      const teamsRaw = g.teams ?? [];
+      if (!teamsRaw.length) continue;                      // пустая подгруппа
+      const division = g.groupName ?? st.name ?? 'Лига';
+      const rows = teamsRaw.map((tm) => {
+        const team = tm.team ?? {};
+        const name = (tm.teamName ?? team.name ?? '').trim();
+        const s = tm.stats ?? {};
+        const gf = Number(s.scored ?? 0), ga = Number(s.missed ?? 0);
+        return {
+          id: nameToId.get(normTeam(name)) ?? (team.id != null ? Number(team.id) : 0), name, logo: team.logoSrc ?? team.thumbnails?.square_xs ?? null, division,
+          played: Number(s.games ?? 0), won: Number(s.wins ?? 0), drawn: Number(s.draws ?? 0), lost: Number(s.loses ?? 0),
+          goalDiff: typeof s.difference === 'number' ? s.difference : gf - ga, points: Number(s.points ?? 0),
+        };
+      }).sort((a, b) => b.points - a.points || b.goalDiff - a.goalDiff);
+      if (rows.length) groups.push({ division, rows });
+    }
+  }
   const order = (n: string) => (/Высшая/i.test(n) ? 0 : /Первая/i.test(n) ? 1 : 2);
-  const groups = groupsRaw.map((g) => {
-    const division = g.groupName ?? 'Лига';
-    const rows = (g.teams ?? []).map((t) => {
-      const team = t.team ?? {};
-      const name = (t.teamName ?? team.name ?? '').trim();
-      const s = t.stats ?? {};
-      const gf = Number(s.scored ?? 0), ga = Number(s.missed ?? 0);
-      return {
-        id: nameToId.get(normTeam(name)) ?? (team.id != null ? Number(team.id) : 0), name, logo: team.logoSrc ?? team.thumbnails?.square_xs ?? null, division,
-        played: Number(s.games ?? 0), won: Number(s.wins ?? 0), drawn: Number(s.draws ?? 0), lost: Number(s.loses ?? 0),
-        goalDiff: typeof s.difference === 'number' ? s.difference : gf - ga, points: Number(s.points ?? 0),
-      };
-    }).sort((a, b) => b.points - a.points || b.goalDiff - a.goalDiff);
-    return { division, rows };
-  }).sort((a, b) => order(a.division) - order(b.division));
-  return groups.some((g) => g.rows.length) ? groups : null;
+  groups.sort((a, b) => order(a.division) - order(b.division));
+  return groups.length ? groups : null;
 }
 
 export async function regionStandings(seasonId: number, year?: number): Promise<DivisionGroup<ClubStandRow>[]> {
