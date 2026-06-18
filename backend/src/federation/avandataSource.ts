@@ -461,21 +461,6 @@ async function resolveFfspbTournament(year: number, expectAge: number | null): P
   logger.warn({ year, formulaTid, cohortAge, expectAge }, 'ffspb турнир не найден поиском → зеркало');
   return null;
 }
-/** ВРЕМЕННАЯ диагностика: скан турниров ФФСПб вокруг формульного id когорты — чтобы увидеть
- *  реальные id/возраст/сезон/стадии и понять, почему 2013 не резолвится. Удалить после отладки. */
-export async function ffspbScanDebug(year: number, radius = 30): Promise<unknown> {
-  const center = FFSPB_SEED_TID + (year - FFSPB_SEED_YEAR);
-  const seedSeason = await ffspbApiGet(`/tournaments/${FFSPB_SEED_TID}`).then(ffspbSeasonOf).catch((e) => `ERR ${String(e).slice(0, 30)}`);
-  const tids: number[] = [];
-  for (let t = center - radius; t <= center + radius; t++) tids.push(t);
-  const rows = await pmap(tids, 8, async (tid) => {
-    try {
-      const t = await ffspbApiGet(`/tournaments/${tid}`, 1);
-      return { tid, name: String(t.name ?? t.title ?? '').slice(0, 60), age: ffspbAgeOf(t), season: ffspbSeasonOf(t), stages: Array.isArray(t.stages) ? (t.stages as unknown[]).length : 0 };
-    } catch (e) { return { tid, err: String(e).slice(0, 24) }; }
-  });
-  return { year, center, seedSeason, hits: rows.filter((r) => !('err' in r)) };
-}
 /** Официальная таблица ФФСПб по году рождения через API. Турнир резолвим формулой+поиском
  *  (resolveFfspbTournament); имена сшиваются с рейтингом AvanData по id. */
 async function ffspbDirectStandings(seasonId: number, year: number): Promise<DivisionGroup<ClubStandRow>[] | null> {
