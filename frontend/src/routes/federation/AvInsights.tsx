@@ -22,6 +22,9 @@ export function FederationAvInsights() {
   const fq = fedQ(year, division);
   // RAE и «сила дивизионов» — кросс-дивизионные диагнозы (реестр без дивизиона / сравнение лиг), без фильтра.
   const ae = useQuery({ queryKey: ['av', 'age', year], queryFn: () => api<AgeEffect>(`/federation/av/age-effect${q}`) });
+  // Перекос по лигам — RAE отдельно для Высшей и Первой (мост по имени на бэке).
+  const aeV = useQuery({ queryKey: ['av', 'age', year, 'Высшая'], queryFn: () => api<AgeEffect>(`/federation/av/age-effect${fedQ(year, 'Высшая')}`) });
+  const aeP = useQuery({ queryKey: ['av', 'age', year, 'Первая'], queryFn: () => api<AgeEffect>(`/federation/av/age-effect${fedQ(year, 'Первая')}`) });
   const ds = useQuery({ queryKey: ['av', 'divstr', year], queryFn: () => api<{ divisions: DivStrength[] }>(`/federation/av/division-strength${q}`) });
   // Лучшие — внутри выбранной лиги.
   const pq = useQuery({ queryKey: ['av', 'players', year, division], queryFn: () => api<{ players: RPlayer[] }>(`/federation/av/players${fq}`) });
@@ -63,6 +66,36 @@ export function FederationAvInsights() {
           );
         })()}
       </section>
+
+      {/* Перекос по лигам — чем выше лига, тем сильнее отбор по физвозрасту */}
+      {ae.data && aeV.data && aeP.data && (() => {
+        const rows = [
+          { l: 'Регион', d: ae.data, hl: false },
+          { l: 'Высшая лига', d: aeV.data, hl: true },
+          { l: 'Первая лига', d: aeP.data, hl: false },
+        ];
+        const maxSkew = Math.max(...rows.map((r) => r.d.skew ?? 0), 1);
+        return (
+          <section className="av-surface av-pad-lg av-rise">
+            <div className="av-section">
+              <div>
+                <h2 className="av-section-title">Перекос по лигам</h2>
+                <p className="av-section-sub">Где сильнее отбор в пользу физически старших</p>
+              </div>
+            </div>
+            <div className="av-leagueskew">
+              {rows.map((x) => (
+                <div key={x.l} className="av-lskew">
+                  <div className="av-lskew__l">{x.l}<b>{num(x.d.total)} игроков · Q1 {x.d.q1pct}% ⁄ Q4 {x.d.q4pct}%</b></div>
+                  <div className="av-lskew__bar"><span style={{ width: `${Math.min(100, ((x.d.skew ?? 0) / maxSkew) * 100)}%`, background: x.hl ? 'var(--av-magenta)' : 'var(--av-cyan)' }} /></div>
+                  <div className="av-lskew__n" style={{ color: x.hl ? 'var(--av-magenta)' : 'var(--av-cyan)' }}>×{x.d.skew ?? '—'}</div>
+                </div>
+              ))}
+            </div>
+            <p className="av-why" style={{ marginTop: 14 }}>Чем выше лига — тем сильнее перекос: ближе к топу отбор в пользу физически старших внутри возраста жёстче, поздно-рождённых отсеивают активнее.</p>
+          </section>
+        );
+      })()}
 
       {/* НАХОДКА 2 — Пропасть лиг (концентрация талантов переехала в «Клубы») */}
       <section className="av-surface av-finding av-finding--cyan av-pad-lg av-rise">

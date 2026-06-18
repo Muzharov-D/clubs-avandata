@@ -164,7 +164,7 @@ export async function federationRoutes(app: FastifyInstance) {
   app.get('/av/age-effect', async (req, reply) => {
     if (avOff(reply)) return { error: 'AVANDATA_API_KEY не задан', code: 'AVANDATA_OFF' };
     const season = Number((req.query as { season?: string }).season) || AV_SEASON;
-    return await ageEffect(season, yearOf(req));
+    return await ageEffect(season, yearOf(req), divisionOf(req));
   });
 
   /** GET /federation/av/concentration?year= — монополия таланта. */

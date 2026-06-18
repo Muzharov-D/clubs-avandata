@@ -453,13 +453,26 @@ export interface AgeEffect {
   /** Перекос Q1→Q4: во сколько раз больше рождённых в начале года. */
   skew: number | null;
 }
-export async function ageEffect(seasonId: number, year?: number): Promise<AgeEffect> {
-  return cached(`age:${seasonId}:${year ?? 0}`, TTL, async () => {
+// Нормализация ФИО для матчинга summaries↔division-игроков (порядок Имя/Фамилия
+// неважен, ё=е). Полные даты только в summaries (без дивизиона), дивизион только
+// в analyzed-игроках (без полной даты) — мост по имени.
+const normName = (s: string): string => s.toLowerCase().replace(/ё/g, 'е').split(/\s+/).filter(Boolean).sort().join(' ');
+
+export async function ageEffect(seasonId: number, year?: number, division?: string): Promise<AgeEffect> {
+  return cached(`age:${seasonId}:${year ?? 0}:${division ?? ''}`, TTL, async () => {
     const all = await cached('summaries', TTL, () => getAllPlayerSummaries());
+    // Перекос по конкретной лиге: оставляем только summaries, чьё ФИО есть среди
+    // разобранных игроков этого дивизиона (у них полная дата есть в summaries).
+    let names: Set<string> | null = null;
+    if (division) {
+      const dps = await regionPlayers(seasonId, undefined, division);
+      names = new Set(dps.map((p) => normName(p.name)));
+    }
     const counts = [0, 0, 0, 0];
     let total = 0;
     for (const p of all) {
       if (!p.dateOfBirth) continue;
+      if (names && !names.has(normName(`${p.lastname ?? ''} ${p.firstname ?? ''}`))) continue;
       const d = new Date(p.dateOfBirth);
       const y = d.getUTCFullYear();
       if (year != null && y !== year) continue;
@@ -498,13 +511,16 @@ export async function talentConcentration(seasonId: number, year?: number, divis
     arr.sort((a, b) => (b.rating as number) - (a.rating as number));
     pool.push(...arr.slice(0, 30));
   }
-  // Группируем по РЕАЛЬНОМУ клубу (срезаем год команды).
+  // Группируем по РЕАЛЬНОМУ клубу. Ключ — нормализованное имя (регистр/дефис/«ФК»),
+  // иначе «ФК Зенит»≠«Фк Зенит», «Кировец Восхождение»≠«Кировец-Восхождение» —
+  // один клуб двоился, % размазывался. normTeam различает СШ/СШОР (не схлопывает).
   const byClub = new Map<string, { club: string; logo: string | null; n: number }>();
   for (const p of pool) {
-    const club = clubName(p.club);
-    if (!club) continue;
-    const e = byClub.get(club) ?? { club, logo: p.clubLogo, n: 0 };
-    e.n += 1; byClub.set(club, e);
+    const display = clubName(p.club);
+    if (!display) continue;
+    const key = normTeam(display);
+    const e = byClub.get(key) ?? { club: display, logo: p.clubLogo, n: 0 };
+    e.n += 1; byClub.set(key, e);
   }
   const ranked = [...byClub.values()].sort((a, b) => b.n - a.n);
   const sum = (arr: typeof ranked) => arr.reduce((s, c) => s + c.n, 0);

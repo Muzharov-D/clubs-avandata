@@ -55,8 +55,11 @@ export function FederationAvHome() {
   const pl = useQuery({ queryKey: ['av', 'players', year, division], queryFn: () => api<{ players: RPlayer[] }>(`/federation/av/players${fedQ(year, division)}`) });
   const d = ov.data;
   const results = rs.data?.results ?? [];
-  const stGroups = (st.data?.groups ?? []).filter((g) => inDivision(g.division, division));
-  const crGroups = (cr.data?.groups ?? []).filter((g) => inDivision(g.division, division));
+  // Таблицы и рейтинг показывают ОБЕ лиги (Высшая + Первая) — отдельными блоками,
+  // независимо от тоггла (тоггл фильтрует пульс/результаты/лучших). Сортируем Высшую вперёд.
+  const divOrder = (d: string) => (inDivision(d, 'Высшая') ? 0 : inDivision(d, 'Первая') ? 1 : 2);
+  const stGroups = [...(st.data?.groups ?? [])].sort((a, b) => divOrder(a.division) - divOrder(b.division));
+  const crGroups = [...(cr.data?.groups ?? [])].sort((a, b) => divOrder(a.division) - divOrder(b.division));
   const skew = ag.data?.skew ?? null;
   const topPlayers = (pl.data?.players ?? []).filter((p) => p.rating != null).slice(0, 8);
 
@@ -164,17 +167,16 @@ export function FederationAvHome() {
           : <div className="av-fixtures">{keyMatches.map((m) => <Fixture key={m.id} m={m} onOpen={setSelected} />)}</div>}
       </section>
 
-      {/* Таблицы + рейтинг клубов */}
-      <div className="av-cols-main av-rise">
-        <section className="av-surface av-pad-lg">
-          <div className="av-section"><h2 className="av-section-title">Турнирные таблицы</h2></div>
-          {st.isLoading ? <Sk /> : stGroups.length === 0 ? <div className="av-note">Нет данных.</div> : stGroups.map((g) => <StandingsBlock key={g.division} g={g} />)}
-        </section>
-        <section className="av-surface av-pad-lg">
-          <div className="av-section"><h2 className="av-section-title">Рейтинг клубов</h2></div>
-          {cr.isLoading ? <Sk /> : crGroups.length === 0 ? <div className="av-note">Нет данных.</div> : crGroups.map((g) => <RatingsBlock key={g.division} g={g} onClub={setSelectedClub} />)}
-        </section>
-      </div>
+      {/* Турнирные таблицы — обе лиги, во всю ширину (имена клубов целиком) */}
+      <section className="av-surface av-pad-lg av-rise">
+        <div className="av-section"><h2 className="av-section-title">Турнирные таблицы</h2></div>
+        {st.isLoading ? <Sk /> : stGroups.length === 0 ? <div className="av-note">Нет данных.</div> : stGroups.map((g) => <StandingsBlock key={g.division} g={g} />)}
+      </section>
+      {/* Рейтинг клубов — обе лиги, во всю ширину */}
+      <section className="av-surface av-pad-lg av-rise">
+        <div className="av-section"><h2 className="av-section-title">Рейтинг клубов</h2></div>
+        {cr.isLoading ? <Sk /> : crGroups.length === 0 ? <div className="av-note">Нет данных.</div> : crGroups.map((g) => <RatingsBlock key={g.division} g={g} onClub={setSelectedClub} />)}
+      </section>
 
       {selected && <MatchDetail base={toBase(selected)} onClose={() => setSelected(null)} />}
       {selectedClub != null && <ClubCard clubId={selectedClub} onClose={() => setSelectedClub(null)} />}
