@@ -461,18 +461,16 @@ const normName = (s: string): string => s.toLowerCase().replace(/ё/g, 'е').spl
 export async function ageEffect(seasonId: number, year?: number, division?: string): Promise<AgeEffect> {
   return cached(`age:${seasonId}:${year ?? 0}:${division ?? ''}`, TTL, async () => {
     const all = await cached('summaries', TTL, () => getAllPlayerSummaries());
-    // Перекос по конкретной лиге: оставляем только summaries, чьё ФИО есть среди
-    // разобранных игроков этого дивизиона (у них полная дата есть в summaries).
-    let names: Set<string> | null = null;
-    if (division) {
-      const dps = await regionPlayers(seasonId, undefined, division);
-      names = new Set(dps.map((p) => normName(p.name)));
-    }
+    // ТОЛЬКО разобранные игроки лиг (не весь реестр 4628 — там много несыгравших).
+    // Без дивизиона = обе лиги вместе; с дивизионом = одна лига. Полные даты берём
+    // из summaries по ФИО (мост: дивизион только у analyzed, даты только в summaries).
+    const dps = await regionPlayers(seasonId, undefined, division);
+    const names = new Set(dps.map((p) => normName(p.name)));
     const counts = [0, 0, 0, 0];
     let total = 0;
     for (const p of all) {
       if (!p.dateOfBirth) continue;
-      if (names && !names.has(normName(`${p.lastname ?? ''} ${p.firstname ?? ''}`))) continue;
+      if (!names.has(normName(`${p.lastname ?? ''} ${p.firstname ?? ''}`))) continue;
       const d = new Date(p.dateOfBirth);
       const y = d.getUTCFullYear();
       if (year != null && y !== year) continue;

@@ -57,7 +57,7 @@ export function FederationAvInsights() {
                 </div>
                 <div>
                   <h2 className="av-verdict" style={{ marginTop: 0 }}>Регион тихо теряет поздно-рождённых: в начале года отбирают в <b>{ae.data.skew ?? '—'}×</b> больше игроков, чем в конце</h2>
-                  <p className="av-why">На <b style={{ color: 'var(--av-text)' }}>{num(ae.data.total)}</b> игроках с известной датой рождения. Эталон равномерности — 25% на квартал. Перекос к Q1 = отбор в пользу физически старших внутри возраста; поздних отсеивают, не замечая.</p>
+                  <p className="av-why">На <b style={{ color: 'var(--av-text)' }}>{num(ae.data.total)}</b> разобранных игроках лиг (Высшая + Первая) с известной датой рождения. Эталон равномерности — 25% на квартал. Перекос к Q1 = отбор в пользу физически старших внутри возраста; поздних отсеивают, не замечая.</p>
                   {lost > 0 && <p className="av-stakes">Ставка: ≈ <b>{num(lost)}</b> игроков поздних кварталов недосчитались относительно равномерности — отсеяны не по способностям, а по месяцу рождения.</p>}
                 </div>
               </div>
@@ -67,10 +67,9 @@ export function FederationAvInsights() {
         })()}
       </section>
 
-      {/* Воронка отбора — перекос РАСТЁТ от реестра к лигам (это ступени, не среднее) */}
-      {ae.data && aeV.data && aeP.data && (() => {
+      {/* Перекос по лигам — Высшая vs Первая (разобранные игроки) */}
+      {aeV.data && aeP.data && (() => {
         const rows = [
-          { l: 'Весь реестр', d: ae.data, hl: false },
           { l: 'Первая лига', d: aeP.data, hl: false },
           { l: 'Высшая лига', d: aeV.data, hl: true },
         ];
@@ -79,8 +78,8 @@ export function FederationAvInsights() {
           <section className="av-surface av-pad-lg av-rise">
             <div className="av-section">
               <div>
-                <h2 className="av-section-title">Отбор усиливает перекос</h2>
-                <p className="av-section-sub">Ступени отбора, не среднее — от полного реестра к разобранным игрокам лиг</p>
+                <h2 className="av-section-title">Перекос по лигам</h2>
+                <p className="av-section-sub">Где сильнее отбор в пользу физически старших</p>
               </div>
             </div>
             <div className="av-leagueskew">
@@ -92,7 +91,7 @@ export function FederationAvInsights() {
                 </div>
               ))}
             </div>
-            <p className="av-why" style={{ marginTop: 14 }}>Это <b style={{ color: 'var(--av-text)' }}>не среднее, а воронка</b>: «весь реестр» — все зарегистрированные (широкая база, перекос слабее); разобранные игроки лиг уже <b style={{ color: 'var(--av-text)' }}>отобраны</b>, и чем выше лига, тем сильнее перекос концентрируется. Сам отбор усиливает эффект возраста — поздно-рождённых отсеивают тем активнее, чем ближе к топу.</p>
+            <p className="av-why" style={{ marginTop: 14 }}><b style={{ color: 'var(--av-text)' }}>Высшая лига</b> отсеивает поздно-рождённых активнее Первой: чем выше уровень, тем жёстче перекос в пользу физически старших внутри возраста.</p>
           </section>
         );
       })()}
