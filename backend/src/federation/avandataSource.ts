@@ -387,65 +387,60 @@ export interface ClubStandRow { id: number; name: string; logo: string | null; d
 export interface ClubRatingRow { id: number; name: string; logo: string | null; division: string; rating: number; }
 export interface DivisionGroup<T> { division: string; rows: T[]; }
 
-// ─── Прямой источник ФФСПб (минуя протухшее зеркало avandata по таблицам) ─────
+// ─── Прямой источник ФФСПб через ОФИЦИАЛЬНЫЙ API (минуя протухшее зеркало) ─────
 // back.avandata.ru по ffspbStatistics устаревает и ТЕРЯЕТ команды (напр. Алмаз 2011:
-// в зеркале 7 команд, в реале 8). Официал — stat.ffspb.org, но он блокирует Render
-// по IP. Решение: тянем страницу турнира ЧЕРЕЗ Vercel-прокси (Vercel не заблокирован),
-// парсим встроенный JSON (Наградион SSR). Любая ошибка → тихий фолбэк на зеркало.
-const FFSPB_WEB = (process.env.FFSPB_WEB_BASE ?? 'https://clubs-avandata.vercel.app/ffspb-page').replace(/\/+$/, '');
+// в зеркале 7, в реале 8). Официал — stat.ffspb.org/api (X-AUTH-TOKEN, JSON-LD/Hydra),
+// блокирует Render по IP → ходим ЧЕРЕЗ Vercel-прокси /ffspb-api/. Нет ключа / ошибка
+// → тихий фолбэк на зеркало. Спека: legirus-screen/docs/FFSPB_API_GUIDE.md.
+const FFSPB_API = (process.env.FFSPB_API_BASE ?? 'https://clubs-avandata.vercel.app/ffspb-api').replace(/\/+$/, '');
+const FFSPB_KEY = process.env.FFSPB_API_KEY ?? '';
 const FFSPB_SEED_TID = Number(process.env.FFSPB_SEED_TID ?? 44324);   // турнир «до 16 лет» = 2011 г.р.
 const FFSPB_SEED_YEAR = Number(process.env.FFSPB_SEED_YEAR ?? 2011);
-async function ffspbWebGet(path: string): Promise<string> {
-  const res = await fetch(`${FFSPB_WEB}${path}`, { headers: { 'User-Agent': 'Mozilla/5.0', Accept: 'text/html' }, signal: AbortSignal.timeout(12000) });
-  if (!res.ok) throw new Error(`ffspb-web ${res.status} ${path}`);
-  return res.text();
+async function ffspbApiGet(path: string): Promise<Record<string, unknown>> {
+  const res = await fetch(`${FFSPB_API}${path}`, { headers: { Accept: 'application/ld+json', 'X-AUTH-TOKEN': FFSPB_KEY }, signal: AbortSignal.timeout(12000) });
+  if (!res.ok) throw new Error(`ffspb-api ${res.status} ${path}`);
+  return res.json() as Promise<Record<string, unknown>>;
 }
-interface FfspbTeamRow { ffspbId: number; name: string; logo: string | null; played: number; won: number; drawn: number; lost: number; goalDiff: number; points: number; at: number }
-/** Парсит таблицу обеих лиг из встроенного JSON страницы турнира ФФСПб. */
-function parseFfspbStandings(html: string): { division: string; rows: FfspbTeamRow[] }[] {
-  const re = /"name":"<a href=\\?"https:\/\/stat\.ffspb\.org\/tournament\d+\/team\/(\d+)\/players\\?">([^<]+)<\/a>","shield":"([^"]*)","stats":\{"games":"(\d+)","wins":"(\d+)","draws":"(\d+)","loses":"(\d+)","difference":"([^"]*)","points":"(\d+)"\}/g;
-  const teams: FfspbTeamRow[] = [];
-  let m: RegExpExecArray | null;
-  while ((m = re.exec(html))) {
-    const d = (m[8] ?? '').split(/\s*-\s*/);
-    const gf = Number(d[0]) || 0, ga = Number(d[1]) || 0;
-    teams.push({ ffspbId: Number(m[1]), name: (m[2] ?? '').trim(), logo: m[3] || null, played: Number(m[4]), won: Number(m[5]), drawn: Number(m[6]), lost: Number(m[7]), goalDiff: gf - ga, points: Number(m[9]), at: m.index });
-  }
-  if (!teams.length) return [];
-  const firstAt = teams[0]!.at, lastAt = teams[teams.length - 1]!.at;
-  const headers: { name: string; at: number }[] = [];
-  for (const name of ['Высшая лига', 'Первая лига', 'Вторая лига']) {
-    let from = firstAt - 1500, i: number;
-    while ((i = html.indexOf(name, from)) >= 0 && i <= lastAt) { headers.push({ name, at: i }); from = i + 1; }
-  }
-  headers.sort((a, b) => a.at - b.at);
-  const divOf = (at: number) => { let d = headers[0]?.name ?? 'Лига'; for (const h of headers) if (h.at <= at) d = h.name; return d; };
-  const groups = new Map<string, FfspbTeamRow[]>();
-  for (const t of teams) { const d = divOf(t.at); (groups.get(d) ?? groups.set(d, []).get(d)!).push(t); }
-  const order = (n: string) => (/Высшая/i.test(n) ? 0 : /Первая/i.test(n) ? 1 : 2);
-  return [...groups.entries()].map(([division, rows]) => ({ division, rows })).sort((a, b) => order(a.division) - order(b.division));
-}
-/** Официальная таблица ФФСПб по году рождения. id когорты = SEED + (year−SEED_YEAR),
- *  сверяется с возрастом «до N лет» в заголовке страницы (иначе формула не сошлась → null). */
+interface FfspbApiTeam { position?: number; teamName?: string; team?: { id?: number | string; name?: string; logoSrc?: string | null; thumbnails?: { square_xs?: string } }; stats?: { games?: number; wins?: number; draws?: number; loses?: number; scored?: number; missed?: number; difference?: number; points?: number } }
+interface FfspbApiGroup { groupName?: string; teams?: FfspbApiTeam[] }
+/** Официальная таблица ФФСПб по году рождения через API. id когорты = SEED + (year−SEED_YEAR),
+ *  сверяется с «до N лет» в названии турнира; имена сшиваются с рейтингом AvanData по id. */
 async function ffspbDirectStandings(seasonId: number, year: number): Promise<DivisionGroup<ClubStandRow>[] | null> {
+  if (!FFSPB_KEY) return null;                            // нет ключа → зеркало
   const ref = (await listTournaments(seasonId)).find((r) => r.ageFrom === year);
   if (!ref) return null;
   const ageM = (ref.fullTitle ?? '').match(/до (\d+) лет/) ?? (ref.category ?? '').match(/(\d+)/);
   const expectAge = ageM ? Number(ageM[1]) : null;
   const tid = FFSPB_SEED_TID + (year - FFSPB_SEED_YEAR);
-  const html = await ffspbWebGet(`/tournament${tid}`);
-  if (expectAge != null && !new RegExp(`до ${expectAge} лет`).test(html)) return null; // не та когорта
-  const parsed = parseFfspbStandings(html);
-  if (!parsed.length) return null;
+  if (expectAge != null) {                                // верификация когорты: отклоняем лишь явно ДРУГОЙ возраст
+    try {
+      const t = await ffspbApiGet(`/tournaments/${tid}`);
+      const found = String(t.name ?? t.title ?? '').match(/до (\d+) лет/);
+      if (found && Number(found[1]) !== expectAge) return null; // не та когорта → зеркало
+    } catch { /* не свериться — продолжаем по формуле */ }
+  }
+  const data = await ffspbApiGet(`/standings?tournament=${encodeURIComponent(`/api/tournaments/${tid}`)}&itemsPerPage=100`);
+  const groupsRaw = ((data['hydra:member'] ?? (data as { member?: unknown }).member ?? []) as FfspbApiGroup[]);
+  if (!groupsRaw.length) return null;
   const nameToId = new Map<string, number>();             // имя ФФСПб → avandata id (для джойна с рейтингом)
   try { const ratings = await regionClubRatings(seasonId, year); for (const g of ratings) for (const r of g.rows) nameToId.set(normTeam(r.name), r.id); } catch { /* без джойна */ }
-  return parsed.map((g) => ({
-    division: g.division,
-    rows: g.rows.slice(0, 12).map((t) => ({
-      id: nameToId.get(normTeam(t.name)) ?? t.ffspbId, name: t.name, logo: t.logo, division: g.division,
-      played: t.played, won: t.won, drawn: t.drawn, lost: t.lost, goalDiff: t.goalDiff, points: t.points,
-    })),
-  }));
+  const order = (n: string) => (/Высшая/i.test(n) ? 0 : /Первая/i.test(n) ? 1 : 2);
+  const groups = groupsRaw.map((g) => {
+    const division = g.groupName ?? 'Лига';
+    const rows = (g.teams ?? []).map((t) => {
+      const team = t.team ?? {};
+      const name = (t.teamName ?? team.name ?? '').trim();
+      const s = t.stats ?? {};
+      const gf = Number(s.scored ?? 0), ga = Number(s.missed ?? 0);
+      return {
+        id: nameToId.get(normTeam(name)) ?? (team.id != null ? Number(team.id) : 0), name, logo: team.logoSrc ?? team.thumbnails?.square_xs ?? null, division,
+        played: Number(s.games ?? 0), won: Number(s.wins ?? 0), drawn: Number(s.draws ?? 0), lost: Number(s.loses ?? 0),
+        goalDiff: typeof s.difference === 'number' ? s.difference : gf - ga, points: Number(s.points ?? 0),
+      };
+    }).sort((a, b) => b.points - a.points || b.goalDiff - a.goalDiff);
+    return { division, rows };
+  }).sort((a, b) => order(a.division) - order(b.division));
+  return groups.some((g) => g.rows.length) ? groups : null;
 }
 
 export async function regionStandings(seasonId: number, year?: number): Promise<DivisionGroup<ClubStandRow>[]> {
