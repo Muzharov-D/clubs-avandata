@@ -420,21 +420,54 @@ async function ffspbApiGet(path: string, attempts = 3): Promise<Record<string, u
 }
 interface FfspbApiTeam { position?: number; teamName?: string; team?: { id?: number | string; name?: string; logoSrc?: string | null; thumbnails?: { square_xs?: string } }; stats?: { games?: number; wins?: number; draws?: number; loses?: number; scored?: number; missed?: number; difference?: number; points?: number } }
 interface FfspbApiGroup { groupName?: string; teams?: FfspbApiTeam[] }
-/** Официальная таблица ФФСПб по году рождения через API. id когорты = SEED + (year−SEED_YEAR),
- *  сверяется с «до N лет» в названии турнира; имена сшиваются с рейтингом AvanData по id. */
+// Возраст когорты «до N лет» и сезон из объекта турнира ФФСПб (сезон бывает объектом или строкой).
+const ffspbAgeOf = (t: Record<string, unknown>): number | null => { const m = String(t.name ?? t.title ?? '').match(/до (\d+) лет/); return m ? Number(m[1]) : null; };
+const ffspbSeasonOf = (t: Record<string, unknown>): string => { const s = t.season as { name?: string } | string | undefined; return String((s && typeof s === 'object' ? s.name : s) ?? '').trim(); };
+const ffspbHasStages = (t: Record<string, unknown>): boolean => Array.isArray(t.stages) && (t.stages as unknown[]).length > 0;
+/** Резолв турнира ФФСПб для когорты года рождения. Сперва ФОРМУЛА (id = SEED+offset) — быстро
+ *  и верно для большинства когорт, поведение как раньше (мягкая сверка возраста). Если формула
+ *  не дала валидный турнир (как для 2013 — id когорты не совпадает с формулой) — ПОИСК по
+ *  соседним id со СТРОГОЙ валидацией: возраст == ожидаемый И сезон == как у заведомо рабочего
+ *  SEED-турнира (2011). Так нельзя подцепить чужую когорту/сезон. Не нашли → null (зеркало). */
+async function resolveFfspbTournament(year: number, expectAge: number | null): Promise<Record<string, unknown> | null> {
+  const formulaTid = FFSPB_SEED_TID + (year - FFSPB_SEED_YEAR);
+  // быстрый путь — формула, мягкая сверка (как было: реджектим только при ЯВНОМ несовпадении возраста)
+  try {
+    const t = await ffspbApiGet(`/tournaments/${formulaTid}`);
+    const age = ffspbAgeOf(t);
+    if (ffspbHasStages(t) && !(expectAge != null && age != null && age !== expectAge)) return t;
+  } catch { /* формула не сработала → поиск */ }
+  if (expectAge == null) return null;                       // нечем строго валидировать → зеркало
+  let anchorSeason = '';
+  try { anchorSeason = ffspbSeasonOf(await ffspbApiGet(`/tournaments/${FFSPB_SEED_TID}`)); } catch { /* нет якоря сезона */ }
+  if (!anchorSeason) return null;
+  const SCAN = 16;                                          // радиус поиска по соседним id (когорты идут рядом)
+  for (let d = 1; d <= SCAN; d++) {
+    for (const cand of [formulaTid + d, formulaTid - d]) {
+      try {
+        const t = await ffspbApiGet(`/tournaments/${cand}`, 1); // 1 попытка: кандидаты в основном мимо
+        if (ffspbHasStages(t) && ffspbAgeOf(t) === expectAge && ffspbSeasonOf(t) === anchorSeason) {
+          logger.info({ year, formulaTid, foundTid: cand, expectAge, season: anchorSeason }, 'ffspb tid найден поиском');
+          return t;
+        }
+      } catch { /* следующий кандидат */ }
+    }
+  }
+  logger.warn({ year, formulaTid, expectAge }, 'ffspb турнир не найден поиском → зеркало');
+  return null;
+}
+/** Официальная таблица ФФСПб по году рождения через API. Турнир резолвим формулой+поиском
+ *  (resolveFfspbTournament); имена сшиваются с рейтингом AvanData по id. */
 async function ffspbDirectStandings(seasonId: number, year: number): Promise<DivisionGroup<ClubStandRow>[] | null> {
   if (!FFSPB_KEY) return null;                            // нет ключа → зеркало
   const ref = (await listTournaments(seasonId)).find((r) => r.ageFrom === year);
   if (!ref) return null;
   const ageM = (ref.fullTitle ?? '').match(/до (\d+) лет/) ?? (ref.category ?? '').match(/(\d+)/);
   const expectAge = ageM ? Number(ageM[1]) : null;
-  const tid = FFSPB_SEED_TID + (year - FFSPB_SEED_YEAR);
-  // Vercel-прокси НЕ форвардит query → берём таблицу ПУТЕВЫМИ эндпоинтами:
-  // /tournaments/{id} даёт стадии (лиги) + название (для сверки когорты), затем
-  // /standings/{stageId}-1 — готовую группу. ?tournament=IRI через прокси не работает.
-  const t = await ffspbApiGet(`/tournaments/${tid}`);
-  const found = String(t.name ?? t.title ?? '').match(/до (\d+) лет/);
-  if (expectAge != null && found && Number(found[1]) !== expectAge) return null; // не та когорта → зеркало
+  // Vercel-прокси НЕ форвардит query → таблицу берём ПУТЕВЫМИ эндпоинтами. Турнир резолвим
+  // формулой, а если не сошлось (2013) — поиском по сезону+возрасту. ?tournament=IRI не работает.
+  const t = await resolveFfspbTournament(year, expectAge);
+  if (!t) return null;                                     // официального турнира не нашли → зеркало
   const stages = (Array.isArray(t.stages) ? t.stages : []) as Array<{ id?: number; name?: string }>;
   if (!stages.length) return null;
   const nameToId = new Map<string, number>();             // имя ФФСПб → avandata id (джойн с рейтингом)
