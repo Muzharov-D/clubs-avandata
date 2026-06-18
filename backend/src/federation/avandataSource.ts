@@ -609,7 +609,10 @@ export async function federationHealth(seasonId: number): Promise<FederationHeal
     if (topTeams === 0) issues.push('нет Высшей лиги');
     if (ghosts > 0) issues.push(`${ghosts} призрак(ов) рейтинга`);
     if (unmatched > 0) issues.push(`${unmatched} несшитых в таблице`);
-    const ok = source === 'ffspb' && !degraded && topTeams > 0 && ghosts === 0 && unmatched === 0;
+    // ok = ДАННЫЕ полны и джойн чист («команда не пропала») — это и есть алертный сигнал.
+    // Источник degraded (зеркало) — отдельный, более мягкий флаг, НЕ фейл: на зеркале данные
+    // тоже полны, просто провенанс ниже (виден бейджем). Иначе любой блип ФФСПб красит health.
+    const ok = topTeams > 0 && ghosts === 0 && unmatched === 0;
     cohorts.push({ year, source, degraded, topDivision: sg?.division ?? null, topTeams, rated: cg?.rows.length ?? 0, ghosts, unmatched, ok, issues });
   }
   return {
