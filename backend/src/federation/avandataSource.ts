@@ -397,6 +397,7 @@ const FFSPB_API = (process.env.FFSPB_API_BASE ?? 'https://clubs-avandata.vercel.
 const FFSPB_KEY = process.env.FFSPB_API_KEY ?? '';
 const FFSPB_SEED_TID = Number(process.env.FFSPB_SEED_TID ?? 44324);   // турнир «до 16 лет» = 2011 г.р.
 const FFSPB_SEED_YEAR = Number(process.env.FFSPB_SEED_YEAR ?? 2011);
+const FFSPB_SEED_AGE = Number(process.env.FFSPB_SEED_AGE ?? 16);      // «до N лет» у SEED-когорты (надёжнее метки AvanData)
 // 404 = ресурса нет (для подтаблиц — «стадий больше нет», легальный стоп, не ретраим).
 class FfspbHttpError extends Error { constructor(public readonly status: number, path: string) { super(`ffspb-api ${status} ${path}`); } }
 // Транзиентные сбои прокси/ФФСПб (5xx/сеть/таймаут) РЕТРАИМ — иначе один блип молча роняет
@@ -431,29 +432,33 @@ const ffspbHasStages = (t: Record<string, unknown>): boolean => Array.isArray(t.
  *  SEED-турнира (2011). Так нельзя подцепить чужую когорту/сезон. Не нашли → null (зеркало). */
 async function resolveFfspbTournament(year: number, expectAge: number | null): Promise<Record<string, unknown> | null> {
   const formulaTid = FFSPB_SEED_TID + (year - FFSPB_SEED_YEAR);
-  // быстрый путь — формула, мягкая сверка (как было: реджектим только при ЯВНОМ несовпадении возраста)
+  // Возраст когорты «до N лет» считаем ОТ SEED (16,15,14… для 2011,2012,2013…), а НЕ от метки
+  // AvanData (expectAge) — она расходится с ФФСПб и ломала поиск 2013 (у ФФСПб «до 14», id 44327;
+  // формула 44326 — пропуск в нумерации). По возрасту+сезону находим ближайший по id турнир.
+  const cohortAge = FFSPB_SEED_AGE - (year - FFSPB_SEED_YEAR);
+  // быстрый путь — формула, мягкая сверка (реджектим только при ЯВНОМ несовпадении возраста)
   try {
     const t = await ffspbApiGet(`/tournaments/${formulaTid}`);
     const age = ffspbAgeOf(t);
-    if (ffspbHasStages(t) && !(expectAge != null && age != null && age !== expectAge)) return t;
+    if (ffspbHasStages(t) && !(age != null && age !== cohortAge)) return t;
   } catch { /* формула не сработала → поиск */ }
-  if (expectAge == null) return null;                       // нечем строго валидировать → зеркало
+  // поиск: ближайший по id турнир той же когорты (возраст == cohortAge) в том же сезоне, что SEED.
   let anchorSeason = '';
   try { anchorSeason = ffspbSeasonOf(await ffspbApiGet(`/tournaments/${FFSPB_SEED_TID}`)); } catch { /* нет якоря сезона */ }
   if (!anchorSeason) return null;
-  const SCAN = 16;                                          // радиус поиска по соседним id (когорты идут рядом)
+  const SCAN = 16;                                          // радиус по соседним id (когорты рядом, но с пропусками)
   for (let d = 1; d <= SCAN; d++) {
     for (const cand of [formulaTid + d, formulaTid - d]) {
       try {
-        const t = await ffspbApiGet(`/tournaments/${cand}`, 1); // 1 попытка: кандидаты в основном мимо
-        if (ffspbHasStages(t) && ffspbAgeOf(t) === expectAge && ffspbSeasonOf(t) === anchorSeason) {
-          logger.info({ year, formulaTid, foundTid: cand, expectAge, season: anchorSeason }, 'ffspb tid найден поиском');
+        const t = await ffspbApiGet(`/tournaments/${cand}`, 2); // 2 попытки: не пропустить нужный из-за блипа
+        if (ffspbHasStages(t) && ffspbAgeOf(t) === cohortAge && ffspbSeasonOf(t) === anchorSeason) {
+          logger.info({ year, formulaTid, foundTid: cand, cohortAge, expectAge, season: anchorSeason }, 'ffspb tid найден поиском');
           return t;
         }
       } catch { /* следующий кандидат */ }
     }
   }
-  logger.warn({ year, formulaTid, expectAge }, 'ffspb турнир не найден поиском → зеркало');
+  logger.warn({ year, formulaTid, cohortAge, expectAge }, 'ffspb турнир не найден поиском → зеркало');
   return null;
 }
 /** ВРЕМЕННАЯ диагностика: скан турниров ФФСПб вокруг формульного id когорты — чтобы увидеть
