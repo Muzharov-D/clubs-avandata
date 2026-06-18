@@ -67,20 +67,20 @@ export function FederationAvInsights() {
         })()}
       </section>
 
-      {/* Перекос по лигам — чем выше лига, тем сильнее отбор по физвозрасту */}
+      {/* Воронка отбора — перекос РАСТЁТ от реестра к лигам (это ступени, не среднее) */}
       {ae.data && aeV.data && aeP.data && (() => {
         const rows = [
-          { l: 'Регион', d: ae.data, hl: false },
-          { l: 'Высшая лига', d: aeV.data, hl: true },
+          { l: 'Весь реестр', d: ae.data, hl: false },
           { l: 'Первая лига', d: aeP.data, hl: false },
+          { l: 'Высшая лига', d: aeV.data, hl: true },
         ];
         const maxSkew = Math.max(...rows.map((r) => r.d.skew ?? 0), 1);
         return (
           <section className="av-surface av-pad-lg av-rise">
             <div className="av-section">
               <div>
-                <h2 className="av-section-title">Перекос по лигам</h2>
-                <p className="av-section-sub">Где сильнее отбор в пользу физически старших</p>
+                <h2 className="av-section-title">Отбор усиливает перекос</h2>
+                <p className="av-section-sub">Ступени отбора, не среднее — от полного реестра к разобранным игрокам лиг</p>
               </div>
             </div>
             <div className="av-leagueskew">
@@ -92,7 +92,7 @@ export function FederationAvInsights() {
                 </div>
               ))}
             </div>
-            <p className="av-why" style={{ marginTop: 14 }}>Чем выше лига — тем сильнее перекос: ближе к топу отбор в пользу физически старших внутри возраста жёстче, поздно-рождённых отсеивают активнее.</p>
+            <p className="av-why" style={{ marginTop: 14 }}>Это <b style={{ color: 'var(--av-text)' }}>не среднее, а воронка</b>: «весь реестр» — все зарегистрированные (широкая база, перекос слабее); разобранные игроки лиг уже <b style={{ color: 'var(--av-text)' }}>отобраны</b>, и чем выше лига, тем сильнее перекос концентрируется. Сам отбор усиливает эффект возраста — поздно-рождённых отсеивают тем активнее, чем ближе к топу.</p>
           </section>
         );
       })()}
