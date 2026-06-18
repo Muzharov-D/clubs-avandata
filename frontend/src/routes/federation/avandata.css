@@ -594,6 +594,24 @@
 .av-dbadge--ok { color: var(--av-success); background: color-mix(in srgb, var(--av-success) 12%, transparent); border-color: color-mix(in srgb, var(--av-success) 28%, transparent); }
 .av-dbadge--warn { color: var(--av-warning); background: color-mix(in srgb, var(--av-warning) 13%, transparent); border-color: color-mix(in srgb, var(--av-warning) 30%, transparent); }
 .av-dbadge--muted { color: var(--av-text-2); background: rgba(255, 255, 255, 0.05); border-color: var(--av-border); }
+
+/* «За неделю» — передняя дверь радара: список «что требует внимания» + динамика */
+.av-weekly__grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); gap: 10px; }
+.av-watch { display: flex; align-items: center; gap: 11px; text-align: left; width: 100%; padding: 11px 14px; border-radius: var(--av-r-sm); background: var(--av-surface); border: 1px solid var(--av-border); border-left: 3px solid var(--av-border); transition: transform 0.15s ease, background 0.15s ease; }
+.av-watch:not(:disabled) { cursor: pointer; }
+@media (hover: hover) { .av-watch:not(:disabled):hover { background: rgba(255, 255, 255, 0.04); transform: translateY(-1px); } }
+.av-watch--under { border-left-color: var(--av-danger); }
+.av-watch--degraded { border-left-color: var(--av-warning); }
+.av-watch--mover { border-left-color: var(--av-cyan); }
+.av-watch__year { flex: none; width: 32px; font-family: var(--av-display); font-size: 11px; font-weight: 800; color: var(--av-text-dim); font-variant-numeric: tabular-nums; }
+.av-watch__icon { flex: none; font-size: 13px; line-height: 1; }
+.av-watch--under .av-watch__icon { color: var(--av-danger); }
+.av-watch--degraded .av-watch__icon { color: var(--av-warning); }
+.av-watch--mover .av-watch__icon { color: var(--av-cyan); }
+.av-watch__body { display: flex; flex-direction: column; gap: 1px; min-width: 0; flex: 1; }
+.av-watch__team { font-size: 13px; font-weight: 700; color: var(--av-text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.av-watch__note { font-size: 11.5px; color: var(--av-text-dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.av-watch__delta { flex: none; font-family: var(--av-display); font-size: 14px; font-weight: 800; color: var(--av-danger); font-variant-numeric: tabular-nums; }
 /* узкий экран — прячем В/Н/П, оставляем И · ± · ОЧ + рейтинг + Δ */
 @media (max-width: 640px) {
   .av-trow.t-comb { grid-template-columns: 20px 24px minmax(0, 1fr) auto 64px 52px; }

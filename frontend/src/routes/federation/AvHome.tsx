@@ -31,6 +31,10 @@ interface ResultTeam { name: string; logo: string | null; score: number | null; 
 interface ResultMatch { id: number; age: string; division: string; date: string; divTeams: number; home: ResultTeam; away: ResultTeam }
 interface AgeEffect { total: number; q1pct: number; q4pct: number; skew: number | null }
 interface RPlayer { id: number; name: string; birthYear: number | null; position: string | null; club: string | null; clubLogo: string | null; photo?: string | null; rating: number | null; mp?: number }
+// «За неделю» — дайджест радара: что требует внимания сейчас + что изменилось за неделю.
+interface WAttention { year: number; kind: 'under' | 'degraded'; team: string | null; teamId: number | null; division: string | null; pos: number | null; ratingRank: number | null; delta: number | null; note: string }
+interface WMover { year: number; kind: 'pos' | 'rating' | 'new' | 'gone'; team: string; from: number | null; to: number | null; note: string }
+interface Weekly { baseline: boolean; cohortsWithHistory: number; snapshots: number; since: string | null; attention: WAttention[]; movers: WMover[] }
 
 const num = (n: number) => n.toLocaleString('ru-RU');
 const pm = (n: number) => (n > 0 ? `+${n}` : String(n));
@@ -43,6 +47,7 @@ const fmtStamp = (iso?: string) => { if (!iso) return ''; try { return new Intl.
 const plMesto = (n: number) => { const a = n % 100, b = n % 10; if (a >= 11 && a <= 14) return 'мест'; if (b === 1) return 'место'; if (b >= 2 && b <= 4) return 'места'; return 'мест'; };
 // склонение «матч»: 1 матч · 2–4 матча · 5+ матчей
 const plMatch = (n: number) => { const a = n % 100, b = n % 10; if (a >= 11 && a <= 14) return 'матчей'; if (b === 1) return 'матч'; if (b >= 2 && b <= 4) return 'матча'; return 'матчей'; };
+const plChange = (n: number) => { const a = n % 100, b = n % 10; if (a >= 11 && a <= 14) return 'изменений'; if (b === 1) return 'изменение'; if (b >= 2 && b <= 4) return 'изменения'; return 'изменений'; };
 
 // --- Значимые матчи: значимость на УРОВНЕ КОМАНДЫ (рейтинг+ранг в дивизионе с бэка) ---
 type SigTone = 'clash' | 'upset' | 'rout';
@@ -69,6 +74,8 @@ export function FederationAvHome() {
   const cr = useQuery({ queryKey: ['av', 'club-ratings', year], queryFn: () => api<{ groups: Group<RatingRow>[] }>(`/federation/av/club-ratings${q}`) });
   const ag = useQuery({ queryKey: ['av', 'age', year], queryFn: () => api<AgeEffect>(`/federation/av/age-effect${q}`) });
   const pl = useQuery({ queryKey: ['av', 'players', year, division], queryFn: () => api<{ players: RPlayer[] }>(`/federation/av/players${fedQ(year, division)}`) });
+  // «За неделю» — региональный дайджест (по всем когортам, фильтры не применяются — это передняя дверь).
+  const wk = useQuery({ queryKey: ['av', 'weekly'], queryFn: () => api<Weekly>('/federation/av/weekly') });
   const d = ov.data;
   const results = rs.data?.results ?? [];
   // Единая таблица выбранной лиги: турнирная позиция + рейтинг AvanData + Δ.
@@ -145,6 +152,9 @@ export function FederationAvHome() {
       </header>
 
       {ov.error && <FedError />}
+
+      {/* За неделю — передняя дверь недельного радара: что требует внимания + динамика */}
+      {wk.data && <WeeklyRadar data={wk.data} onClub={setSelectedClub} />}
 
       {/* Сигнал федерации — что требует внимания прямо сейчас (маршрутизатор внимания) */}
       {skew != null && skew >= 1.3 && (
@@ -231,6 +241,58 @@ export function FederationAvHome() {
 }
 
 const Sk = () => <div className="av-skeleton" style={{ height: 240 }} />;
+
+// «За неделю» — передняя дверь недельного радара. attention (недовыполнение/зеркало) работает
+// с первого среза; movers (динамика за неделю) появляются, когда накопится 2 снимка.
+const moverIcon = (k: WMover['kind']) => (k === 'new' ? '＋' : k === 'gone' ? '－' : k === 'rating' ? '◆' : '↕');
+function WeeklyRadar({ data, onClub }: { data: Weekly; onClub: (id: number) => void }) {
+  const { attention, movers, baseline, since, snapshots } = data;
+  const stamp = since ? fmtStamp(since) : '';
+  if (attention.length === 0 && movers.length === 0) {
+    return (
+      <section className="av-weekly av-rise">
+        <div className="av-section"><h2 className="av-section-title">За неделю</h2></div>
+        <div className="av-surface av-pad av-note">Тревог нет — клубы держат уровень своего рейтинга.{stamp ? ` Срез ${stamp}.` : ''}</div>
+      </section>
+    );
+  }
+  return (
+    <section className="av-weekly av-rise">
+      <div className="av-section">
+        <div>
+          <h2 className="av-section-title">За неделю — что требует внимания</h2>
+          <p className="av-section-sub" style={{ margin: '2px 0 0' }}>
+            {baseline ? 'базовый срез снят' : `${movers.length} ${plChange(movers.length)} за неделю`}{stamp ? ` · ${stamp}` : ''}{baseline ? ' · динамика — со следующего среза' : ''}
+          </p>
+        </div>
+        <span className="av-divtag">{snapshots} сним.</span>
+      </div>
+      <div className="av-weekly__grid">
+        {attention.map((a, i) => (
+          <button type="button" key={`a${i}`} className={`av-watch av-watch--${a.kind}`} onClick={() => a.teamId && onClub(a.teamId)} disabled={!a.teamId}>
+            <span className="av-watch__year">{a.year}</span>
+            <span className="av-watch__icon">{a.kind === 'under' ? '▼' : '⚠'}</span>
+            <span className="av-watch__body">
+              <span className="av-watch__team" title={a.team ?? undefined}>{a.team ?? `Когорта ${a.year}`}</span>
+              <span className="av-watch__note">{a.note}</span>
+            </span>
+            {a.delta != null && <span className="av-watch__delta">{a.delta}</span>}
+          </button>
+        ))}
+        {movers.map((m, i) => (
+          <div key={`m${i}`} className="av-watch av-watch--mover">
+            <span className="av-watch__year">{m.year}</span>
+            <span className="av-watch__icon">{moverIcon(m.kind)}</span>
+            <span className="av-watch__body">
+              <span className="av-watch__team" title={m.team}>{m.team}</span>
+              <span className="av-watch__note">{m.note}</span>
+            </span>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
 
 function Stat({ label, value, extra, tone }: { label: string; value: number; extra?: string; tone: 'cyan' | 'blue' | 'magenta' | 'success' | 'violet' }) {
   return (
