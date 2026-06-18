@@ -814,6 +814,18 @@ export interface ClubProfile {
   recentMatches: ClubProfileMatch[];
 }
 
+/** Имя клуба по ПОКОГОРТНОМУ id рейтинга (id из единой таблицы/снимка/«За неделю»).
+ *  Overview-рейтинг нумерует клубы иначе, поэтому per-cohort id там не находится — резолвим
+ *  имя по покогортным рейтингам, затем сшиваем с overview по имени (normTeam). */
+async function resolveCohortClubName(seasonId: number, id: number): Promise<string | null> {
+  const years = await availableYears(seasonId);
+  for (const year of years) {
+    const groups = await regionClubRatings(seasonId, year);
+    for (const g of groups) { const r = g.rows.find((x) => x.id === id); if (r) return r.name; }
+  }
+  return null;
+}
+
 /** Карточка клуба: место в рейтинге лиги, команды/возрасты, лучшие игроки,
  *  производство таланта (доля топ-пула лиги), последние матчи. Всё из avandata. */
 export async function regionClubProfile(seasonId: number, clubId: number): Promise<ClubProfile | null> {
@@ -822,6 +834,17 @@ export async function regionClubProfile(seasonId: number, clubId: number): Promi
   for (const g of ratingGroups) {
     const idx = g.rows.findIndex((r) => r.id === clubId);
     if (idx >= 0) { found = { row: g.rows[idx]!, rank: idx + 1, division: g.division, size: g.rows.length }; break; }
+  }
+  if (!found) {
+    // clubId — покогортный (единая таблица/«За неделю»/снимок): резолвим имя и ищем клуб в overview по имени.
+    const name = await resolveCohortClubName(seasonId, clubId);
+    if (name) {
+      const key2 = normTeam(name);
+      for (const g of ratingGroups) {
+        const idx = g.rows.findIndex((r) => normTeam(r.name) === key2);
+        if (idx >= 0) { found = { row: g.rows[idx]!, rank: idx + 1, division: g.division, size: g.rows.length }; break; }
+      }
+    }
   }
   if (!found) return null;
   const key = normTeam(found.row.name);
