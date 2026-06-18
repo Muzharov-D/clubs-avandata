@@ -2,6 +2,10 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "rewrites": [
     {
+      "source": "/ffspb-page/:path*",
+      "destination": "https://stat.ffspb.org/:path*"
+    },
+    {
       "source": "/ffspb-api/:path*",
       "destination": "https://stat.ffspb.org/api/:path*"
     },
