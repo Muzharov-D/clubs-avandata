@@ -7,7 +7,7 @@ import { ratingColor } from './ratings';
 import { useFedYear, yearQ, fedQ } from './avYear';
 import './avandata.css';
 
-interface RPlayer { id: number; name: string; position: string | null; club: string | null; clubLogo: string | null; rating: number | null }
+interface RPlayer { id: number; name: string; position: string | null; club: string | null; clubLogo: string | null; rating: number | null; mp?: number }
 interface Quarter { q: number; n: number; pct: number }
 interface AgeEffect { total: number; quarters: Quarter[]; q1pct: number; q4pct: number; skew: number | null }
 interface DivStrength { division: string; clubs: number; avgRating: number | null; topClub: string | null }
@@ -29,7 +29,8 @@ export function FederationAvInsights() {
   // Лучшие — внутри выбранной лиги.
   const pq = useQuery({ queryKey: ['av', 'players', year, division], queryFn: () => api<{ players: RPlayer[] }>(`/federation/av/players${fq}`) });
 
-  const top = useMemo(() => (pq.data?.players ?? []).filter((p) => p.rating != null).slice(0, 8), [pq.data]);
+  // Сильнейшие — по среднему рейтингу, минимум 2 оценённых матча.
+  const top = useMemo(() => (pq.data?.players ?? []).filter((p) => p.rating != null && (p.mp ?? 0) >= 2).slice(0, 8), [pq.data]);
   const divs = ds.data?.divisions ?? [];
   const gap = divs.length >= 2 && divs[1].avgRating ? Math.round(((divs[0].avgRating ?? 0) / (divs[1].avgRating || 1)) * 10) / 10 : null;
 

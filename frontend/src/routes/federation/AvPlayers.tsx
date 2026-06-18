@@ -9,7 +9,7 @@ import { ratingColor } from './ratings';
 import { useFedYear, fedQ } from './avYear';
 import './avandata.css';
 
-interface RPlayer { id: number; name: string; birthYear: number | null; position: string | null; club: string | null; clubLogo: string | null; rating: number | null }
+interface RPlayer { id: number; name: string; birthYear: number | null; position: string | null; club: string | null; clubLogo: string | null; rating: number | null; mp?: number }
 
 const lastName = (s: string) => { const w = s.trim().split(/\s+/); return w.length > 1 ? w[w.length - 1] : s; };
 
@@ -40,8 +40,11 @@ export function FederationAvPlayers() {
   const [qStr, setQStr] = useState('');
 
   const clubs = useMemo(() => Array.from(new Set(players.map((p) => p.club).filter(Boolean))).sort() as string[], [players]);
+  // «С рейтингом» — минимум 2 оценённых матча (рейтинг = среднее по матчам, не пик).
+  const ratedTotal = useMemo(() => players.filter((p) => (p.mp ?? 0) >= 2).length, [players]);
   const shown = useMemo(() => {
-    let list = players;
+    // При поиске ищем по всем; при обычном просмотре — только игроки с рейтингом (≥2 матчей).
+    let list = qStr.trim() ? players : players.filter((p) => (p.mp ?? 0) >= 2);
     if (club !== 'all') list = list.filter((p) => p.club === club);
     if (qStr.trim()) { const q = qStr.toLowerCase(); list = list.filter((p) => p.name.toLowerCase().includes(q)); }
     return list.slice(0, 250);
@@ -50,7 +53,7 @@ export function FederationAvPlayers() {
   // Сборная региона: лучшие по РЕАЛЬНЫМ позициям. Без «добора» — пустой слот
   // честно показывает перекос состава (нет вратарей / мало защитников и т.п.).
   const xi = useMemo(() => {
-    const rated = players.filter((p) => p.rating != null);
+    const rated = players.filter((p) => p.rating != null && (p.mp ?? 0) >= 2);
     const byLine: Record<Line, RPlayer[]> = { GK: [], DEF: [], MID: [], FWD: [] };
     for (const p of rated) { const l = lineOf(p.position); if (l) byLine[l].push(p); }
     (Object.keys(byLine) as Line[]).forEach((l) => byLine[l].sort((a, b) => (b.rating as number) - (a.rating as number)));
@@ -61,7 +64,7 @@ export function FederationAvPlayers() {
 
   // Восходящие — высокий рейтинг среди МЛАДШИХ когорт (честный сигнал «кто растёт»).
   const rising = useMemo(() => {
-    const rated = players.filter((p) => p.rating != null && p.birthYear != null);
+    const rated = players.filter((p) => p.rating != null && p.birthYear != null && (p.mp ?? 0) >= 2);
     if (rated.length < 3) return [];
     const years = Array.from(new Set(rated.map((p) => p.birthYear!))).sort((a, b) => b - a);
     const young = new Set(years.slice(0, 2));
@@ -105,8 +108,8 @@ export function FederationAvPlayers() {
                   <span className="av-rate" style={{ color: ratingColor(p.rating) }}>{p.rating ?? '—'}</span>
                 </Link>
               ))}
-          {!isLoading && players.length > shown.length && (
-            <p className="av-cap">Показаны топ-{shown.length} из {players.length.toLocaleString('ru-RU')} по рейтингу — уточни клубом или поиском, чтобы увидеть остальных.</p>
+          {!isLoading && !qStr.trim() && ratedTotal > shown.length && (
+            <p className="av-cap">Показаны топ-{shown.length} из {ratedTotal.toLocaleString('ru-RU')} с рейтингом (≥2 матчей) — уточни клубом или поиском.</p>
           )}
         </section>
 

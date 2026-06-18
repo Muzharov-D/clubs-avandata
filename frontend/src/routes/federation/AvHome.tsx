@@ -21,7 +21,7 @@ interface CombGroup { division: string; rows: CombRow[] }
 interface ResultTeam { name: string; logo: string | null; score: number | null; rating: number | null; rank: number | null }
 interface ResultMatch { id: number; age: string; division: string; date: string; divTeams: number; home: ResultTeam; away: ResultTeam }
 interface AgeEffect { total: number; q1pct: number; q4pct: number; skew: number | null }
-interface RPlayer { id: number; name: string; birthYear: number | null; position: string | null; club: string | null; clubLogo: string | null; rating: number | null }
+interface RPlayer { id: number; name: string; birthYear: number | null; position: string | null; club: string | null; clubLogo: string | null; rating: number | null; mp?: number }
 
 const num = (n: number) => n.toLocaleString('ru-RU');
 const pm = (n: number) => (n > 0 ? `+${n}` : String(n));
@@ -30,6 +30,8 @@ const shortName = (s: string) => { const w = s.trim().split(/\s+/); return w.len
 const fmtDate = (iso: string) => { try { return new Intl.DateTimeFormat('ru-RU', { day: 'numeric', month: 'short' }).format(new Date(iso)).replace('.', '').toUpperCase(); } catch { return ''; } };
 // склонение «место»: 1 место · 2–4 места · 5+ мест (с учётом 11–14)
 const plMesto = (n: number) => { const a = n % 100, b = n % 10; if (a >= 11 && a <= 14) return 'мест'; if (b === 1) return 'место'; if (b >= 2 && b <= 4) return 'места'; return 'мест'; };
+// склонение «матч»: 1 матч · 2–4 матча · 5+ матчей
+const plMatch = (n: number) => { const a = n % 100, b = n % 10; if (a >= 11 && a <= 14) return 'матчей'; if (b === 1) return 'матч'; if (b >= 2 && b <= 4) return 'матча'; return 'матчей'; };
 
 // --- Значимые матчи: значимость на УРОВНЕ КОМАНДЫ (рейтинг+ранг в дивизионе с бэка) ---
 type SigTone = 'clash' | 'upset' | 'rout';
@@ -75,7 +77,8 @@ export function FederationAvHome() {
     return { division: sg.division, rows };
   }, [st.data, cr.data, division]);
   const skew = ag.data?.skew ?? null;
-  const topPlayers = (pl.data?.players ?? []).filter((p) => p.rating != null).slice(0, 8);
+  // Лучшие — по СРЕДНЕМУ рейтингу, минимум 2 оценённых матча (без one-match-wonder).
+  const topPlayers = (pl.data?.players ?? []).filter((p) => p.rating != null && (p.mp ?? 0) >= 2).slice(0, 8);
 
   // Значимые матчи. Сенсация (правило владельца): победил слабейший, и соперник
   // был ВДВОЕ выше рейтингом ИЛИ на ≥4 места выше в таблице дивизиона.
@@ -160,7 +163,7 @@ export function FederationAvHome() {
                   <div className="av-leader__name" title={p.name}>{shortName(p.name)}</div>
                   <div className="av-leader__meta">{p.club ?? '—'}{p.position ? ` · ${p.position}` : ''}{p.birthYear ? ` · ${p.birthYear}` : ''}</div>
                 </div>
-                <span className="av-leader__rate" style={{ color: ratingColor(p.rating) }}>{p.rating ?? '—'}</span>
+                <span className="av-leader__rate" style={{ color: ratingColor(p.rating) }} title={p.mp ? `Средний рейтинг за ${p.mp} ${plMatch(p.mp)}` : undefined}>{p.rating ?? '—'}</span>
               </Link>
             ))}
           </div>

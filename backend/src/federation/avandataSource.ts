@@ -422,27 +422,36 @@ function groupByDivision<T extends { division: string }>(rows: T[], sortKey: (r:
 }
 
 // ─── Игроки региона (с разобранных матчей, все туры) ─────────────────────────
-export interface RegionPlayer { id: number; name: string; birthYear: number | null; position: string | null; club: string | null; clubLogo: string | null; rating: number | null; }
+export interface RegionPlayer { id: number; name: string; birthYear: number | null; position: string | null; club: string | null; clubLogo: string | null; rating: number | null; mp: number; }
 export async function regionPlayers(seasonId: number, year?: number, division?: string): Promise<RegionPlayer[]> {
   return cached(`players:${seasonId}:${year ?? 0}:${division ?? ''}`, TTL, async () => {
     let refs = await listTournaments(seasonId);
     if (year != null) refs = refs.filter((r) => r.ageFrom === year);
     if (division) refs = refs.filter((r) => matchesDivision(r.divisionTitle, division));
-    const byId = new Map<number, RegionPlayer>();
+    // Рейтинг игрока — СРЕДНЕЕ по всем его матчам. by-role на туре отдаёт рейтинг
+    // ЗА ЭТОТ МАТЧ (поле averageRating меняется от тура к туру), поэтому копим
+    // сумму+счётчик по всем турам, а не берём первый/пиковый матч. mp — число
+    // оценённых матчей (на скольких турах игрок попал в рейтинг по роли).
+    const acc = new Map<number, { p: RegionPlayer; sum: number; n: number }>();
     const jobs: Array<{ t: number; d: number; tour: number }> = [];
     for (const ref of refs) for (let tour = 1; tour <= Math.max(1, ref.lastPlayedTour); tour++) jobs.push({ t: ref.tournamentId, d: ref.divisionId, tour });
     await pmap(jobs, 6, async (job) => {
       const ps = await tourPlayers(seasonId, job.t, job.d, job.tour);
       for (const p of ps) {
-        if (p.id == null || byId.has(p.id)) continue;
-        byId.set(p.id, {
-          id: p.id, name: p.title ?? '—', birthYear: p.dateOfBirth ?? null,
-          position: p.playerMatchRole?.title ?? null, club: p.team?.title ?? null,
-          clubLogo: p.team?.logoUrl ?? null, rating: p.averageRating ?? null,
-        });
+        if (p.id == null) continue;
+        let e = acc.get(p.id);
+        if (!e) {
+          e = { p: { id: p.id, name: p.title ?? '—', birthYear: p.dateOfBirth ?? null,
+            position: p.playerMatchRole?.title ?? null, club: p.team?.title ?? null,
+            clubLogo: p.team?.logoUrl ?? null, rating: null, mp: 0 }, sum: 0, n: 0 };
+          acc.set(p.id, e);
+        }
+        const r = p.averageRating;
+        if (typeof r === 'number' && Number.isFinite(r)) { e.sum += r; e.n += 1; }
       }
     });
-    return [...byId.values()].sort((a, b) => (b.rating ?? -1e9) - (a.rating ?? -1e9));
+    const out = [...acc.values()].map(({ p, sum, n }) => ({ ...p, mp: n, rating: n > 0 ? Math.round(sum / n) : null }));
+    return out.sort((a, b) => (b.rating ?? -1e9) - (a.rating ?? -1e9));
   });
 }
 
@@ -613,7 +622,8 @@ export async function regionClubProfile(seasonId: number, clubId: number): Promi
   ]);
 
   const mine = players.filter((p) => normTeam(clubName(p.club)) === key);
-  const rated = mine.filter((p) => p.rating != null).sort((a, b) => (b.rating as number) - (a.rating as number));
+  // С рейтингом = среднее по ≥2 матчам (без one-match-wonder) — и в топ-5, и в avgRating.
+  const rated = mine.filter((p) => p.rating != null && p.mp >= 2).sort((a, b) => (b.rating as number) - (a.rating as number));
   const years = mine.map((p) => p.birthYear).filter((y): y is number => y != null);
   const ratings = rated.map((p) => p.rating as number);
   const avgRating = ratings.length ? Math.round(ratings.reduce((a, b) => a + b, 0) / ratings.length) : null;
@@ -683,7 +693,7 @@ export async function cohortMatrix(seasonId: number): Promise<Cohort[]> {
       const reg = qs.reduce((a, b) => a + b, 0);
       const q1 = reg ? ((qs[0] ?? 0) / reg) * 100 : 0;
       const q4 = reg ? ((qs[3] ?? 0) / reg) * 100 : 0;
-      const ps = (byYearP.get(y) ?? []).filter((p) => p.rating != null).sort((a, b) => (b.rating as number) - (a.rating as number));
+      const ps = (byYearP.get(y) ?? []).filter((p) => p.rating != null && p.mp >= 2).sort((a, b) => (b.rating as number) - (a.rating as number));
       const ratings = ps.map((p) => p.rating as number);
       const t = ps[0];
       return {
