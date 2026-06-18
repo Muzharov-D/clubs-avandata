@@ -21,7 +21,7 @@ interface CombGroup { division: string; rows: CombRow[] }
 interface ResultTeam { name: string; logo: string | null; score: number | null; rating: number | null; rank: number | null }
 interface ResultMatch { id: number; age: string; division: string; date: string; divTeams: number; home: ResultTeam; away: ResultTeam }
 interface AgeEffect { total: number; q1pct: number; q4pct: number; skew: number | null }
-interface RPlayer { id: number; name: string; birthYear: number | null; position: string | null; club: string | null; clubLogo: string | null; rating: number | null; mp?: number }
+interface RPlayer { id: number; name: string; birthYear: number | null; position: string | null; club: string | null; clubLogo: string | null; photo?: string | null; rating: number | null; mp?: number }
 
 const num = (n: number) => n.toLocaleString('ru-RU');
 const pm = (n: number) => (n > 0 ? `+${n}` : String(n));
@@ -158,7 +158,7 @@ export function FederationAvHome() {
             {topPlayers.map((p, i) => (
               <Link key={p.id} to={`/federation/players/${p.id}`} className="av-surface-soft av-leader">
                 <span className={`av-leader__rank${i < 3 ? ` av-trow__rank--${i + 1}` : ''}`}>{i + 1}</span>
-                <PlayerAvatar name={p.name} size={40} />
+                <PlayerAvatar name={p.name} photoUrl={p.photo} size={40} />
                 <div className="av-leader__id">
                   <div className="av-leader__name" title={p.name}>{shortName(p.name)}</div>
                   <div className="av-leader__meta">{p.club ?? '—'}{p.position ? ` · ${p.position}` : ''}{p.birthYear ? ` · ${p.birthYear}` : ''}</div>
@@ -173,9 +173,9 @@ export function FederationAvHome() {
       {/* Значимые матчи — курируем по значимости, а не валим лентой все 24 */}
       <section className="av-rise">
         <div className="av-section">
-          <h2 className="av-section-title">Ключевые матчи тура</h2>
+          <h2 className="av-section-title">Ключевые матчи</h2>
           {keyMatches.length > 0 && results.length > keyMatches.length && (
-            <span className="av-section-sub" style={{ margin: 0 }}>по разрыву в таблице, рейтинге и счёту · из {results.length} сыгранных</span>
+            <span className="av-section-sub" style={{ margin: 0 }}>самые значимые из {results.length} сыгранных · по разрыву в таблице, рейтинге и счёту</span>
           )}
         </div>
         {rs.isLoading ? <div className="av-skeleton" style={{ height: 140 }} />

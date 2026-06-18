@@ -299,7 +299,7 @@ async function tournamentIdForYear(seasonId: number, year: number): Promise<numb
 }
 
 // ─── Игроки тура (общая сборка) ──────────────────────────────────────────────
-interface RawPlayer { id?: number; title?: string; dateOfBirth?: number; playerMatchRole?: { title?: string }; team?: { id?: number; title?: string; logoUrl?: string | null }; averageRating?: number }
+interface RawPlayer { id?: number; title?: string; dateOfBirth?: number; playerMatchRole?: { title?: string }; team?: { id?: number; title?: string; logoUrl?: string | null }; averageRating?: number; avatarUrl?: string | null }
 async function tourPlayers(seasonId: number, t: number, d: number, tour: number): Promise<RawPlayer[]> {
   try {
     const roleArr = (await getPlayersByRole(seasonId, t, d, tour)) as Array<{ topPlayers?: RawPlayer[] }>;
@@ -431,7 +431,7 @@ function groupByDivision<T extends { division: string }>(rows: T[], sortKey: (r:
 }
 
 // ─── Игроки региона (с разобранных матчей, все туры) ─────────────────────────
-export interface RegionPlayer { id: number; name: string; birthYear: number | null; position: string | null; club: string | null; clubLogo: string | null; rating: number | null; mp: number; }
+export interface RegionPlayer { id: number; name: string; birthYear: number | null; position: string | null; club: string | null; clubLogo: string | null; photo: string | null; rating: number | null; mp: number; }
 export async function regionPlayers(seasonId: number, year?: number, division?: string): Promise<RegionPlayer[]> {
   return cached(`players:${seasonId}:${year ?? 0}:${division ?? ''}`, TTL, async () => {
     let refs = await listTournaments(seasonId);
@@ -452,7 +452,7 @@ export async function regionPlayers(seasonId: number, year?: number, division?: 
         if (!e) {
           e = { p: { id: p.id, name: p.title ?? '—', birthYear: p.dateOfBirth ?? null,
             position: p.playerMatchRole?.title ?? null, club: p.team?.title ?? null,
-            clubLogo: p.team?.logoUrl ?? null, rating: null, mp: 0 }, sum: 0, n: 0 };
+            clubLogo: p.team?.logoUrl ?? null, photo: p.avatarUrl ?? null, rating: null, mp: 0 }, sum: 0, n: 0 };
           acc.set(p.id, e);
         }
         const r = p.averageRating;
@@ -599,7 +599,7 @@ export async function regionResults(seasonId: number, year?: number, division?: 
 }
 
 // ─── Профиль клуба (карточка клуба по клику) ─────────────────────────────────
-export interface ClubProfilePlayer { id: number; name: string; birthYear: number | null; position: string | null; rating: number | null }
+export interface ClubProfilePlayer { id: number; name: string; birthYear: number | null; position: string | null; rating: number | null; photo: string | null }
 export interface ClubProfileMatch { id: number; age: string; date: string; opponent: string; opponentLogo: string | null; gf: number | null; ga: number | null; outcome: 'w' | 'd' | 'l' }
 export interface ClubProfile {
   id: number; name: string; logo: string | null; division: string;
@@ -657,7 +657,7 @@ export async function regionClubProfile(seasonId: number, clubId: number): Promi
     rating: found.row.rating, rank: found.rank, divisionSize: found.size,
     teams: new Set(years).size, ageMin: years.length ? Math.min(...years) : null, ageMax: years.length ? Math.max(...years) : null,
     squad: mine.length, avgRating,
-    topPlayers: rated.slice(0, 5).map((p) => ({ id: p.id, name: p.name, birthYear: p.birthYear, position: p.position, rating: p.rating })),
+    topPlayers: rated.slice(0, 5).map((p) => ({ id: p.id, name: p.name, birthYear: p.birthYear, position: p.position, rating: p.rating, photo: p.photo })),
     talentShare: concEntry?.share ?? null, talentRank: concIdx >= 0 ? concIdx + 1 : null, talentClubs: conc.clubs.length,
     recentMatches,
   };
@@ -726,7 +726,7 @@ export interface PlayerMatch {
   playerSide: 'home' | 'away' | null; rating: number | null;
 }
 export interface PlayerProfile {
-  id: number; name: string; club: string | null; clubLogo: string | null; position: string | null;
+  id: number; name: string; club: string | null; clubLogo: string | null; photo: string | null; position: string | null;
   birthDate: string | null; birthYear: number | null; rating: number | null;
   matches: number; totalEvents: number; metrics: PlayerMetric[];
   recentMatches: PlayerMatch[];
@@ -783,7 +783,7 @@ export async function playerProfile(seasonId: number, playerId: number): Promise
 
   return {
     id: playerId, name, club: id0?.club ?? null, clubLogo: id0?.clubLogo ?? null,
-    position: id0?.position ?? null,
+    photo: id0?.photo ?? null, position: id0?.position ?? null,
     birthDate: detail?.dateOfBirth ?? null,
     birthYear: detail?.dateOfBirth ? new Date(detail.dateOfBirth).getUTCFullYear() : (id0?.birthYear ?? null),
     rating: id0?.rating ?? (events.length ? totalPoints : null),

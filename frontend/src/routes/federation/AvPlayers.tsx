@@ -2,14 +2,13 @@ import { useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { api } from '../../api/client';
-import { ClubShield } from './ClubShield';
 import { PlayerAvatar } from './PlayerAvatar';
 import { FedError, FedEmpty } from './FedState';
 import { ratingColor } from './ratings';
 import { useFedYear, fedQ } from './avYear';
 import './avandata.css';
 
-interface RPlayer { id: number; name: string; birthYear: number | null; position: string | null; club: string | null; clubLogo: string | null; rating: number | null; mp?: number }
+interface RPlayer { id: number; name: string; birthYear: number | null; position: string | null; club: string | null; clubLogo: string | null; photo?: string | null; rating: number | null; mp?: number }
 
 const lastName = (s: string) => { const w = s.trim().split(/\s+/); return w.length > 1 ? w[w.length - 1] : s; };
 
@@ -100,7 +99,7 @@ export function FederationAvPlayers() {
               : shown.map((p, i) => (
                 <Link key={p.id} to={`/federation/players/${p.id}`} className="av-trow t-reg av-trow--link">
                   <span className="av-trow__rank">{i + 1}</span>
-                  <ClubShield name={p.club ?? p.name} logoUrl={p.clubLogo} size={26} />
+                  <PlayerAvatar name={p.name} photoUrl={p.photo} size={26} />
                   <div style={{ minWidth: 0 }}>
                     <div className="av-trow__name">{p.name}</div>
                     <div className="av-trow__meta">{p.club ?? '—'}{p.position ? ` · ${p.position}` : ''}{p.birthYear ? ` · ${p.birthYear}` : ''}</div>
@@ -148,7 +147,7 @@ export function FederationAvPlayers() {
                 {xi.map((s, idx) => s.player ? (
                   <Link key={idx} to={`/federation/players/${s.player.id}`} className="av-slot av-slot--filled" style={{ left: `${s.l}%`, top: `${s.t}%` }} title={s.player.name}>
                     <span className="av-slot__node">
-                      <PlayerAvatar name={s.player.name} size={46} ring={s.line === 'GK'} />
+                      <PlayerAvatar name={s.player.name} photoUrl={s.player.photo} size={46} ring={s.line === 'GK'} />
                       <span className="av-slot__badge" style={{ color: ratingColor(s.player.rating) }}>{s.player.rating}</span>
                     </span>
                     <span className="av-slot__name">{lastName(s.player.name)}</span>
@@ -174,7 +173,7 @@ export function FederationAvPlayers() {
               <div className="av-rising">
                 {rising.map((p) => (
                   <Link key={p.id} to={`/federation/players/${p.id}`} className="av-rising__row">
-                    <PlayerAvatar name={p.name} size={32} />
+                    <PlayerAvatar name={p.name} photoUrl={p.photo} size={32} />
                     <div style={{ minWidth: 0 }}>
                       <div className="av-rising__name">{p.name}</div>
                       <div className="av-rising__meta">{p.club ?? '—'} · {p.birthYear} г.р.</div>

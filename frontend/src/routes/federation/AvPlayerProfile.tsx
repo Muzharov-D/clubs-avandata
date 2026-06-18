@@ -18,7 +18,7 @@ interface PMatch {
   playerSide: 'home' | 'away' | null; rating: number | null;
 }
 interface Profile {
-  id: number; name: string; club: string | null; clubLogo: string | null; position: string | null;
+  id: number; name: string; club: string | null; clubLogo: string | null; photo: string | null; position: string | null;
   birthDate: string | null; birthYear: number | null; rating: number | null;
   matches: number; totalEvents: number; metrics: Metric[]; recentMatches: PMatch[];
 }
@@ -65,7 +65,7 @@ function Body({ p }: { p: Profile }) {
     <>
       <header className="av-surface av-surface--feature av-pad-lg av-phead av-rise">
         <div style={{ position: 'relative', flex: 'none' }}>
-          <PlayerAvatar name={p.name} size={64} ring />
+          <PlayerAvatar name={p.name} photoUrl={p.photo} size={64} ring />
           <span style={{ position: 'absolute', right: -4, bottom: -4 }}><ClubShield name={p.club ?? p.name} logoUrl={p.clubLogo} size={26} /></span>
         </div>
         <div className="av-phead__id">

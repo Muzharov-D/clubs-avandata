@@ -7,7 +7,7 @@ import { PlayerAvatar } from './PlayerAvatar';
 import { ratingColor } from './ratings';
 import './avandata.css';
 
-interface CPlayer { id: number; name: string; birthYear: number | null; position: string | null; rating: number | null }
+interface CPlayer { id: number; name: string; birthYear: number | null; position: string | null; rating: number | null; photo: string | null }
 interface CMatch { id: number; age: string; date: string; opponent: string; opponentLogo: string | null; gf: number | null; ga: number | null; outcome: 'w' | 'd' | 'l' }
 interface ClubProfile {
   id: number; name: string; logo: string | null; division: string;
@@ -85,7 +85,7 @@ export function ClubCard({ clubId, onClose }: { clubId: number; onClose: () => v
                 <div className="av-cc-players">
                   {data.topPlayers.map((p) => (
                     <Link key={p.id} to={`/federation/players/${p.id}`} className="av-cc-player" onClick={onClose}>
-                      <PlayerAvatar name={p.name} size={46} />
+                      <PlayerAvatar name={p.name} photoUrl={p.photo} size={46} />
                       <span className="av-cc-player__name" title={p.name}>{p.name}</span>
                       <span className="av-cc-player__meta">{p.birthYear ?? '—'}{p.position ? ` · ${p.position.split(' ').pop()}` : ''}</span>
                       <span className="av-cc-player__rate" style={{ color: ratingColor(p.rating) }}>{p.rating ?? '—'}</span>

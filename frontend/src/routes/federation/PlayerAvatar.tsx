@@ -2,7 +2,7 @@
  * Аватар игрока — круг с динамическим градиентом и инициалами. Порт из боевого
  * фронта AvanData (PlayerAvatar.tsx): никаких серых заглушек.
  */
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 
 const PALETTE: ReadonlyArray<readonly [string, string]> = [
   ['#22d3ee', '#0e7490'], ['#3054ff', '#091e80'], ['#ff0099', '#85035d'],
@@ -23,13 +23,29 @@ const initials = (s: string): string => {
   return (words[0][0] + words[1][0]).toUpperCase();
 };
 
-interface Props { name: string; size?: number; ring?: boolean }
+interface Props { name: string; size?: number; ring?: boolean; photoUrl?: string | null }
 
-export function PlayerAvatar({ name, size = 44, ring = false }: Props) {
+export function PlayerAvatar({ name, size = 44, ring = false, photoUrl }: Props) {
+  const [failed, setFailed] = useState(false);
   const { gid, c1, c2, ini } = useMemo(() => {
     const [a, b] = PALETTE[hash(name) % PALETTE.length];
     return { gid: `pa-${hash(name)}`, c1: a, c2: b, ini: initials(name) };
   }, [name]);
+  // Реальное фото игрока (Наградион CDN), при битой ссылке — генеративный аватар (без серых заглушек).
+  if (photoUrl && /^https?:\/\//.test(photoUrl) && !failed) {
+    return (
+      <img
+        src={photoUrl} alt={name} width={size} height={size} decoding="async" loading="lazy"
+        onError={() => setFailed(true)}
+        style={{
+          width: size, height: size, borderRadius: '50%', objectFit: 'cover', objectPosition: 'top center',
+          display: 'block', flex: 'none', background: 'var(--av-surface-2, #131a3a)',
+          border: ring ? '1.5px solid rgba(94,235,252,0.55)' : '1px solid rgba(255,255,255,0.22)',
+          filter: ring ? 'drop-shadow(0 2px 6px rgba(0,0,0,0.45))' : undefined,
+        }}
+      />
+    );
+  }
   return (
     <svg width={size} height={size} viewBox="0 0 48 48" role="img" aria-label={name} style={{ display: 'block', flex: 'none', filter: ring ? 'drop-shadow(0 2px 6px rgba(0,0,0,0.45))' : undefined }}>
       <defs>
