@@ -1,14 +1,14 @@
-import { regionStandings, regionClubRatings, availableYears } from './avandataSource.js';
-import { latestSnapshotsForCohort, snapshotMeta, type SnapPayload } from './snapshots.js';
+import { latestSnapshotsForCohort, snapshotMeta, type SnapPayload, type SnapTeam } from './snapshots.js';
 
 /**
  * «За неделю» — передняя дверь недельного радара (Фаза C).
  *
- * Две части:
- *  - attention: что требует внимания ПРЯМО СЕЙЧАС (история не нужна, работает с 1-го дня):
- *    клубы, что сильно недовыполняют рейтинг (Δ ≤ −2), и когорты на зеркале (degraded).
+ * Считается ЦЕЛИКОМ из снимков (быстро, без живых вызовов ФФСПб/АванДаты) — снимок уже
+ * хранит место+рейтинг по клубу. Две части:
+ *  - attention: что требует внимания (Δ из последнего снимка): клубы, сильно недовыполняющие
+ *    рейтинг (Δ ≤ −2), и когорты на зеркале. Работает с первого же снимка.
  *  - movers: что изменилось ЗА НЕДЕЛЮ — diff последних двух снимков (место/рейтинг/появления).
- *    Пусто, пока не накопится 2 снимка; baseline=true означает «база снята, ждём след. срез».
+ *    Пусто, пока не накопится 2 снимка; baseline=true = «база снята, ждём следующий срез».
  */
 
 const isTopDiv = (d: string): boolean => /Высшая|Боброва/i.test(d);
@@ -27,67 +27,68 @@ export interface WeeklyDigest {
   attention: AttentionItem[]; movers: MoverItem[];
 }
 
-interface TopRow { id: number; name: string; pos: number; rating: number | null; ratingRank: number | null; delta: number | null; }
+/** Рейтинг-ранг среди команд верхнего дивизиона (тот же знаменатель, что место). */
+function ratingRankMap(top: SnapTeam[]): Map<number, number> {
+  const rr = new Map<number, number>();
+  [...top].filter((t) => t.rating != null).sort((a, b) => (b.rating as number) - (a.rating as number))
+    .forEach((t, i) => rr.set(t.id, i + 1));
+  return rr;
+}
 
-/** Текущая Высшая когорты с рейтинг-рангом и Δ (то же, что в единой таблице, но на бэке). */
-async function cohortTop(seasonId: number, year: number): Promise<{ degraded: boolean; division: string | null; rows: TopRow[] }> {
-  const st = await regionStandings(seasonId, year);
-  const cr = await regionClubRatings(seasonId, year).catch(() => []);
-  const sg = st.groups.find((g) => isTopDiv(g.division)) ?? null;
-  const cg = cr.find((g) => isTopDiv(g.division)) ?? null;
-  const ratingById = new Map<number, number>();
-  for (const r of cg?.rows ?? []) ratingById.set(r.id, r.rating);
-  const standRows = sg?.rows ?? [];
-  const ratingRank = new Map<number, number>();
-  [...standRows].sort((a, b) => (ratingById.get(b.id) ?? -Infinity) - (ratingById.get(a.id) ?? -Infinity))
-    .forEach((r, i) => { if (ratingById.has(r.id)) ratingRank.set(r.id, i + 1); });
-  const rows: TopRow[] = standRows.map((r, i) => {
-    const rr = ratingRank.get(r.id) ?? null;
-    return { id: r.id, name: r.name, pos: i + 1, rating: ratingById.get(r.id) ?? null, ratingRank: rr, delta: rr != null ? rr - (i + 1) : null };
-  });
-  return { degraded: st.degraded, division: sg?.division ?? null, rows };
+function attentionFromSnapshot(year: number, payload: SnapPayload): AttentionItem[] {
+  const out: AttentionItem[] = [];
+  if (payload.degraded) {
+    out.push({ year, kind: 'degraded', team: null, teamId: null, division: null, pos: null, ratingRank: null, delta: null, note: 'данные когорты — зеркало, могут быть неполными' });
+  }
+  const top = payload.teams.filter((t) => isTopDiv(t.division));
+  const division = top[0]?.division ?? null;
+  const rr = ratingRankMap(top);
+  for (const t of top) {
+    const rank = rr.get(t.id);
+    if (rank == null) continue;
+    const delta = rank - t.pos;
+    if (delta <= -2) {
+      out.push({ year, kind: 'under', team: t.name, teamId: t.id, division, pos: t.pos, ratingRank: rank, delta,
+        note: `${t.pos}-е место при ${rank}-м по рейтингу — недовыполняет на ${Math.abs(delta)}` });
+    }
+  }
+  return out;
+}
+
+function moversFromSnapshots(year: number, cur: SnapPayload, prev: SnapPayload): MoverItem[] {
+  const out: MoverItem[] = [];
+  const prevTop = prev.teams.filter((t) => isTopDiv(t.division));
+  const curTop = cur.teams.filter((t) => isTopDiv(t.division));
+  const prevById = new Map(prevTop.map((t) => [t.id, t]));
+  const curIds = new Set(curTop.map((t) => t.id));
+  for (const t of curTop) {
+    const p = prevById.get(t.id);
+    if (!p) { out.push({ year, kind: 'new', team: t.name, from: null, to: t.pos, note: `появилась в таблице (${t.pos}-е место)` }); continue; }
+    if (p.pos !== t.pos) out.push({ year, kind: 'pos', team: t.name, from: p.pos, to: t.pos, note: `${p.pos}→${t.pos} место` });
+    if (t.rating != null && p.rating != null && p.rating > 0 && Math.abs(t.rating - p.rating) / p.rating >= RATING_MOVE) {
+      out.push({ year, kind: 'rating', team: t.name, from: p.rating, to: t.rating, note: `рейтинг ${p.rating}→${t.rating}` });
+    }
+  }
+  for (const p of prevById.values()) {
+    if (!curIds.has(p.id)) out.push({ year, kind: 'gone', team: p.name, from: p.pos, to: null, note: 'выбыла из таблицы' });
+  }
+  return out;
 }
 
 export async function federationWeekly(seasonId: number): Promise<WeeklyDigest> {
-  const years = await availableYears(seasonId);
+  const meta = await snapshotMeta(seasonId);
   const attention: AttentionItem[] = [];
   const movers: MoverItem[] = [];
   let cohortsWithHistory = 0;
-  for (const year of years) {
-    // --- attention: текущее состояние ---
-    const top = await cohortTop(seasonId, year);
-    if (top.degraded) {
-      attention.push({ year, kind: 'degraded', team: null, teamId: null, division: top.division, pos: null, ratingRank: null, delta: null, note: 'данные когорты — зеркало, могут быть неполными' });
-    }
-    for (const r of top.rows) {
-      if (r.delta != null && r.delta <= -2) {
-        attention.push({ year, kind: 'under', team: r.name, teamId: r.id, division: top.division, pos: r.pos, ratingRank: r.ratingRank, delta: r.delta,
-          note: `${r.pos}-е место при ${r.ratingRank}-м по рейтингу — недовыполняет на ${Math.abs(r.delta)}` });
-      }
-    }
-    // --- movers: diff последних двух снимков ---
-    const snaps = await latestSnapshotsForCohort(seasonId, year, 2);
+  for (const c of meta.cohorts) {
+    const snaps = await latestSnapshotsForCohort(seasonId, c.year, 2);
+    if (!snaps.length) continue;
+    attention.push(...attentionFromSnapshot(c.year, snaps[0]!.payload as SnapPayload));
     if (snaps.length >= 2) {
       cohortsWithHistory++;
-      const cur = snaps[0]!.payload as SnapPayload;
-      const prev = snaps[1]!.payload as SnapPayload;
-      const prevById = new Map(prev.teams.filter((t) => isTopDiv(t.division)).map((t) => [t.id, t]));
-      const curTop = cur.teams.filter((t) => isTopDiv(t.division));
-      const curIds = new Set(curTop.map((t) => t.id));
-      for (const t of curTop) {
-        const p = prevById.get(t.id);
-        if (!p) { movers.push({ year, kind: 'new', team: t.name, from: null, to: t.pos, note: `появилась в таблице (${t.pos}-е место)` }); continue; }
-        if (p.pos !== t.pos) movers.push({ year, kind: 'pos', team: t.name, from: p.pos, to: t.pos, note: `${p.pos}→${t.pos} место` });
-        if (t.rating != null && p.rating != null && p.rating > 0 && Math.abs(t.rating - p.rating) / p.rating >= RATING_MOVE) {
-          movers.push({ year, kind: 'rating', team: t.name, from: p.rating, to: t.rating, note: `рейтинг ${p.rating}→${t.rating}` });
-        }
-      }
-      for (const p of prevById.values()) {
-        if (!curIds.has(p.id)) movers.push({ year, kind: 'gone', team: p.name, from: p.pos, to: null, note: 'выбыла из таблицы' });
-      }
+      movers.push(...moversFromSnapshots(c.year, snaps[0]!.payload as SnapPayload, snaps[1]!.payload as SnapPayload));
     }
   }
   attention.sort((a, b) => Math.abs(b.delta ?? 0) - Math.abs(a.delta ?? 0));
-  const meta = await snapshotMeta(seasonId);
   return { baseline: cohortsWithHistory === 0, cohortsWithHistory, snapshots: meta.total, since: meta.latest, attention, movers };
 }
