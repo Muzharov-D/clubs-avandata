@@ -397,10 +397,24 @@ const FFSPB_API = (process.env.FFSPB_API_BASE ?? 'https://clubs-avandata.vercel.
 const FFSPB_KEY = process.env.FFSPB_API_KEY ?? '';
 const FFSPB_SEED_TID = Number(process.env.FFSPB_SEED_TID ?? 44324);   // турнир «до 16 лет» = 2011 г.р.
 const FFSPB_SEED_YEAR = Number(process.env.FFSPB_SEED_YEAR ?? 2011);
-async function ffspbApiGet(path: string): Promise<Record<string, unknown>> {
-  const res = await fetch(`${FFSPB_API}${path}`, { headers: { Accept: 'application/ld+json', 'X-AUTH-TOKEN': FFSPB_KEY }, signal: AbortSignal.timeout(12000) });
-  if (!res.ok) throw new Error(`ffspb-api ${res.status} ${path}`);
-  return res.json() as Promise<Record<string, unknown>>;
+// 404 = ресурса нет (для подтаблиц — «стадий больше нет», легальный стоп, не ретраим).
+class FfspbHttpError extends Error { constructor(public readonly status: number, path: string) { super(`ffspb-api ${status} ${path}`); } }
+// Транзиентные сбои прокси/ФФСПб (5xx/сеть/таймаут) РЕТРАИМ — иначе один блип молча роняет
+// целую стадию (баг: 2012 вернулась без «Высшей»), да ещё и кэшируется на TTL. 404 — финально.
+async function ffspbApiGet(path: string, attempts = 3): Promise<Record<string, unknown>> {
+  let lastErr: unknown;
+  for (let i = 0; i < attempts; i++) {
+    try {
+      const res = await fetch(`${FFSPB_API}${path}`, { headers: { Accept: 'application/ld+json', 'X-AUTH-TOKEN': FFSPB_KEY }, signal: AbortSignal.timeout(12000) });
+      if (!res.ok) throw new FfspbHttpError(res.status, path);
+      return res.json() as Promise<Record<string, unknown>>;
+    } catch (e) {
+      if (e instanceof FfspbHttpError && e.status === 404) throw e;   // нет ресурса — не ретраим
+      lastErr = e;
+      if (i < attempts - 1) await new Promise((r) => setTimeout(r, 300 * (i + 1))); // короткий бэкофф
+    }
+  }
+  throw lastErr;
 }
 interface FfspbApiTeam { position?: number; teamName?: string; team?: { id?: number | string; name?: string; logoSrc?: string | null; thumbnails?: { square_xs?: string } }; stats?: { games?: number; wins?: number; draws?: number; loses?: number; scored?: number; missed?: number; difference?: number; points?: number } }
 interface FfspbApiGroup { groupName?: string; teams?: FfspbApiTeam[] }
@@ -434,7 +448,11 @@ async function ffspbDirectStandings(seasonId: number, year: number): Promise<Div
     let sub = 1;
     for (; sub <= SUB_MAX; sub++) {
       let g: FfspbApiGroup;
-      try { g = (await ffspbApiGet(`/standings/${st.id}-${sub}`)) as unknown as FfspbApiGroup; } catch { break; }
+      try { g = (await ffspbApiGet(`/standings/${st.id}-${sub}`)) as unknown as FfspbApiGroup; }
+      catch (e) {
+        if (e instanceof FfspbHttpError && e.status === 404) break;  // подтаблиц больше нет — норм
+        throw e;  // транзиент после ретраев — не глотаем стадию молча, валим когорту → degraded-зеркало
+      }
       const teamsRaw = g.teams ?? [];
       if (!teamsRaw.length) continue;                      // пустая подгруппа
       const division = g.groupName ?? st.name ?? 'Лига';
