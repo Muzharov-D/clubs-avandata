@@ -409,7 +409,9 @@ async function ffspbApiGet(path: string, attempts = 3): Promise<Record<string, u
       if (!res.ok) throw new FfspbHttpError(res.status, path);
       return res.json() as Promise<Record<string, unknown>>;
     } catch (e) {
-      if (e instanceof FfspbHttpError && e.status === 404) throw e;   // нет ресурса — не ретраим
+      // 4xx (вкл. 404 — «нет подтаблицы») = клиентская ошибка/нет ресурса → НЕ ретраим, пробрасываем.
+      // Ретраим только транзиент: 5xx / сеть / таймаут (AbortError).
+      if (e instanceof FfspbHttpError && e.status >= 400 && e.status < 500) throw e;
       lastErr = e;
       if (i < attempts - 1) await new Promise((r) => setTimeout(r, 300 * (i + 1))); // короткий бэкофф
     }
@@ -448,11 +450,10 @@ async function ffspbDirectStandings(seasonId: number, year: number): Promise<Div
     let sub = 1;
     for (; sub <= SUB_MAX; sub++) {
       let g: FfspbApiGroup;
-      try { g = (await ffspbApiGet(`/standings/${st.id}-${sub}`)) as unknown as FfspbApiGroup; }
-      catch (e) {
-        if (e instanceof FfspbHttpError && e.status === 404) break;  // подтаблиц больше нет — норм
-        throw e;  // транзиент после ретраев — не глотаем стадию молча, валим когорту → degraded-зеркало
-      }
+      // ФФСПб на «нет подтаблицы» отвечает НЕ-404 (различить «нет данных» и сбой нельзя),
+      // поэтому на любой ошибке СТОПим эту стадию, но НЕ роняем уже собранные стадии. Ретрай
+      // транзиентов сидит внутри ffspbApiGet — он гасит блипы, из-за которых стадия пропадала молча.
+      try { g = (await ffspbApiGet(`/standings/${st.id}-${sub}`)) as unknown as FfspbApiGroup; } catch { break; }
       const teamsRaw = g.teams ?? [];
       if (!teamsRaw.length) continue;                      // пустая подгруппа
       const division = g.groupName ?? st.name ?? 'Лига';
