@@ -1,0 +1,488 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Равная цифровая среда региона — питч</title>
+<style>
+  :root{
+    --bg:#0a0c10; --bg2:#0e1116; --surface:#141922; --surface2:#1a212c;
+    --line:#26303d; --text:#eef2f6; --muted:#9aa6b4; --faint:#6b7686;
+    --brand:#ef4444; --brand-deep:#b91c1c; --gold:#f5b417; --cyan:#22d3ee;
+    --green:#34d399; --violet:#a78bfa;
+    --r:16px; --r-sm:10px; --r-lg:22px;
+    --maxw:1180px;
+    --font:'Inter Tight',Inter,-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0;font-family:var(--font);background:
+      radial-gradient(1200px 700px at 80% -10%, rgba(239,68,68,.12), transparent 60%),
+      radial-gradient(900px 600px at 0% 10%, rgba(34,211,238,.08), transparent 55%),
+      var(--bg);
+    color:var(--text);line-height:1.5;-webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 28px}
+
+  /* ── toolbar ── */
+  .bar{position:sticky;top:0;z-index:50;backdrop-filter:blur(10px);background:rgba(10,12,16,.72);border-bottom:1px solid var(--line)}
+  .bar .wrap{display:flex;align-items:center;gap:14px;height:58px}
+  .logo{font-weight:800;letter-spacing:-.02em;font-size:15px;display:flex;align-items:center;gap:9px}
+  .logo .dot{width:10px;height:10px;border-radius:50%;background:var(--brand);box-shadow:0 0 14px var(--brand)}
+  .bar .sp{flex:1}
+  .nav{display:flex;gap:6px}
+  .nav a{font-size:12.5px;color:var(--muted);text-decoration:none;padding:6px 10px;border-radius:8px}
+  .nav a:hover{background:var(--surface2);color:#fff}
+  .btn{font:inherit;font-size:13px;font-weight:600;color:var(--text);cursor:pointer;background:var(--surface2);border:1px solid var(--line);border-radius:999px;padding:8px 15px;transition:.15s;display:inline-flex;align-items:center;gap:7px}
+  .btn:hover{border-color:var(--brand);color:#fff}
+  .btn.on{background:var(--brand);border-color:var(--brand);color:#fff}
+  .hint{font-size:12px;color:var(--faint)}
+
+  /* ── hero ── */
+  .hero{padding:60px 0 24px}
+  .kicker{font-size:12.5px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--brand);margin-bottom:16px}
+  h1{font-size:clamp(34px,5vw,58px);line-height:1.04;letter-spacing:-.03em;margin:0 0 18px;font-weight:800}
+  h1 .grad{background:linear-gradient(100deg,var(--gold),var(--brand));-webkit-background-clip:text;background-clip:text;color:transparent}
+  .lede{font-size:clamp(16px,2vw,20px);color:var(--muted);max-width:800px}
+  .lede b{color:var(--text);font-weight:600}
+  .stats{display:flex;flex-wrap:wrap;gap:14px;margin-top:26px}
+  .stat{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:14px 18px;min-width:150px}
+  .stat .n{font-size:24px;font-weight:800;letter-spacing:-.02em}
+  .stat .n .u{font-size:14px;color:var(--gold)}
+  .stat .l{font-size:12px;color:var(--faint);margin-top:2px}
+
+  section{padding:44px 0;border-top:1px solid rgba(38,48,61,.5)}
+  .eyebrow{font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);margin-bottom:10px}
+  h2{font-size:clamp(24px,3.4vw,38px);letter-spacing:-.02em;margin:0 0 10px;font-weight:800}
+  .sub{color:var(--muted);max-width:760px;margin:0 0 28px}
+
+  /* ── spiral levels ── */
+  .spiral{display:flex;flex-direction:column}
+  .level{position:relative;background:linear-gradient(90deg,var(--surface),var(--bg2));border:1px solid var(--line);border-left:4px solid var(--lc,var(--brand));border-radius:var(--r);padding:18px 22px;margin:0 auto;width:var(--w,100%);transition:.2s}
+  .level:hover{border-color:var(--lc,var(--brand))}
+  .lvl-top{display:flex;align-items:center;gap:14px;margin-bottom:14px;flex-wrap:wrap}
+  .lvl-ico{width:46px;height:46px;border-radius:13px;display:grid;place-items:center;font-size:22px;background:color-mix(in srgb,var(--lc) 16%,transparent);border:1px solid color-mix(in srgb,var(--lc) 40%,transparent)}
+  .lvl-n{font-size:11px;font-weight:700;color:var(--faint);letter-spacing:.08em}
+  .lvl-t{font-size:20px;font-weight:800;letter-spacing:-.01em}
+  .lvl-tags{margin-left:auto;display:flex;gap:7px;flex-wrap:wrap}
+  .tag{font-size:11px;font-weight:700;padding:4px 10px;border-radius:999px;border:1px solid var(--line);color:var(--muted);background:var(--surface2)}
+  .tag.scope{color:var(--lc);border-color:color-mix(in srgb,var(--lc) 40%,transparent)}
+  .lvl-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px}
+  .cell .cl{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--faint);margin-bottom:5px;display:flex;align-items:center;gap:6px}
+  .cell .ct{font-size:13.5px;color:var(--muted);line-height:1.45}
+  .cell.born .ct b,.cell .ct b{color:var(--text);font-weight:600}
+  .cell.dec{border-left:2px solid color-mix(in srgb,var(--lc) 50%,transparent);padding-left:13px}
+  .cell.dec .cl{color:var(--lc)}
+  .cell.dec .ct{color:var(--text)}
+  .lvl-foot{margin-top:13px;padding-top:11px;border-top:1px dashed var(--line);font-size:12px;color:var(--faint)}
+  .chip{display:inline-block;background:var(--surface2);border:1px solid var(--line);border-radius:999px;padding:3px 10px;margin:0 5px 0 0;color:var(--muted);font-weight:600;font-size:11.5px}
+  .flow{display:flex;justify-content:center;gap:34px;padding:8px 0;font-size:12px;font-weight:600;flex-wrap:wrap}
+  .flow .up{color:var(--green)} .flow .down{color:var(--violet)}
+
+  /* ── lineage ── */
+  .lineage{display:grid;grid-template-columns:repeat(5,1fr);gap:0;align-items:stretch}
+  .step{position:relative;background:var(--surface);border:1px solid var(--line);border-top:3px solid var(--sc,var(--brand));border-radius:var(--r);padding:16px 16px;margin:0 6px}
+  .step .si{font-size:22px;margin-bottom:8px}
+  .step .sn{font-size:11px;font-weight:700;color:var(--faint);letter-spacing:.06em;margin-bottom:4px}
+  .step .st{font-size:13.5px;color:var(--text);font-weight:600;line-height:1.4}
+  .step .sd{font-size:12px;color:var(--faint);margin-top:5px;line-height:1.4}
+  .step:not(:last-child)::after{content:"→";position:absolute;right:-13px;top:50%;transform:translateY(-50%);color:var(--green);font-weight:800;font-size:18px;z-index:2}
+  .lineage-note{margin-top:18px;font-size:14px;color:var(--muted);text-align:center}
+  .lineage-note b{color:var(--gold)}
+
+  /* ── value cards ── */
+  .moat{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
+  .mcard{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);padding:22px}
+  .mcard .mi{font-size:24px;margin-bottom:10px}
+  .mcard h3{margin:0 0 7px;font-size:17px;font-weight:800;letter-spacing:-.01em}
+  .mcard p{margin:0;font-size:13.5px;color:var(--muted);line-height:1.5}
+  .mcard p b{color:var(--text)}
+
+  /* ── roles ── */
+  .roles{display:grid;grid-template-columns:repeat(2,1fr);gap:18px}
+  .role{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);padding:22px 22px 16px;transition:.2s;position:relative;overflow:hidden}
+  .role::before{content:"";position:absolute;inset:0 0 auto 0;height:3px;background:var(--rc,var(--brand))}
+  .role:hover{border-color:color-mix(in srgb,var(--rc) 55%,var(--line))}
+  .role-h{display:flex;align-items:center;gap:13px;margin-bottom:4px}
+  .role-ico{width:40px;height:40px;border-radius:11px;display:grid;place-items:center;font-size:19px;background:color-mix(in srgb,var(--rc) 15%,transparent);border:1px solid color-mix(in srgb,var(--rc) 38%,transparent)}
+  .role-t{font-size:18px;font-weight:800}
+  .role-who{font-size:12.5px;color:var(--faint);margin:-2px 0 12px 53px}
+  .role-dec{font-size:12.5px;color:var(--muted);background:color-mix(in srgb,var(--rc) 9%,transparent);border:1px solid color-mix(in srgb,var(--rc) 22%,transparent);border-radius:var(--r-sm);padding:9px 12px;margin-bottom:14px}
+  .role-dec b{color:var(--text)}
+  .screens{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .scr{background:var(--bg2);border:1px solid var(--line);border-radius:var(--r-sm);padding:11px 13px;transition:.15s}
+  .scr:hover{border-color:var(--rc,var(--brand))}
+  .scr-t{font-size:13.5px;font-weight:700;display:flex;align-items:center;gap:7px;margin-bottom:4px}
+  .scr-t .g{width:7px;height:7px;border-radius:2px;background:var(--rc,var(--brand));flex:0 0 auto}
+  .scr-d{font-size:12px;color:var(--muted);line-height:1.4}
+  .scr-q{font-size:11.5px;color:var(--faint);margin-top:5px;font-style:italic}
+  .scr-q::before{content:"→ ";color:var(--rc,var(--brand));font-style:normal}
+
+  .legend{display:flex;flex-wrap:wrap;gap:18px;margin-top:22px;font-size:13px;color:var(--muted)}
+  .legend i{font-style:normal;display:inline-flex;align-items:center;gap:7px}
+  .legend .sw{width:12px;height:12px;border-radius:3px;display:inline-block}
+
+  /* ── tables ── */
+  .tbl{width:100%;border-collapse:collapse;font-size:13.5px;border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+  .tbl th,.tbl td{text-align:left;padding:13px 16px;border-bottom:1px solid var(--line);vertical-align:top}
+  .tbl thead th{background:var(--surface2);font-size:11.5px;letter-spacing:.04em;text-transform:uppercase;color:var(--faint);font-weight:700}
+  .tbl tbody tr:last-child td{border-bottom:0}
+  .tbl .crit{color:var(--text);font-weight:700;width:26%}
+  .tbl .bad{color:var(--faint)} .tbl .bad::before{content:"✕ ";color:var(--brand)}
+  .tbl .good{color:var(--muted)} .tbl .good::before{content:"✓ ";color:var(--green)} .tbl .good b{color:var(--text)}
+
+  /* ── phases ── */
+  .phases{display:grid;grid-template-columns:repeat(4,1fr);gap:0}
+  .phase{position:relative;background:var(--surface);border:1px solid var(--line);border-top:3px solid var(--pc,var(--brand));border-radius:var(--r);padding:18px 16px;margin:0 6px}
+  .phase .pn{font-size:11px;font-weight:700;letter-spacing:.08em;color:var(--faint);margin-bottom:6px}
+  .phase h3{margin:0 0 7px;font-size:16px;font-weight:800}
+  .phase p{margin:0;font-size:12.5px;color:var(--muted);line-height:1.45}
+  .phase .badge{display:inline-block;margin-top:10px;font-size:10.5px;font-weight:700;padding:3px 9px;border-radius:999px}
+  .phase .badge.now{background:color-mix(in srgb,var(--green) 18%,transparent);color:var(--green);border:1px solid color-mix(in srgb,var(--green) 40%,transparent)}
+  .phase .badge.next{background:var(--surface2);color:var(--faint);border:1px solid var(--line)}
+  .phase:not(:last-child)::after{content:"→";position:absolute;right:-13px;top:50%;transform:translateY(-50%);color:var(--brand);font-weight:800;font-size:18px;z-index:2}
+
+  footer{border-top:1px solid var(--line);padding:28px 0 60px;color:var(--faint);font-size:13px}
+
+  body.editing [data-e]{outline:1px dashed color-mix(in srgb,var(--gold) 60%,transparent);outline-offset:3px;border-radius:4px}
+  body.editing{caret-color:var(--gold)}
+
+  @media (max-width:920px){
+    .level{width:100%!important}.lvl-grid{grid-template-columns:1fr}
+    .roles,.moat{grid-template-columns:1fr}
+    .lineage{grid-template-columns:1fr;gap:10px}.step{margin:0}.step:not(:last-child)::after{content:"↓";right:50%;top:auto;bottom:-15px;transform:translateX(50%)}
+    .phases{grid-template-columns:1fr;gap:10px}.phase{margin:0}.phase:not(:last-child)::after{content:"↓";right:50%;top:auto;bottom:-15px;transform:translateX(50%)}
+    .tbl,.tbl thead,.tbl tbody,.tbl tr,.tbl th,.tbl td{display:block}.tbl thead{display:none}.tbl td{border:0;padding:4px 14px}.tbl tr{border-bottom:1px solid var(--line);padding:10px 0}
+    .nav{display:none}
+  }
+  @media print{
+    .bar,.hint{display:none}
+    body{background:#fff;color:#111}
+    .level,.role,.scr,.step,.mcard,.stat{break-inside:avoid;border-color:#ccc;background:#fff}
+    h1 .grad{color:var(--brand)}
+    section{padding:16px 0}
+  }
+</style>
+</head>
+<body>
+
+<div class="bar">
+  <div class="wrap">
+    <div class="logo"><span class="dot"></span>Avandata · цифровая среда региона</div>
+    <div class="sp"></div>
+    <nav class="nav">
+      <a href="#spiral">Спираль</a><a href="#lineage">Путь паса</a><a href="#roles">Экраны</a><a href="#moat">Среда</a><a href="#compare">Сравнение</a><a href="#rollout">Рост</a>
+    </nav>
+    <span class="hint" id="editHint">режим показа</span>
+    <button class="btn" id="editBtn">✏️ Правка</button>
+    <button class="btn" onclick="window.print()">⤓ В PDF</button>
+  </div>
+</div>
+
+<header class="hero">
+  <div class="wrap">
+    <div class="kicker" data-e>Цифровая среда развития · масштаб региона</div>
+    <h1 data-e>Равная цифровая среда<br><span class="grad">на весь регион</span></h1>
+    <p class="lede" data-e>Один пас ребёнка из любой школы — большой академии или сельской секции — <b>уже обогащает всю картину выше</b>:
+      команду, клуб, лигу, регион. Это среда, где <b>качество аналитики не зависит от бюджета</b>, где <b>виден каждый</b>, и где
+      <b>ни один талант не теряется</b> из-за географии. Данные поднимаются виток за витком — и из каждого действия рождается
+      качество, одинаковое для всех.</p>
+    <div class="stats">
+      <div class="stat" data-e><div class="n">~130</div><div class="l">показателей с матча на игрока</div></div>
+      <div class="stat" data-e><div class="n">5</div><div class="l">витков среды</div></div>
+      <div class="stat" data-e><div class="n">1<span class="u"> ввод</span></div><div class="l">качество поднимается само</div></div>
+      <div class="stat" data-e><div class="n">100%</div><div class="l">равный доступ — независимо от бюджета</div></div>
+    </div>
+  </div>
+</header>
+
+<!-- ─────────────────── СПИРАЛЬ ─────────────────── -->
+<section id="spiral">
+  <div class="wrap">
+    <div class="eyebrow" data-e>Восходящая спираль</div>
+    <h2 data-e>Пять витков: данные → инсайт → решение</h2>
+    <p class="sub" data-e>Снизу — атом (игрок), сверху — регион. На каждом витке: что <b>собирается</b>, что из этого
+      <b>рождается</b> и какое <b>решение</b> это позволяет принять. <span style="color:var(--green)">↑ данные обогащают среду выше</span> ·
+      <span style="color:var(--violet)">↓ нормы и стандарты возвращаются вниз</span>.</p>
+
+    <div class="spiral">
+
+      <!-- L1 -->
+      <div class="level" style="--lc:var(--gold);--w:60%">
+        <div class="lvl-top">
+          <div class="lvl-ico">⚽</div>
+          <div><div class="lvl-n" data-e>ВИТОК 1 · АТОМ</div><div class="lvl-t" data-e>Игрок</div></div>
+          <div class="lvl-tags"><span class="tag scope" data-e>1 игрок</span></div>
+        </div>
+        <div class="lvl-grid">
+          <div class="cell"><div class="cl" data-e>📥 Собирается</div><div class="ct" data-e>~130 событий матча: голы, удары, точность пасов (8 типов), отборы, перехваты, единоборства, дистанция, спринты.</div></div>
+          <div class="cell born"><div class="cl" data-e>✨ Рождается</div><div class="ct" data-e><b>Индекс эффективности</b> (общий/атака/оборона/физика), перцентили против команды, <b>амплуа</b>, форма, надёжность, конверсия ударов.</div></div>
+          <div class="cell dec"><div class="cl" data-e>🎯 Решение</div><div class="ct" data-e>Над чем работать игроку, готов ли к старшей команде, попадание в состав на матч.</div></div>
+        </div>
+        <div class="lvl-foot" data-e>Смотрит: <span class="chip">Игрок</span><span class="chip">Родитель</span><span class="chip">Тренер</span></div>
+      </div>
+
+      <div class="flow"><span class="up">↑ индексы суммируются в состав</span><span class="down">↓ персональная норма возраста</span></div>
+
+      <!-- L2 -->
+      <div class="level" style="--lc:var(--cyan);--w:70%">
+        <div class="lvl-top">
+          <div class="lvl-ico">👥</div>
+          <div><div class="lvl-n" data-e>ВИТОК 2</div><div class="lvl-t" data-e>Команда</div></div>
+          <div class="lvl-tags"><span class="tag scope" data-e>1 команда / возраст</span></div>
+        </div>
+        <div class="lvl-grid">
+          <div class="cell"><div class="cl" data-e>📥 Собирается</div><div class="ct" data-e>Индексы всех игроков состава + результаты матчей и календарь команды.</div></div>
+          <div class="cell born"><div class="cl" data-e>✨ Рождается</div><div class="ct" data-e>Профиль команды по линиям, <b>стиль игры</b> (прессинг/вертикаль/владение), лидеры тура, динамика сезона, импульс по таймам.</div></div>
+          <div class="cell dec"><div class="cl" data-e>🎯 Решение</div><div class="ct" data-e>Кого ставить и в какой роли, тренировочный фокус недели, кого подтягивать из резерва.</div></div>
+        </div>
+        <div class="lvl-foot" data-e>Смотрит: <span class="chip">Тренер команды</span></div>
+      </div>
+
+      <div class="flow"><span class="up">↑ команды складываются в вертикаль</span><span class="down">↓ единая методика клуба</span></div>
+
+      <!-- L3 -->
+      <div class="level" style="--lc:var(--brand);--w:82%">
+        <div class="lvl-top">
+          <div class="lvl-ico">🏛️</div>
+          <div><div class="lvl-n" data-e>ВИТОК 3</div><div class="lvl-t" data-e>Клуб / Академия</div></div>
+          <div class="lvl-tags"><span class="tag scope" data-e>все возрасты клуба</span></div>
+        </div>
+        <div class="lvl-grid">
+          <div class="cell"><div class="cl" data-e>📥 Собирается</div><div class="ct" data-e>Профили всех команд U8…U18, посещаемость, нагрузка, движение игроков между возрастами.</div></div>
+          <div class="cell born"><div class="cl" data-e>✨ Рождается</div><div class="ct" data-e><b>Вертикаль развития</b> (как поколение растёт год к году), сравнение возрастов, путь игрока, <b>кадровый резерв</b> «кто готов выше».</div></div>
+          <div class="cell dec"><div class="cl" data-e>🎯 Решение</div><div class="ct" data-e>Кого двигать вверх, какие возрасты проседают, кадровые решения по тренерам, куда направить методическую работу.</div></div>
+        </div>
+        <div class="lvl-foot" data-e>Смотрит: <span class="chip">Главный тренер</span><span class="chip">Директор академии</span></div>
+      </div>
+
+      <div class="flow"><span class="up">↑ клубы складываются в картину дивизиона</span><span class="down">↓ единые ориентиры лиги</span></div>
+
+      <!-- L4 -->
+      <div class="level" style="--lc:var(--violet);--w:92%">
+        <div class="lvl-top">
+          <div class="lvl-ico">🏆</div>
+          <div><div class="lvl-n" data-e>ВИТОК 4</div><div class="lvl-t" data-e>Лига</div></div>
+          <div class="lvl-tags"><span class="tag scope" data-e>все клубы дивизиона</span></div>
+        </div>
+        <div class="lvl-grid">
+          <div class="cell"><div class="cl" data-e>📥 Собирается</div><div class="ct" data-e>Таблицы и матчи всех клубов дивизиона + их командные профили.</div></div>
+          <div class="cell born"><div class="cl" data-e>✨ Рождается</div><div class="ct" data-e>Сводная таблица, <b>баланс силы</b> дивизиона, результативность и стили, дисциплина, <b>пул талантов лиги</b> (топ по позиции/возрасту сквозь клубы).</div></div>
+          <div class="cell dec"><div class="cl" data-e>🎯 Решение</div><div class="ct" data-e>Формат и справедливость лиги, выявление доминирования, кого звать на просмотры, дисциплинарные меры.</div></div>
+        </div>
+        <div class="lvl-foot" data-e>Смотрит: <span class="chip">Координатор лиги</span><span class="chip">Селекционеры</span></div>
+      </div>
+
+      <div class="flow"><span class="up">↑ лиги складываются в карту региона</span><span class="down">↓ стандарты и аккредитация федерации</span></div>
+
+      <!-- L5 -->
+      <div class="level" style="--lc:var(--green);--w:100%">
+        <div class="lvl-top">
+          <div class="lvl-ico">🗺️</div>
+          <div><div class="lvl-n" data-e>ВИТОК 5 · РЕГИОН</div><div class="lvl-t" data-e>Региональная федерация</div></div>
+          <div class="lvl-tags"><span class="tag scope" data-e>весь регион</span></div>
+        </div>
+        <div class="lvl-grid">
+          <div class="cell"><div class="cl" data-e>📥 Собирается</div><div class="ct" data-e>Все лиги и клубы региона + сводные профили команд и игроков.</div></div>
+          <div class="cell born"><div class="cl" data-e>✨ Рождается</div><div class="ct" data-e><b>Карта охвата</b> (клубы/дети/тренеры), <b>реестр талантов</b> (кандидаты в сборные), метрики развития (массовость, удержание, прогресс когорт), соответствие методологии.</div></div>
+          <div class="cell dec"><div class="cl" data-e>🎯 Решение</div><div class="ct" data-e>Куда направить методическую поддержку и развитие, кого в сборную региона, какие академии соответствуют стандартам, стратегия развития футбола.</div></div>
+        </div>
+        <div class="lvl-foot" data-e>Смотрит: <span class="chip">Федерация</span><span class="chip">Скауты</span><span class="chip">Тренеры сборных</span></div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ─────────────────── ПУТЬ ОДНОГО ПАСА ─────────────────── -->
+<section id="lineage">
+  <div class="wrap">
+    <div class="eyebrow" data-e>Линия данных</div>
+    <h2 data-e>Путь одного гола — сквозь все пять витков</h2>
+    <p class="sub" data-e>И гол, и скромный пас — <b>каждое действие поднимается наверх</b> и делает картину региона полнее. Данные вводятся один раз — каждый виток берёт своё.</p>
+    <div class="lineage">
+      <div class="step" style="--sc:var(--gold)"><div class="si">⚽</div><div class="sn" data-e>ВИТОК 1 · ИГРОК</div><div class="st" data-e>Удар Иванова на 67-й — гол.</div><div class="sd" data-e>Событие записано в матч: удар, в створ, гол, конверсия 1 из 3.</div></div>
+      <div class="step" style="--sc:var(--cyan)"><div class="si">📈</div><div class="sn" data-e>ВИТОК 2 · КОМАНДА</div><div class="st" data-e>+0.3 к индексу, лидер тура.</div><div class="sd" data-e>Поднял среднюю «атаки» команды; первый по голевым за тур.</div></div>
+      <div class="step" style="--sc:var(--brand)"><div class="si">🧬</div><div class="sn" data-e>ВИТОК 3 · КЛУБ</div><div class="st" data-e>Готов к старшему возрасту.</div><div class="sd" data-e>Стабильно выше нормы U14 — в кадровом резерве «двигать вверх».</div></div>
+      <div class="step" style="--sc:var(--violet)"><div class="si">🏆</div><div class="sn" data-e>ВИТОК 4 · ЛИГА</div><div class="st" data-e>В пуле талантов дивизиона.</div><div class="sd" data-e>Очки клубу в таблице; попал в топ форвардов лиги по возрасту.</div></div>
+      <div class="step" style="--sc:var(--green)"><div class="si">🗺️</div><div class="sn" data-e>ВИТОК 5 · РЕГИОН</div><div class="st" data-e>Виден всему региону.</div><div class="sd" data-e>Точка на карте талантов — ни один игрок не теряется из виду.</div></div>
+    </div>
+    <div class="lineage-note" data-e><b>Один пас → обогащает всю среду выше.</b> Никто не дублирует отчёты. Качество поднимается само — и для топ-академии, и для сельской секции.</div>
+  </div>
+</section>
+
+<!-- ─────────────────── ЭКРАНЫ ПО РОЛЯМ ─────────────────── -->
+<section id="roles">
+  <div class="wrap">
+    <div class="eyebrow" data-e>Интерфейсы</div>
+    <h2 data-e>Экраны по ролям</h2>
+    <p class="sub" data-e>Каждая роль видит свой виток среды и принимает свои решения. У каждого экрана — вопрос, на который он отвечает.</p>
+
+    <div class="roles">
+
+      <!-- Игрок / Родитель -->
+      <div class="role" style="--rc:var(--gold)">
+        <div class="role-h"><div class="role-ico">⚽</div><div class="role-t" data-e>Игрок и Родитель</div></div>
+        <div class="role-who" data-e>Виток 1 · личные данные. Родитель видит ребёнка без отдельного входа.</div>
+        <div class="role-dec" data-e><b>Решает:</b> над чем работать, как я расту, вызвали ли меня на матч.</div>
+        <div class="screens">
+          <div class="scr"><div class="scr-t"><span class="g"></span><span data-e>Профиль игрока</span></div><div class="scr-d" data-e>Индекс эффективности, радар сильных сторон, амплуа, форма.</div><div class="scr-q" data-e>В чём я силён и где проседаю?</div></div>
+          <div class="scr"><div class="scr-t"><span class="g"></span><span data-e>Мои матчи</span></div><div class="scr-d" data-e>Разбор каждой игры, оценка, ключевые эпизоды.</div><div class="scr-q" data-e>Как я сыграл и почему такая оценка?</div></div>
+          <div class="scr"><div class="scr-t"><span class="g"></span><span data-e>Состав на матч</span></div><div class="scr-d" data-e>Вызвали / не вызвали, подтверждение участия.</div><div class="scr-q" data-e>Я в заявке на ближайшую игру?</div></div>
+          <div class="scr"><div class="scr-t"><span class="g"></span><span data-e>Тренировки</span></div><div class="scr-d" data-e>Расписание, посещаемость, персональные цели.</div><div class="scr-q" data-e>Куда и когда, какая моя норма?</div></div>
+        </div>
+      </div>
+
+      <!-- Тренер команды -->
+      <div class="role" style="--rc:var(--cyan)">
+        <div class="role-h"><div class="role-ico">👥</div><div class="role-t" data-e>Тренер команды</div></div>
+        <div class="role-who" data-e>Виток 2 · одна команда/возраст.</div>
+        <div class="role-dec" data-e><b>Решает:</b> состав и роли, фокус тренировок, кого подтягивать.</div>
+        <div class="screens">
+          <div class="scr"><div class="scr-t"><span class="g"></span><span data-e>Дашборд команды</span></div><div class="scr-d" data-e>Состав по линиям, средние рейтинги, лидеры.</div><div class="scr-q" data-e>В какой форме команда прямо сейчас?</div></div>
+          <div class="scr"><div class="scr-t"><span class="g"></span><span data-e>Разбор матча</span></div><div class="scr-d" data-e>Командная статистика, стиль игры, импульс по таймам.</div><div class="scr-q" data-e>Что сработало и где провалились?</div></div>
+          <div class="scr"><div class="scr-t"><span class="g"></span><span data-e>Профили игроков</span></div><div class="scr-d" data-e>Перцентили и сравнение внутри команды.</div><div class="scr-q" data-e>Кто тянет, кому нужна работа?</div></div>
+          <div class="scr"><div class="scr-t"><span class="g"></span><span data-e>Состав и тренировки</span></div><div class="scr-d" data-e>Вызовы, посещаемость, нагрузка недели.</div><div class="scr-q" data-e>Кого ставить и кто готов?</div></div>
+          <div class="scr"><div class="scr-t"><span class="g"></span><span data-e>Турнирная таблица</span></div><div class="scr-d" data-e>Положение, календарь, профиль соперника.</div><div class="scr-q" data-e>Кто следующий и как к нему готовиться?</div></div>
+        </div>
+      </div>
+
+      <!-- Главный тренер клуба -->
+      <div class="role" style="--rc:var(--brand)">
+        <div class="role-h"><div class="role-ico">🏛️</div><div class="role-t" data-e>Главный тренер / Директор</div></div>
+        <div class="role-who" data-e>Виток 3 · все команды клуба + всё, что у тренера.</div>
+        <div class="role-dec" data-e><b>Решает:</b> кого двигать по вертикали, какие возрасты проседают, кадры.</div>
+        <div class="screens">
+          <div class="scr"><div class="scr-t"><span class="g"></span><span data-e>Обзор клуба</span></div><div class="scr-d" data-e>Все возрасты на одном экране, ключевые метрики.</div><div class="scr-q" data-e>Как живёт академия в целом?</div></div>
+          <div class="scr"><div class="scr-t"><span class="g"></span><span data-e>Вертикаль развития</span></div><div class="scr-d" data-e>U8 → U18, прогресс поколений год к году.</div><div class="scr-q" data-e>Поколение растёт или стагнирует?</div></div>
+          <div class="scr"><div class="scr-t"><span class="g"></span><span data-e>Кадровый резерв</span></div><div class="scr-d" data-e>Кто готов в старший возраст, путь игрока.</div><div class="scr-q" data-e>Кого двигать вверх уже сейчас?</div></div>
+          <div class="scr"><div class="scr-t"><span class="g"></span><span data-e>Команды и тренеры</span></div><div class="scr-d" data-e>Составы, назначения, нагрузка тренеров, доступы.</div><div class="scr-q" data-e>Где кадровые дыры и перекосы?</div></div>
+        </div>
+      </div>
+
+      <!-- Администратор -->
+      <div class="role" style="--rc:#94a3b8">
+        <div class="role-h"><div class="role-ico">⚙️</div><div class="role-t" data-e>Администратор клуба</div></div>
+        <div class="role-who" data-e>Служебный слой · настройка и данные клуба.</div>
+        <div class="role-dec" data-e><b>Решает:</b> доступы и поток данных в среду.</div>
+        <div class="screens">
+          <div class="scr"><div class="scr-t"><span class="g"></span><span data-e>Клуб: бренд</span></div><div class="scr-d" data-e>Логотип, цвета, оформление клуба в среде.</div><div class="scr-q" data-e>Как клуб выглядит в среде?</div></div>
+          <div class="scr"><div class="scr-t"><span class="g"></span><span data-e>Команды</span></div><div class="scr-d" data-e>Создание возрастов, открытие/архив.</div><div class="scr-q" data-e>Какие команды активны?</div></div>
+          <div class="scr"><div class="scr-t"><span class="g"></span><span data-e>Пользователи и роли</span></div><div class="scr-d" data-e>Тренеры, игроки, права доступа.</div><div class="scr-q" data-e>Кто что видит?</div></div>
+          <div class="scr"><div class="scr-t"><span class="g"></span><span data-e>Загрузка отчётов</span></div><div class="scr-d" data-e>Импорт матчей: статистика + рейтинги.</div><div class="scr-q" data-e>Данные матча в системе?</div></div>
+        </div>
+      </div>
+
+      <!-- Лига -->
+      <div class="role" style="--rc:var(--violet)">
+        <div class="role-h"><div class="role-ico">🏆</div><div class="role-t" data-e>Координатор лиги</div></div>
+        <div class="role-who" data-e>Виток 4 · все клубы дивизиона.</div>
+        <div class="role-dec" data-e><b>Решает:</b> формат и честность лиги, кого на просмотры, дисциплину.</div>
+        <div class="screens">
+          <div class="scr"><div class="scr-t"><span class="g"></span><span data-e>Сводная таблица лиги</span></div><div class="scr-d" data-e>Все клубы, туры, результаты в одном месте.</div><div class="scr-q" data-e>Кто и как идёт по дистанции?</div></div>
+          <div class="scr"><div class="scr-t"><span class="g"></span><span data-e>Межклубная аналитика</span></div><div class="scr-d" data-e>Баланс силы, результативность, стили игры.</div><div class="scr-q" data-e>Дивизион ровный или есть гегемон?</div></div>
+          <div class="scr"><div class="scr-t"><span class="g"></span><span data-e>Календарь и протоколы</span></div><div class="scr-d" data-e>Расписание тура, переносы, результаты.</div><div class="scr-q" data-e>Что и когда играется?</div></div>
+          <div class="scr"><div class="scr-t"><span class="g"></span><span data-e>Пул талантов лиги</span></div><div class="scr-d" data-e>Топ игроков по позициям и возрастам сквозь клубы.</div><div class="scr-q" data-e>Кого звать на просмотр?</div></div>
+          <div class="scr"><div class="scr-t"><span class="g"></span><span data-e>Дисциплина и регламент</span></div><div class="scr-d" data-e>Карточки, дисквалификации, соответствие.</div><div class="scr-q" data-e>Кто нарушает и что делать?</div></div>
+        </div>
+      </div>
+
+      <!-- Федерация -->
+      <div class="role" style="--rc:var(--green)">
+        <div class="role-h"><div class="role-ico">🗺️</div><div class="role-t" data-e>Региональная федерация</div></div>
+        <div class="role-who" data-e>Виток 5 · все лиги и клубы региона.</div>
+        <div class="role-dec" data-e><b>Решает:</b> развитие региона, состав сборных, аккредитацию академий.</div>
+        <div class="screens">
+          <div class="scr"><div class="scr-t"><span class="g"></span><span data-e>Карта региона</span></div><div class="scr-d" data-e>Клубы, лиги, охват и плотность футбола.</div><div class="scr-q" data-e>Где футбол есть, а где провал?</div></div>
+          <div class="scr"><div class="scr-t"><span class="g"></span><span data-e>Реестр талантов / скаутинг</span></div><div class="scr-d" data-e>Восходящие игроки, кандидаты в сборные региона.</div><div class="scr-q" data-e>Кто лучшие по возрастам в регионе?</div></div>
+          <div class="scr"><div class="scr-t"><span class="g"></span><span data-e>Метрики развития</span></div><div class="scr-d" data-e>Массовость, удержание детей, прогресс когорт.</div><div class="scr-q" data-e>Развитие идёт или дети уходят?</div></div>
+          <div class="scr"><div class="scr-t"><span class="g"></span><span data-e>Методология и стандарты</span></div><div class="scr-d" data-e>Единые требования к академиям и тренерам.</div><div class="scr-q" data-e>Кто соответствует, кого аккредитовать?</div></div>
+          <div class="scr"><div class="scr-t"><span class="g"></span><span data-e>Отчётность и развитие</span></div><div class="scr-d" data-e>Сводки для федерации, аудит качества, приоритеты развития.</div><div class="scr-q" data-e>Куда направить развитие?</div></div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="legend">
+      <i><span class="sw" style="background:var(--gold)"></span> Игрок</i>
+      <i><span class="sw" style="background:var(--cyan)"></span> Команда</i>
+      <i><span class="sw" style="background:var(--brand)"></span> Клуб</i>
+      <i><span class="sw" style="background:var(--violet)"></span> Лига</i>
+      <i><span class="sw" style="background:var(--green)"></span> Федерация</i>
+    </div>
+  </div>
+</section>
+
+<!-- ─────────────────── СРЕДА, А НЕ ОТЧЁТЫ ─────────────────── -->
+<section id="moat">
+  <div class="wrap">
+    <div class="eyebrow" data-e>Почему это среда, а не отчёты</div>
+    <h2 data-e>Качество — для всех, не для избранных</h2>
+    <p class="sub" data-e>Разрозненные таблицы решают один уровень. Единая среда связывает уровни в один организм — и поднимает качество для каждого участника, независимо от размера клуба и бюджета.</p>
+    <div class="moat">
+      <div class="mcard"><div class="mi">🎯</div><h3 data-e>Один источник истины</h3><p data-e>Данные вводятся <b>один раз внизу</b> и поднимаются сами. Клуб, лига и федерация видят <b>одни и те же цифры</b> — решения честные и сопоставимые.</p></div>
+      <div class="mcard"><div class="mi">🤝</div><h3 data-e>Равный доступ</h3><p data-e>Сельская секция и топ-академия получают <b>один инструмент и одинаковое качество</b> аналитики. Бюджет и география больше не решают, увидят ли ребёнка.</p></div>
+      <div class="mcard"><div class="mi">⬇️</div><h3 data-e>Стандарты сверху вниз</h3><p data-e>Методология федерации доходит <b>до персональной нормы конкретного ребёнка</b> — единые ориентиры качества на всех витках.</p></div>
+      <div class="mcard"><div class="mi">🌱</div><h3 data-e>Каждое действие обогащает среду</h3><p data-e>Один пас <b>мгновенно улучшает картину</b> команды, лиги и региона. Никто не невидим — данные работают на всех сразу.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ─────────────────── СРАВНЕНИЕ ─────────────────── -->
+<section id="compare">
+  <div class="wrap">
+    <div class="eyebrow" data-e>Качество среды</div>
+    <h2 data-e>Связанная среда против разрозненных таблиц</h2>
+    <p class="sub" data-e>Разрозненные дашборды закрывают один уровень. Единая среда связывает все пять — и разницу в качестве видно сразу.</p>
+    <table class="tbl">
+      <thead><tr><th data-e>Критерий</th><th data-e>Разрозненные таблицы / Excel</th><th data-e>Единая среда Avandata</th></tr></thead>
+      <tbody>
+        <tr><td class="crit" data-e>Ввод данных</td><td class="bad" data-e>Многократно, в каждой системе вручную</td><td class="good" data-e><b>Один раз</b> внизу — поднимается само</td></tr>
+        <tr><td class="crit" data-e>Связь уровней</td><td class="bad" data-e>Нет, ручная сводка в Excel</td><td class="good" data-e><b>Сквозная</b> вертикаль игрок → регион</td></tr>
+        <tr><td class="crit" data-e>Качество для всех</td><td class="bad" data-e>Зависит от бюджета и аналитика клуба</td><td class="good" data-e><b>Одинаковое</b> для сельской секции и топ-академии</td></tr>
+        <tr><td class="crit" data-e>Видимость таланта</td><td class="bad" data-e>Зависит от связей и географии</td><td class="good" data-e><b>Виден каждый</b> — объективные индексы по региону</td></tr>
+        <tr><td class="crit" data-e>История игрока</td><td class="bad" data-e>Теряется при переходах между командами</td><td class="good" data-e><b>Единый архив</b> роста за годы</td></tr>
+        <tr><td class="crit" data-e>Стандарты развития</td><td class="bad" data-e>На бумаге, до тренера не доходят</td><td class="good" data-e>Доходят <b>до персональной нормы</b> ребёнка</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ─────────────────── РОСТ СРЕДЫ ─────────────────── -->
+<section id="rollout">
+  <div class="wrap">
+    <div class="eyebrow" data-e>Рост среды</div>
+    <h2 data-e>Как среда покрывает регион — снизу вверх</h2>
+    <p class="sub" data-e>Среда растёт от ценности для ребёнка и тренера — к лиге и региону. Каждый новый участник делает картину полнее для всех остальных.</p>
+    <div class="phases">
+      <div class="phase" style="--pc:var(--gold)"><div class="pn" data-e>ФАЗА 1</div><h3 data-e>Якорные клубы</h3><p data-e>Академии на реальных данных. Тренер сразу получает разбор матчей и индексы игроков.</p><span class="badge now" data-e>● уже работает</span></div>
+      <div class="phase" style="--pc:var(--brand)"><div class="pn" data-e>ФАЗА 2</div><h3 data-e>Лига</h3><p data-e>Клубы дивизиона в одной среде — общая, честная для всех картина.</p><span class="badge next" data-e>следующий шаг</span></div>
+      <div class="phase" style="--pc:var(--violet)"><div class="pn" data-e>ФАЗА 3</div><h3 data-e>Региональная федерация</h3><p data-e>Регион целиком: скаутинг, единая методология, развитие футбола.</p><span class="badge next" data-e>вижн</span></div>
+      <div class="phase" style="--pc:var(--green)"><div class="pn" data-e>ФАЗА 4</div><h3 data-e>Другие регионы</h3><p data-e>Та же среда — масштабируется на новые регионы. Подход повторяем.</p><span class="badge next" data-e>масштаб</span></div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap" data-e>
+    Avandata · черновик питча v4 — про равную цифровую среду и качество. «✏️ Правка» — редактировать текст прямо в браузере;
+    «⤓ В PDF» — для показа. Файл самодостаточный: один HTML, открывается двойным кликом в любом браузере.
+  </div>
+</footer>
+
+<script>
+  const btn=document.getElementById('editBtn');
+  const hint=document.getElementById('editHint');
+  let editing=false;
+  btn.addEventListener('click',()=>{
+    editing=!editing;
+    document.designMode=editing?'on':'off';
+    document.body.classList.toggle('editing',editing);
+    btn.classList.toggle('on',editing);
+    btn.textContent=editing?'✓ Готово':'✏️ Правка';
+    hint.textContent=editing?'режим правки — кликните в любой текст':'режим показа';
+  });
+</script>
+</body>
+</html>

@@ -44,3 +44,8 @@ tmp/
 __pycache__/
 .tmp_icons/
 .tmp_pravki/
+
+# Local scratch / not for repo
+screens-starter/
+_pravki.txt
+_pravki_img/
