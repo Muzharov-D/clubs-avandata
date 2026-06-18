@@ -69,12 +69,16 @@ export async function latestSnapshotsForCohort(seasonId: number, year: number, n
     .orderBy(desc(federationSnapshots.capturedAt)).limit(n));
 }
 
-/** Снять снимок, только если свежего нет (старше maxAgeDays или вовсе пусто). Так крон
- *  делает ~недельный срез, сеет базовый снимок на первом тике и не дублирует при рестартах. */
+let snapshotInFlight = false; // защита от параллельного двойного снятия (крон × старт × просмотр)
+/** Снять снимок, только если свежего нет (старше maxAgeDays или вовсе пусто). Так и крон, и
+ *  базовый сид на старте, и триггер-на-просмотр делают ~недельный срез без дублей и при рестартах. */
 export async function captureSnapshotIfDue(seasonId: number, maxAgeDays = 6.5): Promise<{ captured: boolean; written: number }> {
+  if (snapshotInFlight) return { captured: false, written: 0 };
   const meta = await snapshotMeta(seasonId);
   if (meta.latest && Date.now() - new Date(meta.latest).getTime() < maxAgeDays * 86_400_000) {
     return { captured: false, written: 0 };                // свежий снимок уже есть
   }
-  return { captured: true, written: await captureFederationSnapshot(seasonId) };
+  snapshotInFlight = true;
+  try { return { captured: true, written: await captureFederationSnapshot(seasonId) }; }
+  finally { snapshotInFlight = false; }
 }

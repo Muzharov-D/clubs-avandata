@@ -9,8 +9,9 @@ import {
   ageEffect, talentConcentration, cohortMatrix, regionResults, regionMatchDetail,
   warmRegionMatchProtocols, regionClubProfile, federationHealth,
 } from './avandataSource.js';
-import { snapshotMeta } from './snapshots.js';
+import { snapshotMeta, captureSnapshotIfDue } from './snapshots.js';
 import { federationWeekly } from './weekly.js';
+import { env } from '../env.js';
 import {
   federationOverview,
   federationRegionMap,
@@ -127,7 +128,7 @@ export async function federationRoutes(app: FastifyInstance) {
   app.get('/av/snapshots', async (req, reply) => {
     if (avOff(reply)) return { error: 'AVANDATA_API_KEY не задан', code: 'AVANDATA_OFF' };
     const season = Number((req.query as { season?: string }).season) || AV_SEASON;
-    return await snapshotMeta(season);
+    return { ...(await snapshotMeta(season)), cronsEnabled: env.START_CRONS };
   });
 
   /** GET /federation/av/weekly — «За неделю» (Фаза C): что требует внимания сейчас
@@ -135,6 +136,10 @@ export async function federationRoutes(app: FastifyInstance) {
   app.get('/av/weekly', async (req, reply) => {
     if (avOff(reply)) return { error: 'AVANDATA_API_KEY не задан', code: 'AVANDATA_OFF' };
     const season = Number((req.query as { season?: string }).season) || AV_SEASON;
+    // Триггер-на-просмотр: открыли радар → если недельный снимок просрочен, снимаем новый в фоне
+    // (гард внутри — не чаще ~раза/нед, ответ не блокируем). Радар копит данные ОТ ПРОСМОТРА,
+    // не завися от START_CRONS — динамика появится при следующем заходе.
+    void captureSnapshotIfDue(season).catch(() => undefined);
     return await federationWeekly(season);
   });
 
