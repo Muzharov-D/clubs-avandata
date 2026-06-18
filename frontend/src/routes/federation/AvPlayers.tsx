@@ -21,13 +21,22 @@ const lineOf = (pos: string | null): Line | null => {
   if (/напад|форвард/.test(p)) return 'FWD';
   return null;
 };
+// Сторона по названию амплуа: левый = слева, правый = справа, иначе центр.
+const sideScore = (pos: string | null): number => {
+  const p = (pos ?? '').toLowerCase();
+  if (/прав/.test(p)) return 1;
+  if (/лев/.test(p)) return -1;
+  return 0;
+};
+const plMatch = (n: number) => { const a = n % 100, b = n % 10; if (a >= 11 && a <= 14) return 'матчей'; if (b === 1) return 'матч'; if (b >= 2 && b <= 4) return 'матча'; return 'матчей'; };
 
-// 4-3-3, координаты в % (атака вверх, ворота внизу)
-const SLOTS: Array<{ line: Line; l: number; t: number; tag: string }> = [
+// 4-3-3, слоты СТРОГО слева-направо в каждой линии (атака вверх, ворота внизу).
+type Slot = { line: Line; l: number; t: number; tag: string };
+const SLOTS: Slot[] = [
   { line: 'GK', l: 50, t: 88, tag: 'ВРТ' },
-  { line: 'DEF', l: 14, t: 70, tag: 'ЗАЩ' }, { line: 'DEF', l: 38, t: 74, tag: 'ЗАЩ' }, { line: 'DEF', l: 62, t: 74, tag: 'ЗАЩ' }, { line: 'DEF', l: 86, t: 70, tag: 'ЗАЩ' },
-  { line: 'MID', l: 24, t: 50, tag: 'ПЗЩ' }, { line: 'MID', l: 50, t: 46, tag: 'ПЗЩ' }, { line: 'MID', l: 76, t: 50, tag: 'ПЗЩ' },
-  { line: 'FWD', l: 24, t: 24, tag: 'НАП' }, { line: 'FWD', l: 50, t: 20, tag: 'НАП' }, { line: 'FWD', l: 76, t: 24, tag: 'НАП' },
+  { line: 'DEF', l: 14, t: 70, tag: 'ЛЗ' }, { line: 'DEF', l: 38, t: 74, tag: 'ЦЗ' }, { line: 'DEF', l: 62, t: 74, tag: 'ЦЗ' }, { line: 'DEF', l: 86, t: 70, tag: 'ПЗ' },
+  { line: 'MID', l: 24, t: 50, tag: 'ЛП' }, { line: 'MID', l: 50, t: 46, tag: 'ЦП' }, { line: 'MID', l: 76, t: 50, tag: 'ПП' },
+  { line: 'FWD', l: 24, t: 24, tag: 'ЛН' }, { line: 'FWD', l: 50, t: 20, tag: 'ЦН' }, { line: 'FWD', l: 76, t: 24, tag: 'ПН' },
 ];
 
 /** Таланты региона — реестр + «Сборная региона» (лучшие по позициям на данных). */
@@ -37,6 +46,7 @@ export function FederationAvPlayers() {
   const players = data?.players ?? [];
   const [club, setClub] = useState('all');
   const [qStr, setQStr] = useState('');
+  const [peek, setPeek] = useState<RPlayer | null>(null);
 
   const clubs = useMemo(() => Array.from(new Set(players.map((p) => p.club).filter(Boolean))).sort() as string[], [players]);
   // «С рейтингом» — минимум 2 оценённых матча (рейтинг = среднее по матчам, не пик).
@@ -55,9 +65,21 @@ export function FederationAvPlayers() {
     const rated = players.filter((p) => p.rating != null && (p.mp ?? 0) >= 2);
     const byLine: Record<Line, RPlayer[]> = { GK: [], DEF: [], MID: [], FWD: [] };
     for (const p of rated) { const l = lineOf(p.position); if (l) byLine[l].push(p); }
-    (Object.keys(byLine) as Line[]).forEach((l) => byLine[l].sort((a, b) => (b.rating as number) - (a.rating as number)));
-    const pool: Record<Line, RPlayer[]> = { GK: [...byLine.GK], DEF: [...byLine.DEF], MID: [...byLine.MID], FWD: [...byLine.FWD] };
-    return SLOTS.map((s) => ({ ...s, player: pool[s.line].shift() }));
+    const slotsByLine: Record<Line, Slot[]> = { GK: [], DEF: [], MID: [], FWD: [] };
+    SLOTS.forEach((s) => slotsByLine[s.line].push(s));
+    const pick = new Map<Slot, RPlayer>();
+    (Object.keys(byLine) as Line[]).forEach((line) => {
+      const slots = slotsByLine[line];                          // уже слева-направо
+      const top = [...byLine[line]].sort((a, b) => (b.rating as number) - (a.rating as number)).slice(0, slots.length);
+      // лучших N линии расставляем слева-направо по реальной стороне амплуа:
+      // левые — слева, правые — справа, центральные — в середину (тай-брейк по рейтингу).
+      const ordered = top
+        .map((p, i) => ({ p, side: sideScore(p.position), r: i }))
+        .sort((a, b) => a.side - b.side || a.r - b.r)
+        .map((x) => x.p);
+      slots.forEach((s, i) => { if (ordered[i]) pick.set(s, ordered[i]); });
+    });
+    return SLOTS.map((s) => ({ ...s, player: pick.get(s) }));
   }, [players]);
   const xiFilled = xi.filter((s) => s.player).length;
 
@@ -118,7 +140,7 @@ export function FederationAvPlayers() {
             <div className="av-section" style={{ marginBottom: 10 }}>
               <div>
                 <h2 className="av-section-title">Лучшие игроки региона</h2>
-                <p className="av-section-sub">Лучшие по реальным позициям · пустой слот = нет игрока</p>
+                <p className="av-section-sub">Лучшие по реальным позициям · клик по игроку — карточка · пустой слот = нет игрока</p>
               </div>
             </div>
             {isLoading ? <div className="av-skeleton" style={{ aspectRatio: '4 / 5' }} /> : xiFilled < 4 ? (
@@ -144,20 +166,23 @@ export function FederationAvPlayers() {
                   </g>
                   <circle cx="50" cy="50" r="0.7" fill="rgba(255,255,255,0.5)" />
                 </svg>
-                {xi.map((s, idx) => s.player ? (
-                  <Link key={idx} to={`/federation/players/${s.player.id}`} className="av-slot av-slot--filled" style={{ left: `${s.l}%`, top: `${s.t}%` }} title={s.player.name}>
-                    <span className="av-slot__node">
-                      <PlayerAvatar name={s.player.name} photoUrl={s.player.photo} size={46} ring={s.line === 'GK'} />
-                      <span className="av-slot__badge" style={{ color: ratingColor(s.player.rating) }}>{s.player.rating}</span>
+                {xi.map((s, idx) => {
+                  const pl = s.player;
+                  return pl ? (
+                    <button key={idx} type="button" className="av-slot av-slot--filled av-slot--btn" style={{ left: `${s.l}%`, top: `${s.t}%` }} title={`${pl.name} · ${s.tag}`} onClick={() => setPeek(pl)}>
+                      <span className="av-slot__node">
+                        <PlayerAvatar name={pl.name} photoUrl={pl.photo} size={46} ring={s.line === 'GK'} />
+                        <span className="av-slot__badge" style={{ color: ratingColor(pl.rating) }}>{pl.rating}</span>
+                      </span>
+                      <span className="av-slot__name">{lastName(pl.name)}</span>
+                    </button>
+                  ) : (
+                    <span key={idx} className="av-slot" style={{ left: `${s.l}%`, top: `${s.t}%` }}>
+                      <span className="av-slot__empty" />
+                      <span className="av-slot__tag">{s.tag}</span>
                     </span>
-                    <span className="av-slot__name">{lastName(s.player.name)}</span>
-                  </Link>
-                ) : (
-                  <span key={idx} className="av-slot" style={{ left: `${s.l}%`, top: `${s.t}%` }}>
-                    <span className="av-slot__empty" />
-                    <span className="av-slot__tag">{s.tag}</span>
-                  </span>
-                ))}
+                  );
+                })}
               </div>
             )}
           </section>
@@ -186,6 +211,30 @@ export function FederationAvPlayers() {
           )}
         </aside>
       </div>
+      {peek && <XiPeek p={peek} onClose={() => setPeek(null)} />}
     </>
+  );
+}
+
+/** Карточка игрока из «сборной» — открывается по клику на поле, без ухода со страницы. */
+function XiPeek({ p, onClose }: { p: RPlayer; onClose: () => void }) {
+  return (
+    <div className="av-modal__backdrop" onClick={onClose} role="presentation">
+      <div className="av-peek" onClick={(e) => e.stopPropagation()} role="dialog" aria-label={p.name}>
+        <button type="button" className="av-modal__close" onClick={onClose} aria-label="Закрыть">✕</button>
+        <div className="av-peek__head">
+          <PlayerAvatar name={p.name} photoUrl={p.photo} size={66} ring />
+          <div style={{ minWidth: 0 }}>
+            <div className="av-peek__name">{p.name}</div>
+            <div className="av-peek__meta">{p.club ?? '—'}{p.position ? ` · ${p.position}` : ''}{p.birthYear ? ` · ${p.birthYear} г.р.` : ''}</div>
+          </div>
+          <span className="av-peek__rate" style={{ color: ratingColor(p.rating) }}>{p.rating ?? '—'}</span>
+        </div>
+        <div className="av-peek__foot">
+          <span className="av-peek__mp">{p.mp ? `средний рейтинг за ${p.mp} ${plMatch(p.mp)}` : 'средний рейтинг по матчам'}</span>
+          <Link to={`/federation/players/${p.id}`} className="av-link" onClick={onClose}>Открыть профиль →</Link>
+        </div>
+      </div>
+    </div>
   );
 }

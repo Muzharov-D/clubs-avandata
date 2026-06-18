@@ -640,6 +640,20 @@
 .av-slot__tag { font-size: 9px; font-weight: 700; letter-spacing: 0.06em; color: rgba(255, 255, 255, 0.6); text-transform: uppercase; }
 .av-slot__empty { width: 44px; height: 44px; border-radius: 50%; border: 2px dashed rgba(255, 255, 255, 0.32); display: block; }
 
+/* Сборная региона: слот = кнопка (клик → карточка), поле не перехватывает клики */
+.av-pitch__field { pointer-events: none; }
+.av-slot--btn { background: none; border: 0; padding: 0; font: inherit; color: inherit; cursor: pointer; }
+.av-slot--btn:focus-visible { outline: none; }
+.av-slot--btn:focus-visible .av-slot__node { outline: 2px solid var(--av-cyan); outline-offset: 3px; border-radius: 50%; }
+/* Карточка-peek игрока из сборной */
+.av-peek { position: relative; width: 100%; max-width: 400px; padding: 20px; background: var(--av-surface); border: 1px solid var(--av-border); border-radius: var(--av-r-lg); box-shadow: var(--av-shadow-lg); }
+.av-peek__head { display: flex; align-items: center; gap: 13px; }
+.av-peek__name { font-family: var(--av-display); font-weight: 700; font-size: 16px; color: var(--av-text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.av-peek__meta { font-size: 11.5px; color: var(--av-text-dim); margin-top: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.av-peek__rate { margin-left: auto; padding-left: 8px; font-family: var(--av-display); font-weight: 800; font-size: 22px; font-variant-numeric: tabular-nums; }
+.av-peek__foot { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 14px; padding-top: 12px; border-top: 1px solid rgba(94, 235, 252, 0.12); }
+.av-peek__mp { font-size: 11px; color: var(--av-text-faint); }
+
 /* строки-ссылки: reset без инлайнов (Уинстон) */
 a.av-trow { text-decoration: none; color: inherit; }
 
