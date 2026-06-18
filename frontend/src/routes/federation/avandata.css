@@ -399,7 +399,8 @@
 /* =============================================================================
    ПОЛЕ СБОРНОЙ РЕГИОНА (Team of region pitch)
    ============================================================================= */
-.av-pitch { position: relative; aspect-ratio: 4 / 5; border-radius: var(--av-r-lg); overflow: hidden; box-shadow: var(--av-shadow), inset 0 0 70px rgba(0, 0, 0, 0.4); }
+/* Поле «сборной»: высота 4/5, но не выше вьюпорта — весь состав (вкл. вратаря) виден без скролла. */
+.av-pitch { position: relative; aspect-ratio: 4 / 5; max-height: calc(100vh - 236px); border-radius: var(--av-r-lg); overflow: hidden; box-shadow: var(--av-shadow), inset 0 0 70px rgba(0, 0, 0, 0.4); }
 .av-pitch__field { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
 .av-slot { position: absolute; transform: translate(-50%, -50%); display: flex; flex-direction: column; align-items: center; gap: 5px; text-align: center; z-index: 2; text-decoration: none; }
 .av-slot__node { position: relative; display: block; filter: drop-shadow(0 3px 7px rgba(0, 0, 0, 0.55)); transition: transform 0.15s ease; }

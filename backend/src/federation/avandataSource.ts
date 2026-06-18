@@ -441,7 +441,7 @@ export async function regionPlayers(seasonId: number, year?: number, division?: 
     // ЗА ЭТОТ МАТЧ (поле averageRating меняется от тура к туру), поэтому копим
     // сумму+счётчик по всем турам, а не берём первый/пиковый матч. mp — число
     // оценённых матчей (на скольких турах игрок попал в рейтинг по роли).
-    const acc = new Map<number, { p: RegionPlayer; sum: number; n: number }>();
+    const acc = new Map<number, { p: RegionPlayer; sum: number; n: number; roles: Map<string, number> }>();
     const jobs: Array<{ t: number; d: number; tour: number }> = [];
     for (const ref of refs) for (let tour = 1; tour <= Math.max(1, ref.lastPlayedTour); tour++) jobs.push({ t: ref.tournamentId, d: ref.divisionId, tour });
     await pmap(jobs, 6, async (job) => {
@@ -452,14 +452,22 @@ export async function regionPlayers(seasonId: number, year?: number, division?: 
         if (!e) {
           e = { p: { id: p.id, name: p.title ?? '—', birthYear: p.dateOfBirth ?? null,
             position: p.playerMatchRole?.title ?? null, club: p.team?.title ?? null,
-            clubLogo: p.team?.logoUrl ?? null, photo: p.avatarUrl ?? null, rating: null, mp: 0 }, sum: 0, n: 0 };
+            clubLogo: p.team?.logoUrl ?? null, photo: p.avatarUrl ?? null, rating: null, mp: 0 }, sum: 0, n: 0, roles: new Map() };
           acc.set(p.id, e);
         }
+        const role = p.playerMatchRole?.title;
+        if (role) e.roles.set(role, (e.roles.get(role) ?? 0) + 1);
         const r = p.averageRating;
         if (typeof r === 'number' && Number.isFinite(r)) { e.sum += r; e.n += 1; }
       }
     });
-    const out = [...acc.values()].map(({ p, sum, n }) => ({ ...p, mp: n, rating: n > 0 ? Math.round(sum / n) : null }));
+    const out = [...acc.values()].map(({ p, sum, n, roles }) => {
+      // Основное амплуа = самое частое по матчам (детерминированно), а не роль из
+      // случайного первого матча — иначе правый защитник «уезжает» в центр.
+      let pos = p.position, best = 0;
+      for (const [role, c] of roles) if (c > best || (c === best && pos != null && role < pos)) { best = c; pos = role; }
+      return { ...p, position: pos, mp: n, rating: n > 0 ? Math.round(sum / n) : null };
+    });
     return out.sort((a, b) => (b.rating ?? -1e9) - (a.rating ?? -1e9));
   });
 }

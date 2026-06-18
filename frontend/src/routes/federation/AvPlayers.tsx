@@ -69,15 +69,17 @@ export function FederationAvPlayers() {
     SLOTS.forEach((s) => slotsByLine[s.line].push(s));
     const pick = new Map<Slot, RPlayer>();
     (Object.keys(byLine) as Line[]).forEach((line) => {
-      const slots = slotsByLine[line];                          // уже слева-направо
-      const top = [...byLine[line]].sort((a, b) => (b.rating as number) - (a.rating as number)).slice(0, slots.length);
-      // лучших N линии расставляем слева-направо по реальной стороне амплуа:
-      // левые — слева, правые — справа, центральные — в середину (тай-брейк по рейтингу).
-      const ordered = top
-        .map((p, i) => ({ p, side: sideScore(p.position), r: i }))
-        .sort((a, b) => a.side - b.side || a.r - b.r)
-        .map((x) => x.p);
-      slots.forEach((s, i) => { if (ordered[i]) pick.set(s, ordered[i]); });
+      const free = [...slotsByLine[line]];
+      const top = [...byLine[line]].sort((a, b) => (b.rating as number) - (a.rating as number)).slice(0, free.length);
+      // Лучший по рейтингу первым берёт свободный слот, ближайший к «идеальному» X
+      // его стороны (левый→14%, центр→50%, правый→86%) — правый встаёт справа.
+      for (const p of top) {
+        const ideal = 50 + sideScore(p.position) * 36;
+        let bi = 0, bd = Infinity;
+        free.forEach((s, i) => { const d = Math.abs(s.l - ideal); if (d < bd) { bd = d; bi = i; } });
+        const [s] = free.splice(bi, 1);
+        if (s) pick.set(s, p);
+      }
     });
     return SLOTS.map((s) => ({ ...s, player: pick.get(s) }));
   }, [players]);
