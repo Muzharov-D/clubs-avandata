@@ -15,6 +15,9 @@ interface Overview { divisions: string[]; tournaments: number; teams: number; pl
 interface StandRow { id: number; name: string; logo: string | null; played: number; won: number; drawn: number; lost: number; goalDiff: number; points: number }
 interface RatingRow { id: number; name: string; logo: string | null; rating: number }
 interface Group<T> { division: string; rows: T[] }
+// Ответ /av/standings с провенансом: какой источник реально отдал таблицу и когда —
+// чтобы честно показать «официальные ФФСПб» / «зеркало, может быть неполным».
+interface StandingsResp { groups: Group<StandRow>[]; source?: 'ffspb' | 'mirror'; degraded?: boolean; asOf?: string }
 // Строка единой таблицы: турнирная статистика + рейтинг AvanData + Δ (перевыполнение).
 // Статы nullable: команда может быть в рейтинге, но ещё не в турнирной таблице
 // (ranked=false) — её всё равно показываем, чтобы не «пропадала».
@@ -34,6 +37,8 @@ const pm = (n: number) => (n > 0 ? `+${n}` : String(n));
 // «Александр Суслов» → «Суслов А.» — фамилия (идентификатор) не теряется при обрезке
 const shortName = (s: string) => { const w = s.trim().split(/\s+/); return w.length > 1 ? `${w[w.length - 1]} ${w[0][0]}.` : s; };
 const fmtDate = (iso: string) => { try { return new Intl.DateTimeFormat('ru-RU', { day: 'numeric', month: 'short' }).format(new Date(iso)).replace('.', '').toUpperCase(); } catch { return ''; } };
+// Дата+время выборки для бейджа свежести: «18 июн 14:32»
+const fmtStamp = (iso?: string) => { if (!iso) return ''; try { return new Intl.DateTimeFormat('ru-RU', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }).format(new Date(iso)); } catch { return ''; } };
 // склонение «место»: 1 место · 2–4 места · 5+ мест (с учётом 11–14)
 const plMesto = (n: number) => { const a = n % 100, b = n % 10; if (a >= 11 && a <= 14) return 'мест'; if (b === 1) return 'место'; if (b >= 2 && b <= 4) return 'места'; return 'мест'; };
 // склонение «матч»: 1 матч · 2–4 матча · 5+ матчей
@@ -60,7 +65,7 @@ export function FederationAvHome() {
   const [selectedClub, setSelectedClub] = useState<number | null>(null);
   const ov = useQuery({ queryKey: ['av', 'overview', year, division], queryFn: () => api<Overview>(`/federation/av/overview${fedQ(year, division)}`) });
   const rs = useQuery({ queryKey: ['av', 'results', year, division], queryFn: () => api<{ results: ResultMatch[] }>(`/federation/av/results${fedQ(year, division)}`) });
-  const st = useQuery({ queryKey: ['av', 'standings', year], queryFn: () => api<{ groups: Group<StandRow>[] }>(`/federation/av/standings${q}`) });
+  const st = useQuery({ queryKey: ['av', 'standings', year], queryFn: () => api<StandingsResp>(`/federation/av/standings${q}`) });
   const cr = useQuery({ queryKey: ['av', 'club-ratings', year], queryFn: () => api<{ groups: Group<RatingRow>[] }>(`/federation/av/club-ratings${q}`) });
   const ag = useQuery({ queryKey: ['av', 'age', year], queryFn: () => api<AgeEffect>(`/federation/av/age-effect${q}`) });
   const pl = useQuery({ queryKey: ['av', 'players', year, division], queryFn: () => api<{ players: RPlayer[] }>(`/federation/av/players${fedQ(year, division)}`) });
@@ -205,10 +210,15 @@ export function FederationAvHome() {
         <div className="av-section">
           <div>
             <h2 className="av-section-title">Турнирная таблица</h2>
-            <p className="av-section-sub" style={{ margin: '2px 0 0' }}>Позиция в первенстве против рейтинга AvanData — кто перевыполняет</p>
+            <p className="av-section-sub" style={{ margin: '2px 0 0' }}>
+              {year == null
+                ? 'Свод по всем годам рождения — суммарно по когортам, не единое первенство'
+                : 'Позиция в первенстве против рейтинга AvanData — кто перевыполняет'}
+            </p>
           </div>
           <span className="av-divtag">{division} лига</span>
         </div>
+        {st.data && <DataBadge source={st.data.source} degraded={st.data.degraded} asOf={st.data.asOf} />}
         {st.isLoading || cr.isLoading ? <Sk />
           : !combined || combined.rows.length === 0 ? <div className="av-note">Нет данных по выбранному фильтру.</div>
           : <CombinedTable g={combined} onClub={setSelectedClub} />}
@@ -259,6 +269,25 @@ function Fixture({ m, onOpen }: { m: KeyMatch; onOpen: (m: KeyMatch) => void }) 
       </div>
       {m.tone && <div className="av-fixture__foot">{m.why || `${m.age} · ${m.division}`}</div>}
     </button>
+  );
+}
+
+// Бейдж провенанса данных: честно говорит, ОТКУДА таблица и КОГДА снята. Молчаливый
+// фолбэк на зеркало (бывает неполным) теперь виден, а не прячется.
+function DataBadge({ source, degraded, asOf }: { source?: 'ffspb' | 'mirror'; degraded?: boolean; asOf?: string }) {
+  if (!source) return null;
+  const stamp = fmtStamp(asOf);
+  const cfg = degraded
+    ? { cls: 'av-dbadge--warn', icon: '⚠', text: 'Зеркало AvanData — данные могут быть неполными', tip: 'Официальный API ФФСПб был недоступен — показано зеркало, в нём бывают пропуски команд.' }
+    : source === 'ffspb'
+      ? { cls: 'av-dbadge--ok', icon: '●', text: 'Официальные данные ФФСПб', tip: 'Турнирная таблица получена напрямую из официального API ФФСПб.' }
+      : { cls: 'av-dbadge--muted', icon: '●', text: 'Свод AvanData по когортам', tip: 'Агрегат по всем годам рождения из базы AvanData.' };
+  return (
+    <div className={`av-dbadge ${cfg.cls}`} title={cfg.tip}>
+      <span className="av-dbadge__dot">{cfg.icon}</span>
+      <span>{cfg.text}</span>
+      {stamp && <span className="av-dbadge__stamp">· обновлено {stamp}</span>}
+    </div>
   );
 }
 

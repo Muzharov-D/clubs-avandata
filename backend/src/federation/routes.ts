@@ -108,7 +108,8 @@ export async function federationRoutes(app: FastifyInstance) {
   app.get('/av/standings', async (req, reply) => {
     if (avOff(reply)) return { error: 'AVANDATA_API_KEY не задан', code: 'AVANDATA_OFF' };
     const season = Number((req.query as { season?: string }).season) || AV_SEASON;
-    return { season, groups: await regionStandings(season, yearOf(req)) };
+    const std = await regionStandings(season, yearOf(req));
+    return { season, ...std }; // { groups, source, degraded, asOf }
   });
 
   /** GET /federation/av/club-ratings?year= — рейтинг клубов AvanData по дивизионам. */

@@ -15,6 +15,7 @@ import {
 import { getMatch as ffspbGetMatch, isFfspbConfigured } from '../services/ffspbApi.js';
 import { logger } from '../shared/logger.js';
 import { env } from '../env.js';
+import { normTeam } from './teamName.js';
 
 // ─── Детали матча (для карточки матча по клику) ──────────────────────────────
 export interface MatchCard { player: string; minute: string }
@@ -427,7 +428,11 @@ async function ffspbDirectStandings(seasonId: number, year: number): Promise<Div
     if (st.id == null) continue;
     // у стадии может быть несколько подтаблиц: /standings/{stageId}-{N}
     // (напр. 83191-1 «Группа A» пустая + 83191-2 «Первая лига»). Берём непустые.
-    for (let sub = 1; sub <= 4; sub++) {
+    // 404 = подтаблиц больше нет (стоп). SUB_MAX — защита от молчаливого усечения
+    // (реальные дивизионы столько подгрупп не имеют); упёрлись — кричим в лог, не режем тихо.
+    const SUB_MAX = 12;
+    let sub = 1;
+    for (; sub <= SUB_MAX; sub++) {
       let g: FfspbApiGroup;
       try { g = (await ffspbApiGet(`/standings/${st.id}-${sub}`)) as unknown as FfspbApiGroup; } catch { break; }
       const teamsRaw = g.teams ?? [];
@@ -448,28 +453,42 @@ async function ffspbDirectStandings(seasonId: number, year: number): Promise<Div
       });
       if (rows.length) groups.push({ division, rows });
     }
+    if (sub > SUB_MAX) logger.warn({ stage: st.id, year }, 'подтаблицы ФФСПб упёрлись в SUB_MAX — возможно усечение, поднимите лимит');
   }
   const order = (n: string) => (/Высшая/i.test(n) ? 0 : /Первая/i.test(n) ? 1 : 2);
   groups.sort((a, b) => order(a.division) - order(b.division));
   return groups.length ? groups : null;
 }
 
-export async function regionStandings(seasonId: number, year?: number): Promise<DivisionGroup<ClubStandRow>[]> {
+/** Таблица + ПРОВЕНАНС: какой источник реально отдал данные и когда. Чтобы фронт мог
+ *  честно сказать «официальные ФФСПб» / «зеркало, может быть неполным», а не молчать. */
+export interface StandingsResult {
+  groups: DivisionGroup<ClubStandRow>[];
+  source: 'ffspb' | 'mirror';  // ffspb = официальный API; mirror = зеркало AvanData
+  degraded: boolean;           // true = хотели официальный по году, но упали на зеркало (бывает неполным)
+  asOf: string;                // ISO-время фактической выборки (заморожено TTL-кэшем)
+}
+export async function regionStandings(seasonId: number, year?: number): Promise<StandingsResult> {
   return cached(`standings:${seasonId}:${year ?? 0}`, TTL, async () => {
-    // Сначала ОФИЦИАЛ ФФСПб (через Vercel-прокси), при ошибке — зеркало avandata.
+    const asOf = new Date().toISOString();
+    // Сначала ОФИЦИАЛ ФФСПб (через Vercel-прокси), при ошибке — зеркало avandata (с пометкой degraded).
     if (year != null) {
       try {
         const direct = await ffspbDirectStandings(seasonId, year);
-        if (direct && direct.some((g) => g.rows.length)) return direct;
-      } catch (e) { logger.warn({ err: String(e), year }, 'ffspb-direct standings failed → mirror'); }
+        if (direct && direct.some((g) => g.rows.length)) return { groups: direct, source: 'ffspb', degraded: false, asOf };
+        logger.warn({ year }, 'ffspb-direct standings пуст → зеркало (degraded)');
+      } catch (e) { logger.warn({ err: String(e), year }, 'ffspb-direct standings failed → зеркало (degraded)'); }
     }
     const tid = year != null ? await tournamentIdForYear(seasonId, year) : undefined;
     const teams = tid ? await getFfspbStatisticsByTournament(seasonId, tid) : await getFfspbStatistics(seasonId);
-    return groupByDivision(teams.map((t: AvStatTeam) => ({
+    const groups = groupByDivision(teams.map((t: AvStatTeam) => ({
       id: t.id, name: t.name, logo: t.logo ?? null, division: t.division?.name ?? 'Лига',
       played: t.stats.matchesPlayed, won: t.stats.matchesWon, drawn: t.stats.draw, lost: t.stats.defeat,
       goalDiff: t.stats.differenceGoals, points: t.stats.points,
     })), (r) => r.points);
+    // year задан, но официальный путь не сработал → данные с зеркала, честно помечаем degraded.
+    // year отсутствует («Все») → зеркало-сводка это штатный источник агрегата, не деградация.
+    return { groups, source: 'mirror', degraded: year != null, asOf };
   });
 }
 export async function regionClubRatings(seasonId: number, year?: number): Promise<DivisionGroup<ClubRatingRow>[]> {
@@ -638,22 +657,8 @@ export interface ResultMatch {
   id: number; age: string; division: string; date: string; divTeams: number;
   home: ResultTeam; away: ResultTeam;
 }
-// «ФК Зенит 2013» / «Алмаз-Антей» / «Звезда (Олимпийские надежды)» / «ФК Динамо-СПб»
-// → единый ключ для сшивки команды (ФФСПб) с её рейтингом (АванДата). Источники именуют
-// клуб ПО-РАЗНОМУ, id у них тоже разные — джойн только по имени, поэтому срезаем весь шум:
-// кавычки, «ФК», хвостовой год рождения, скобочную приписку-программу «(Олимпийские
-// надежды)» и город-квалификатор «СПб». Иначе клуб ДВОИТСЯ: строка таблицы без рейтинга +
-// «призрак» с рейтингом (баг 2012: «Звезда (Олимпийские надежды)» ≠ «ФК Звезда 2012»).
-// СШ/СШОР НЕ схлопываем (это разные школы). \b с кириллицей в JS не работает — токен «спб»
-// якорим пробелами/границами строки.
-const normTeam = (s: string): string => s.toLowerCase()
-  .replace(/[«»"']/g, '')
-  .replace(/\([^)]*\)/g, ' ')                            // «(Олимпийские надежды)» — программа, не имя
-  .replace(/^фк\s+/, '')
-  .replace(/\s*\d{4}\s*$/, '')                           // хвостовой год рождения (АванДата)
-  .replace(/[-–—]/g, ' ')
-  .replace(/(^|\s)(спб|санкт петербург)(?=\s|$)/g, ' ')  // город-квалификатор (ФФСПб даёт, АванДата нет)
-  .replace(/\s+/g, ' ').trim();
+// normTeam — ключ сшивки команды (ФФСПб) с её рейтингом (АванДата). Вынесен в чистый
+// модуль ./teamName.ts (без env/БД), контракт зафиксирован тестами teamName.test.ts.
 
 export async function regionResults(seasonId: number, year?: number, division?: string): Promise<ResultMatch[]> {
   return cached(`results:${seasonId}:${year ?? 0}:${division ?? ''}`, 5 * 60 * 1000, async () => {
