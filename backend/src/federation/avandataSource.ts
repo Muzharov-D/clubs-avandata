@@ -571,6 +571,9 @@ const isTopDiv = (d: string): boolean => /Высшая|Боброва/i.test(d);
  *  пропала» машиной, а не глазами владельца. Когорты идут ПОСЛЕДОВАТЕЛЬНО — параллель бёрстит
  *  прокси и даёт ложный degraded. */
 export async function federationHealth(seasonId: number): Promise<FederationHealthReport> {
+  // Кэшируем (TTL 10м): живой обход когорт тяжёлый, а эндпоинт/монитор должен отвечать быстро.
+  // Часовой крон recomputes по истечении TTL и логирует — детектор регрессий остаётся живым.
+  return cached(`fedhealth:${seasonId}`, TTL, async () => {
   const years = await availableYears(seasonId);
   const cohorts: CohortHealth[] = [];
   for (const year of years) {
@@ -602,6 +605,7 @@ export async function federationHealth(seasonId: number): Promise<FederationHeal
     failing: cohorts.filter((c) => !c.ok).length,
     cohorts,
   };
+  });
 }
 
 // ─── Сила лиг (дивизионов) — для «силы клубов/лиг» ───────────────────────────
