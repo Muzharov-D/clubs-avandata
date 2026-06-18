@@ -558,6 +558,52 @@ export async function regionClubRatings(seasonId: number, year?: number): Promis
   });
 }
 
+// ─── Здоровье региона: инварианты данных (Фаза A «недельного радара») ─────────
+export interface CohortHealth {
+  year: number; source: 'ffspb' | 'mirror' | null; degraded: boolean;
+  topDivision: string | null; topTeams: number; rated: number; ghosts: number; unmatched: number;
+  ok: boolean; issues: string[];
+}
+export interface FederationHealthReport { checkedAt: string; ok: boolean; degraded: number; failing: number; cohorts: CohortHealth[]; }
+const isTopDiv = (d: string): boolean => /Высшая|Боброва/i.test(d);
+/** Проверка инвариантов данных по ВСЕМ когортам: официальный источник (не зеркало), наличие
+ *  Высшей лиги, чистый джойн (без призраков/несшитых). Ловит регрессии класса «команда
+ *  пропала» машиной, а не глазами владельца. Когорты идут ПОСЛЕДОВАТЕЛЬНО — параллель бёрстит
+ *  прокси и даёт ложный degraded. */
+export async function federationHealth(seasonId: number): Promise<FederationHealthReport> {
+  const years = await availableYears(seasonId);
+  const cohorts: CohortHealth[] = [];
+  for (const year of years) {
+    const issues: string[] = [];
+    let st: StandingsResult | null = null;
+    let crGroups: DivisionGroup<ClubRatingRow>[] = [];
+    try { st = await regionStandings(seasonId, year); } catch (e) { issues.push(`ошибка таблицы: ${String(e).slice(0, 40)}`); }
+    try { crGroups = await regionClubRatings(seasonId, year); } catch { /* рейтинги опциональны для проверки */ }
+    const sg = st?.groups.find((g) => isTopDiv(g.division)) ?? null;
+    const cg = crGroups.find((g) => isTopDiv(g.division)) ?? null;
+    const sIds = new Set((sg?.rows ?? []).map((r) => r.id));
+    const rIds = new Set((cg?.rows ?? []).map((r) => r.id));
+    const ghosts = (cg?.rows ?? []).filter((r) => !sIds.has(r.id)).length;
+    const unmatched = (sg?.rows ?? []).filter((r) => !rIds.has(r.id)).length;
+    const topTeams = sg?.rows.length ?? 0;
+    const source = st?.source ?? null;
+    const degraded = st?.degraded ?? false;
+    if (degraded) issues.push('источник — зеркало (degraded)');
+    if (topTeams === 0) issues.push('нет Высшей лиги');
+    if (ghosts > 0) issues.push(`${ghosts} призрак(ов) рейтинга`);
+    if (unmatched > 0) issues.push(`${unmatched} несшитых в таблице`);
+    const ok = source === 'ffspb' && !degraded && topTeams > 0 && ghosts === 0 && unmatched === 0;
+    cohorts.push({ year, source, degraded, topDivision: sg?.division ?? null, topTeams, rated: cg?.rows.length ?? 0, ghosts, unmatched, ok, issues });
+  }
+  return {
+    checkedAt: new Date().toISOString(),
+    ok: cohorts.every((c) => c.ok),
+    degraded: cohorts.filter((c) => c.degraded).length,
+    failing: cohorts.filter((c) => !c.ok).length,
+    cohorts,
+  };
+}
+
 // ─── Сила лиг (дивизионов) — для «силы клубов/лиг» ───────────────────────────
 export interface DivisionStrength { division: string; clubs: number; avgRating: number | null; topRating: number | null; topClub: string | null; }
 export async function divisionStrength(seasonId: number, year?: number): Promise<DivisionStrength[]> {

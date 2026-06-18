@@ -6,6 +6,7 @@ import { logger } from '../shared/logger.js';
 import { syncTenantStandings } from '../services/standingsService.js';
 import { syncTenantCalendarTournament } from '../services/calendarService.js';
 import { syncTenantEvents } from '../services/matchEventsService.js';
+import { federationHealth } from '../federation/avandataSource.js';
 
 /**
  * Multi-tenant cron runner.
@@ -120,6 +121,27 @@ async function tickEvents() {
 }
 
 // ============================================================================
+// Federation health — инварианты данных кабинета федерации (Фаза A «радара»).
+// Ловит регрессии «команда пропала»/«ушли в зеркало» машиной, а не глазами владельца.
+// ============================================================================
+
+const FED_SEASON = 2; // сезон Первенства (как AV_SEASON в federation/routes)
+
+async function tickFederationHealth() {
+  try {
+    const r = await federationHealth(FED_SEASON);
+    if (r.ok) {
+      logger.info({ cohorts: r.cohorts.length }, 'federation health OK — все когорты на официале, джойн чист');
+    } else {
+      const bad = r.cohorts.filter((c) => !c.ok).map((c) => ({ year: c.year, source: c.source, issues: c.issues }));
+      logger.warn({ failing: r.failing, degraded: r.degraded, bad }, 'federation health ПРОБЛЕМА — данные требуют внимания');
+    }
+  } catch (e) {
+    logger.error({ err: e instanceof Error ? e.message : String(e) }, 'federation health tick failed');
+  }
+}
+
+// ============================================================================
 // Wiring
 // ============================================================================
 
@@ -134,6 +156,7 @@ const JOBS: CronJob[] = [
   { name: 'standings', intervalMs: 30 * 60_000, initialDelayMs: 5_000,  run: tickStandings },
   { name: 'calendar',  intervalMs: 30 * 60_000, initialDelayMs: 8_000,  run: tickCalendar  },
   { name: 'events',    intervalMs: 6 * 60 * 60_000, initialDelayMs: 12_000, run: tickEvents },
+  { name: 'fedHealth', intervalMs: 60 * 60_000, initialDelayMs: 20_000, run: tickFederationHealth },
 ];
 
 export function startCrons() {

@@ -7,7 +7,7 @@ import {
   isAvandataConfigured, listTournaments, compareTournaments, regionOverview, regionPlayers,
   regionStandings, regionClubRatings, playerProfile, availableYears, divisionStrength,
   ageEffect, talentConcentration, cohortMatrix, regionResults, regionMatchDetail,
-  warmRegionMatchProtocols, regionClubProfile,
+  warmRegionMatchProtocols, regionClubProfile, federationHealth,
 } from './avandataSource.js';
 import {
   federationOverview,
@@ -110,6 +110,14 @@ export async function federationRoutes(app: FastifyInstance) {
     const season = Number((req.query as { season?: string }).season) || AV_SEASON;
     const std = await regionStandings(season, yearOf(req));
     return { season, ...std }; // { groups, source, degraded, asOf }
+  });
+
+  /** GET /federation/av/health — инварианты данных по всем когортам (Фаза A «недельного радара»):
+   *  официальный источник, наличие Высшей, чистый джойн. Ловит регрессии «команда пропала». */
+  app.get('/av/health', async (req, reply) => {
+    if (avOff(reply)) return { error: 'AVANDATA_API_KEY не задан', code: 'AVANDATA_OFF' };
+    const season = Number((req.query as { season?: string }).season) || AV_SEASON;
+    return await federationHealth(season);
   });
 
   /** GET /federation/av/club-ratings?year= — рейтинг клубов AvanData по дивизионам. */
