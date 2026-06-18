@@ -476,7 +476,8 @@ async function ffspbDirectStandings(seasonId: number, year: number): Promise<Div
   const stages = (Array.isArray(t.stages) ? t.stages : []) as Array<{ id?: number; name?: string }>;
   if (!stages.length) return null;
   const nameToId = new Map<string, number>();             // имя ФФСПб → avandata id (джойн с рейтингом)
-  try { const ratings = await regionClubRatings(seasonId, year); for (const g of ratings) for (const r of g.rows) nameToId.set(normTeam(r.name), r.id); } catch { /* без джойна */ }
+  let ratingGroups: DivisionGroup<ClubRatingRow>[] = [];
+  try { ratingGroups = await regionClubRatings(seasonId, year); for (const g of ratingGroups) for (const r of g.rows) nameToId.set(normTeam(r.name), r.id); } catch { /* без джойна */ }
   const groups: DivisionGroup<ClubStandRow>[] = [];
   for (const st of stages) {
     if (st.id == null) continue;
@@ -514,6 +515,17 @@ async function ffspbDirectStandings(seasonId: number, year: number): Promise<Div
   }
   const order = (n: string) => (/Высшая/i.test(n) ? 0 : /Первая/i.test(n) ? 1 : 2);
   groups.sort((a, b) => order(a.division) - order(b.division));
+  // ПОЛНОТА: если в РЕЙТИНГЕ есть дивизион с командами, а в таблице его НЕТ — стадия отвалилась
+  // транзиентом (баг 2009: «Высшая» пропала, осталась «Первая»). Не отдаём кривой партиал —
+  // null → regionStandings ретраит, иначе зеркало (degraded, оно полнее). Сверка по токену лиги.
+  const divTok = (n: string) => (/Высшая|Боброва/i.test(n) ? 'в' : /Первая|Дементьева/i.test(n) ? 'п' : n.toLowerCase());
+  const standDivs = new Set(groups.map((g) => divTok(g.division)));
+  for (const rg of ratingGroups) {
+    if (rg.rows.length && !standDivs.has(divTok(rg.division))) {
+      logger.warn({ year, missing: rg.division }, 'ffspb-direct неполный: дивизион есть в рейтинге, нет в таблице → null');
+      return null;
+    }
+  }
   return groups.length ? groups : null;
 }
 
@@ -531,9 +543,11 @@ export async function regionStandings(seasonId: number, year?: number): Promise<
     // Сначала ОФИЦИАЛ ФФСПб (через Vercel-прокси), при ошибке — зеркало avandata (с пометкой degraded).
     if (year != null) {
       try {
-        const direct = await ffspbDirectStandings(seasonId, year);
+        let direct = await ffspbDirectStandings(seasonId, year);
+        // null = пусто/неполно (стадия отвалилась транзиентом) → ОДИН ретрай свежей выборкой
+        if (!direct || !direct.some((g) => g.rows.length)) direct = await ffspbDirectStandings(seasonId, year);
         if (direct && direct.some((g) => g.rows.length)) return { groups: direct, source: 'ffspb', degraded: false, asOf };
-        logger.warn({ year }, 'ffspb-direct standings пуст → зеркало (degraded)');
+        logger.warn({ year }, 'ffspb-direct standings пуст/неполный после ретрая → зеркало (degraded)');
       } catch (e) { logger.warn({ err: String(e), year }, 'ffspb-direct standings failed → зеркало (degraded)'); }
     }
     const tid = year != null ? await tournamentIdForYear(seasonId, year) : undefined;
