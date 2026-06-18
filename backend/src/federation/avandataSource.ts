@@ -319,16 +319,25 @@ export async function tournamentAggregate(seasonId: number, ref: TournamentRef):
     try { teams = (await getTeamsList(ref.tournamentId, ref.divisionId, 1)).length; } catch { /* */ }
     const tours = Array.from({ length: Math.max(1, ref.lastPlayedTour) }, (_, i) => i + 1);
     let matches = 0, analyzed = 0, goals = 0, yellow = 0;
-    const players = new Map<number, number>();
+    const players = new Map<number, { sum: number; n: number }>();
     await pmap(tours, 5, async (tour) => {
       let st;
       try { st = await getTourStatistics(ref.tournamentId, ref.divisionId, tour); } catch { return; }
       matches += st.totalMatches; goals += st.totalGoals; yellow += st.totalYellowCards;
       const ps = await tourPlayers(seasonId, ref.tournamentId, ref.divisionId, tour);
       if (ps.length > 0) analyzed += Math.max(st.analyzedMatches, 1);
-      for (const p of ps) if (p.id != null && !players.has(p.id)) players.set(p.id, p.averageRating ?? 0);
+      // Рейтинг игрока — СРЕДНЕЕ по его матчам (единая методика с regionPlayers),
+      // не первый/пиковый матч. Каждого уникального игрока считаем для players.size.
+      for (const p of ps) {
+        if (p.id == null) continue;
+        const e = players.get(p.id) ?? { sum: 0, n: 0 };
+        const r = p.averageRating;
+        if (typeof r === 'number' && Number.isFinite(r)) { e.sum += r; e.n += 1; }
+        players.set(p.id, e);
+      }
     });
-    const ratings = [...players.values()].filter((r) => Number.isFinite(r) && r !== 0);
+    // Средний рейтинг турнира = среднее по игрокам с ≥2 оценёнными матчами (как «лучшие»).
+    const ratings = [...players.values()].filter((e) => e.n >= 2).map((e) => e.sum / e.n);
     return {
       ref, teams, players: players.size, matches, analyzed, goals, yellow,
       goalsPerMatch: matches ? Math.round((goals / matches) * 100) / 100 : null,
