@@ -16,7 +16,13 @@ interface StandRow { id: number; name: string; logo: string | null; played: numb
 interface RatingRow { id: number; name: string; logo: string | null; rating: number }
 interface Group<T> { division: string; rows: T[] }
 // Строка единой таблицы: турнирная статистика + рейтинг AvanData + Δ (перевыполнение).
-interface CombRow extends StandRow { rating: number | null; delta: number | null }
+// Статы nullable: команда может быть в рейтинге, но ещё не в турнирной таблице
+// (ranked=false) — её всё равно показываем, чтобы не «пропадала».
+interface CombRow {
+  id: number; name: string; logo: string | null;
+  played: number | null; won: number | null; drawn: number | null; lost: number | null; goalDiff: number | null; points: number | null;
+  rating: number | null; delta: number | null; ranked: boolean;
+}
 interface CombGroup { division: string; rows: CombRow[] }
 interface ResultTeam { name: string; logo: string | null; score: number | null; rating: number | null; rank: number | null }
 interface ResultMatch { id: number; age: string; division: string; date: string; divTeams: number; home: ResultTeam; away: ResultTeam }
@@ -66,15 +72,25 @@ export function FederationAvHome() {
   // вся главная теперь согласованно подчиняется фильтрам (пульс/матчи/лучшие/таблица).
   const combined = useMemo<CombGroup | null>(() => {
     const sg = (st.data?.groups ?? []).find((g) => inDivision(g.division, division));
-    if (!sg) return null;
     const cg = (cr.data?.groups ?? []).find((g) => inDivision(g.division, division));
-    const rRank = new Map<number, number>(), rVal = new Map<number, number>();
-    (cg?.rows ?? []).forEach((r, i) => { rRank.set(r.id, i + 1); rVal.set(r.id, r.rating); });
-    const rows: CombRow[] = sg.rows.map((r, i) => {
-      const rr = rRank.get(r.id);
-      return { ...r, rating: rVal.has(r.id) ? rVal.get(r.id)! : null, delta: rr != null ? rr - (i + 1) : null };
+    if (!sg && !cg) return null;
+    const standRows = sg?.rows ?? [];
+    const rVal = new Map<number, number>();
+    (cg?.rows ?? []).forEach((r) => rVal.set(r.id, r.rating));
+    // Место по рейтингу считаем СРЕДИ команд таблицы — тот же знаменатель, что и
+    // место по очкам, иначе Δ врёт, когда в рейтинге есть «лишняя» команда.
+    const ratingRank = new Map<number, number>();
+    [...standRows].sort((a, b) => (rVal.get(b.id) ?? -Infinity) - (rVal.get(a.id) ?? -Infinity))
+      .forEach((r, i) => { if (rVal.has(r.id)) ratingRank.set(r.id, i + 1); });
+    const ranked: CombRow[] = standRows.map((r, i) => {
+      const rr = ratingRank.get(r.id);
+      return { id: r.id, name: r.name, logo: r.logo, played: r.played, won: r.won, drawn: r.drawn, lost: r.lost, goalDiff: r.goalDiff, points: r.points, rating: rVal.has(r.id) ? rVal.get(r.id)! : null, delta: rr != null ? rr - (i + 1) : null, ranked: true };
     });
-    return { division: sg.division, rows };
+    // Команды с рейтингом, но ещё без турнирной таблицы — показываем отдельно (не теряем).
+    const inStand = new Set(standRows.map((r) => r.id));
+    const extra: CombRow[] = (cg?.rows ?? []).filter((r) => !inStand.has(r.id))
+      .map((r) => ({ id: r.id, name: r.name, logo: r.logo, played: null, won: null, drawn: null, lost: null, goalDiff: null, points: null, rating: r.rating, delta: null, ranked: false }));
+    return { division: (sg ?? cg)!.division, rows: [...ranked, ...extra] };
   }, [st.data, cr.data, division]);
   const skew = ag.data?.skew ?? null;
   // Лучшие — по СРЕДНЕМУ рейтингу, минимум 2 оценённых матча (без one-match-wonder).
@@ -259,14 +275,14 @@ function CombinedTable({ g, onClub }: { g: CombGroup; onClub: (id: number) => vo
         <span className="av-colh av-colh--c">Δ</span>
       </div>
       {g.rows.map((r, i) => (
-        <button type="button" key={r.id} onClick={() => onClub(r.id)} className={`av-trow t-comb av-trow--btn${i === 0 ? ' av-trow--lead' : ''}`}>
-          <span className={rankCls(i)}>{i + 1}</span>
+        <button type="button" key={r.id} onClick={() => onClub(r.id)} className={`av-trow t-comb av-trow--btn${i === 0 && r.ranked ? ' av-trow--lead' : ''}${r.ranked ? '' : ' av-trow--ghost'}`}>
+          <span className={r.ranked ? rankCls(i) : 'av-trow__rank'} title={r.ranked ? undefined : 'Есть рейтинг, но ещё нет в турнирной таблице'}>{r.ranked ? i + 1 : '—'}</span>
           <ClubShield name={r.name} logoUrl={r.logo} size={22} />
           <span className="av-trow__name" title={r.name}>{r.name}</span>
           <span className="av-trow__stats av-six">
-            <span className="av-dim">{r.played}</span><span>{r.won}</span><span>{r.drawn}</span><span>{r.lost}</span>
-            <span className={r.goalDiff > 0 ? 'av-pos' : r.goalDiff < 0 ? 'av-neg' : 'av-dim'}>{pm(r.goalDiff)}</span>
-            <span className="av-trow__pts">{r.points}</span>
+            <span className="av-dim">{r.played ?? '—'}</span><span>{r.won ?? '—'}</span><span>{r.drawn ?? '—'}</span><span>{r.lost ?? '—'}</span>
+            <span className={r.goalDiff == null ? 'av-dim' : r.goalDiff > 0 ? 'av-pos' : r.goalDiff < 0 ? 'av-neg' : 'av-dim'}>{r.goalDiff == null ? '—' : pm(r.goalDiff)}</span>
+            <span className="av-trow__pts">{r.points ?? '—'}</span>
           </span>
           <span className={`av-crate${r.rating != null && r.rating < 0 ? ' av-crate--neg' : ''}`}>{r.rating != null ? num(r.rating) : '—'}</span>
           <DeltaChip delta={r.delta} />
@@ -275,7 +291,7 @@ function CombinedTable({ g, onClub }: { g: CombGroup; onClub: (id: number) => vo
       <p className="av-table-legend">
         <b>Рейтинг</b> — клубный рейтинг AvanData (сумма рейтингов игроков).&ensp;<b>Δ</b> — место в таблице против места по рейтингу:&nbsp;
         <span className="av-delta av-delta--up av-delta--inline">▲</span> перевыполняет,&nbsp;
-        <span className="av-delta av-delta--down av-delta--inline">▼</span> недовыполняет относительно своего рейтинга.
+        <span className="av-delta av-delta--down av-delta--inline">▼</span> недовыполняет относительно своего рейтинга.&ensp;Строки с «—» — есть рейтинг, но пока нет матчей в таблице.
       </p>
     </div>
   );

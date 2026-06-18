@@ -572,6 +572,9 @@
 /* клубный рейтинг AvanData — плотное число (не пилюля, экономим ширину под Δ) */
 .av-crate { font-family: var(--av-display); font-weight: 700; font-size: 13.5px; color: var(--av-cyan); text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
 .av-crate--neg { color: var(--av-danger); }
+/* строка «есть рейтинг, но нет в таблице» — приглушена, отделена сверху */
+.av-trow--ghost { opacity: 0.62; border-top: 1px dashed rgba(94, 235, 252, 0.14); }
+.av-trow--ghost .av-trow__pts { color: var(--av-text-dim) !important; }
 /* Δ-чип — главный инсайт: перевыполнение (зелёный ▲) / недовыполнение (красный ▼) */
 .av-delta { justify-self: center; display: inline-flex; align-items: center; gap: 1px; min-width: 44px; padding: 4px 7px; border-radius: var(--av-r-sm); font-family: var(--av-display); font-weight: 700; font-size: 12.5px; font-variant-numeric: tabular-nums; }
 .av-delta--up { color: var(--av-success); background: color-mix(in srgb, var(--av-success) 13%, transparent); border: 1px solid color-mix(in srgb, var(--av-success) 30%, transparent); }
