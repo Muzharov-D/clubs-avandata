@@ -17,3 +17,4 @@ export * from './dashboardLayouts.js';
 // W4 — Федерация (слой регулятора над клубами-тенантами)
 export * from './federations.js';
 export * from './federationTenants.js';
+export * from './federationSnapshots.js';

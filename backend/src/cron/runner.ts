@@ -7,6 +7,7 @@ import { syncTenantStandings } from '../services/standingsService.js';
 import { syncTenantCalendarTournament } from '../services/calendarService.js';
 import { syncTenantEvents } from '../services/matchEventsService.js';
 import { federationHealth } from '../federation/avandataSource.js';
+import { captureSnapshotIfDue } from '../federation/snapshots.js';
 
 /**
  * Multi-tenant cron runner.
@@ -142,6 +143,20 @@ async function tickFederationHealth() {
 }
 
 // ============================================================================
+// Federation snapshot — недельный срез состояния когорт (Фаза B «радара»).
+// Сеет базовый снимок на первом тике, дальше пишет ~раз в неделю (диф → «За неделю»).
+// ============================================================================
+
+async function tickFederationSnapshot() {
+  try {
+    const r = await captureSnapshotIfDue(FED_SEASON);
+    if (r.captured) logger.info({ written: r.written }, 'federation snapshot tick — снимок записан');
+  } catch (e) {
+    logger.error({ err: e instanceof Error ? e.message : String(e) }, 'federation snapshot tick failed');
+  }
+}
+
+// ============================================================================
 // Wiring
 // ============================================================================
 
@@ -156,7 +171,8 @@ const JOBS: CronJob[] = [
   { name: 'standings', intervalMs: 30 * 60_000, initialDelayMs: 5_000,  run: tickStandings },
   { name: 'calendar',  intervalMs: 30 * 60_000, initialDelayMs: 8_000,  run: tickCalendar  },
   { name: 'events',    intervalMs: 6 * 60 * 60_000, initialDelayMs: 12_000, run: tickEvents },
-  { name: 'fedHealth', intervalMs: 60 * 60_000, initialDelayMs: 20_000, run: tickFederationHealth },
+  { name: 'fedHealth',   intervalMs: 60 * 60_000, initialDelayMs: 20_000, run: tickFederationHealth },
+  { name: 'fedSnapshot', intervalMs: 12 * 60 * 60_000, initialDelayMs: 30_000, run: tickFederationSnapshot },
 ];
 
 export function startCrons() {

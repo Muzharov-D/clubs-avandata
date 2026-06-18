@@ -18,6 +18,7 @@ import { videoRoutes } from './modules/video/routes.js';
 import { closePool } from './db/client.js';
 import { runMigrations } from './db/migrate.js';
 import { startCrons, stopCrons } from './cron/runner.js';
+import { captureSnapshotIfDue } from './federation/snapshots.js';
 
 async function buildServer() {
   const app = Fastify({
@@ -114,6 +115,12 @@ async function start() {
     } else {
       logger.info('START_CRONS=false — crons disabled');
     }
+    // Базовый снимок состояния когорт при старте (Фаза B «недельного радара») — гарантирует,
+    // что история начнёт копиться даже при выключенном планировщике. Гард внутри пишет не чаще
+    // ~раза в неделю, поэтому частые деплои не плодят дубли. Fire-and-forget — старт не блокируем.
+    void captureSnapshotIfDue(2)
+      .then((r) => { if (r.captured) logger.info({ written: r.written }, 'startup: базовый federation snapshot записан'); })
+      .catch((err) => logger.warn({ err: err instanceof Error ? err.message : String(err) }, 'startup snapshot seed failed'));
   } catch (err) {
     logger.error({ err }, 'Failed to start server');
     process.exit(1);
