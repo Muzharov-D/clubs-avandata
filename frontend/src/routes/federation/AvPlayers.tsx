@@ -12,16 +12,35 @@ interface RPlayer { id: number; name: string; birthYear: number | null; position
 
 const lastName = (s: string) => { const w = s.trim().split(/\s+/); return w.length > 1 ? w[w.length - 1] : s; };
 
-type Line = 'GK' | 'DEF' | 'MID' | 'FWD';
-const lineOf = (pos: string | null): Line | null => {
+// Амплуа игрока → слот сборной (точная карта позиций по ТЗ владельца).
+// ЦЗ: центральные защитники · ПЗ/ЛЗ: фланговые защ./фулбеки · ЦП: ВСЕ
+// опорные/центральные/атакующие полузащ. (вкл. «правый/левый атакующий») ·
+// ПН/ЛН: фланговый полузащ.(вингер) ИЛИ фланговый нап. · ЦН: центрфорварды.
+type Cat = 'GK' | 'LB' | 'CB' | 'RB' | 'CM' | 'LW' | 'CF' | 'RW';
+const catOf = (pos: string | null): Cat | null => {
   const p = (pos ?? '').toLowerCase();
   if (/врат/.test(p)) return 'GK';
-  if (/полуз/.test(p)) return 'MID';          // «полуЗАЩИТник» содержит «защит» — проверяем ПЕРВЫМ
-  if (/защит|фулбек/.test(p)) return 'DEF';
-  if (/напад|форвард/.test(p)) return 'FWD';
+  if ((/защит/.test(p) || /фулбек/.test(p)) && !/полуз/.test(p)) {
+    if (/центральн/.test(p)) return 'CB';
+    if (/прав/.test(p)) return 'RB';
+    if (/лев/.test(p)) return 'LB';
+    return 'CB';
+  }
+  if (/полуз/.test(p)) {
+    if (/опорн|атакующ|центральн/.test(p)) return 'CM';   // в центр поля
+    if (/прав/.test(p)) return 'RW';                       // правый полузащитник = вингер
+    if (/лев/.test(p)) return 'LW';
+    return 'CM';
+  }
+  if (/напад/.test(p) || /форвард/.test(p)) {
+    if (/центральн/.test(p)) return 'CF';
+    if (/прав/.test(p)) return 'RW';
+    if (/лев/.test(p)) return 'LW';
+    return 'CF';
+  }
   return null;
 };
-// Сторона по названию амплуа: левый = слева, правый = справа, иначе центр.
+// Сторона амплуа — для раскладки внутри слотов одной категории (ЦЗ×2, ЦП×3).
 const sideScore = (pos: string | null): number => {
   const p = (pos ?? '').toLowerCase();
   if (/прав/.test(p)) return 1;
@@ -30,13 +49,13 @@ const sideScore = (pos: string | null): number => {
 };
 const plMatch = (n: number) => { const a = n % 100, b = n % 10; if (a >= 11 && a <= 14) return 'матчей'; if (b === 1) return 'матч'; if (b >= 2 && b <= 4) return 'матча'; return 'матчей'; };
 
-// 4-3-3, слоты СТРОГО слева-направо в каждой линии (атака вверх, ворота внизу).
-type Slot = { line: Line; l: number; t: number; tag: string };
+// 4-3-3 по ТЗ: ВРТ · ЛЗ-ЦЗ-ЦЗ-ПЗ · ЦП×3 · ЛН-ЦН-ПН (атака вверх). Слот = категория.
+type Slot = { cat: Cat; l: number; t: number; tag: string };
 const SLOTS: Slot[] = [
-  { line: 'GK', l: 50, t: 88, tag: 'ВРТ' },
-  { line: 'DEF', l: 14, t: 70, tag: 'ЛЗ' }, { line: 'DEF', l: 38, t: 74, tag: 'ЦЗ' }, { line: 'DEF', l: 62, t: 74, tag: 'ЦЗ' }, { line: 'DEF', l: 86, t: 70, tag: 'ПЗ' },
-  { line: 'MID', l: 24, t: 50, tag: 'ЛП' }, { line: 'MID', l: 50, t: 46, tag: 'ЦП' }, { line: 'MID', l: 76, t: 50, tag: 'ПП' },
-  { line: 'FWD', l: 24, t: 24, tag: 'ЛН' }, { line: 'FWD', l: 50, t: 20, tag: 'ЦН' }, { line: 'FWD', l: 76, t: 24, tag: 'ПН' },
+  { cat: 'GK', l: 50, t: 88, tag: 'ВРТ' },
+  { cat: 'LB', l: 14, t: 70, tag: 'ЛЗ' }, { cat: 'CB', l: 38, t: 74, tag: 'ЦЗ' }, { cat: 'CB', l: 62, t: 74, tag: 'ЦЗ' }, { cat: 'RB', l: 86, t: 70, tag: 'ПЗ' },
+  { cat: 'CM', l: 24, t: 50, tag: 'ЦП' }, { cat: 'CM', l: 50, t: 46, tag: 'ЦП' }, { cat: 'CM', l: 76, t: 50, tag: 'ЦП' },
+  { cat: 'LW', l: 24, t: 24, tag: 'ЛН' }, { cat: 'CF', l: 50, t: 20, tag: 'ЦН' }, { cat: 'RW', l: 76, t: 24, tag: 'ПН' },
 ];
 
 /** Таланты региона — реестр + «Сборная региона» (лучшие по позициям на данных). */
@@ -59,20 +78,21 @@ export function FederationAvPlayers() {
     return list.slice(0, 250);
   }, [players, club, qStr]);
 
-  // Сборная региона: лучшие по РЕАЛЬНЫМ позициям. Без «добора» — пустой слот
-  // честно показывает перекос состава (нет вратарей / мало защитников и т.п.).
+  // Сборная региона: на каждый слот — лучшие игроки СВОЕЙ категории амплуа
+  // (ЦЗ — 2, ЦП — 3, остальные — по 1). Без «добора»: нет правого защитника —
+  // слот ПЗ пустой (честно показывает перекос состава).
   const xi = useMemo(() => {
-    const rated = players.filter((p) => p.rating != null && (p.mp ?? 0) >= 2);
-    const byLine: Record<Line, RPlayer[]> = { GK: [], DEF: [], MID: [], FWD: [] };
-    for (const p of rated) { const l = lineOf(p.position); if (l) byLine[l].push(p); }
-    const slotsByLine: Record<Line, Slot[]> = { GK: [], DEF: [], MID: [], FWD: [] };
-    SLOTS.forEach((s) => slotsByLine[s.line].push(s));
+    const empty = (): Record<Cat, RPlayer[]> => ({ GK: [], LB: [], CB: [], RB: [], CM: [], LW: [], CF: [], RW: [] });
+    const byCat = empty();
+    for (const p of players) if (p.rating != null && (p.mp ?? 0) >= 2) { const c = catOf(p.position); if (c) byCat[c].push(p); }
+    const slotsByCat = empty() as unknown as Record<Cat, Slot[]>;
+    SLOTS.forEach((s) => slotsByCat[s.cat].push(s));
     const pick = new Map<Slot, RPlayer>();
-    (Object.keys(byLine) as Line[]).forEach((line) => {
-      const free = [...slotsByLine[line]];
-      const top = [...byLine[line]].sort((a, b) => (b.rating as number) - (a.rating as number)).slice(0, free.length);
-      // Лучший по рейтингу первым берёт свободный слот, ближайший к «идеальному» X
-      // его стороны (левый→14%, центр→50%, правый→86%) — правый встаёт справа.
+    (Object.keys(slotsByCat) as Cat[]).forEach((cat) => {
+      const free = [...slotsByCat[cat]];
+      const top = [...byCat[cat]].sort((a, b) => (b.rating as number) - (a.rating as number)).slice(0, free.length);
+      // Внутри категории лучший первым берёт слот, ближайший к своей стороне
+      // (для ЦЗ×2 и ЦП×3: левый-уклон — левее, правый — правее).
       for (const p of top) {
         const ideal = 50 + sideScore(p.position) * 36;
         let bi = 0, bd = Infinity;
@@ -173,7 +193,7 @@ export function FederationAvPlayers() {
                   return pl ? (
                     <button key={idx} type="button" className="av-slot av-slot--filled av-slot--btn" style={{ left: `${s.l}%`, top: `${s.t}%` }} title={`${pl.name} · ${s.tag}`} onClick={() => setPeek(pl)}>
                       <span className="av-slot__node">
-                        <PlayerAvatar name={pl.name} photoUrl={pl.photo} size={46} ring={s.line === 'GK'} />
+                        <PlayerAvatar name={pl.name} photoUrl={pl.photo} size={46} ring={s.cat === 'GK'} />
                         <span className="av-slot__badge" style={{ color: ratingColor(pl.rating) }}>{pl.rating}</span>
                       </span>
                       <span className="av-slot__name">{lastName(pl.name)}</span>
