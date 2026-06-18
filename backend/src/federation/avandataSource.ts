@@ -433,7 +433,9 @@ async function ffspbDirectStandings(seasonId: number, year: number): Promise<Div
       const teamsRaw = g.teams ?? [];
       if (!teamsRaw.length) continue;                      // пустая подгруппа
       const division = g.groupName ?? st.name ?? 'Лига';
-      const rows = teamsRaw.map((tm) => {
+      // Порядок — официальный position ФФСПб (их тай-брейк: личные встречи и т.п.),
+      // НЕ пересортировываем по очкам/разнице, иначе при равенстве очков врём.
+      const rows = teamsRaw.slice().sort((a, b) => Number(a.position ?? 99) - Number(b.position ?? 99)).map((tm) => {
         const team = tm.team ?? {};
         const name = (tm.teamName ?? team.name ?? '').trim();
         const s = tm.stats ?? {};
@@ -443,7 +445,7 @@ async function ffspbDirectStandings(seasonId: number, year: number): Promise<Div
           played: Number(s.games ?? 0), won: Number(s.wins ?? 0), drawn: Number(s.draws ?? 0), lost: Number(s.loses ?? 0),
           goalDiff: typeof s.difference === 'number' ? s.difference : gf - ga, points: Number(s.points ?? 0),
         };
-      }).sort((a, b) => b.points - a.points || b.goalDiff - a.goalDiff);
+      });
       if (rows.length) groups.push({ division, rows });
     }
   }
