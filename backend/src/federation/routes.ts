@@ -10,6 +10,7 @@ import {
   warmRegionMatchProtocols, regionClubProfile, federationHealth,
 } from './avandataSource.js';
 import { snapshotMeta } from './snapshots.js';
+import { federationWeekly } from './weekly.js';
 import {
   federationOverview,
   federationRegionMap,
@@ -127,6 +128,14 @@ export async function federationRoutes(app: FastifyInstance) {
     if (avOff(reply)) return { error: 'AVANDATA_API_KEY не задан', code: 'AVANDATA_OFF' };
     const season = Number((req.query as { season?: string }).season) || AV_SEASON;
     return await snapshotMeta(season);
+  });
+
+  /** GET /federation/av/weekly — «За неделю» (Фаза C): что требует внимания сейчас
+   *  (недовыполнение/зеркало) + что изменилось за неделю (диф снимков). */
+  app.get('/av/weekly', async (req, reply) => {
+    if (avOff(reply)) return { error: 'AVANDATA_API_KEY не задан', code: 'AVANDATA_OFF' };
+    const season = Number((req.query as { season?: string }).season) || AV_SEASON;
+    return await federationWeekly(season);
   });
 
   /** GET /federation/av/club-ratings?year= — рейтинг клубов AvanData по дивизионам. */
