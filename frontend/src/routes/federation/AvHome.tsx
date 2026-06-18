@@ -15,6 +15,9 @@ interface Overview { divisions: string[]; tournaments: number; teams: number; pl
 interface StandRow { id: number; name: string; logo: string | null; played: number; won: number; drawn: number; lost: number; goalDiff: number; points: number }
 interface RatingRow { id: number; name: string; logo: string | null; rating: number }
 interface Group<T> { division: string; rows: T[] }
+// Строка единой таблицы: турнирная статистика + рейтинг AvanData + Δ (перевыполнение).
+interface CombRow extends StandRow { rating: number | null; delta: number | null }
+interface CombGroup { division: string; rows: CombRow[] }
 interface ResultTeam { name: string; logo: string | null; score: number | null; rating: number | null; rank: number | null }
 interface ResultMatch { id: number; age: string; division: string; date: string; divTeams: number; home: ResultTeam; away: ResultTeam }
 interface AgeEffect { total: number; q1pct: number; q4pct: number; skew: number | null }
@@ -47,7 +50,7 @@ export function FederationAvHome() {
   const q = yearQ(year);
   const [selected, setSelected] = useState<ResultMatch | null>(null);
   const [selectedClub, setSelectedClub] = useState<number | null>(null);
-  const ov = useQuery({ queryKey: ['av', 'overview', division], queryFn: () => api<Overview>(`/federation/av/overview${fedQ(null, division)}`) });
+  const ov = useQuery({ queryKey: ['av', 'overview', year, division], queryFn: () => api<Overview>(`/federation/av/overview${fedQ(year, division)}`) });
   const rs = useQuery({ queryKey: ['av', 'results', year, division], queryFn: () => api<{ results: ResultMatch[] }>(`/federation/av/results${fedQ(year, division)}`) });
   const st = useQuery({ queryKey: ['av', 'standings', year], queryFn: () => api<{ groups: Group<StandRow>[] }>(`/federation/av/standings${q}`) });
   const cr = useQuery({ queryKey: ['av', 'club-ratings', year], queryFn: () => api<{ groups: Group<RatingRow>[] }>(`/federation/av/club-ratings${q}`) });
@@ -55,11 +58,22 @@ export function FederationAvHome() {
   const pl = useQuery({ queryKey: ['av', 'players', year, division], queryFn: () => api<{ players: RPlayer[] }>(`/federation/av/players${fedQ(year, division)}`) });
   const d = ov.data;
   const results = rs.data?.results ?? [];
-  // Таблицы и рейтинг показывают ОБЕ лиги (Высшая + Первая) — отдельными блоками,
-  // независимо от тоггла (тоггл фильтрует пульс/результаты/лучших). Сортируем Высшую вперёд.
-  const divOrder = (d: string) => (inDivision(d, 'Высшая') ? 0 : inDivision(d, 'Первая') ? 1 : 2);
-  const stGroups = [...(st.data?.groups ?? [])].sort((a, b) => divOrder(a.division) - divOrder(b.division));
-  const crGroups = [...(cr.data?.groups ?? [])].sort((a, b) => divOrder(a.division) - divOrder(b.division));
+  // Единая таблица выбранной лиги: турнирная позиция + рейтинг AvanData + Δ.
+  // Δ = место по рейтингу − место в таблице: >0 клуб ВЫШЕ своего рейтинга
+  // (перевыполняет), <0 НИЖЕ (недовыполняет). Тоггл «Лига» фильтрует таблицу —
+  // вся главная теперь согласованно подчиняется фильтрам (пульс/матчи/лучшие/таблица).
+  const combined = useMemo<CombGroup | null>(() => {
+    const sg = (st.data?.groups ?? []).find((g) => inDivision(g.division, division));
+    if (!sg) return null;
+    const cg = (cr.data?.groups ?? []).find((g) => inDivision(g.division, division));
+    const rRank = new Map<number, number>(), rVal = new Map<number, number>();
+    (cg?.rows ?? []).forEach((r, i) => { rRank.set(r.id, i + 1); rVal.set(r.id, r.rating); });
+    const rows: CombRow[] = sg.rows.map((r, i) => {
+      const rr = rRank.get(r.id);
+      return { ...r, rating: rVal.has(r.id) ? rVal.get(r.id)! : null, delta: rr != null ? rr - (i + 1) : null };
+    });
+    return { division: sg.division, rows };
+  }, [st.data, cr.data, division]);
   const skew = ag.data?.skew ?? null;
   const topPlayers = (pl.data?.players ?? []).filter((p) => p.rating != null).slice(0, 8);
 
@@ -167,15 +181,18 @@ export function FederationAvHome() {
           : <div className="av-fixtures">{keyMatches.map((m) => <Fixture key={m.id} m={m} onOpen={setSelected} />)}</div>}
       </section>
 
-      {/* Турнирные таблицы — обе лиги, во всю ширину (имена клубов целиком) */}
+      {/* Единая турнирная таблица выбранной лиги — позиция + рейтинг AvanData + Δ (перевыполнение) */}
       <section className="av-surface av-pad-lg av-rise">
-        <div className="av-section"><h2 className="av-section-title">Турнирные таблицы</h2></div>
-        {st.isLoading ? <Sk /> : stGroups.length === 0 ? <div className="av-note">Нет данных.</div> : stGroups.map((g) => <StandingsBlock key={g.division} g={g} />)}
-      </section>
-      {/* Рейтинг клубов — обе лиги, во всю ширину */}
-      <section className="av-surface av-pad-lg av-rise">
-        <div className="av-section"><h2 className="av-section-title">Рейтинг клубов</h2></div>
-        {cr.isLoading ? <Sk /> : crGroups.length === 0 ? <div className="av-note">Нет данных.</div> : crGroups.map((g) => <RatingsBlock key={g.division} g={g} onClub={setSelectedClub} />)}
+        <div className="av-section">
+          <div>
+            <h2 className="av-section-title">Турнирная таблица</h2>
+            <p className="av-section-sub" style={{ margin: '2px 0 0' }}>Позиция в первенстве против рейтинга AvanData — кто перевыполняет</p>
+          </div>
+          <span className="av-divtag">{division} лига</span>
+        </div>
+        {st.isLoading || cr.isLoading ? <Sk />
+          : !combined || combined.rows.length === 0 ? <div className="av-note">Нет данных по выбранному фильтру.</div>
+          : <CombinedTable g={combined} onClub={setSelectedClub} />}
       </section>
 
       {selected && <MatchDetail base={toBase(selected)} onClose={() => setSelected(null)} />}
@@ -228,15 +245,18 @@ function Fixture({ m, onOpen }: { m: KeyMatch; onOpen: (m: KeyMatch) => void }) 
 
 const rankCls = (i: number) => `av-trow__rank${i < 3 ? ` av-trow__rank--${i + 1}` : ''}`;
 
-function StandingsBlock({ g }: { g: Group<StandRow> }) {
+function CombinedTable({ g, onClub }: { g: CombGroup; onClub: (id: number) => void }) {
   return (
-    <div className="av-group">
-      <div className="av-group__head">
-        <span className="av-group__name">{g.division}</span>
-        <span className="av-group__cols av-six"><span>И</span><span>В</span><span>Н</span><span>П</span><span>±</span><span>ОЧ</span></span>
+    <div className="av-ctable">
+      <div className="av-trow t-comb av-trow--cols">
+        <span /><span />
+        <span className="av-colh av-colh--l">Команда</span>
+        <span className="av-trow__stats av-six"><span>И</span><span>В</span><span>Н</span><span>П</span><span>±</span><span>ОЧ</span></span>
+        <span className="av-colh">Рейтинг</span>
+        <span className="av-colh av-colh--c">Δ</span>
       </div>
       {g.rows.map((r, i) => (
-        <div key={r.id} className={`av-trow t-stand${i === 0 ? ' av-trow--lead' : ''}`}>
+        <button type="button" key={r.id} onClick={() => onClub(r.id)} className={`av-trow t-comb av-trow--btn${i === 0 ? ' av-trow--lead' : ''}`}>
           <span className={rankCls(i)}>{i + 1}</span>
           <ClubShield name={r.name} logoUrl={r.logo} size={22} />
           <span className="av-trow__name" title={r.name}>{r.name}</span>
@@ -245,29 +265,28 @@ function StandingsBlock({ g }: { g: Group<StandRow> }) {
             <span className={r.goalDiff > 0 ? 'av-pos' : r.goalDiff < 0 ? 'av-neg' : 'av-dim'}>{pm(r.goalDiff)}</span>
             <span className="av-trow__pts">{r.points}</span>
           </span>
-        </div>
+          <span className={`av-crate${r.rating != null && r.rating < 0 ? ' av-crate--neg' : ''}`}>{r.rating != null ? num(r.rating) : '—'}</span>
+          <DeltaChip delta={r.delta} />
+        </button>
       ))}
+      <p className="av-table-legend">
+        <b>Рейтинг</b> — клубный рейтинг AvanData (сумма рейтингов игроков).&ensp;<b>Δ</b> — место в таблице против места по рейтингу:&nbsp;
+        <span className="av-delta av-delta--up av-delta--inline">▲</span> перевыполняет,&nbsp;
+        <span className="av-delta av-delta--down av-delta--inline">▼</span> недовыполняет относительно своего рейтинга.
+      </p>
     </div>
   );
 }
 
-function RatingsBlock({ g, onClub }: { g: Group<RatingRow>; onClub: (id: number) => void }) {
-  const max = Math.max(...g.rows.map((r) => Math.abs(r.rating)), 1);
+// Δ-чип: на сколько мест команда выше (перевыполняет) / ниже (недовыполняет) своего рейтинга.
+function DeltaChip({ delta }: { delta: number | null }) {
+  if (delta == null) return <span className="av-delta av-delta--zero">—</span>;
+  if (delta === 0) return <span className="av-delta av-delta--zero" title="Ровно на уровне своего рейтинга">0</span>;
+  const up = delta > 0, n = Math.abs(delta);
   return (
-    <div className="av-group">
-      <div className="av-group__head">
-        <span className="av-group__name">{g.division}</span>
-        <span className="av-group__cols">Рейтинг</span>
-      </div>
-      {g.rows.map((r, i) => (
-        <button type="button" key={r.id} onClick={() => onClub(r.id)} className={`av-trow t-rate av-trow--btn${i === 0 ? ' av-trow--lead' : ''}`}>
-          <span className={rankCls(i)}>{i + 1}</span>
-          <ClubShield name={r.name} logoUrl={r.logo} size={22} />
-          <span className="av-trow__name" title={r.name}>{r.name}</span>
-          <span className="av-meter"><span className="av-meter__fill" style={{ width: `${(Math.abs(r.rating) / max) * 100}%`, background: r.rating < 0 ? 'var(--av-danger)' : 'var(--av-cyan)' }} /></span>
-          <span className={`av-rate${r.rating < 0 ? ' av-rate--neg' : ''}`}>{num(r.rating)}</span>
-        </button>
-      ))}
-    </div>
+    <span className={`av-delta ${up ? 'av-delta--up' : 'av-delta--down'}`}
+      title={up ? `Выше своего рейтинга на ${n} ${plMesto(n)} — перевыполняет` : `Ниже своего рейтинга на ${n} ${plMesto(n)} — недовыполняет`}>
+      {up ? '▲' : '▼'}{n}
+    </span>
   );
 }

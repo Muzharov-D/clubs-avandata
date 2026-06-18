@@ -65,7 +65,7 @@ export async function federationRoutes(app: FastifyInstance) {
   app.get('/av/overview', async (req, reply) => {
     if (avOff(reply)) return { error: 'AVANDATA_API_KEY не задан', code: 'AVANDATA_OFF' };
     const season = Number((req.query as { season?: string }).season) || AV_SEASON;
-    return await regionOverview(season, divisionOf(req));
+    return await regionOverview(season, divisionOf(req), yearOf(req));
   });
 
   /** GET /federation/av/compare?keys=14:2,13:2 — сравнение турниров между собой. */

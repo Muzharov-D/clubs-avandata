@@ -357,9 +357,10 @@ export const matchesDivision = (title: string, division: string): boolean => {
   return re ? re.test(title) : title.toLowerCase().includes(division.toLowerCase());
 };
 
-export async function regionOverview(seasonId: number, division?: string): Promise<RegionOverview> {
-  return cached(`overview:${seasonId}:${division ?? ''}`, TTL, async () => {
+export async function regionOverview(seasonId: number, division?: string, year?: number): Promise<RegionOverview> {
+  return cached(`overview:${seasonId}:${division ?? ''}:${year ?? 0}`, TTL, async () => {
     let refs = await listTournaments(seasonId);
+    if (year != null) refs = refs.filter((r) => r.ageFrom === year);
     if (division) refs = refs.filter((r) => matchesDivision(r.divisionTitle, division));
     const aggs = await pmap(refs, 4, (r) => tournamentAggregate(seasonId, r));
     const sum = (sel: (a: TournamentAgg) => number) => aggs.reduce((s, a) => s + sel(a), 0);
