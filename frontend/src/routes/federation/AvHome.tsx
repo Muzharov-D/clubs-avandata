@@ -148,8 +148,18 @@ export function FederationAvHome() {
           <h1 className="av-title">Обзор региона</h1>
           <p className="av-sub">Первенство СПб · сезон 2026</p>
         </div>
-        <Link to="/federation/cohorts" className="av-link">Возрастные группы →</Link>
+        <div className="av-head__r">
+          <button type="button" className="av-print-btn" onClick={() => window.print()} title="Сохранить отчёт в PDF (печать)">⎙ Печать · PDF</button>
+          <Link to="/federation/cohorts" className="av-link">Возрастные группы →</Link>
+        </div>
       </header>
+
+      {/* Печатная шапка отчёта — видна ТОЛЬКО в PDF/печати */}
+      <div className="av-print-only av-print-head">
+        <b>Кабинет федерации · Первенство СПб · сезон 2026</b>
+        <span>Обзор региона · {division} лига · {year != null ? `${year} г.р.` : 'все возрасты'}</span>
+        <span>Отчёт сформирован {new Date().toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
+      </div>
 
       {ov.error && <FedError />}
 

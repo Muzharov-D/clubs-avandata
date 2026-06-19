@@ -693,6 +693,38 @@ a.av-trow { text-decoration: none; color: inherit; }
 .av-finding--cyan .av-stakes { background: rgba(94, 235, 252, 0.08); border-left-color: var(--av-cyan); }
 .av-finding--cyan .av-stakes b { color: var(--av-cyan); }
 
+/* === Печать / экспорт в PDF — отчёт «на совещание» ========================== */
+.av-head__r { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.av-print-btn { font-family: var(--av-display); font-size: 12.5px; font-weight: 700; padding: 6px 13px; border-radius: var(--av-r-sm); color: var(--av-cyan); background: color-mix(in srgb, var(--av-cyan) 10%, transparent); border: 1px solid color-mix(in srgb, var(--av-cyan) 32%, transparent); cursor: pointer; transition: background 0.15s ease; white-space: nowrap; }
+@media (hover: hover) { .av-print-btn:hover { background: color-mix(in srgb, var(--av-cyan) 18%, transparent); } }
+.av-print-only { display: none; }                 /* печатная шапка скрыта на экране */
+.av-print-head b { display: block; font-family: var(--av-display); font-size: 15px; }
+.av-print-head span { display: block; font-size: 12px; color: #444; line-height: 1.5; }
+
+@media print {
+  /* СВЕТЛАЯ тема для печати: тёмный фон жрёт тонер, cyan на белом нечитаем */
+  .av-root {
+    --av-bg-page: #fff; --av-bg-page-2: #fff;
+    --av-surface: #fff; --av-surface-2: #fafafa; --av-surface-3: #f5f5f5;
+    --av-panel: #fff; --av-panel-soft: #fafafa;
+    --av-border: #d8d8d8; --av-border-strong: #bdbdbd;
+    --av-text: #111; --av-text-card: #111; --av-text-2: #333; --av-text-dim: #555; --av-text-faint: #888;
+    --av-cyan: #0e7490; --av-cyan-deep: #0e7490; --av-cyan-glow: #0e7490; --av-accent: #0e7490; --av-accent-deep: #0e7490;
+    --av-shadow: none; --av-shadow-lg: none; --av-ring: none; --av-glow: none;
+    background: #fff !important;
+  }
+  .av-bg, .av-bg::before, .av-bg::after { display: none !important; }                 /* фон-волны долой */
+  .av-topbar, .av-subbar, .av-head__r, .av-print-btn, .av-link { display: none !important; } /* нав/фильтры/кнопки долой */
+  .av-print-only { display: block !important; margin-bottom: 14px; }                  /* печатная шапка показать */
+  *, *::before, *::after { backdrop-filter: none !important; -webkit-backdrop-filter: none !important; box-shadow: none !important; text-shadow: none !important; animation: none !important; transition: none !important; }
+  .av-surface, .av-surface-soft, .av-stat, .av-fixture, .av-watch, .av-finding, .av-dbadge { background: #fff !important; border: 1px solid #ddd !important; }
+  /* не рвать карточки/секции посреди страницы */
+  section, .av-weekly, .av-pulse, .av-leaders, .av-ctable, .av-fixtures, .av-watch, .av-fixture, .av-stat, .av-leader { break-inside: avoid; page-break-inside: avoid; }
+  .av-section-title { break-after: avoid; }
+  @page { margin: 14mm; }
+  body, .av-root { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+}
+
 /* фокус-число героя — тест трёх секунд (Караваджо) */
 .av-finding__top { display: flex; align-items: center; gap: 24px; flex-wrap: wrap; margin-top: 12px; }
 .av-finding__top > div:last-child { flex: 1; min-width: 280px; }
