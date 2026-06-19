@@ -537,17 +537,24 @@ export interface StandingsResult {
   degraded: boolean;           // true = хотели официальный по году, но упали на зеркало (бывает неполным)
   asOf: string;                // ISO-время фактической выборки (заморожено TTL-кэшем)
 }
+// Последний ХОРОШИЙ результат таблиц по когорте (официал ФФСПб, полный). Блипы ФФСПб НЕ должны
+// «ронять» таблицу в зеркало/неполноту — пока есть свежий хороший (≤6ч), отдаём его, не деградант.
+// Меняется по турам (раз в неделю), поэтому слегка устаревший хороший точнее свежего сломанного.
+const lastGoodStandings = new Map<string, { result: StandingsResult; at: number }>();
+const GOOD_STANDINGS_TTL = 6 * 60 * 60 * 1000;
 export async function regionStandings(seasonId: number, year?: number): Promise<StandingsResult> {
-  return cached(`standings:${seasonId}:${year ?? 0}`, TTL, async () => {
+  const key = `${seasonId}:${year ?? 0}`;
+  const fresh: StandingsResult = await cached(`standings:${key}`, TTL, async () => {
     const asOf = new Date().toISOString();
-    // Сначала ОФИЦИАЛ ФФСПб (через Vercel-прокси), при ошибке — зеркало avandata (с пометкой degraded).
+    // Сначала ОФИЦИАЛ ФФСПб (через Vercel-прокси), при ошибке/неполноте — зеркало avandata.
     if (year != null) {
       try {
-        let direct = await ffspbDirectStandings(seasonId, year);
-        // null = пусто/неполно (стадия отвалилась транзиентом) → ОДИН ретрай свежей выборкой
-        if (!direct || !direct.some((g) => g.rows.length)) direct = await ffspbDirectStandings(seasonId, year);
-        if (direct && direct.some((g) => g.rows.length)) return { groups: direct, source: 'ffspb', degraded: false, asOf };
-        logger.warn({ year }, 'ffspb-direct standings пуст/неполный после ретрая → зеркало (degraded)');
+        // До 3 попыток: стадия может отвалиться транзиентом (completeness вернёт null), ретрай ловит.
+        for (let attempt = 0; attempt < 3; attempt++) {
+          const direct = await ffspbDirectStandings(seasonId, year);
+          if (direct && direct.some((g) => g.rows.length)) return { groups: direct, source: 'ffspb', degraded: false, asOf };
+        }
+        logger.warn({ year }, 'ffspb-direct standings пуст/неполный после ретраев → зеркало (degraded)');
       } catch (e) { logger.warn({ err: String(e), year }, 'ffspb-direct standings failed → зеркало (degraded)'); }
     }
     const tid = year != null ? await tournamentIdForYear(seasonId, year) : undefined;
@@ -561,6 +568,20 @@ export async function regionStandings(seasonId: number, year?: number): Promise<
     // year отсутствует («Все») → зеркало-сводка это штатный источник агрегата, не деградация.
     return { groups, source: 'mirror', degraded: year != null, asOf };
   });
+  // СТИКИ-ХОРОШИЙ (только для конкретного года): официал+непустой = эталон, запоминаем и отдаём.
+  // Деградант/неполнота → отдаём последний хороший (≤6ч), чтобы таблица не «отваливалась» из-за блипа.
+  if (year != null) {
+    if (fresh.source === 'ffspb' && !fresh.degraded && fresh.groups.length > 0) {
+      lastGoodStandings.set(key, { result: fresh, at: Date.now() });
+      return fresh;
+    }
+    const good = lastGoodStandings.get(key);
+    if (good && Date.now() - good.at < GOOD_STANDINGS_TTL) {
+      logger.info({ year, freshSrc: fresh.source }, 'standings: отдаём последний хороший (свежий деградирован)');
+      return good.result;
+    }
+  }
+  return fresh;
 }
 export async function regionClubRatings(seasonId: number, year?: number): Promise<DivisionGroup<ClubRatingRow>[]> {
   return cached(`clubratings:${seasonId}:${year ?? 0}`, TTL, async () => {
