@@ -609,7 +609,13 @@ let lastFedHealth: FederationHealthReport | null = null;
 /** Последний посчитанный отчёт здоровья (его обновляет крон fedHealth). Чтобы /av/health отвечал
  *  МГНОВЕННО (живой обход когорт тяжёлый), а не пересчитывал на каждый запрос. */
 export const getLastFedHealth = (): FederationHealthReport | null => lastFedHealth;
+let healthInFlight: Promise<FederationHealthReport> | null = null;
 export async function federationHealth(seasonId: number): Promise<FederationHealthReport> {
+  if (healthInFlight) return healthInFlight; // дедуп: один тяжёлый обход за раз, конкурентные ждут его
+  healthInFlight = computeFederationHealth(seasonId);
+  try { return await healthInFlight; } finally { healthInFlight = null; }
+}
+async function computeFederationHealth(seasonId: number): Promise<FederationHealthReport> {
   const years = await availableYears(seasonId);
   const cohorts: CohortHealth[] = [];
   for (const year of years) {
