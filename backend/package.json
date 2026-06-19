@@ -20,7 +20,8 @@
     "seed:trainings": "tsx src/scripts/seedTrainings.ts",
     "seed:federation": "tsx src/scripts/seedFederation.ts",
     "seed:federation-admin": "tsx src/scripts/seedFederationAdmin.ts",
-    "seed:consent": "tsx src/scripts/seedConsent.ts"
+    "seed:consent": "tsx src/scripts/seedConsent.ts",
+    "sync:lossmap": "tsx src/scripts/syncLossMap.ts"
   },
   "dependencies": {
     "@fastify/cookie": "^11.0.2",

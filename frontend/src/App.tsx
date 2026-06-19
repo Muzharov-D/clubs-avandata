@@ -58,6 +58,7 @@ const FederationAvPlayers = lazy(() => import('./routes/federation/AvPlayers').t
 const FederationAvPlayerProfile = lazy(() => import('./routes/federation/AvPlayerProfile').then((m) => ({ default: m.FederationAvPlayerProfile })));
 const FederationAvInsights = lazy(() => import('./routes/federation/AvInsights').then((m) => ({ default: m.FederationAvInsights })));
 const FederationAvOpportunity = lazy(() => import('./routes/federation/AvOpportunity').then((m) => ({ default: m.FederationAvOpportunity })));
+const FederationAvLossMap = lazy(() => import('./routes/federation/AvLossMap').then((m) => ({ default: m.FederationAvLossMap })));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -189,6 +190,7 @@ export function App() {
                     <Route path="players/:id" element={<FederationAvPlayerProfile />} />
                     <Route path="fairness" element={<FederationAvInsights />} />
                     <Route path="opportunity" element={<FederationAvOpportunity />} />
+                    <Route path="loss-map" element={<FederationAvLossMap />} />
                     <Route path="clubs" element={<FederationAvClubs />} />
                     <Route path="cohorts" element={<FederationAvCohorts />} />
                     <Route path="compare" element={<FederationAvCompare />} />

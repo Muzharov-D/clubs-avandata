@@ -12,6 +12,7 @@ import {
 } from './avandataSource.js';
 import { snapshotMeta, captureSnapshotIfDue } from './snapshots.js';
 import { federationWeekly } from './weekly.js';
+import { LOSS_MAP } from './lossMap.generated.js';
 import { env } from '../env.js';
 import {
   federationOverview,
@@ -211,6 +212,10 @@ export async function federationRoutes(app: FastifyInstance) {
     const season = Number((req.query as { season?: string }).season) || AV_SEASON;
     return await talentConcentration(season, yearOf(req), divisionOf(req));
   });
+
+  /** GET /federation/av/loss-map — «Карта потерь»: game-time% по кварталам рождения (снимок
+   *  FFSPB, обновляется `npm run sync:lossmap`). Статика — отдаём мгновенно, без живого FFSPB. */
+  app.get('/av/loss-map', async () => LOSS_MAP);
 
   /** GET /federation/av/opportunity?year=&division= — карта возможностей (старт-рейт + справедливость по кварталам). */
   app.get('/av/opportunity', async (req, reply) => {
