@@ -11,6 +11,7 @@ const TABS: Array<{ to: string; end?: boolean; label: string }> = [
   { to: '/federation', end: true, label: 'Обзор региона' },
   { to: '/federation/players', label: 'Лучшие игроки' },
   { to: '/federation/fairness', label: 'Эффект возраста' },
+  { to: '/federation/opportunity', label: 'Возможности' },
   { to: '/federation/clubs', label: 'Клубы' },
   { to: '/federation/compare', label: 'Турниры' },
 ];

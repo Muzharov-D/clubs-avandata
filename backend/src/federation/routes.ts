@@ -8,6 +8,7 @@ import {
   regionStandings, regionClubRatings, playerProfile, availableYears, divisionStrength,
   ageEffect, talentConcentration, cohortMatrix, regionResults, regionMatchDetail,
   warmRegionMatchProtocols, regionClubProfile, federationHealth, getLastFedHealth,
+  opportunityMap,
 } from './avandataSource.js';
 import { snapshotMeta, captureSnapshotIfDue } from './snapshots.js';
 import { federationWeekly } from './weekly.js';
@@ -209,6 +210,13 @@ export async function federationRoutes(app: FastifyInstance) {
     if (avOff(reply)) return { error: 'AVANDATA_API_KEY не задан', code: 'AVANDATA_OFF' };
     const season = Number((req.query as { season?: string }).season) || AV_SEASON;
     return await talentConcentration(season, yearOf(req), divisionOf(req));
+  });
+
+  /** GET /federation/av/opportunity?year=&division= — карта возможностей (старт-рейт + справедливость по кварталам). */
+  app.get('/av/opportunity', async (req, reply) => {
+    if (avOff(reply)) return { error: 'AVANDATA_API_KEY не задан', code: 'AVANDATA_OFF' };
+    const season = Number((req.query as { season?: string }).season) || AV_SEASON;
+    return await opportunityMap(season, yearOf(req), divisionOf(req));
   });
 
   /** GET /federation/av/players/:id — профиль игрока + «пицца» из событий. */
