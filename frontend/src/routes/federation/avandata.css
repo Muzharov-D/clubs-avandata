@@ -603,11 +603,15 @@
 .av-watch--under { border-left-color: var(--av-danger); }
 .av-watch--degraded { border-left-color: var(--av-warning); }
 .av-watch--mover { border-left-color: var(--av-cyan); }
+.av-watch--monopoly { border-left-color: var(--av-violet); }
+.av-watch--rae { border-left-color: var(--av-warning); }
 .av-watch__year { flex: none; width: 32px; font-family: var(--av-display); font-size: 11px; font-weight: 800; color: var(--av-text-dim); font-variant-numeric: tabular-nums; }
 .av-watch__icon { flex: none; font-size: 13px; line-height: 1; }
 .av-watch--under .av-watch__icon { color: var(--av-danger); }
 .av-watch--degraded .av-watch__icon { color: var(--av-warning); }
 .av-watch--mover .av-watch__icon { color: var(--av-cyan); }
+.av-watch--monopoly .av-watch__icon { color: var(--av-violet); }
+.av-watch--rae .av-watch__icon { color: var(--av-warning); }
 .av-watch__body { display: flex; flex-direction: column; gap: 1px; min-width: 0; flex: 1; }
 .av-watch__team { font-size: 13px; font-weight: 700; color: var(--av-text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .av-watch__note { font-size: 11.5px; color: var(--av-text-dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }

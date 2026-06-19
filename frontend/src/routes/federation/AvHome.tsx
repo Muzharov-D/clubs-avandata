@@ -32,7 +32,7 @@ interface ResultMatch { id: number; age: string; division: string; date: string;
 interface AgeEffect { total: number; q1pct: number; q4pct: number; skew: number | null }
 interface RPlayer { id: number; name: string; birthYear: number | null; position: string | null; club: string | null; clubLogo: string | null; photo?: string | null; rating: number | null; mp?: number }
 // «За неделю» — дайджест радара: что требует внимания сейчас + что изменилось за неделю.
-interface WAttention { year: number; kind: 'under' | 'degraded'; team: string | null; teamId: number | null; division: string | null; pos: number | null; ratingRank: number | null; delta: number | null; note: string }
+interface WAttention { year: number; kind: 'under' | 'degraded' | 'monopoly' | 'rae'; team: string | null; teamId: number | null; division: string | null; pos: number | null; ratingRank: number | null; delta: number | null; note: string }
 interface WMover { year: number; kind: 'pos' | 'rating' | 'new' | 'gone'; team: string; from: number | null; to: number | null; note: string }
 interface Weekly { baseline: boolean; cohortsWithHistory: number; snapshots: number; since: string | null; attention: WAttention[]; movers: WMover[] }
 
@@ -255,6 +255,7 @@ const Sk = () => <div className="av-skeleton" style={{ height: 240 }} />;
 // «За неделю» — передняя дверь недельного радара. attention (недовыполнение/зеркало) работает
 // с первого среза; movers (динамика за неделю) появляются, когда накопится 2 снимка.
 const moverIcon = (k: WMover['kind']) => (k === 'new' ? '＋' : k === 'gone' ? '－' : k === 'rating' ? '◆' : '↕');
+const attIcon = (k: WAttention['kind']) => (k === 'under' ? '▼' : k === 'monopoly' ? '⬡' : k === 'rae' ? '⏳' : '⚠');
 function WeeklyRadar({ data, onClub }: { data: Weekly; onClub: (id: number) => void }) {
   const { attention, movers, baseline, since, snapshots } = data;
   const stamp = since ? fmtStamp(since) : '';
@@ -281,7 +282,7 @@ function WeeklyRadar({ data, onClub }: { data: Weekly; onClub: (id: number) => v
         {attention.map((a, i) => (
           <button type="button" key={`a${i}`} className={`av-watch av-watch--${a.kind}`} onClick={() => a.teamId && onClub(a.teamId)} disabled={!a.teamId}>
             <span className="av-watch__year">{a.year}</span>
-            <span className="av-watch__icon">{a.kind === 'under' ? '▼' : '⚠'}</span>
+            <span className="av-watch__icon">{attIcon(a.kind)}</span>
             <span className="av-watch__body">
               <span className="av-watch__team" title={a.team ?? undefined}>{a.team ?? `Когорта ${a.year}`}</span>
               <span className="av-watch__note">{a.note}</span>

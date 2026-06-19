@@ -12,10 +12,12 @@ import { latestSnapshotsForCohort, snapshotMeta, type SnapPayload, type SnapTeam
  */
 
 const isTopDiv = (d: string): boolean => /Высшая|Боброва/i.test(d);
-const RATING_MOVE = 0.05; // порог значимого изменения рейтинга за неделю (5%)
+const RATING_MOVE = 0.05;   // порог значимого изменения рейтинга за неделю (5%)
+const MONOPOLY_PCT = 50;    // топ-3 клуба держат ≥ N% таланта когорты → сигнал «монополия»
+const RAE_SKEW = 1.8;       // перекос Q1/Q4 ≥ N → сигнал «возрастная утечка»
 
 export interface AttentionItem {
-  year: number; kind: 'under' | 'degraded'; team: string | null; teamId: number | null;
+  year: number; kind: 'under' | 'degraded' | 'monopoly' | 'rae'; team: string | null; teamId: number | null;
   division: string | null; pos: number | null; ratingRank: number | null; delta: number | null; note: string;
 }
 export interface MoverItem {
@@ -35,11 +37,16 @@ function ratingRankMap(top: SnapTeam[]): Map<number, number> {
   return rr;
 }
 
+const flag = (year: number, kind: AttentionItem['kind'], note: string): AttentionItem =>
+  ({ year, kind, team: null, teamId: null, division: null, pos: null, ratingRank: null, delta: null, note });
+
 function attentionFromSnapshot(year: number, payload: SnapPayload): AttentionItem[] {
   const out: AttentionItem[] = [];
-  if (payload.degraded) {
-    out.push({ year, kind: 'degraded', team: null, teamId: null, division: null, pos: null, ratingRank: null, delta: null, note: 'данные когорты — зеркало, могут быть неполными' });
-  }
+  if (payload.degraded) out.push(flag(year, 'degraded', 'данные когорты — зеркало, могут быть неполными'));
+  // watchlist-сигналы из метрик снимка (пороги): монополия таланта + возрастная утечка (RAE)
+  const m = payload.metrics;
+  if (m?.monopolyTop3 != null && m.monopolyTop3 >= MONOPOLY_PCT) out.push(flag(year, 'monopoly', `монополия таланта: топ-3 клуба держат ${m.monopolyTop3}% сильнейших`));
+  if (m?.rae != null && m.rae >= RAE_SKEW) out.push(flag(year, 'rae', `возрастная утечка: перекос ×${m.rae} (начало/конец года рождения)`));
   const top = payload.teams.filter((t) => isTopDiv(t.division));
   const division = top[0]?.division ?? null;
   const rr = ratingRankMap(top);
