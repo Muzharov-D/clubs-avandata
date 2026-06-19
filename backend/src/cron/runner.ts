@@ -8,6 +8,7 @@ import { syncTenantCalendarTournament } from '../services/calendarService.js';
 import { syncTenantEvents } from '../services/matchEventsService.js';
 import { federationHealth } from '../federation/avandataSource.js';
 import { captureSnapshotIfDue } from '../federation/snapshots.js';
+import { env } from '../env.js';
 
 /**
  * Multi-tenant cron runner.
@@ -128,15 +129,37 @@ async function tickEvents() {
 
 const FED_SEASON = 2; // сезон Первенства (как AV_SEASON в federation/routes)
 
+// Канало-независимый алерт: POST {text} на webhook (Slack/Discord/реле). Не задан → тихо.
+async function notifyFederationAlert(text: string): Promise<void> {
+  if (!env.FEDERATION_ALERT_WEBHOOK) return;
+  try {
+    await fetch(env.FEDERATION_ALERT_WEBHOOK, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text, content: text }), signal: AbortSignal.timeout(8000), // content — для Discord
+    });
+    logger.info('federation alert отправлен');
+  } catch (e) { logger.warn({ err: e instanceof Error ? e.message : String(e) }, 'federation alert не отправлен'); }
+}
+
+let lastHealthOk: boolean | null = null; // для алерта только на СМЕНУ состояния (без спама каждый тик)
+
 async function tickFederationHealth() {
   try {
     const r = await federationHealth(FED_SEASON);
     if (r.ok) {
-      logger.info({ cohorts: r.cohorts.length }, 'federation health OK — все когорты на официале, джойн чист');
+      logger.info({ cohorts: r.cohorts.length, degraded: r.degraded }, 'federation health OK — данные полны, джойн чист');
     } else {
       const bad = r.cohorts.filter((c) => !c.ok).map((c) => ({ year: c.year, source: c.source, issues: c.issues }));
       logger.warn({ failing: r.failing, degraded: r.degraded, bad }, 'federation health ПРОБЛЕМА — данные требуют внимания');
     }
+    // Алерт только при СМЕНЕ ok↔fail (восстановление тоже сообщаем).
+    if (lastHealthOk !== null && lastHealthOk !== r.ok) {
+      const bad = r.cohorts.filter((c) => !c.ok).map((c) => `${c.year}: ${c.issues.join(', ')}`).join(' | ');
+      await notifyFederationAlert(r.ok
+        ? '✅ Кабинет федерации: данные восстановлены — все когорты в норме.'
+        : `🔴 Кабинет федерации: проблема с данными (когорт ${r.failing}). ${bad}`);
+    }
+    lastHealthOk = r.ok;
   } catch (e) {
     logger.error({ err: e instanceof Error ? e.message : String(e) }, 'federation health tick failed');
   }
@@ -171,7 +194,7 @@ const JOBS: CronJob[] = [
   { name: 'standings', intervalMs: 30 * 60_000, initialDelayMs: 5_000,  run: tickStandings },
   { name: 'calendar',  intervalMs: 30 * 60_000, initialDelayMs: 8_000,  run: tickCalendar  },
   { name: 'events',    intervalMs: 6 * 60 * 60_000, initialDelayMs: 12_000, run: tickEvents },
-  { name: 'fedHealth',   intervalMs: 60 * 60_000, initialDelayMs: 20_000, run: tickFederationHealth },
+  { name: 'fedHealth',   intervalMs: 20 * 60_000, initialDelayMs: 20_000, run: tickFederationHealth },
   { name: 'fedSnapshot', intervalMs: 12 * 60 * 60_000, initialDelayMs: 30_000, run: tickFederationSnapshot },
 ];
 

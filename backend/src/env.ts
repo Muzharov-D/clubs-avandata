@@ -27,6 +27,9 @@ const envSchema = z.object({
     .default('false'),
   FFSPB_API_KEY: z.string().optional(),
   FFSPB_ENDPOINT: z.string().url().default('https://stat.ffspb.org/api'),
+  // Канал алертов федерации (health-крон шлёт POST {text} при СМЕНЕ состояния данных).
+  // Канало-независимый webhook: Slack/Discord/Mattermost/реле. Не задан → алерты молчат.
+  FEDERATION_ALERT_WEBHOOK: z.string().url().optional(),
   // Протокол матча (голы/судьи/тренеры) из FFSPB в карточке матча федерации.
   // По умолчанию OFF: stat.ffspb.org НЕДОСТУПЕН с Render (блок IP ДЦ). Включить,
   // когда FFSPB_ENDPOINT указывает на достижимый прокси (РФ-регион) — тогда

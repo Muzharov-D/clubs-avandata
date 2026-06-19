@@ -7,7 +7,7 @@ import {
   isAvandataConfigured, listTournaments, compareTournaments, regionOverview, regionPlayers,
   regionStandings, regionClubRatings, playerProfile, availableYears, divisionStrength,
   ageEffect, talentConcentration, cohortMatrix, regionResults, regionMatchDetail,
-  warmRegionMatchProtocols, regionClubProfile, federationHealth,
+  warmRegionMatchProtocols, regionClubProfile, federationHealth, getLastFedHealth,
 } from './avandataSource.js';
 import { snapshotMeta, captureSnapshotIfDue } from './snapshots.js';
 import { federationWeekly } from './weekly.js';
@@ -120,7 +120,8 @@ export async function federationRoutes(app: FastifyInstance) {
   app.get('/av/health', async (req, reply) => {
     if (avOff(reply)) return { error: 'AVANDATA_API_KEY не задан', code: 'AVANDATA_OFF' };
     const season = Number((req.query as { season?: string }).season) || AV_SEASON;
-    return await federationHealth(season);
+    // Мгновенно — последний крон-отчёт; если крон ещё не отработал, считаем вживую один раз.
+    return getLastFedHealth() ?? await federationHealth(season);
   });
 
   /** GET /federation/av/snapshots — метаданные недельных снимков (Фаза B): по когортам

@@ -605,10 +605,11 @@ const isTopDiv = (d: string): boolean => /Высшая|Боброва/i.test(d);
  *  Высшей лиги, чистый джойн (без призраков/несшитых). Ловит регрессии класса «команда
  *  пропала» машиной, а не глазами владельца. Когорты идут ПОСЛЕДОВАТЕЛЬНО — параллель бёрстит
  *  прокси и даёт ложный degraded. */
+let lastFedHealth: FederationHealthReport | null = null;
+/** Последний посчитанный отчёт здоровья (его обновляет крон fedHealth). Чтобы /av/health отвечал
+ *  МГНОВЕННО (живой обход когорт тяжёлый), а не пересчитывал на каждый запрос. */
+export const getLastFedHealth = (): FederationHealthReport | null => lastFedHealth;
 export async function federationHealth(seasonId: number): Promise<FederationHealthReport> {
-  // Кэшируем (TTL 10м): живой обход когорт тяжёлый, а эндпоинт/монитор должен отвечать быстро.
-  // Часовой крон recomputes по истечении TTL и логирует — детектор регрессий остаётся живым.
-  return cached(`fedhealth:${seasonId}`, TTL, async () => {
   const years = await availableYears(seasonId);
   const cohorts: CohortHealth[] = [];
   for (const year of years) {
@@ -636,14 +637,15 @@ export async function federationHealth(seasonId: number): Promise<FederationHeal
     const ok = topTeams > 0 && ghosts === 0 && unmatched === 0;
     cohorts.push({ year, source, degraded, topDivision: sg?.division ?? null, topTeams, rated: cg?.rows.length ?? 0, ghosts, unmatched, ok, issues });
   }
-  return {
+  const report: FederationHealthReport = {
     checkedAt: new Date().toISOString(),
     ok: cohorts.every((c) => c.ok),
     degraded: cohorts.filter((c) => c.degraded).length,
     failing: cohorts.filter((c) => !c.ok).length,
     cohorts,
   };
-  });
+  lastFedHealth = report;
+  return report;
 }
 
 // ─── Сила лиг (дивизионов) — для «силы клубов/лиг» ───────────────────────────
