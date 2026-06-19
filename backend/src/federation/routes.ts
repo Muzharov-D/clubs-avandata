@@ -120,8 +120,12 @@ export async function federationRoutes(app: FastifyInstance) {
   app.get('/av/health', async (req, reply) => {
     if (avOff(reply)) return { error: 'AVANDATA_API_KEY не задан', code: 'AVANDATA_OFF' };
     const season = Number((req.query as { season?: string }).season) || AV_SEASON;
-    // Мгновенно — последний крон-отчёт; если крон ещё не отработал, считаем вживую один раз.
-    return getLastFedHealth() ?? await federationHealth(season);
+    // НИКОГДА не блокируем: отдаём последний крон-отчёт мгновенно; если он ещё не готов —
+    // греем в фоне и возвращаем «считается» (живой обход когорт тяжёлый, его делает крон).
+    const last = getLastFedHealth();
+    if (last) return last;
+    void federationHealth(season).catch(() => undefined);
+    return { ok: null, warming: true, degraded: 0, failing: 0, cohorts: [], note: 'отчёт считается — обновите через минуту' };
   });
 
   /** GET /federation/av/snapshots — метаданные недельных снимков (Фаза B): по когортам
