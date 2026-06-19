@@ -17,7 +17,7 @@ export function FedError({ subject = 'База разборов' }: { subject?: 
 }
 
 /** Пустое состояние: ничего не нашли / нет данных по фильтру. */
-export function FedEmpty({ children }: { icon?: string; children: ReactNode }) {
+export function FedEmpty({ children }: { children: ReactNode }) {
   return (
     <div className="av-empty av-rise">
       <span className="av-empty__icon" aria-hidden>

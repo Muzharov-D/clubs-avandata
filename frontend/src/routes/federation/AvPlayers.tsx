@@ -151,7 +151,7 @@ export function FederationAvPlayers() {
           )}
 
           {isLoading ? [0, 1, 2, 3, 4, 5, 6].map((i) => <div key={i} className="av-skeleton" style={{ height: 42, marginBottom: 8 }} />)
-            : shown.length === 0 ? <FedEmpty icon="🎯">Никого не нашли по фильтру.</FedEmpty>
+            : shown.length === 0 ? <FedEmpty>Никого не нашли по фильтру.</FedEmpty>
               : shown.map((p, i) => (
                 <Link key={p.id} to={`/federation/players/${p.id}`} className="av-trow t-reg av-trow--link">
                   <span className="av-trow__rank">{i + 1}</span>

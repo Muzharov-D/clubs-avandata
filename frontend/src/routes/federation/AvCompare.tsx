@@ -1,6 +1,8 @@
 import { useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { api } from '../../api/client';
+import { ClubShield } from './ClubShield';
+import { MatchDetail, type MatchBase } from './MatchDetail';
 import { FedError } from './FedState';
 import { useFedYear } from './avYear';
 import './avandata.css';
@@ -22,11 +24,21 @@ const METRICS: Array<{ k: MK; l: string; hint: string }> = [
 const COLORS = ['var(--av-chart-1)', 'var(--av-chart-2)', 'var(--av-chart-3)', 'var(--av-chart-4)', 'var(--av-chart-5)', 'var(--av-chart-6)'];
 const fmt = (v: number | null) => (v == null ? '—' : Number.isInteger(v) ? v.toLocaleString('ru-RU') : v.toFixed(2));
 
+// Лента результатов («как идут турниры»): берём только то, что нужно карточке матча.
+interface RTeam { name: string; logo: string | null; score: number | null }
+interface RMatch { id: number; age: string; division: string; date: string; home: RTeam; away: RTeam }
+const fmtDate = (iso: string) => { try { return new Intl.DateTimeFormat('ru-RU', { day: 'numeric', month: 'short' }).format(new Date(iso)).replace('.', '').toUpperCase(); } catch { return ''; } };
+const toBase = (m: RMatch): MatchBase => ({ id: m.id, age: m.age, division: m.division, date: m.date, home: m.home, away: m.away });
+
 export function FederationAvCompare() {
   const { year } = useFedYear();
   const tq = useQuery({ queryKey: ['av', 'tournaments'], queryFn: () => api<{ tournaments: TRef[] }>('/federation/av/tournaments') });
   const refs = tq.data?.tournaments ?? [];
   const [selected, setSelected] = useState<string[]>([]);
+  const [open, setOpen] = useState<RMatch | null>(null);
+  // Свежие результаты по выбранному году (или все возрасты) — «как идут турниры».
+  const rs = useQuery({ queryKey: ['av', 'results', year, 'all'], queryFn: () => api<{ results: RMatch[] }>(`/federation/av/results${year != null ? `?year=${year}` : ''}`) });
+  const results = rs.data?.results ?? [];
 
   const sel = useMemo(() => {
     if (selected.length) return selected;
@@ -47,10 +59,17 @@ export function FederationAvCompare() {
     <>
       <header className="av-head av-rise">
         <div className="av-head__l">
-          <h1 className="av-title">Сравнение турниров</h1>
-          <p className="av-sub">Турниры региона — показатели рядом</p>
+          <h1 className="av-title">Турниры</h1>
+          <p className="av-sub">Первенство СПб — результаты и сравнение дивизионов</p>
         </div>
       </header>
+
+      <div className="av-section av-rise">
+        <div>
+          <h2 className="av-section-title">Сравнение турниров</h2>
+          <p className="av-section-sub" style={{ margin: '2px 0 0' }}>Выбери турниры — ключевые показатели встанут рядом</p>
+        </div>
+      </div>
 
       {tq.isLoading ? <div className="av-skeleton" style={{ height: 44 }} /> : (
         <div className="av-pills av-rise">
@@ -98,6 +117,49 @@ export function FederationAvCompare() {
       <p className="av-dim" style={{ fontSize: 11.5, lineHeight: 1.5 }}>
         Голы/матчи — по всем турам; рейтинг/игроки — с разобранных матчей. Турнир «Вторая Лига» (коллеги) встанет колонкой здесь же после подключения их выгрузки PDF+CSV.
       </p>
+
+      {/* Как идут турниры — свежие результаты, клик → детали матча */}
+      {rs.isLoading ? <div className="av-skeleton av-rise" style={{ height: 160 }} /> : results.length > 0 && (
+        <section className="av-rise">
+          <div className="av-section">
+            <div>
+              <h2 className="av-section-title">Последние результаты</h2>
+              <p className="av-section-sub" style={{ margin: '2px 0 0' }}>Как идут турниры{year != null ? ` · ${year} г.р.` : ' всех возрастов'} · клик → детали матча</p>
+            </div>
+            <span className="av-divtag">{results.length} матчей</span>
+          </div>
+          <div className="av-fixtures">
+            {results.slice(0, 18).map((m) => {
+              const hs = m.home.score ?? 0, as = m.away.score ?? 0;
+              return (
+                <button key={m.id} type="button" className="av-fixture av-fixture--link" onClick={() => setOpen(m)}>
+                  <div className="av-fixture__top">
+                    <span className="av-fixture__age">{m.age} · {m.division}</span>
+                    <span className="av-fixture__date">{fmtDate(m.date)}</span>
+                  </div>
+                  <div className="av-fixture__body">
+                    <span className="av-fixture__team">
+                      <ClubShield name={m.home.name} logoUrl={m.home.logo} size={34} />
+                      <span className="av-fixture__team-name" title={m.home.name}>{m.home.name}</span>
+                    </span>
+                    <span className="av-fixture__score">
+                      <b className={hs >= as ? 'av-fixture__score-w' : 'av-fixture__score-l'}>{m.home.score ?? '–'}</b>
+                      <span className="av-fixture__sep">:</span>
+                      <b className={as >= hs ? 'av-fixture__score-w' : 'av-fixture__score-l'}>{m.away.score ?? '–'}</b>
+                    </span>
+                    <span className="av-fixture__team">
+                      <ClubShield name={m.away.name} logoUrl={m.away.logo} size={34} />
+                      <span className="av-fixture__team-name" title={m.away.name}>{m.away.name}</span>
+                    </span>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        </section>
+      )}
+
+      {open && <MatchDetail base={toBase(open)} onClose={() => setOpen(null)} />}
     </>
   );
 }

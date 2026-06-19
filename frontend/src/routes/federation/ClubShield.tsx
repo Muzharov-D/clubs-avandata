@@ -3,7 +3,7 @@
  * названия, чтобы никогда не показывать серые заглушки. Порт из боевого фронта
  * AvanData (ClubShield.tsx).
  */
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 
 const PALETTE: ReadonlyArray<readonly [string, string]> = [
   ['#22d3ee', '#0e7490'], ['#3054ff', '#091e80'], ['#ff0099', '#85035d'],
@@ -27,14 +27,24 @@ const initials = (s: string): string => {
 interface Props { name: string; logoUrl?: string | null; size?: number; }
 
 export function ClubShield({ name, logoUrl, size = 32 }: Props) {
+  // bad = лого битое ИЛИ широкий вордмарк: оба заменяем генеративным щитом, а не
+  // показываем сломанную картинку / блёклое пятно на белом круге.
+  const [bad, setBad] = useState(false);
   const { gid, c1, c2, ini } = useMemo(() => {
     const [a, b] = PALETTE[hash(name) % PALETTE.length];
     return { gid: `cs-${hash(name)}`, c1: a, c2: b, ini: initials(name) };
   }, [name]);
 
-  if (logoUrl && /^https?:\/\//.test(logoUrl)) {
+  if (logoUrl && /^https?:\/\//.test(logoUrl) && !bad) {
     return (
-      <img src={logoUrl} alt={name} width={size} height={size} decoding="async" loading="lazy" className="av-shield" style={{ width: size, height: size }} />
+      <img
+        src={logoUrl} alt={name} width={size} height={size} decoding="async" loading="lazy"
+        className="av-shield" style={{ width: size, height: size }}
+        onError={() => setBad(true)}
+        // Широкий вордмарк (напр. «СШОР Зенит», 4281px) на белом круге сливается в
+        // блёклое пятно — ловим по соотношению сторон и заменяем генеративным щитом.
+        onLoad={(e) => { const im = e.currentTarget; if (im.naturalWidth && im.naturalHeight && im.naturalWidth / im.naturalHeight > 2.2) setBad(true); }}
+      />
     );
   }
   return (
