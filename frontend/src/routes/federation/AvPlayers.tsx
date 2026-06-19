@@ -105,14 +105,26 @@ export function FederationAvPlayers() {
   }, [players]);
   const xiFilled = xi.filter((s) => s.player).length;
 
-  // Восходящие — высокий рейтинг среди МЛАДШИХ когорт (честный сигнал «кто растёт»).
+  // Запасные сборной — лучшие за пределами стартовой XI: показываем глубину обоймы
+  // региона (а не только 11 имён). По среднему рейтингу, ≥2 матчей, без тех, кто в XI.
+  const bench = useMemo(() => {
+    const xiIds = new Set(xi.map((s) => s.player?.id).filter((x): x is number => x != null));
+    return players
+      .filter((p) => p.rating != null && (p.mp ?? 0) >= 2 && !xiIds.has(p.id))
+      .sort((a, b) => (b.rating as number) - (a.rating as number))
+      .slice(0, 7);
+  }, [players, xi]);
+
+  // Восходящие — высокий рейтинг среди МЛАДШИХ когорт (честный сигнал «кто растёт»):
+  // ядро работы федерации — заметить талант в младших, пока есть время дать ему ход.
   const rising = useMemo(() => {
     const rated = players.filter((p) => p.rating != null && p.birthYear != null && (p.mp ?? 0) >= 2);
-    if (rated.length < 3) return [];
+    if (rated.length < 3) return [] as RPlayer[];
     const years = Array.from(new Set(rated.map((p) => p.birthYear!))).sort((a, b) => b - a);
     const young = new Set(years.slice(0, 2));
-    return rated.filter((p) => young.has(p.birthYear!)).sort((a, b) => (b.rating ?? 0) - (a.rating ?? 0)).slice(0, 6);
+    return rated.filter((p) => young.has(p.birthYear!)).sort((a, b) => (b.rating ?? 0) - (a.rating ?? 0)).slice(0, 12);
   }, [players]);
+  const risingYears = useMemo(() => Array.from(new Set(rising.map((p) => p.birthYear!))).sort((a, b) => b - a), [rising]);
 
   return (
     <>
@@ -207,32 +219,52 @@ export function FederationAvPlayers() {
                 })}
               </div>
             )}
-          </section>
-
-          {rising.length > 0 && (
-            <section className="av-surface av-pad-lg">
-              <div className="av-section" style={{ marginBottom: 10 }}>
-                <div>
-                  <h2 className="av-section-title">Восходящие</h2>
-                  <p className="av-section-sub">Высокий рейтинг среди младших</p>
+            {!isLoading && xiFilled >= 4 && bench.length > 0 && (
+              <div className="av-bench">
+                <div className="av-bench__title">Запасные — ещё {bench.length} в обойме региона</div>
+                <div className="av-bench__row">
+                  {bench.map((p) => (
+                    <button key={p.id} type="button" className="av-bench__chip" onClick={() => setPeek(p)} title={`${p.name}${p.position ? ` · ${p.position}` : ''}`}>
+                      <PlayerAvatar name={p.name} photoUrl={p.photo} size={30} />
+                      <span className="av-bench__id">
+                        <span className="av-bench__name">{lastName(p.name)}</span>
+                        <span className="av-bench__pos">{p.position ?? '—'}</span>
+                      </span>
+                      <span className="av-bench__rate" style={{ color: ratingColor(p.rating) }}>{p.rating}</span>
+                    </button>
+                  ))}
                 </div>
               </div>
-              <div className="av-rising">
-                {rising.map((p) => (
-                  <Link key={p.id} to={`/federation/players/${p.id}`} className="av-rising__row">
-                    <PlayerAvatar name={p.name} photoUrl={p.photo} size={32} />
-                    <div style={{ minWidth: 0 }}>
-                      <div className="av-rising__name">{p.name}</div>
-                      <div className="av-rising__meta">{p.club ?? '—'} · {p.birthYear} г.р.</div>
-                    </div>
-                    <span className="av-rate">{p.rating}</span>
-                  </Link>
-                ))}
-              </div>
-            </section>
-          )}
+            )}
+          </section>
         </aside>
       </div>
+
+      {rising.length > 0 && (
+        <section className="av-surface av-pad-lg av-rise">
+          <div className="av-section">
+            <div>
+              <h2 className="av-section-title">Восходящие игроки</h2>
+              <p className="av-section-sub">Сильнейшие в младших когортах{risingYears.length ? ` · ${risingYears.join(' · ')} г.р.` : ''} — кого регион обязан не потерять</p>
+            </div>
+          </div>
+          <div className="av-rising-grid">
+            {rising.map((p, i) => (
+              <Link key={p.id} to={`/federation/players/${p.id}`} className="av-surface-soft av-rcard">
+                <span className="av-rcard__rank">{i + 1}</span>
+                <PlayerAvatar name={p.name} photoUrl={p.photo} size={42} />
+                <div className="av-rcard__id">
+                  <div className="av-rcard__name" title={p.name}>{p.name}</div>
+                  <div className="av-rcard__meta">{p.club ?? '—'}{p.position ? ` · ${p.position}` : ''}</div>
+                </div>
+                <span className="av-rcard__year" title="год рождения">{p.birthYear}</span>
+                <span className="av-rcard__rate" style={{ color: ratingColor(p.rating) }}>{p.rating}</span>
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
+
       {peek && <XiPeek p={peek} onClose={() => setPeek(null)} />}
     </>
   );

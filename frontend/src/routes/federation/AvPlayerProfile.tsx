@@ -9,7 +9,7 @@ import { FedEmpty } from './FedState';
 import { MatchDetail, type MatchBase } from './MatchDetail';
 import './avandata.css';
 
-interface PoolP { id: number; rating: number | null; birthYear: number | null }
+interface PoolP { id: number; rating: number | null; birthYear: number | null; position: string | null }
 interface Metric { id: string; title: string; short: string; category: string; count: number; points: number }
 interface PMatch {
   id: number; date: string | null;
@@ -29,6 +29,24 @@ const toMatchBase = (m: PMatch): MatchBase => ({ id: m.id, age: '', division: ''
 const catColor = (c: string) => (c === 'attack' ? 'var(--av-cat-attack)' : c === 'defense' ? 'var(--av-cat-defense)' : 'var(--av-cat-pass)');
 const catLabel = (c: string) => (c === 'attack' ? 'Атака' : c === 'defense' ? 'Оборона' : 'Развитие');
 const plMatch = (n: number) => { const a = n % 100, b = n % 10; if (a >= 11 && a <= 14) return 'матчей'; if (b === 1) return 'матч'; if (b >= 2 && b <= 4) return 'матча'; return 'матчей'; };
+
+// Линия амплуа (грубая) — для перцентиля «среди своих»: вратари/защита/полузащита/атака.
+type Line = 'GK' | 'DEF' | 'MID' | 'FWD';
+const lineOf = (pos: string | null): Line | null => {
+  const p = (pos ?? '').toLowerCase();
+  if (/врат/.test(p)) return 'GK';
+  if ((/защит/.test(p) || /фулбек/.test(p)) && !/полуз/.test(p)) return 'DEF';
+  if (/полуз|опорн/.test(p)) return 'MID';
+  if (/напад|форвард/.test(p)) return 'FWD';
+  return null;
+};
+const LINE_LABEL: Record<Line, string> = { GK: 'вратарей', DEF: 'защитников', MID: 'полузащитников', FWD: 'нападающих' };
+// «топ X%» по рейтингу внутри пула: меньше = лучше (топ-1% — сильнейшие). null — пул мал.
+const topPctOf = (mine: number, pool: number[], min = 5): number | null => {
+  if (pool.length < min) return null;
+  const below = pool.filter((r) => r < mine).length;
+  return Math.max(1, Math.min(100, Math.round((1 - below / Math.max(1, pool.length - 1)) * 100)));
+};
 
 /** Профиль игрока + перцентильная «пицца» на РЕАЛЬНЫХ событиях (37 метрик). */
 export function FederationAvPlayerProfile() {
@@ -52,13 +70,26 @@ function Body({ p }: { p: Profile }) {
   const top = p.metrics.slice(0, 16);
   const metricMax = Math.max(...p.metrics.map((x) => x.count), 1);
   const pool = useQuery({ queryKey: ['av', 'players', null], queryFn: () => api<{ players: PoolP[] }>('/federation/av/players') });
-  const pct = useMemo(() => {
-    const list = (pool.data?.players ?? []).filter((x) => x.rating != null);
+  // Перцентиль-герой: положение игрока в регионе по рейтингу + срезы по возрасту и амплуа.
+  // Знаменатель (весь пул региона) есть только у федерации — это и есть её «ров».
+  const rank = useMemo(() => {
+    const list = (pool.data?.players ?? []).filter((x): x is PoolP & { rating: number } => x.rating != null);
     if (p.rating == null || list.length < 5) return null;
-    const below = list.filter((x) => (x.rating as number) < (p.rating as number)).length;
-    return Math.round((below / Math.max(1, list.length - 1)) * 100);
-  }, [pool.data, p.rating]);
-  const topPct = pct != null ? Math.max(1, Math.min(100, 100 - pct)) : null;
+    const my = p.rating;
+    const all = list.map((x) => x.rating);
+    const myLine = lineOf(p.position);
+    const sameYear = p.birthYear != null ? list.filter((x) => x.birthYear === p.birthYear).map((x) => x.rating) : [];
+    const sameLine = myLine ? list.filter((x) => lineOf(x.position) === myLine).map((x) => x.rating) : [];
+    const place = [...all].sort((a, b) => b - a).findIndex((r) => r <= my) + 1; // ранг по строго-сильнейшим
+    return {
+      total: all.length,
+      place: place > 0 ? place : all.length,
+      region: topPctOf(my, all),
+      year: p.birthYear != null ? topPctOf(my, sameYear, 4) : null,
+      line: myLine ? topPctOf(my, sameLine, 4) : null,
+      lineLabel: myLine ? LINE_LABEL[myLine] : null,
+    };
+  }, [pool.data, p.rating, p.position, p.birthYear]);
   const [selectedMatch, setSelectedMatch] = useState<PMatch | null>(null);
 
   return (
@@ -72,8 +103,8 @@ function Body({ p }: { p: Profile }) {
           <h1 className="av-phead__name">{p.name}</h1>
           <p className="av-phead__meta">{p.position ?? 'позиция —'} · {p.club ?? '—'}{p.birthYear ? ` · ${p.birthYear} г.р.` : ''} · {p.matches} {plMatch(p.matches)} · {p.totalEvents} событий</p>
           <div className="av-phead__chips">
-            {topPct != null && <span className="av-pct"><b>топ {topPct}%</b><span>региона по рейтингу</span></span>}
             {p.position && <span className="av-chip av-chip--dim">{p.position}</span>}
+            {p.birthYear && <span className="av-chip av-chip--dim">{p.birthYear} г.р.</span>}
           </div>
         </div>
         {p.rating != null && (
@@ -83,6 +114,34 @@ function Body({ p }: { p: Profile }) {
           </div>
         )}
       </header>
+
+      {/* Перцентиль-герой: где игрок в регионе — по рейтингу, в своём возрасте, среди амплуа */}
+      {rank?.region != null && (
+        <section className="av-pcthero av-rise">
+          <div className="av-pcthero__main">
+            <span className="av-pcthero__pct">топ&nbsp;{rank.region}%</span>
+            <span className="av-pcthero__cap">региона по рейтингу</span>
+          </div>
+          <div className="av-pcthero__rest">
+            <div className="av-pcthero__cell">
+              <span className="av-pcthero__n">{rank.place}<i>&nbsp;/ {rank.total}</i></span>
+              <span className="av-pcthero__l">место в регионе</span>
+            </div>
+            {rank.year != null && (
+              <div className="av-pcthero__cell">
+                <span className="av-pcthero__n">топ {rank.year}%</span>
+                <span className="av-pcthero__l">среди {p.birthYear} г.р.</span>
+              </div>
+            )}
+            {rank.line != null && rank.lineLabel && (
+              <div className="av-pcthero__cell">
+                <span className="av-pcthero__n">топ {rank.line}%</span>
+                <span className="av-pcthero__l">среди {rank.lineLabel} региона</span>
+              </div>
+            )}
+          </div>
+        </section>
+      )}
 
       <div className="av-cols-2 av-rise">
         <section className="av-surface av-pad-lg" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>

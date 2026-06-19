@@ -429,6 +429,19 @@
 .av-pct b { font-family: var(--av-display); font-size: 16px; font-weight: 700; color: var(--av-cyan); }
 .av-pct span { font-size: 11px; color: var(--av-text-2); }
 
+/* Перцентиль-герой профиля — положение игрока в регионе (ров федерации = знаменатель) */
+.av-pcthero { display: flex; flex-wrap: wrap; align-items: stretch; gap: 22px; padding: 18px 22px; position: relative; overflow: hidden; border-radius: var(--av-r-lg); background: linear-gradient(135deg, color-mix(in srgb, var(--av-cyan) 12%, var(--av-surface)) 0%, var(--av-surface) 60%); border: 1px solid color-mix(in srgb, var(--av-cyan) 28%, var(--av-border)); box-shadow: var(--av-shadow), var(--av-ring); }
+.av-pcthero::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; background: var(--av-cyan); box-shadow: 0 0 18px var(--av-cyan); }
+.av-pcthero__main { display: flex; flex-direction: column; justify-content: center; padding-right: 22px; border-right: 1px solid var(--av-border); }
+.av-pcthero__pct { font-family: var(--av-display); font-size: 40px; font-weight: 700; line-height: 1; color: var(--av-cyan); font-variant-numeric: tabular-nums; text-shadow: 0 0 26px rgba(94, 235, 252, 0.30); }
+.av-pcthero__cap { font-size: 11px; color: var(--av-text-2); margin-top: 8px; }
+.av-pcthero__rest { display: flex; flex-wrap: wrap; gap: 26px; align-items: center; }
+.av-pcthero__cell { display: flex; flex-direction: column; }
+.av-pcthero__n { font-family: var(--av-display); font-size: 22px; font-weight: 700; line-height: 1; color: var(--av-text); font-variant-numeric: tabular-nums; }
+.av-pcthero__n i { font-style: normal; font-size: 14px; color: var(--av-text-faint); }
+.av-pcthero__l { font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--av-text-dim); margin-top: 7px; }
+@media (max-width: 560px) { .av-pcthero__main { border-right: 0; padding-right: 0; } .av-pcthero__rest { gap: 18px; } }
+
 /* шапка профиля игрока */
 .av-phead { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; }
 .av-phead__id { min-width: 0; }
@@ -456,6 +469,16 @@
 .av-gap__big { font-family: var(--av-display); font-size: 42px; font-weight: 700; line-height: 1; font-variant-numeric: tabular-nums; }
 .av-gap__lbl { font-size: 10.5px; color: var(--av-text-dim); text-transform: uppercase; letter-spacing: 0.06em; margin-top: 7px; }
 .av-gap__x { font-family: var(--av-display); font-size: 24px; color: var(--av-text-faint); font-weight: 700; }
+
+/* состав по кварталам одной полосой — мгновенный «перекос» (HalfSplitChart 4-сегм) */
+.av-raecomp { margin-top: 18px; }
+.av-raecomp__bar { display: flex; height: 32px; border-radius: var(--av-r-sm); overflow: hidden; background: rgba(255, 255, 255, 0.05); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.04); }
+.av-raecomp__seg { display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1.05; color: #06121f; overflow: hidden; min-width: 0; font-variant-numeric: tabular-nums; transition: width 0.6s cubic-bezier(.22, 1, .36, 1); }
+.av-raecomp__seg b { font-family: var(--av-display); font-size: 11.5px; font-weight: 700; }
+.av-raecomp__seg i { font-style: normal; font-size: 9.5px; font-weight: 600; opacity: 0.82; }
+.av-raecomp__scale { position: relative; height: 26px; margin-top: 7px; }
+.av-raecomp__refmark { position: absolute; top: -7px; width: 1px; height: 9px; background: rgba(255, 255, 255, 0.30); }
+.av-raecomp__hint { display: block; font-size: 10px; line-height: 1.4; color: var(--av-text-faint); }
 
 /* распределение по кварталам с эталоном 25% (RAE) */
 .av-rae__row { display: grid; grid-template-columns: 96px 1fr 48px 72px; align-items: center; gap: 12px; margin-bottom: 10px; }
@@ -649,13 +672,27 @@
 .av-band__t { font-size: 11px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--av-text-dim); font-weight: 700; }
 .av-band__line { flex: 1; height: 1px; background: linear-gradient(90deg, rgba(94,235,252,0.25), transparent); }
 
-/* рейл восходящих (молодые таланты) */
-.av-rising { display: grid; gap: 2px; }
-.av-rising__row { display: grid; grid-template-columns: 38px 1fr auto; align-items: center; gap: 10px; padding: 7px 4px; border-bottom: 1px solid rgba(94,235,252,0.05); text-decoration: none; color: inherit; border-radius: 7px; transition: background 0.15s ease; }
-.av-rising__row:last-child { border-bottom: 0; }
-@media (hover: hover) { .av-rising__row:hover { background: rgba(255,255,255,0.04); } }
-.av-rising__name { font-weight: 500; font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.av-rising__meta { font-size: 10.5px; color: var(--av-text-dim); margin-top: 1px; }
+/* Восходящие игроки — полноразмерная сетка карточек (сильнейшие в младших когортах) */
+.av-rising-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 10px; }
+.av-rcard { display: grid; grid-template-columns: 20px auto 1fr auto auto; align-items: center; gap: 11px; padding: 11px 14px; text-decoration: none; color: inherit; transition: border-color 0.15s ease, background 0.15s ease; }
+@media (hover: hover) { .av-rcard:hover { border-color: var(--av-border-strong); background: var(--av-surface-3); } }
+.av-rcard__rank { font-family: var(--av-display); font-weight: 700; font-size: 12.5px; color: var(--av-text-faint); text-align: center; font-variant-numeric: tabular-nums; }
+.av-rcard__id { min-width: 0; }
+.av-rcard__name { font-weight: 600; font-size: 13.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.av-rcard__meta { font-size: 10.5px; color: var(--av-text-dim); margin-top: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.av-rcard__year { font-family: var(--av-display); font-size: 12px; font-weight: 700; font-variant-numeric: tabular-nums; color: var(--av-text-2); padding: 2px 7px; border-radius: 6px; background: rgba(94,235,252,0.10); border: 1px solid rgba(94,235,252,0.22); }
+.av-rcard__rate { font-family: var(--av-display); font-weight: 700; font-size: 20px; font-variant-numeric: tabular-nums; }
+
+/* Запасные сборной — ряд чипов под полем (глубина обоймы за пределами стартовой XI) */
+.av-bench { margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--av-border); }
+.av-bench__title { font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--av-text-dim); margin-bottom: 10px; }
+.av-bench__row { display: flex; flex-wrap: wrap; gap: 8px; }
+.av-bench__chip { display: inline-flex; align-items: center; gap: 8px; padding: 5px 11px 5px 6px; background: var(--av-surface-2); border: 1px solid var(--av-border); border-radius: 22px; cursor: pointer; font: inherit; color: inherit; transition: border-color 0.15s ease, background 0.15s ease; }
+@media (hover: hover) { .av-bench__chip:hover { border-color: rgba(94,235,252,0.40); background: var(--av-surface-3); } }
+.av-bench__id { display: flex; flex-direction: column; align-items: flex-start; min-width: 0; line-height: 1.15; }
+.av-bench__name { font-size: 12.5px; font-weight: 600; white-space: nowrap; }
+.av-bench__pos { font-size: 9.5px; color: var(--av-text-dim); text-transform: uppercase; letter-spacing: 0.04em; white-space: nowrap; }
+.av-bench__rate { font-family: var(--av-display); font-weight: 700; font-size: 14px; font-variant-numeric: tabular-nums; margin-left: 2px; }
 
 /* лучшие игроки региона — сетка карточек-лидеров (главный экран) */
 .av-leaders { display: grid; grid-template-columns: repeat(auto-fill, minmax(272px, 1fr)); gap: 12px; }

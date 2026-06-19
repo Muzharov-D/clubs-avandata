@@ -62,6 +62,7 @@ export function FederationAvInsights() {
                   {lost > 0 && <p className="av-stakes">Ставка: ≈ <b>{num(lost)}</b> игроков поздних кварталов недосчитались относительно равномерности — отсеяны не по способностям, а по месяцу рождения.</p>}
                 </div>
               </div>
+              <RaeComposition quarters={ae.data.quarters} />
               <RaeBars quarters={ae.data.quarters} />
             </>
           );
@@ -138,6 +139,30 @@ export function FederationAvInsights() {
         )}
       </section>
     </>
+  );
+}
+
+// Состав когорты по кварталам рождения одной полосой: ширина сегмента = доля квартала.
+// Перекос (Q1 широкий, Q4 узкий) читается мгновенно; засечки 25/50/75% = равномерный эталон.
+function RaeComposition({ quarters }: { quarters: Quarter[] }) {
+  const total = quarters.reduce((s, q) => s + q.n, 0);
+  if (!total) return null;
+  return (
+    <div className="av-raecomp">
+      <div className="av-raecomp__bar" role="img" aria-label="Состав по кварталам рождения">
+        {quarters.map((q) => (
+          <span key={q.q} className="av-raecomp__seg" style={{ width: `${q.pct}%`, background: q.pct >= 25 ? 'var(--av-magenta)' : 'var(--av-cyan)' }} title={`Q${q.q} · ${QLABEL[q.q - 1]} · ${q.pct}% · ${q.n} игроков`}>
+            {q.pct >= 8 && <><b>Q{q.q}</b><i>{q.pct}%</i></>}
+          </span>
+        ))}
+      </div>
+      <div className="av-raecomp__scale">
+        <span className="av-raecomp__refmark" style={{ left: '25%' }} />
+        <span className="av-raecomp__refmark" style={{ left: '50%' }} />
+        <span className="av-raecomp__refmark" style={{ left: '75%' }} />
+        <span className="av-raecomp__hint">засечки — равномерные 25% на квартал; чем шире левые сегменты, тем сильнее недобор поздно-рождённых</span>
+      </div>
+    </div>
   );
 }
 
