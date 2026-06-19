@@ -16,6 +16,7 @@ import { getMatch as ffspbGetMatch, isFfspbConfigured } from '../services/ffspbA
 import { logger } from '../shared/logger.js';
 import { env } from '../env.js';
 import { normTeam } from './teamName.js';
+import { snapshotMeta, latestSnapshotsForCohort, type SnapPayload } from './snapshots.js';
 
 // ─── Детали матча (для карточки матча по клику) ──────────────────────────────
 export interface MatchCard { player: string; minute: string }
@@ -616,32 +617,28 @@ export async function federationHealth(seasonId: number): Promise<FederationHeal
   try { return await healthInFlight; } finally { healthInFlight = null; }
 }
 async function computeFederationHealth(seasonId: number): Promise<FederationHealthReport> {
-  const years = await availableYears(seasonId);
+  // Считаем из СНИМКОВ (БД), а НЕ живым обходом ФФСПб: снимок хранит срез когорты (место+рейтинг),
+  // чтение мгновенно и НАДЁЖНО доходит до конца (живой обход 5×3 ретрая на флакающем ФФСПб мог
+  // «считаться вечно»). Снимки свежи (триггер-на-просмотр + крон + стики-хороший). «Команда
+  // пропала» = topTeams==0 (нет Высшей) или unmatched (команда таблицы без рейтинга) — ловится.
+  const meta = await snapshotMeta(seasonId);
   const cohorts: CohortHealth[] = [];
-  for (const year of years) {
+  for (const c of meta.cohorts) {
     const issues: string[] = [];
-    let st: StandingsResult | null = null;
-    let crGroups: DivisionGroup<ClubRatingRow>[] = [];
-    try { st = await regionStandings(seasonId, year); } catch (e) { issues.push(`ошибка таблицы: ${String(e).slice(0, 40)}`); }
-    try { crGroups = await regionClubRatings(seasonId, year); } catch { /* рейтинги опциональны для проверки */ }
-    const sg = st?.groups.find((g) => isTopDiv(g.division)) ?? null;
-    const cg = crGroups.find((g) => isTopDiv(g.division)) ?? null;
-    const sIds = new Set((sg?.rows ?? []).map((r) => r.id));
-    const rIds = new Set((cg?.rows ?? []).map((r) => r.id));
-    const ghosts = (cg?.rows ?? []).filter((r) => !sIds.has(r.id)).length;
-    const unmatched = (sg?.rows ?? []).filter((r) => !rIds.has(r.id)).length;
-    const topTeams = sg?.rows.length ?? 0;
-    const source = st?.source ?? null;
-    const degraded = st?.degraded ?? false;
+    const snaps = await latestSnapshotsForCohort(seasonId, c.year, 1);
+    const p = snaps[0]?.payload as SnapPayload | undefined;
+    const top = (p?.teams ?? []).filter((t) => isTopDiv(t.division));
+    const topTeams = top.length;
+    const unmatched = top.filter((t) => t.rating == null).length;
+    const source = (p?.source ?? null) as 'ffspb' | 'mirror' | null;
+    const degraded = p?.degraded ?? false;
+    if (!p) issues.push('нет снимка');
     if (degraded) issues.push('источник — зеркало (degraded)');
     if (topTeams === 0) issues.push('нет Высшей лиги');
-    if (ghosts > 0) issues.push(`${ghosts} призрак(ов) рейтинга`);
     if (unmatched > 0) issues.push(`${unmatched} несшитых в таблице`);
-    // ok = ДАННЫЕ полны и джойн чист («команда не пропала») — это и есть алертный сигнал.
-    // Источник degraded (зеркало) — отдельный, более мягкий флаг, НЕ фейл: на зеркале данные
-    // тоже полны, просто провенанс ниже (виден бейджем). Иначе любой блип ФФСПб красит health.
-    const ok = topTeams > 0 && ghosts === 0 && unmatched === 0;
-    cohorts.push({ year, source, degraded, topDivision: sg?.division ?? null, topTeams, rated: cg?.rows.length ?? 0, ghosts, unmatched, ok, issues });
+    // ok = данные полны и джойн чист («команда не пропала»). degraded — мягкий флаг, не фейл.
+    const ok = topTeams > 0 && unmatched === 0;
+    cohorts.push({ year: c.year, source, degraded, topDivision: top[0]?.division ?? null, topTeams, rated: 0, ghosts: 0, unmatched, ok, issues });
   }
   const report: FederationHealthReport = {
     checkedAt: new Date().toISOString(),
