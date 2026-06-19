@@ -751,3 +751,16 @@ a.av-trow { text-decoration: none; color: inherit; }
   .av-title { font-size: 23px; }
   .av-cmp__row { grid-template-columns: 96px 1fr 54px; }
 }
+/* Телефон: нав — компактная горизонтальная прокрутка (а не 3 ряда переносом); экономим место */
+@media (max-width: 560px) {
+  .av-topnav { flex: 1 1 100%; flex-wrap: nowrap; overflow-x: auto; gap: 2px; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+  .av-topnav::-webkit-scrollbar { display: none; }
+  .av-navtab { padding: 7px 11px; font-size: 12.5px; flex: none; }
+  .av-brand__sub { display: none; }
+  .av-topbar__who { display: none; }                 /* email на телефоне ни к чему */
+  .av-head { flex-wrap: wrap; gap: 10px; }
+  .av-head__r { width: 100%; }
+  .av-content { padding: 14px 11px 40px; }
+  .av-section-title { font-size: 15px; }
+  .av-print-btn, .av-head__r .av-link { flex: 1; text-align: center; } /* кнопки во всю ширину */
+}
