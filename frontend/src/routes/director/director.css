@@ -1,16 +1,6 @@
-/* Кабинет спортивного директора — на клубных токенах (styles/index.css). */
-.dir-root { min-height: 100vh; background: var(--bg-page, #0a0c10); color: var(--text, #f3f6fc); font-family: var(--font, Inter, system-ui, sans-serif); -webkit-font-smoothing: antialiased; }
-
-.dir-topbar { position: sticky; top: 0; z-index: 20; display: flex; align-items: center; gap: 16px; padding: 12px 24px; background: color-mix(in srgb, var(--bg-page-2, #0e1117) 92%, transparent); backdrop-filter: blur(14px); border-bottom: 1px solid var(--border, #262d3a); }
-.dir-brand { display: flex; align-items: baseline; gap: 12px; min-width: 0; }
-.dir-brand__logo { font-size: 17px; font-weight: 800; letter-spacing: -0.01em; }
-.dir-brand__logo b { color: var(--brand-primary, #5eebfc); }
-.dir-brand__role { font-size: 12px; color: var(--text-muted, #97a3b6); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.dir-topbar__r { margin-left: auto; display: flex; align-items: center; gap: 12px; flex: none; }
-.dir-who { font-size: 12.5px; color: var(--text-muted-strong, #b4c0d2); max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.dir-logout { background: rgba(255,255,255,0.04); color: var(--text-muted-strong, #b4c0d2); border: 1px solid var(--border, #262d3a); border-radius: var(--radius-sm, 8px); padding: 7px 13px; font-size: 12.5px; font-weight: 600; cursor: pointer; }
-.dir-logout:hover { border-color: var(--border-strong, #343d4e); color: var(--text); }
-
+/* Кабинет спортивного директора — на общих клубных токенах (styles/index.css).
+   Рендерится ВНУТРИ MainLayout (общий клубный шелл: AppHeader + SidebarNav),
+   поэтому собственного топбара нет — только контент .dir-main. */
 .dir-main { max-width: 1180px; margin: 0 auto; padding: 22px 24px 60px; display: flex; flex-direction: column; gap: 18px; }
 .dir-head { }
 .dir-title { font-size: 26px; font-weight: 800; letter-spacing: -0.02em; margin: 0; }
@@ -21,16 +11,16 @@
 .dir-skeleton { height: 320px; border-radius: var(--radius, 12px); background: linear-gradient(90deg, var(--bg-surface,#141821), var(--bg-surface-2,#1b212c), var(--bg-surface,#141821)); }
 
 /* карточка-секция */
-.dir-card { background: var(--bg-surface, #141821); border: 1px solid var(--border, #262d3a); border-radius: var(--radius, 12px); padding: 18px 20px; box-shadow: var(--shadow, 0 2px 6px rgba(6,11,22,.4)); }
+.dir-card { background: var(--surface-card, var(--bg-surface, #141821)); border: 1px solid var(--border, #262d3a); border-radius: var(--radius, 14px); padding: 18px 20px; box-shadow: var(--shadow, 0 2px 6px rgba(6,11,22,.4)); }
 .dir-card__head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
-.dir-card__head h2 { font-size: 15px; font-weight: 700; margin: 0; }
+.dir-card__head h2 { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; margin: 0; }
 .dir-card__head span { font-size: 11px; color: var(--text-faint, #828fa6); }
 .dir-cols { display: grid; grid-template-columns: 1.3fr 1fr; gap: 18px; align-items: start; }
 @media (max-width: 900px) { .dir-cols { grid-template-columns: 1fr; } }
 
 /* KPI */
 .dir-kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px; }
-.dir-kpi { background: var(--bg-surface, #141821); border: 1px solid var(--border, #262d3a); border-radius: var(--radius, 12px); padding: 16px 18px; box-shadow: var(--shadow, 0 2px 6px rgba(6,11,22,.4)); }
+.dir-kpi { background: var(--surface-card, var(--bg-surface, #141821)); border: 1px solid var(--border, #262d3a); border-radius: var(--radius, 14px); padding: 16px 18px; box-shadow: var(--shadow, 0 2px 6px rgba(6,11,22,.4)); }
 .dir-kpi__label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted, #97a3b6); }
 .dir-kpi__value { font-family: var(--font-display, 'Space Grotesk', var(--font)); font-size: 34px; font-weight: 700; line-height: 1; margin-top: 10px; font-variant-numeric: tabular-nums; }
 
@@ -48,7 +38,7 @@
 .dir-vert { display: flex; flex-direction: column; gap: 8px; }
 .dir-vrow { display: grid; grid-template-columns: 92px 1fr 48px 74px minmax(120px, 1.3fr) auto; align-items: center; gap: 12px; }
 .dir-vrow__age { font-size: 12.5px; font-weight: 600; white-space: nowrap; }
-.dir-vrow__track { height: 16px; border-radius: 5px; background: rgba(255,255,255,0.05); overflow: hidden; }
+.dir-vrow__track { height: 16px; border-radius: 5px; background: var(--surface-soft, rgba(255,255,255,0.05)); overflow: hidden; }
 .dir-vrow__fill { display: block; height: 100%; border-radius: 5px; transition: width .5s ease; }
 .dir-vrow__rate { font-family: var(--font-display, 'Space Grotesk'); font-weight: 700; text-align: right; font-variant-numeric: tabular-nums; }
 .dir-vrow__last { font-size: 12px; color: var(--text-muted, #97a3b6); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
