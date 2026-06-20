@@ -32,6 +32,7 @@ import { withTenant, withBypassRLS } from '../db/tenantContext.js';
 import { listTeamPlayers, isFfspbConfigured } from '../services/ffspbApi.js';
 import { syncTenantCalendarTournament } from '../services/calendarService.js';
 import { syncTenantStandings } from '../services/standingsService.js';
+import { syncTenantMatchParticipation } from '../services/participationService.js';
 import {
   ffspbFullName,
   extractBirthDate,
@@ -183,6 +184,7 @@ async function main() {
   // 2) по каждой команде: ростер игроков + календарь (+кубок) + таблица.
   let totalPlayers = 0;
   let totalMatches = 0;
+  let totalStatRows = 0;
   for (const t of teams) {
     const teamId = `${slug}-${t.ageGroup}`;
     const np = await ingestRoster(slug, teamId, t.ffspbTeamId);
@@ -205,13 +207,28 @@ async function main() {
       tenantSlug: slug, ageGroup: t.ageGroup, tournamentId: t.tournamentId, season, ourMatcher: matcher,
     });
 
+    // Поминутное участие (matches + match_players.minutes) — топливо карты потерь/RAE.
+    const part = await syncTenantMatchParticipation({
+      tenantSlug: slug, ageGroup: t.ageGroup, teamId, ffspbTeamId: t.ffspbTeamId,
+      tournamentId: t.tournamentId, tournament: 'league', season,
+    });
+    if (part.ok) totalStatRows += part.playerRows ?? 0;
+    if (t.cupId) {
+      const partCup = await syncTenantMatchParticipation({
+        tenantSlug: slug, ageGroup: t.ageGroup, teamId, ffspbTeamId: t.ffspbTeamId,
+        tournamentId: t.cupId, tournament: 'cup', season,
+      });
+      if (partCup.ok) totalStatRows += partCup.playerRows ?? 0;
+    }
+
     console.log(
       `  ${teamId}: игроков ${np} · матчи ${cal.ok ? cal.count : 'СБОЙ(' + cal.error + ')'}` +
+      ` · участие ${part.ok ? `${part.matches}м/${part.playerRows}строк` : 'СБОЙ(' + part.error + ')'}` +
       ` · таблица ${st.ok ? st.teamsCount : 'СБОЙ(' + st.error + ')'}`,
     );
   }
 
-  console.log(`\n✓ Клуб «${name}» заведён: ${teams.length} команд, ${totalPlayers} игроков, ${totalMatches} матчей лиги.`);
+  console.log(`\n✓ Клуб «${name}» заведён: ${teams.length} команд, ${totalPlayers} игроков, ${totalMatches} матчей лиги, ${totalStatRows} строк участия (минуты → карта потерь).`);
   console.log(`  Вход тренера: ${hcEmail} / ${password}`);
   console.log(`  Спортдиректора/тренеров команд добавить: npm run seed:sporting-director / seed:coach (tenant=${slug}).`);
 
