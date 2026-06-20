@@ -59,9 +59,9 @@
 .cd__club-logo {
   flex-shrink: 0; width: 72px; height: 72px;
   object-fit: contain; border-radius: 14px;
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--surface-soft, rgba(255, 255, 255, 0.05));
   padding: 6px;
-  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.28);
+  box-shadow: var(--shadow);
 }
 .cd__header-text { min-width: 0; }
 .cd__eyebrow {
@@ -86,7 +86,7 @@
 /* ===== Фрейм «Главное» (правки Зенита #5,#6,#9,#10) ===== */
 .cd__main {
   position: relative; z-index: 1;
-  background: linear-gradient(180deg, rgba(20,25,50,0.55), rgba(15,20,40,0.35));
+  background: var(--surface-card);
   border: 1px solid var(--border-strong, #343d4e);
   border-radius: var(--radius-lg, 20px);
   padding: 18px 18px 20px;
@@ -285,7 +285,7 @@
 }
 .cd__hero-card {
   position: relative; z-index: 1;
-  background: linear-gradient(180deg, rgba(20,25,50,0.7), rgba(15,20,40,0.5));
+  background: var(--surface-card);
   border: 1px solid rgba(255,255,255,0.08);
   border-radius: var(--radius);
   padding: 22px;
@@ -356,7 +356,7 @@
 /* ===== Panel base ===== */
 .cd__panel {
   position: relative; z-index: 1;
-  background: linear-gradient(180deg, rgba(20,25,50,0.5), rgba(15,20,40,0.3));
+  background: var(--surface-card);
   border: 1px solid rgba(255,255,255,0.06);
   border-radius: var(--radius);
   padding: 20px;
