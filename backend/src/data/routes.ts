@@ -170,14 +170,26 @@ export async function dataRoutes(app: FastifyInstance) {
   // команды (Σ длин матчей, matches.meta.lengthMin от participationService; fallback 70').
   app.get('/club/loss-map', async (req) => {
     const slug = tenantId(req);
+    // Клубная аналитика — для club-wide ролей (НЕ игрок/тренер одной команды).
+    const role = req.user?.role;
+    if (role !== 'head_coach' && role !== 'sporting_director' && role !== 'platform_admin') {
+      throw new UnauthorizedError('клубная карта потерь — для тренера клуба и спортдиректора');
+    }
     return withTenant(slug, async (_tx, conn) => {
+      // Считаем ТОЛЬКО по матчам с FFSPB-участием (meta.lengthMin есть): иначе
+      // смешались бы единицы и удвоились бы матчи с SportVisor-загрузками (другой
+      // ext_match_id + минуты из PDF). Так воронка консистентна.
       const { rows } = await conn.query(
         `WITH team_avail AS (
            SELECT team_id, SUM(COALESCE(NULLIF(meta->>'lengthMin','')::int, 70)) AS avail
-             FROM matches WHERE tenant_id = $1 GROUP BY team_id
+             FROM matches WHERE tenant_id = $1 AND (meta->>'lengthMin') IS NOT NULL
+             GROUP BY team_id
          ), player_min AS (
-           SELECT player_id, SUM(COALESCE(minutes, 0)) AS mins
-             FROM match_players WHERE tenant_id = $1 GROUP BY player_id
+           SELECT mp.player_id, SUM(COALESCE(mp.minutes, 0)) AS mins
+             FROM match_players mp
+             JOIN matches m ON m.id = mp.match_id AND m.tenant_id = $1
+            WHERE mp.tenant_id = $1 AND (m.meta->>'lengthMin') IS NOT NULL
+            GROUP BY mp.player_id
          )
          SELECT p.full_name AS "fullName",
                 EXTRACT(MONTH FROM p.birth_date)::int AS "birthMonth",
@@ -185,7 +197,7 @@ export async function dataRoutes(app: FastifyInstance) {
                 COALESCE(pm.mins, 0)::int AS mins,
                 COALESCE(ta.avail, 0)::int AS avail
            FROM players p
-           JOIN teams t ON t.id = p.team_id
+           JOIN teams t ON t.id = p.team_id AND t.tenant_id = $1
            LEFT JOIN player_min pm ON pm.player_id = p.id
            LEFT JOIN team_avail ta ON ta.team_id = p.team_id
           WHERE p.tenant_id = $1 AND p.birth_date IS NOT NULL`,
@@ -603,6 +615,7 @@ export async function dataRoutes(app: FastifyInstance) {
       const note = typeof req.body?.note === 'string' ? req.body.note.slice(0, 5000) : null;
       return withTenant(slug, async (_tx, conn) => {
         // team_coach редактирует только СВОЙ матч (по team_id); head_coach — любой в клубе.
+        if (role === 'team_coach' && !req.user?.teamId) throw new UnauthorizedError('тренер команды без привязки к команде');
         const ts = role === 'team_coach' && req.user?.teamId;
         const { rowCount } = await conn.query(
           `UPDATE matches SET coach_note = $1 WHERE tenant_id = $2 AND id = $3${ts ? ' AND team_id = $4' : ''}`,
@@ -621,8 +634,9 @@ export async function dataRoutes(app: FastifyInstance) {
       throw new UnauthorizedError('only coaches can delete matches');
     }
     return withTenant(slug, async (_tx, conn) => {
-      // team_coach удаляет только СВОЙ матч (head_coach — любой в клубе).
-      if (role === 'team_coach' && req.user?.teamId) {
+      // team_coach удаляет только СВОЙ матч (head_coach — любой в клубе); fail-closed без teamId.
+      if (role === 'team_coach') {
+        if (!req.user?.teamId) throw new UnauthorizedError('тренер команды без привязки к команде');
         const own = await conn.query(`SELECT 1 FROM matches WHERE tenant_id = $1 AND id = $2 AND team_id = $3`, [slug, req.params.matchId, req.user.teamId]);
         if (!own.rowCount) throw new NotFoundError('match not found');
       }

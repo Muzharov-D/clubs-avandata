@@ -44,6 +44,9 @@ const shortName = (s: string) => { const w = (s || '').trim().split(/\s+/); retu
 const initials = (s: string) => { const w = (s || '').trim().split(/\s+/).filter(Boolean); return ((w[0]?.[0] ?? '') + (w[1]?.[0] ?? '')).toUpperCase() || '?'; };
 const trendMark = (t: number | null) => (t == null ? '' : t > 0.05 ? `▲ +${t}` : t < -0.05 ? `▼ ${t}` : '= 0');
 const trendCls = (t: number | null) => (t == null ? '' : t > 0.05 ? 'up' : t < -0.05 ? 'down' : 'eq');
+// Цвет для game-time% (0–100): своя шкала, НЕ rating-шкала 4–10. <15 красный … ≥50 зелёный.
+const lossColor = (pct: number): string =>
+  pct >= 50 ? 'var(--rating-excellent)' : pct >= 30 ? 'var(--rating-ok)' : pct >= 15 ? 'var(--rating-weak)' : 'var(--rating-poor)';
 
 function Avatar({ name, photo, size = 40 }: { name: string; photo: string | null; size?: number }) {
   if (photo && /^https?:\/\//.test(photo)) return <img className="dir-av" src={photo} alt={name} width={size} height={size} style={{ width: size, height: size }} loading="lazy" />;
@@ -150,10 +153,16 @@ export function DirectorDashboard() {
                     <div key={q.q} className={`dir-lossq${q.q === 4 ? ' dir-lossq--late' : ''}`}>
                       <div className="dir-lossq__h"><b>Q{q.q}</b><span>{q.roster} игр.</span></div>
                       <div className="dir-lossq__track">
-                        <span className="dir-lossq__fill" style={{ width: `${Math.min(100, q.medianPct)}%`, background: ratingColor(q.medianPct / 10) }} />
+                        <span className="dir-lossq__fill" style={{ width: `${Math.min(100, q.medianPct)}%`, background: lossColor(q.medianPct) }} />
                       </div>
-                      <div className="dir-lossq__med">медиана {q.medianPct}%</div>
-                      <div className="dir-lossq__buried">погребены &lt;15%: <b>{q.buried15}%</b></div>
+                      {q.roster === 0 ? (
+                        <div className="dir-lossq__med dir-dim">нет данных</div>
+                      ) : (
+                        <>
+                          <div className="dir-lossq__med">медиана {q.medianPct}%</div>
+                          <div className="dir-lossq__buried">погребены &lt;15%: <b>{q.buried15}%</b></div>
+                        </>
+                      )}
                     </div>
                   ))}
                 </div>

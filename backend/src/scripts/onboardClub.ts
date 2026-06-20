@@ -136,7 +136,7 @@ async function main() {
   const matcher = arg('matcher') ?? name;          // подстрока для «наш матч/наша строка таблицы»
   const season = arg('season') ?? '2025-2026';
   const hcName = arg('hc-name') ?? 'Главный тренер';
-  const password = arg('hc-password') ?? `${slug}-${randomBytes(3).toString('hex')}`;
+  const password = arg('hc-password') ?? randomBytes(12).toString('base64url'); // ~96 бит, без предсказуемого префикса
 
   if (!isFfspbConfigured()) { console.error('FFSPB_API_KEY не задан в .env'); process.exit(1); }
   const teams = parseTeams(teamsRaw);
@@ -187,6 +187,7 @@ async function main() {
   let totalStatRows = 0;
   for (const t of teams) {
     const teamId = `${slug}-${t.ageGroup}`;
+    try {
     const np = await ingestRoster(slug, teamId, t.ffspbTeamId);
     totalPlayers += np;
 
@@ -226,6 +227,9 @@ async function main() {
       ` · участие ${part.ok ? `${part.matches}м/${part.playerRows}строк` : 'СБОЙ(' + part.error + ')'}` +
       ` · таблица ${st.ok ? st.teamsCount : 'СБОЙ(' + st.error + ')'}`,
     );
+    } catch (e) {
+      console.error(`  ${teamId}: команда пропущена — ${e instanceof Error ? e.message : String(e)}`);
+    }
   }
 
   console.log(`\n✓ Клуб «${name}» заведён: ${teams.length} команд, ${totalPlayers} игроков, ${totalMatches} матчей лиги, ${totalStatRows} строк участия (минуты → карта потерь).`);

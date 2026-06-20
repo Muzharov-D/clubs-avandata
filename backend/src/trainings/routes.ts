@@ -26,10 +26,14 @@ export async function trainingsRoutes(app: FastifyInstance) {
     if (!id) throw new UnauthorizedError('tenant context required');
     return id;
   }
-  function assertCoach(req: { user?: { role?: string } }): void {
+  function assertCoach(req: { user?: { role?: string; teamId?: string | null } }): void {
     const role = req.user?.role;
     if (role !== 'head_coach' && role !== 'team_coach') {
       throw new ForbiddenError('только тренер может управлять тренировками');
+    }
+    // fail-closed: team_coach без teamId иначе обошёл бы team-фильтр (доступ ко всем командам).
+    if (role === 'team_coach' && !req.user?.teamId) {
+      throw new ForbiddenError('тренер команды без привязки к команде');
     }
   }
   // team_coach управляет только СВОЕЙ командой (head_coach — любой командой клуба).

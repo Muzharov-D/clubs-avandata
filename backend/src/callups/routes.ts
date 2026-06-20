@@ -53,7 +53,9 @@ export async function callupsRoutes(app: FastifyInstance) {
       throw new ForbiddenError('только тренер может управлять составом на матч');
     }
     // team_coach — только СВОЯ возрастная команда (teamId = `${slug}-${age}`); head_coach — любой возраст клуба.
-    if (role === 'team_coach' && req.user?.teamId) {
+    // fail-closed: без teamId team_coach иначе проскочил бы проверку (доступ ко всем возрастам).
+    if (role === 'team_coach') {
+      if (!req.user?.teamId) throw new ForbiddenError('тренер команды без привязки к команде');
       const age = (req.params as { age?: string } | undefined)?.age;
       const slug = req.user?.tenantId ?? '';
       if (age && req.user.teamId !== `${slug}-${age}`) {
@@ -225,9 +227,10 @@ export async function callupsRoutes(app: FastifyInstance) {
       const { age, extMatchId } = req.params;
       const role = req.user?.role;
       const isCoach = role === 'head_coach' || role === 'team_coach';
-      // team_coach отвечает за состав только своей возрастной команды.
-      if (role === 'team_coach' && req.user?.teamId && req.user.teamId !== `${slug}-${age}`) {
-        throw new ForbiddenError('тренер команды управляет составом только своей команды');
+      // team_coach отвечает за состав только своей возрастной команды (fail-closed).
+      if (role === 'team_coach') {
+        if (!req.user?.teamId) throw new ForbiddenError('тренер команды без привязки к команде');
+        if (req.user.teamId !== `${slug}-${age}`) throw new ForbiddenError('тренер команды управляет составом только своей команды');
       }
 
       const targetPlayerId = isCoach
