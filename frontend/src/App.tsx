@@ -87,8 +87,10 @@ function RootRoute() {
 }
 
 function CoachOnly({ children }: { children: React.ReactNode }) {
-  const { isCoach, isPlayer, user } = useAuth() as { isCoach: boolean; isPlayer: boolean; user: any };
-  if (isCoach) return <>{children}</>;
+  // Спортдиректор (read-only аналитик) пускается во все аналитические экраны
+  // наравне с тренером; кнопки записи внутри экранов гейтятся isCoach (он false → read-only).
+  const { isCoach, isDirector, isPlayer, user } = useAuth() as { isCoach: boolean; isDirector: boolean; isPlayer: boolean; user: any };
+  if (isCoach || isDirector) return <>{children}</>;
   if (isPlayer && user?.playerId) {
     return <Navigate to={`/players/${user.playerId}`} replace />;
   }
@@ -205,18 +207,10 @@ export function App() {
                     <Route path="*" element={<Navigate to="/federation" replace />} />
                   </Route>
 
-                  {/* Кабинет спортивного директора клуба (sporting_director) — клуб-scoped аналитика */}
-                  <Route
-                    path="/director"
-                    element={
-                      <DirectorOnly>
-                        <DirectorDashboard />
-                      </DirectorOnly>
-                    }
-                  />
-
                   {/* Авторизованный кабинет клуба */}
                   <Route element={<ProtectedRoute roles={[]}><MainLayout /></ProtectedRoute>}>
+                    {/* Спортивный директор: «Сводка»-дом внутри клубной оболочки (полный доступ к экранам через меню) */}
+                    <Route path="/director" element={<DirectorOnly><DirectorDashboard /></DirectorOnly>} />
                     <Route path="/club" element={<ClubDashboard />} />
                     <Route path="/club-hub" element={<HeadCoachOnly><ClubHub /></HeadCoachOnly>} />
                     <Route path="/analytics" element={<CoachOnly><ClubOverview /></CoachOnly>} />

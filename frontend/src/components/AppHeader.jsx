@@ -12,6 +12,7 @@ import './AppHeader.css';
 const ROLE_LABELS = {
   head_coach: 'Главный тренер',
   team_coach: 'Тренер команды',
+  sporting_director: 'Спортивный директор',
   player: 'Игрок',
 };
 
@@ -25,7 +26,8 @@ export default function AppHeader() {
     toast.info('Вы вышли из системы');
     navigate('/login', { replace: true });
   }
-  const canSwitch = user?.role === 'head_coach';
+  // Спортдиректор тоже видит весь клуб → даём переключатель команд (для командных экранов).
+  const canSwitch = user?.role === 'head_coach' || user?.role === 'sporting_director';
   const activeTeams = (teams || []).filter((t) => t.active && t.isOurTeam !== false);
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);

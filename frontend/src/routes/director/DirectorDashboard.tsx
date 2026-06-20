@@ -1,6 +1,5 @@
 import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { useNavigate } from 'react-router-dom';
 // @ts-ignore — legacy .js client/util
 import { fetchClubSummary, fetchClubTalent } from '../../services/api';
 import { useAuth } from '../../contexts/AuthContext';
@@ -50,8 +49,7 @@ function Avatar({ name, photo, size = 40 }: { name: string; photo: string | null
 }
 
 export function DirectorDashboard() {
-  const { tenant, user, logout } = useAuth() as { tenant: { displayName?: string; name?: string } | null; user: { fullName?: string } | null; logout: () => void };
-  const navigate = useNavigate();
+  const { tenant } = useAuth() as { tenant: { displayName?: string; name?: string } | null };
   const sumQ = useQuery({ queryKey: ['dir', 'club-summary'], queryFn: () => fetchClubSummary() as Promise<{ teams: TeamRow[] }> });
   const talQ = useQuery({ queryKey: ['dir', 'club-talent'], queryFn: () => fetchClubTalent() as Promise<{ players: TalentRow[] }> });
 
@@ -81,23 +79,11 @@ export function DirectorDashboard() {
   const clubName = tenant?.displayName || tenant?.name || 'Клуб';
 
   return (
-    <div className="dir-root">
-      <header className="dir-topbar">
-        <div className="dir-brand">
-          <span className="dir-brand__logo">Avan<b>Data</b></span>
-          <span className="dir-brand__role">Спортивный директор · {clubName}</span>
-        </div>
-        <div className="dir-topbar__r">
-          <span className="dir-who">{user?.fullName || 'Спортивный директор'}</span>
-          <button className="dir-logout" onClick={() => { logout(); navigate('/login', { replace: true }); }}>Выйти</button>
-        </div>
-      </header>
-
-      <main className="dir-main">
-        <div className="dir-head">
-          <h1 className="dir-title">Обзор клуба</h1>
-          <p className="dir-sub">Все команды клуба сразу — развитие, кадровый резерв, сборная</p>
-        </div>
+    <div className="dir-main">
+      <div className="dir-head">
+        <h1 className="dir-title">Сводка директора</h1>
+        <p className="dir-sub">{clubName} · все команды клуба — развитие, кадровый резерв, сборная</p>
+      </div>
 
         {loading && <div className="dir-skeleton" />}
         {!loading && (sumQ.isError || talQ.isError) && <div className="dir-note dir-note--err">База клуба временно недоступна — обновите страницу.</div>}
@@ -191,7 +177,6 @@ export function DirectorDashboard() {
             </section>
           </>
         )}
-      </main>
     </div>
   );
 }
