@@ -40,6 +40,7 @@ import {
   shortPosition,
   extractPhoto,
 } from '../services/playerPhotoService.js';
+import { parseTeams } from './onboardParse.js';
 
 // ---- CLI ----------------------------------------------------------------
 function arg(name: string): string | undefined {
@@ -53,25 +54,7 @@ function req(name: string): string {
   return v;
 }
 
-interface TeamSpec {
-  ageGroup: string;       // '2010'
-  tournamentId: string;   // FFSPB турнир лиги (матчи + таблица)
-  ffspbTeamId: string;    // FFSPB id команды (ростер игроков)
-  cupId: string | null;   // опц. FFSPB турнир кубка (матчи)
-}
-
-function parseTeams(raw: string): TeamSpec[] {
-  const specs: TeamSpec[] = [];
-  for (const chunk of raw.split(',').map((s) => s.trim()).filter(Boolean)) {
-    const [age, tid, team, cup] = chunk.split(':').map((s) => s.trim());
-    if (!age || !tid || !team) {
-      throw new Error(`плохой формат команды "${chunk}" — нужно age:tournamentId:ffspbTeamId[:cupId]`);
-    }
-    specs.push({ ageGroup: age, tournamentId: tid, ffspbTeamId: team, cupId: cup || null });
-  }
-  if (!specs.length) throw new Error('--teams пуст');
-  return specs;
-}
+// TeamSpec + parseTeams вынесены в ./onboardParse.ts (для юнит-тестов).
 
 // ---- Заливка ростера в players (недостающий кусок) ----------------------
 // Игроки тянутся ПО НАШЕЙ команде (ffspbTeamId) — значит все они наши. Дата

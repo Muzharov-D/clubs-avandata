@@ -10,6 +10,8 @@ import { statField, statFieldTotal } from '../shared/statValue.js';
 import { resolveOurExtId, markOurStandingsRow } from './ourTeam.js';
 import { applyFixtureDates, type DatedMatchRow } from './matchDate.js';
 import { linkFfspbFixture } from '../upload/ffspbMatchLink.js';
+import { lossQuarters } from './lossMapMath.js';
+import { teamWriteScope, canReadClubAnalytics } from '../auth/scope.js';
 import { isFfspbConfigured } from '../services/ffspbApi.js';
 import { syncTenantCalendarTournament } from '../services/calendarService.js';
 import { syncTenantStandings } from '../services/standingsService.js';
@@ -172,7 +174,7 @@ export async function dataRoutes(app: FastifyInstance) {
     const slug = tenantId(req);
     // Клубная аналитика — для club-wide ролей (НЕ игрок/тренер одной команды).
     const role = req.user?.role;
-    if (role !== 'head_coach' && role !== 'sporting_director' && role !== 'platform_admin') {
+    if (!canReadClubAnalytics(role)) {
       throw new UnauthorizedError('клубная карта потерь — для тренера клуба и спортдиректора');
     }
     return withTenant(slug, async (_tx, conn) => {
@@ -212,27 +214,7 @@ export async function dataRoutes(app: FastifyInstance) {
           name: r.fullName ?? '?',
           team: r.teamName ?? '',
         }));
-      const median = (a: number[]): number => {
-        if (!a.length) return 0;
-        const s = a.slice().sort((x, y) => x - y);
-        return s[Math.floor(s.length / 2)]!;
-      };
-      const byQuarter = [0, 1, 2, 3].map((qi) => {
-        const s = pts.filter((p) => p.q === qi);
-        const n = s.length || 1;
-        const pc = (f: (x: number) => boolean) => Math.round((s.filter((p) => f(p.pct)).length / n) * 100);
-        return {
-          q: qi + 1, roster: s.length,
-          medianPct: Math.round(median(s.map((p) => p.pct)) * 100),
-          buried15: pc((x) => x < 0.15), buried30: pc((x) => x < 0.30), contrib50: pc((x) => x >= 0.50),
-        };
-      });
-      const examplesBuried = pts
-        .filter((p) => p.q === 3 && p.pct < 0.15)
-        .sort((a, b) => a.pct - b.pct)
-        .slice(0, 6)
-        .map((p) => ({ name: p.name, team: p.team, pct: Math.round(p.pct * 100) }));
-      return { roster: pts.length, byQuarter, examplesBuried, hasData: pts.length > 0 };
+      return lossQuarters(pts);
     });
   });
 
@@ -609,13 +591,13 @@ export async function dataRoutes(app: FastifyInstance) {
     async (req) => {
       const slug = tenantId(req);
       const role = req.user?.role;
-      if (role !== 'head_coach' && role !== 'team_coach') {
-        throw new UnauthorizedError('only coaches can edit notes');
+      if (teamWriteScope(role, req.user?.teamId) === 'deny') {
+        throw new UnauthorizedError('нет прав на правку заметки матча');
       }
       const note = typeof req.body?.note === 'string' ? req.body.note.slice(0, 5000) : null;
       return withTenant(slug, async (_tx, conn) => {
-        // team_coach редактирует только СВОЙ матч (по team_id); head_coach — любой в клубе.
-        if (role === 'team_coach' && !req.user?.teamId) throw new UnauthorizedError('тренер команды без привязки к команде');
+        // team_coach редактирует только СВОЙ матч (по team_id); head_coach — любой.
+        // (teamWriteScope в гейте выше уже отсёк team_coach без teamId.)
         const ts = role === 'team_coach' && req.user?.teamId;
         const { rowCount } = await conn.query(
           `UPDATE matches SET coach_note = $1 WHERE tenant_id = $2 AND id = $3${ts ? ' AND team_id = $4' : ''}`,
@@ -630,13 +612,12 @@ export async function dataRoutes(app: FastifyInstance) {
   app.delete<{ Params: { matchId: string } }>('/match/:matchId', async (req) => {
     const slug = tenantId(req);
     const role = req.user?.role;
-    if (role !== 'head_coach' && role !== 'team_coach') {
-      throw new UnauthorizedError('only coaches can delete matches');
+    if (teamWriteScope(role, req.user?.teamId) === 'deny') {
+      throw new UnauthorizedError('нет прав на удаление матча');
     }
     return withTenant(slug, async (_tx, conn) => {
-      // team_coach удаляет только СВОЙ матч (head_coach — любой в клубе); fail-closed без teamId.
-      if (role === 'team_coach') {
-        if (!req.user?.teamId) throw new UnauthorizedError('тренер команды без привязки к команде');
+      // team_coach удаляет только СВОЙ матч (head_coach — любой); гейт teamWriteScope выше отсёк team_coach без teamId.
+      if (role === 'team_coach' && req.user?.teamId) {
         const own = await conn.query(`SELECT 1 FROM matches WHERE tenant_id = $1 AND id = $2 AND team_id = $3`, [slug, req.params.matchId, req.user.teamId]);
         if (!own.rowCount) throw new NotFoundError('match not found');
       }

@@ -2,6 +2,7 @@ import type { FastifyInstance } from 'fastify';
 import { authenticate } from '../auth/middleware.js';
 import { withTenant } from '../db/tenantContext.js';
 import { UnauthorizedError, ForbiddenError } from '../shared/errors.js';
+import { teamWriteScope } from '../auth/scope.js';
 
 /**
  * Tenant-scoped API тренировок (Sprint 5.1). Раньше существовали только схема
@@ -27,13 +28,9 @@ export async function trainingsRoutes(app: FastifyInstance) {
     return id;
   }
   function assertCoach(req: { user?: { role?: string; teamId?: string | null } }): void {
-    const role = req.user?.role;
-    if (role !== 'head_coach' && role !== 'team_coach') {
-      throw new ForbiddenError('только тренер может управлять тренировками');
-    }
-    // fail-closed: team_coach без teamId иначе обошёл бы team-фильтр (доступ ко всем командам).
-    if (role === 'team_coach' && !req.user?.teamId) {
-      throw new ForbiddenError('тренер команды без привязки к команде');
+    // teamWriteScope='deny' = не тренер ИЛИ team_coach без teamId (fail-closed); директор — read-only.
+    if (teamWriteScope(req.user?.role, req.user?.teamId) === 'deny') {
+      throw new ForbiddenError('только тренер своей команды управляет тренировками');
     }
   }
   // team_coach управляет только СВОЕЙ командой (head_coach — любой командой клуба).

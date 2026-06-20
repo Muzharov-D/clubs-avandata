@@ -2,6 +2,7 @@ import type { FastifyInstance } from 'fastify';
 import { authenticate } from '../auth/middleware.js';
 import { withTenant } from '../db/tenantContext.js';
 import { UnauthorizedError, ForbiddenError, BadRequestError } from '../shared/errors.js';
+import { callupWriteScope } from '../auth/scope.js';
 
 /**
  * Tenant-scoped API «Вызов состава на матч» (callups, Sprint 5.B).
@@ -52,13 +53,11 @@ export async function callupsRoutes(app: FastifyInstance) {
     if (role !== 'head_coach' && role !== 'team_coach') {
       throw new ForbiddenError('только тренер может управлять составом на матч');
     }
-    // team_coach — только СВОЯ возрастная команда (teamId = `${slug}-${age}`); head_coach — любой возраст клуба.
-    // fail-closed: без teamId team_coach иначе проскочил бы проверку (доступ ко всем возрастам).
+    // team_coach — только СВОЯ возрастная команда; callupWriteScope='deny' = чужой возраст / без teamId.
     if (role === 'team_coach') {
       if (!req.user?.teamId) throw new ForbiddenError('тренер команды без привязки к команде');
       const age = (req.params as { age?: string } | undefined)?.age;
-      const slug = req.user?.tenantId ?? '';
-      if (age && req.user.teamId !== `${slug}-${age}`) {
+      if (age && callupWriteScope(role, req.user.teamId, req.user?.tenantId ?? '', age) === 'deny') {
         throw new ForbiddenError('тренер команды управляет составом только своей команды');
       }
     }
@@ -227,10 +226,9 @@ export async function callupsRoutes(app: FastifyInstance) {
       const { age, extMatchId } = req.params;
       const role = req.user?.role;
       const isCoach = role === 'head_coach' || role === 'team_coach';
-      // team_coach отвечает за состав только своей возрастной команды (fail-closed).
-      if (role === 'team_coach') {
-        if (!req.user?.teamId) throw new ForbiddenError('тренер команды без привязки к команде');
-        if (req.user.teamId !== `${slug}-${age}`) throw new ForbiddenError('тренер команды управляет составом только своей команды');
+      // team_coach отвечает за состав только своей возрастной команды (callupWriteScope).
+      if (role === 'team_coach' && callupWriteScope(role, req.user?.teamId, slug, age) === 'deny') {
+        throw new ForbiddenError('тренер команды управляет составом только своей команды');
       }
 
       const targetPlayerId = isCoach
