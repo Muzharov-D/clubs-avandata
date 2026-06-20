@@ -34,6 +34,16 @@
 .dir-kpi__label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted, #97a3b6); }
 .dir-kpi__value { font-family: var(--font-display, 'Space Grotesk', var(--font)); font-size: 34px; font-weight: 700; line-height: 1; margin-top: 10px; font-variant-numeric: tabular-nums; }
 
+/* радар внимания — ведёт сводку */
+.dir-attn { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 10px; }
+.dir-attn__item { display: flex; align-items: flex-start; gap: 10px; padding: 10px 12px; background: var(--bg-surface-2, #1b212c); border: 1px solid var(--border, #262d3a); border-radius: var(--radius-sm, 8px); }
+.dir-attn__ic { font-size: 15px; line-height: 1.3; flex: none; }
+.dir-attn__ic--down { color: var(--rating-weak, #fb8c00); }
+.dir-attn__ic--wait { color: var(--rating-poor, #ef4444); }
+.dir-attn__body { min-width: 0; }
+.dir-attn__t { font-size: 13px; font-weight: 600; }
+.dir-attn__d { font-size: 11px; color: var(--text-muted, #97a3b6); margin-top: 2px; }
+
 /* развитие по возрастам */
 .dir-vert { display: flex; flex-direction: column; gap: 8px; }
 .dir-vrow { display: grid; grid-template-columns: 92px 1fr 48px 74px minmax(120px, 1.3fr) auto; align-items: center; gap: 12px; }

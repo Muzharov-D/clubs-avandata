@@ -75,6 +75,19 @@ export function DirectorDashboard() {
   const topScorer = useMemo(() => [...talent].sort((a, b) => b.goals - a.goals)[0] ?? null, [talent]);
   const topAssist = useMemo(() => [...talent].sort((a, b) => b.assists - a.assists)[0] ?? null, [talent]);
 
+  // Радар внимания: где горит (падающая форма / флаги команд) + сильные игроки,
+  // которым мало дают играть — клубный сигнал «потери» (то же, что федерация видит над регионом).
+  const attention = useMemo(() => {
+    const fadingTeams = teams.filter((t) => (t.flags?.length ?? 0) > 0 || (t.trend != null && t.trend <= -0.3));
+    const mins = talent.map((p) => p.minutes).filter((m) => m > 0).sort((a, b) => a - b);
+    const medMin = mins.length ? (mins[Math.floor(mins.length / 2)] as number) : 0;
+    const underused = talent
+      .filter((p) => p.avgOverall != null && p.avgOverall >= 7 && medMin > 0 && p.minutes < medMin * 0.6)
+      .sort((a, b) => (b.avgOverall ?? 0) - (a.avgOverall ?? 0))
+      .slice(0, 6);
+    return { fadingTeams, underused };
+  }, [teams, talent]);
+
   const loading = sumQ.isLoading || talQ.isLoading;
   const clubName = tenant?.displayName || tenant?.name || 'Клуб';
 
@@ -97,6 +110,33 @@ export function DirectorDashboard() {
               <Kpi label="Игроков в резерве" value={kpi.players} />
               <Kpi label="Средний рейтинг клуба" value={kpi.clubAvg ?? '—'} color={kpi.clubAvg != null ? ratingColor(kpi.clubAvg) : undefined} />
             </section>
+
+            {/* Радар внимания — ведёт сводку (инструмент решений, не просто витрина) */}
+            {(attention.fadingTeams.length > 0 || attention.underused.length > 0) && (
+              <section className="dir-card">
+                <div className="dir-card__head"><h2>Требует внимания</h2><span>где падает форма · кого недоигрывают</span></div>
+                <div className="dir-attn">
+                  {attention.fadingTeams.map((t) => (
+                    <div key={`t-${t.id}`} className="dir-attn__item">
+                      <span className="dir-attn__ic dir-attn__ic--down">▼</span>
+                      <div className="dir-attn__body">
+                        <div className="dir-attn__t">{teamLabel(t)}</div>
+                        <div className="dir-attn__d">{t.flags && t.flags.length ? t.flags.join(' · ') : `форма падает (${trendMark(t.trend)})`}</div>
+                      </div>
+                    </div>
+                  ))}
+                  {attention.underused.map((p) => (
+                    <div key={`p-${p.id}`} className="dir-attn__item">
+                      <span className="dir-attn__ic dir-attn__ic--wait">⏳</span>
+                      <div className="dir-attn__body">
+                        <div className="dir-attn__t">{shortName(p.fullName)} <b style={{ color: ratingColor(p.avgOverall ?? 0) }}>{p.avgOverall}</b></div>
+                        <div className="dir-attn__d">сильный, но мало играет — {Math.round(p.minutes)} мин · {p.matches} матч.{p.teamLabel ? ` · ${p.teamLabel}` : ''}</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </section>
+            )}
 
             {/* Развитие по возрастам */}
             <section className="dir-card">
