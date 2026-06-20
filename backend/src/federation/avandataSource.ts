@@ -10,7 +10,6 @@ import {
   isAvandataConfigured, getSeasons, getTeamsList, getTourStatistics, getPlayersByRole, getMatches,
   getFfspbStatistics, getFfspbStatisticsByTournament, getClubRatingsOverview, getClubRatingsByTournament,
   getPlayerDetail, getPlayerEvents, getEventTypes, getAllPlayerSummaries, getMatchDetail, authedGet,
-  getOnFieldPage, getSummaryPlayersPage,
   type AvSeason, type AvStatTeam, type AvRatingTeam, type AvEventType,
 } from '../services/avandataApi.js';
 import { getMatch as ffspbGetMatch, isFfspbConfigured } from '../services/ffspbApi.js';
@@ -751,105 +750,6 @@ export async function ageEffect(seasonId: number, year?: number, division?: stri
     const quarters = counts.map((n, i) => ({ q: i + 1, n, pct: total ? Math.round((n / total) * 1000) / 10 : 0 }));
     const q1 = quarters[0]?.pct ?? 0, q4 = quarters[3]?.pct ?? 0;
     return { total, quarters, q1pct: q1, q4pct: q4, skew: q4 > 0 ? Math.round((q1 / q4) * 100) / 100 : null };
-  });
-}
-
-// ─── ВЫВОД: Карта возможностей/потерь ───────────────────────────────────────
-// Ядро боли федерации: КТО получает игровую возможность, а кого «теряют на скамейке».
-// Истинных минут в базе нет — есть факт СТАРТА (/player-on-field.startsOnField), поэтому
-// «возможность» = доля матчей в старте (start-rate). Тяжёлый сбор (~26k расстановок)
-// тянется раз в 6ч и кэшируется; справедливость по кварталам — через чистый мост
-// playerId→summary→дата рождения (без фаззи-матчинга имён).
-const OPP_TTL = 6 * 60 * 60 * 1000;
-/** Тянем ВЕСЬ списочный ресурс страницами, щадя базу (concurrency 4, ретрай на уровне страницы). */
-async function pageAll<T>(getPage: (p: number) => Promise<{ data: T[]; totalPages: number }>): Promise<T[]> {
-  const first = await getPage(1);
-  const out: T[] = [...first.data];
-  if (first.totalPages <= 1) return out;
-  const pages = Array.from({ length: first.totalPages - 1 }, (_, i) => i + 2);
-  const rest = await pmap(pages, 4, async (p) => {
-    for (let i = 1; i <= 3; i++) { try { return (await getPage(p)).data; } catch { if (i === 3) return [] as T[]; await new Promise((r) => setTimeout(r, 300 * i)); } }
-    return [] as T[];
-  });
-  for (const a of rest) out.push(...a);
-  return out;
-}
-const giniOf = (xs: number[]): number => {
-  const a = xs.slice().sort((p, q) => p - q); const n = a.length;
-  const sum = a.reduce((s, x) => s + x, 0);
-  if (!n || sum === 0) return 0;
-  let cum = 0; for (let i = 0; i < n; i++) cum += (i + 1) * (a[i] as number);
-  return Math.round((((2 * cum) / (n * sum)) - (n + 1) / n) * 1000) / 1000;
-};
-export interface OppQuarter { q: number; players: number; startRate: number }
-export interface OpportunityMap {
-  players: number;          // региональных игроков с расстановками (≥2 выходов)
-  alwaysShare: number;      // % всегда в старте (start-rate ≥85%)
-  benchShare: number;       // % «вечно на скамейке» (≥3 выходов, старт <25%)
-  gini: number;             // неравенство стартов между игроками (0..1)
-  buckets: Array<{ from: number; to: number; n: number }>; // распределение старт-рейта
-  quarters: OppQuarter[];   // старт-рейт по кварталу рождения (все)
-  quartersTop: OppQuarter[];// то же среди сильных (рейтинг ≥ медианы) — «при равном классе»
-  q1q4Gap: number | null;   // разрыв старт-рейта Q1−Q4, п.п. (все)
-  q1q4GapTop: number | null;// разрыв среди сильных
-  asOf: string;
-}
-export async function opportunityMap(seasonId: number, year?: number, division?: string): Promise<OpportunityMap> {
-  return cached(`opp:${seasonId}:${year ?? 0}:${division ?? ''}`, OPP_TTL, async () => {
-    const [players, onfield, bridge, summaries] = await Promise.all([
-      regionPlayers(seasonId, year, division),
-      cached('onfield', OPP_TTL, () => pageAll(getOnFieldPage)),
-      cached('summaryPlayers', OPP_TTL, () => pageAll(getSummaryPlayersPage)),
-      cached('summaries', TTL, () => getAllPlayerSummaries()),
-    ]);
-    // старты/выходы по playerId
-    const byP = new Map<number, { starts: number; apps: number }>();
-    for (const r of onfield) {
-      if (r.playerId == null) continue;
-      const e = byP.get(r.playerId) ?? { starts: 0, apps: 0 };
-      e.apps += 1; if (r.startsOnField) e.starts += 1; byP.set(r.playerId, e);
-    }
-    // playerId → квартал рождения (мост дедупа → summary → дата)
-    const sumOfPlayer = new Map<number, number>();
-    for (const b of bridge) if (b.playerId != null && b.playerSummaryId != null) sumOfPlayer.set(b.playerId, b.playerSummaryId);
-    const dobOfSum = new Map<number, string>();
-    for (const s of summaries) if (s.id != null && s.dateOfBirth) dobOfSum.set(s.id, s.dateOfBirth);
-    const quarterOf = (pid: number): number | null => {
-      const sid = sumOfPlayer.get(pid); if (sid == null) return null;
-      const dob = dobOfSum.get(sid); if (!dob) return null;
-      return Math.floor(new Date(dob).getUTCMonth() / 3); // 0..3
-    };
-    // Скоуп — игроки региона (analyzed) с расстановками, ≥2 выходов (без one-game шума).
-    interface Row { rate: number; starts: number; apps: number; q: number | null; rating: number | null }
-    const rows: Row[] = [];
-    for (const p of players) {
-      const of = byP.get(p.id); if (!of || of.apps < 2) continue;
-      rows.push({ rate: of.starts / of.apps, starts: of.starts, apps: of.apps, q: quarterOf(p.id), rating: p.rating });
-    }
-    const n = Math.max(1, rows.length);
-    const pct = (k: number) => Math.round((k / n) * 100);
-    const always = rows.filter((r) => r.rate >= 0.85).length;
-    const benchN = rows.filter((r) => r.apps >= 3 && r.rate < 0.25).length;
-    const buckets = [{ from: 0, to: 25 }, { from: 25, to: 50 }, { from: 50, to: 75 }, { from: 75, to: 100 }]
-      .map((b) => ({ from: b.from, to: b.to, n: rows.filter((r) => { const v = r.rate * 100; return v >= b.from && (b.to === 100 ? v <= 100 : v < b.to); }).length }));
-    const ratings = rows.map((r) => r.rating ?? 0).filter((x) => x > 0).sort((a, b) => a - b);
-    const med = ratings.length ? (ratings[Math.floor(ratings.length / 2)] as number) : 0;
-    const quartersOf = (subset: Row[]): OppQuarter[] => {
-      const acc = [0, 1, 2, 3].map(() => ({ s: 0, a: 0, p: 0 }));
-      for (const r of subset) { if (r.q == null) continue; const c = acc[r.q]!; c.s += r.starts; c.a += r.apps; c.p += 1; }
-      return acc.map((c, i) => ({ q: i + 1, players: c.p, startRate: c.a ? Math.round((c.s / c.a) * 1000) / 10 : 0 }));
-    };
-    const quarters = quartersOf(rows);
-    const quartersTop = quartersOf(rows.filter((r) => med > 0 && (r.rating ?? 0) >= med));
-    const gap = (qs: OppQuarter[]): number | null => {
-      const a = qs[0]?.startRate, z = qs[3]?.startRate;
-      return a != null && z != null ? Math.round((a - z) * 10) / 10 : null;
-    };
-    return {
-      players: rows.length, alwaysShare: pct(always), benchShare: pct(benchN), gini: giniOf(rows.map((r) => r.starts)),
-      buckets, quarters, quartersTop, q1q4Gap: gap(quarters), q1q4GapTop: gap(quartersTop),
-      asOf: new Date().toISOString(),
-    };
   });
 }
 

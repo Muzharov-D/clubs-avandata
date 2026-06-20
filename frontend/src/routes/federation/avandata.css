@@ -500,25 +500,6 @@
 .av-lskew__bar span { display: block; height: 100%; border-radius: 8px; transition: width 0.7s ease; }
 .av-lskew__n { font-family: var(--av-display); font-weight: 800; font-size: 23px; text-align: right; font-variant-numeric: tabular-nums; }
 
-/* Карта возможностей — распределение игроков по доле стартов (одна полоса) */
-.av-oppdist { margin-top: 18px; }
-.av-oppdist__bar { display: flex; height: 40px; border-radius: var(--av-r-sm); overflow: hidden; background: rgba(255, 255, 255, 0.05); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.04); }
-.av-oppdist__seg { display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1.1; color: #06121f; overflow: hidden; min-width: 0; font-variant-numeric: tabular-nums; transition: width 0.6s cubic-bezier(.22, 1, .36, 1); }
-.av-oppdist__seg b { font-family: var(--av-display); font-size: 14px; font-weight: 700; }
-.av-oppdist__seg i { font-style: normal; font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; opacity: 0.85; }
-.av-oppdist__legend { display: flex; flex-wrap: wrap; gap: 14px; margin-top: 12px; font-size: 11px; color: var(--av-text-2); }
-.av-oppdist__legend span { display: inline-flex; align-items: center; gap: 6px; }
-.av-oppdist__legend i { width: 11px; height: 11px; border-radius: 3px; display: inline-block; flex: none; }
-
-/* Справедливость старта — бары старт-рейта по кварталам рождения */
-.av-oppq { display: flex; flex-direction: column; gap: 9px; margin-top: 10px; }
-.av-oppq__row { display: grid; grid-template-columns: 108px 1fr 56px 66px; align-items: center; gap: 12px; }
-.av-oppq__label { font-size: 12px; color: var(--av-text-2); white-space: nowrap; }
-.av-oppq__track { height: 22px; border-radius: 6px; background: rgba(255, 255, 255, 0.05); overflow: hidden; }
-.av-oppq__fill { display: block; height: 100%; border-radius: 6px; transition: width 0.7s ease; }
-.av-oppq__val { font-family: var(--av-display); font-weight: 700; text-align: right; font-variant-numeric: tabular-nums; }
-.av-oppq__n { font-size: 10.5px; color: var(--av-text-faint); text-align: right; font-variant-numeric: tabular-nums; }
-
 /* Карта потерь — двойной штраф (герой) */
 .av-loss-twin { display: flex; align-items: center; gap: 24px; flex-wrap: wrap; margin-top: 14px; }
 .av-loss-twin__cell { flex: 1; min-width: 200px; }

@@ -207,18 +207,4 @@ export async function getAllPlayerSummaries(maxPages = 60): Promise<AvPlayerSumm
   return all;
 }
 
-// ---- Возможность/минуты: расстановки (старт/замена) + мост дедупа ----
-export interface AvOnField { playerId: number; startsOnField: boolean; playerRoleId?: string | null }
-/** Страница расстановок /player-on-field (старт/замена по игроку). limit≤100. */
-export async function getOnFieldPage(page: number): Promise<{ data: AvOnField[]; totalPages: number }> {
-  const d = await authedGet<{ data?: AvOnField[]; meta?: { totalPages?: number } }>(`/player-on-field?limit=100&page=${page}`);
-  return { data: d.data ?? [], totalPages: d.meta?.totalPages ?? 1 };
-}
-export interface AvSummaryPlayer { playerId: number; playerSummaryId: number }
-/** Страница моста дедупа /player-summary-players (playerId ↔ playerSummaryId). limit≤100. */
-export async function getSummaryPlayersPage(page: number): Promise<{ data: AvSummaryPlayer[]; totalPages: number }> {
-  const d = await authedGet<{ data?: AvSummaryPlayer[]; meta?: { totalPages?: number } }>(`/player-summary-players?limit=100&page=${page}`);
-  return { data: d.data ?? [], totalPages: d.meta?.totalPages ?? 1 };
-}
-
 logger.debug({ configured: isAvandataConfigured() }, 'avandataApi loaded');
