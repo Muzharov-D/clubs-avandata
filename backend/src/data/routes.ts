@@ -542,9 +542,11 @@ export async function dataRoutes(app: FastifyInstance) {
       }
       const note = typeof req.body?.note === 'string' ? req.body.note.slice(0, 5000) : null;
       return withTenant(slug, async (_tx, conn) => {
+        // team_coach редактирует только СВОЙ матч (по team_id); head_coach — любой в клубе.
+        const ts = role === 'team_coach' && req.user?.teamId;
         const { rowCount } = await conn.query(
-          `UPDATE matches SET coach_note = $1 WHERE tenant_id = $2 AND id = $3`,
-          [note, slug, req.params.matchId],
+          `UPDATE matches SET coach_note = $1 WHERE tenant_id = $2 AND id = $3${ts ? ' AND team_id = $4' : ''}`,
+          ts ? [note, slug, req.params.matchId, req.user!.teamId] : [note, slug, req.params.matchId],
         );
         if (!rowCount) throw new NotFoundError('match not found');
         return { ok: true, coachNote: note };
@@ -559,6 +561,11 @@ export async function dataRoutes(app: FastifyInstance) {
       throw new UnauthorizedError('only coaches can delete matches');
     }
     return withTenant(slug, async (_tx, conn) => {
+      // team_coach удаляет только СВОЙ матч (head_coach — любой в клубе).
+      if (role === 'team_coach' && req.user?.teamId) {
+        const own = await conn.query(`SELECT 1 FROM matches WHERE tenant_id = $1 AND id = $2 AND team_id = $3`, [slug, req.params.matchId, req.user.teamId]);
+        if (!own.rowCount) throw new NotFoundError('match not found');
+      }
       // FK: сначала match_players, потом сам матч. Всё строго в рамках tenant.
       await conn.query(`DELETE FROM match_players WHERE tenant_id = $1 AND match_id = $2`, [slug, req.params.matchId]);
       const { rowCount } = await conn.query(

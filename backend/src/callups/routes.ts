@@ -47,10 +47,18 @@ export async function callupsRoutes(app: FastifyInstance) {
     if (!id) throw new UnauthorizedError('tenant context required');
     return id;
   }
-  function assertCoach(req: { user?: { role?: string } }): void {
+  function assertCoach(req: { user?: { role?: string; tenantId?: string | null; teamId?: string | null }; params?: unknown }): void {
     const role = req.user?.role;
     if (role !== 'head_coach' && role !== 'team_coach') {
       throw new ForbiddenError('только тренер может управлять составом на матч');
+    }
+    // team_coach — только СВОЯ возрастная команда (teamId = `${slug}-${age}`); head_coach — любой возраст клуба.
+    if (role === 'team_coach' && req.user?.teamId) {
+      const age = (req.params as { age?: string } | undefined)?.age;
+      const slug = req.user?.tenantId ?? '';
+      if (age && req.user.teamId !== `${slug}-${age}`) {
+        throw new ForbiddenError('тренер команды управляет составом только своей команды');
+      }
     }
   }
 
@@ -217,6 +225,10 @@ export async function callupsRoutes(app: FastifyInstance) {
       const { age, extMatchId } = req.params;
       const role = req.user?.role;
       const isCoach = role === 'head_coach' || role === 'team_coach';
+      // team_coach отвечает за состав только своей возрастной команды.
+      if (role === 'team_coach' && req.user?.teamId && req.user.teamId !== `${slug}-${age}`) {
+        throw new ForbiddenError('тренер команды управляет составом только своей команды');
+      }
 
       const targetPlayerId = isCoach
         ? (typeof req.body?.playerId === 'string' ? req.body.playerId : null)

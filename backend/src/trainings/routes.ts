@@ -32,6 +32,12 @@ export async function trainingsRoutes(app: FastifyInstance) {
       throw new ForbiddenError('только тренер может управлять тренировками');
     }
   }
+  // team_coach управляет только СВОЕЙ командой (head_coach — любой командой клуба).
+  function assertTeamScope(req: { user?: { role?: string; teamId?: string | null } }, teamId: string | null | undefined): void {
+    if (req.user?.role === 'team_coach' && req.user?.teamId && teamId && teamId !== req.user.teamId) {
+      throw new ForbiddenError('тренер команды управляет только своей командой');
+    }
+  }
 
   // GET /trainings/team/:teamId?scope=upcoming|past|all
   app.get<{ Params: { teamId: string }; Querystring: { scope?: string } }>(
@@ -71,6 +77,7 @@ export async function trainingsRoutes(app: FastifyInstance) {
     const slug = tenantId(req);
     assertCoach(req);
     const b = req.body ?? {};
+    assertTeamScope(req, b.teamId as string);
     return withTenant(slug, async (_tx, conn) => {
       const { rows } = await conn.query(
         `INSERT INTO trainings
@@ -104,9 +111,11 @@ export async function trainingsRoutes(app: FastifyInstance) {
     }
     if (sets.length === 0) return { ok: true };
     return withTenant(slug, async (_tx, conn) => {
+      // team_coach — только своя команда: добавляем team_id в WHERE (чужую не тронет).
+      let where = 'tenant_id = $1 AND id = $2';
+      if (req.user?.role === 'team_coach' && req.user?.teamId) { vals.push(req.user.teamId); where += ` AND team_id = $${vals.length}`; }
       const { rows } = await conn.query(
-        `UPDATE trainings SET ${sets.join(', ')}, updated_at = now()
-           WHERE tenant_id = $1 AND id = $2 RETURNING ${TRAINING_COLS}`,
+        `UPDATE trainings SET ${sets.join(', ')}, updated_at = now() WHERE ${where} RETURNING ${TRAINING_COLS}`,
         vals,
       );
       return { training: rows[0] ?? null };
@@ -118,7 +127,11 @@ export async function trainingsRoutes(app: FastifyInstance) {
     const slug = tenantId(req);
     assertCoach(req);
     return withTenant(slug, async (_tx, conn) => {
-      await conn.query('DELETE FROM trainings WHERE tenant_id = $1 AND id = $2', [slug, req.params.id]);
+      const ts = req.user?.role === 'team_coach' && req.user?.teamId;
+      await conn.query(
+        `DELETE FROM trainings WHERE tenant_id = $1 AND id = $2${ts ? ' AND team_id = $3' : ''}`,
+        ts ? [slug, req.params.id, req.user!.teamId] : [slug, req.params.id],
+      );
       return { ok: true };
     });
   });
