@@ -87,7 +87,7 @@ export function extractPhoto(p: Record<string, unknown>): string | null {
 }
 
 /** Имя игрока из объекта FFSPB: name | firstName + (surname|lastName). */
-function ffspbFullName(p: Record<string, unknown>): string | null {
+export function ffspbFullName(p: Record<string, unknown>): string | null {
   if (typeof p.name === 'string' && p.name.trim()) return p.name;
   const fn = typeof p.firstName === 'string' ? p.firstName : '';
   // FFSPB отдаёт фамилию как `surname` (не `lastName`).
