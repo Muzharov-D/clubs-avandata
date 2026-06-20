@@ -1,4 +1,4 @@
-export type UserRole = 'platform_admin' | 'head_coach' | 'team_coach' | 'player';
+export type UserRole = 'platform_admin' | 'head_coach' | 'team_coach' | 'player' | 'federation_admin' | 'sporting_director';
 
 export interface User {
   id: string;

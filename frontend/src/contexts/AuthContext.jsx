@@ -91,6 +91,9 @@ export function AuthProvider({ children }) {
   const isPlayer = user?.role === 'player';
   const isHeadCoach = user?.role === 'head_coach';
   const isTeamCoach = user?.role === 'team_coach';
+  // Спортивный директор — клуб-scoped аналитик (read-only), НЕ тренер (вне COACH_ROLES):
+  // у него собственный кабинет /director, без тренерских прав записи.
+  const isDirector = user?.role === 'sporting_director';
 
   const value = {
     user,
@@ -103,6 +106,7 @@ export function AuthProvider({ children }) {
     isPlayer,
     isHeadCoach,
     isTeamCoach,
+    isDirector,
     canSeePlayer: (playerId) =>
       (user ? COACH_ROLES.has(user.role) : false) ||
       (user?.role === 'player' && user.playerId === playerId),

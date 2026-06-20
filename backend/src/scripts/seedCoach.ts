@@ -30,7 +30,12 @@ async function main(): Promise<void> {
   const username = arg('username', 'coach2010');
   const password = arg('password', 'legirus 2010');
   const fullName = arg('name', 'Тренер Легирус 2010');
-  const role = 'head_coach';
+  // --role=head_coach (по умолчанию, видит весь клуб) | team_coach (заперт на --team)
+  const role = arg('role', 'head_coach');
+  if (role !== 'head_coach' && role !== 'team_coach') {
+    console.error('--role должен быть head_coach или team_coach');
+    process.exit(1);
+  }
 
   if (password.length < 8) {
     console.error('Пароль должен быть не короче 8 символов');
@@ -62,7 +67,7 @@ async function main(): Promise<void> {
       );
       console.log(`✓ Обновлён тренер: ${username} (id=${id}) · ${role} · team=${team}`);
     } else {
-      const id = `u-${tenant}-hc-${randomBytes(3).toString('hex')}`;
+      const id = `u-${tenant}-${role === 'team_coach' ? 'tc' : 'hc'}-${randomBytes(3).toString('hex')}`;
       await c.query(
         `INSERT INTO users (id, tenant_id, username, password_hash, full_name, role, team_id)
          VALUES ($1, $2, $3, $4, $5, $6, $7)`,

@@ -30,7 +30,7 @@ export const users = pgTable(
     unique('users_tenant_username_uq').on(t.tenantId, t.username),
     check(
       'users_role_chk',
-      sql`${t.role} IN ('platform_admin','head_coach','team_coach','player','federation_admin')`,
+      sql`${t.role} IN ('platform_admin','head_coach','team_coach','player','federation_admin','sporting_director')`,
     ),
     // Роли без клуба (platform_admin, federation_admin) обязаны иметь tenant_id
     // NULL; клубные роли — наоборот. federation_admin scoped в федерацию, не в клуб.
@@ -43,4 +43,4 @@ export const users = pgTable(
 
 export type User = typeof users.$inferSelect;
 export type UserInsert = typeof users.$inferInsert;
-export type UserRole = 'platform_admin' | 'head_coach' | 'team_coach' | 'player' | 'federation_admin';
+export type UserRole = 'platform_admin' | 'head_coach' | 'team_coach' | 'player' | 'federation_admin' | 'sporting_director';

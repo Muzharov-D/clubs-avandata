@@ -21,6 +21,7 @@
     "seed:federation": "tsx src/scripts/seedFederation.ts",
     "seed:federation-admin": "tsx src/scripts/seedFederationAdmin.ts",
     "seed:consent": "tsx src/scripts/seedConsent.ts",
+    "seed:sporting-director": "tsx src/scripts/seedSportingDirector.ts",
     "sync:lossmap": "tsx src/scripts/syncLossMap.ts"
   },
   "dependencies": {
