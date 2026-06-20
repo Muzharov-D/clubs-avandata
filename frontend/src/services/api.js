@@ -236,6 +236,8 @@ export const fetchTeams = () => fetchJson('/data/teams');
 export const fetchClubSummary = () => fetchJson('/data/club/summary');
 // Кадровый резерв клуба: топ-игроки по всем командам (для кабинета ст. тренера).
 export const fetchClubTalent = () => fetchJson('/data/club/talent');
+// Клубная «карта потерь»: квартальная воронка game-time% по дате рождения.
+export const fetchClubLossMap = () => fetchJson('/data/club/loss-map');
 export const fetchPlayers = (teamId) =>
   fetchJson(`/data/players${teamId ? `?teamId=${encodeURIComponent(teamId)}` : ''}`);
 export const fetchMatches = (teamId) =>

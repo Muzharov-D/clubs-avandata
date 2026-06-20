@@ -164,6 +164,66 @@ export async function dataRoutes(app: FastifyInstance) {
     });
   });
 
+  // Клубная «карта потерь»: квартальная воронка game-time% по дате рождения —
+  // тот же клин, что федерация видит над регионом, но на данных самого клуба.
+  // game-time% = минуты игрока (Σ match_players.minutes) ÷ доступные минуты его
+  // команды (Σ длин матчей, matches.meta.lengthMin от participationService; fallback 70').
+  app.get('/club/loss-map', async (req) => {
+    const slug = tenantId(req);
+    return withTenant(slug, async (_tx, conn) => {
+      const { rows } = await conn.query(
+        `WITH team_avail AS (
+           SELECT team_id, SUM(COALESCE(NULLIF(meta->>'lengthMin','')::int, 70)) AS avail
+             FROM matches WHERE tenant_id = $1 GROUP BY team_id
+         ), player_min AS (
+           SELECT player_id, SUM(COALESCE(minutes, 0)) AS mins
+             FROM match_players WHERE tenant_id = $1 GROUP BY player_id
+         )
+         SELECT p.full_name AS "fullName",
+                EXTRACT(MONTH FROM p.birth_date)::int AS "birthMonth",
+                t.name AS "teamName",
+                COALESCE(pm.mins, 0)::int AS mins,
+                COALESCE(ta.avail, 0)::int AS avail
+           FROM players p
+           JOIN teams t ON t.id = p.team_id
+           LEFT JOIN player_min pm ON pm.player_id = p.id
+           LEFT JOIN team_avail ta ON ta.team_id = p.team_id
+          WHERE p.tenant_id = $1 AND p.birth_date IS NOT NULL`,
+        [slug],
+      );
+      interface LRow { fullName: string | null; birthMonth: number; teamName: string | null; mins: number; avail: number }
+      const pts = (rows as LRow[])
+        .filter((r) => Number(r.avail) > 0)
+        .map((r) => ({
+          q: Math.floor((Number(r.birthMonth) - 1) / 3), // 0..3
+          pct: Math.min(1, Number(r.mins) / Number(r.avail)), // ≤100% (страховка от seed-артефактов)
+          name: r.fullName ?? '?',
+          team: r.teamName ?? '',
+        }));
+      const median = (a: number[]): number => {
+        if (!a.length) return 0;
+        const s = a.slice().sort((x, y) => x - y);
+        return s[Math.floor(s.length / 2)]!;
+      };
+      const byQuarter = [0, 1, 2, 3].map((qi) => {
+        const s = pts.filter((p) => p.q === qi);
+        const n = s.length || 1;
+        const pc = (f: (x: number) => boolean) => Math.round((s.filter((p) => f(p.pct)).length / n) * 100);
+        return {
+          q: qi + 1, roster: s.length,
+          medianPct: Math.round(median(s.map((p) => p.pct)) * 100),
+          buried15: pc((x) => x < 0.15), buried30: pc((x) => x < 0.30), contrib50: pc((x) => x >= 0.50),
+        };
+      });
+      const examplesBuried = pts
+        .filter((p) => p.q === 3 && p.pct < 0.15)
+        .sort((a, b) => a.pct - b.pct)
+        .slice(0, 6)
+        .map((p) => ({ name: p.name, team: p.team, pct: Math.round(p.pct * 100) }));
+      return { roster: pts.length, byQuarter, examplesBuried, hasData: pts.length > 0 };
+    });
+  });
+
   // Кадровый резерв клуба: топ-игроки по ВСЕМ командам (сезонный рейтинг),
   // для старшего тренера. Флаг aboveTeam — игрок заметно выше среднего своей
   // команды (кандидат «двигать выше»). Поверх существующих данных.

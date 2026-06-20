@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 // @ts-ignore — legacy .js client/util
-import { fetchClubSummary, fetchClubTalent } from '../../services/api';
+import { fetchClubSummary, fetchClubTalent, fetchClubLossMap } from '../../services/api';
 import { useAuth } from '../../contexts/AuthContext';
 // @ts-ignore — legacy .js util
 import { ratingColor } from '../../utils/colors';
@@ -23,6 +23,8 @@ interface TalentRow {
   avgOverall: number | null; trend: number | null; goals: number; assists: number;
   teamLabel: string | null; position: string | null; positionCode: string | null; aboveTeam?: boolean;
 }
+interface LossQuarter { q: number; roster: number; medianPct: number; buried15: number; buried30: number; contrib50: number }
+interface LossMapResp { roster: number; byQuarter: LossQuarter[]; examplesBuried: Array<{ name: string; team: string; pct: number }>; hasData: boolean }
 
 type Line = 'GK' | 'DEF' | 'MID' | 'FWD';
 const lineOf = (pos: string | null): Line | null => {
@@ -52,6 +54,7 @@ export function DirectorDashboard() {
   const { tenant } = useAuth() as { tenant: { displayName?: string; name?: string } | null };
   const sumQ = useQuery({ queryKey: ['dir', 'club-summary'], queryFn: () => fetchClubSummary() as Promise<{ teams: TeamRow[] }> });
   const talQ = useQuery({ queryKey: ['dir', 'club-talent'], queryFn: () => fetchClubTalent() as Promise<{ players: TalentRow[] }> });
+  const lossQ = useQuery({ queryKey: ['dir', 'club-loss-map'], queryFn: () => fetchClubLossMap() as Promise<LossMapResp> });
 
   const teams = useMemo(() => {
     const t = (sumQ.data?.teams ?? []).slice();
@@ -135,6 +138,34 @@ export function DirectorDashboard() {
                     </div>
                   ))}
                 </div>
+              </section>
+            )}
+
+            {/* Карта потерь — квартальная воронка game-time% (клин стратегии B) */}
+            {lossQ.data?.hasData && (
+              <section className="dir-card">
+                <div className="dir-card__head"><h2>Карта потерь</h2><span>game-time% по кварталу рождения · кого теряем</span></div>
+                <div className="dir-loss">
+                  {lossQ.data.byQuarter.map((q) => (
+                    <div key={q.q} className={`dir-lossq${q.q === 4 ? ' dir-lossq--late' : ''}`}>
+                      <div className="dir-lossq__h"><b>Q{q.q}</b><span>{q.roster} игр.</span></div>
+                      <div className="dir-lossq__track">
+                        <span className="dir-lossq__fill" style={{ width: `${Math.min(100, q.medianPct)}%`, background: ratingColor(q.medianPct / 10) }} />
+                      </div>
+                      <div className="dir-lossq__med">медиана {q.medianPct}%</div>
+                      <div className="dir-lossq__buried">погребены &lt;15%: <b>{q.buried15}%</b></div>
+                    </div>
+                  ))}
+                </div>
+                <p className="dir-loss__note">Поздно рождённые (Q3–Q4) системно получают меньше игрового времени — измеримая утечка таланта.</p>
+                {lossQ.data.examplesBuried.length > 0 && (
+                  <div className="dir-loss__ex">
+                    <span className="dir-loss__ex-lbl">Q4 почти не играют:</span>
+                    {lossQ.data.examplesBuried.map((e, i) => (
+                      <span key={i} className="dir-loss__ex-item">{shortName(e.name)} <b>{e.pct}%</b>{e.team ? ` · ${e.team}` : ''}</span>
+                    ))}
+                  </div>
+                )}
               </section>
             )}
 

@@ -136,20 +136,24 @@ export async function syncTenantMatchParticipation(args: {
         if (!pp.length) continue;
 
         const hasScore = m.resultHost != null && m.resultGuest != null && (m.done ?? 0) >= 4;
+        // Длина матча (мин) → meta.lengthMin: нужна для «доступных минут команды»
+        // в клубной карте потерь (game-time% = минуты игрока ÷ сумма длин матчей).
+        const lengthMin = Math.round((Number(det.length) || 4200) / 60);
         // Матч: обновляем только FFSPB-поля; team_summary_stats/ratings (SportVisor)
         // не трогаем. RETURNING id — берём канонический id (вдруг матч уже заведён
         // из SportVisor с другим id, но тем же ext_match_id).
         const ins = await conn.query<{ id: string }>(
           `INSERT INTO matches (
              id, tenant_id, team_id, ext_match_id, home_team_name, away_team_name,
-             match_date, season, tournament, score_home, score_away
-           ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)
+             match_date, season, tournament, score_home, score_away, meta
+           ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12::jsonb)
            ON CONFLICT (tenant_id, ext_match_id) DO UPDATE SET
              match_date  = EXCLUDED.match_date,
              score_home  = EXCLUDED.score_home,
              score_away  = EXCLUDED.score_away,
              home_team_name = COALESCE(matches.home_team_name, EXCLUDED.home_team_name),
-             away_team_name = COALESCE(matches.away_team_name, EXCLUDED.away_team_name)
+             away_team_name = COALESCE(matches.away_team_name, EXCLUDED.away_team_name),
+             meta = matches.meta || EXCLUDED.meta
            RETURNING id`,
           [
             `ffspb-${tenantSlug}-${extId}`, tenantSlug, teamId, String(extId),
@@ -158,6 +162,7 @@ export async function syncTenantMatchParticipation(args: {
             m.publicDate ?? null, season, tournament,
             hasScore ? Number(m.resultHost) : null,
             hasScore ? Number(m.resultGuest) : null,
+            JSON.stringify({ lengthMin }),
           ],
         );
         const matchId = ins.rows[0]?.id;

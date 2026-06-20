@@ -34,6 +34,25 @@
 .dir-attn__t { font-size: 13px; font-weight: 600; }
 .dir-attn__d { font-size: 11px; color: var(--text-muted, #97a3b6); margin-top: 2px; }
 
+/* клубная карта потерь — квартальная воронка game-time% */
+.dir-loss { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+@media (max-width: 600px) { .dir-loss { grid-template-columns: repeat(2, 1fr); } }
+.dir-lossq { background: var(--bg-surface-2, #1b212c); border: 1px solid var(--border, #262d3a); border-radius: var(--radius-sm, 9px); padding: 11px 12px; }
+.dir-lossq--late { border-color: color-mix(in srgb, var(--rating-poor, #ef4444) 45%, transparent); }
+.dir-lossq__h { display: flex; align-items: baseline; justify-content: space-between; }
+.dir-lossq__h b { font-family: var(--font-display, 'Space Grotesk'); font-size: 16px; }
+.dir-lossq__h span { font-size: 10.5px; color: var(--text-muted, #97a3b6); }
+.dir-lossq__track { height: 8px; border-radius: 4px; background: var(--surface-soft, rgba(255,255,255,0.05)); overflow: hidden; margin: 9px 0 6px; }
+.dir-lossq__fill { display: block; height: 100%; border-radius: 4px; transition: width .5s ease; }
+.dir-lossq__med { font-size: 12px; font-weight: 600; }
+.dir-lossq__buried { font-size: 10.5px; color: var(--text-muted, #97a3b6); margin-top: 2px; }
+.dir-lossq__buried b { color: var(--rating-weak, #fb8c00); }
+.dir-loss__note { font-size: 11.5px; color: var(--text-muted-strong, #b4c0d2); margin: 12px 0 0; }
+.dir-loss__ex { display: flex; flex-wrap: wrap; gap: 10px; align-items: baseline; margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border, #262d3a); }
+.dir-loss__ex-lbl { font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-faint, #828fa6); }
+.dir-loss__ex-item { font-size: 11.5px; color: var(--text-muted, #97a3b6); }
+.dir-loss__ex-item b { color: var(--rating-poor, #ef4444); font-family: var(--font-display, 'Space Grotesk'); }
+
 /* развитие по возрастам */
 .dir-vert { display: flex; flex-direction: column; gap: 8px; }
 .dir-vrow { display: grid; grid-template-columns: 92px 1fr 48px 74px minmax(120px, 1.3fr) auto; align-items: center; gap: 12px; }
