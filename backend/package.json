@@ -24,6 +24,8 @@
     "seed:sporting-director": "tsx src/scripts/seedSportingDirector.ts",
     "sync:lossmap": "tsx src/scripts/syncLossMap.ts",
     "sync:region-census": "tsx src/scripts/syncRegionCensus.ts",
+    "sync:region-minutes": "tsx src/scripts/syncRegionMinutes.ts",
+    "sync:federation": "npm run sync:region-census && npm run sync:region-minutes",
     "onboard:club": "tsx src/scripts/onboardClub.ts"
   },
   "dependencies": {
