@@ -64,6 +64,7 @@ const FederationPyramid = lazy(() => import('./routes/federation/PyramidView').t
 const FederationAgeEffect = lazy(() => import('./routes/federation/AgeEffectView').then((m) => ({ default: m.FederationAgeEffect })));
 const FederationBuried = lazy(() => import('./routes/federation/BuriedView').then((m) => ({ default: m.FederationBuried })));
 const FederationScorers = lazy(() => import('./routes/federation/ScorersView').then((m) => ({ default: m.FederationScorers })));
+const FederationDiscoveries = lazy(() => import('./routes/federation/DiscoveriesView').then((m) => ({ default: m.FederationDiscoveries })));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -202,6 +203,7 @@ export function App() {
                     }
                   >
                     <Route index element={<FederationAvHome />} />
+                    <Route path="discoveries" element={<FederationDiscoveries />} />
                     <Route path="region-map" element={<FederationRegionMap />} />
                     <Route path="pyramid" element={<FederationPyramid />} />
                     <Route path="age-effect" element={<FederationAgeEffect />} />

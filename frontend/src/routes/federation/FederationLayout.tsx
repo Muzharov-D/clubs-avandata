@@ -9,6 +9,7 @@ interface FedAuth { user: { fullName?: string; email?: string } | null; logout: 
 
 const TABS: Array<{ to: string; end?: boolean; label: string }> = [
   { to: '/federation', end: true, label: 'Обзор региона' },
+  { to: '/federation/discoveries', label: 'Открытия региона' },
   { to: '/federation/region-map', label: 'Карта региона' },
   { to: '/federation/pyramid', label: 'Пирамида лиг' },
   { to: '/federation/age-effect', label: 'Возрастной эффект' },
