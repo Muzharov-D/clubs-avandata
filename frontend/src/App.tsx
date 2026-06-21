@@ -59,6 +59,8 @@ const FederationAvPlayers = lazy(() => import('./routes/federation/AvPlayers').t
 const FederationAvPlayerProfile = lazy(() => import('./routes/federation/AvPlayerProfile').then((m) => ({ default: m.FederationAvPlayerProfile })));
 const FederationAvInsights = lazy(() => import('./routes/federation/AvInsights').then((m) => ({ default: m.FederationAvInsights })));
 const FederationAvLossMap = lazy(() => import('./routes/federation/AvLossMap').then((m) => ({ default: m.FederationAvLossMap })));
+const FederationRegionMap = lazy(() => import('./routes/federation/RegionMap').then((m) => ({ default: m.FederationRegionMap })));
+const FederationPyramid = lazy(() => import('./routes/federation/PyramidView').then((m) => ({ default: m.FederationPyramid })));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -197,6 +199,8 @@ export function App() {
                     }
                   >
                     <Route index element={<FederationAvHome />} />
+                    <Route path="region-map" element={<FederationRegionMap />} />
+                    <Route path="pyramid" element={<FederationPyramid />} />
                     <Route path="players" element={<FederationAvPlayers />} />
                     <Route path="players/:id" element={<FederationAvPlayerProfile />} />
                     <Route path="fairness" element={<FederationAvInsights />} />

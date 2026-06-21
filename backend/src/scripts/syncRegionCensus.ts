@@ -190,6 +190,8 @@ async function buildPayload(): Promise<RegionPyramidPayload> {
         clubs: b.clubs.size,
         players: b.players,
         q1pct: known ? Math.round((b.q[1] / known) * 1000) / 10 : 0,
+        q2pct: known ? Math.round((b.q[2] / known) * 1000) / 10 : 0,
+        q3pct: known ? Math.round((b.q[3] / known) * 1000) / 10 : 0,
         q4pct: known ? Math.round((b.q[4] / known) * 1000) / 10 : 0,
         skew: b.q[4] > 0 ? Math.round((b.q[1] / b.q[4]) * 100) / 100 : null,
       };
