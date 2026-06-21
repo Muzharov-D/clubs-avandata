@@ -25,7 +25,7 @@
 }
 .kinetic .players-subnav__item.active {
   background: var(--brand-gradient) !important;
-  color: #fff !important;
+  color: var(--text, #fff) !important;
   box-shadow: 0 4px 14px -4px color-mix(in srgb, var(--brand-primary) 70%, transparent);
 }
 
@@ -37,7 +37,7 @@
   font-size: clamp(24px, 3.5vw, 40px) !important;
   letter-spacing: -0.03em;
   text-transform: uppercase;
-  color: #fff;
+  color: var(--text, #fff);
   text-shadow: 0 4px 22px color-mix(in srgb, var(--brand-primary) 35%, transparent);
 }
 

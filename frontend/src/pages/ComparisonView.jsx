@@ -233,7 +233,7 @@ export default function ComparisonView() {
       </div>
 
       <div className="page-section-title comparison-view__sections-title">
-        Командные дашборды (9 секций · pages 12-20 PDF)
+        Командные дашборды (9 секций · стр. 12-20 PDF)
       </div>
       <div className="comparison-view__sections">
         {SECTIONS.map((sec) => {

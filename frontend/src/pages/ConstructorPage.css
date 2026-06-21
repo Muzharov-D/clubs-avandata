@@ -46,7 +46,7 @@
   border-radius: 999px;
   border: 1px solid var(--brand-primary);
   background: var(--brand-primary);
-  color: #fff;
+  color: var(--rating-text-light, #fff);
   font-size: 0.85rem;
   font-weight: 700;
   cursor: pointer;
@@ -117,7 +117,7 @@
   border-radius: 999px;
   border: 1px solid var(--brand-primary);
   background: var(--brand-primary);
-  color: #fff;
+  color: var(--rating-text-light, #fff);
   font-size: 0.74rem;
   font-weight: 700;
   cursor: pointer;
@@ -168,7 +168,7 @@
   width: 18px;
   height: 18px;
   border-radius: 50%;
-  background: #fff;
+  background: var(--rating-text-light, #fff);
   transition: transform var(--dur-fast) var(--ease-out);
 }
 .cstr-switch--on .cstr-switch__knob { transform: translateX(18px); }

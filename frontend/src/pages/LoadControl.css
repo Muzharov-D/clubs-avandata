@@ -3,7 +3,7 @@
 .load-control__title { font-size: 28px; font-weight: 800; margin: 0; font-family: var(--font-display); letter-spacing: -0.01em; }
 .load-control__sub { color: var(--text-muted); font-size: 13px; margin-top: 2px; }
 .load-control__export {
-  background: rgba(255,255,255,0.05); border: 1px solid var(--border);
+  background: var(--surface-soft); border: 1px solid var(--border);
   color: var(--text); font-size: 13px; padding: 8px 14px; border-radius: 8px;
 }
 
@@ -14,10 +14,10 @@
   align-items: center;
   gap: 12px;
   padding: 10px 16px;
-  border-bottom: 1px solid rgba(255,255,255,0.05);
+  border-bottom: 1px solid var(--surface-soft);
 }
 .load-control__row--head {
-  background: rgba(255,255,255,0.04);
+  background: var(--surface-soft);
   font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em;
   color: var(--text-muted); font-weight: 600;
 }
@@ -55,7 +55,7 @@
 .lc-num { text-align: center; font-weight: 700; }
 
 .lc-bar { display: flex; flex-direction: column; gap: 4px; }
-.lc-bar__track { height: 8px; background: rgba(255,255,255,0.06); border-radius: 4px; overflow: hidden; }
+.lc-bar__track { height: 8px; background: var(--surface-soft); border-radius: 4px; overflow: hidden; }
 .lc-bar__fill { display: block; height: 100%; border-radius: 4px; background: linear-gradient(90deg, var(--brand-secondary), var(--brand-primary)); }
 .lc-bar__fill--dist { background: linear-gradient(90deg, var(--rating-good), var(--rating-excellent)); }
 .lc-bar__val { font-size: 11px; color: var(--text-muted); font-variant-numeric: tabular-nums; }
@@ -63,7 +63,7 @@
 .lc-flag { text-align: center; font-size: 12px; font-weight: 700; border-radius: 12px; padding: 4px 6px; }
 .lc-flag--high   { color: var(--rating-text-light); background: var(--rating-poor); }
 .lc-flag--medium { color: var(--rating-text-dark);  background: var(--rating-ok); }
-.lc-flag--low    { color: var(--text-muted); background: rgba(255,255,255,0.05); }
+.lc-flag--low    { color: var(--text-muted); background: var(--surface-soft); }
 
 /* Кликабельный флаг высокой нагрузки + разворачиваемая панель риска травмы. */
 .lc-flag--risk { padding: 0; background: transparent; }

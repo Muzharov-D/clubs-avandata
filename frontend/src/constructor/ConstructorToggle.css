@@ -28,7 +28,7 @@
 .cstr-toggle--on {
   background: var(--brand-primary);
   border-color: var(--brand-primary);
-  color: #fff;
+  color: var(--rating-text-light, #fff);
 }
 .cstr-toggle--ghost {
   background: transparent;
