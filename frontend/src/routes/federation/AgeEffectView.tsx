@@ -43,10 +43,10 @@ export function FederationAgeEffect() {
     <div>
       <header className="fed-head">
         <div>
-          <h1 className="fed-title">Возрастной эффект</h1>
+          <h1 className="fed-title">Перекос по когортам</h1>
           <p className="fed-sub">
             {data && cohorts.length > 0
-              ? `Перекос даты рождения по когортам · ${num(totalPlayers)} игроков`
+              ? `Перекос даты рождения по годам · вся регистрация ФФСПб · ${num(totalPlayers)} игроков`
               : (federation?.region ?? federation?.name ?? 'Регион')}
           </p>
         </div>

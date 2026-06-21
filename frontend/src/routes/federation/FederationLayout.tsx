@@ -12,7 +12,7 @@ const TABS: Array<{ to: string; end?: boolean; label: string }> = [
   { to: '/federation/discoveries', label: 'Открытия региона' },
   { to: '/federation/region-map', label: 'Карта региона' },
   { to: '/federation/pyramid', label: 'Пирамида лиг' },
-  { to: '/federation/age-effect', label: 'Возрастной эффект' },
+  { to: '/federation/age-effect', label: 'Перекос по когортам' },
   { to: '/federation/opportunity', label: 'Карта возможностей' },
   { to: '/federation/scorers', label: 'Бомбардиры' },
   { to: '/federation/best-xi', label: 'Сборная региона' },
