@@ -15,14 +15,9 @@ export default function Login() {
   const [error, setError] = useState(null);
   const [busy, setBusy] = useState(false);
 
-  // Если уже залогинен — перекидываем по роли (без захода в форму).
-  if (user) {
-    const dest =
-      user.role === 'platform_admin' ? '/admin'
-      : user.role === 'federation_admin' ? '/federation'
-      : '/club';
-    return <Navigate to={dest} replace />;
-  }
+  // Если уже залогинен — отдаём в RootRoute ('/'): он раскидывает по роли
+  // (директор → /director, ст. тренер → /club-hub, и т.д.). Единый источник.
+  if (user) return <Navigate to="/" replace />;
 
   async function submit(e) {
     e.preventDefault();
@@ -33,18 +28,9 @@ export default function Login() {
       const value = u.trim();
       const normalized = value.includes('@') ? value : value.toLowerCase();
       const loggedUser = await login(normalized, p);
-      // Куда перенаправить: platform_admin — в админку платформы,
-      // остальные — в кабинет клуба (или туда откуда пришли).
-      let target;
-      if (loggedUser?.role === 'platform_admin') {
-        target = '/admin';
-      } else if (loggedUser?.role === 'federation_admin') {
-        target = '/federation';
-      } else if (loggedUser?.role === 'player' && loggedUser?.playerId) {
-        target = `/players/${loggedUser.playerId}`;
-      } else {
-        target = location.state?.from?.pathname || '/club';
-      }
+      // Куда: либо откуда пришли (deep-link), либо в RootRoute ('/'), который
+      // раскидывает по роли — включая директора (/director) и ст. тренера (/club-hub).
+      const target = location.state?.from?.pathname || '/';
       const greeting = loggedUser?.fullName ? `Здравствуй, ${loggedUser.fullName}!` : 'Вход выполнен';
       toast.success(greeting);
       navigate(target, { replace: true });
