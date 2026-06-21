@@ -216,6 +216,13 @@
 .fed-dist__ref { position: absolute; top: -2px; bottom: -2px; left: 25%; width: 1px; background: var(--border-strong); }
 .fed-dist__val { width: 78px; flex: none; text-align: right; font-size: 13px; font-variant-numeric: tabular-nums; }
 
+/* перекос Q1÷Q4 в таблице пирамиды лиг: токен-бар + значение справа */
+.fed-skew { display: flex; align-items: center; gap: 10px; justify-content: flex-end; }
+.fed-skew__track { flex: 1; min-width: 70px; max-width: 120px; height: 6px; border-radius: 3px; background: var(--bg-surface-3); overflow: hidden; }
+.fed-skew__fill { display: block; height: 100%; border-radius: 3px; background: var(--brand-gradient); transition: width var(--dur) var(--ease-out); }
+.fed-skew__val { width: 44px; flex: none; text-align: right; font-weight: 600; }
+@media (prefers-reduced-motion: reduce) { .fed-skew__fill { transition: none; } }
+
 /* ---- Состояния ---- */
 .fed-note { color: var(--text-muted); font-size: 14px; padding: 14px 0; }
 .fed-empty { padding: 40px 20px; text-align: center; color: var(--text-muted); }

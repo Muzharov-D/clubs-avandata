@@ -1,5 +1,6 @@
 import type { PoolClient } from 'pg';
 import { FED_MEMBERSHIP_SQL, fedMembershipFilter } from './membership.js';
+import type { RegionPyramidPayload } from './regionCensus.js';
 
 export interface FederationOverview {
   /** Честный охват: всего клубов-членов, из них на глубине (paid) и на базе (free). */
@@ -68,6 +69,12 @@ export interface FederationRegionMap {
   goals: number;
   /** Разрез по возрастам: команды и футболисты. */
   byAge: Array<{ ageGroup: string; teams: number; players: number }>;
+  /**
+   * Перепись региона по «пирамиде лиг» FFSPB (ВСЕ лиги, не только члены) — последний
+   * месячный снимок region_census, или null, если ещё не снимали. Подмешивается в роуте
+   * через latestRegionCensus(); счётчики выше предпочитают эти тоталы при наличии.
+   */
+  pyramid: RegionPyramidPayload | null;
 }
 
 /**
@@ -151,6 +158,9 @@ export async function federationRegionMap(conn: PoolClient): Promise<FederationR
     matches: await countMembers('matches'),
     goals: Number(goalsQ.rows[0]?.goals ?? 0),
     byAge,
+    // pyramid подмешивает роут через latestRegionCensus() (отдельный bypass-read,
+    // не зависит от conn федерации). Здесь — нейтральный дефолт.
+    pyramid: null,
   };
 }
 

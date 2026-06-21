@@ -10,6 +10,7 @@ import {
   warmRegionMatchProtocols, regionClubProfile, federationHealth, getLastFedHealth,
 } from './avandataSource.js';
 import { snapshotMeta, captureSnapshotIfDue } from './snapshots.js';
+import { latestRegionCensus } from './regionCensus.js';
 import { federationWeekly } from './weekly.js';
 import { LOSS_MAP } from './lossMap.generated.js';
 import { env } from '../env.js';
@@ -226,12 +227,17 @@ export async function federationRoutes(app: FastifyInstance) {
     return profile;
   });
 
-  /** GET /api/v1/federation/region-map — перепись региона (живые счётчики) + реестр кадров. */
+  /** GET /api/v1/federation/region-map — перепись региона (живые счётчики) + реестр кадров
+   *  + пирамида лиг FFSPB (последний месячный снимок region_census, null если ещё нет). */
   app.get('/region-map', async (req) => {
     const federationId = req.user?.federationId;
     if (!federationId) throw new BadRequestError('no federation context', 'NO_FEDERATION');
+    // Пирамиду читаем ОТДЕЛЬНЫМ bypass-ридом (region_census — не tenant-scoped, по
+    // federationSlug). Эндпоинт только ЧИТАЕТ последний снимок — живой FFSPB здесь не дёргаем.
+    const pyramid = await latestRegionCensus(federationId);
     return await withFederation(federationId, async (_tx, conn) => ({
       ...(await federationRegionMap(conn)),
+      pyramid,
       registry: registryFor(federationId),
     }));
   });

@@ -18,3 +18,4 @@ export * from './dashboardLayouts.js';
 export * from './federations.js';
 export * from './federationTenants.js';
 export * from './federationSnapshots.js';
+export * from './regionCensus.js';

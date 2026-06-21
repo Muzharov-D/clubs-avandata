@@ -11,6 +11,28 @@ interface Registry {
   source: string;
   period: string;
 }
+interface PyramidLeague {
+  league: string;
+  teams: number;
+  clubs: number;
+  players: number;
+  q1pct: number;
+  q4pct: number;
+  skew: number | null;
+}
+interface PyramidPayload {
+  season: string;
+  leagues: PyramidLeague[];
+  totals: {
+    playersDistinct: number;
+    teamsTotal: number;
+    clubsDistinct: number;
+    matches: number;
+    q1pct: number;
+    q4pct: number;
+  };
+  capturedAt?: string | null;
+}
 interface RegionMapData {
   players: number;
   clubs: { total: number; paid: number; free: number };
@@ -21,6 +43,8 @@ interface RegionMapData {
   matches: number;
   goals: number;
   byAge: Array<{ ageGroup: string; teams: number; players: number }>;
+  /** Пирамида лиг FFSPB (ВСЕ лиги региона) — последний месячный снимок, null если ещё нет. */
+  pyramid: PyramidPayload | null;
   registry: Registry | null;
 }
 
@@ -58,29 +82,41 @@ export function FederationRegionMap() {
 }
 
 function RegionBody({ d }: { d: RegionMapData }) {
+  const p = d.pyramid;
+  // При наличии переписи по пирамиде (ВСЕ лиги региона) счётчики предпочитают её
+  // тоталы — иначе остаются числа клубов-членов (текущее поведение, fallback).
+  const players = p ? p.totals.playersDistinct : d.players;
+  const teams = p ? p.totals.teamsTotal : d.teams;
+  const matches = p ? p.totals.matches : d.matches;
+  const clubsTotal = p ? p.totals.clubsDistinct : d.clubs.total;
+  const leaguesCount = p ? p.leagues.length : d.leagues;
+  const clubsExtra = p
+    ? `${d.clubs.total} в кабинетах · ${d.clubs.free} база`
+    : `${d.clubs.paid} глубина · ${d.clubs.free} база`;
+  const leaguesExtra = p
+    ? `${plural(p.leagues.length, 'лига', 'лиги', 'лиг')} · пирамида FFSPB`
+    : `${d.competitions} ${plural(d.competitions, 'возраст', 'возраста', 'возрастов')}`;
+
   return (
     <div className="fed-stack">
-      {/* ---- Перепись: живые счётчики ---- */}
+      {/* ---- Перепись: живые счётчики (пирамида FFSPB при наличии, иначе клубы-члены) ---- */}
       <div className="fed-census fed-rise">
         <div className="fed-census__cell">
-          <StatTile label="Футболисты" value={d.players} accent="violet" big />
+          <StatTile label="Футболисты" value={players} accent="violet" big />
         </div>
         <div className="fed-census__cell">
-          <StatTile
-            label="Клубы"
-            value={d.clubs.total}
-            extra={`${d.clubs.paid} глубина · ${d.clubs.free} база`}
-            accent="cyan"
-            big
-          />
+          <StatTile label="Клубы" value={clubsTotal} extra={clubsExtra} accent="cyan" big />
         </div>
-        <div className="fed-census__cell"><StatTile label="Команды" value={d.teams} accent="muted" big /></div>
+        <div className="fed-census__cell"><StatTile label="Команды" value={teams} accent="muted" big /></div>
         <div className="fed-census__cell">
-          <StatTile label="Лиги" value={d.leagues} extra={`${d.competitions} ${plural(d.competitions, 'возраст', 'возраста', 'возрастов')}`} accent="gold" big />
+          <StatTile label="Лиги" value={leaguesCount} extra={leaguesExtra} accent="gold" big />
         </div>
-        <div className="fed-census__cell"><StatTile label="Матчи разобраны" value={d.matches} accent="cyan" big /></div>
+        <div className="fed-census__cell"><StatTile label="Матчи" value={matches} accent="cyan" big /></div>
         <div className="fed-census__cell"><StatTile label="Голы" value={d.goals} accent="green" big /></div>
       </div>
+
+      {/* ---- По лигам: пирамида FFSPB (скрывается, если снимка ещё нет) ---- */}
+      {p && p.leagues.length > 0 && <PyramidCard p={p} />}
 
       <div className="fed-cols">
         {/* ---- Кадры региона (реестр) ---- */}
@@ -89,6 +125,68 @@ function RegionBody({ d }: { d: RegionMapData }) {
         <ByAgeCard rows={d.byAge} ageGroups={d.ageGroups} />
       </div>
     </div>
+  );
+}
+
+/**
+ * Пирамида лиг региона (FFSPB): по каждой лиге — команды/клубы/игроки/доля Q4 и
+ * перекос Q1÷Q4 с токен-баром. Чем выше лига, тем сильнее перекос к рождённым в
+ * начале года (отбор по физической зрелости) — это видно одним взглядом по барам.
+ */
+function PyramidCard({ p }: { p: PyramidPayload }) {
+  const maxSkew = Math.max(1, ...p.leagues.map((l) => l.skew ?? 0));
+  const captured = p.capturedAt ? new Date(p.capturedAt).toLocaleDateString('ru-RU') : null;
+  return (
+    <section className="fed-card fed-rise">
+      <div className="fed-card__pad">
+        <div className="fed-card__title">
+          По лигам
+          <span className="fed-faint" style={{ fontWeight: 400 }}>
+            сезон {p.season} · пирамида FFSPB{captured ? ` · данные с ${captured}` : ''}
+          </span>
+        </div>
+        <div className="fed-table__scroll">
+          <table className="fed-dt">
+            <thead>
+              <tr>
+                <th>Лига</th>
+                <th>Команды</th>
+                <th>Клубы</th>
+                <th>Игроки</th>
+                <th>Q4 доля</th>
+                <th style={{ minWidth: 168 }}>Перекос Q1÷Q4</th>
+              </tr>
+            </thead>
+            <tbody>
+              {p.leagues.map((l) => (
+                <tr key={l.league}>
+                  <td>{l.league}</td>
+                  <td className="fed-num">{l.teams}</td>
+                  <td className="fed-num">{l.clubs}</td>
+                  <td className="fed-num">{l.players}</td>
+                  <td className="fed-num">{l.q4pct}%</td>
+                  <td>
+                    <span className="fed-skew">
+                      <span className="fed-skew__track">
+                        <span
+                          className="fed-skew__fill"
+                          style={{ width: `${l.skew != null ? Math.min(100, (l.skew / maxSkew) * 100) : 0}%` }}
+                        />
+                      </span>
+                      <span className="fed-skew__val fed-num">{l.skew != null ? `${l.skew}×` : '—'}</span>
+                    </span>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <p className="fed-faint" style={{ fontSize: 11.5, margin: '12px 2px 0', lineHeight: 1.55 }}>
+          Перекос Q1÷Q4 — во сколько раз больше игроков рождено в начале года (январь–март),
+          чем в конце (октябрь–декабрь). Чем выше лига, тем сильнее отбор по физической зрелости.
+        </p>
+      </div>
+    </section>
   );
 }
 

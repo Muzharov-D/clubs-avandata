@@ -23,6 +23,7 @@
     "seed:consent": "tsx src/scripts/seedConsent.ts",
     "seed:sporting-director": "tsx src/scripts/seedSportingDirector.ts",
     "sync:lossmap": "tsx src/scripts/syncLossMap.ts",
+    "sync:region-census": "tsx src/scripts/syncRegionCensus.ts",
     "onboard:club": "tsx src/scripts/onboardClub.ts"
   },
   "dependencies": {
