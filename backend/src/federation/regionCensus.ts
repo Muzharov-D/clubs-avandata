@@ -34,6 +34,23 @@ export interface RegionPyramidLeague {
   skew: number | null;
 }
 
+/**
+ * Перекос даты рождения по одной когорте (году рождения) Первенства.
+ * Считается на снимке region_census (тот же обход FFSPB, без нового пула).
+ */
+export interface RegionAgeCohort {
+  /** Год рождения когорты (2009..2016). */
+  year: number;
+  /** Игроки когорты Первенства (лиги Высшая+Первая), дедуп. */
+  players: number;
+  /** Доля Q1 рождения (% от известных дат), 1 знак. */
+  q1pct: number;
+  /** Доля Q4 рождения (% от известных дат), 1 знак. */
+  q4pct: number;
+  /** Перекос Q1÷Q4 (×). null, если Q4=0. */
+  skew: number | null;
+}
+
 /** Региональные тоталы переписи (дедуп по всему региону). */
 export interface RegionPyramidTotals {
   /** Игроки, различимые по id глобально. */
@@ -53,6 +70,8 @@ export interface RegionPyramidPayload {
   season: string;
   leagues: RegionPyramidLeague[];
   totals: RegionPyramidTotals;
+  /** Перекос даты рождения по когортам Первенства (2009..2016, по возрастанию года). */
+  ageEffect: RegionAgeCohort[];
   /** ISO-метка момента съёма (проставляет read-функция из captured_at). */
   capturedAt?: string | null;
 }

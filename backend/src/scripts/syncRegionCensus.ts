@@ -5,6 +5,7 @@ import { logger } from '../shared/logger.js';
 import { isFfspbConfigured, listStandings, listMatches, listTeamPlayers } from '../services/ffspbApi.js';
 import { regionCensus } from '../db/schema/regionCensus.js';
 import type {
+  RegionAgeCohort,
   RegionPyramidLeague,
   RegionPyramidPayload,
   RegionPyramidTotals,
@@ -113,7 +114,7 @@ interface RosterPlayer {
 // ---- Главный обход -------------------------------------------------------
 async function buildPayload(): Promise<RegionPyramidPayload> {
   // 1) Команды с лигой по всем турнирам + матчи на тир.
-  const teamLeague = new Map<string, { league: League; name: string }>();
+  const teamLeague = new Map<string, { league: League; name: string; year: number }>();
   const tierMatches: RegionPyramidTotals['tierMatches'] = { 'Первенство': 0, 'Турнир': 0 };
 
   for (const t of TOURN) {
@@ -126,7 +127,8 @@ async function buildPayload(): Promise<RegionPyramidPayload> {
           if (!id) continue;
           const name = (tm.teamName ?? tm.team?.name ?? '').trim();
           const prev = teamLeague.get(id);
-          if (!prev || RANK[lg] < RANK[prev.league]) teamLeague.set(id, { league: lg, name });
+          // Когорта (год рождения) команды берётся из турнира; при апгрейде лиги год тоже освежаем.
+          if (!prev || RANK[lg] < RANK[prev.league]) teamLeague.set(id, { league: lg, name, year: t.year });
         }
       }
     } catch (e) {
@@ -142,7 +144,7 @@ async function buildPayload(): Promise<RegionPyramidPayload> {
 
   // 2) Ростеры по уникальным командам → игроки с дедупом, назначаем в высшую лигу.
   const teams = [...teamLeague.entries()].map(([id, v]) => ({ id, ...v }));
-  const player = new Map<string, { league: League; dob: unknown }>();
+  const player = new Map<string, { league: League; dob: unknown; year: number }>();
   const rosters = await pmap(teams, 6, async (tm) => ({
     tm,
     ps: (await listTeamPlayers(tm.id)) as RosterPlayer[],
@@ -154,8 +156,9 @@ async function buildPayload(): Promise<RegionPyramidPayload> {
       if (!pid) continue;
       const dob = p.birthDate ?? p.dateOfBirth ?? p.birthday ?? null;
       const prev = player.get(pid);
+      // Игрок назначается в ВЫСШУЮ лигу появления; когорта (год) берётся из той же команды.
       if (!prev || RANK[r.tm.league] < RANK[prev.league]) {
-        player.set(pid, { league: r.tm.league, dob: dob ?? prev?.dob ?? null });
+        player.set(pid, { league: r.tm.league, dob: dob ?? prev?.dob ?? null, year: r.tm.year });
       }
     }
   }
@@ -197,6 +200,32 @@ async function buildPayload(): Promise<RegionPyramidPayload> {
       };
     });
 
+  // 3b) Перекос даты рождения по когортам Первенства (= лиги Высшая+Первая),
+  // сгруппированный по году рождения. Тот же дедуп-снимок игроков, нового пула нет.
+  const PERVENSTVO: League[] = ['Высшая', 'Первая'];
+  const cohort = new Map<number, { players: number; q: { 1: number; 2: number; 3: number; 4: number } }>();
+  for (const { league, dob, year } of player.values()) {
+    if (!PERVENSTVO.includes(league)) continue;
+    let c = cohort.get(year);
+    if (!c) { c = { players: 0, q: { 1: 0, 2: 0, 3: 0, 4: 0 } }; cohort.set(year, c); }
+    c.players++;
+    const q = quarterOf(dob);
+    if (q) c.q[q as 1 | 2 | 3 | 4]++;
+  }
+  const ageEffect: RegionAgeCohort[] = [];
+  for (let year = 2009; year <= 2016; year++) {
+    const c = cohort.get(year);
+    if (!c) continue;
+    const known = c.q[1] + c.q[2] + c.q[3] + c.q[4];
+    ageEffect.push({
+      year,
+      players: c.players,
+      q1pct: known ? Math.round((c.q[1] / known) * 1000) / 10 : 0,
+      q4pct: known ? Math.round((c.q[4] / known) * 1000) / 10 : 0,
+      skew: c.q[4] > 0 ? Math.round((c.q[1] / c.q[4]) * 100) / 100 : null,
+    });
+  }
+
   const knownR = regionQ[1] + regionQ[2] + regionQ[3] + regionQ[4];
   const totals: RegionPyramidTotals = {
     playersDistinct: player.size,
@@ -209,7 +238,7 @@ async function buildPayload(): Promise<RegionPyramidPayload> {
     q4pct: knownR ? Math.round((regionQ[4] / knownR) * 1000) / 10 : 0,
   };
 
-  return { season: SEASON, leagues, totals };
+  return { season: SEASON, leagues, totals, ageEffect };
 }
 
 // ---- CLI -----------------------------------------------------------------

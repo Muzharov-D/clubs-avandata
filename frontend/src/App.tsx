@@ -61,6 +61,7 @@ const FederationAvInsights = lazy(() => import('./routes/federation/AvInsights')
 const FederationAvLossMap = lazy(() => import('./routes/federation/AvLossMap').then((m) => ({ default: m.FederationAvLossMap })));
 const FederationRegionMap = lazy(() => import('./routes/federation/RegionMap').then((m) => ({ default: m.FederationRegionMap })));
 const FederationPyramid = lazy(() => import('./routes/federation/PyramidView').then((m) => ({ default: m.FederationPyramid })));
+const FederationAgeEffect = lazy(() => import('./routes/federation/AgeEffectView').then((m) => ({ default: m.FederationAgeEffect })));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -201,6 +202,7 @@ export function App() {
                     <Route index element={<FederationAvHome />} />
                     <Route path="region-map" element={<FederationRegionMap />} />
                     <Route path="pyramid" element={<FederationPyramid />} />
+                    <Route path="age-effect" element={<FederationAgeEffect />} />
                     <Route path="players" element={<FederationAvPlayers />} />
                     <Route path="players/:id" element={<FederationAvPlayerProfile />} />
                     <Route path="fairness" element={<FederationAvInsights />} />
