@@ -12,6 +12,7 @@ import {
 import { snapshotMeta, captureSnapshotIfDue } from './snapshots.js';
 import { latestRegionCensus } from './regionCensus.js';
 import { latestRegionMinutes } from './regionMinutes.js';
+import { latestRegionScorers } from './regionScorers.js';
 import { federationWeekly } from './weekly.js';
 import { LOSS_MAP } from './lossMap.generated.js';
 import { env } from '../env.js';
@@ -250,6 +251,15 @@ export async function federationRoutes(app: FastifyInstance) {
     const federationId = req.user?.federationId;
     if (!federationId) throw new BadRequestError('no federation context', 'NO_FEDERATION');
     return await latestRegionMinutes(federationId);
+  });
+
+  /** GET /api/v1/federation/region-scorers — бомбардиры региона: голы Первенства из
+   *  протоколов FFSPB (последний месячный снимок region_scorers, null если ещё нет).
+   *  Только ЧИТАЕТ — живой FFSPB здесь не дёргаем (отдельный bypass-рид по federationSlug). */
+  app.get('/region-scorers', async (req) => {
+    const federationId = req.user?.federationId;
+    if (!federationId) throw new BadRequestError('no federation context', 'NO_FEDERATION');
+    return await latestRegionScorers(federationId);
   });
 
   /** GET /api/v1/federation/region-profile — 6-мерный профиль качества + стиль игры. */

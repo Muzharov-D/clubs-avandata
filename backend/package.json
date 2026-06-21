@@ -25,7 +25,8 @@
     "sync:lossmap": "tsx src/scripts/syncLossMap.ts",
     "sync:region-census": "tsx src/scripts/syncRegionCensus.ts",
     "sync:region-minutes": "tsx src/scripts/syncRegionMinutes.ts",
-    "sync:federation": "npm run sync:region-census && npm run sync:region-minutes",
+    "sync:region-scorers": "tsx src/scripts/syncRegionScorers.ts",
+    "sync:federation": "npm run sync:region-census && npm run sync:region-minutes && npm run sync:region-scorers",
     "onboard:club": "tsx src/scripts/onboardClub.ts"
   },
   "dependencies": {
