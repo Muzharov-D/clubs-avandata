@@ -16,6 +16,7 @@ const TABS: Array<{ to: string; end?: boolean; label: string }> = [
   { to: '/federation/opportunity', label: 'Карта возможностей' },
   { to: '/federation/scorers', label: 'Бомбардиры' },
   { to: '/federation/best-xi', label: 'Сборная региона' },
+  { to: '/federation/talent-production', label: 'Производство талантов' },
   { to: '/federation/players', label: 'Лучшие игроки' },
   { to: '/federation/fairness', label: 'Эффект возраста' },
   { to: '/federation/loss-map', label: 'Потери' },

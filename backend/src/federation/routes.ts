@@ -8,7 +8,7 @@ import {
   regionStandings, regionClubRatings, playerProfile, availableYears, divisionStrength,
   ageEffect, talentConcentration, cohortMatrix, regionResults, regionMatchDetail,
   warmRegionMatchProtocols, regionClubProfile, federationHealth, getLastFedHealth,
-  federationRegionBestXi,
+  federationRegionBestXi, federationTalentProduction,
 } from './avandataSource.js';
 import { snapshotMeta, captureSnapshotIfDue } from './snapshots.js';
 import { latestRegionCensus } from './regionCensus.js';
@@ -208,6 +208,15 @@ export async function federationRoutes(app: FastifyInstance) {
     if (avOff(reply)) return { error: 'AVANDATA_API_KEY не задан', code: 'AVANDATA_OFF' };
     const season = Number((req.query as { season?: string }).season) || AV_SEASON;
     return { season, cohorts: await federationRegionBestXi(season) };
+  });
+
+  /** GET /federation/av/talent-production — производство талантов × результат (PPG):
+   *  по когортам 2009..2013 топ-22 по рейтингу раскладываются по клубам, PPG из таблиц ФФСПб.
+   *  «Победа ≠ производство таланта» — квадрант-скаттер клубов на фронте. */
+  app.get('/av/talent-production', async (req, reply) => {
+    if (avOff(reply)) return { error: 'AVANDATA_API_KEY не задан', code: 'AVANDATA_OFF' };
+    const season = Number((req.query as { season?: string }).season) || AV_SEASON;
+    return await federationTalentProduction(season);
   });
 
   /** GET /federation/av/age-effect?year= — возрастная утечка (RAE по полной дате). */

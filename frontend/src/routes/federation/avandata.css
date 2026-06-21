@@ -745,6 +745,13 @@
 .av-slot--btn { background: none; border: 0; padding: 0; font: inherit; color: inherit; cursor: pointer; }
 .av-slot--btn:focus-visible { outline: none; }
 .av-slot--btn:focus-visible .av-slot__node { outline: 2px solid var(--av-cyan); outline-offset: 3px; border-radius: 50%; }
+/* Узел клуба на карте «Производство талантов» — герб в круге поверх SVG-квадрантов */
+.av-prodnode { position: absolute; transform: translate(-50%, -50%); z-index: 2; display: grid; place-items: center; width: 34px; height: 34px; padding: 2px; border-radius: 50%; background: color-mix(in srgb, var(--av-surface) 86%, transparent); border: 1px solid var(--av-border); box-shadow: 0 2px 7px rgba(0, 0, 0, 0.45); cursor: pointer; transition: transform 0.15s ease, border-color 0.15s ease; }
+.av-prodnode > * { border-radius: 50%; }
+@media (hover: hover) { .av-prodnode:hover { transform: translate(-50%, -50%) scale(1.14); border-color: var(--av-border-strong); z-index: 3; } }
+.av-prodnode:focus-visible { outline: 2px solid var(--av-cyan); outline-offset: 2px; }
+.av-prodnode__dot { display: block; width: 16px; height: 16px; border-radius: 50%; box-shadow: 0 0 0 3px color-mix(in srgb, var(--av-accent) 22%, transparent); }
+
 /* Карточка-peek игрока из сборной */
 .av-peek { position: relative; width: 100%; max-width: 400px; padding: 20px; background: var(--av-surface); border: 1px solid var(--av-border); border-radius: var(--av-r-lg); box-shadow: var(--av-shadow-lg); }
 .av-peek__head { display: flex; align-items: center; gap: 13px; }

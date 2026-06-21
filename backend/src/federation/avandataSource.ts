@@ -1118,3 +1118,100 @@ export async function federationRegionBestXi(seasonId: number): Promise<BestXiCo
     return cohorts.sort((a, b) => b.year - a.year);
   });
 }
+
+// ─── ПРОИЗВОДСТВО ТАЛАНТОВ: топ-игроки клуба × результат (PPG) ────────────────
+// «Победа ≠ производство таланта»: клуб может побеждать, не давая топ-индивидов
+// (Зенит ~0 талантов / PPG ~2.11), и наоборот — растить таланты, но проигрывать
+// (ФК Динамо ~7 / ~0.62). По разбору AvanData когорт 2009..2013: топ-22 по рейтингу
+// когорты раскладываем по клубам (производство), PPG клуба берём из таблиц ФФСПб.
+export interface TalentProductionClub { name: string; logo: string | null; talents: number; ppg: number; cohorts: number; }
+export interface TalentProduction { clubs: TalentProductionClub[]; medianTalents: number; medianPpg: number; }
+
+const PROD_YEARS = [2009, 2010, 2011, 2012, 2013] as const;
+const PROD_TOPK = 22;
+// Канонизация имени клуба для сшивки «производство (рейтинг AvanData) × PPG (таблица ФФСПб)».
+// Кириллический `\b` в JS СЛОМАН (ASCII-only) — поэтому ТОКЕННО: lowercase, режем по пробелам,
+// выкидываем служебные токены {фк,ооо,футбольный,клуб,ао} и любой 4-значный год. Так
+// «ООО Футбольный клуб Автово» → «автово» сшивается с AvanData «Автово».
+const PROD_DROP = new Set(['фк', 'ооо', 'футбольный', 'клуб', 'ао']);
+const prodCanon = (n: string | null | undefined): string =>
+  (n ?? '').toLowerCase().replace(/["'«»]/g, ' ')
+    .split(/\s+/)
+    .filter((tok) => tok && !PROD_DROP.has(tok) && !/^\d{4}$/.test(tok))
+    .join(' ').trim();
+
+const median = (xs: number[]): number => {
+  if (xs.length === 0) return 0;
+  const a = xs.slice().sort((x, y) => x - y);
+  const mid = Math.floor(a.length / 2);
+  return a.length % 2 ? a[mid]! : Math.round(((a[mid - 1]! + a[mid]!) / 2) * 100) / 100;
+};
+
+/** Производство талантов: на каждую когорту 2009..2013 топ-22 оценённых (≥2 матчей) по
+ *  рейтингу раскладываем по канон-клубам (talents), PPG клуба×когорты = points/played из
+ *  таблицы ФФСПб; агрегируем по клубу за все когорты (сумма талантов, средний PPG, 2 знака).
+ *  Возвращаем клубы + медианы talents/ppg (для крестовины квадрантов на фронте). */
+export async function federationTalentProduction(seasonId: number): Promise<TalentProduction> {
+  return cached(`talentprod:${seasonId}`, TTL, async () => {
+    // Накопитель по канон-клубу: сумма талантов за когорты + список PPG по когортам + лого/имя.
+    const agg = new Map<string, { name: string; logo: string | null; talents: number; ppgs: number[] }>();
+    const touch = (canonKey: string, name: string, logo: string | null) => {
+      let e = agg.get(canonKey);
+      if (!e) { e = { name, logo, talents: 0, ppgs: [] }; agg.set(canonKey, e); }
+      if (!e.logo && logo) e.logo = logo; // лого берём из первого источника, где оно есть
+      return e;
+    };
+
+    await pmap([...PROD_YEARS], 3, async (year) => {
+      // Производство: топ-22 по рейтингу когорты (оценённые ≥2 матчей) → счётчик по канон-клубу.
+      const players = (await regionPlayers(seasonId, year))
+        .filter((p) => p.rating != null && p.mp >= 2); // regionPlayers уже сортирует по рейтингу desc
+      const top = players.slice(0, PROD_TOPK);
+      const talentByCanon = new Map<string, { count: number; name: string; logo: string | null }>();
+      for (const p of top) {
+        const display = clubName(p.club);
+        const key = prodCanon(display);
+        if (!key) continue;
+        const t = talentByCanon.get(key) ?? { count: 0, name: display || (p.club ?? ''), logo: p.clubLogo };
+        t.count += 1; if (!t.logo && p.clubLogo) t.logo = p.clubLogo;
+        talentByCanon.set(key, t);
+      }
+
+      // PPG: из таблицы ФФСПб этой когорты (points/played) по канон-имени клуба.
+      const std = await regionStandings(seasonId, year).catch(() => null);
+      const ppgByCanon = new Map<string, { ppg: number; name: string; logo: string | null }>();
+      for (const g of std?.groups ?? []) for (const row of g.rows) {
+        const key = prodCanon(row.name);
+        if (!key || row.played <= 0) continue;
+        const ppg = Math.round((row.points / row.played) * 100) / 100;
+        ppgByCanon.set(key, { ppg, name: row.name, logo: row.logo });
+      }
+
+      // Сшивка по канон-ключу: клуб когорты учитываем, если есть PPG (иначе результат неизвестен).
+      const keys = new Set<string>([...talentByCanon.keys(), ...ppgByCanon.keys()]);
+      for (const key of keys) {
+        const pInfo = ppgByCanon.get(key);
+        if (!pInfo) continue; // нет результата в таблице — пропускаем (точку без Y не построить)
+        const tInfo = talentByCanon.get(key);
+        const e = touch(key, pInfo.name || tInfo?.name || key, pInfo.logo ?? tInfo?.logo ?? null);
+        e.talents += tInfo?.count ?? 0;
+        e.ppgs.push(pInfo.ppg);
+      }
+    });
+
+    const clubs: TalentProductionClub[] = [...agg.values()]
+      .filter((e) => e.ppgs.length > 0)
+      .map((e) => ({
+        name: e.name, logo: e.logo, talents: e.talents,
+        ppg: Math.round((e.ppgs.reduce((s, v) => s + v, 0) / e.ppgs.length) * 100) / 100,
+        cohorts: e.ppgs.length,
+      }))
+      .sort((a, b) => b.talents - a.talents);
+
+    return {
+      clubs,
+      medianTalents: median(clubs.map((c) => c.talents)),
+      medianPpg: median(clubs.map((c) => c.ppg)),
+    };
+  });
+}

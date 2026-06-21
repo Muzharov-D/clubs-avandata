@@ -65,6 +65,7 @@ const FederationAgeEffect = lazy(() => import('./routes/federation/AgeEffectView
 const FederationBuried = lazy(() => import('./routes/federation/BuriedView').then((m) => ({ default: m.FederationBuried })));
 const FederationScorers = lazy(() => import('./routes/federation/ScorersView').then((m) => ({ default: m.FederationScorers })));
 const FederationBestXi = lazy(() => import('./routes/federation/BestXiView').then((m) => ({ default: m.FederationBestXi })));
+const FederationProduction = lazy(() => import('./routes/federation/ProductionView').then((m) => ({ default: m.FederationProduction })));
 const FederationDiscoveries = lazy(() => import('./routes/federation/DiscoveriesView').then((m) => ({ default: m.FederationDiscoveries })));
 
 const queryClient = new QueryClient({
@@ -211,6 +212,7 @@ export function App() {
                     <Route path="opportunity" element={<FederationBuried />} />
                     <Route path="scorers" element={<FederationScorers />} />
                     <Route path="best-xi" element={<FederationBestXi />} />
+                    <Route path="talent-production" element={<FederationProduction />} />
                     <Route path="players" element={<FederationAvPlayers />} />
                     <Route path="players/:id" element={<FederationAvPlayerProfile />} />
                     <Route path="fairness" element={<FederationAvInsights />} />
