@@ -1063,3 +1063,58 @@ export async function playerProfile(seasonId: number, playerId: number): Promise
     matches: matchIds.size, totalEvents: events.length, metrics, recentMatches,
   };
 }
+
+// ─── Сборная региона: лучшая XI (1-4-3-3) по когортам года рождения ──────────
+// Живой расчёт из рейтингов AvanData (разобранные 2 лиги Первенства). На когорту:
+// игроки с ≥2 оценёнными матчами классифицируются в линию (ВРТ/ЗАЩ/ПЗ/НАП), лучшие
+// по рейтингу занимают 1-4-3-3, перцентиль — место ВНУТРИ линии среди оценённых.
+export type BestXiLine = 'GK' | 'DEF' | 'MID' | 'FWD';
+export interface BestXiPlayer {
+  id: number; name: string; club: string | null; clubLogo: string | null; photo: string | null;
+  line: BestXiLine; position: string | null; rating: number | null; mp: number; pct: number;
+}
+export interface BestXiCohort { year: number; ratedCount: number; clubs: number; xi: BestXiPlayer[]; }
+
+/** Линия игрока по амплуа (по реальной match-роли). ВАЖЕН ПОРЯДОК: полузащит/опорн (MID)
+ *  проверяем ДО защит (DEF), иначе «полуЗАЩИТник» неверно уходит в защиту. */
+function bestXiLineOf(position: string | null): BestXiLine | null {
+  const r = (position ?? '').toLowerCase();
+  if (/вратар/.test(r)) return 'GK';
+  if (/полузащит|опорн|плеймейкер/.test(r)) return 'MID';
+  if (/защит|фулбек|бек/.test(r)) return 'DEF';
+  if (/нападал|нападающ|форвард/.test(r)) return 'FWD';
+  return null;
+}
+const BEST_XI_YEARS = [2009, 2010, 2011, 2012, 2013] as const;
+const BEST_XI_SHAPE: Record<BestXiLine, number> = { GK: 1, DEF: 4, MID: 3, FWD: 3 };
+
+/** Сборная региона по когортам 2009..2013: на каждую — лучшая XI (1-4-3-3) из
+ *  оценённых игроков региона (≥2 матчей, рейтинг != null), перцентиль внутри линии. */
+export async function federationRegionBestXi(seasonId: number): Promise<BestXiCohort[]> {
+  return cached(`bestxi:${seasonId}`, TTL, async () => {
+    const cohorts = await pmap([...BEST_XI_YEARS], 3, async (year): Promise<BestXiCohort> => {
+      const players = (await regionPlayers(seasonId, year))
+        .filter((p) => p.mp >= 2 && p.rating != null);
+      const byLine: Record<BestXiLine, RegionPlayer[]> = { GK: [], DEF: [], MID: [], FWD: [] };
+      for (const p of players) { const ln = bestXiLineOf(p.position); if (ln) byLine[ln].push(p); }
+      const xi: BestXiPlayer[] = [];
+      const clubs = new Set<string>();
+      for (const p of players) { const c = clubName(p.club); if (c) clubs.add(normTeam(c)); }
+      (Object.keys(BEST_XI_SHAPE) as BestXiLine[]).forEach((line) => {
+        const arr = byLine[line].slice().sort((a, b) => (b.rating as number) - (a.rating as number));
+        // Перцентиль = место внутри линии (percent_rank): топ = 100%, последний = 0%.
+        arr.forEach((p, i) => {
+          const pct = arr.length > 1 ? Math.round((1 - i / (arr.length - 1)) * 1000) / 10 : 100;
+          if (i < BEST_XI_SHAPE[line]) {
+            xi.push({
+              id: p.id, name: p.name, club: clubName(p.club) || p.club, clubLogo: p.clubLogo,
+              photo: p.photo, line, position: p.position, rating: p.rating, mp: p.mp, pct,
+            });
+          }
+        });
+      });
+      return { year, ratedCount: players.length, clubs: clubs.size, xi };
+    });
+    return cohorts.sort((a, b) => b.year - a.year);
+  });
+}

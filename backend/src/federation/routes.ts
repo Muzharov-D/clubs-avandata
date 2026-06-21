@@ -8,6 +8,7 @@ import {
   regionStandings, regionClubRatings, playerProfile, availableYears, divisionStrength,
   ageEffect, talentConcentration, cohortMatrix, regionResults, regionMatchDetail,
   warmRegionMatchProtocols, regionClubProfile, federationHealth, getLastFedHealth,
+  federationRegionBestXi,
 } from './avandataSource.js';
 import { snapshotMeta, captureSnapshotIfDue } from './snapshots.js';
 import { latestRegionCensus } from './regionCensus.js';
@@ -199,6 +200,14 @@ export async function federationRoutes(app: FastifyInstance) {
     if (avOff(reply)) return { error: 'AVANDATA_API_KEY не задан', code: 'AVANDATA_OFF' };
     const season = Number((req.query as { season?: string }).season) || AV_SEASON;
     return { season, cohorts: await cohortMatrix(season) };
+  });
+
+  /** GET /federation/av/best-xi — сборная региона (лучшая XI 1-4-3-3) по когортам
+   *  2009..2013 из живых рейтингов AvanData: топ по индексу внутри линии. */
+  app.get('/av/best-xi', async (req, reply) => {
+    if (avOff(reply)) return { error: 'AVANDATA_API_KEY не задан', code: 'AVANDATA_OFF' };
+    const season = Number((req.query as { season?: string }).season) || AV_SEASON;
+    return { season, cohorts: await federationRegionBestXi(season) };
   });
 
   /** GET /federation/av/age-effect?year= — возрастная утечка (RAE по полной дате). */
