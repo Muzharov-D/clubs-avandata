@@ -60,6 +60,9 @@
   --surface-card:   linear-gradient(180deg, #141932, #0f1428);
   /* Мягкая полупрозрачная подложка: дорожки прогресса, hover, вложенные плитки. */
   --surface-soft:   rgba(255,255,255,0.05);
+  /* Акцент-золото (метрики-чипы рейтинга) + текст возрастных бейджей (фиолет). */
+  --accent-gold:    #b8860b;
+  --age-badge-text: #c4b5fd;
 
   /* Типографика: Space Grotesk — дисплей/цифры, Inter — тело. */
   --font:           'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;

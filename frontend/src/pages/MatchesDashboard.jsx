@@ -119,13 +119,13 @@ export default function MatchesDashboard() {
                   <span>{cleanTeamName(lastMatch.homeTeam?.name) || 'Команда'}</span>
                 </div>
                 <div className="matches-dashboard__last-score matches-dashboard__last-score--hero">
-                  <span className={homeScore != null && homeScore > awayScore ? 'win' : (homeScore != null && homeScore < awayScore ? 'loss' : '')}>
+                  <span className={homeScore != null && awayScore != null && homeScore > awayScore ? 'win' : (homeScore != null && awayScore != null && homeScore < awayScore ? 'loss' : '')}>
                     {homeScore != null
                       ? <AnimatedNumber value={Number(homeScore)} format={(v) => String(Math.round(v))} stiffness={120} damping={25} />
                       : '—'}
                   </span>
                   <span className="sep">:</span>
-                  <span className={awayScore != null && awayScore > homeScore ? 'win' : (awayScore != null && awayScore < homeScore ? 'loss' : '')}>
+                  <span className={awayScore != null && homeScore != null && awayScore > homeScore ? 'win' : (awayScore != null && homeScore != null && awayScore < homeScore ? 'loss' : '')}>
                     {awayScore != null
                       ? <AnimatedNumber value={Number(awayScore)} format={(v) => String(Math.round(v))} stiffness={120} damping={25} />
                       : '—'}
