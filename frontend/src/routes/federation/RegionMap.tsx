@@ -4,6 +4,7 @@ import { api } from '../../api/client';
 import { useAuth } from '../../contexts/AuthContext';
 import { Reveal } from '../../components/motion';
 import { useFedYear, inDivision, type Division } from './avYear';
+import { num } from './utils';
 import './avandata.css';
 
 interface Registry {
@@ -113,18 +114,30 @@ export function RegionCensusBody() {
     <div className="fed-stack">
       {/* ---- Перепись: живые счётчики (пирамида FFSPB при наличии, иначе клубы-члены) ---- */}
       <Reveal variant="slide-up">
-        <div className="fed-census">
-          <div className="fed-census__cell">
-            <StatTile label="Футболисты" value={players} accent="violet" big />
+        <div className="av-pulse">
+          <div className="av-surface av-stat" style={{ '--rail': 'var(--av-violet)' } as React.CSSProperties}>
+            <div className="av-stat__label">Футболисты</div>
+            <div className="av-stat__value">{num(players)}</div>
+            <div className="av-stat__extra"><span className="av-chip av-chip--dim">в пирамиде</span></div>
           </div>
-          <div className="fed-census__cell">
-            <StatTile label="Клубы" value={clubsTotal} extra={clubsExtra} accent="cyan" big />
+          <div className="av-surface av-stat" style={{ '--rail': 'var(--av-cyan)' } as React.CSSProperties}>
+            <div className="av-stat__label">Клубы</div>
+            <div className="av-stat__value">{num(clubsTotal)}</div>
+            <div className="av-stat__extra">{clubsExtra}</div>
           </div>
-          <div className="fed-census__cell"><StatTile label="Команды" value={teams} accent="muted" big /></div>
-          <div className="fed-census__cell">
-            <StatTile label="Лиги" value={leaguesCount} extra={leaguesExtra} accent="gold" big />
+          <div className="av-surface av-stat" style={{ '--rail': 'var(--av-text-faint)' } as React.CSSProperties}>
+            <div className="av-stat__label">Команды</div>
+            <div className="av-stat__value">{num(teams)}</div>
           </div>
-          <div className="fed-census__cell"><StatTile label="Матчи" value={matches} accent="cyan" big /></div>
+          <div className="av-surface av-stat" style={{ '--rail': 'var(--av-rank-1)' } as React.CSSProperties}>
+            <div className="av-stat__label">Лиги</div>
+            <div className="av-stat__value">{num(leaguesCount)}</div>
+            <div className="av-stat__extra">{leaguesExtra}</div>
+          </div>
+          <div className="av-surface av-stat" style={{ '--rail': 'var(--av-cyan)' } as React.CSSProperties}>
+            <div className="av-stat__label">Матчи</div>
+            <div className="av-stat__value">{num(matches)}</div>
+          </div>
         </div>
       </Reveal>
 
