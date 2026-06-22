@@ -1184,14 +1184,18 @@ async function withTimeout<T>(p: Promise<T>, timeoutMs: number, fallback: T, lab
  *  year задан → считаем ТОЛЬКО эту когорту (одна возрастная группа); year отсутствует →
  *  совокупность всех PROD_YEARS (поведение по умолчанию). Ключ кэша — по году. */
 export async function federationTalentProduction(seasonId: number, year?: number): Promise<TalentProduction> {
-  return cached(`talentprod:${seasonId}:${year ?? 0}`, TTL, async () => {
-    const empty: TalentProduction = { clubs: [], medianTalents: 0, medianPpg: 0 };
-    // Гард: весь расчёт не должен виснуть. Зеркало быстрое (200 за сек), но если AvanData
-    // деградирует — отдаём пусто за ≤8с, а не пендинг >30с. Кэш на TTL не схватит пустой
-    // результат (он не закэшируется внутри cached, т.к. возвращается из withTimeout-fallback),
-    // поэтому следующий запрос пересчитает заново, когда зеркало оживёт.
-    return withTimeout(computeTalentProduction(seasonId, year), 8000, empty, 'talent-production');
-  });
+  const key = `talentprod:${seasonId}:${year ?? 0}`;
+  const hit = cache.get(key);
+  if (hit && Date.now() - hit.at < TTL) return hit.val as TalentProduction;
+  const empty: TalentProduction = { clubs: [], medianTalents: 0, medianPpg: 0 };
+  // Гард от зависания: всё на avandata-зеркале (без заблокированного с Render FFSPB-direct),
+  // но ХОЛОДНЫЙ агрегат 5 когорт (regionPlayers ×5) может занять десяток секунд — даём запас
+  // 25с, а не 8с (8с рубил холодный расчёт в пусто). Эндпоинт всё равно не виснет >25с.
+  const result = await withTimeout(computeTalentProduction(seasonId, year), 25000, empty, `talent-production:${year ?? 'all'}`);
+  // КЭШИРУЕМ ТОЛЬКО непустой результат: иначе разовый таймаут/деградация залипает в кэше на
+  // весь TTL (как и случилось — пустой фоллбэк закэшировался). Пустой — отдаём, но не кэшируем.
+  if (result.clubs.length > 0) cache.set(key, { at: Date.now(), val: result });
+  return result;
 }
 
 async function computeTalentProduction(seasonId: number, year?: number): Promise<TalentProduction> {
