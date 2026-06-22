@@ -115,8 +115,8 @@
   min-height: 360px;
 }
 .cd__mm {
-  background: rgba(255,255,255,0.03);
-  border: 1px solid rgba(255,255,255,0.07);
+  background: var(--surface-soft, rgba(255,255,255,0.05));
+  border: 1px solid var(--border, #262d3a);
   border-radius: var(--radius, 14px);
   padding: 14px 16px;
   display: flex; flex-direction: column;
@@ -184,8 +184,8 @@
    подвал (полоса/подпись). Угловое свечение заполняет пустоту высоких карточек. */
 .cd__kpi-card {
   position: relative; overflow: hidden;
-  background: rgba(255,255,255,0.03);
-  border: 1px solid rgba(255,255,255,0.07);
+  background: var(--surface-soft, rgba(255,255,255,0.05));
+  border: 1px solid var(--border, #262d3a);
   border-radius: var(--radius, 14px);
   padding: 18px;
   display: flex; flex-direction: column; gap: 14px;
@@ -221,7 +221,7 @@
   flex-direction: row; align-items: center; color: var(--accent-cyan);
   font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; opacity: 0.75;
 }
-.cd__kpi-bar { display: block; height: 8px; background: rgba(255,255,255,0.06); border-radius: 999px; overflow: hidden; }
+.cd__kpi-bar { display: block; height: 8px; background: var(--surface-soft, rgba(255,255,255,0.05)); border-radius: 999px; overflow: hidden; }
 .cd__kpi-bar-fill { display: block; height: 100%; border-radius: 999px; transition: width 400ms var(--ease-out, ease-out); }
 .cd__kpi-empty { font-size: 14px; color: var(--text-faint); }
 .cd__kpi-sub { font-size: 13.5px; color: var(--text-muted-strong, #b4c0d2); }
@@ -250,7 +250,7 @@
 .cd__rt-lines { display: flex; flex-direction: column; gap: 9px; }
 .cd__rt-line { display: grid; grid-template-columns: 60px 1fr 38px; align-items: center; gap: 10px; }
 .cd__rt-line-lab { font-size: 13px; color: var(--text-muted-strong, #b4c0d2); font-weight: 600; }
-.cd__rt-line-bar { height: 7px; background: rgba(255,255,255,0.06); border-radius: 999px; overflow: hidden; }
+.cd__rt-line-bar { height: 7px; background: var(--surface-soft, rgba(255,255,255,0.05)); border-radius: 999px; overflow: hidden; }
 .cd__rt-line-fill { display: block; height: 100%; border-radius: 999px; transition: width 500ms var(--ease-out, ease-out); }
 .cd__rt-line-val { font-size: 15px; font-weight: 800; text-align: right; font-variant-numeric: tabular-nums; }
 
@@ -330,9 +330,9 @@
 }
 .cd__mm-form-cells { display: inline-flex; gap: 3px; }
 .cd__mm-form-cell {
-  width: 17px; height: 17px; border-radius: 4px;
+  width: 17px; height: 17px; border-radius: var(--radius-xs, 6px);
   display: grid; place-items: center;
-  font-size: 10px; font-weight: 800; color: #fff;
+  font-size: 10px; font-weight: 800; color: var(--rating-text-light, #fff);
   font-variant-numeric: tabular-nums;
 }
 .cd__mm-form-cell--w { background: var(--success, #22c55e); }
@@ -402,7 +402,7 @@
 .cd__roster-tab:hover { color: var(--text); }
 .cd__roster-tab.is-active {
   background: var(--brand-gradient);
-  color: #fff;
+  color: var(--rating-text-light, #fff);
 }
 
 .cd__hero-venue {
@@ -440,7 +440,7 @@
   cursor: pointer;
   transition: background 120ms;
 }
-.cd__top-row:hover { background: rgba(255,255,255,0.04); }
+.cd__top-row:hover { background: var(--surface-soft, rgba(255,255,255,0.05)); }
 .cd__top-rank {
   color: var(--text-faint); font-weight: 800; font-size: 16px;
   text-align: center; font-variant-numeric: tabular-nums;
@@ -517,7 +517,7 @@
 }
 .cd__line-count {
   font-size: 12px; font-weight: 700; color: var(--text-faint);
-  background: rgba(255,255,255,0.05); border-radius: 999px;
+  background: var(--surface-soft, rgba(255,255,255,0.05)); border-radius: 999px;
   min-width: 20px; height: 18px; padding: 0 6px;
   display: inline-flex; align-items: center; justify-content: center;
   font-variant-numeric: tabular-nums;
@@ -671,7 +671,7 @@
   white-space: nowrap; cursor: pointer;
   transition: background var(--dur-fast, 120ms), color var(--dur-fast, 120ms);
 }
-.cd__anchor:hover { background: rgba(255,255,255,0.06); color: var(--text); }
+.cd__anchor:hover { background: var(--surface-soft, rgba(255,255,255,0.05)); color: var(--text); }
 /* Скролл к якорю не должен прятать заголовок под app-header */
 .cd__main, .cd__panel, .cd__columns { scroll-margin-top: 84px; }
 

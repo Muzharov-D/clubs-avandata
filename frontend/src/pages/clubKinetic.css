@@ -14,9 +14,9 @@
   text-transform: uppercase;
   /* Надёжный видимый цвет (без хрупкого background-clip:text, который давал
      невидимый текст поверх фон-слоёв) + кинетик-свечение. */
-  color: #fff !important;
+  color: var(--rating-text-light, #fff) !important;
   background: none !important;
-  -webkit-text-fill-color: #fff !important;
+  -webkit-text-fill-color: var(--rating-text-light, #fff) !important;
   text-shadow:
     0 0 1px color-mix(in srgb, var(--accent-cyan) 60%, transparent),
     0 6px 30px color-mix(in srgb, var(--brand-primary) 45%, transparent);
@@ -63,7 +63,7 @@
 }
 .cd.kinetic .cd__hero-action {
   background: var(--brand-gradient) !important;
-  color: #fff !important; border: none !important;
+  color: var(--rating-text-light, #fff) !important; border: none !important;
   box-shadow: 0 8px 20px -8px color-mix(in srgb, var(--brand-primary) 70%, transparent);
   transition: transform var(--dur-fast) var(--ease-out);
 }
@@ -72,7 +72,7 @@
 /* ─── Панели: глубина + дисплей-заголовки ─── */
 .cd.kinetic .cd__panel {
   background:
-    linear-gradient(180deg, color-mix(in srgb, var(--bg-surface) 92%, #fff 3%), var(--bg-surface)) !important;
+    linear-gradient(180deg, color-mix(in srgb, var(--bg-surface) 92%, var(--rating-text-light, #fff) 3%), var(--bg-surface)) !important;
   border: 1px solid var(--border) !important;
   border-radius: var(--radius-lg, 20px) !important;
   box-shadow: var(--shadow), var(--ring) !important;

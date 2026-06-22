@@ -31,10 +31,12 @@ h1, h2, h3, .page-title, .match-detail__score,
   flex-shrink: 0;
 }
 
-/* ─── Карточки: глубина, мягкая граница, ховер-подъём ─── */
+/* ─── Карточки: глубина, мягкая граница, ховер-подъём ───
+   Канонический навигационный фон карточки (var(--surface-card)) — единый со
+   спорт-директором/федерацией: navy #141932→#0f1428. Раньше был локальный
+   градиент поверх --bg-surface; унифицировано на общий токен. */
 .card {
-  background:
-    linear-gradient(180deg, color-mix(in srgb, var(--bg-surface) 92%, #fff 3%), var(--bg-surface)) !important;
+  background: var(--surface-card, linear-gradient(180deg, color-mix(in srgb, var(--bg-surface) 92%, #fff 3%), var(--bg-surface))) !important;
   border: 1px solid var(--border) !important;
   border-radius: var(--radius) !important;
   box-shadow: var(--shadow), var(--ring) !important;

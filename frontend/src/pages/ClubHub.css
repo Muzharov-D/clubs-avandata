@@ -12,7 +12,7 @@
 .club-hub__lede{color:var(--text-muted);font-size:.92rem;max-width:420px}
 .club-hub__kpis{display:flex;gap:12px;flex-wrap:wrap}
 .club-hub__kpi{
-  background:var(--surface-2,rgba(127,127,127,.06));border:1px solid var(--border,rgba(127,127,127,.14));
+  background:var(--bg-surface-2,#1b212c);border:1px solid var(--border,#262d3a);
   border-radius:var(--radius-sm,9px);padding:10px 16px;min-width:96px;text-align:center;
 }
 .club-hub__kpi-n{font-size:1.5rem;font-weight:800;line-height:1.1;font-variant-numeric:tabular-nums}
@@ -26,7 +26,7 @@
 }
 .club-hub__card{
   text-align:left;cursor:pointer;font:inherit;color:inherit;
-  background:var(--surface,rgba(127,127,127,.04));border:1px solid var(--border,rgba(127,127,127,.14));
+  background:var(--surface-card,var(--bg-surface,#141821));border:1px solid var(--border,#262d3a);
   border-radius:var(--radius,14px);padding:14px 16px;transition:.15s;
   display:flex;flex-direction:column;gap:9px;
 }
@@ -46,12 +46,12 @@
 .club-hub__last{
   display:flex;align-items:center;gap:8px;font-size:.8rem;
   padding:7px 10px;border-radius:var(--radius-sm,9px);
-  background:var(--surface-2,rgba(127,127,127,.06));
+  background:var(--surface-soft,rgba(255,255,255,0.05));
 }
-.club-hub__last-res{font-weight:800;width:18px;text-align:center;border-radius:5px}
-.club-hub__last--W .club-hub__last-res{color:#fff;background:var(--success,#22c55e)}
-.club-hub__last--L .club-hub__last-res{color:#fff;background:#ef4444}
-.club-hub__last--D .club-hub__last-res{color:#fff;background:#94a3b8}
+.club-hub__last-res{font-weight:800;width:18px;text-align:center;border-radius:var(--radius-xs,6px)}
+.club-hub__last--W .club-hub__last-res{color:var(--rating-text-light,#fff);background:var(--success,#22c55e)}
+.club-hub__last--L .club-hub__last-res{color:var(--rating-text-light,#fff);background:var(--danger,#ef4444)}
+.club-hub__last--D .club-hub__last-res{color:var(--rating-text-light,#fff);background:var(--rating-none,#888)}
 .club-hub__last-score{font-weight:800;font-variant-numeric:tabular-nums}
 .club-hub__last-opp{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--text-muted)}
 .club-hub__last-date{color:var(--text-muted);font-size:.72rem}
@@ -60,20 +60,20 @@
 .club-hub__flags{display:flex;flex-wrap:wrap;gap:6px}
 .club-hub__flag{
   font-size:.68rem;font-weight:700;color:var(--warning,#f59e0b);
-  background:var(--surface-warn,rgba(220,120,40,.1));border:1px solid color-mix(in srgb,var(--warning,#f59e0b) 35%,transparent);
+  background:color-mix(in srgb,var(--warning,#f59e0b) 12%,transparent);border:1px solid color-mix(in srgb,var(--warning,#f59e0b) 35%,transparent);
   border-radius:999px;padding:2px 8px;
 }
 
-/* тоны рейтинга */
-.club-hub__rating--hi  {color:#06231a;background:#34d399}
-.club-hub__rating--good{color:#06231a;background:#86efac}
-.club-hub__rating--mid {color:#2a1e05;background:#fbbf24}
-.club-hub__rating--low {color:#fff;background:#ef4444}
-.club-hub__rating--na  {color:var(--text-muted);background:var(--surface-2,rgba(127,127,127,.1))}
-.club-hub__kpi-n--hi,.club-hub__vval--hi{color:#34d399}
-.club-hub__kpi-n--good,.club-hub__vval--good{color:#86efac}
-.club-hub__kpi-n--mid,.club-hub__vval--mid{color:#fbbf24}
-.club-hub__kpi-n--low,.club-hub__vval--low{color:#ef4444}
+/* тоны рейтинга — на канонической шкале var(--rating-*) */
+.club-hub__rating--hi  {color:var(--rating-text-light,#fff);background:var(--rating-excellent,#4caf50)}
+.club-hub__rating--good{color:var(--rating-text-dark,#222);background:var(--rating-good,#82bc47)}
+.club-hub__rating--mid {color:var(--rating-text-dark,#222);background:var(--rating-ok,#fbc02d)}
+.club-hub__rating--low {color:var(--rating-text-light,#fff);background:var(--rating-poor,#ef4444)}
+.club-hub__rating--na  {color:var(--text-muted);background:var(--surface-soft,rgba(255,255,255,0.05))}
+.club-hub__kpi-n--hi,.club-hub__vval--hi{color:var(--rating-excellent,#4caf50)}
+.club-hub__kpi-n--good,.club-hub__vval--good{color:var(--rating-good,#82bc47)}
+.club-hub__kpi-n--mid,.club-hub__vval--mid{color:var(--rating-ok,#fbc02d)}
+.club-hub__kpi-n--low,.club-hub__vval--low{color:var(--rating-poor,#ef4444)}
 .club-hub__vval--na{color:var(--text-muted)}
 
 /* ─── вертикаль развития ─── */
@@ -84,32 +84,32 @@
 }
 .club-hub__vrow:hover .club-hub__vname{color:var(--brand-primary)}
 .club-hub__vname{font-size:.86rem;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.club-hub__vtrack{height:12px;border-radius:999px;background:var(--surface-2,rgba(127,127,127,.1));overflow:hidden}
+.club-hub__vtrack{height:12px;border-radius:999px;background:var(--surface-soft,rgba(255,255,255,0.05));overflow:hidden}
 .club-hub__vfill{display:block;height:100%;border-radius:999px;transition:width .4s ease}
-.club-hub__vfill--hi{background:#34d399}
-.club-hub__vfill--good{background:#86efac}
-.club-hub__vfill--mid{background:#fbbf24}
-.club-hub__vfill--low{background:#ef4444}
-.club-hub__vfill--na{background:var(--border,rgba(127,127,127,.2))}
+.club-hub__vfill--hi{background:var(--rating-excellent,#4caf50)}
+.club-hub__vfill--good{background:var(--rating-good,#82bc47)}
+.club-hub__vfill--mid{background:var(--rating-ok,#fbc02d)}
+.club-hub__vfill--low{background:var(--rating-poor,#ef4444)}
+.club-hub__vfill--na{background:var(--border,#262d3a)}
 .club-hub__vval{font-size:.95rem;font-weight:800;text-align:right;font-variant-numeric:tabular-nums}
 
 /* ─── табы метрик вертикали ─── */
 .club-hub__vtabs{display:inline-flex;gap:4px;margin-left:12px;vertical-align:middle}
 .club-hub__vtab{font:inherit;font-size:.72rem;font-weight:700;cursor:pointer;color:var(--text-muted);
-  background:var(--surface-2,rgba(127,127,127,.08));border:1px solid var(--border,rgba(127,127,127,.14));
+  background:var(--surface-soft,rgba(255,255,255,0.05));border:1px solid var(--border,#262d3a);
   border-radius:999px;padding:3px 11px;transition:.15s}
 .club-hub__vtab:hover{color:var(--text)}
-.club-hub__vtab.is-active{background:var(--brand-primary);border-color:var(--brand-primary);color:#fff}
+.club-hub__vtab.is-active{background:var(--brand-primary);border-color:var(--brand-primary);color:var(--rating-text-light,#fff)}
 
 /* ─── восходящие игроки клуба ─── */
 .club-hub__talent{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:10px;margin-bottom:26px}
 .club-hub__player{display:flex;align-items:center;gap:12px;text-align:left;cursor:pointer;font:inherit;color:inherit;
-  background:var(--surface,rgba(127,127,127,.04));border:1px solid var(--border,rgba(127,127,127,.14));
+  background:var(--surface-card,var(--bg-surface,#141821));border:1px solid var(--border,#262d3a);
   border-radius:var(--radius,14px);padding:10px 12px;transition:.15s}
 .club-hub__player:hover{border-color:var(--brand-primary);transform:translateY(-1px)}
 .club-hub__player-info{flex:1;min-width:0}
 .club-hub__player-name{font-size:.92rem;font-weight:800;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
-.club-hub__up{font-size:.62rem;font-weight:800;color:#06231a;background:#34d399;border-radius:999px;padding:2px 7px}
+.club-hub__up{font-size:.62rem;font-weight:800;color:var(--rating-text-light,#fff);background:var(--rating-excellent,#4caf50);border-radius:999px;padding:2px 7px}
 .club-hub__player-meta{font-size:.74rem;color:var(--text-muted);margin-top:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .club-hub__player-stats{display:flex;gap:10px;font-size:.72rem;color:var(--text-muted);margin-top:3px;font-weight:600}
 .club-hub__player-stats .is-up{color:var(--success,#22c55e)}
@@ -120,7 +120,7 @@
 /* ─── требует внимания ─── */
 .club-hub__alerts{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:10px;margin-bottom:26px}
 .club-hub__alert{display:flex;align-items:center;gap:12px;text-align:left;cursor:pointer;font:inherit;color:inherit;
-  background:var(--surface-warn,rgba(220,120,40,.07));border:1px solid color-mix(in srgb,var(--warning,#f59e0b) 30%,transparent);
+  background:color-mix(in srgb,var(--warning,#f59e0b) 8%,transparent);border:1px solid color-mix(in srgb,var(--warning,#f59e0b) 30%,transparent);
   border-radius:var(--radius,14px);padding:12px 14px;transition:.15s}
 .club-hub__alert:hover{border-color:var(--warning,#f59e0b)}
 .club-hub__alert-team{font-weight:800;font-size:.92rem;flex:0 0 auto}
@@ -131,7 +131,7 @@
 .club-hub__staff{display:flex;flex-direction:column;gap:2px;padding:8px 10px;margin-bottom:26px}
 .club-hub__staffrow{display:grid;grid-template-columns:1fr 1fr auto;align-items:center;gap:12px;cursor:pointer;
   font:inherit;color:inherit;background:none;border:0;padding:9px 8px;text-align:left;border-radius:var(--radius-sm,9px);transition:.15s}
-.club-hub__staffrow:hover{background:var(--surface-2,rgba(127,127,127,.06))}
+.club-hub__staffrow:hover{background:var(--surface-soft,rgba(255,255,255,0.05))}
 .club-hub__staff-coach{font-weight:700;font-size:.9rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .club-hub__staff-team{font-size:.82rem;color:var(--text-muted)}
 .club-hub__staff-meta{font-size:.9rem;font-weight:800;text-align:right;font-variant-numeric:tabular-nums}

@@ -171,7 +171,7 @@ export default function LoadControl() {
                   <span className="lc-bar__track">
                     <span className="lc-bar__fill lc-bar__fill--dist" style={{ width: `${((p.distance || 0) / maxDist) * 100}%` }} />
                   </span>
-                  <span className="lc-bar__val">{(p.distance / 1000).toFixed(1)} км · спринт {(p.sprintDistance / 1000).toFixed(1)} км</span>
+                  <span className="lc-bar__val">{((p.distance || 0) / 1000).toFixed(1)} км · спринт {((p.sprintDistance || 0) / 1000).toFixed(1)} км</span>
                 </span>
                 {lvl === 'high' ? (
                   <InjuryRiskFlag

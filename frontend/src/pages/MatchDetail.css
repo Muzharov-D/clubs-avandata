@@ -39,7 +39,7 @@
 .match-detail__team-logo {
   width: 56px; height: 56px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #1a4ba0, #0a2860);
+  background: linear-gradient(135deg, var(--brand-primary, #1a4ba0), #0a2860);
   color: var(--accent-cyan);
   font-weight: 800;
   font-size: 24px;
@@ -75,7 +75,7 @@
 .match-detail__status {
   font-size: 10px;
   letter-spacing: 0.05em;
-  color: #7cb342;
+  color: var(--rating-good, #7cb342);
   margin-top: 6px;
 }
 
@@ -315,8 +315,8 @@
   min-width: 60px;
   justify-content: center;
 }
-.mvs-row__delta--up    { color: #7cb342; background: rgba(124, 179, 66, 0.12); }
-.mvs-row__delta--down  { color: #ef5350; background: rgba(239, 83, 80, 0.12); }
+.mvs-row__delta--up    { color: var(--rating-good, #7cb342); background: rgba(124, 179, 66, 0.12); }
+.mvs-row__delta--down  { color: var(--rating-poor, #ef5350); background: rgba(239, 83, 80, 0.12); }
 .mvs-row__delta--flat  { color: rgba(255, 255, 255, 0.5); background: rgba(255, 255, 255, 0.04); }
 .mvs-row__delta-arrow  { font-size: 10px; }
 

@@ -64,7 +64,7 @@
   line-height: 0.95;
   letter-spacing: -0.03em;
   text-transform: uppercase;
-  color: #fff;
+  color: var(--text, #fff);
   text-shadow:
     0 0 1px color-mix(in srgb, var(--accent-cyan) 50%, transparent),
     0 6px 28px color-mix(in srgb, var(--brand-primary) 40%, transparent);
