@@ -1,24 +1,24 @@
 /* ============================================================================
-   Federation · Apple Pro Design Language
-   Minimal, dark, breathable. One big number per screen. No glow, no noise.
+   Federation · Apple Pro Design Language — v2
+   Warm, deep, breathable. No neon, no flat boxes. Depth through subtle
+   gradient, thin borders, and tabular numerals. The accent is white, not blue.
    ============================================================================ */
 
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
 :root {
-  --bg: #050507;
-  --bg-elevated: #0f0f14;
-  --bg-card: #12121a;
-  --bg-card-hover: #1a1a24;
-  --border: rgba(255,255,255,0.06);
-  --border-strong: rgba(255,255,255,0.10);
-  --text: #f5f5f7;
-  --text-secondary: #86868b;
-  --text-tertiary: #424245;
-  --accent: #0a84ff;
-  --accent-soft: rgba(10,132,255,0.15);
-  --accent-glow: rgba(10,132,255,0.08);
-  --success: #32d74b;
+  --bg: #0a0a0c;
+  --bg-elevated: #111114;
+  --bg-card: #131316;
+  --bg-card-hover: #18181c;
+  --border: rgba(255,255,255,0.08);
+  --border-strong: rgba(255,255,255,0.14);
+  --text: #f0f0f5;
+  --text-secondary: #8a8a93;
+  --text-tertiary: #4a4a52;
+  --accent: #ffffff;
+  --accent-soft: rgba(255,255,255,0.10);
+  --success: #34c759;
   --warning: #ff9f0a;
   --danger: #ff453a;
   --radius: 20px;
@@ -36,59 +36,64 @@
   position: sticky; top: 0; z-index: 50;
   display: flex; align-items: center; gap: 32px;
   padding: 16px 40px;
-  background: rgba(5,5,7,0.72); backdrop-filter: blur(20px) saturate(180%);
+  background: rgba(10,10,12,0.85); backdrop-filter: blur(24px) saturate(160%);
   border-bottom: 1px solid var(--border);
 }
 .fed-bar__brand { font-size: 20px; font-weight: 600; letter-spacing: -0.02em; color: var(--text); text-decoration: none; }
-.fed-bar__brand span { color: var(--accent); font-weight: 700; }
-.fed-bar__nav { display: flex; gap: 4px; margin-left: auto; }
+.fed-bar__brand span { font-weight: 700; color: var(--text); }
+.fed-bar__nav { display: flex; gap: 8px; margin-left: auto; }
 .fed-tab {
   padding: 8px 16px; border-radius: 8px; font-size: 14px; font-weight: 500;
   color: var(--text-secondary); text-decoration: none; transition: all 0.2s var(--ease);
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
 }
-.fed-tab:hover { color: var(--text); background: rgba(255,255,255,0.04); }
-.fed-tab--active { color: var(--text); background: var(--accent-soft); }
+.fed-tab:hover { color: var(--text); }
+.fed-tab--active { color: var(--text); border-bottom-color: var(--accent); }
 .fed-bar__who { font-size: 13px; color: var(--text-secondary); margin-left: 24px; }
 .fed-bar__out { font-size: 13px; color: var(--text-secondary); background: none; border: none; cursor: pointer; padding: 8px 12px; border-radius: 8px; transition: all 0.2s; }
-.fed-bar__out:hover { color: var(--danger); background: rgba(255,69,58,0.08); }
+.fed-bar__out:hover { color: var(--danger); }
 
 /* ---- Subbar (filters) ---- */
 .fed-filter {
   position: sticky; top: 65px; z-index: 40;
   display: flex; gap: 12px; padding: 12px 40px;
-  background: rgba(5,5,7,0.60); backdrop-filter: blur(12px);
+  background: rgba(10,10,12,0.70); backdrop-filter: blur(12px);
   border-bottom: 1px solid var(--border);
 }
 .fed-pill {
   padding: 6px 14px; border-radius: 8px; font-size: 13px; font-weight: 500;
-  background: var(--bg-card); border: 1px solid var(--border); color: var(--text-secondary);
+  background: transparent; border: 1px solid var(--border); color: var(--text-secondary);
   cursor: pointer; transition: all 0.2s;
 }
 .fed-pill:hover { border-color: var(--border-strong); color: var(--text); }
-.fed-pill--active { background: var(--accent); color: #fff; border-color: var(--accent); }
+.fed-pill--active { background: var(--text); color: var(--bg); border-color: var(--text); font-weight: 600; }
 
 /* ---- Page ---- */
 .fed-page { max-width: 1200px; margin: 0 auto; padding: 48px 40px 80px; }
 .fed-hero { margin-bottom: 64px; }
-.fed-hero__kicker { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--accent); margin-bottom: 12px; }
-.fed-hero__title { font-size: 48px; font-weight: 300; letter-spacing: -0.03em; line-height: 1.1; margin: 0 0 8px; }
+.fed-hero__kicker { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-secondary); margin-bottom: 12px; }
+.fed-hero__title { font-size: 40px; font-weight: 500; letter-spacing: -0.03em; line-height: 1.1; margin: 0 0 8px; }
 .fed-hero__sub { font-size: 17px; color: var(--text-secondary); font-weight: 400; margin: 0; }
 
 /* ---- Metric Card (the hero) ---- */
 .fed-metric {
-  background: var(--bg-card); border-radius: var(--radius); border: 1px solid var(--border);
-  padding: 32px; transition: all 0.3s var(--ease);
+  background: linear-gradient(180deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.01) 100%);
+  border-radius: var(--radius); border: 1px solid var(--border);
+  padding: 32px;
+  transition: all 0.3s var(--ease);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.04);
 }
-.fed-metric:hover { background: var(--bg-card-hover); border-color: var(--border-strong); }
-.fed-metric__label { font-size: 13px; font-weight: 500; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 16px; }
-.fed-metric__value { font-size: 64px; font-weight: 200; letter-spacing: -0.04em; line-height: 1; color: var(--text); }
-.fed-metric__value--accent { color: var(--accent); }
-.fed-metric__value--success { color: var(--success); }
-.fed-metric__value--warning { color: var(--warning); }
-.fed-metric__extra { font-size: 14px; color: var(--text-secondary); margin-top: 12px; }
+.fed-metric:hover { background: linear-gradient(180deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.02) 100%); border-color: var(--border-strong); }
+.fed-metric__label { font-size: 12px; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 12px; }
+.fed-metric__value { font-size: 56px; font-weight: 400; letter-spacing: -0.02em; line-height: 1; color: var(--text); font-variant-numeric: tabular-nums; }
+.fed-metric__value--accent { color: var(--text); font-weight: 500; }
+.fed-metric__value--success { color: var(--success); font-weight: 500; }
+.fed-metric__value--warning { color: var(--warning); font-weight: 500; }
+.fed-metric__extra { font-size: 13px; color: var(--text-secondary); margin-top: 12px; font-weight: 400; }
 
 /* ---- Grid ---- */
-.fed-grid { display: grid; gap: 20px; }
+.fed-grid { display: grid; gap: 16px; }
 .fed-grid--2 { grid-template-columns: repeat(2, 1fr); }
 .fed-grid--3 { grid-template-columns: repeat(3, 1fr); }
 .fed-grid--4 { grid-template-columns: repeat(4, 1fr); }
@@ -97,12 +102,15 @@
 
 /* ---- Card ---- */
 .fed-card {
-  background: var(--bg-card); border-radius: var(--radius); border: 1px solid var(--border);
-  padding: 28px; transition: all 0.3s var(--ease);
+  background: linear-gradient(180deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.01) 100%);
+  border-radius: var(--radius); border: 1px solid var(--border);
+  padding: 28px;
+  transition: all 0.3s var(--ease);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.04);
 }
-.fed-card:hover { background: var(--bg-card-hover); border-color: var(--border-strong); }
-.fed-card__title { font-size: 15px; font-weight: 600; color: var(--text); margin: 0 0 4px; }
-.fed-card__sub { font-size: 13px; color: var(--text-secondary); margin: 0 0 20px; }
+.fed-card:hover { background: linear-gradient(180deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.02) 100%); border-color: var(--border-strong); }
+.fed-card__title { font-size: 16px; font-weight: 600; color: var(--text); margin: 0 0 4px; }
+.fed-card__sub { font-size: 13px; color: var(--text-secondary); margin: 0 0 20px; font-weight: 400; }
 
 /* ---- Table ---- */
 .fed-table { width: 100%; border-collapse: collapse; font-size: 14px; }
@@ -120,17 +128,18 @@
 
 /* ---- Badge ---- */
 .fed-badge { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 600; }
-.fed-badge--accent { background: var(--accent-soft); color: var(--accent); }
-.fed-badge--success { background: rgba(50,215,75,0.12); color: var(--success); }
+.fed-badge--accent { background: var(--accent-soft); color: var(--text); }
+.fed-badge--success { background: rgba(52,199,89,0.12); color: var(--success); }
 .fed-badge--warning { background: rgba(255,159,10,0.12); color: var(--warning); }
 .fed-badge--danger { background: rgba(255,69,58,0.12); color: var(--danger); }
 
 /* ---- Bar (minimal) ---- */
 .fed-track { height: 4px; border-radius: 2px; background: var(--bg-elevated); overflow: hidden; }
-.fed-fill { height: 100%; border-radius: 2px; background: var(--accent); transition: width 0.8s var(--ease); }
+.fed-fill { height: 100%; border-radius: 2px; background: var(--text-secondary); transition: width 0.8s var(--ease); }
 .fed-fill--success { background: var(--success); }
 .fed-fill--warning { background: var(--warning); }
 .fed-fill--danger { background: var(--danger); }
+.fed-fill--accent { background: var(--text); }
 
 /* ---- Empty / Skeleton ---- */
 .fed-empty { padding: 60px; text-align: center; color: var(--text-secondary); font-size: 15px; }
@@ -139,11 +148,11 @@
 
 /* ---- Section divider ---- */
 .fed-divider { display: flex; align-items: baseline; gap: 16px; margin: 48px 0 24px; }
-.fed-divider__title { font-size: 28px; font-weight: 300; letter-spacing: -0.02em; margin: 0; }
+.fed-divider__title { font-size: 24px; font-weight: 500; letter-spacing: -0.02em; margin: 0; }
 .fed-divider__line { flex: 1; height: 1px; background: var(--border); }
 
 /* ---- Misc ---- */
-.fed-link { color: var(--accent); text-decoration: none; font-size: 14px; font-weight: 500; transition: opacity 0.2s; }
+.fed-link { color: var(--text); text-decoration: none; font-size: 14px; font-weight: 500; transition: opacity 0.2s; }
 .fed-link:hover { opacity: 0.7; }
 .fed-note { font-size: 13px; color: var(--text-secondary); line-height: 1.6; }
 
