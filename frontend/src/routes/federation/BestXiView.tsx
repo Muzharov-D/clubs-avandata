@@ -8,13 +8,6 @@ import { useFedYear } from './avYear';
 import { lastName, plMatch } from './utils';
 import './federation.css';
 
-/**
- * «Сборная региона» — лучшая XI (схема 1-4-3-3) по КОГОРТЕ года рождения,
- * собранная ВЖИВУЮ из рейтингов AvanData (оценённые игроки 2 верхних лиг
- * Первенства). Источник — /federation/av/best-xi (богатый мульти-клубный расчёт),
- * НЕ клубная БД. Селектор когорт (2013→2009) — клиентский, по умолчанию младшая.
- */
-
 type Line = 'GK' | 'DEF' | 'MID' | 'FWD';
 interface XiPlayer {
   id: number; name: string; club: string | null; clubLogo: string | null; photo: string | null;
@@ -22,12 +15,7 @@ interface XiPlayer {
 }
 interface Cohort { year: number; ratedCount: number; clubs: number; xi: XiPlayer[]; }
 
-
-// Аббревиатура линии для подписи слота (русские, без англицизмов).
 const LINE_TAG: Record<Line, string> = { GK: 'ВРТ', DEF: 'ЗАЩ', MID: 'ПЗ', FWD: 'НАП' };
-
-// Координаты слотов схемы 1-4-3-3 на вертикальном поле (ВРТ снизу, НАП сверху).
-// Порядок внутри линии совпадает с порядком, в котором их кладёт бэкенд (топ-рейтинг).
 const SLOTS: Record<Line, Array<{ l: number; t: number }>> = {
   GK: [{ l: 50, t: 88 }],
   DEF: [{ l: 14, t: 70 }, { l: 38, t: 74 }, { l: 62, t: 74 }, { l: 86, t: 70 }],
@@ -35,33 +23,9 @@ const SLOTS: Record<Line, Array<{ l: number; t: number }>> = {
   FWD: [{ l: 24, t: 22 }, { l: 50, t: 18 }, { l: 76, t: 22 }],
 };
 const LINE_ORDER: Line[] = ['GK', 'DEF', 'MID', 'FWD'];
-
-// Кольцо/акцент по перцентилю внутри линии — ТОЛЬКО токены (white-label).
 const pctRing = (pct: number): string =>
-  pct >= 97 ? 'var(--av-success)' : pct >= 93 ? 'var(--av-accent)' : 'var(--av-text-dim)';
+  pct >= 97 ? 'var(--success)' : pct >= 93 ? 'var(--accent)' : 'var(--text-secondary)';
 
-
-export function FederationBestXi() {
-  return (
-    <>
-      <header className="av-head av-rise">
-        <div className="av-head__l">
-          <h1 className="av-title">Сборная региона</h1>
-          <p className="av-sub">Сильнейшие игроки по рейтингу в каждой линии · схема 1-4-3-3</p>
-        </div>
-      </header>
-      <BestXiBody />
-    </>
-  );
-}
-
-/**
- * Тело «Сборной региона» — поле 1-4-3-3 по выбранной когорте. Следует ГЛОБАЛЬНОМУ
- * фильтру года (useFedYear): «все» → самая младшая когорта (там ядро работы
- * федерации). Рейтинги нормализованы в шкалу 0–10 (rating10Color/ratingLabel),
- * сырые сотни AvanData не показываем. Заголовок-секции внутри, без шапки экрана —
- * чтобы встраивать в «Таланты».
- */
 export function BestXiBody() {
   const { year: globalYear } = useFedYear();
   const { data, isLoading, error } = useQuery({
@@ -70,10 +34,8 @@ export function BestXiBody() {
   });
   const cohorts = useMemo(() => (data?.cohorts ?? []).slice().sort((a, b) => b.year - a.year), [data]);
   const [peek, setPeek] = useState<XiPlayer | null>(null);
-  // Активная когорта: глобальный год (если он есть среди когорт), иначе младшая.
   const active = (globalYear != null ? cohorts.find((c) => c.year === globalYear) : null) ?? cohorts[0] ?? null;
 
-  // Раскладываем XI когорты по слотам схемы: внутри каждой линии — по порядку с бэка.
   const placed = useMemo(() => {
     if (!active) return [];
     const idx: Record<Line, number> = { GK: 0, DEF: 0, MID: 0, FWD: 0 };
@@ -92,33 +54,32 @@ export function BestXiBody() {
     <>
       {error && <FedError />}
 
-      <section className="av-surface av-surface--feature av-pad-lg av-rise">
+      <div className="fed-card" style={{ position: 'relative', overflow: 'hidden' }}>
         {isLoading ? (
-          <div className="av-skeleton" style={{ aspectRatio: '4 / 5' }} />
+          <div className="fed-skeleton" style={{ aspectRatio: '4 / 5' }} />
         ) : !active || active.xi.length === 0 ? (
-          <FedEmpty>Недостаточно разобранных игроков для формирования сборной этой когорты.</FedEmpty>
+          <FedEmpty>Недостаточно разобранных игроков для формирования сборной.</FedEmpty>
         ) : (
           <>
-            <div className="av-section" style={{ marginBottom: 12 }}>
-              <div>
-                <h2 className="av-section-title">Сборная {active.year} года рождения</h2>
-                <p className="av-section-sub">
-                  {active.ratedCount.toLocaleString('ru-RU')} оценённых · {active.clubs} {active.clubs === 1 ? 'клуб' : 'клубов'}
-                  {globalYear == null ? ' · при значении «Все» отображается младшая когорта; выберите год в фильтре' : ''} · нажмите на игрока для карточки
-                </p>
-              </div>
+            <div style={{ marginBottom: 16 }}>
+              <h3 style={{ fontSize: 20, fontWeight: 400, margin: 0 }}>Сборная {active.year} года рождения</h3>
+              <p className="fed-note">
+                {active.ratedCount.toLocaleString('ru-RU')} оценённых · {active.clubs} клубов
+                {globalYear == null ? ' · младшая когорта по умолчанию' : ''}
+              </p>
             </div>
 
-            <div className="av-pitch">
-              <svg className="av-pitch__field" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+            {/* Pitch */}
+            <div style={{ position: 'relative', aspectRatio: '4 / 5', borderRadius: 'var(--radius)', overflow: 'hidden', background: 'linear-gradient(180deg, #1a4a2a, #0e3d1f)' }}>
+              <svg viewBox="0 0 100 100" preserveAspectRatio="none" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }} aria-hidden>
+                <rect x="0" y="0" width="100" height="100" fill="url(#grass)" />
                 <defs>
-                  <linearGradient id="bestxi-grass" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="var(--av-pitch-grass)" /><stop offset="50%" stopColor="var(--av-pitch-grass-deep)" /><stop offset="100%" stopColor="var(--av-pitch-grass)" />
+                  <linearGradient id="grass" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#1a4a2a" /><stop offset="50%" stopColor="#0e3d1f" /><stop offset="100%" stopColor="#1a4a2a" />
                   </linearGradient>
                 </defs>
-                <rect x="0" y="0" width="100" height="100" fill="url(#bestxi-grass)" />
-                {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map((i) => <rect key={i} x="0" y={i * 10} width="100" height="10" fill={i % 2 ? 'rgba(255,255,255,0.035)' : 'rgba(0,0,0,0.07)'} />)}
-                <g fill="none" stroke="rgba(255,255,255,0.5)" strokeWidth="0.4">
+                {[0,1,2,3,4,5,6,7,8,9].map((i) => <rect key={i} x="0" y={i*10} width="100" height="10" fill={i%2 ? 'rgba(255,255,255,0.03)' : 'transparent'} />)}
+                <g fill="none" stroke="rgba(255,255,255,0.4)" strokeWidth="0.4">
                   <rect x="2" y="2" width="96" height="96" />
                   <line x1="2" y1="50" x2="98" y2="50" />
                   <circle cx="50" cy="50" r="9" />
@@ -127,7 +88,6 @@ export function BestXiBody() {
                   <rect x="24" y="84" width="52" height="14" />
                   <rect x="38" y="92.5" width="24" height="5.5" />
                 </g>
-                <circle cx="50" cy="50" r="0.7" fill="rgba(255,255,255,0.5)" />
               </svg>
 
               {placed.map(({ slot, player }) => {
@@ -135,57 +95,48 @@ export function BestXiBody() {
                 return (
                   <button
                     key={player.id} type="button"
-                    className="av-slot av-slot--filled av-slot--btn"
-                    style={{ left: `${slot.l}%`, top: `${slot.t}%` }}
+                    style={{ position: 'absolute', left: `${slot.l}%`, top: `${slot.t}%`, transform: 'translate(-50%, -50%)', zIndex: 2, background: 'none', border: 'none', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}
                     title={`${player.name} · ${LINE_TAG[player.line]} · топ ${player.pct}%`}
                     onClick={() => setPeek(player)}
                   >
-                    <span className="av-slot__node" style={{ borderRadius: '50%', boxShadow: `0 0 0 2px ${ring}, 0 3px 7px rgba(0,0,0,0.55)` }}>
+                    <span style={{ borderRadius: '50%', boxShadow: `0 0 0 2px ${ring}, 0 3px 7px rgba(0,0,0,0.55)`, display: 'block' }}>
                       <PlayerAvatar name={player.name} photoUrl={player.photo} size={46} ring={player.line === 'GK'} />
-                      <span className="av-slot__badge" style={{ color: rating10Color(player.rating) }}>{ratingLabel(player.rating)}</span>
+                      <span style={{ position: 'absolute', bottom: -4, right: -4, minWidth: 22, padding: '1px 4px', fontSize: 11, fontWeight: 800, background: 'rgba(8,12,20,0.92)', border: '1.5px solid rgba(255,255,255,0.16)', borderRadius: 7, color: rating10Color(player.rating) }}>{ratingLabel(player.rating)}</span>
                     </span>
-                    <span className="av-slot__tag" style={{ color: ring }}>{LINE_TAG[player.line]}</span>
-                    <span className="av-slot__name">{lastName(player.name)}</span>
-                    <span
-                      className="av-slot__name"
-                      style={{ fontSize: 9, fontWeight: 600, color: 'var(--av-text-dim)', background: 'rgba(0,0,0,0.42)' }}
-                    >
-                      {player.club ?? '—'} · топ {player.pct}%
-                    </span>
+                    <span style={{ fontSize: 10, fontWeight: 700, color: ring, textTransform: 'uppercase' }}>{LINE_TAG[player.line]}</span>
+                    <span style={{ fontSize: 11, fontWeight: 600, color: '#fff', background: 'rgba(0,0,0,0.5)', padding: '2px 8px', borderRadius: 6, whiteSpace: 'nowrap' }}>{lastName(player.name)}</span>
+                    <span style={{ fontSize: 9, fontWeight: 600, color: 'var(--text-secondary)', background: 'rgba(0,0,0,0.42)' }}>{player.club ?? '—'} · топ {player.pct}%</span>
                   </button>
                 );
               })}
             </div>
 
-            <p className="av-cap" style={{ marginTop: 14 }}>
-              Перцентиль — позиция игрока внутри линии среди оценённых игроков региона. По данным разбора двух высших лиг (AvanData).
+            <p className="fed-note" style={{ marginTop: 16 }}>
+              Перцентиль — позиция внутри линии среди оценённых игроков региона. По данным разбора двух высших лиг.
             </p>
           </>
         )}
-      </section>
+      </div>
 
       {peek && <XiPeek p={peek} onClose={() => setPeek(null)} />}
     </>
   );
 }
 
-/** Карточка игрока из сборной — по клику на поле, без ухода со страницы. */
 function XiPeek({ p, onClose }: { p: XiPlayer; onClose: () => void }) {
   return (
-    <div className="av-modal__backdrop" onClick={onClose} role="presentation">
-      <div className="av-peek" onClick={(e) => e.stopPropagation()} role="dialog" aria-label={p.name}>
-        <button type="button" className="av-modal__close" onClick={onClose} aria-label="Закрыть">✕</button>
-        <div className="av-peek__head">
+    <div style={{ position: 'fixed', inset: 0, zIndex: 60, display: 'flex', alignItems: 'flex-start', justifyContent: 'center', padding: 48, background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(6px)' }} onClick={onClose} role="presentation">
+      <div className="fed-card" style={{ width: '100%', maxWidth: 400, position: 'relative', marginTop: 48 }} onClick={(e) => e.stopPropagation()} role="dialog" aria-label={p.name}>
+        <button type="button" onClick={onClose} aria-label="Закрыть" style={{ position: 'absolute', top: 12, right: 14, width: 30, height: 30, borderRadius: 8, fontSize: 18, background: 'var(--bg-elevated)', border: '1px solid var(--border)', color: 'var(--text-secondary)', cursor: 'pointer' }}>✕</button>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 16 }}>
           <PlayerAvatar name={p.name} photoUrl={p.photo} size={66} ring />
           <div style={{ minWidth: 0 }}>
-            <div className="av-peek__name">{p.name}</div>
-            <div className="av-peek__meta">{p.club ?? '—'}{p.position ? ` · ${p.position}` : ''} · топ {p.pct}% в линии</div>
+            <div style={{ fontSize: 18, fontWeight: 600, color: 'var(--text)' }}>{p.name}</div>
+            <div className="fed-note">{p.club ?? '—'}{p.position ? ` · ${p.position}` : ''} · топ {p.pct}%</div>
           </div>
-          <span className="av-peek__rate" style={{ color: rating10Color(p.rating) }}>{ratingLabel(p.rating)}</span>
+          <span style={{ marginLeft: 'auto', fontSize: 24, fontWeight: 700, color: rating10Color(p.rating) }}>{ratingLabel(p.rating)}</span>
         </div>
-        <div className="av-peek__foot">
-          <span className="av-peek__mp">{p.mp ? `средний рейтинг (0–10) за ${p.mp} ${plMatch(p.mp)}` : 'средний рейтинг по матчам'}</span>
-        </div>
+        <div className="fed-note">{p.mp ? `Средний рейтинг за ${p.mp} ${plMatch(p.mp)}` : 'Средний рейтинг по матчам'}</div>
       </div>
     </div>
   );
