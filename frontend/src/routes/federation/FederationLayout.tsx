@@ -12,6 +12,7 @@ const TABS: Array<{ to: string; end?: boolean; label: string }> = [
   { to: '/federation/talent-loss', label: 'Потеря таланта' },
   { to: '/federation/talent', label: 'Таланты' },
   { to: '/federation/clubs', label: 'Клубы' },
+  { to: '/federation/leagues', label: 'Управление лигами' },
 ];
 
 export function FederationLayout() {

@@ -51,11 +51,12 @@ import { DirectorDashboard } from './routes/director/DirectorDashboard';
 // Кабинет федерации региона (federation_admin) — оболочка eager, экраны lazy
 // (отдельные чанки: фед-код грузится только при заходе в /federation, не в клубный бандл).
 import { FederationLayout } from './routes/federation/FederationLayout';
-// 4 консолидированных экрана кабинета (композиция тел существующих экранов).
+// 5 консолидированных экранов кабинета (композиция тел существующих экранов).
 const FederationOverview = lazy(() => import('./routes/federation/OverviewView').then((m) => ({ default: m.FederationOverview })));
 const FederationTalentLoss = lazy(() => import('./routes/federation/TalentLossView').then((m) => ({ default: m.FederationTalentLoss })));
 const FederationTalent = lazy(() => import('./routes/federation/TalentView').then((m) => ({ default: m.FederationTalent })));
 const FederationClubs = lazy(() => import('./routes/federation/ClubsView').then((m) => ({ default: m.FederationClubs })));
+const FederationLeagues = lazy(() => import('./routes/federation/LeaguesView').then((m) => ({ default: m.FederationLeagues })));
 // Глубокий маршрут профиля игрока — достижим, но вне главного нав.
 const FederationAvPlayerProfile = lazy(() => import('./routes/federation/AvPlayerProfile').then((m) => ({ default: m.FederationAvPlayerProfile })));
 
@@ -195,16 +196,17 @@ export function App() {
                       </FederationOnly>
                     }
                   >
-                    {/* 4 раздела */}
+                    {/* 5 разделов */}
                     <Route index element={<FederationOverview />} />
                     <Route path="talent-loss" element={<FederationTalentLoss />} />
                     <Route path="talent" element={<FederationTalent />} />
                     <Route path="clubs" element={<FederationClubs />} />
+                    <Route path="leagues" element={<FederationLeagues />} />
 
                     {/* Глубокий профиль игрока — достижим, вне главного нав */}
                     <Route path="players/:id" element={<FederationAvPlayerProfile />} />
 
-                    {/* Редиректы старых путей на ближайший из 4 (закладки не 404) */}
+                    {/* Редиректы старых путей на ближайший из 5 (закладки не 404) */}
                     <Route path="discoveries" element={<Navigate to="/federation" replace />} />
                     <Route path="region-map" element={<Navigate to="/federation" replace />} />
                     <Route path="pyramid" element={<Navigate to="/federation/talent-loss" replace />} />
