@@ -8,7 +8,7 @@ import { PlayerAvatar } from './PlayerAvatar';
 import { FedEmpty } from './FedState';
 import { MatchDetail, type MatchBase } from './MatchDetail';
 import { fmtDate, plMatch, lineOf, LINE_LABEL, topPctOf } from './utils';
-import './avandata.css';
+import './federation.css';
 
 interface PoolP { id: number; rating: number | null; birthYear: number | null; position: string | null }
 interface Metric { id: string; title: string; short: string; category: string; count: number; points: number }

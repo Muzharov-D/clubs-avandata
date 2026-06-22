@@ -4,7 +4,7 @@ import { api } from '../../api/client';
 import { ClubShield } from './ClubShield';
 import { FedError, FedEmpty } from './FedState';
 import { useFedYear, yearQ } from './avYear';
-import './avandata.css';
+import './federation.css';
 
 /**
  * «Производство талантов» — квадрант-скаттер клубов: X = сколько топ-игроков клуб

@@ -3,7 +3,7 @@ import { api } from '../../api/client';
 import { useAuth } from '../../contexts/AuthContext';
 import { Reveal, AnimatedNumber } from '../../components/motion';
 import { num } from './utils';
-import './avandata.css';
+import './federation.css';
 
 /**
  * Карта возможностей — игровое время Первенства (когорты 2009–2016) по протоколам

@@ -5,7 +5,7 @@ import { api } from '../../api/client';
 import { ClubShield } from './ClubShield';
 import { PlayerAvatar } from './PlayerAvatar';
 import { ratingColor } from './ratings';
-import './avandata.css';
+import './federation.css';
 
 interface CPlayer { id: number; name: string; birthYear: number | null; position: string | null; rating: number | null; photo: string | null }
 interface CMatch { id: number; age: string; date: string; opponent: string; opponentLogo: string | null; gf: number | null; ga: number | null; outcome: 'w' | 'd' | 'l' }

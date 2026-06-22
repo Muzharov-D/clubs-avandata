@@ -6,7 +6,7 @@ import { ClubCard } from './ClubCard';
 import { useFedYear, yearQ, inDivision } from './avYear';
 import { ratingLabel, rating10Color } from './ratings';
 import { fmtStamp, plMesto } from './utils';
-import './avandata.css';
+import './federation.css';
 
 interface StandRow { id: number; name: string; logo: string | null; played: number; won: number; drawn: number; lost: number; goalDiff: number; points: number }
 interface RatingRow { id: number; name: string; logo: string | null; rating: number }

@@ -5,7 +5,7 @@ import { api } from '../../api/client';
 import { ClubShield } from './ClubShield';
 import { PlayerAvatar } from './PlayerAvatar';
 import { ratingColor } from './ratings';
-import './avandata.css';
+import './federation.css';
 
 interface Side { id: number | null; name: string; logo: string | null; score: number | null }
 interface StatRow { eventType: string; title: string; home: number; away: number }

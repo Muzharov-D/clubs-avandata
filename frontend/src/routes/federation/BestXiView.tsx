@@ -6,7 +6,7 @@ import { FedError, FedEmpty } from './FedState';
 import { ratingLabel, rating10Color } from './ratings';
 import { useFedYear } from './avYear';
 import { lastName, plMatch } from './utils';
-import './avandata.css';
+import './federation.css';
 
 /**
  * «Сборная региона» — лучшая XI (схема 1-4-3-3) по КОГОРТЕ года рождения,

@@ -5,7 +5,7 @@ import { PlayerAvatar } from './PlayerAvatar';
 import { FedError } from './FedState';
 import { useFedYear } from './avYear';
 import { fmtStamp } from './utils';
-import './avandata.css';
+import './federation.css';
 
 interface LossQuarter { q: number; roster: number; medianPct: number; buried15: number; buried30: number; contrib50: number }
 interface LossCohort { year: number; label: string; roster: number; byQuarter: LossQuarter[] }

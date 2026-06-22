@@ -5,7 +5,7 @@ import { ClubShield } from './ClubShield';
 import { ClubCard } from './ClubCard';
 import { FedError } from './FedState';
 import { useFedYear, yearQ, fedQ, inDivision } from './avYear';
-import './avandata.css';
+import './federation.css';
 
 interface RatingRow { id: number; name: string; logo: string | null; rating: number }
 interface Group<T> { division: string; rows: T[] }

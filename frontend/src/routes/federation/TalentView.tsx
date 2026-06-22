@@ -2,61 +2,51 @@ import { useFedYear } from './avYear';
 import { BestXiBody } from './BestXiView';
 import { RegionLeaderboardBody } from './AvPlayers';
 import { ScorersBody } from './ScorersView';
-import './avandata.css';
+import './federation.css';
 
-/**
- * «Таланты» — кто в регионе лучший, по ОДНОЙ когорте за раз. Слева — единственное
- * на экране поле «Сборная региона» (BestXiBody, 1-4-3-3); справа — рейтинг игроков
- * (RegionLeaderboardBody, нормализован в 0–10); ниже — бомбардиры (ScorersBody).
- * Все три следуют глобальному фильтру года (один когортный срез — чинит «2009
- * рядом с 2016»). Композиция тел существующих экранов; дублирующее поле игроков
- * (внутри AvPlayers) убрано — питч здесь только один.
- */
 export function FederationTalent() {
   const { year } = useFedYear();
-  const scope = year != null ? `${year} г.р.` : 'все возрасты — выберите год в фильтре для отдельной когорты';
+  const scope = year != null ? `${year} г.р.` : 'все возрасты';
 
   return (
-    <>
-      <header className="av-head av-rise">
-        <div className="av-head__l">
-          <h1 className="av-title">Таланты</h1>
-          <p className="av-sub">Сборная региона, рейтинг игроков и бомбардиры · {scope}</p>
-        </div>
-      </header>
-
-      {/* Поле сборной (слева) + рейтинг игроков (справа) */}
-      <div className="av-split av-rise">
-        <section>
-          <div className="av-section" style={{ marginBottom: 12 }}>
-            <div>
-              <h2 className="av-section-title">Сборная региона</h2>
-              <p className="av-section-sub" style={{ margin: '2px 0 0' }}>Сильнейшие игроки по рейтингу в каждой линии · схема 1-4-3-3</p>
-            </div>
-          </div>
-          <BestXiBody />
-        </section>
-
-        <aside style={{ display: 'grid', gap: 14, alignContent: 'start' }}>
-          <RegionLeaderboardBody withRising={false} />
-        </aside>
+    <div>
+      <div className="fed-hero">
+        <div className="fed-hero__kicker">Кто лучший в регионе</div>
+        <h1 className="fed-hero__title">Таланты</h1>
+        <p className="fed-hero__sub">Сборная региона, рейтинг игроков и бомбардиры · {scope}</p>
       </div>
 
-      {/* Восходящие младших когорт — полноширинная лента (правый столбец не растягиваем пустотой) */}
-      <div className="av-rise">
+      <div className="fed-grid fed-grid--2" style={{ marginBottom: 48 }}>
+        <div>
+          <div className="fed-divider" style={{ marginTop: 0 }}>
+            <h2 className="fed-divider__title">Сборная региона</h2>
+            <div className="fed-divider__line" />
+          </div>
+          <p className="fed-note" style={{ marginBottom: 24 }}>Сильнейшие игроки по рейтингу в каждой линии · схема 1-4-3-3</p>
+          <BestXiBody />
+        </div>
+
+        <div>
+          <div className="fed-divider" style={{ marginTop: 0 }}>
+            <h2 className="fed-divider__title">Рейтинг</h2>
+            <div className="fed-divider__line" />
+          </div>
+          <RegionLeaderboardBody withRising={false} />
+        </div>
+      </div>
+
+      <div style={{ marginBottom: 48 }}>
         <RegionLeaderboardBody withLeaderboard={false} withRising />
       </div>
 
-      {/* Бомбардиры региона (когортный срез по строкам топ-голов) */}
-      <section className="av-rise">
-        <div className="av-section">
-          <div>
-            <h2 className="av-section-title">Бомбардиры региона</h2>
-            <p className="av-section-sub" style={{ margin: '2px 0 0' }}>Голы из протоколов ФФСПб · {scope}</p>
-          </div>
+      <section>
+        <div className="fed-divider">
+          <h2 className="fed-divider__title">Бомбардиры</h2>
+          <div className="fed-divider__line" />
         </div>
+        <p className="fed-note" style={{ marginBottom: 24 }}>Голы из протоколов ФФСПб · {scope}</p>
         <ScorersBody />
       </section>
-    </>
+    </div>
   );
 }

@@ -1,0 +1,153 @@
+/* ============================================================================
+   Federation · Apple Pro Design Language
+   Minimal, dark, breathable. One big number per screen. No glow, no noise.
+   ============================================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+:root {
+  --bg: #050507;
+  --bg-elevated: #0f0f14;
+  --bg-card: #12121a;
+  --bg-card-hover: #1a1a24;
+  --border: rgba(255,255,255,0.06);
+  --border-strong: rgba(255,255,255,0.10);
+  --text: #f5f5f7;
+  --text-secondary: #86868b;
+  --text-tertiary: #424245;
+  --accent: #0a84ff;
+  --accent-soft: rgba(10,132,255,0.15);
+  --accent-glow: rgba(10,132,255,0.08);
+  --success: #32d74b;
+  --warning: #ff9f0a;
+  --danger: #ff453a;
+  --radius: 20px;
+  --radius-sm: 12px;
+  --font: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --dur: 0.5s;
+}
+
+/* ---- Shell ---- */
+.fed-root { font-family: var(--font); color: var(--text); background: var(--bg); min-height: 100vh; -webkit-font-smoothing: antialiased; }
+
+/* ---- Topbar ---- */
+.fed-bar {
+  position: sticky; top: 0; z-index: 50;
+  display: flex; align-items: center; gap: 32px;
+  padding: 16px 40px;
+  background: rgba(5,5,7,0.72); backdrop-filter: blur(20px) saturate(180%);
+  border-bottom: 1px solid var(--border);
+}
+.fed-bar__brand { font-size: 20px; font-weight: 600; letter-spacing: -0.02em; color: var(--text); text-decoration: none; }
+.fed-bar__brand span { color: var(--accent); font-weight: 700; }
+.fed-bar__nav { display: flex; gap: 4px; margin-left: auto; }
+.fed-tab {
+  padding: 8px 16px; border-radius: 8px; font-size: 14px; font-weight: 500;
+  color: var(--text-secondary); text-decoration: none; transition: all 0.2s var(--ease);
+}
+.fed-tab:hover { color: var(--text); background: rgba(255,255,255,0.04); }
+.fed-tab--active { color: var(--text); background: var(--accent-soft); }
+.fed-bar__who { font-size: 13px; color: var(--text-secondary); margin-left: 24px; }
+.fed-bar__out { font-size: 13px; color: var(--text-secondary); background: none; border: none; cursor: pointer; padding: 8px 12px; border-radius: 8px; transition: all 0.2s; }
+.fed-bar__out:hover { color: var(--danger); background: rgba(255,69,58,0.08); }
+
+/* ---- Subbar (filters) ---- */
+.fed-filter {
+  position: sticky; top: 65px; z-index: 40;
+  display: flex; gap: 12px; padding: 12px 40px;
+  background: rgba(5,5,7,0.60); backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+}
+.fed-pill {
+  padding: 6px 14px; border-radius: 8px; font-size: 13px; font-weight: 500;
+  background: var(--bg-card); border: 1px solid var(--border); color: var(--text-secondary);
+  cursor: pointer; transition: all 0.2s;
+}
+.fed-pill:hover { border-color: var(--border-strong); color: var(--text); }
+.fed-pill--active { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+/* ---- Page ---- */
+.fed-page { max-width: 1200px; margin: 0 auto; padding: 48px 40px 80px; }
+.fed-hero { margin-bottom: 64px; }
+.fed-hero__kicker { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--accent); margin-bottom: 12px; }
+.fed-hero__title { font-size: 48px; font-weight: 300; letter-spacing: -0.03em; line-height: 1.1; margin: 0 0 8px; }
+.fed-hero__sub { font-size: 17px; color: var(--text-secondary); font-weight: 400; margin: 0; }
+
+/* ---- Metric Card (the hero) ---- */
+.fed-metric {
+  background: var(--bg-card); border-radius: var(--radius); border: 1px solid var(--border);
+  padding: 32px; transition: all 0.3s var(--ease);
+}
+.fed-metric:hover { background: var(--bg-card-hover); border-color: var(--border-strong); }
+.fed-metric__label { font-size: 13px; font-weight: 500; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 16px; }
+.fed-metric__value { font-size: 64px; font-weight: 200; letter-spacing: -0.04em; line-height: 1; color: var(--text); }
+.fed-metric__value--accent { color: var(--accent); }
+.fed-metric__value--success { color: var(--success); }
+.fed-metric__value--warning { color: var(--warning); }
+.fed-metric__extra { font-size: 14px; color: var(--text-secondary); margin-top: 12px; }
+
+/* ---- Grid ---- */
+.fed-grid { display: grid; gap: 20px; }
+.fed-grid--2 { grid-template-columns: repeat(2, 1fr); }
+.fed-grid--3 { grid-template-columns: repeat(3, 1fr); }
+.fed-grid--4 { grid-template-columns: repeat(4, 1fr); }
+@media (max-width: 960px) { .fed-grid--4 { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 640px) { .fed-grid--2, .fed-grid--3, .fed-grid--4 { grid-template-columns: 1fr; } }
+
+/* ---- Card ---- */
+.fed-card {
+  background: var(--bg-card); border-radius: var(--radius); border: 1px solid var(--border);
+  padding: 28px; transition: all 0.3s var(--ease);
+}
+.fed-card:hover { background: var(--bg-card-hover); border-color: var(--border-strong); }
+.fed-card__title { font-size: 15px; font-weight: 600; color: var(--text); margin: 0 0 4px; }
+.fed-card__sub { font-size: 13px; color: var(--text-secondary); margin: 0 0 20px; }
+
+/* ---- Table ---- */
+.fed-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+.fed-table th { text-align: left; padding: 12px 16px; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-secondary); border-bottom: 1px solid var(--border); }
+.fed-table td { padding: 14px 16px; color: var(--text); border-bottom: 1px solid var(--border); }
+.fed-table tr:hover td { background: rgba(255,255,255,0.02); }
+.fed-table__num { font-variant-numeric: tabular-nums; font-weight: 500; }
+.fed-table__muted { color: var(--text-secondary); }
+
+/* ---- List / Row ---- */
+.fed-row { display: flex; align-items: center; gap: 16px; padding: 14px 16px; border-bottom: 1px solid var(--border); transition: background 0.2s; }
+.fed-row:hover { background: rgba(255,255,255,0.02); }
+.fed-row__name { font-weight: 500; font-size: 14px; flex: 1; }
+.fed-row__meta { font-size: 12px; color: var(--text-secondary); }
+
+/* ---- Badge ---- */
+.fed-badge { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 600; }
+.fed-badge--accent { background: var(--accent-soft); color: var(--accent); }
+.fed-badge--success { background: rgba(50,215,75,0.12); color: var(--success); }
+.fed-badge--warning { background: rgba(255,159,10,0.12); color: var(--warning); }
+.fed-badge--danger { background: rgba(255,69,58,0.12); color: var(--danger); }
+
+/* ---- Bar (minimal) ---- */
+.fed-track { height: 4px; border-radius: 2px; background: var(--bg-elevated); overflow: hidden; }
+.fed-fill { height: 100%; border-radius: 2px; background: var(--accent); transition: width 0.8s var(--ease); }
+.fed-fill--success { background: var(--success); }
+.fed-fill--warning { background: var(--warning); }
+.fed-fill--danger { background: var(--danger); }
+
+/* ---- Empty / Skeleton ---- */
+.fed-empty { padding: 60px; text-align: center; color: var(--text-secondary); font-size: 15px; }
+.fed-skeleton { background: linear-gradient(90deg, var(--bg-card) 25%, var(--bg-elevated) 50%, var(--bg-card) 75%); background-size: 200% 100%; animation: fed-skel 1.5s infinite; border-radius: var(--radius-sm); }
+@keyframes fed-skel { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+
+/* ---- Section divider ---- */
+.fed-divider { display: flex; align-items: baseline; gap: 16px; margin: 48px 0 24px; }
+.fed-divider__title { font-size: 28px; font-weight: 300; letter-spacing: -0.02em; margin: 0; }
+.fed-divider__line { flex: 1; height: 1px; background: var(--border); }
+
+/* ---- Misc ---- */
+.fed-link { color: var(--accent); text-decoration: none; font-size: 14px; font-weight: 500; transition: opacity 0.2s; }
+.fed-link:hover { opacity: 0.7; }
+.fed-note { font-size: 13px; color: var(--text-secondary); line-height: 1.6; }
+
+/* ---- Reduced motion ---- */
+@media (prefers-reduced-motion: reduce) {
+  .fed-skeleton, .fed-metric, .fed-card, .fed-fill, .fed-tab, .fed-pill { transition: none !important; animation: none !important; }
+}

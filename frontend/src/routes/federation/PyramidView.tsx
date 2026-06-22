@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { api } from '../../api/client';
 import { useAuth } from '../../contexts/AuthContext';
 import { Reveal, AnimatedNumber } from '../../components/motion';
-import './avandata.css';
+import './federation.css';
 
 /**
  * Пирамида лиг (слой №2) — ВТОРОЙ взгляд на тот же снимок region_census, что и

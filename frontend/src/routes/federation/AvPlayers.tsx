@@ -7,7 +7,7 @@ import { FedError, FedEmpty } from './FedState';
 import { ratingLabel, rating10Color } from './ratings';
 import { useFedYear, fedQ } from './avYear';
 import { lastName, plMatch } from './utils';
-import './avandata.css';
+import './federation.css';
 
 interface RPlayer { id: number; name: string; birthYear: number | null; position: string | null; club: string | null; clubLogo: string | null; photo?: string | null; rating: number | null; mp?: number }
 
