@@ -1,5 +1,5 @@
 import { Suspense } from 'react';
-import { NavLink, Outlet, useNavigate, useLocation, Link } from 'react-router-dom';
+import { NavLink, Outlet, useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { toast } from '../../components/Toast';
 import { FedYearProvider, YearFilter, DivisionFilter } from './avYear';
@@ -22,14 +22,9 @@ const TABS: Array<{ to: string; end?: boolean; label: string }> = [
 export function FederationLayout() {
   const { user, logout } = useAuth() as FedAuth;
   const navigate = useNavigate();
-  const { pathname } = useLocation();
-  // Когорта (год рождения) применима к 3 экранам; на «Обзоре» (перепись + вердикты)
-  // когортного среза нет — фильтры там скрыты, чтобы не вводить в заблуждение.
-  const onIndex = /\/federation\/?$/.test(pathname);
-  const showYear = !onIndex;
-  // Дивизион значим там, где данные режутся по лиге (Таланты — рейтинг/лидерборд,
-  // Клубы — сила лиг/таблица). На «Потере таланта» срез по дате рождения, не по лиге.
-  const showDivision = /\/federation\/(talent|clubs)$/.test(pathname);
+  // Директива регулятора: фильтры по лиге И возрасту присутствуют на ВСЕХ 4 экранах
+  // (Обзор · Потеря таланта · Таланты · Клубы). Где какой-то срез данные не режут —
+  // экран отвечает подсветкой и честной пометкой охвата, а не молчанием.
   function handleLogout() {
     logout();
     toast.info('Вы вышли из кабинета');
@@ -63,12 +58,10 @@ export function FederationLayout() {
             </div>
           </header>
 
-          {showYear && (
-            <div className="av-subbar">
-              {showDivision && <DivisionFilter />}
-              <YearFilter />
-            </div>
-          )}
+          <div className="av-subbar">
+            <DivisionFilter />
+            <YearFilter />
+          </div>
 
           <main className="av-content">
             <div className="av-page">

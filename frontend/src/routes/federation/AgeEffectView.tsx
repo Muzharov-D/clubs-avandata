@@ -65,7 +65,7 @@ export function FederationAgeEffect() {
  * когорт с поиском крайних. Самонесущее (fetch внутри), без шапки экрана.
  */
 export function AgeEffectBody() {
-  const { year } = useFedYear();
+  const { year, division } = useFedYear();
   const { data, isLoading, error } = useRegionMap();
   if (isLoading) return <div className="fed-skeleton" style={{ height: 320 }} />;
   if (error) return <div className="fed-note" style={{ color: 'var(--danger)' }}>Не удалось загрузить возрастной эффект</div>;
@@ -186,8 +186,10 @@ export function AgeEffectBody() {
           <p className="fed-faint" style={{ fontSize: 11.5, margin: '16px 0 0', lineHeight: 1.55 }}>
             Перекос нарастает к воротам отбора (13–16 лет) — точка вмешательства регулятора.
             Здесь — ВСЕ когорты переписи ФФСПб; фильтр года вверху (только когорты с разбором AvanData)
-            подсвечивает выбранную, но график показывает все. Сезон {p.season} · тот же снимок,
-            что и «Карта региона»{captured ? ` · данные с ${captured}` : ''}.
+            подсвечивает выбранную, но график показывает все. Перекос считается по всей регистрации
+            региона — отдельного среза по лиге <b style={{ color: 'var(--accent-cyan)' }}>{division}</b> в
+            этом снимке нет (срез по лиге доступен на экранах «Таланты» и «Клубы»). Сезон {p.season} ·
+            тот же снимок, что и «Карта региона»{captured ? ` · данные с ${captured}` : ''}.
           </p>
         </div>
       </section>

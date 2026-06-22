@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { api } from '../../api/client';
 import { ClubShield } from './ClubShield';
 import { FedError, FedEmpty } from './FedState';
+import { useFedYear, yearQ } from './avYear';
 import './avandata.css';
 
 /**
@@ -38,14 +39,15 @@ export function FederationProduction() {
 
 /**
  * Тело «Производства талантов» — квадрант-скаттер клубов (топ-игроки × PPG).
- * Расчёт ПУЛИТСЯ по когортам (среза по году в /av/talent-production нет) →
- * region-level, фильтр года не применяется (метка «по региону» в подписи).
+ * Когорта: server-side через ?year из глобального useFedYear — «Все» = совокупность
+ * всех когорт (поведение по умолчанию), выбранный год = одна возрастная группа.
  * Самонесущее, без шапки экрана.
  */
 export function ProductionBody() {
+  const { year } = useFedYear();
   const { data, isLoading, error } = useQuery({
-    queryKey: ['av', 'talent-production'],
-    queryFn: () => api<Payload>('/federation/av/talent-production'),
+    queryKey: ['av', 'talent-production', year],
+    queryFn: () => api<Payload>(`/federation/av/talent-production${yearQ(year)}`),
   });
 
   const clubs = data?.clubs ?? [];
@@ -74,7 +76,7 @@ export function ProductionBody() {
               <div>
                 <h2 className="av-section-title">Производство × результат</h2>
                 <p className="av-section-sub">
-                  по региону (все когорты) · {clubs.length} {plClub(clubs.length)} · крестовина — медианы (талантов {data!.medianTalents}, PPG {data!.medianPpg}) · клик по гербу — детали
+                  {year == null ? 'по региону · все когорты (совокупность)' : `когорта ${year} г.р.`} · {clubs.length} {plClub(clubs.length)} · крестовина — медианы (талантов {data!.medianTalents}, PPG {data!.medianPpg}) · клик по гербу — детали
                 </p>
               </div>
             </div>

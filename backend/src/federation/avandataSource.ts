@@ -1180,19 +1180,23 @@ async function withTimeout<T>(p: Promise<T>, timeoutMs: number, fallback: T, lab
 /** Производство талантов: на каждую когорту 2009..2013 топ-22 оценённых (≥2 матчей) по
  *  рейтингу раскладываем по канон-клубам (talents), PPG клуба×когорты = points/played из
  *  таблицы ФФСПб; агрегируем по клубу за все когорты (сумма талантов, средний PPG, 2 знака).
- *  Возвращаем клубы + медианы talents/ppg (для крестовины квадрантов на фронте). */
-export async function federationTalentProduction(seasonId: number): Promise<TalentProduction> {
-  return cached(`talentprod:${seasonId}`, TTL, async () => {
+ *  Возвращаем клубы + медианы talents/ppg (для крестовины квадрантов на фронте).
+ *  year задан → считаем ТОЛЬКО эту когорту (одна возрастная группа); year отсутствует →
+ *  совокупность всех PROD_YEARS (поведение по умолчанию). Ключ кэша — по году. */
+export async function federationTalentProduction(seasonId: number, year?: number): Promise<TalentProduction> {
+  return cached(`talentprod:${seasonId}:${year ?? 0}`, TTL, async () => {
     const empty: TalentProduction = { clubs: [], medianTalents: 0, medianPpg: 0 };
     // Гард: весь расчёт не должен виснуть. Зеркало быстрое (200 за сек), но если AvanData
     // деградирует — отдаём пусто за ≤8с, а не пендинг >30с. Кэш на TTL не схватит пустой
     // результат (он не закэшируется внутри cached, т.к. возвращается из withTimeout-fallback),
     // поэтому следующий запрос пересчитает заново, когда зеркало оживёт.
-    return withTimeout(computeTalentProduction(seasonId), 8000, empty, 'talent-production');
+    return withTimeout(computeTalentProduction(seasonId, year), 8000, empty, 'talent-production');
   });
 }
 
-async function computeTalentProduction(seasonId: number): Promise<TalentProduction> {
+async function computeTalentProduction(seasonId: number, year?: number): Promise<TalentProduction> {
+  // Когорты для расчёта: одна выбранная (фильтр возраста) или совокупность PROD_YEARS.
+  const years = year != null ? [year] : [...PROD_YEARS];
   // Накопитель по канон-клубу: сумма талантов за когорты + список PPG по когортам + лого/имя.
   const agg = new Map<string, { name: string; logo: string | null; talents: number; ppgs: number[] }>();
   const touch = (canonKey: string, name: string, logo: string | null) => {
@@ -1202,7 +1206,7 @@ async function computeTalentProduction(seasonId: number): Promise<TalentProducti
     return e;
   };
 
-  await pmap([...PROD_YEARS], 3, async (year) => {
+  await pmap(years, 3, async (year) => {
     // Производство: топ-22 по рейтингу когорты (оценённые ≥2 матчей) → счётчик по канон-клубу.
     const players = (await regionPlayers(seasonId, year))
       .filter((p) => p.rating != null && p.mp >= 2); // regionPlayers уже сортирует по рейтингу desc

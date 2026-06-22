@@ -210,13 +210,18 @@ export async function federationRoutes(app: FastifyInstance) {
     return { season, cohorts: await federationRegionBestXi(season) };
   });
 
-  /** GET /federation/av/talent-production — производство талантов × результат (PPG):
+  /** GET /federation/av/talent-production?year= — производство талантов × результат (PPG):
    *  по когортам 2009..2013 топ-22 по рейтингу раскладываются по клубам, PPG из таблиц ФФСПб.
-   *  «Победа ≠ производство таланта» — квадрант-скаттер клубов на фронте. */
+   *  «Победа ≠ производство таланта» — квадрант-скаттер клубов на фронте.
+   *  Без ?year — совокупность всех когорт; с ?year (в диапазоне когорт) — одна возрастная группа.
+   *  Год вне диапазона когорт игнорируем (→ совокупность), чтобы не отдавать пустую карту. */
   app.get('/av/talent-production', async (req, reply) => {
     if (avOff(reply)) return { error: 'AVANDATA_API_KEY не задан', code: 'AVANDATA_OFF' };
     const season = Number((req.query as { season?: string }).season) || AV_SEASON;
-    return await federationTalentProduction(season);
+    const y = yearOf(req);
+    const cohortYears = await availableYears(season);
+    const year = y != null && cohortYears.includes(y) ? y : undefined;
+    return await federationTalentProduction(season, year);
   });
 
   /** GET /federation/av/age-effect?year= — возрастная утечка (RAE по полной дате). */

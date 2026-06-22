@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { StatTile } from '../../components/StatTile';
 import { api } from '../../api/client';
 import { useAuth } from '../../contexts/AuthContext';
+import { useFedYear, inDivision, type Division } from './avYear';
 import './federation.css';
 
 interface Registry {
@@ -75,6 +76,7 @@ export function FederationRegionMap() {
  * по возрастам» НАМЕРЕННО опущен (sparse). Самонесущее (fetch внутри), без шапки.
  */
 export function RegionCensusBody() {
+  const { year, division } = useFedYear();
   const { data, isLoading, error } = useQuery({
     queryKey: ['federation', 'region-map'],
     queryFn: () => api<RegionMapData>('/federation/region-map'),
@@ -123,8 +125,13 @@ export function RegionCensusBody() {
         <div className="fed-census__cell"><StatTile label="Матчи" value={matches} accent="cyan" big /></div>
       </div>
 
-      {/* ---- По лигам: пирамида FFSPB (скрывается, если снимка ещё нет) ---- */}
-      {p && p.leagues.length > 0 && <PyramidCard p={p} />}
+      {/* ---- По лигам: пирамида FFSPB (скрывается, если снимка ещё нет). Выбранная лига
+              в верхнем фильтре — подсвечена; перепись — по всему региону (см. пометку). ---- */}
+      {p && p.leagues.length > 0 && <PyramidCard p={p} division={division} />}
+
+      {/* ---- Честная пометка охвата: перепись региона — все лиги и все когорты; срез по
+              году рождения живёт на экранах «Таланты»/«Клубы», где данные режутся по когорте. ---- */}
+      <ScopeNote year={year} division={division} hasPyramid={!!(p && p.leagues.length > 0)} />
 
       {/* ---- Кадры региона (реестр). «Состав по возрастам» опущен — sparse (1 клуб). ---- */}
       <RegistryCard r={d.registry} />
@@ -133,11 +140,30 @@ export function RegionCensusBody() {
 }
 
 /**
+ * Честная пометка охвата переписи: снимок region_census — по всему региону (все лиги,
+ * все когорты), per-year/одно-лиговый срез в нём отсутствует. Поэтому фильтры на «Обзоре»
+ * не молчат: выбранная лига подсвечивает строку «По лигам», а пометка прямо говорит, что
+ * срез по возрасту применяется на экранах с когортными данными.
+ */
+function ScopeNote({ year, division, hasPyramid }: { year: number | null; division: Division; hasPyramid: boolean }) {
+  return (
+    <p className="fed-faint" style={{ fontSize: 11.5, margin: '-2px 2px 0', lineHeight: 1.55 }}>
+      Перепись региона — по всем лигам и всем когортам.{' '}
+      {hasPyramid ? <>Лига <b style={{ color: 'var(--accent-cyan)' }}>{division}</b> подсвечена в таблице «По лигам».</> : null}
+      {year != null
+        ? ` Срез по году рождения (${year}) применяется на экранах «Таланты» и «Клубы», где данные разобраны по когортам.`
+        : ' Срез по году рождения доступен на экранах «Таланты» и «Клубы».'}
+    </p>
+  );
+}
+
+/**
  * Пирамида лиг региона (FFSPB): по каждой лиге — команды/клубы/игроки/доля Q4 и
  * перекос Q1÷Q4 с токен-баром. Чем выше лига, тем сильнее перекос к рождённым в
  * начале года (отбор по физической зрелости) — это видно одним взглядом по барам.
+ * Выбранная в верхнем фильтре лига (division) подсвечивается — фильтр «делает» видимое.
  */
-function PyramidCard({ p }: { p: PyramidPayload }) {
+function PyramidCard({ p, division }: { p: PyramidPayload; division: Division }) {
   const maxSkew = Math.max(1, ...p.leagues.map((l) => l.skew ?? 0));
   const captured = p.capturedAt ? new Date(p.capturedAt).toLocaleDateString('ru-RU') : null;
   return (
@@ -162,26 +188,36 @@ function PyramidCard({ p }: { p: PyramidPayload }) {
               </tr>
             </thead>
             <tbody>
-              {p.leagues.map((l) => (
-                <tr key={l.league}>
-                  <td>{l.league}</td>
-                  <td className="fed-num">{l.teams}</td>
-                  <td className="fed-num">{l.clubs}</td>
-                  <td className="fed-num">{l.players}</td>
-                  <td className="fed-num">{l.q4pct}%</td>
-                  <td>
-                    <span className="fed-skew">
-                      <span className="fed-skew__track">
-                        <span
-                          className="fed-skew__fill"
-                          style={{ width: `${l.skew != null ? Math.min(100, (l.skew / maxSkew) * 100) : 0}%` }}
-                        />
+              {p.leagues.map((l) => {
+                // Подсветка строки выбранной лиги: левый акцент-рейл + усиление контраста.
+                const sel = inDivision(l.league, division);
+                return (
+                  <tr
+                    key={l.league}
+                    style={sel ? {
+                      background: 'color-mix(in srgb, var(--accent-cyan) 9%, transparent)',
+                      boxShadow: 'inset 3px 0 0 var(--accent-cyan)',
+                    } : undefined}
+                  >
+                    <td style={sel ? { fontWeight: 700, color: 'var(--accent-cyan)' } : undefined}>{l.league}</td>
+                    <td className="fed-num">{l.teams}</td>
+                    <td className="fed-num">{l.clubs}</td>
+                    <td className="fed-num">{l.players}</td>
+                    <td className="fed-num">{l.q4pct}%</td>
+                    <td>
+                      <span className="fed-skew">
+                        <span className="fed-skew__track">
+                          <span
+                            className="fed-skew__fill"
+                            style={{ width: `${l.skew != null ? Math.min(100, (l.skew / maxSkew) * 100) : 0}%` }}
+                          />
+                        </span>
+                        <span className="fed-skew__val fed-num">{l.skew != null ? `${l.skew}×` : '—'}</span>
                       </span>
-                      <span className="fed-skew__val fed-num">{l.skew != null ? `${l.skew}×` : '—'}</span>
-                    </span>
-                  </td>
-                </tr>
-              ))}
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
