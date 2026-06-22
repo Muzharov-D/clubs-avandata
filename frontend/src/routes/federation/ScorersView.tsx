@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { api } from '../../api/client';
 import { useFedYear } from './avYear';
-import './federation.css';
+import './avandata.css';
 
 /**
  * Бомбардиры региона — ВТОРОЙ снимок поверх протоколов FFSPB (как Пирамида/Карта

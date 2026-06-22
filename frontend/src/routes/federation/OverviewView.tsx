@@ -1,7 +1,7 @@
 import { useAuth } from '../../contexts/AuthContext';
 import { RegionCensusBody } from './RegionMap';
 import { DiscoveriesBody } from './DiscoveriesView';
-import './federation.css';
+import './avandata.css';
 
 /**
  * «Обзор» (главная кабинета федерации) — перепись региона (KPI-тоталы пирамиды

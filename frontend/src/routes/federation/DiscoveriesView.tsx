@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { api } from '../../api/client';
 import { useAuth } from '../../contexts/AuthContext';
 import { Reveal, AnimatedNumber } from '../../components/motion';
-import './federation.css';
+import './avandata.css';
 
 /**
  * Открытия региона — домашняя сборка выводов-приговоров поверх УЖЕ снятых

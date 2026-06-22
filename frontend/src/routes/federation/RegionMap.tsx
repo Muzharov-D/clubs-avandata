@@ -4,7 +4,7 @@ import { api } from '../../api/client';
 import { useAuth } from '../../contexts/AuthContext';
 import { Reveal } from '../../components/motion';
 import { useFedYear, inDivision, type Division } from './avYear';
-import './federation.css';
+import './avandata.css';
 
 interface Registry {
   coaches: number | null;

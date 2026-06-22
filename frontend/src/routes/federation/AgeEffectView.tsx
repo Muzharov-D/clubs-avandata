@@ -3,7 +3,7 @@ import { api } from '../../api/client';
 import { useAuth } from '../../contexts/AuthContext';
 import { Reveal } from '../../components/motion';
 import { useFedYear } from './avYear';
-import './federation.css';
+import './avandata.css';
 
 /**
  * Возрастной эффект (relative-age) — ТРЕТИЙ взгляд на тот же снимок region_census,

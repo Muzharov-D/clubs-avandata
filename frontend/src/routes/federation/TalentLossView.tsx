@@ -3,7 +3,7 @@ import { useFedYear } from './avYear';
 import { AgeEffectBody } from './AgeEffectView';
 import { PyramidBody } from './PyramidView';
 import { BuriedBody } from './BuriedView';
-import './federation.css';
+import './avandata.css';
 
 /**
  * «Потеря таланта» — единый экран воронки отбора: перекос по когортам
