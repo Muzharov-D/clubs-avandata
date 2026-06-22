@@ -55,11 +55,6 @@ interface RegionMapData {
  */
 export function FederationRegionMap() {
   const { federation } = useAuth() as { federation: { region?: string; name?: string } | null };
-  const { data, isLoading, error } = useQuery({
-    queryKey: ['federation', 'region-map'],
-    queryFn: () => api<RegionMapData>('/federation/region-map'),
-  });
-
   return (
     <div>
       <header className="fed-head">
@@ -68,20 +63,32 @@ export function FederationRegionMap() {
           <p className="fed-sub">{federation?.region ?? federation?.name ?? 'Регион'} · детско-юношеский футбол — перепись</p>
         </div>
       </header>
-
-      {isLoading && (
-        <div className="fed-kpis">
-          {[0, 1, 2, 3, 4, 5].map((i) => <div key={i} className="fed-skeleton" style={{ height: 104 }} />)}
-        </div>
-      )}
-      {error && <div className="fed-note" style={{ color: 'var(--danger)' }}>Не удалось загрузить карту региона</div>}
-
-      {data && <RegionBody d={data} />}
+      <RegionCensusBody />
     </div>
   );
 }
 
-function RegionBody({ d }: { d: RegionMapData }) {
+/**
+ * Тело переписи региона — KPI-тоталы пирамиды FFSPB (futboltы/клубы/команды/лиги/
+ * матчи/голы) + таблица «По лигам» + «Кадры региона». Источник тоталов — pyramid.totals
+ * (ВСЕ лиги региона), НЕ byAge клубов-членов (он 1-клубно разрежен). Блок «Состав
+ * по возрастам» НАМЕРЕННО опущен (sparse). Самонесущее (fetch внутри), без шапки.
+ */
+export function RegionCensusBody() {
+  const { data, isLoading, error } = useQuery({
+    queryKey: ['federation', 'region-map'],
+    queryFn: () => api<RegionMapData>('/federation/region-map'),
+  });
+  if (isLoading) {
+    return (
+      <div className="fed-kpis">
+        {[0, 1, 2, 3, 4, 5].map((i) => <div key={i} className="fed-skeleton" style={{ height: 104 }} />)}
+      </div>
+    );
+  }
+  if (error) return <div className="fed-note" style={{ color: 'var(--danger)' }}>Не удалось загрузить карту региона</div>;
+  if (!data) return null;
+  const d = data;
   const p = d.pyramid;
   // При наличии переписи по пирамиде (ВСЕ лиги региона) счётчики предпочитают её
   // тоталы — иначе остаются числа клубов-членов (текущее поведение, fallback).
@@ -118,12 +125,8 @@ function RegionBody({ d }: { d: RegionMapData }) {
       {/* ---- По лигам: пирамида FFSPB (скрывается, если снимка ещё нет) ---- */}
       {p && p.leagues.length > 0 && <PyramidCard p={p} />}
 
-      <div className="fed-cols">
-        {/* ---- Кадры региона (реестр) ---- */}
-        <RegistryCard r={d.registry} />
-        {/* ---- Разрез по возрастам ---- */}
-        <ByAgeCard rows={d.byAge} ageGroups={d.ageGroups} />
-      </div>
+      {/* ---- Кадры региона (реестр). «Состав по возрастам» опущен — sparse (1 клуб). ---- */}
+      <RegistryCard r={d.registry} />
     </div>
   );
 }
@@ -212,37 +215,6 @@ function RegistryCard({ r }: { r: Registry | null }) {
               Футбольный контур выше — живые счётчики из базы.
             </p>
           </>
-        )}
-      </div>
-    </section>
-  );
-}
-
-function ByAgeCard({ rows, ageGroups }: { rows: RegionMapData['byAge']; ageGroups: string[] }) {
-  const maxPlayers = Math.max(1, ...rows.map((r) => r.players));
-  return (
-    <section className="fed-card fed-rise">
-      <div className="fed-card__pad">
-        <div className="fed-card__title">
-          Состав по возрастам
-          <span className="fed-faint" style={{ fontWeight: 400 }}>{ageGroups.length} {plural(ageGroups.length, 'возраст', 'возраста', 'возрастов')}</span>
-        </div>
-        {rows.length === 0 ? (
-          <div className="fed-note">Пока нет команд по возрастам.</div>
-        ) : (
-          <div>
-            {rows.map((a) => (
-              <div className="fed-dist__row" key={a.ageGroup} style={{ marginBottom: 10 }}>
-                <span className="fed-dist__label" style={{ width: 70 }}>{a.ageGroup}</span>
-                <span className="fed-meter">
-                  <span className="fed-meter__fill" style={{ width: `${(a.players / maxPlayers) * 100}%`, background: 'var(--brand-gradient)' }} />
-                </span>
-                <span className="fed-dist__val fed-num" style={{ width: 130 }}>
-                  {a.players} {plural(a.players, 'игрок', 'игрока', 'игроков')} · {a.teams} {plural(a.teams, 'команда', 'команды', 'команд')}
-                </span>
-              </div>
-            ))}
-          </div>
         )}
       </div>
     </section>

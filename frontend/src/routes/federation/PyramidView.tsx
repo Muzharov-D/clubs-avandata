@@ -85,11 +85,6 @@ function buildTier(leagues: PyramidLeague[]): Tier {
 
 export function FederationPyramid() {
   const { federation } = useAuth() as { federation: { region?: string; name?: string } | null };
-  const { data, isLoading, error } = useQuery({
-    queryKey: ['federation', 'region-map'],
-    queryFn: () => api<RegionMapData>('/federation/region-map'),
-  });
-
   return (
     <div>
       <header className="fed-head">
@@ -98,20 +93,31 @@ export function FederationPyramid() {
           <p className="fed-sub">{federation?.region ?? federation?.name ?? 'Регион'} · два эшелона — где скапливаются поздно-рождённые</p>
         </div>
       </header>
-
-      {isLoading && (
-        <div className="fed-cols">
-          {[0, 1].map((i) => <div key={i} className="fed-skeleton" style={{ height: 220 }} />)}
-        </div>
-      )}
-      {error && <div className="fed-note" style={{ color: 'var(--danger)' }}>Не удалось загрузить пирамиду лиг</div>}
-
-      {data && <PyramidBody p={data.pyramid} />}
+      <PyramidBody />
     </div>
   );
 }
 
-function PyramidBody({ p }: { p: PyramidPayload | null }) {
+/**
+ * Тело «Пирамиды лиг» — два эшелона по долям кварталов. Снимок ПУЛИТСЯ по всем
+ * лигам региона (per-cohort среза в region_census нет), поэтому это region-level
+ * взгляд — фильтр года к нему не применяется (метка «по региону» в подписи).
+ * Самонесущее (fetch внутри), без шапки экрана.
+ */
+export function PyramidBody() {
+  const { data, isLoading, error } = useQuery({
+    queryKey: ['federation', 'region-map'],
+    queryFn: () => api<RegionMapData>('/federation/region-map'),
+  });
+  if (isLoading) {
+    return (
+      <div className="fed-cols">
+        {[0, 1].map((i) => <div key={i} className="fed-skeleton" style={{ height: 220 }} />)}
+      </div>
+    );
+  }
+  if (error) return <div className="fed-note" style={{ color: 'var(--danger)' }}>Не удалось загрузить пирамиду лиг</div>;
+  const p = data?.pyramid ?? null;
   if (!p || p.leagues.length === 0) {
     return (
       <div className="fed-empty">

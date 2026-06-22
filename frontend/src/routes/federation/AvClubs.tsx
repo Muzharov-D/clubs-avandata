@@ -16,6 +16,26 @@ const num = (n: number) => n.toLocaleString('ru-RU');
 
 /** Клубы региона — рейтинг школ по данным + сила лиг + кто производит талант. */
 export function FederationAvClubs() {
+  const { division } = useFedYear();
+  return (
+    <>
+      <header className="av-head av-rise">
+        <div className="av-head__l">
+          <h1 className="av-title">Клубы региона</h1>
+          <p className="av-sub">Рейтинг клубов по очкам · {division} лига</p>
+        </div>
+      </header>
+      <ClubsBody />
+    </>
+  );
+}
+
+/**
+ * Тело «Клубов региона» — сила лиг + кто производит талант + рейтинг клубов.
+ * Когорта/лига: server-side через yearQ/fedQ из глобального useFedYear (год +
+ * дивизион фильтруют данные на бэке). Самонесущее, без шапки экрана.
+ */
+export function ClubsBody() {
   const { year, division } = useFedYear();
   const q = yearQ(year);
   const cr = useQuery({ queryKey: ['av', 'club-ratings', year], queryFn: () => api<{ groups: Group<RatingRow>[] }>(`/federation/av/club-ratings${q}`) });
@@ -30,13 +50,6 @@ export function FederationAvClubs() {
 
   return (
     <>
-      <header className="av-head av-rise">
-        <div className="av-head__l">
-          <h1 className="av-title">Клубы региона</h1>
-          <p className="av-sub">Рейтинг клубов по очкам · {division} лига</p>
-        </div>
-      </header>
-
       {/* Сила лиг — прямое сравнение дивизионов (обе лиги рядом); выбранная подсвечена */}
       {ds.isLoading ? <div className="av-skeleton av-rise" style={{ height: 116 }} /> : (
         <div className="av-leagues av-rise">

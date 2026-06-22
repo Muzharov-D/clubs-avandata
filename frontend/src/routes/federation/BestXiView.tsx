@@ -3,7 +3,8 @@ import { useQuery } from '@tanstack/react-query';
 import { api } from '../../api/client';
 import { PlayerAvatar } from './PlayerAvatar';
 import { FedError, FedEmpty } from './FedState';
-import { ratingColor } from './ratings';
+import { ratingLabel, rating10Color } from './ratings';
+import { useFedYear } from './avYear';
 import './avandata.css';
 
 /**
@@ -42,15 +43,36 @@ const pctRing = (pct: number): string =>
 const plMatch = (n: number) => { const a = n % 100, b = n % 10; if (a >= 11 && a <= 14) return 'матчей'; if (b === 1) return 'матч'; if (b >= 2 && b <= 4) return 'матча'; return 'матчей'; };
 
 export function FederationBestXi() {
+  return (
+    <>
+      <header className="av-head av-rise">
+        <div className="av-head__l">
+          <h1 className="av-title">Сборная региона</h1>
+          <p className="av-sub">Лучшие по индексу внутри линии · схема 1-4-3-3</p>
+        </div>
+      </header>
+      <BestXiBody />
+    </>
+  );
+}
+
+/**
+ * Тело «Сборной региона» — поле 1-4-3-3 по выбранной когорте. Следует ГЛОБАЛЬНОМУ
+ * фильтру года (useFedYear): «все» → самая младшая когорта (там ядро работы
+ * федерации). Рейтинги нормализованы в шкалу 0–10 (rating10Color/ratingLabel),
+ * сырые сотни AvanData не показываем. Заголовок-секции внутри, без шапки экрана —
+ * чтобы встраивать в «Таланты».
+ */
+export function BestXiBody() {
+  const { year: globalYear } = useFedYear();
   const { data, isLoading, error } = useQuery({
     queryKey: ['av', 'best-xi'],
     queryFn: () => api<{ cohorts: Cohort[] }>('/federation/av/best-xi'),
   });
   const cohorts = useMemo(() => (data?.cohorts ?? []).slice().sort((a, b) => b.year - a.year), [data]);
-  const [year, setYear] = useState<number | null>(null);
-  // По умолчанию — самая младшая (первая) когорта, как только данные приехали.
-  const active = cohorts.find((c) => c.year === year) ?? cohorts[0] ?? null;
   const [peek, setPeek] = useState<XiPlayer | null>(null);
+  // Активная когорта: глобальный год (если он есть среди когорт), иначе младшая.
+  const active = (globalYear != null ? cohorts.find((c) => c.year === globalYear) : null) ?? cohorts[0] ?? null;
 
   // Раскладываем XI когорты по слотам схемы: внутри каждой линии — по порядку с бэка.
   const placed = useMemo(() => {
@@ -69,32 +91,7 @@ export function FederationBestXi() {
 
   return (
     <>
-      <header className="av-head av-rise">
-        <div className="av-head__l">
-          <h1 className="av-title">Сборная региона</h1>
-          <p className="av-sub">Лучшие по индексу внутри линии · схема 1-4-3-3</p>
-        </div>
-      </header>
-
       {error && <FedError />}
-
-      {/* Селектор когорт — год рождения 2013→2009, клиентский. */}
-      {cohorts.length > 0 && (
-        <div className="av-yearbar av-rise" role="tablist" aria-label="Год рождения" style={{ marginBottom: 16 }}>
-          <span className="av-yearbar__label">Год рождения</span>
-          {cohorts.map((c) => {
-            const on = active?.year === c.year;
-            return (
-              <button
-                key={c.year} type="button" role="tab" aria-pressed={on} aria-label={`Год рождения: ${c.year}`}
-                className={`av-ychip${on ? ' av-ychip--active' : ''}`} onClick={() => setYear(c.year)}
-              >
-                {c.year}
-              </button>
-            );
-          })}
-        </div>
-      )}
 
       <section className="av-surface av-surface--feature av-pad-lg av-rise">
         {isLoading ? (
@@ -107,7 +104,8 @@ export function FederationBestXi() {
               <div>
                 <h2 className="av-section-title">Сборная {active.year} года рождения</h2>
                 <p className="av-section-sub">
-                  {active.ratedCount.toLocaleString('ru-RU')} оценённых · {active.clubs} {active.clubs === 1 ? 'клуб' : 'клубов'} · клик по игроку — карточка
+                  {active.ratedCount.toLocaleString('ru-RU')} оценённых · {active.clubs} {active.clubs === 1 ? 'клуб' : 'клубов'}
+                  {globalYear == null ? ' · «Все» → младшая когорта; выбери год сверху' : ''} · клик по игроку — карточка
                 </p>
               </div>
             </div>
@@ -145,7 +143,7 @@ export function FederationBestXi() {
                   >
                     <span className="av-slot__node" style={{ borderRadius: '50%', boxShadow: `0 0 0 2px ${ring}, 0 3px 7px rgba(0,0,0,0.55)` }}>
                       <PlayerAvatar name={player.name} photoUrl={player.photo} size={46} ring={player.line === 'GK'} />
-                      <span className="av-slot__badge" style={{ color: ratingColor(player.rating) }}>{player.rating}</span>
+                      <span className="av-slot__badge" style={{ color: rating10Color(player.rating) }}>{ratingLabel(player.rating)}</span>
                     </span>
                     <span className="av-slot__tag" style={{ color: ring }}>{LINE_TAG[player.line]}</span>
                     <span className="av-slot__name">{lastName(player.name)}</span>
@@ -184,10 +182,10 @@ function XiPeek({ p, onClose }: { p: XiPlayer; onClose: () => void }) {
             <div className="av-peek__name">{p.name}</div>
             <div className="av-peek__meta">{p.club ?? '—'}{p.position ? ` · ${p.position}` : ''} · топ {p.pct}% в линии</div>
           </div>
-          <span className="av-peek__rate" style={{ color: ratingColor(p.rating) }}>{p.rating ?? '—'}</span>
+          <span className="av-peek__rate" style={{ color: rating10Color(p.rating) }}>{ratingLabel(p.rating)}</span>
         </div>
         <div className="av-peek__foot">
-          <span className="av-peek__mp">{p.mp ? `средний рейтинг за ${p.mp} ${plMatch(p.mp)}` : 'средний рейтинг по матчам'}</span>
+          <span className="av-peek__mp">{p.mp ? `средний рейтинг (0–10) за ${p.mp} ${plMatch(p.mp)}` : 'средний рейтинг по матчам'}</span>
         </div>
       </div>
     </div>

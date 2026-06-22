@@ -40,13 +40,14 @@ interface MinutesPayload {
 
 const num = (n: number): string => Math.round(n).toLocaleString('ru-RU');
 
+const useMinutes = () => useQuery({
+  queryKey: ['federation', 'minutes'],
+  queryFn: () => api<MinutesPayload | null>('/federation/minutes'),
+});
+
 export function FederationBuried() {
   const { federation } = useAuth() as { federation: { region?: string; name?: string } | null };
-  const { data, isLoading, error } = useQuery({
-    queryKey: ['federation', 'minutes'],
-    queryFn: () => api<MinutesPayload | null>('/federation/minutes'),
-  });
-
+  const { data } = useMinutes();
   return (
     <div>
       <header className="fed-head">
@@ -59,13 +60,22 @@ export function FederationBuried() {
           </p>
         </div>
       </header>
-
-      {isLoading && <div className="fed-skeleton" style={{ height: 360 }} />}
-      {error && <div className="fed-note" style={{ color: 'var(--danger)' }}>Не удалось загрузить карту возможностей</div>}
-
-      {data !== undefined && <BuriedBody p={data} />}
+      <BuriedBody />
     </div>
   );
+}
+
+/**
+ * Тело «Карты возможностей» — игровое время (реестр / не выходят / погребённые +
+ * разрез по кварталам). Снимок region_minutes ПУЛИТСЯ по региону (per-cohort
+ * среза нет) → region-level, фильтр года не применяется (метка «по региону»).
+ * Самонесущее (fetch внутри), без шапки экрана.
+ */
+export function BuriedBody() {
+  const { data, isLoading, error } = useMinutes();
+  if (isLoading) return <div className="fed-skeleton" style={{ height: 360 }} />;
+  if (error) return <div className="fed-note" style={{ color: 'var(--danger)' }}>Не удалось загрузить карту возможностей</div>;
+  return <BuriedBodyInner p={data ?? null} />;
 }
 
 // Бакеты распределения: 0% (danger), 0–15 & 15–30 (тёплые рампы warning), 30–50 (инфо), ≥50 (success).
@@ -78,7 +88,7 @@ const BUCKET_DEFS: BucketDef[] = [
   { key: 'over50', label: '≥50% — основа', color: 'var(--success)' },
 ];
 
-function BuriedBody({ p }: { p: MinutesPayload | null }) {
+function BuriedBodyInner({ p }: { p: MinutesPayload | null }) {
   if (!p) {
     return (
       <div className="fed-empty">

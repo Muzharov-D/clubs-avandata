@@ -23,6 +23,26 @@ const Y_MAX = 3; // PPG-шкала 0..3
 const plClub = (n: number) => { const a = n % 100, b = n % 10; if (a >= 11 && a <= 14) return 'клубов'; if (b === 1) return 'клуб'; if (b >= 2 && b <= 4) return 'клуба'; return 'клубов'; };
 
 export function FederationProduction() {
+  return (
+    <>
+      <header className="av-head av-rise">
+        <div className="av-head__l">
+          <h1 className="av-title">Производство талантов</h1>
+          <p className="av-sub">Топ-игроки клуба × результат · по разбору AvanData</p>
+        </div>
+      </header>
+      <ProductionBody />
+    </>
+  );
+}
+
+/**
+ * Тело «Производства талантов» — квадрант-скаттер клубов (топ-игроки × PPG).
+ * Расчёт ПУЛИТСЯ по когортам (среза по году в /av/talent-production нет) →
+ * region-level, фильтр года не применяется (метка «по региону» в подписи).
+ * Самонесущее, без шапки экрана.
+ */
+export function ProductionBody() {
   const { data, isLoading, error } = useQuery({
     queryKey: ['av', 'talent-production'],
     queryFn: () => api<Payload>('/federation/av/talent-production'),
@@ -41,13 +61,6 @@ export function FederationProduction() {
 
   return (
     <>
-      <header className="av-head av-rise">
-        <div className="av-head__l">
-          <h1 className="av-title">Производство талантов</h1>
-          <p className="av-sub">Топ-игроки клуба × результат · по разбору AvanData</p>
-        </div>
-      </header>
-
       {error && <FedError />}
 
       <section className="av-surface av-surface--feature av-pad-lg av-rise">
@@ -61,7 +74,7 @@ export function FederationProduction() {
               <div>
                 <h2 className="av-section-title">Производство × результат</h2>
                 <p className="av-section-sub">
-                  {clubs.length} {plClub(clubs.length)} · крестовина — медианы (талантов {data!.medianTalents}, PPG {data!.medianPpg}) · клик по гербу — детали
+                  по региону (все когорты) · {clubs.length} {plClub(clubs.length)} · крестовина — медианы (талантов {data!.medianTalents}, PPG {data!.medianPpg}) · клик по гербу — детали
                 </p>
               </div>
             </div>

@@ -7,21 +7,12 @@ import './avandata.css';
 
 interface FedAuth { user: { fullName?: string; email?: string } | null; logout: () => void }
 
+// Ровно 4 раздела (директива регулятора): без дублей, каждый — полный экран.
 const TABS: Array<{ to: string; end?: boolean; label: string }> = [
-  { to: '/federation', end: true, label: 'Обзор региона' },
-  { to: '/federation/discoveries', label: 'Открытия региона' },
-  { to: '/federation/region-map', label: 'Карта региона' },
-  { to: '/federation/pyramid', label: 'Пирамида лиг' },
-  { to: '/federation/age-effect', label: 'Перекос по когортам' },
-  { to: '/federation/opportunity', label: 'Карта возможностей' },
-  { to: '/federation/scorers', label: 'Бомбардиры' },
-  { to: '/federation/best-xi', label: 'Сборная региона' },
-  { to: '/federation/talent-production', label: 'Производство талантов' },
-  { to: '/federation/players', label: 'Лучшие игроки' },
-  { to: '/federation/fairness', label: 'Эффект возраста' },
-  { to: '/federation/loss-map', label: 'Потери' },
+  { to: '/federation', end: true, label: 'Обзор' },
+  { to: '/federation/talent-loss', label: 'Потеря таланта' },
+  { to: '/federation/talent', label: 'Таланты' },
   { to: '/federation/clubs', label: 'Клубы' },
-  { to: '/federation/compare', label: 'Турниры' },
 ];
 
 /**
@@ -32,8 +23,13 @@ export function FederationLayout() {
   const { user, logout } = useAuth() as FedAuth;
   const navigate = useNavigate();
   const { pathname } = useLocation();
-  // Дивизион инертен на телескопе когорт (region-wide) и на сравнении турниров (там лиги уже рядом).
-  const showDivision = !/\/federation\/(cohorts|compare)$/.test(pathname);
+  // Когорта (год рождения) применима к 3 экранам; на «Обзоре» (перепись + вердикты)
+  // когортного среза нет — фильтры там скрыты, чтобы не вводить в заблуждение.
+  const onIndex = /\/federation\/?$/.test(pathname);
+  const showYear = !onIndex;
+  // Дивизион значим там, где данные режутся по лиге (Таланты — рейтинг/лидерборд,
+  // Клубы — сила лиг/таблица). На «Потере таланта» срез по дате рождения, не по лиге.
+  const showDivision = /\/federation\/(talent|clubs)$/.test(pathname);
   function handleLogout() {
     logout();
     toast.info('Вы вышли из кабинета');
@@ -67,10 +63,12 @@ export function FederationLayout() {
             </div>
           </header>
 
-          <div className="av-subbar">
-            {showDivision && <DivisionFilter />}
-            <YearFilter />
-          </div>
+          {showYear && (
+            <div className="av-subbar">
+              {showDivision && <DivisionFilter />}
+              <YearFilter />
+            </div>
+          )}
 
           <main className="av-content">
             <div className="av-page">

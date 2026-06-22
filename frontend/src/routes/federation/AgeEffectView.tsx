@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { api } from '../../api/client';
 import { useAuth } from '../../contexts/AuthContext';
+import { useFedYear } from './avYear';
 import './federation.css';
 
 /**
@@ -29,13 +30,14 @@ interface RegionMapData {
 
 const num = (n: number): string => Math.round(n).toLocaleString('ru-RU');
 
+const useRegionMap = () => useQuery({
+  queryKey: ['federation', 'region-map'],
+  queryFn: () => api<RegionMapData>('/federation/region-map'),
+});
+
 export function FederationAgeEffect() {
   const { federation } = useAuth() as { federation: { region?: string; name?: string } | null };
-  const { data, isLoading, error } = useQuery({
-    queryKey: ['federation', 'region-map'],
-    queryFn: () => api<RegionMapData>('/federation/region-map'),
-  });
-
+  const { data } = useRegionMap();
   const cohorts = data?.pyramid?.ageEffect ?? [];
   const totalPlayers = cohorts.reduce((a, c) => a + c.players, 0);
 
@@ -51,16 +53,23 @@ export function FederationAgeEffect() {
           </p>
         </div>
       </header>
-
-      {isLoading && <div className="fed-skeleton" style={{ height: 320 }} />}
-      {error && <div className="fed-note" style={{ color: 'var(--danger)' }}>Не удалось загрузить возрастной эффект</div>}
-
-      {data && <AgeEffectBody p={data.pyramid} />}
+      <AgeEffectBody />
     </div>
   );
 }
 
-function AgeEffectBody({ p }: { p: PyramidPayload | null }) {
+/**
+ * Тело «Перекоса по когортам» — гистограмма Q1÷Q4 по годам рождения.
+ * Когорта: ageEffect ЕСТЬ по годам, поэтому выбранный в глобальном useFedYear
+ * год подсвечивается (а вердикт говорит именно о нём); «все» — обычный обзор всех
+ * когорт с поиском крайних. Самонесущее (fetch внутри), без шапки экрана.
+ */
+export function AgeEffectBody() {
+  const { year } = useFedYear();
+  const { data, isLoading, error } = useRegionMap();
+  if (isLoading) return <div className="fed-skeleton" style={{ height: 320 }} />;
+  if (error) return <div className="fed-note" style={{ color: 'var(--danger)' }}>Не удалось загрузить возрастной эффект</div>;
+  const p = data?.pyramid ?? null;
   const cohorts = p?.ageEffect ?? [];
   if (!p || cohorts.length === 0) {
     return (
@@ -76,6 +85,10 @@ function AgeEffectBody({ p }: { p: PyramidPayload | null }) {
   const maxC = withSkew.reduce<(AgeCohort & { skew: number }) | null>((m, c) => (m == null || c.skew > m.skew ? c : m), null);
   const minC = withSkew.reduce<(AgeCohort & { skew: number }) | null>((m, c) => (m == null || c.skew < m.skew ? c : m), null);
 
+  // Выбранная когорта (глобальный фильтр) — её и подсвечиваем; иначе ярче всех.
+  const selected = year != null ? cohorts.find((c) => c.year === year) ?? null : null;
+  const focusYear = selected?.year ?? maxC?.year ?? null;
+
   // Высота столбика ∝ (skew − 1): паритет 1.0× = пол. Нормируем по максимальному избытку.
   const maxExcess = Math.max(0.1, ...withSkew.map((c) => c.skew - 1));
 
@@ -83,7 +96,18 @@ function AgeEffectBody({ p }: { p: PyramidPayload | null }) {
 
   return (
     <div className="fed-stack">
-      {maxC && minC && (
+      {selected ? (
+        <section className="fed-finding fed-finding--hero fed-rise">
+          <div className="fed-finding__kicker">⚠ Перекос · {selected.year} г.р.</div>
+          <p className="fed-finding__verdict">
+            {selected.year}: перекос {selected.skew != null ? `${selected.skew}×` : '—'} · Q1 {selected.q1pct}% — Q4 {selected.q4pct}%
+          </p>
+          <p className="fed-finding__why">
+            По {num(selected.players)} игрокам когорты. Перекос Q1÷Q4 — во сколько раз больше рождённых в начале
+            года (январь–март), чем в конце (октябрь–декабрь). Паритет — 1.0×.{maxC && minC ? ` По региону ярче всех ${maxC.year} (${maxC.skew}×), ровнее ${minC.year} (${minC.skew}×).` : ''}
+          </p>
+        </section>
+      ) : maxC && minC && (
         <section className="fed-finding fed-finding--hero fed-rise">
           <div className="fed-finding__kicker">⚠ Перекос по когортам</div>
           <p className="fed-finding__verdict">
@@ -105,11 +129,13 @@ function AgeEffectBody({ p }: { p: PyramidPayload | null }) {
 
           <div style={{ display: 'grid', gridTemplateColumns: `repeat(${cohorts.length}, 1fr)`, gap: 10, alignItems: 'end' }}>
             {cohorts.map((c) => {
-              const isMax = maxC != null && c.year === maxC.year;
-              const isMin = minC != null && c.year === minC.year;
+              const isFocus = focusYear != null && c.year === focusYear;
+              const isMin = !selected && minC != null && c.year === minC.year;
+              // Когда когорта выбрана — не в фокусе бледнеет; в обзоре «все» бледнеет только минимум.
+              const dim = selected ? !isFocus : isMin;
               const excess = c.skew != null ? Math.max(0, c.skew - 1) : 0;
               const heightPct = (excess / maxExcess) * 100;
-              const barColor = isMax ? 'var(--accent-cyan)' : 'var(--brand-gradient)';
+              const barColor = isFocus ? 'var(--accent-cyan)' : 'var(--brand-gradient)';
               return (
                 <div key={c.year} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
                   <span
@@ -117,8 +143,8 @@ function AgeEffectBody({ p }: { p: PyramidPayload | null }) {
                     style={{
                       fontSize: 12.5,
                       fontWeight: 600,
-                      color: isMax ? 'var(--accent-cyan)' : 'var(--text)',
-                      opacity: isMin ? 0.5 : 1,
+                      color: isFocus ? 'var(--accent-cyan)' : 'var(--text)',
+                      opacity: dim ? 0.5 : 1,
                     }}
                   >
                     {c.skew != null ? `${c.skew}×` : '—'}
@@ -141,14 +167,14 @@ function AgeEffectBody({ p }: { p: PyramidPayload | null }) {
                         height: `${heightPct}%`,
                         background: barColor,
                         borderRadius: 'var(--radius-sm)',
-                        opacity: isMin ? 0.45 : 1,
+                        opacity: dim ? 0.45 : 1,
                         transition: 'height var(--dur) var(--ease-out)',
                       }}
                     />
                   </span>
                   <span
                     className="fed-faint"
-                    style={{ fontSize: 11.5, fontWeight: isMax ? 700 : 400, color: isMax ? 'var(--accent-cyan)' : undefined }}
+                    style={{ fontSize: 11.5, fontWeight: isFocus ? 700 : 400, color: isFocus ? 'var(--accent-cyan)' : undefined }}
                   >
                     {c.year}
                   </span>

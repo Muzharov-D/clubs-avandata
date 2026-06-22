@@ -1,5 +1,4 @@
 import { useQuery } from '@tanstack/react-query';
-import { Link } from 'react-router-dom';
 import { api } from '../../api/client';
 import { ClubShield } from './ClubShield';
 import { PlayerAvatar } from './PlayerAvatar';
@@ -25,9 +24,6 @@ const fmtStamp = (iso: string) => { try { return new Intl.DateTimeFormat('ru-RU'
  * Данные — снимок официального FFSPB (минуты), обновляется `npm run sync:lossmap`.
  */
 export function FederationAvLossMap() {
-  const { year } = useFedYear();
-  const { data, isLoading, error } = useQuery({ queryKey: ['av', 'loss-map'], queryFn: () => api<LossMap>('/federation/av/loss-map') });
-
   return (
     <>
       <header className="av-head av-rise">
@@ -35,14 +31,24 @@ export function FederationAvLossMap() {
           <h1 className="av-title">Карта потерь</h1>
           <p className="av-sub">Кого регион теряет: на отборе и на скамейке · по доле игрового времени</p>
         </div>
-        <Link to="/federation/fairness" className="av-link">Эффект возраста →</Link>
       </header>
-
-      {error && <FedError subject="Карта потерь" />}
-      {isLoading && <div className="av-skeleton av-rise" style={{ height: 360 }} />}
-      {data && <Body d={data} year={year} />}
+      <LossMapBody />
     </>
   );
+}
+
+/**
+ * Тело «Карты потерь» — двойной штраф + воронка по кварталам + примеры.
+ * Когорта: снимок ИМЕЕТ срез по годам (d.cohorts), поэтому выбранный в глобальном
+ * useFedYear год берётся клиентски (d.cohorts.find), «все» → pooled. Самонесущее.
+ */
+export function LossMapBody() {
+  const { year } = useFedYear();
+  const { data, isLoading, error } = useQuery({ queryKey: ['av', 'loss-map'], queryFn: () => api<LossMap>('/federation/av/loss-map') });
+  if (error) return <FedError subject="Карта потерь" />;
+  if (isLoading) return <div className="av-skeleton av-rise" style={{ height: 360 }} />;
+  if (!data) return null;
+  return <Body d={data} year={year} />;
 }
 
 function Body({ d, year }: { d: LossMap; year: number | null }) {

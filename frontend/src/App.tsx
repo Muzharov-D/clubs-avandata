@@ -51,22 +51,13 @@ import { DirectorDashboard } from './routes/director/DirectorDashboard';
 // Кабинет федерации региона (federation_admin) — оболочка eager, экраны lazy
 // (отдельные чанки: фед-код грузится только при заходе в /federation, не в клубный бандл).
 import { FederationLayout } from './routes/federation/FederationLayout';
-const FederationAvCohorts = lazy(() => import('./routes/federation/AvCohorts').then((m) => ({ default: m.FederationAvCohorts })));
-const FederationAvHome = lazy(() => import('./routes/federation/AvHome').then((m) => ({ default: m.FederationAvHome })));
-const FederationAvClubs = lazy(() => import('./routes/federation/AvClubs').then((m) => ({ default: m.FederationAvClubs })));
-const FederationAvCompare = lazy(() => import('./routes/federation/AvCompare').then((m) => ({ default: m.FederationAvCompare })));
-const FederationAvPlayers = lazy(() => import('./routes/federation/AvPlayers').then((m) => ({ default: m.FederationAvPlayers })));
+// 4 консолидированных экрана кабинета (композиция тел существующих экранов).
+const FederationOverview = lazy(() => import('./routes/federation/OverviewView').then((m) => ({ default: m.FederationOverview })));
+const FederationTalentLoss = lazy(() => import('./routes/federation/TalentLossView').then((m) => ({ default: m.FederationTalentLoss })));
+const FederationTalent = lazy(() => import('./routes/federation/TalentView').then((m) => ({ default: m.FederationTalent })));
+const FederationClubs = lazy(() => import('./routes/federation/ClubsView').then((m) => ({ default: m.FederationClubs })));
+// Глубокий маршрут профиля игрока — достижим, но вне главного нав.
 const FederationAvPlayerProfile = lazy(() => import('./routes/federation/AvPlayerProfile').then((m) => ({ default: m.FederationAvPlayerProfile })));
-const FederationAvInsights = lazy(() => import('./routes/federation/AvInsights').then((m) => ({ default: m.FederationAvInsights })));
-const FederationAvLossMap = lazy(() => import('./routes/federation/AvLossMap').then((m) => ({ default: m.FederationAvLossMap })));
-const FederationRegionMap = lazy(() => import('./routes/federation/RegionMap').then((m) => ({ default: m.FederationRegionMap })));
-const FederationPyramid = lazy(() => import('./routes/federation/PyramidView').then((m) => ({ default: m.FederationPyramid })));
-const FederationAgeEffect = lazy(() => import('./routes/federation/AgeEffectView').then((m) => ({ default: m.FederationAgeEffect })));
-const FederationBuried = lazy(() => import('./routes/federation/BuriedView').then((m) => ({ default: m.FederationBuried })));
-const FederationScorers = lazy(() => import('./routes/federation/ScorersView').then((m) => ({ default: m.FederationScorers })));
-const FederationBestXi = lazy(() => import('./routes/federation/BestXiView').then((m) => ({ default: m.FederationBestXi })));
-const FederationProduction = lazy(() => import('./routes/federation/ProductionView').then((m) => ({ default: m.FederationProduction })));
-const FederationDiscoveries = lazy(() => import('./routes/federation/DiscoveriesView').then((m) => ({ default: m.FederationDiscoveries })));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -204,22 +195,29 @@ export function App() {
                       </FederationOnly>
                     }
                   >
-                    <Route index element={<FederationAvHome />} />
-                    <Route path="discoveries" element={<FederationDiscoveries />} />
-                    <Route path="region-map" element={<FederationRegionMap />} />
-                    <Route path="pyramid" element={<FederationPyramid />} />
-                    <Route path="age-effect" element={<FederationAgeEffect />} />
-                    <Route path="opportunity" element={<FederationBuried />} />
-                    <Route path="scorers" element={<FederationScorers />} />
-                    <Route path="best-xi" element={<FederationBestXi />} />
-                    <Route path="talent-production" element={<FederationProduction />} />
-                    <Route path="players" element={<FederationAvPlayers />} />
+                    {/* 4 раздела */}
+                    <Route index element={<FederationOverview />} />
+                    <Route path="talent-loss" element={<FederationTalentLoss />} />
+                    <Route path="talent" element={<FederationTalent />} />
+                    <Route path="clubs" element={<FederationClubs />} />
+
+                    {/* Глубокий профиль игрока — достижим, вне главного нав */}
                     <Route path="players/:id" element={<FederationAvPlayerProfile />} />
-                    <Route path="fairness" element={<FederationAvInsights />} />
-                    <Route path="loss-map" element={<FederationAvLossMap />} />
-                    <Route path="clubs" element={<FederationAvClubs />} />
-                    <Route path="cohorts" element={<FederationAvCohorts />} />
-                    <Route path="compare" element={<FederationAvCompare />} />
+
+                    {/* Редиректы старых путей на ближайший из 4 (закладки не 404) */}
+                    <Route path="discoveries" element={<Navigate to="/federation" replace />} />
+                    <Route path="region-map" element={<Navigate to="/federation" replace />} />
+                    <Route path="pyramid" element={<Navigate to="/federation/talent-loss" replace />} />
+                    <Route path="age-effect" element={<Navigate to="/federation/talent-loss" replace />} />
+                    <Route path="opportunity" element={<Navigate to="/federation/talent-loss" replace />} />
+                    <Route path="fairness" element={<Navigate to="/federation/talent-loss" replace />} />
+                    <Route path="loss-map" element={<Navigate to="/federation/clubs" replace />} />
+                    <Route path="scorers" element={<Navigate to="/federation/talent" replace />} />
+                    <Route path="best-xi" element={<Navigate to="/federation/talent" replace />} />
+                    <Route path="players" element={<Navigate to="/federation/talent" replace />} />
+                    <Route path="talent-production" element={<Navigate to="/federation/clubs" replace />} />
+                    <Route path="cohorts" element={<Navigate to="/federation/talent-loss" replace />} />
+                    <Route path="compare" element={<Navigate to="/federation/clubs" replace />} />
                     <Route path="*" element={<Navigate to="/federation" replace />} />
                   </Route>
 

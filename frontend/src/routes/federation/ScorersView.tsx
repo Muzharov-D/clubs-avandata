@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { api } from '../../api/client';
+import { useFedYear } from './avYear';
 import './federation.css';
 
 /**
@@ -28,13 +29,7 @@ const TOP_N = 12;
 const num = (n: number): string => n.toLocaleString('ru-RU');
 
 export function FederationScorers() {
-  const { data, isLoading, error } = useQuery({
-    queryKey: ['federation', 'region-scorers'],
-    queryFn: () => api<ScorersPayload | null>('/federation/region-scorers'),
-  });
-
-  const matchesScanned = data?.matchesScanned ?? 0;
-
+  const matchesScanned = useScorers().data?.matchesScanned ?? 0;
   return (
     <div>
       <header className="fed-head">
@@ -43,22 +38,38 @@ export function FederationScorers() {
           <p className="fed-sub">Голы из протоколов · Первенство 2009–2016 · {num(matchesScanned)} матчей</p>
         </div>
       </header>
-
-      {isLoading && <div className="fed-skeleton" style={{ height: 420 }} />}
-      {error && <div className="fed-note" style={{ color: 'var(--danger)' }}>Не удалось загрузить бомбардиров региона</div>}
-
-      {!isLoading && !error && <ScorersBody p={data ?? null} />}
+      <ScorersBody />
     </div>
   );
 }
 
-function ScorersBody({ p }: { p: ScorersPayload | null }) {
-  const rows = p?.topGoals ?? [];
+const useScorers = () => useQuery({
+  queryKey: ['federation', 'region-scorers'],
+  queryFn: () => api<ScorersPayload | null>('/federation/region-scorers'),
+});
+
+/**
+ * Тело «Бомбардиров» — топ голеадоров. Когорта: клиентский фильтр по строкам
+ * (`topGoals[].cohort`) из глобального useFedYear — снимок пулится по всем
+ * возрастам, но каждая строка знает свой год, поэтому «2009 рядом с 2016»
+ * чинится отбором по выбранной когорте. «Все» = весь регион. Без шапки экрана.
+ */
+export function ScorersBody() {
+  const { year } = useFedYear();
+  const { data: p, isLoading, error } = useScorers();
+
+  if (isLoading) return <div className="fed-skeleton" style={{ height: 420 }} />;
+  if (error) return <div className="fed-note" style={{ color: 'var(--danger)' }}>Не удалось загрузить бомбардиров региона</div>;
+
+  const all = p?.topGoals ?? [];
+  const rows = year != null ? all.filter((r) => r.cohort === year) : all;
   if (!p || rows.length === 0) {
     return (
       <div className="fed-empty">
         <div className="fed-empty__icon" aria-hidden>⚽</div>
-        Бомбардиры региона ещё не сняты — данные появятся после ближайшего обхода протоколов FFSPB.
+        {year != null
+          ? `По когорте ${year} г.р. голов в снимке пока нет — выбери другой год или «Все».`
+          : 'Бомбардиры региона ещё не сняты — данные появятся после ближайшего обхода протоколов FFSPB.'}
       </div>
     );
   }
@@ -71,7 +82,10 @@ function ScorersBody({ p }: { p: ScorersPayload | null }) {
     <div className="fed-stack">
       <section className="fed-card fed-rise">
         <div className="fed-card__pad">
-          <div className="fed-card__title">Топ голеадоров · голы</div>
+          <div className="fed-card__title">
+            Топ голеадоров · голы
+            <span className="fed-faint" style={{ fontWeight: 400 }}>{year != null ? `${year} г.р.` : 'все возрасты'}</span>
+          </div>
           <div className="fed-stack" style={{ gap: 8, marginTop: 4 }}>
             {top.map((r, i) => (
               <ScorerLine key={`${r.name}-${r.club}-${i}`} rank={i + 1} r={r} max={max} />
