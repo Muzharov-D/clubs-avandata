@@ -7,6 +7,7 @@ import { ratingColor } from './ratings';
 import { PlayerAvatar } from './PlayerAvatar';
 import { FedEmpty } from './FedState';
 import { MatchDetail, type MatchBase } from './MatchDetail';
+import { fmtDate, plMatch, lineOf, LINE_LABEL, topPctOf } from './utils';
 import './avandata.css';
 
 interface PoolP { id: number; rating: number | null; birthYear: number | null; position: string | null }
@@ -23,30 +24,10 @@ interface Profile {
   matches: number; totalEvents: number; metrics: Metric[]; recentMatches: PMatch[];
 }
 
-const fmtD = (iso: string | null) => { if (!iso) return ''; try { return new Intl.DateTimeFormat('ru-RU', { day: 'numeric', month: 'short' }).format(new Date(iso)).replace('.', ''); } catch { return ''; } };
 const toMatchBase = (m: PMatch): MatchBase => ({ id: m.id, age: '', division: '', date: m.date ?? '', home: m.home, away: m.away });
 
 const catColor = (c: string) => (c === 'attack' ? 'var(--av-cat-attack)' : c === 'defense' ? 'var(--av-cat-defense)' : 'var(--av-cat-pass)');
 const catLabel = (c: string) => (c === 'attack' ? 'Атака' : c === 'defense' ? 'Оборона' : 'Развитие');
-const plMatch = (n: number) => { const a = n % 100, b = n % 10; if (a >= 11 && a <= 14) return 'матчей'; if (b === 1) return 'матч'; if (b >= 2 && b <= 4) return 'матча'; return 'матчей'; };
-
-// Линия амплуа (грубая) — для перцентиля «среди своих»: вратари/защита/полузащита/атака.
-type Line = 'GK' | 'DEF' | 'MID' | 'FWD';
-const lineOf = (pos: string | null): Line | null => {
-  const p = (pos ?? '').toLowerCase();
-  if (/врат/.test(p)) return 'GK';
-  if ((/защит/.test(p) || /фулбек/.test(p)) && !/полуз/.test(p)) return 'DEF';
-  if (/полуз|опорн/.test(p)) return 'MID';
-  if (/напад|форвард/.test(p)) return 'FWD';
-  return null;
-};
-const LINE_LABEL: Record<Line, string> = { GK: 'вратарей', DEF: 'защитников', MID: 'полузащитников', FWD: 'нападающих' };
-// «топ X%» по рейтингу внутри пула: меньше = лучше (топ-1% — сильнейшие). null — пул мал.
-const topPctOf = (mine: number, pool: number[], min = 5): number | null => {
-  if (pool.length < min) return null;
-  const below = pool.filter((r) => r < mine).length;
-  return Math.max(1, Math.min(100, Math.round((1 - below / Math.max(1, pool.length - 1)) * 100)));
-};
 
 /** Профиль игрока + перцентильная «пицца» на РЕАЛЬНЫХ событиях (37 метрик). */
 export function FederationAvPlayerProfile() {
@@ -191,7 +172,7 @@ function Body({ p }: { p: Profile }) {
           <div className="av-pmatches">
             {p.recentMatches.map((m, i) => (
               <button type="button" key={i} className="av-pmatch" onClick={() => setSelectedMatch(m)}>
-                <span className="av-pmatch__date">{fmtD(m.date)}</span>
+                <span className="av-pmatch__date">{fmtDate(m.date)}</span>
                 <span className={`av-pmatch__team av-pmatch__team--h${m.playerSide === 'home' ? ' av-pmatch__team--me' : ''}`}>
                   <span className="av-pmatch__name" title={m.home.name}>{m.home.name}</span>
                   <ClubShield name={m.home.name} logoUrl={m.home.logo} size={22} />

@@ -5,6 +5,7 @@ import { PlayerAvatar } from './PlayerAvatar';
 import { FedError, FedEmpty } from './FedState';
 import { ratingLabel, rating10Color } from './ratings';
 import { useFedYear } from './avYear';
+import { lastName, plMatch } from './utils';
 import './avandata.css';
 
 /**
@@ -21,7 +22,6 @@ interface XiPlayer {
 }
 interface Cohort { year: number; ratedCount: number; clubs: number; xi: XiPlayer[]; }
 
-const lastName = (s: string) => { const w = s.trim().split(/\s+/); return w.length > 1 ? w[w.length - 1] : s; };
 
 // Аббревиатура линии для подписи слота (русские, без англицизмов).
 const LINE_TAG: Record<Line, string> = { GK: 'ВРТ', DEF: 'ЗАЩ', MID: 'ПЗ', FWD: 'НАП' };
@@ -40,7 +40,6 @@ const LINE_ORDER: Line[] = ['GK', 'DEF', 'MID', 'FWD'];
 const pctRing = (pct: number): string =>
   pct >= 97 ? 'var(--av-success)' : pct >= 93 ? 'var(--av-accent)' : 'var(--av-text-dim)';
 
-const plMatch = (n: number) => { const a = n % 100, b = n % 10; if (a >= 11 && a <= 14) return 'матчей'; if (b === 1) return 'матч'; if (b >= 2 && b <= 4) return 'матча'; return 'матчей'; };
 
 export function FederationBestXi() {
   return (

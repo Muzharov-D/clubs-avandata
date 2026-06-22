@@ -4,6 +4,7 @@ import { ClubShield } from './ClubShield';
 import { PlayerAvatar } from './PlayerAvatar';
 import { FedError } from './FedState';
 import { useFedYear } from './avYear';
+import { fmtStamp } from './utils';
 import './avandata.css';
 
 interface LossQuarter { q: number; roster: number; medianPct: number; buried15: number; buried30: number; contrib50: number }
@@ -16,7 +17,6 @@ interface LossMap {
 }
 
 const QLABEL = ['янв–мар', 'апр–июн', 'июл–сен', 'окт–дек'];
-const fmtStamp = (iso: string) => { try { return new Intl.DateTimeFormat('ru-RU', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }).format(new Date(iso)); } catch { return ''; } };
 
 /**
  * Карта потерь — ядро боли федерации на ИГРОВОМ ВРЕМЕНИ: кого регион теряет на двери

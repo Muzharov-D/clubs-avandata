@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { api } from '../../api/client';
 import { useAuth } from '../../contexts/AuthContext';
 import { Reveal, AnimatedNumber } from '../../components/motion';
+import { num } from './utils';
 import './avandata.css';
 
 /**
@@ -39,7 +40,7 @@ interface MinutesPayload {
   capturedAt?: string | null;
 }
 
-const num = (n: number): string => Math.round(n).toLocaleString('ru-RU');
+
 
 const useMinutes = () => useQuery({
   queryKey: ['federation', 'minutes'],

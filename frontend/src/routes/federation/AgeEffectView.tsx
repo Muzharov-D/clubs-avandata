@@ -3,6 +3,7 @@ import { api } from '../../api/client';
 import { useAuth } from '../../contexts/AuthContext';
 import { Reveal } from '../../components/motion';
 import { useFedYear } from './avYear';
+import { num } from './utils';
 import './avandata.css';
 
 /**
@@ -29,7 +30,7 @@ interface RegionMapData {
   pyramid: PyramidPayload | null;
 }
 
-const num = (n: number): string => Math.round(n).toLocaleString('ru-RU');
+
 
 const useRegionMap = () => useQuery({
   queryKey: ['federation', 'region-map'],

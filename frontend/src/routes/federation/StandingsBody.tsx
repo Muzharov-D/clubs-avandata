@@ -5,6 +5,7 @@ import { ClubShield } from './ClubShield';
 import { ClubCard } from './ClubCard';
 import { useFedYear, yearQ, inDivision } from './avYear';
 import { ratingLabel, rating10Color } from './ratings';
+import { fmtStamp, plMesto } from './utils';
 import './avandata.css';
 
 interface StandRow { id: number; name: string; logo: string | null; played: number; won: number; drawn: number; lost: number; goalDiff: number; points: number }
@@ -24,10 +25,6 @@ interface CombRow {
 interface CombGroup { division: string; rows: CombRow[] }
 
 const pm = (n: number) => (n > 0 ? `+${n}` : String(n));
-// Дата+время выборки для бейджа свежести: «18 июн 14:32»
-const fmtStamp = (iso?: string) => { if (!iso) return ''; try { return new Intl.DateTimeFormat('ru-RU', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }).format(new Date(iso)); } catch { return ''; } };
-// склонение «место»: 1 место · 2–4 места · 5+ мест (с учётом 11–14)
-const plMesto = (n: number) => { const a = n % 100, b = n % 10; if (a >= 11 && a <= 14) return 'мест'; if (b === 1) return 'место'; if (b >= 2 && b <= 4) return 'места'; return 'мест'; };
 
 const Sk = () => <div className="av-skeleton" style={{ height: 240 }} />;
 

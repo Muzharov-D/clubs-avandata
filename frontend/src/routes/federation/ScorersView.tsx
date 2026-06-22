@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { api } from '../../api/client';
 import { useFedYear } from './avYear';
+import { num } from './utils';
 import './avandata.css';
 
 /**
@@ -26,7 +27,7 @@ interface ScorersPayload {
 }
 
 const TOP_N = 12;
-const num = (n: number): string => n.toLocaleString('ru-RU');
+
 
 export function FederationScorers() {
   const matchesScanned = useScorers().data?.matchesScanned ?? 0;
