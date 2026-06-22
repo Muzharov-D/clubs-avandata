@@ -51,8 +51,7 @@ export function ClubsBody() {
   return (
     <>
       {/* Сила лиг — прямое сравнение дивизионов (обе лиги рядом); выбранная подсвечена.
-          Большое число = ЧИСЛО КЛУБОВ лиги (а не сырой средний рейтинг в десятках тысяч —
-          для регулятора это шум); сила лиги читается лидером в подписи. */}
+          Большое число = средний рейтинг лиги по методике AvanData (абсолют, не нормируем). */}
       {ds.isLoading ? <div className="av-skeleton av-rise" style={{ height: 116 }} /> : (
         <div className="av-leagues av-rise">
           {(ds.data?.divisions ?? []).map((l) => {
@@ -60,8 +59,8 @@ export function ClubsBody() {
             return (
               <div key={l.division} className={`av-surface av-league${sel ? ' av-surface-glow' : ''}`}>
                 <div className="av-league__name">{l.division}</div>
-                <div className="av-league__big" style={{ color: sel ? 'var(--av-cyan)' : 'var(--av-blue-glow)' }}>{l.clubs}</div>
-                <div className="av-league__sub">{plClub(l.clubs)} в лиге{l.topClub ? ` · лидер ${l.topClub}` : ''}</div>
+                <div className="av-league__big" style={{ color: sel ? 'var(--av-cyan)' : 'var(--av-blue-glow)' }}>{l.avgRating != null ? Math.round(l.avgRating).toLocaleString('ru-RU') : '—'}</div>
+                <div className="av-league__sub">средний рейтинг AvanData · {plClub(l.clubs)} в лиге{l.topClub ? ` · лидер ${l.topClub}` : ''}</div>
               </div>
             );
           })}
@@ -99,22 +98,19 @@ export function ClubsBody() {
       {cr.isLoading ? <section className="av-surface av-pad-lg av-rise"><div className="av-skeleton" style={{ height: 320 }} /></section> : (
         <section className="av-surface av-pad-lg av-rise">
           <div className="av-section"><h2 className="av-section-title">Рейтинг клубов</h2></div>
-          {/* Индекс силы 0–100 (рейтинг клуба ÷ лидер ×100) вместо сырой суммы в десятках
-              тысяч: регулятор видит ОТНОСИТЕЛЬНУЮ силу + место, а не бессмысленные 67 645. */}
-          {shown.map((r, i) => {
-            const index = Math.round((r.rating / max) * 100);
-            return (
-              <button type="button" key={`${r.id}-${r.division}`} onClick={() => setSelectedClub(r.id)} className={`av-trow t-pow av-trow--btn${i === 0 ? ' av-trow--lead' : ''}`}>
-                <span className={`av-trow__rank${i < 3 ? ` av-trow__rank--${i + 1}` : ''}`}>{i + 1}</span>
-                <ClubShield name={r.name} logoUrl={r.logo} size={26} />
-                <span className="av-trow__name" title={r.name}>{r.name}</span>
-                <span className="av-chip av-chip--cyan" style={{ justifySelf: 'start' }}>{r.division}</span>
-                <span className="av-meter"><span className="av-meter__fill" style={{ width: `${(Math.abs(r.rating) / max) * 100}%`, background: r.rating < 0 ? 'var(--av-danger)' : i === 0 ? 'var(--av-cyan)' : 'var(--av-blue-glow)' }} /></span>
-                <span className={`av-rate${r.rating < 0 ? ' av-rate--neg' : ''}`} title="индекс силы (лидер = 100)">{index}</span>
-              </button>
-            );
-          })}
-          <p className="av-cap">Индекс силы — рейтинг клуба относительно лидера лиги (лидер = 100).</p>
+          {/* Абсолютный рейтинг клуба по методике AvanData (сумма рейтингов игроков) —
+              показываем как есть; бар — относительная длина к лидеру лиги. */}
+          {shown.map((r, i) => (
+            <button type="button" key={`${r.id}-${r.division}`} onClick={() => setSelectedClub(r.id)} className={`av-trow t-pow av-trow--btn${i === 0 ? ' av-trow--lead' : ''}`}>
+              <span className={`av-trow__rank${i < 3 ? ` av-trow__rank--${i + 1}` : ''}`}>{i + 1}</span>
+              <ClubShield name={r.name} logoUrl={r.logo} size={26} />
+              <span className="av-trow__name" title={r.name}>{r.name}</span>
+              <span className="av-chip av-chip--cyan" style={{ justifySelf: 'start' }}>{r.division}</span>
+              <span className="av-meter"><span className="av-meter__fill" style={{ width: `${(Math.abs(r.rating) / max) * 100}%`, background: r.rating < 0 ? 'var(--av-danger)' : i === 0 ? 'var(--av-cyan)' : 'var(--av-blue-glow)' }} /></span>
+              <span className={`av-rate${r.rating < 0 ? ' av-rate--neg' : ''}`} title="рейтинг клуба AvanData">{Math.round(r.rating).toLocaleString('ru-RU')}</span>
+            </button>
+          ))}
+          <p className="av-cap">Рейтинг клуба — сумма рейтингов игроков по методике AvanData.</p>
         </section>
       )}
 

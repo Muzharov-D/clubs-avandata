@@ -15,13 +15,9 @@ export function ratingColor(value: number | null | undefined): string {
 }
 
 /**
- * Рейтинг игрока региона (AvanData) на шкалу кабинета 0–10.
- *
- * `regionPlayers`/`best-xi` отдают СЫРОЙ averageRating — среднее по матчам поля
- * `averageRating` из by-role (avandataSource.regionPlayers: `Math.round(sum/n)`),
- * это целое в сотнях (≈200–900). Кабинет (и `ratingColor`, и клубный фронт)
- * говорит в шкале 0–10: топ региона ≈ 840 сырых ⇒ 8.4. Значит шкала — raw/100.
- * Возвращаем число 0–10 (1 знак) — НИКОГДА не показываем сырые сотни.
+ * Нормализация СЫРОГО рейтинга AvanData в 0–10 — ТОЛЬКО для выбора цвета-смысла
+ * (ratingColor). Само ЧИСЛО на экране показываем АБСОЛЮТНЫМ (ratingLabel) — рейтинг
+ * AvanData это методика продукта, его не «причёсываем». raw ≈ 200–900 ⇒ /100 для порога.
  */
 const RAW_TO_TEN = 100;
 export function rating10(raw: number | null | undefined): number | null {
@@ -32,10 +28,15 @@ export function rating10(raw: number | null | undefined): number | null {
   const ten = n > 20 ? n / RAW_TO_TEN : n;
   return Math.round(ten * 10) / 10;
 }
-/** Готовая подпись рейтинга 0–10 (1 знак) или «—». */
+/**
+ * Подпись рейтинга — АБСОЛЮТНОЕ значение методики AvanData (НЕ нормируем!).
+ * Показываем как есть, с разделением разрядов: 830, 12 480, хоть миллиард. «—» если нет.
+ */
 export const ratingLabel = (raw: number | null | undefined): string => {
-  const t = rating10(raw);
-  return t == null ? '—' : t.toFixed(1);
+  if (raw == null || Number.isNaN(Number(raw))) return '—';
+  const n = Number(raw);
+  if (n <= 0) return '—';
+  return Math.round(n).toLocaleString('ru-RU');
 };
 /** Цвет-смысл по СЫРОМУ рейтингу: нормализуем в 0–10, затем тот же ratingColor. */
 export const rating10Color = (raw: number | null | undefined): string => ratingColor(rating10(raw));

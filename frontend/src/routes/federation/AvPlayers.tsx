@@ -20,8 +20,8 @@ const plMatch = (n: number) => { const a = n % 100, b = n % 10; if (a >= 11 && a
  * за длинный рейтинг + «кого регион обязан не потерять».
  *
  * Когорта: server-side через fedQ(year, division) из глобального useFedYear —
- * «все» = весь регион, выбранный год = одна когорта (чинит «2009 рядом с 2016»).
- * Рейтинг нормализован в 0–10 (rating10Color/ratingLabel) — сырые сотни не видны.
+ * «все» = весь регион (совокупность), выбранный год = одна когорта.
+ * Рейтинг — АБСОЛЮТНЫЙ AvanData (методика продукта), не нормируем; цвет — по rating10Color.
  */
 export function FederationAvPlayers() {
   return (
@@ -54,38 +54,15 @@ export function RegionLeaderboardBody({ withRising = true, withLeaderboard = tru
   // «С рейтингом» — минимум 2 оценённых матча (рейтинг = среднее по матчам, не пик).
   const ratedTotal = useMemo(() => players.filter((p) => (p.mp ?? 0) >= 2).length, [players]);
 
-  // Перцентиль ВНУТРИ когорты (год рождения): рейтинги 2009 и 2013 не сравнимы напрямую
-  // (методика — рейтинг за матч когорты), поэтому в режиме «Все» ранжируем по месту внутри
-  // своего возраста (percent_rank: топ когорты = 100). Так 2013-й лидер не уезжает вниз под
-  // 2009-х. Когда выбран год — когорта одна, перцентиль не нужен (сортируем по рейтингу).
-  const pctById = useMemo(() => {
-    const m = new Map<number, number>();
-    if (year != null) return m; // одна когорта — перцентиль не считаем
-    const byYear = new Map<number, RPlayer[]>();
-    for (const p of players) {
-      if (p.rating == null || p.birthYear == null || (p.mp ?? 0) < 2) continue;
-      const arr = byYear.get(p.birthYear) ?? [];
-      arr.push(p); byYear.set(p.birthYear, arr);
-    }
-    for (const arr of byYear.values()) {
-      arr.sort((a, b) => (b.rating ?? 0) - (a.rating ?? 0));
-      arr.forEach((p, i) => m.set(p.id, arr.length > 1 ? Math.round((1 - i / (arr.length - 1)) * 1000) / 10 : 100));
-    }
-    return m;
-  }, [players, year]);
-
   const shown = useMemo(() => {
     // При поиске ищем по всем; при обычном просмотре — только игроки с рейтингом (≥2 матчей).
     let list = qStr.trim() ? players : players.filter((p) => (p.mp ?? 0) >= 2);
     if (club !== 'all') list = list.filter((p) => p.club === club);
     if (qStr.trim()) { const q = qStr.toLowerCase(); list = list.filter((p) => p.name.toLowerCase().includes(q)); }
-    // «Все» (без поиска) — сортируем по перцентилю когорты (кросс-возрастно сравнимо),
-    // иначе по рейтингу (одна когорта / поиск — рейтинг прямо сопоставим).
-    if (year == null && !qStr.trim()) {
-      list = list.slice().sort((a, b) => (pctById.get(b.id) ?? -1) - (pctById.get(a.id) ?? -1));
-    }
-    return list.slice(0, 250);
-  }, [players, club, qStr, year, pctById]);
+    // Сортировка — по АБСОЛЮТНОМУ рейтингу AvanData (методика). Возрастной срез — через
+    // верхний фильтр (год = одна когорта; «Все» = совокупность региона).
+    return list.slice().sort((a, b) => (b.rating ?? -1) - (a.rating ?? -1)).slice(0, 250);
+  }, [players, club, qStr]);
 
   // Восходящие — высокий рейтинг среди МЛАДШИХ когорт (честный сигнал «кто растёт»):
   // ядро работы федерации — заметить талант в младших, пока есть время дать ему ход.
@@ -108,7 +85,7 @@ export function RegionLeaderboardBody({ withRising = true, withLeaderboard = tru
             <div>
               <h2 className="av-section-title">Рейтинг игроков</h2>
               <p className="av-section-sub" style={{ margin: '2px 0 0' }}>
-                {players.length.toLocaleString('ru-RU')} разобранных{year != null ? ` · ${year} г.р.` : ' · все возрасты'} · {year == null ? 'ранг по перцентилю когорты (возрасты сравнимы)' : 'средний рейтинг 0–10'}
+                {players.length.toLocaleString('ru-RU')} разобранных{year != null ? ` · ${year} г.р.` : ' · все возрасты'} · рейтинг AvanData
               </p>
             </div>
             <input className="av-search" placeholder="Поиск по имени…" value={qStr} onChange={(e) => setQStr(e.target.value)} />
@@ -125,24 +102,17 @@ export function RegionLeaderboardBody({ withRising = true, withLeaderboard = tru
             : shown.length === 0 ? <FedEmpty>Никого не нашли по фильтру.</FedEmpty>
               : (
                 <div className="av-leaders">
-                  {shown.map((p, i) => {
-                    // В режиме «Все» главное число — перцентиль когорты (кросс-возрастно сравнимо),
-                    // а рейтинг 0–10 уходит в подпись (он сравним только внутри одного возраста).
-                    const pct = year == null && !qStr.trim() ? pctById.get(p.id) : undefined;
-                    return (
-                      <Link key={p.id} to={`/federation/players/${p.id}`} className="av-surface-soft av-leader">
-                        <span className="av-leader__rank">{i + 1}</span>
-                        <PlayerAvatar name={p.name} photoUrl={p.photo} size={40} />
-                        <div className="av-leader__id">
-                          <div className="av-leader__name" title={p.name}>{p.name}</div>
-                          <div className="av-leader__meta">{p.club ?? '—'}{p.position ? ` · ${p.position}` : ''}{p.birthYear ? ` · ${p.birthYear}` : ''}{pct != null ? ` · рейтинг ${ratingLabel(p.rating)}` : ''}</div>
-                        </div>
-                        {pct != null
-                          ? <span className="av-leader__rate" style={{ color: rating10Color(p.rating) }} title="перцентиль внутри когорты (год рождения)">{pct}%</span>
-                          : <span className="av-leader__rate" style={{ color: rating10Color(p.rating) }}>{ratingLabel(p.rating)}</span>}
-                      </Link>
-                    );
-                  })}
+                  {shown.map((p, i) => (
+                    <Link key={p.id} to={`/federation/players/${p.id}`} className="av-surface-soft av-leader">
+                      <span className="av-leader__rank">{i + 1}</span>
+                      <PlayerAvatar name={p.name} photoUrl={p.photo} size={40} />
+                      <div className="av-leader__id">
+                        <div className="av-leader__name" title={p.name}>{p.name}</div>
+                        <div className="av-leader__meta">{p.club ?? '—'}{p.position ? ` · ${p.position}` : ''}{p.birthYear ? ` · ${p.birthYear}` : ''}</div>
+                      </div>
+                      <span className="av-leader__rate" style={{ color: rating10Color(p.rating) }} title="рейтинг AvanData">{ratingLabel(p.rating)}</span>
+                    </Link>
+                  ))}
                 </div>
               )}
           {!isLoading && !qStr.trim() && ratedTotal > shown.length && (
@@ -196,7 +166,7 @@ function XiPeek({ p, onClose }: { p: RPlayer; onClose: () => void }) {
           <span className="av-peek__rate" style={{ color: rating10Color(p.rating) }}>{ratingLabel(p.rating)}</span>
         </div>
         <div className="av-peek__foot">
-          <span className="av-peek__mp">{p.mp ? `средний рейтинг (0–10) за ${p.mp} ${plMatch(p.mp)}` : 'средний рейтинг по матчам'}</span>
+          <span className="av-peek__mp">{p.mp ? `рейтинг AvanData · среднее за ${p.mp} ${plMatch(p.mp)}` : 'рейтинг AvanData · среднее по матчам'}</span>
           <Link to={`/federation/players/${p.id}`} className="av-link" onClick={onClose}>Открыть профиль →</Link>
         </div>
       </div>
