@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { api } from '../../api/client';
+import { FedError, FedEmpty } from './FedState';
 import { useFedYear } from './avYear';
 import { num } from './utils';
 import './federation.css';
@@ -33,11 +34,9 @@ export function FederationScorers() {
   const matchesScanned = useScorers().data?.matchesScanned ?? 0;
   return (
     <div>
-      <header className="fed-head">
-        <div>
-          <h1 className="fed-title">Бомбардиры региона</h1>
-          <p className="fed-sub">Голы из протоколов · Первенство 2009–2016 · {num(matchesScanned)} матчей</p>
-        </div>
+      <header className="fed-hero">
+        <h1 className="fed-hero__title">Бомбардиры региона</h1>
+        <p className="fed-hero__sub">Голы из протоколов · Первенство 2009–2016 · {num(matchesScanned)} матчей</p>
       </header>
       <ScorersBody />
     </div>
@@ -60,18 +59,17 @@ export function ScorersBody() {
   const { data: p, isLoading, error } = useScorers();
 
   if (isLoading) return <div className="fed-skeleton" style={{ height: 420 }} />;
-  if (error) return <div className="fed-note" style={{ color: 'var(--danger)' }}>Не удалось загрузить бомбардиров региона</div>;
+  if (error) return <FedError subject="Бомбардиры региона" />;
 
   const all = p?.topGoals ?? [];
   const rows = year != null ? all.filter((r) => r.cohort === year) : all;
   if (!p || rows.length === 0) {
     return (
-      <div className="fed-empty">
-        <div className="fed-empty__icon" aria-hidden>⚽</div>
+      <FedEmpty>
         {year != null
           ? `По когорте ${year} г.р. голы в снимке отсутствуют — выберите другой год или значение «Все».`
           : 'Данные по бомбардирам региона ещё не сформированы — появятся после ближайшего обновления протоколов ФФСПб.'}
-      </div>
+      </FedEmpty>
     );
   }
 
@@ -80,22 +78,14 @@ export function ScorersBody() {
   const captured = p.capturedAt ? new Date(p.capturedAt).toLocaleDateString('ru-RU') : null;
 
   return (
-    <div className="fed-stack">
-      <section className="fed-card fed-rise">
-        <div className="fed-card__pad">
-          <div className="fed-card__title">
-            Топ голеадоров · голы
-            <span className="fed-faint" style={{ fontWeight: 400 }}>{year != null ? `${year} г.р.` : 'все возрасты'}</span>
-          </div>
-          <div className="fed-stack" style={{ gap: 8, marginTop: 4 }}>
-            {top.map((r, i) => (
-              <ScorerLine key={`${r.name}-${r.club}-${i}`} rank={i + 1} r={r} max={max} />
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <p className="fed-faint" style={{ fontSize: 11.5, margin: 0, lineHeight: 1.55 }}>
+    <div className="fed-card">
+      <h2 className="fed-card__title">Топ голеадоров · голы <span className="fed-table__muted">{year != null ? `${year} г.р.` : 'все возрасты'}</span></h2>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 16 }}>
+        {top.map((r, i) => (
+          <ScorerLine key={`${r.name}-${r.club}-${i}`} rank={i + 1} r={r} max={max} />
+        ))}
+      </div>
+      <p className="fed-note" style={{ marginTop: 16 }}>
         Голы — из событий протоколов ФФСПб (гол/пенальти, автоголы исключены). Ассисты в
         протоколах не заполнены. Сравнение между возрастами условно.
         {captured ? ` Данные с ${captured}.` : ''}
@@ -105,14 +95,14 @@ export function ScorersBody() {
 }
 
 function ScorerLine({ rank, r, max }: { rank: number; r: ScorerRow; max: number }) {
-  // Топ-1 — золото (--warning), топ-2 — циан (--accent-cyan), остальные — нейтраль.
-  const accent = rank === 1 ? 'var(--warning)' : rank === 2 ? 'var(--accent-cyan)' : 'var(--text)';
-  const barColor = rank === 1 ? 'var(--warning)' : rank === 2 ? 'var(--accent-cyan)' : 'var(--brand-primary)';
+  // Топ-1 — золото (--warning), топ-2 — акцент, остальные — нейтраль.
+  const accent = rank === 1 ? 'var(--warning)' : rank === 2 ? 'var(--accent)' : 'var(--text)';
+  const barColor = rank === 1 ? 'var(--warning)' : rank === 2 ? 'var(--accent)' : 'var(--accent)';
   const pct = max > 0 ? (r.goals / max) * 100 : 0;
 
   return (
-    <div className="fed-row" style={{ gap: 12, alignItems: 'center' }}>
-      <span className="fed-faint fed-num" style={{ width: 18, fontSize: 12, textAlign: 'right' }}>{rank}</span>
+    <div className="fed-row">
+      <span className="fed-table__muted" style={{ width: 24, textAlign: 'right' }}>{rank}</span>
 
       <span
         aria-hidden
@@ -125,14 +115,14 @@ function ScorerLine({ rank, r, max }: { rank: number; r: ScorerRow; max: number 
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          background: 'var(--bg-surface-3)',
+          background: 'var(--bg-elevated)',
           border: '1px solid var(--border)',
         }}
       >
         {r.logo ? (
           <img src={r.logo} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
         ) : (
-          <span style={{ width: 12, height: 12, borderRadius: '50%', background: 'color-mix(in srgb, var(--text-faint) 45%, transparent)' }} />
+          <span style={{ width: 12, height: 12, borderRadius: '50%', background: 'var(--text-tertiary)' }} />
         )}
       </span>
 
@@ -141,10 +131,10 @@ function ScorerLine({ rank, r, max }: { rank: number; r: ScorerRow; max: number 
         <div className="fed-row__meta">{r.club} · {r.cohort} г.р.</div>
       </div>
 
-      <span className="fed-meter" style={{ width: 88, flex: 'none' }}>
-        <span className="fed-meter__fill" style={{ width: `${pct}%`, background: barColor }} />
-      </span>
-      <span className="fed-num" style={{ fontWeight: 700, color: accent, width: 26, textAlign: 'right' }}>{r.goals}</span>
+      <div className="fed-track" style={{ width: 88, flex: 'none' }}>
+        <div className="fed-fill" style={{ width: `${pct}%`, background: barColor }} />
+      </div>
+      <span className="fed-table__num" style={{ fontWeight: 700, color: accent, width: 32, textAlign: 'right' }}>{r.goals}</span>
     </div>
   );
 }

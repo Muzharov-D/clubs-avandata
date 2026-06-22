@@ -17,20 +17,14 @@ import './federation.css';
 interface ProdClub { name: string; logo: string | null; talents: number; ppg: number; cohorts: number; }
 interface Payload { clubs: ProdClub[]; medianTalents: number; medianPpg: number; }
 
-// Геометрия графика (в %): поле для точек внутри отступов под оси/подписи.
-const PAD = { l: 9, r: 5, t: 6, b: 11 } as const; // отступы поля в % контейнера
-const Y_MAX = 3; // PPG-шкала 0..3
-
 const plClub = (n: number) => { const a = n % 100, b = n % 10; if (a >= 11 && a <= 14) return 'клубов'; if (b === 1) return 'клуб'; if (b >= 2 && b <= 4) return 'клуба'; return 'клубов'; };
 
 export function FederationProduction() {
   return (
     <>
-      <header className="av-head av-rise">
-        <div className="av-head__l">
-          <h1 className="av-title">Производство талантов</h1>
-          <p className="av-sub">Топ-игроки клуба × результат · по разбору AvanData</p>
-        </div>
+      <header className="fed-hero">
+        <h1 className="fed-hero__title">Производство талантов</h1>
+        <p className="fed-hero__sub">Топ-игроки клуба × результат · по разбору AvanData</p>
       </header>
       <ProductionBody />
     </>
@@ -38,7 +32,7 @@ export function FederationProduction() {
 }
 
 /**
- * Тело «Производства талантов» — квадрант-скаттер клубов (топ-игроки × PPG).
+ * Тело «Производства талантов» — таблица клубов (топ-игроки × PPG).
  * Когорта: server-side через ?year из глобального useFedYear — «Все» = совокупность
  * всех когорт (поведение по умолчанию), выбранный год = одна возрастная группа.
  * Самонесущее, без шапки экрана.
@@ -54,84 +48,72 @@ export function ProductionBody() {
   const maxTalents = useMemo(() => Math.max(4, ...clubs.map((c) => c.talents)), [clubs]);
   const [peek, setPeek] = useState<ProdClub | null>(null);
 
-  // Позиция точки в % контейнера: X ∝ talents/maxTalents, Y ∝ ppg/Y_MAX (инвертируем — верх = высокий PPG).
-  const xPct = (talents: number) => PAD.l + (talents / maxTalents) * (100 - PAD.l - PAD.r);
-  const yPct = (ppg: number) => PAD.t + (1 - Math.min(ppg, Y_MAX) / Y_MAX) * (100 - PAD.t - PAD.b);
-
-  const medX = data ? xPct(data.medianTalents) : 50;
-  const medY = data ? yPct(data.medianPpg) : 50;
+  const zoneLabel = (c: ProdClub) => {
+    const aboveTalents = c.talents >= (data?.medianTalents ?? 0);
+    const abovePpg = c.ppg >= (data?.medianPpg ?? 0);
+    if (aboveTalents && abovePpg) return { label: 'Производство и результат', cls: 'fed-badge--success' };
+    if (!aboveTalents && abovePpg) return { label: 'Результат без производства', cls: 'fed-badge--accent' };
+    if (aboveTalents && !abovePpg) return { label: 'Производство без результата', cls: 'fed-badge--warning' };
+    return { label: 'Без производства и без результата', cls: '' };
+  };
 
   return (
     <>
       {error && <FedError />}
 
-      <section className="av-surface av-surface--feature av-pad-lg av-rise">
+      <section className="fed-card">
         {isLoading ? (
-          <div className="av-skeleton" style={{ aspectRatio: '7 / 5' }} />
+          <div className="fed-skeleton" style={{ height: 240 }} />
         ) : clubs.length === 0 ? (
           <FedEmpty>Недостаточно разобранных когорт для построения карты производства талантов.</FedEmpty>
         ) : (
           <>
-            <div className="av-section" style={{ marginBottom: 12 }}>
-              <div>
-                <h2 className="av-section-title">Производство × результат</h2>
-                <p className="av-section-sub">
-                  {year == null ? 'по региону · все когорты (совокупность)' : `когорта ${year} г.р.`} · {clubs.length} {plClub(clubs.length)} · крестовина — медианы (талантов {data!.medianTalents}, PPG {data!.medianPpg}) · клик по гербу — детали
-                </p>
-              </div>
-            </div>
+            <h2 className="fed-card__title">Производство × результат</h2>
+            <p className="fed-card__sub">
+              {year == null ? 'по региону · все когорты (совокупность)' : `когорта ${year} г.р.`} · {clubs.length} {plClub(clubs.length)} · медианы: талантов {data!.medianTalents}, PPG {data!.medianPpg}
+            </p>
 
-            <div style={{ position: 'relative', width: '100%', aspectRatio: '7 / 5' }}>
-              <svg viewBox="0 0 100 100" preserveAspectRatio="none" width="100%" height="100%" style={{ position: 'absolute', inset: 0 }} aria-hidden>
-                {/* Тинты квадрантов: верх-право (производят и побеждают) — зелёный, низ-право (производят, не побеждают) — янтарь. */}
-                <rect x={medX} y={PAD.t} width={100 - PAD.r - medX} height={medY - PAD.t} fill="var(--av-success)" opacity="0.06" />
-                <rect x={PAD.l} y={PAD.t} width={medX - PAD.l} height={medY - PAD.t} fill="var(--av-accent)" opacity="0.05" />
-                <rect x={medX} y={medY} width={100 - PAD.r - medX} height={100 - PAD.b - medY} fill="var(--av-warning)" opacity="0.06" />
-                <rect x={PAD.l} y={medY} width={medX - PAD.l} height={100 - PAD.b - medY} fill="var(--av-text-dim)" opacity="0.04" />
+            <table className="fed-table">
+              <thead>
+                <tr>
+                  <th>Клуб</th>
+                  <th>Топ-игроков</th>
+                  <th>PPG</th>
+                  <th>Зона</th>
+                </tr>
+              </thead>
+              <tbody>
+                {clubs.map((c) => {
+                  const z = zoneLabel(c);
+                  const pct = maxTalents > 0 ? (c.talents / maxTalents) * 100 : 0;
+                  return (
+                    <tr key={c.name} onClick={() => setPeek(c)} style={{ cursor: 'pointer' }}>
+                      <td>
+                        <div className="fed-row" style={{ padding: 0, borderBottom: 'none', gap: 8 }}>
+                          <ClubShield name={c.name} logoUrl={c.logo} size={30} />
+                          <span className="fed-row__name">{c.name}</span>
+                        </div>
+                      </td>
+                      <td>
+                        <div className="fed-row" style={{ padding: 0, borderBottom: 'none', gap: 8 }}>
+                          <div className="fed-track" style={{ width: 80 }}>
+                            <div className="fed-fill" style={{ width: `${pct}%` }} />
+                          </div>
+                          <span className="fed-table__num">{c.talents}</span>
+                        </div>
+                      </td>
+                      <td className="fed-table__num">{c.ppg}</td>
+                      <td>
+                        {z.cls ? <span className={`fed-badge ${z.cls}`}>{z.label}</span> : <span className="fed-table__muted">{z.label}</span>}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
 
-                {/* Рамка поля */}
-                <rect x={PAD.l} y={PAD.t} width={100 - PAD.l - PAD.r} height={100 - PAD.t - PAD.b} fill="none" stroke="var(--av-border)" strokeWidth="0.3" />
-
-                {/* Крестовина медиан */}
-                <line x1={medX} y1={PAD.t} x2={medX} y2={100 - PAD.b} stroke="var(--av-text-dim)" strokeWidth="0.35" strokeDasharray="1.4 1.4" opacity="0.7" />
-                <line x1={PAD.l} y1={medY} x2={100 - PAD.r} y2={medY} stroke="var(--av-text-dim)" strokeWidth="0.35" strokeDasharray="1.4 1.4" opacity="0.7" />
-              </svg>
-
-              {/* Угловые подписи зон — HTML поверх SVG (чёткий текст без растяжения preserveAspectRatio). */}
-              <ZoneLabel text="Производство и результат" color="var(--av-success)" style={{ right: '6%', top: '7%', textAlign: 'right' }} />
-              <ZoneLabel text="Результат без производства" color="var(--av-accent)" style={{ left: '10%', top: '7%' }} />
-              <ZoneLabel text="Производство без результата" color="var(--av-warning)" style={{ right: '6%', bottom: '13%', textAlign: 'right' }} />
-              <ZoneLabel text="Без производства и без результата" color="var(--av-text-dim)" style={{ left: '10%', bottom: '13%' }} />
-
-              {/* Подписи осей */}
-              <span style={{ position: 'absolute', left: '50%', bottom: 0, transform: 'translateX(-50%)', fontSize: 10, fontWeight: 600, letterSpacing: '0.04em', color: 'var(--av-text-dim)' }}>
-                Топ-игроков (0–{maxTalents})
-              </span>
-              <span style={{ position: 'absolute', left: 2, top: '50%', transform: 'translateY(-50%) rotate(-90deg)', transformOrigin: 'left center', fontSize: 10, fontWeight: 600, letterSpacing: '0.04em', color: 'var(--av-text-dim)', whiteSpace: 'nowrap' }}>
-                Очки за игру (0–{Y_MAX})
-              </span>
-
-              {/* Узлы клубов — герб в круге поверх SVG (как слоты сборной над полем). */}
-              {clubs.map((c) => (
-                <button
-                  key={c.name} type="button" className="av-prodnode"
-                  style={{ left: `${xPct(c.talents)}%`, top: `${yPct(c.ppg)}%` }}
-                  title={`${c.name} · ${c.talents} топ-игроков · PPG ${c.ppg}`}
-                  onClick={() => setPeek(c)}
-                >
-                  {c.logo ? (
-                    <ClubShield name={c.name} logoUrl={c.logo} size={30} />
-                  ) : (
-                    <span className="av-prodnode__dot" style={{ background: 'var(--av-accent)' }} aria-hidden />
-                  )}
-                </button>
-              ))}
-            </div>
-
-            <p className="av-cap" style={{ marginTop: 14 }}>
-              Топ — топ-22 по рейтингу когорты. За один сезон производство таланта и результат частично
-              связаны; диагностическую ценность представляют отклонения: высокое производство при низком
-              результате либо результат без производства собственных талантов.
+            <p className="fed-note" style={{ marginTop: 16 }}>
+              Топ — топ-22 по рейтингу когорты. За один сезон производство таланта и результат частично связаны; диагностическую ценность представляют отклонения: высокое производство при низком результате либо результат без производства собственных талантов.
             </p>
           </>
         )}
@@ -142,36 +124,24 @@ export function ProductionBody() {
   );
 }
 
-function ZoneLabel({ text, color, style }: { text: string; color: string; style: React.CSSProperties }) {
-  return (
-    <span
-      style={{
-        position: 'absolute', maxWidth: '34%', fontSize: 10.5, fontWeight: 700, lineHeight: 1.3,
-        letterSpacing: '0.02em', textTransform: 'uppercase', color, opacity: 0.85, pointerEvents: 'none', ...style,
-      }}
-    >
-      {text}
-    </span>
-  );
-}
+const plYear = (n: number) => { const a = n % 100, b = n % 10; if (a >= 11 && a <= 14) return 'когорт'; if (b === 1) return 'когорту'; if (b >= 2 && b <= 4) return 'когорты'; return 'когорт'; };
 
 /** Карточка клуба из карты — по клику на герб, без ухода со страницы. */
 function ProdPeek({ c, onClose }: { c: ProdClub; onClose: () => void }) {
-  const plYear = (n: number) => { const a = n % 100, b = n % 10; if (a >= 11 && a <= 14) return 'когорт'; if (b === 1) return 'когорту'; if (b >= 2 && b <= 4) return 'когорты'; return 'когорт'; };
   return (
-    <div className="av-modal__backdrop" onClick={onClose} role="presentation">
-      <div className="av-peek" onClick={(e) => e.stopPropagation()} role="dialog" aria-label={c.name}>
-        <button type="button" className="av-modal__close" onClick={onClose} aria-label="Закрыть">✕</button>
-        <div className="av-peek__head">
+    <div style={{ position: 'fixed', inset: 0, zIndex: 100, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center' }} onClick={onClose} role="presentation">
+      <div className="fed-card" style={{ width: '90%', maxWidth: 420, position: 'relative' }} onClick={(e) => e.stopPropagation()} role="dialog" aria-label={c.name}>
+        <button type="button" onClick={onClose} aria-label="Закрыть" style={{ position: 'absolute', top: 16, right: 16, background: 'none', border: 'none', color: 'var(--text-secondary)', fontSize: 18, cursor: 'pointer' }}>✕</button>
+        <div className="fed-row" style={{ borderBottom: 'none', padding: 0 }}>
           <ClubShield name={c.name} logoUrl={c.logo} size={56} />
           <div style={{ minWidth: 0 }}>
-            <div className="av-peek__name">{c.name}</div>
-            <div className="av-peek__meta">{c.talents} топ-игроков · по {c.cohorts} {plYear(c.cohorts)}</div>
+            <div className="fed-row__name" style={{ fontSize: 16 }}>{c.name}</div>
+            <div className="fed-row__meta">{c.talents} топ-игроков · по {c.cohorts} {plYear(c.cohorts)}</div>
           </div>
-          <span className="av-peek__rate" style={{ color: 'var(--av-accent)' }}>{c.ppg}</span>
+          <span style={{ fontSize: 32, fontWeight: 200, letterSpacing: '-0.02em' }}>{c.ppg}</span>
         </div>
-        <div className="av-peek__foot">
-          <span className="av-peek__mp">очки за игру (PPG) · среднее по когортам</span>
+        <div className="fed-row" style={{ borderBottom: 'none', padding: '12px 0 0', marginTop: 12 }}>
+          <span className="fed-row__meta">очки за игру (PPG) · среднее по когортам</span>
         </div>
       </div>
     </div>

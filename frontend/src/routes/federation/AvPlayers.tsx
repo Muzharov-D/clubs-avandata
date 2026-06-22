@@ -6,7 +6,7 @@ import { PlayerAvatar } from './PlayerAvatar';
 import { FedError, FedEmpty } from './FedState';
 import { ratingLabel, rating10Color } from './ratings';
 import { useFedYear, fedQ } from './avYear';
-import { lastName, plMatch } from './utils';
+import { num, plMatch } from './utils';
 import './federation.css';
 
 interface RPlayer { id: number; name: string; birthYear: number | null; position: string | null; club: string | null; clubLogo: string | null; photo?: string | null; rating: number | null; mp?: number }
@@ -24,11 +24,9 @@ interface RPlayer { id: number; name: string; birthYear: number | null; position
 export function FederationAvPlayers() {
   return (
     <>
-      <header className="av-head av-rise">
-        <div className="av-head__l">
-          <h1 className="av-title">Игроки региона</h1>
-          <p className="av-sub">Рейтинг игроков по разбору AvanData · клик → профиль</p>
-        </div>
+      <header className="fed-hero">
+        <h1 className="fed-hero__title">Игроки региона</h1>
+        <p className="fed-hero__sub">Рейтинг игроков по разбору AvanData · клик → профиль</p>
       </header>
       <RegionLeaderboardBody />
     </>
@@ -78,70 +76,86 @@ export function RegionLeaderboardBody({ withRising = true, withLeaderboard = tru
       {error && <FedError />}
 
       {withLeaderboard && (
-        <section className="av-surface av-pad-lg av-rise">
-          <div className="av-section">
-            <div>
-              <h2 className="av-section-title">Рейтинг игроков</h2>
-              <p className="av-section-sub" style={{ margin: '2px 0 0' }}>
-                {players.length.toLocaleString('ru-RU')} разобранных{year != null ? ` · ${year} г.р.` : ' · все возрасты'} · рейтинг AvanData
-              </p>
-            </div>
-            <input className="av-search" placeholder="Поиск по имени…" value={qStr} onChange={(e) => setQStr(e.target.value)} />
+        <section className="fed-card">
+          <h2 className="fed-card__title">Рейтинг игроков</h2>
+          <p className="fed-card__sub">
+            {num(players.length)} разобранных{year != null ? ` · ${year} г.р.` : ' · все возрасты'} · рейтинг AvanData
+          </p>
+
+          <div className="fed-row" style={{ padding: '12px 16px', borderBottom: 'none' }}>
+            <input
+              placeholder="Поиск по имени…"
+              value={qStr}
+              onChange={(e) => setQStr(e.target.value)}
+              style={{ background: 'var(--bg-elevated)', border: '1px solid var(--border)', borderRadius: '8px', color: 'var(--text)', padding: '8px 12px', fontSize: '14px', flex: 1, maxWidth: 320 }}
+            />
+            {clubs.length > 1 && (
+              <select
+                value={club}
+                onChange={(e) => setClub(e.target.value)}
+                aria-label="Фильтр по клубу"
+                style={{ background: 'var(--bg-elevated)', border: '1px solid var(--border)', borderRadius: '8px', color: 'var(--text)', padding: '8px 12px', fontSize: '14px' }}
+              >
+                <option value="all">Все клубы ({clubs.length})</option>
+                {clubs.map((c) => <option key={c} value={c}>{c}</option>)}
+              </select>
+            )}
           </div>
 
-          {clubs.length > 1 && (
-            <select className="av-select" value={club} onChange={(e) => setClub(e.target.value)} aria-label="Фильтр по клубу">
-              <option value="all">Все клубы ({clubs.length})</option>
-              {clubs.map((c) => <option key={c} value={c}>{c}</option>)}
-            </select>
+          {isLoading ? (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8, padding: '16px' }}>
+              {[0, 1, 2, 3, 4, 5, 6].map((i) => <div key={i} className="fed-skeleton" style={{ height: 42 }} />)}
+            </div>
+          ) : shown.length === 0 ? (
+            <FedEmpty>По заданному фильтру игроки не найдены.</FedEmpty>
+          ) : (
+            <div>
+              {shown.map((p, i) => (
+                <Link key={p.id} to={`/federation/players/${p.id}`} className="fed-row" style={{ textDecoration: 'none' }}>
+                  <span className="fed-table__num" style={{ width: 28, textAlign: 'right' }}>{i + 1}</span>
+                  <PlayerAvatar name={p.name} photoUrl={p.photo} size={40} />
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div className="fed-row__name" title={p.name}>{p.name}</div>
+                    <div className="fed-row__meta">{p.club ?? '—'}{p.position ? ` · ${p.position}` : ''}{p.birthYear ? ` · ${p.birthYear}` : ''}</div>
+                  </div>
+                  <span style={{ fontSize: 24, fontWeight: 200, letterSpacing: '-0.02em', color: rating10Color(p.rating) }} title="рейтинг AvanData">{ratingLabel(p.rating)}</span>
+                </Link>
+              ))}
+            </div>
           )}
 
-          {isLoading ? [0, 1, 2, 3, 4, 5, 6].map((i) => <div key={i} className="av-skeleton" style={{ height: 42, marginBottom: 8 }} />)
-            : shown.length === 0 ? <FedEmpty>По заданному фильтру игроки не найдены.</FedEmpty>
-              : (
-                <div className="av-leaders">
-                  {shown.map((p, i) => (
-                    <Link key={p.id} to={`/federation/players/${p.id}`} className="av-surface-soft av-leader">
-                      <span className="av-leader__rank">{i + 1}</span>
-                      <PlayerAvatar name={p.name} photoUrl={p.photo} size={40} />
-                      <div className="av-leader__id">
-                        <div className="av-leader__name" title={p.name}>{p.name}</div>
-                        <div className="av-leader__meta">{p.club ?? '—'}{p.position ? ` · ${p.position}` : ''}{p.birthYear ? ` · ${p.birthYear}` : ''}</div>
-                      </div>
-                      <span className="av-leader__rate" style={{ color: rating10Color(p.rating) }} title="рейтинг AvanData">{ratingLabel(p.rating)}</span>
-                    </Link>
-                  ))}
-                </div>
-              )}
           {!isLoading && !qStr.trim() && ratedTotal > shown.length && (
-            <p className="av-cap">Отображены топ-{shown.length} из {ratedTotal.toLocaleString('ru-RU')} игроков с рейтингом (не менее 2 матчей) — уточните выбор по клубу или поиску.</p>
+            <p className="fed-note" style={{ padding: '12px 16px' }}>Отображены топ-{shown.length} из {num(ratedTotal)} игроков с рейтингом (не менее 2 матчей) — уточните выбор по клубу или поиску.</p>
           )}
         </section>
       )}
 
       {withRising && rising.length > 0 && (
-        <section className="av-surface av-pad-lg av-rise">
-          <div className="av-section">
-            <div>
-              <h2 className="av-section-title">Восходящие игроки</h2>
-              <p className="av-section-sub">Сильнейшие в младших когортах{risingYears.length ? ` · ${risingYears.join(' · ')} г.р.` : ''} — кого регион обязан не потерять</p>
-            </div>
+        <>
+          <div className="fed-divider">
+            <h2 className="fed-divider__title">Восходящие игроки</h2>
+            <div className="fed-divider__line" />
           </div>
-          <div className="av-rising-grid">
+          <p className="fed-note">Сильнейшие в младших когортах{risingYears.length ? ` · ${risingYears.join(' · ')} г.р.` : ''} — кого регион обязан не потерять</p>
+          <div className="fed-grid fed-grid--4">
             {rising.map((p, i) => (
-              <Link key={p.id} to={`/federation/players/${p.id}`} className="av-surface-soft av-rcard">
-                <span className="av-rcard__rank">{i + 1}</span>
-                <PlayerAvatar name={p.name} photoUrl={p.photo} size={42} />
-                <div className="av-rcard__id">
-                  <div className="av-rcard__name" title={p.name}>{p.name}</div>
-                  <div className="av-rcard__meta">{p.club ?? '—'}{p.position ? ` · ${p.position}` : ''}</div>
+              <Link key={p.id} to={`/federation/players/${p.id}`} className="fed-card" style={{ textDecoration: 'none' }}>
+                <div className="fed-row" style={{ borderBottom: 'none', padding: 0 }}>
+                  <span className="fed-table__num" style={{ width: 24, textAlign: 'right' }}>{i + 1}</span>
+                  <PlayerAvatar name={p.name} photoUrl={p.photo} size={42} />
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div className="fed-row__name" title={p.name}>{p.name}</div>
+                    <div className="fed-row__meta">{p.club ?? '—'}{p.position ? ` · ${p.position}` : ''}</div>
+                  </div>
                 </div>
-                <span className="av-rcard__year" title="год рождения">{p.birthYear}</span>
-                <span className="av-rcard__rate" style={{ color: rating10Color(p.rating) }}>{ratingLabel(p.rating)}</span>
+                <div className="fed-row" style={{ borderBottom: 'none', padding: '8px 0 0', marginTop: 8 }}>
+                  <span className="fed-badge">{p.birthYear} г.р.</span>
+                  <span style={{ fontSize: 28, fontWeight: 200, letterSpacing: '-0.02em', marginLeft: 'auto', color: rating10Color(p.rating) }}>{ratingLabel(p.rating)}</span>
+                </div>
               </Link>
             ))}
           </div>
-        </section>
+        </>
       )}
 
       {peek && <XiPeek p={peek} onClose={() => setPeek(null)} />}
@@ -152,20 +166,20 @@ export function RegionLeaderboardBody({ withRising = true, withLeaderboard = tru
 /** Карточка игрока — открывается по клику, без ухода со страницы. */
 function XiPeek({ p, onClose }: { p: RPlayer; onClose: () => void }) {
   return (
-    <div className="av-modal__backdrop" onClick={onClose} role="presentation">
-      <div className="av-peek" onClick={(e) => e.stopPropagation()} role="dialog" aria-label={p.name}>
-        <button type="button" className="av-modal__close" onClick={onClose} aria-label="Закрыть">✕</button>
-        <div className="av-peek__head">
+    <div style={{ position: 'fixed', inset: 0, zIndex: 100, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center' }} onClick={onClose} role="presentation">
+      <div className="fed-card" style={{ width: '90%', maxWidth: 480, position: 'relative' }} onClick={(e) => e.stopPropagation()} role="dialog" aria-label={p.name}>
+        <button type="button" onClick={onClose} aria-label="Закрыть" style={{ position: 'absolute', top: 16, right: 16, background: 'none', border: 'none', color: 'var(--text-secondary)', fontSize: 18, cursor: 'pointer' }}>✕</button>
+        <div className="fed-row" style={{ borderBottom: 'none', padding: 0 }}>
           <PlayerAvatar name={p.name} photoUrl={p.photo} size={66} ring />
           <div style={{ minWidth: 0 }}>
-            <div className="av-peek__name">{p.name}</div>
-            <div className="av-peek__meta">{p.club ?? '—'}{p.position ? ` · ${p.position}` : ''}{p.birthYear ? ` · ${p.birthYear} г.р.` : ''}</div>
+            <div className="fed-row__name" style={{ fontSize: 16 }}>{p.name}</div>
+            <div className="fed-row__meta">{p.club ?? '—'}{p.position ? ` · ${p.position}` : ''}{p.birthYear ? ` · ${p.birthYear} г.р.` : ''}</div>
           </div>
-          <span className="av-peek__rate" style={{ color: rating10Color(p.rating) }}>{ratingLabel(p.rating)}</span>
+          <span style={{ fontSize: 32, fontWeight: 200, letterSpacing: '-0.02em', color: rating10Color(p.rating) }}>{ratingLabel(p.rating)}</span>
         </div>
-        <div className="av-peek__foot">
-          <span className="av-peek__mp">{p.mp ? `рейтинг AvanData · среднее за ${p.mp} ${plMatch(p.mp)}` : 'рейтинг AvanData · среднее по матчам'}</span>
-          <Link to={`/federation/players/${p.id}`} className="av-link" onClick={onClose}>Открыть профиль →</Link>
+        <div className="fed-row" style={{ borderBottom: 'none', padding: '12px 0 0', marginTop: 12, justifyContent: 'space-between' }}>
+          <span className="fed-row__meta">{p.mp ? `рейтинг AvanData · среднее за ${p.mp} ${plMatch(p.mp)}` : 'рейтинг AvanData · среднее по матчам'}</span>
+          <Link to={`/federation/players/${p.id}`} className="fed-link" onClick={onClose}>Открыть профиль →</Link>
         </div>
       </div>
     </div>

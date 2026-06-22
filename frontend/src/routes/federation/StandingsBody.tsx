@@ -26,8 +26,6 @@ interface CombGroup { division: string; rows: CombRow[] }
 
 const pm = (n: number) => (n > 0 ? `+${n}` : String(n));
 
-const Sk = () => <div className="av-skeleton" style={{ height: 240 }} />;
-
 /**
  * Турнирная таблица выбранной лиги — официальная картина первенства как секция
  * «Клубов»: позиция (И/В/Н/П · разница · очки) против рейтинга AvanData + Δ
@@ -73,21 +71,21 @@ export function StandingsBody() {
   }, [st.data, cr.data, division]);
 
   return (
-    <section className="av-surface av-pad-lg av-rise">
-      <div className="av-section">
+    <section className="fed-card">
+      <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap' }}>
         <div>
-          <h2 className="av-section-title">Турнирная таблица</h2>
-          <p className="av-section-sub" style={{ margin: '2px 0 0' }}>
+          <h2 className="fed-card__title">Турнирная таблица</h2>
+          <p className="fed-card__sub">
             {year == null
               ? 'Свод по всем годам рождения — суммарно по когортам, не единое первенство'
               : 'Позиция в первенстве против рейтинга AvanData — кто перевыполняет'}
           </p>
         </div>
-        <span className="av-divtag">{division} лига</span>
+        <span className="fed-badge fed-badge--accent">{division} лига</span>
       </div>
       {st.data && <DataBadge source={st.data.source} degraded={st.data.degraded} asOf={st.data.asOf} />}
-      {st.isLoading || cr.isLoading ? <Sk />
-        : !combined || combined.rows.length === 0 ? <div className="av-note">Нет данных по выбранному фильтру.</div>
+      {st.isLoading || cr.isLoading ? <div className="fed-skeleton" style={{ height: 240 }} />
+        : !combined || combined.rows.length === 0 ? <div className="fed-note">Нет данных по выбранному фильтру.</div>
         : <CombinedTable g={combined} onClub={setSelectedClub} />}
 
       {selectedClub != null && <ClubCard clubId={selectedClub} onClose={() => setSelectedClub(null)} />}
@@ -101,51 +99,66 @@ function DataBadge({ source, degraded, asOf }: { source?: 'ffspb' | 'mirror'; de
   if (!source) return null;
   const stamp = fmtStamp(asOf);
   const cfg = degraded
-    ? { cls: 'av-dbadge--warn', icon: '⚠', text: 'Зеркало AvanData — данные могут быть неполными', tip: 'Официальный API ФФСПб был недоступен — показано зеркало, в нём бывают пропуски команд.' }
+    ? { cls: 'fed-badge--warning', text: 'Зеркало AvanData — данные могут быть неполными', tip: 'Официальный API ФФСПб был недоступен — показано зеркало, в нём бывают пропуски команд.' }
     : source === 'ffspb'
-      ? { cls: 'av-dbadge--ok', icon: '●', text: 'Официальные данные ФФСПб', tip: 'Турнирная таблица получена напрямую из официального API ФФСПб.' }
-      : { cls: 'av-dbadge--muted', icon: '●', text: 'Свод AvanData по когортам', tip: 'Агрегат по всем годам рождения из базы AvanData.' };
+      ? { cls: 'fed-badge--success', text: 'Официальные данные ФФСПб', tip: 'Турнирная таблица получена напрямую из официального API ФФСПб.' }
+      : { cls: '', text: 'Свод AvanData по когортам', tip: 'Агрегат по всем годам рождения из базы AvanData.' };
   return (
-    <div className={`av-dbadge ${cfg.cls}`} title={cfg.tip}>
-      <span className="av-dbadge__dot">{cfg.icon}</span>
+    <div className={`fed-badge ${cfg.cls}`} style={{ marginTop: 12 }} title={cfg.tip}>
+      <span style={{ marginRight: 4 }}>{degraded ? '⚠' : '●'}</span>
       <span>{cfg.text}</span>
-      {stamp && <span className="av-dbadge__stamp">· обновлено {stamp}</span>}
+      {stamp && <span className="fed-table__muted" style={{ marginLeft: 4 }}>· обновлено {stamp}</span>}
     </div>
   );
 }
 
-const rankCls = (i: number) => `av-trow__rank${i < 3 ? ` av-trow__rank--${i + 1}` : ''}`;
-
 function CombinedTable({ g, onClub }: { g: CombGroup; onClub: (id: number) => void }) {
   return (
-    <div className="av-ctable">
-      <div className="av-trow t-comb av-trow--cols">
-        <span /><span />
-        <span className="av-colh av-colh--l">Команда</span>
-        <span className="av-trow__stats av-six"><span>И</span><span>В</span><span>Н</span><span>П</span><span>±</span><span>ОЧ</span></span>
-        <span className="av-colh">Рейтинг</span>
-        <span className="av-colh av-colh--c">Δ</span>
-      </div>
-      {g.rows.map((r, i) => (
-        <button type="button" key={r.id} onClick={() => onClub(r.id)} className={`av-trow t-comb av-trow--btn${i === 0 && r.ranked ? ' av-trow--lead' : ''}${r.ranked ? '' : ' av-trow--ghost'}`}>
-          <span className={r.ranked ? rankCls(i) : 'av-trow__rank'} title={r.ranked ? undefined : 'Есть рейтинг, но ещё нет в турнирной таблице'}>{r.ranked ? i + 1 : '—'}</span>
-          <ClubShield name={r.name} logoUrl={r.logo} size={22} />
-          <span className="av-trow__name" title={r.name}>{r.name}</span>
-          <span className="av-trow__stats av-six">
-            <span className="av-dim">{r.played ?? '—'}</span><span>{r.won ?? '—'}</span><span>{r.drawn ?? '—'}</span><span>{r.lost ?? '—'}</span>
-            <span className={r.goalDiff == null ? 'av-dim' : r.goalDiff > 0 ? 'av-pos' : r.goalDiff < 0 ? 'av-neg' : 'av-dim'}>{r.goalDiff == null ? '—' : pm(r.goalDiff)}</span>
-            <span className="av-trow__pts">{r.points ?? '—'}</span>
-          </span>
-          {/* Рейтинг AvanData — АБСОЛЮТНОЕ значение методики (ratingLabel, не нормируем);
-              цвет-смысл — по нормализованной 0–10 шкале (rating10Color). */}
-          <span className="av-crate" style={{ color: rating10Color(r.rating) }} title="Клубный рейтинг AvanData (сумма рейтингов игроков)">{ratingLabel(r.rating)}</span>
-          <DeltaChip delta={r.delta} />
-        </button>
-      ))}
-      <p className="av-table-legend">
-        <b>Рейтинг</b> — клубный рейтинг AvanData (сумма рейтингов игроков).&ensp;<b>Δ</b> — место в таблице против места по рейтингу:&nbsp;
-        <span className="av-delta av-delta--up av-delta--inline">▲</span> перевыполняет,&nbsp;
-        <span className="av-delta av-delta--down av-delta--inline">▼</span> недовыполняет относительно своего рейтинга.&ensp;Строки с «—» — есть рейтинг, но пока нет матчей в таблице.
+    <div style={{ marginTop: 16 }}>
+      <table className="fed-table">
+        <thead>
+          <tr>
+            <th style={{ width: 40 }} />
+            <th />
+            <th>Команда</th>
+            <th className="fed-table__num">И</th>
+            <th className="fed-table__num">В</th>
+            <th className="fed-table__num">Н</th>
+            <th className="fed-table__num">П</th>
+            <th className="fed-table__num">±</th>
+            <th className="fed-table__num">ОЧ</th>
+            <th>Рейтинг</th>
+            <th className="fed-table__num">Δ</th>
+          </tr>
+        </thead>
+        <tbody>
+          {g.rows.map((r, i) => (
+            <tr key={r.id} onClick={() => onClub(r.id)} style={{ cursor: 'pointer' }}>
+              <td className="fed-table__num" style={{ color: r.ranked ? (i < 3 ? 'var(--accent)' : undefined) : 'var(--text-secondary)' }} title={r.ranked ? undefined : 'Есть рейтинг, но ещё нет в турнирной таблице'}>
+                {r.ranked ? i + 1 : '—'}
+              </td>
+              <td><ClubShield name={r.name} logoUrl={r.logo} size={22} /></td>
+              <td>
+                <div className="fed-row__name" title={r.name}>{r.name}</div>
+              </td>
+              <td className="fed-table__muted">{r.played ?? '—'}</td>
+              <td className="fed-table__num">{r.won ?? '—'}</td>
+              <td className="fed-table__num">{r.drawn ?? '—'}</td>
+              <td className="fed-table__num">{r.lost ?? '—'}</td>
+              <td className="fed-table__num" style={{ color: r.goalDiff == null ? undefined : r.goalDiff > 0 ? 'var(--success)' : r.goalDiff < 0 ? 'var(--danger)' : undefined }}>
+                {r.goalDiff == null ? '—' : pm(r.goalDiff)}
+              </td>
+              <td className="fed-table__num" style={{ fontWeight: 700 }}>{r.points ?? '—'}</td>
+              <td style={{ color: rating10Color(r.rating) }} title="Клубный рейтинг AvanData (сумма рейтингов игроков)">{ratingLabel(r.rating)}</td>
+              <td><DeltaChip delta={r.delta} /></td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      <p className="fed-note">
+        <b>Рейтинг</b> — клубный рейтинг AvanData (сумма рейтингов игроков). <b>Δ</b> — место в таблице против места по рейтингу: {' '}
+        <span className="fed-badge fed-badge--success">▲</span> перевыполняет, {' '}
+        <span className="fed-badge fed-badge--danger">▼</span> недовыполняет относительно своего рейтинга. Строки с «—» — есть рейтинг, но пока нет матчей в таблице.
       </p>
     </div>
   );
@@ -153,11 +166,11 @@ function CombinedTable({ g, onClub }: { g: CombGroup; onClub: (id: number) => vo
 
 // Δ-чип: на сколько мест команда выше (перевыполняет) / ниже (недовыполняет) своего рейтинга.
 function DeltaChip({ delta }: { delta: number | null }) {
-  if (delta == null) return <span className="av-delta av-delta--zero">—</span>;
-  if (delta === 0) return <span className="av-delta av-delta--zero" title="Ровно на уровне своего рейтинга">0</span>;
+  if (delta == null) return <span className="fed-table__muted">—</span>;
+  if (delta === 0) return <span className="fed-table__muted" title="Ровно на уровне своего рейтинга">0</span>;
   const up = delta > 0, n = Math.abs(delta);
   return (
-    <span className={`av-delta ${up ? 'av-delta--up' : 'av-delta--down'}`}
+    <span className={up ? 'fed-badge fed-badge--success' : 'fed-badge fed-badge--danger'}
       title={up ? `Выше своего рейтинга на ${n} ${plMesto(n)} — перевыполняет` : `Ниже своего рейтинга на ${n} ${plMesto(n)} — недовыполняет`}>
       {up ? '▲' : '▼'}{n}
     </span>

@@ -7,7 +7,7 @@ import { useFedYear } from './avYear';
 import { fmtStamp } from './utils';
 import './federation.css';
 
-interface LossQuarter { q: number; roster: number; medianPct: number; buried15: number; buried30: number; contrib50: number }
+interface LossQuarter { q: number; roster: number; medianPct: number; buried15: number; contrib50: number }
 interface LossCohort { year: number; label: string; roster: number; byQuarter: LossQuarter[] }
 interface LossMap {
   generatedAt: string; season: number; note: string;
@@ -26,11 +26,9 @@ const QLABEL = ['янв–мар', 'апр–июн', 'июл–сен', 'окт
 export function FederationAvLossMap() {
   return (
     <>
-      <header className="av-head av-rise">
-        <div className="av-head__l">
-          <h1 className="av-title">Карта потерь</h1>
-          <p className="av-sub">Кого регион теряет: на отборе и на скамейке · по доле игрового времени</p>
-        </div>
+      <header className="fed-hero">
+        <h1 className="fed-hero__title">Карта потерь</h1>
+        <p className="fed-hero__sub">Кого регион теряет: на отборе и на скамейке · по доле игрового времени</p>
       </header>
       <LossMapBody />
     </>
@@ -46,7 +44,7 @@ export function LossMapBody() {
   const { year } = useFedYear();
   const { data, isLoading, error } = useQuery({ queryKey: ['av', 'loss-map'], queryFn: () => api<LossMap>('/federation/av/loss-map') });
   if (error) return <FedError subject="Карта потерь" />;
-  if (isLoading) return <div className="av-skeleton av-rise" style={{ height: 360 }} />;
+  if (isLoading) return <div className="fed-skeleton" style={{ height: 360 }} />;
   if (!data) return null;
   return <Body d={data} year={year} />;
 }
@@ -64,77 +62,85 @@ function Body({ d, year }: { d: LossMap; year: number | null }) {
   return (
     <>
       {/* Двойной штраф — герой */}
-      <section className="av-surface av-finding av-finding--hero av-pad-lg av-rise">
-        <span className="av-finding__kicker">Двойная потеря поздно рождённых · {scopeLabel}</span>
-        <div className="av-loss-twin">
-          <div className="av-loss-twin__cell">
-            <span className="av-loss-twin__n">{skew != null ? `×${skew}` : '—'}</span>
-            <span className="av-loss-twin__l">реже включаются в заявку<br /><b>на этапе отбора</b> (Q1 {q1.roster} · Q4 {q4.roster})</span>
+      <section className="fed-metric">
+        <div className="fed-metric__label">Двойная потеря поздно рождённых · {scopeLabel}</div>
+        <div className="fed-grid fed-grid--2">
+          <div>
+            <div className="fed-metric__value">{skew != null ? `×${skew}` : '—'}</div>
+            <div className="fed-metric__extra">реже включаются в заявку на этапе отбора (Q1 {q1.roster} · Q4 {q4.roster})</div>
           </div>
-          <span className="av-loss-twin__plus">+</span>
-          <div className="av-loss-twin__cell">
-            <span className="av-loss-twin__n" style={{ color: 'var(--av-magenta)' }}>{q4.buried15}%</span>
-            <span className="av-loss-twin__l">из включённых — <b>«погребённые»</b><br />на скамейке (Q1 {q1.buried15}%)</span>
+          <div>
+            <div className="fed-metric__value fed-metric__value--warning">{q4.buried15}%</div>
+            <div className="fed-metric__extra">из включённых — «погребённые» на скамейке (Q1 {q1.buried15}%)</div>
           </div>
         </div>
-        <p className="av-why" style={{ marginTop: 16 }}>
-          Регион теряет поздно рождённых дважды: их <b style={{ color: 'var(--av-text)' }}>в {skew ?? '—'} раза реже</b> включают в заявку, а включённые — <b style={{ color: 'var(--av-text)' }}>чаще остаются на скамейке</b> (менее 15% игрового времени). Низкая игровая практика при формальном участии распределена неравномерно — перекос направлен против рождённых в конце года.
+        <p className="fed-note" style={{ marginTop: 16 }}>
+          Регион теряет поздно рождённых дважды: их <b>в {skew ?? '—'} раза реже</b> включают в заявку, а включённые — <b>чаще остаются на скамейке</b> (менее 15% игрового времени). Низкая игровая практика при формальном участии распределена неравномерно — перекос направлен против рождённых в конце года.
         </p>
       </section>
 
       {/* Воронка по кварталам рождения */}
-      <section className="av-surface av-pad-lg av-rise">
-        <div className="av-section">
-          <div>
-            <h2 className="av-section-title">По кварталу рождения</h2>
-            <p className="av-section-sub" style={{ margin: '2px 0 0' }}>Размер заявки · медиана игрового времени · доля «погребённых» (&lt;15% времени)</p>
-          </div>
-        </div>
-        <div className="av-loss-funnel">
-          <div className="av-lossrow av-lossrow--head">
-            <span>Квартал</span><span>В заявке</span><span>Медиана времени</span><span>«Погребены» &lt;15%</span>
-          </div>
-          {bq.map((q) => (
-            <div key={q.q} className="av-lossrow">
-              <span className="av-lossrow__q">Q{q.q} · {QLABEL[q.q - 1]}</span>
-              <span className="av-lossrow__roster">
-                <span className="av-lossrow__bar"><span style={{ width: `${(q.roster / maxRoster) * 100}%`, background: q.q === 4 ? 'var(--av-magenta)' : 'var(--av-cyan)' }} /></span>
-                <b>{q.roster}</b>
-              </span>
-              <span className="av-lossrow__med" style={{ color: q.medianPct < 35 ? 'var(--av-warning)' : 'var(--av-text)' }}>{q.medianPct}%</span>
-              <span className="av-lossrow__buried">
-                <span className="av-lossrow__bar"><span style={{ width: `${q.buried15}%`, background: 'var(--av-magenta)' }} /></span>
-                <b style={{ color: 'var(--av-magenta)' }}>{q.buried15}%</b>
-              </span>
-            </div>
-          ))}
-        </div>
-        <p className="av-why" style={{ marginTop: 14 }}>«Погребённые» — игроки в заявке, проведшие на поле менее 15% игрового времени команды. Приоритетные зоны для мер федерации — <b style={{ color: 'var(--av-text)' }}>отбор</b> (основной перекос) и контроль доступа молодых игроков к игровой практике.</p>
+      <section className="fed-card">
+        <h2 className="fed-card__title">По кварталу рождения</h2>
+        <p className="fed-card__sub">Размер заявки · медиана игрового времени · доля «погребённых» (&lt;15% времени)</p>
+        <table className="fed-table">
+          <thead>
+            <tr>
+              <th>Квартал</th>
+              <th>В заявке</th>
+              <th>Медиана времени</th>
+              <th>«Погребены» &lt;15%</th>
+            </tr>
+          </thead>
+          <tbody>
+            {bq.map((q) => (
+              <tr key={q.q}>
+                <td>Q{q.q} · {QLABEL[q.q - 1]}</td>
+                <td>
+                  <div className="fed-row" style={{ padding: 0, borderBottom: 'none', gap: 8 }}>
+                    <div className="fed-track" style={{ width: 80 }}>
+                      <div className="fed-fill" style={{ width: `${(q.roster / maxRoster) * 100}%`, background: q.q === 4 ? 'var(--danger)' : 'var(--accent)' }} />
+                    </div>
+                    <span className="fed-table__num">{q.roster}</span>
+                  </div>
+                </td>
+                <td className="fed-table__num" style={{ color: q.medianPct < 35 ? 'var(--warning)' : undefined }}>{q.medianPct}%</td>
+                <td>
+                  <div className="fed-row" style={{ padding: 0, borderBottom: 'none', gap: 8 }}>
+                    <div className="fed-track" style={{ width: 80 }}>
+                      <div className="fed-fill fed-fill--danger" style={{ width: `${q.buried15}%` }} />
+                    </div>
+                    <span className="fed-table__num" style={{ color: 'var(--danger)' }}>{q.buried15}%</span>
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        <p className="fed-note" style={{ marginTop: 16 }}>«Погребённые» — игроки в заявке, проведшие на поле менее 15% игрового времени команды. Приоритетные зоны для мер федерации — <b>отбор</b> (основной перекос) и контроль доступа молодых игроков к игровой практике.</p>
       </section>
 
       {/* Кого именно теряем */}
       {examples.length > 0 && (
-        <section className="av-surface av-pad-lg av-rise">
-          <div className="av-section"><h2 className="av-section-title">Кого регион теряет</h2>
-            <span className="av-section-sub" style={{ margin: 0 }}>поздно рождённые игроки в заявке с минимальным игровым временем</span></div>
-          <div className="av-loss-ex">
+        <section className="fed-card">
+          <h2 className="fed-card__title">Кого регион теряет</h2>
+          <p className="fed-card__sub">поздно рождённые игроки в заявке с минимальным игровым временем</p>
+          <div>
             {examples.map((e, i) => (
-              <div key={i} className="av-loss-excard">
+              <div key={i} className="fed-row">
                 <PlayerAvatar name={e.name} size={38} />
-                <div className="av-loss-excard__id">
-                  <div className="av-loss-excard__name" title={e.name}>{e.name}</div>
-                  <div className="av-loss-excard__team"><ClubShield name={e.team} size={16} /> {e.team} · {e.year} г.р.</div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div className="fed-row__name" title={e.name}>{e.name}</div>
+                  <div className="fed-row__meta"><ClubShield name={e.team} size={16} /> {e.team} · {e.year} г.р.</div>
                 </div>
-                <span className="av-loss-excard__pct">{e.pct}%</span>
+                <span style={{ fontSize: 24, fontWeight: 200, letterSpacing: '-0.02em', color: 'var(--danger)' }}>{e.pct}%</span>
               </div>
             ))}
           </div>
         </section>
       )}
 
-      <p className="av-dim" style={{ fontSize: 11, lineHeight: 1.5 }}>
-        Снимок официального FFSPB от {fmtStamp(d.generatedAt)} · реестр {view.roster} игроков{cohort ? '' : ` (${d.cohorts.length} когорт)`}. {d.note}.
-      </p>
+      <p className="fed-note">Снимок официального FFSPB от {fmtStamp(d.generatedAt)} · реестр {view.roster} игроков{cohort ? '' : ` (${d.cohorts.length} когорт)`}. {d.note}.</p>
     </>
   );
 }

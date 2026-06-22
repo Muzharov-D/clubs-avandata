@@ -5,6 +5,7 @@ import { ClubShield } from './ClubShield';
 import { ClubCard } from './ClubCard';
 import { FedError } from './FedState';
 import { useFedYear, yearQ, fedQ, inDivision } from './avYear';
+import { num } from './utils';
 import './federation.css';
 
 interface RatingRow { id: number; name: string; logo: string | null; rating: number }
@@ -19,11 +20,9 @@ export function FederationAvClubs() {
   const { division } = useFedYear();
   return (
     <>
-      <header className="av-head av-rise">
-        <div className="av-head__l">
-          <h1 className="av-title">Клубы региона</h1>
-          <p className="av-sub">Рейтинг клубов по очкам · {division} лига</p>
-        </div>
+      <header className="fed-hero">
+        <h1 className="fed-hero__title">Клубы региона</h1>
+        <p className="fed-hero__sub">Рейтинг клубов по очкам · {division} лига</p>
       </header>
       <ClubsBody />
     </>
@@ -52,15 +51,19 @@ export function ClubsBody() {
     <>
       {/* Сила лиг — прямое сравнение дивизионов (обе лиги рядом); выбранная подсвечена.
           Большое число = средний рейтинг лиги по методике AvanData (абсолют, не нормируем). */}
-      {ds.isLoading ? <div className="av-skeleton av-rise" style={{ height: 116 }} /> : (
-        <div className="av-leagues av-rise">
+      {ds.isLoading ? <div className="fed-skeleton" style={{ height: 116 }} /> : (
+        <div className="fed-grid fed-grid--2">
           {(ds.data?.divisions ?? []).map((l) => {
             const sel = inDivision(l.division, division);
             return (
-              <div key={l.division} className={`av-surface av-league${sel ? ' av-surface-glow' : ''}`}>
-                <div className="av-league__name">{l.division}</div>
-                <div className="av-league__big" style={{ color: sel ? 'var(--av-cyan)' : 'var(--av-blue-glow)' }}>{l.avgRating != null ? Math.round(l.avgRating).toLocaleString('ru-RU') : '—'}</div>
-                <div className="av-league__sub">средний рейтинг AvanData · {plClub(l.clubs)} в лиге{l.topClub ? ` · лидер ${l.topClub}` : ''}</div>
+              <div key={l.division} className="fed-metric">
+                <div className="fed-metric__label">{l.division}</div>
+                <div className={`fed-metric__value${sel ? ' fed-metric__value--accent' : ''}`}>
+                  {l.avgRating != null ? num(l.avgRating) : '—'}
+                </div>
+                <div className="fed-metric__extra">
+                  средний рейтинг AvanData · {plClub(l.clubs)} в лиге{l.topClub ? ` · лидер ${l.topClub}` : ''}
+                </div>
               </div>
             );
           })}
@@ -68,49 +71,50 @@ export function ClubsBody() {
       )}
 
       {/* Кто производит талант — концентрация сильнейших игроков лиги по школам */}
-      <section className="av-surface av-pad-lg av-rise">
-        <div className="av-section">
-          <h2 className="av-section-title">Кто производит талант</h2>
-          <span className="av-section-sub" style={{ margin: 0 }}>Доля сильнейших игроков {division} лиги по школам</span>
-        </div>
-        {tc.isLoading ? <div className="av-skeleton" style={{ height: 240 }} /> : tc.data && tc.data.clubs.length > 0 ? (() => {
+      <section className="fed-card">
+        <h2 className="fed-card__title">Кто производит талант</h2>
+        <p className="fed-card__sub">Доля сильнейших игроков {division} лиги по школам</p>
+        {tc.isLoading ? <div className="fed-skeleton" style={{ height: 240 }} /> : tc.data && tc.data.clubs.length > 0 ? (() => {
           const d = tc.data;
           const maxN = Math.max(...d.clubs.map((c) => c.n), 1);
           return (
             <>
-              <h3 className="av-verdict" style={{ marginTop: 0 }}>Три клуба сосредоточили <b style={{ color: 'var(--av-warning)' }}>{d.top3Share}%</b> сильнейших игроков лиги</h3>
-              <p className="av-why" style={{ marginBottom: 14 }}>Пул — топ-30 игроков каждого возраста ({d.topPool} игроков из {d.totalClubs} школ); команды объединены в школы (без привязки к году команды). На топ-5 школ приходится <b style={{ color: 'var(--av-text)' }}>{d.top5Share}%</b>.</p>
+              <p className="fed-note">Три клуба сосредоточили <b style={{ color: 'var(--warning)' }}>{d.top3Share}%</b> сильнейших игроков лиги</p>
+              <p className="fed-note" style={{ marginTop: 8 }}>Пул — топ-30 игроков каждого возраста ({d.topPool} игроков из {d.totalClubs} школ); команды объединены в школы (без привязки к году команды). На топ-5 школ приходится <b>{d.top5Share}%</b>.</p>
               {d.clubs.slice(0, 10).map((c) => (
-                <div key={c.club} className="av-trow t-mono">
+                <div key={c.club} className="fed-row">
                   <ClubShield name={c.club} logoUrl={c.logo} size={24} />
-                  <span className="av-trow__name" title={c.club}>{c.club}</span>
-                  <span className="av-meter"><span className="av-meter__fill" style={{ width: `${(c.n / maxN) * 100}%`, background: 'var(--av-warning)' }} /></span>
-                  <span className="av-num" style={{ textAlign: 'right', fontWeight: 700, color: 'var(--av-warning)' }}>{c.share}%</span>
+                  <span className="fed-row__name" title={c.club}>{c.club}</span>
+                  <div className="fed-track" style={{ flex: 1 }}>
+                    <div className="fed-fill fed-fill--warning" style={{ width: `${(c.n / maxN) * 100}%` }} />
+                  </div>
+                  <span className="fed-table__num" style={{ color: 'var(--warning)', width: 48, textAlign: 'right' }}>{c.share}%</span>
                 </div>
               ))}
-              {d.totalClubs > d.clubs.slice(0, 10).length && <p className="av-cap">Отображены 10 школ из {d.totalClubs}.</p>}
+              {d.totalClubs > d.clubs.slice(0, 10).length && <p className="fed-note">Отображены 10 школ из {d.totalClubs}.</p>}
             </>
           );
-        })() : <div className="av-note">Недостаточно разобранных игроков для оценки.</div>}
+        })() : <div className="fed-note">Недостаточно разобранных игроков для оценки.</div>}
       </section>
 
       {cr.error && <FedError />}
-      {cr.isLoading ? <section className="av-surface av-pad-lg av-rise"><div className="av-skeleton" style={{ height: 320 }} /></section> : (
-        <section className="av-surface av-pad-lg av-rise">
-          <div className="av-section"><h2 className="av-section-title">Рейтинг клубов</h2></div>
-          {/* Абсолютный рейтинг клуба по методике AvanData (сумма рейтингов игроков) —
-              показываем как есть; бар — относительная длина к лидеру лиги. */}
+      {cr.isLoading ? <div className="fed-skeleton" style={{ height: 320 }} /> : (
+        <section className="fed-card">
+          <h2 className="fed-card__title">Рейтинг клубов</h2>
+          <p className="fed-card__sub">Абсолютный рейтинг клуба по методике AvanData (сумма рейтингов игроков)</p>
           {shown.map((r, i) => (
-            <button type="button" key={`${r.id}-${r.division}`} onClick={() => setSelectedClub(r.id)} className={`av-trow t-pow av-trow--btn${i === 0 ? ' av-trow--lead' : ''}`}>
-              <span className={`av-trow__rank${i < 3 ? ` av-trow__rank--${i + 1}` : ''}`}>{i + 1}</span>
+            <button type="button" key={`${r.id}-${r.division}`} onClick={() => setSelectedClub(r.id)} className="fed-row" style={{ width: '100%', background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left' }}>
+              <span className="fed-table__num" style={{ width: 28, textAlign: 'right', color: i < 3 ? 'var(--accent)' : 'var(--text-secondary)' }}>{i + 1}</span>
               <ClubShield name={r.name} logoUrl={r.logo} size={26} />
-              <span className="av-trow__name" title={r.name}>{r.name}</span>
-              <span className="av-chip av-chip--cyan" style={{ justifySelf: 'start' }}>{r.division}</span>
-              <span className="av-meter"><span className="av-meter__fill" style={{ width: `${(Math.abs(r.rating) / max) * 100}%`, background: r.rating < 0 ? 'var(--av-danger)' : i === 0 ? 'var(--av-cyan)' : 'var(--av-blue-glow)' }} /></span>
-              <span className={`av-rate${r.rating < 0 ? ' av-rate--neg' : ''}`} title="рейтинг клуба AvanData">{Math.round(r.rating).toLocaleString('ru-RU')}</span>
+              <span className="fed-row__name" title={r.name}>{r.name}</span>
+              <span className="fed-badge fed-badge--accent">{r.division}</span>
+              <div className="fed-track" style={{ flex: 1 }}>
+                <div className="fed-fill" style={{ width: `${(Math.abs(r.rating) / max) * 100}%`, background: r.rating < 0 ? 'var(--danger)' : 'var(--accent)' }} />
+              </div>
+              <span className="fed-table__num" style={{ width: 64, textAlign: 'right' }} title="рейтинг клуба AvanData">{num(r.rating)}</span>
             </button>
           ))}
-          <p className="av-cap">Рейтинг клуба — сумма рейтингов игроков по методике AvanData.</p>
+          <p className="fed-note">Рейтинг клуба — сумма рейтингов игроков по методике AvanData.</p>
         </section>
       )}
 
