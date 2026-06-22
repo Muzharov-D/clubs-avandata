@@ -5,11 +5,11 @@ import { useFedYear } from './avYear';
 import { num } from './utils';
 import './federation.css';
 
-interface AgeCohort { year: number; players: number; q1pct: number; q4pct: number; skew: number | null }
+export interface AgeCohort { year: number; players: number; q1pct: number; q4pct: number; skew: number | null }
 interface PyramidPayload { season: string; ageEffect: AgeCohort[]; capturedAt?: string | null }
 interface RegionMapData { pyramid: PyramidPayload | null }
 
-const useRegionMap = () => useQuery({ queryKey: ['federation', 'region-map'], queryFn: () => api<RegionMapData>('/federation/region-map') });
+export const useRegionMap = () => useQuery({ queryKey: ['federation', 'region-map'], queryFn: () => api<RegionMapData>('/federation/region-map') });
 
 export function FederationAgeEffect() {
   const { federation } = useAuth() as { federation: { region?: string; name?: string } | null };
