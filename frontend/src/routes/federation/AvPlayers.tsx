@@ -99,7 +99,7 @@ export function RegionLeaderboardBody({ withRising = true, withLeaderboard = tru
           )}
 
           {isLoading ? [0, 1, 2, 3, 4, 5, 6].map((i) => <div key={i} className="av-skeleton" style={{ height: 42, marginBottom: 8 }} />)
-            : shown.length === 0 ? <FedEmpty>Никого не нашли по фильтру.</FedEmpty>
+            : shown.length === 0 ? <FedEmpty>По заданному фильтру игроки не найдены.</FedEmpty>
               : (
                 <div className="av-leaders">
                   {shown.map((p, i) => (
@@ -116,7 +116,7 @@ export function RegionLeaderboardBody({ withRising = true, withLeaderboard = tru
                 </div>
               )}
           {!isLoading && !qStr.trim() && ratedTotal > shown.length && (
-            <p className="av-cap">Показаны топ-{shown.length} из {ratedTotal.toLocaleString('ru-RU')} с рейтингом (≥2 матчей) — уточни клубом или поиском.</p>
+            <p className="av-cap">Отображены топ-{shown.length} из {ratedTotal.toLocaleString('ru-RU')} игроков с рейтингом (не менее 2 матчей) — уточните выбор по клубу или поиску.</p>
           )}
         </section>
       )}

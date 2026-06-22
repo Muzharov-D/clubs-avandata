@@ -48,7 +48,7 @@ export function FederationBestXi() {
       <header className="av-head av-rise">
         <div className="av-head__l">
           <h1 className="av-title">Сборная региона</h1>
-          <p className="av-sub">Лучшие по индексу внутри линии · схема 1-4-3-3</p>
+          <p className="av-sub">Сильнейшие игроки по рейтингу в каждой линии · схема 1-4-3-3</p>
         </div>
       </header>
       <BestXiBody />
@@ -97,7 +97,7 @@ export function BestXiBody() {
         {isLoading ? (
           <div className="av-skeleton" style={{ aspectRatio: '4 / 5' }} />
         ) : !active || active.xi.length === 0 ? (
-          <FedEmpty>Мало разобранных игроков для сборной этой когорты.</FedEmpty>
+          <FedEmpty>Недостаточно разобранных игроков для формирования сборной этой когорты.</FedEmpty>
         ) : (
           <>
             <div className="av-section" style={{ marginBottom: 12 }}>
@@ -105,7 +105,7 @@ export function BestXiBody() {
                 <h2 className="av-section-title">Сборная {active.year} года рождения</h2>
                 <p className="av-section-sub">
                   {active.ratedCount.toLocaleString('ru-RU')} оценённых · {active.clubs} {active.clubs === 1 ? 'клуб' : 'клубов'}
-                  {globalYear == null ? ' · «Все» → младшая когорта; выбери год сверху' : ''} · клик по игроку — карточка
+                  {globalYear == null ? ' · при значении «Все» отображается младшая когорта; выберите год в фильтре' : ''} · нажмите на игрока для карточки
                 </p>
               </div>
             </div>
@@ -114,7 +114,7 @@ export function BestXiBody() {
               <svg className="av-pitch__field" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
                 <defs>
                   <linearGradient id="bestxi-grass" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#176b3c" /><stop offset="50%" stopColor="#0e4d2a" /><stop offset="100%" stopColor="#176b3c" />
+                    <stop offset="0%" stopColor="var(--av-pitch-grass)" /><stop offset="50%" stopColor="var(--av-pitch-grass-deep)" /><stop offset="100%" stopColor="var(--av-pitch-grass)" />
                   </linearGradient>
                 </defs>
                 <rect x="0" y="0" width="100" height="100" fill="url(#bestxi-grass)" />
@@ -159,7 +159,7 @@ export function BestXiBody() {
             </div>
 
             <p className="av-cap" style={{ marginTop: 14 }}>
-              Перцентиль — место внутри линии среди оценённых региона. По разбору верхних 2 лиг (AvanData).
+              Перцентиль — позиция игрока внутри линии среди оценённых игроков региона. По данным разбора двух высших лиг (AvanData).
             </p>
           </>
         )}

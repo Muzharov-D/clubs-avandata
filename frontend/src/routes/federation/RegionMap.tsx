@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { StatTile } from '../../components/StatTile';
 import { api } from '../../api/client';
 import { useAuth } from '../../contexts/AuthContext';
+import { Reveal } from '../../components/motion';
 import { useFedYear, inDivision, type Division } from './avYear';
 import './federation.css';
 
@@ -111,30 +112,32 @@ export function RegionCensusBody() {
   return (
     <div className="fed-stack">
       {/* ---- Перепись: живые счётчики (пирамида FFSPB при наличии, иначе клубы-члены) ---- */}
-      <div className="fed-census fed-rise">
-        <div className="fed-census__cell">
-          <StatTile label="Футболисты" value={players} accent="violet" big />
+      <Reveal variant="slide-up">
+        <div className="fed-census">
+          <div className="fed-census__cell">
+            <StatTile label="Футболисты" value={players} accent="violet" big />
+          </div>
+          <div className="fed-census__cell">
+            <StatTile label="Клубы" value={clubsTotal} extra={clubsExtra} accent="cyan" big />
+          </div>
+          <div className="fed-census__cell"><StatTile label="Команды" value={teams} accent="muted" big /></div>
+          <div className="fed-census__cell">
+            <StatTile label="Лиги" value={leaguesCount} extra={leaguesExtra} accent="gold" big />
+          </div>
+          <div className="fed-census__cell"><StatTile label="Матчи" value={matches} accent="cyan" big /></div>
         </div>
-        <div className="fed-census__cell">
-          <StatTile label="Клубы" value={clubsTotal} extra={clubsExtra} accent="cyan" big />
-        </div>
-        <div className="fed-census__cell"><StatTile label="Команды" value={teams} accent="muted" big /></div>
-        <div className="fed-census__cell">
-          <StatTile label="Лиги" value={leaguesCount} extra={leaguesExtra} accent="gold" big />
-        </div>
-        <div className="fed-census__cell"><StatTile label="Матчи" value={matches} accent="cyan" big /></div>
-      </div>
+      </Reveal>
 
       {/* ---- По лигам: пирамида FFSPB (скрывается, если снимка ещё нет). Выбранная лига
               в верхнем фильтре — подсвечена; перепись — по всему региону (см. пометку). ---- */}
-      {p && p.leagues.length > 0 && <PyramidCard p={p} division={division} />}
+      {p && p.leagues.length > 0 && <Reveal variant="slide-up" delay={0.05}><PyramidCard p={p} division={division} /></Reveal>}
 
       {/* ---- Честная пометка охвата: перепись региона — все лиги и все когорты; срез по
               году рождения живёт на экранах «Таланты»/«Клубы», где данные режутся по когорте. ---- */}
       <ScopeNote year={year} division={division} hasPyramid={!!(p && p.leagues.length > 0)} />
 
       {/* ---- Кадры региона (реестр). «Состав по возрастам» опущен — sparse (1 клуб). ---- */}
-      <RegistryCard r={d.registry} />
+      <Reveal variant="slide-up" delay={0.1}><RegistryCard r={d.registry} /></Reveal>
     </div>
   );
 }

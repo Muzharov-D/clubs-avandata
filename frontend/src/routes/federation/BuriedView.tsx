@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { api } from '../../api/client';
 import { useAuth } from '../../contexts/AuthContext';
+import { Reveal, AnimatedNumber } from '../../components/motion';
 import './federation.css';
 
 /**
@@ -55,7 +56,7 @@ export function FederationBuried() {
           <h1 className="fed-title">Карта возможностей</h1>
           <p className="fed-sub">
             {data
-              ? `Выживших отобрали — но выпускают ли? · ${num(data.evaluated)} игроков`
+              ? `Доступ прошедших отбор к игровому времени · ${num(data.evaluated)} игроков`
               : (federation?.region ?? federation?.name ?? 'Регион')}
           </p>
         </div>
@@ -93,7 +94,7 @@ function BuriedBodyInner({ p }: { p: MinutesPayload | null }) {
     return (
       <div className="fed-empty">
         <div className="fed-empty__icon" aria-hidden>🪑</div>
-        Карта возможностей ещё не снята — данные появятся после ближайшего обхода протоколов FFSPB.
+        Данные по игровому времени ещё не сформированы — появятся после ближайшего обновления протоколов ФФСПб.
       </div>
     );
   }
@@ -107,23 +108,25 @@ function BuriedBodyInner({ p }: { p: MinutesPayload | null }) {
     <div className="fed-stack">
       {/* 3 метрики: реестр · не выходят · погребённые */}
       <div className="fed-cols">
-        <MetricCard label="В реестре лиг" value={num(p.evaluated)} sub="оценено игроков" />
+        <MetricCard label="В реестре лиг" value={p.evaluated} sub="оценено игроков" delay={0} />
         <MetricCard
           label="Не выходят ни разу"
-          value={num(p.neverPlayed)}
+          value={p.neverPlayed}
           sub={`${p.neverPlayedPct}% реестра`}
           tone="danger"
+          delay={0.05}
         />
         <MetricCard
           label="Погребённые <15%"
-          value={num(p.buried15)}
+          value={p.buried15}
           sub={`${p.buried15Pct}% реестра`}
           tone="warning"
+          delay={0.1}
         />
       </div>
 
       {/* Распределение игрового времени — горизонтальный стек по 5 бакетам */}
-      <section className="fed-card fed-rise">
+      <Reveal variant="slide-up" delay={0.05} className="fed-card">
         <div className="fed-card__pad">
           <div className="fed-card__title">
             Распределение игрового времени
@@ -181,10 +184,10 @@ function BuriedBodyInner({ p }: { p: MinutesPayload | null }) {
             ))}
           </div>
         </div>
-      </section>
+      </Reveal>
 
       {/* Медиана игрового времени по кварталам рождения — Q4 (самый низкий) подсвечен */}
-      <section className="fed-card fed-rise">
+      <Reveal variant="slide-up" delay={0.1} className="fed-card">
         <div className="fed-card__pad">
           <div className="fed-card__title">
             Игровое время по кварталам рождения
@@ -194,13 +197,13 @@ function BuriedBodyInner({ p }: { p: MinutesPayload | null }) {
           <QuarterBars rows={p.byQuarter} lowestQ={lowest?.q ?? null} />
 
           <p className="fed-faint" style={{ fontSize: 12, margin: '14px 0 0', lineHeight: 1.55 }}>
-            Поздно-рождённый «выживший» играет меньше — двойной штраф.
+            Поздно рождённые получают меньше игрового времени — это вторая, дополнительная потеря после отбора.
             {q4 != null && lowest?.q === 4 && (
-              <> Q4 — самый низкий ({q4.medianTime}%): уже прошедшего отбор по дате рождения ещё и реже выпускают.</>
+              <> Квартал Q4 — минимальный показатель ({q4.medianTime}%): прошедшие отбор по дате рождения дополнительно ограничены в игровой практике.</>
             )}
           </p>
         </div>
-      </section>
+      </Reveal>
 
       <p className="fed-faint" style={{ fontSize: 11.5, margin: 0, lineHeight: 1.55 }}>
         Игровое время из протоколов ФФСПб (доля от командных минут). У младших возрастов
@@ -211,14 +214,16 @@ function BuriedBodyInner({ p }: { p: MinutesPayload | null }) {
   );
 }
 
-function MetricCard({ label, value, sub, tone }: { label: string; value: string; sub: string; tone?: 'danger' | 'warning' }) {
+function MetricCard({ label, value, sub, tone, delay = 0 }: { label: string; value: number; sub: string; tone?: 'danger' | 'warning'; delay?: number }) {
   const accent = tone === 'danger' ? 'var(--danger)' : tone === 'warning' ? 'var(--warning)' : 'var(--text)';
   return (
-    <section className="fed-card fed-rise">
+    <Reveal variant="slide-up" delay={delay} className="fed-card">
       <div className="fed-card__pad">
         <div className="fed-faint" style={{ fontSize: 12, marginBottom: 8 }}>{label}</div>
-        <div
+        <span
+          className="fed-num"
           style={{
+            display: 'block',
             fontFamily: 'var(--font-display)',
             fontSize: 38,
             fontWeight: 800,
@@ -227,11 +232,11 @@ function MetricCard({ label, value, sub, tone }: { label: string; value: string;
             color: accent,
           }}
         >
-          {value}
-        </div>
+          <AnimatedNumber value={value} />
+        </span>
         <div className="fed-faint" style={{ fontSize: 12, marginTop: 8 }}>{sub}</div>
       </div>
-    </section>
+    </Reveal>
   );
 }
 
@@ -250,25 +255,12 @@ function QuarterBars({ rows, lowestQ }: { rows: MinutesQuarter[]; lowestQ: numbe
             >
               {r.medianTime}%
             </span>
-            <span
-              style={{
-                width: '100%',
-                height: 160,
-                borderRadius: 'var(--radius-sm)',
-                background: 'var(--bg-surface-3)',
-                display: 'flex',
-                alignItems: 'flex-end',
-                overflow: 'hidden',
-              }}
-            >
+            <span className="fed-bar__track" style={{ height: 160, display: 'flex', alignItems: 'flex-end' }}>
               <span
+                className={`fed-bar__fill${isLow ? ' fed-bar__fill--focus' : ''}`}
                 style={{
-                  display: 'block',
-                  width: '100%',
                   height: `${heightPct}%`,
                   background: isLow ? 'var(--danger)' : 'var(--brand-gradient)',
-                  borderRadius: 'var(--radius-sm)',
-                  transition: 'height var(--dur) var(--ease-out)',
                 }}
               />
             </span>

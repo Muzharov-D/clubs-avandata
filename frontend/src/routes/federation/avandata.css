@@ -45,6 +45,8 @@
   --av-chart-1: #5EEBFC; --av-chart-2: #FF0099; --av-chart-3: #3054FF; --av-chart-4: #34d399; --av-chart-5: #fbbf24; --av-chart-6: #a78bfa;
   /* медали топ-3 */
   --av-rank-1: #ffd36b; --av-rank-2: #cdd6f4; --av-rank-3: #e0a878;
+  /* газон поля «сборной» (не брендируется — цвет травы) */
+  --av-pitch-grass: #176b3c; --av-pitch-grass-deep: #0e4d2a;
   /* шкала рейтинга (цвет = смысл) */
   --av-rating-excellent: var(--rating-excellent);
   --av-rating-good: var(--rating-good);

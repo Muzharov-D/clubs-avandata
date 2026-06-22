@@ -78,8 +78,8 @@ export function ClubsBody() {
           const maxN = Math.max(...d.clubs.map((c) => c.n), 1);
           return (
             <>
-              <h3 className="av-verdict" style={{ marginTop: 0 }}>3 клуба держат <b style={{ color: 'var(--av-warning)' }}>{d.top3Share}%</b> сильнейших талантов лиги</h3>
-              <p className="av-why" style={{ marginBottom: 14 }}>Пул — топ-30 игроков каждого возраста ({d.topPool} талантов из {d.totalClubs} школ); клубы схлопнуты в реальные школы (без года команды). Топ-5 школ — <b style={{ color: 'var(--av-text)' }}>{d.top5Share}%</b>.</p>
+              <h3 className="av-verdict" style={{ marginTop: 0 }}>Три клуба сосредоточили <b style={{ color: 'var(--av-warning)' }}>{d.top3Share}%</b> сильнейших игроков лиги</h3>
+              <p className="av-why" style={{ marginBottom: 14 }}>Пул — топ-30 игроков каждого возраста ({d.topPool} игроков из {d.totalClubs} школ); команды объединены в школы (без привязки к году команды). На топ-5 школ приходится <b style={{ color: 'var(--av-text)' }}>{d.top5Share}%</b>.</p>
               {d.clubs.slice(0, 10).map((c) => (
                 <div key={c.club} className="av-trow t-mono">
                   <ClubShield name={c.club} logoUrl={c.logo} size={24} />
@@ -88,7 +88,7 @@ export function ClubsBody() {
                   <span className="av-num" style={{ textAlign: 'right', fontWeight: 700, color: 'var(--av-warning)' }}>{c.share}%</span>
                 </div>
               ))}
-              {d.totalClubs > d.clubs.slice(0, 10).length && <p className="av-cap">Показаны 10 школ-производителей из {d.totalClubs}.</p>}
+              {d.totalClubs > d.clubs.slice(0, 10).length && <p className="av-cap">Отображены 10 школ из {d.totalClubs}.</p>}
             </>
           );
         })() : <div className="av-note">Недостаточно разобранных игроков для оценки.</div>}

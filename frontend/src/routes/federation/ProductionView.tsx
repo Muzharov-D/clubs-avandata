@@ -69,7 +69,7 @@ export function ProductionBody() {
         {isLoading ? (
           <div className="av-skeleton" style={{ aspectRatio: '7 / 5' }} />
         ) : clubs.length === 0 ? (
-          <FedEmpty>Мало разобранных когорт для карты производства талантов.</FedEmpty>
+          <FedEmpty>Недостаточно разобранных когорт для построения карты производства талантов.</FedEmpty>
         ) : (
           <>
             <div className="av-section" style={{ marginBottom: 12 }}>
@@ -98,10 +98,10 @@ export function ProductionBody() {
               </svg>
 
               {/* Угловые подписи зон — HTML поверх SVG (чёткий текст без растяжения preserveAspectRatio). */}
-              <ZoneLabel text="Производят и побеждают" color="var(--av-success)" style={{ right: '6%', top: '7%', textAlign: 'right' }} />
-              <ZoneLabel text="Побеждают без производства" color="var(--av-accent)" style={{ left: '10%', top: '7%' }} />
-              <ZoneLabel text="Производят, не побеждают" color="var(--av-warning)" style={{ right: '6%', bottom: '13%', textAlign: 'right' }} />
-              <ZoneLabel text="ни то, ни то" color="var(--av-text-dim)" style={{ left: '10%', bottom: '13%' }} />
+              <ZoneLabel text="Производство и результат" color="var(--av-success)" style={{ right: '6%', top: '7%', textAlign: 'right' }} />
+              <ZoneLabel text="Результат без производства" color="var(--av-accent)" style={{ left: '10%', top: '7%' }} />
+              <ZoneLabel text="Производство без результата" color="var(--av-warning)" style={{ right: '6%', bottom: '13%', textAlign: 'right' }} />
+              <ZoneLabel text="Без производства и без результата" color="var(--av-text-dim)" style={{ left: '10%', bottom: '13%' }} />
 
               {/* Подписи осей */}
               <span style={{ position: 'absolute', left: '50%', bottom: 0, transform: 'translateX(-50%)', fontSize: 10, fontWeight: 600, letterSpacing: '0.04em', color: 'var(--av-text-dim)' }}>
@@ -129,8 +129,9 @@ export function ProductionBody() {
             </div>
 
             <p className="av-cap" style={{ marginTop: 14 }}>
-              Топ = топ-22 по рейтингу когорты. В один сезон талант и победа частично связаны — говорящие
-              именно отклонения (произвёл много и проиграл / победил без топов).
+              Топ — топ-22 по рейтингу когорты. За один сезон производство таланта и результат частично
+              связаны; диагностическую ценность представляют отклонения: высокое производство при низком
+              результате либо результат без производства собственных талантов.
             </p>
           </>
         )}

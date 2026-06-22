@@ -14,7 +14,7 @@ import './avandata.css';
  */
 export function FederationTalent() {
   const { year } = useFedYear();
-  const scope = year != null ? `${year} г.р.` : 'все возрасты — выбери год сверху для одной когорты';
+  const scope = year != null ? `${year} г.р.` : 'все возрасты — выберите год в фильтре для отдельной когорты';
 
   return (
     <>
@@ -31,7 +31,7 @@ export function FederationTalent() {
           <div className="av-section" style={{ marginBottom: 12 }}>
             <div>
               <h2 className="av-section-title">Сборная региона</h2>
-              <p className="av-section-sub" style={{ margin: '2px 0 0' }}>Лучшие по индексу внутри линии · схема 1-4-3-3</p>
+              <p className="av-section-sub" style={{ margin: '2px 0 0' }}>Сильнейшие игроки по рейтингу в каждой линии · схема 1-4-3-3</p>
             </div>
           </div>
           <BestXiBody />

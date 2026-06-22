@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { api } from '../../api/client';
 import { useAuth } from '../../contexts/AuthContext';
+import { Reveal } from '../../components/motion';
 import { useFedYear } from './avYear';
 import './federation.css';
 
@@ -75,7 +76,7 @@ export function AgeEffectBody() {
     return (
       <div className="fed-empty">
         <div className="fed-empty__icon" aria-hidden>📅</div>
-        Перепись по когортам ещё не снята — данные появятся после ближайшего обхода FFSPB.
+        Данные по когортам ещё не сформированы — появятся после ближайшего обновления данных ФФСПб.
       </div>
     );
   }
@@ -97,30 +98,30 @@ export function AgeEffectBody() {
   return (
     <div className="fed-stack">
       {selected ? (
-        <section className="fed-finding fed-finding--hero fed-rise">
-          <div className="fed-finding__kicker">⚠ Перекос · {selected.year} г.р.</div>
+        <Reveal variant="slide-up" className="fed-finding fed-finding--hero">
+          <div className="fed-finding__kicker">Перекос · {selected.year} г.р.</div>
           <p className="fed-finding__verdict">
             {selected.year}: перекос {selected.skew != null ? `${selected.skew}×` : '—'} · Q1 {selected.q1pct}% — Q4 {selected.q4pct}%
           </p>
           <p className="fed-finding__why">
-            По {num(selected.players)} игрокам когорты. Перекос Q1÷Q4 — во сколько раз больше рождённых в начале
-            года (январь–март), чем в конце (октябрь–декабрь). Паритет — 1.0×.{maxC && minC ? ` По региону ярче всех ${maxC.year} (${maxC.skew}×), ровнее ${minC.year} (${minC.skew}×).` : ''}
+            Расчёт по {num(selected.players)} игрокам когорты. Перекос Q1÷Q4 — отношение числа рождённых в начале
+            года (январь–март) к рождённым в конце (октябрь–декабрь). Паритет соответствует значению 1.0×.{maxC && minC ? ` В разрезе региона наибольший перекос — ${maxC.year} (${maxC.skew}×), наименьший — ${minC.year} (${minC.skew}×).` : ''}
           </p>
-        </section>
+        </Reveal>
       ) : maxC && minC && (
-        <section className="fed-finding fed-finding--hero fed-rise">
-          <div className="fed-finding__kicker">⚠ Перекос по когортам</div>
+        <Reveal variant="slide-up" className="fed-finding fed-finding--hero">
+          <div className="fed-finding__kicker">Перекос по когортам</div>
           <p className="fed-finding__verdict">
-            Ярче всех — {maxC.year}: {maxC.skew}×. Ровнее всех — {minC.year}: {minC.skew}×.
+            Наибольший перекос — {maxC.year}: {maxC.skew}×. Наименьший — {minC.year}: {minC.skew}×.
           </p>
           <p className="fed-finding__why">
-            Перекос Q1÷Q4 — во сколько раз больше игроков рождено в начале года (январь–март),
-            чем в конце (октябрь–декабрь). Паритет — 1.0×.
+            Перекос Q1÷Q4 — отношение числа рождённых в начале года (январь–март) к рождённым
+            в конце (октябрь–декабрь). Паритет соответствует значению 1.0×.
           </p>
-        </section>
+        </Reveal>
       )}
 
-      <section className="fed-card fed-rise">
+      <Reveal variant="slide-up" delay={0.05} className="fed-card">
         <div className="fed-card__pad">
           <div className="fed-card__title">
             Перекос Q1÷Q4 по когортам
@@ -149,26 +150,13 @@ export function AgeEffectBody() {
                   >
                     {c.skew != null ? `${c.skew}×` : '—'}
                   </span>
-                  <span
-                    style={{
-                      width: '100%',
-                      height: 160,
-                      borderRadius: 'var(--radius-sm)',
-                      background: 'var(--bg-surface-3)',
-                      display: 'flex',
-                      alignItems: 'flex-end',
-                      overflow: 'hidden',
-                    }}
-                  >
+                  <span className="fed-bar__track" style={{ height: 160, display: 'flex', alignItems: 'flex-end' }}>
                     <span
+                      className={`fed-bar__fill${isFocus ? ' fed-bar__fill--focus' : ''}`}
                       style={{
-                        display: 'block',
-                        width: '100%',
                         height: `${heightPct}%`,
                         background: barColor,
-                        borderRadius: 'var(--radius-sm)',
                         opacity: dim ? 0.45 : 1,
-                        transition: 'height var(--dur) var(--ease-out)',
                       }}
                     />
                   </span>
@@ -184,15 +172,15 @@ export function AgeEffectBody() {
           </div>
 
           <p className="fed-faint" style={{ fontSize: 11.5, margin: '16px 0 0', lineHeight: 1.55 }}>
-            Перекос нарастает к воротам отбора (13–16 лет) — точка вмешательства регулятора.
-            Здесь — ВСЕ когорты переписи ФФСПб; фильтр года вверху (только когорты с разбором AvanData)
-            подсвечивает выбранную, но график показывает все. Перекос считается по всей регистрации
-            региона — отдельного среза по лиге <b style={{ color: 'var(--accent-cyan)' }}>{division}</b> в
-            этом снимке нет (срез по лиге доступен на экранах «Таланты» и «Клубы»). Сезон {p.season} ·
+            Перекос усиливается к возрасту отбора (13–16 лет) — приоритетная зона для мер регулятора.
+            На графике представлены все когорты регистрации ФФСПб; фильтр года сверху (только когорты
+            с разбором AvanData) выделяет выбранную, но график отображает все. Перекос рассчитывается по
+            всей регистрации региона — отдельный срез по лиге <b style={{ color: 'var(--accent-cyan)' }}>{division}</b> в
+            данном снимке отсутствует (срез по лиге доступен в разделах «Таланты» и «Клубы»). Сезон {p.season} ·
             тот же снимок, что и «Карта региона»{captured ? ` · данные с ${captured}` : ''}.
           </p>
         </div>
-      </section>
+      </Reveal>
     </div>
   );
 }

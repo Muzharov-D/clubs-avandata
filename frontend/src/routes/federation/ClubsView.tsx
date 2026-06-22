@@ -32,7 +32,7 @@ export function FederationClubs() {
         <div className="av-section">
           <div>
             <h2 className="av-section-title">Карта потерь</h2>
-            <p className="av-section-sub" style={{ margin: '2px 0 0' }}>Кого регион теряет: на отборе и на скамейке · {scope}</p>
+            <p className="av-section-sub" style={{ margin: '2px 0 0' }}>Потери региона на этапе отбора и при распределении игрового времени · {scope}</p>
           </div>
         </div>
         <LossMapBody />

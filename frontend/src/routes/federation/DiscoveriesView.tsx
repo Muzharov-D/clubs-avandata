@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { api } from '../../api/client';
 import { useAuth } from '../../contexts/AuthContext';
+import { Reveal, AnimatedNumber } from '../../components/motion';
 import './federation.css';
 
 /**
@@ -19,7 +20,6 @@ interface RegionMapData {
 interface MinutesData { evaluated: number; neverPlayed: number; buried15: number }
 interface ScorersData { topGoals: Array<{ name: string; club: string; cohort: number; goals: number }> }
 
-const num = (n: number): string => Math.round(n).toLocaleString('ru-RU');
 const TOP_LEAGUES = ['Высшая', 'Первая'];
 
 export function FederationDiscoveries() {
@@ -80,7 +80,7 @@ export function DiscoveriesBody() {
     return (
       <div className="fed-empty">
         <div className="fed-empty__icon" aria-hidden>🔭</div>
-        Месячный снимок региона ещё не снят — открытия появятся после ближайшего обхода FFSPB.
+        Сводные данные региона ещё не сформированы — аналитические выводы появятся после ближайшего обновления данных ФФСПб.
       </div>
     );
   }
@@ -88,43 +88,51 @@ export function DiscoveriesBody() {
 
   return (
     <div className="fed-stack">
-      <Link to="/federation/talent-loss" className="fed-finding fed-finding--hero fed-rise" style={{ display: 'block', textDecoration: 'none', color: 'inherit' }}>
-        <div className="fed-finding__kicker">⚠ Главное · возрастная утечка</div>
-        <p className="fed-finding__verdict">Поздно-рождённых отсеивают ещё на входе в академии.</p>
-        <p className="fed-finding__why">
-          По {num(totalPlayers)} игрокам Первенства рождённых в начале года{raeSkew != null ? <> в <b>{raeSkew}×</b> больше</> : ''}, чем в конце.
-          Видно только на масштабе региона. Открыть «Потерю таланта» →
-        </p>
-      </Link>
+      <Reveal variant="slide-up">
+        <Link to="/federation/talent-loss" className="fed-finding fed-finding--hero" style={{ display: 'block', textDecoration: 'none', color: 'inherit' }}>
+          <div className="fed-finding__kicker">Ключевое наблюдение · возрастной отбор</div>
+          <p className="fed-finding__verdict">Поздно рождённые отсеиваются уже на входе в академии.</p>
+          <p className="fed-finding__why">
+            По данным <AnimatedNumber value={totalPlayers} /> игроков Первенства рождённых в начале года{raeSkew != null ? <> в <b>{raeSkew}×</b> больше</> : ''}, чем в конце.
+            Перекос проявляется только на масштабе региона. Перейти к разделу «Потеря таланта» →
+          </p>
+        </Link>
+      </Reveal>
 
       <div className="fed-cols">
-        <Link to="/federation/talent-loss" className="fed-finding fed-rise" style={{ display: 'block', textDecoration: 'none', color: 'inherit' }}>
-          <div className="fed-finding__kicker">Пирамида лиг</div>
-          <p className="fed-finding__verdict" style={{ fontSize: 16 }}>
-            {lowerShare != null ? `${lowerShare}% поздно-рождённых играют в нижних лигах` : 'Где осели поздно-рождённые'}
-          </p>
-          <p className="fed-finding__why">Их не выбросили — спустили вниз. Открыть →</p>
-        </Link>
+        <Reveal variant="slide-up" delay={0.05}>
+          <Link to="/federation/talent-loss" className="fed-finding" style={{ display: 'block', textDecoration: 'none', color: 'inherit' }}>
+            <div className="fed-finding__kicker">Пирамида лиг</div>
+            <p className="fed-finding__verdict" style={{ fontSize: 16 }}>
+              {lowerShare != null ? `${lowerShare}% поздно рождённых выступают в нижних лигах` : 'Распределение поздно рождённых по лигам'}
+            </p>
+            <p className="fed-finding__why">Не выбывают из системы, а смещаются в нижние эшелоны. Перейти к разделу →</p>
+          </Link>
+        </Reveal>
 
-        <Link to="/federation/talent-loss" className="fed-finding fed-rise" style={{ display: 'block', textDecoration: 'none', color: 'inherit' }}>
-          <div className="fed-finding__kicker">Карта возможностей</div>
-          <p className="fed-finding__verdict" style={{ fontSize: 16 }}>
-            {never != null ? `${num(never)} игроков не выходят ни разу` : 'Кого из выживших не выпускают'}
-          </p>
-          <p className="fed-finding__why">Отобрали — но держат на скамейке. Открыть →</p>
-        </Link>
+        <Reveal variant="slide-up" delay={0.1}>
+          <Link to="/federation/talent-loss" className="fed-finding" style={{ display: 'block', textDecoration: 'none', color: 'inherit' }}>
+            <div className="fed-finding__kicker">Карта возможностей</div>
+            <p className="fed-finding__verdict" style={{ fontSize: 16 }}>
+              {never != null ? <><AnimatedNumber value={never} /> игроков не выходят на поле ни разу</> : 'Доступ к игровому времени у прошедших отбор'}
+            </p>
+            <p className="fed-finding__why">Прошли отбор, но остаются на скамейке без игровой практики. Перейти к разделу →</p>
+          </Link>
+        </Reveal>
 
-        <Link to="/federation/talent" className="fed-finding fed-rise" style={{ display: 'block', textDecoration: 'none', color: 'inherit' }}>
-          <div className="fed-finding__kicker">Бомбардиры</div>
-          <p className="fed-finding__verdict" style={{ fontSize: 16 }}>
-            {topScorer ? `${topScorer.name} — ${topScorer.goals} ${topScorer.goals % 10 === 1 && topScorer.goals % 100 !== 11 ? 'гол' : 'голов'}` : 'Лучшие бомбардиры региона'}
-          </p>
-          <p className="fed-finding__why">{topScorer ? `${topScorer.club} · ${topScorer.cohort} г.р.` : 'Голы из протоколов'} · Открыть →</p>
-        </Link>
+        <Reveal variant="slide-up" delay={0.15}>
+          <Link to="/federation/talent" className="fed-finding" style={{ display: 'block', textDecoration: 'none', color: 'inherit' }}>
+            <div className="fed-finding__kicker">Бомбардиры</div>
+            <p className="fed-finding__verdict" style={{ fontSize: 16 }}>
+              {topScorer ? `${topScorer.name} — ${topScorer.goals} ${topScorer.goals % 10 === 1 && topScorer.goals % 100 !== 11 ? 'гол' : 'голов'}` : 'Лучшие бомбардиры региона'}
+            </p>
+            <p className="fed-finding__why">{topScorer ? `${topScorer.club} · ${topScorer.cohort} г.р.` : 'Голы по данным протоколов'} · Перейти к разделу →</p>
+          </Link>
+        </Reveal>
       </div>
 
       <p className="fed-faint" style={{ fontSize: 11.5, margin: '4px 2px 0', lineHeight: 1.55 }}>
-        Источник истины — официальный API ФФСПб. Каждое открытие: вердикт → улика → ссылка вглубь.
+        Источник данных — официальный API ФФСПб. Структура наблюдения: вывод → подтверждающие данные → переход к разделу.
       </p>
     </div>
   );

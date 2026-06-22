@@ -19,7 +19,7 @@ export function FederationOverview() {
       <header className="fed-head" style={{ marginBottom: 0 }}>
         <div>
           <h1 className="fed-title">Обзор региона</h1>
-          <p className="fed-sub">{region} · перепись детско-юношеского футбола и что данные говорят регулятору сегодня</p>
+          <p className="fed-sub">{region} · сводные данные детско-юношеского футбола и аналитические выводы для регулятора</p>
         </div>
       </header>
 
@@ -30,8 +30,8 @@ export function FederationOverview() {
       <section>
         <div className="fed-head" style={{ marginBottom: 14 }}>
           <div>
-            <h2 className="fed-title" style={{ fontSize: 19 }}>Открытия региона</h2>
-            <p className="fed-sub">Вердикт → улика → ссылка вглубь</p>
+            <h2 className="fed-title" style={{ fontSize: 19 }}>Аналитические выводы</h2>
+            <p className="fed-sub">Вывод → подтверждающие данные → переход к разделу</p>
           </div>
         </div>
         <DiscoveriesBody />

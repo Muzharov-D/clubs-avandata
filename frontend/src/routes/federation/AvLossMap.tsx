@@ -65,20 +65,20 @@ function Body({ d, year }: { d: LossMap; year: number | null }) {
     <>
       {/* Двойной штраф — герой */}
       <section className="av-surface av-finding av-finding--hero av-pad-lg av-rise">
-        <span className="av-finding__kicker">Двойная потеря поздно-рождённых · {scopeLabel}</span>
+        <span className="av-finding__kicker">Двойная потеря поздно рождённых · {scopeLabel}</span>
         <div className="av-loss-twin">
           <div className="av-loss-twin__cell">
             <span className="av-loss-twin__n">{skew != null ? `×${skew}` : '—'}</span>
-            <span className="av-loss-twin__l">реже попадают в заявку<br /><b>на ОТБОРЕ</b> (Q1 {q1.roster} · Q4 {q4.roster})</span>
+            <span className="av-loss-twin__l">реже включаются в заявку<br /><b>на этапе отбора</b> (Q1 {q1.roster} · Q4 {q4.roster})</span>
           </div>
           <span className="av-loss-twin__plus">+</span>
           <div className="av-loss-twin__cell">
             <span className="av-loss-twin__n" style={{ color: 'var(--av-magenta)' }}>{q4.buried15}%</span>
-            <span className="av-loss-twin__l">из попавших — <b>«погребены»</b><br />на СКАМЕЙКЕ (Q1 {q1.buried15}%)</span>
+            <span className="av-loss-twin__l">из включённых — <b>«погребённые»</b><br />на скамейке (Q1 {q1.buried15}%)</span>
           </div>
         </div>
         <p className="av-why" style={{ marginTop: 16 }}>
-          Регион теряет поздно-рождённых дважды: их <b style={{ color: 'var(--av-text)' }}>в {skew ?? '—'} раза реже</b> берут в заявку, и кто попал — <b style={{ color: 'var(--av-text)' }}>чаще оседает на скамейке</b> (играет менее 15% времени). «Числятся, а не играют» — это не равномерный фон, а перекос против декабрьских.
+          Регион теряет поздно рождённых дважды: их <b style={{ color: 'var(--av-text)' }}>в {skew ?? '—'} раза реже</b> включают в заявку, а включённые — <b style={{ color: 'var(--av-text)' }}>чаще остаются на скамейке</b> (менее 15% игрового времени). Низкая игровая практика при формальном участии распределена неравномерно — перекос направлен против рождённых в конце года.
         </p>
       </section>
 
@@ -109,14 +109,14 @@ function Body({ d, year }: { d: LossMap; year: number | null }) {
             </div>
           ))}
         </div>
-        <p className="av-why" style={{ marginTop: 14 }}>«Погребены» = игроки в заявке, проведшие на поле менее 15% игрового времени команды. Точка вмешательства федерации — <b style={{ color: 'var(--av-text)' }}>отбор</b> (главный перекос) и контроль доверия молодым.</p>
+        <p className="av-why" style={{ marginTop: 14 }}>«Погребённые» — игроки в заявке, проведшие на поле менее 15% игрового времени команды. Приоритетные зоны для мер федерации — <b style={{ color: 'var(--av-text)' }}>отбор</b> (основной перекос) и контроль доступа молодых игроков к игровой практике.</p>
       </section>
 
       {/* Кого именно теряем */}
       {examples.length > 0 && (
         <section className="av-surface av-pad-lg av-rise">
-          <div className="av-section"><h2 className="av-section-title">Кого теряем сейчас</h2>
-            <span className="av-section-sub" style={{ margin: 0 }}>поздно-рождённые в заявке с минимальным игровым временем</span></div>
+          <div className="av-section"><h2 className="av-section-title">Кого регион теряет</h2>
+            <span className="av-section-sub" style={{ margin: 0 }}>поздно рождённые игроки в заявке с минимальным игровым временем</span></div>
           <div className="av-loss-ex">
             {examples.map((e, i) => (
               <div key={i} className="av-loss-excard">

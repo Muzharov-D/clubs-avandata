@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { api } from '../../api/client';
 import { useAuth } from '../../contexts/AuthContext';
+import { Reveal, AnimatedNumber } from '../../components/motion';
 import './federation.css';
 
 /**
@@ -122,7 +123,7 @@ export function PyramidBody() {
     return (
       <div className="fed-empty">
         <div className="fed-empty__icon" aria-hidden>⛰️</div>
-        Перепись по пирамиде лиг ещё не снята — данные появятся после ближайшего обхода FFSPB.
+        Данные по пирамиде лиг ещё не сформированы — появятся после ближайшего обновления данных ФФСПб.
       </div>
     );
   }
@@ -150,40 +151,40 @@ export function PyramidBody() {
           title="Верхний эшелон"
           leagues="Высшая + Первая"
           t={top}
+          delay={0}
         />
         <TierCard
           tone="lower"
           title="Нижний эшелон"
           leagues="Вторая · Третья · Четвёртая"
           t={lower}
+          delay={0.05}
         />
       </div>
 
       {/* Главный вывод: куда осели поздно-рождённые + во сколько раз ранний достигает верха */}
-      <section className="fed-finding fed-finding--hero fed-rise">
-        <div className="fed-finding__kicker">⚠ Пирамида отбора</div>
+      <Reveal variant="slide-up" delay={0.1} className="fed-finding fed-finding--hero">
+        <div className="fed-finding__kicker">Пирамида отбора</div>
         <p className="fed-finding__verdict">
-          {shareOfQ4InLower}% всех поздно-рождённых региона играют в нижних лигах
+          {shareOfQ4InLower}% всех поздно рождённых региона выступают в нижних лигах
         </p>
         {reachTopRatio != null && (
           <p className="fed-finding__why">
-            Рождённый в начале года попадает в Высшую/Первую в <b>{reachTopRatio}×</b> чаще,
-            чем рождённый в конце. Чем выше эшелон, тем жёстче отбор по физической зрелости —
-            поздние выталкиваются вниз.
+            Рождённые в начале года попадают в Высшую и Первую лиги в <b>{reachTopRatio}×</b> чаще,
+            чем рождённые в конце. Чем выше эшелон, тем строже отбор по физической зрелости —
+            поздно рождённые смещаются в нижние лиги.
           </p>
         )}
         <p className="fed-faint" style={{ fontSize: 11.5, margin: '12px 0 0', lineHeight: 1.55 }}>
           Сезон {p.season} · тот же снимок, что и «Карта региона»{captured ? ` · данные с ${captured}` : ''}.
           Q1 — рождённые в январе–марте, Q4 — в октябре–декабре.
         </p>
-      </section>
+      </Reveal>
     </div>
   );
 }
 
-const num = (n: number) => Math.round(n).toLocaleString('ru-RU');
-
-function TierCard({ tone, title, leagues, t }: { tone: 'top' | 'lower'; title: string; leagues: string; t: Tier }) {
+function TierCard({ tone, title, leagues, t, delay = 0 }: { tone: 'top' | 'lower'; title: string; leagues: string; t: Tier; delay?: number }) {
   // Q4 подсвечивается: в верхнем эшелоне это «дефицит поздних» (красный),
   // в нижнем — «куда они осели» (зелёный). Оба берутся из токенов, без хардкода.
   const q4Color = tone === 'top' ? 'var(--danger)' : 'var(--success)';
@@ -196,7 +197,7 @@ function TierCard({ tone, title, leagues, t }: { tone: 'top' | 'lower'; title: s
   const maxPct = Math.max(1, ...quarters.map((q) => q.pct));
 
   return (
-    <section className="fed-card fed-rise">
+    <Reveal variant="slide-up" delay={delay} className="fed-card">
       <div className="fed-card__pad">
         <div className="fed-card__title">
           {title}
@@ -204,8 +205,8 @@ function TierCard({ tone, title, leagues, t }: { tone: 'top' | 'lower'; title: s
         </div>
 
         <div style={{ display: 'flex', alignItems: 'baseline', gap: 12, flexWrap: 'wrap', marginBottom: 16 }}>
-          <span style={{ fontFamily: 'var(--font-display)', fontSize: 34, fontWeight: 800, lineHeight: 1, letterSpacing: '-0.02em' }}>
-            {num(t.players)}
+          <span className="fed-num" style={{ fontFamily: 'var(--font-display)', fontSize: 34, fontWeight: 800, lineHeight: 1, letterSpacing: '-0.02em' }}>
+            <AnimatedNumber value={t.players} />
           </span>
           <span className="fed-faint" style={{ fontSize: 12 }}>игроков</span>
           {t.skew != null && (
@@ -235,25 +236,12 @@ function TierCard({ tone, title, leagues, t }: { tone: 'top' | 'lower'; title: s
                 >
                   {q.pct}%
                 </span>
-                <span
-                  style={{
-                    width: '100%',
-                    height: 78,
-                    borderRadius: 'var(--radius-sm)',
-                    background: 'var(--bg-surface-3)',
-                    display: 'flex',
-                    alignItems: 'flex-end',
-                    overflow: 'hidden',
-                  }}
-                >
+                <span className="fed-bar__track" style={{ height: 78, display: 'flex', alignItems: 'flex-end' }}>
                   <span
+                    className={`fed-bar__fill${isQ4 ? ' fed-bar__fill--focus' : ''}`}
                     style={{
-                      display: 'block',
-                      width: '100%',
                       height: `${(q.pct / maxPct) * 100}%`,
                       background: isQ4 ? q4Color : 'var(--brand-gradient)',
-                      borderRadius: 'var(--radius-sm)',
-                      transition: 'height var(--dur) var(--ease-out)',
                     }}
                   />
                 </span>
@@ -263,6 +251,6 @@ function TierCard({ tone, title, leagues, t }: { tone: 'top' | 'lower'; title: s
           })}
         </div>
       </div>
-    </section>
+    </Reveal>
   );
 }
