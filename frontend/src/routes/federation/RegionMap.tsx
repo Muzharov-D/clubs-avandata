@@ -97,8 +97,10 @@ export function RegionCensusBody() {
   const matches = p ? p.totals.matches : d.matches;
   const clubsTotal = p ? p.totals.clubsDistinct : d.clubs.total;
   const leaguesCount = p ? p.leagues.length : d.leagues;
+  // Клубы пирамиды распределены по лигам — это правда для всего региона. Старое
+  // «N в кабинетах · M база» — рудимент framing «клубы-члены» (для пирамиды бессмысленно).
   const clubsExtra = p
-    ? `${d.clubs.total} в кабинетах · ${d.clubs.free} база`
+    ? `в ${plural(p.leagues.length, 'лиге', 'лигах', 'лигах')}`
     : `${d.clubs.paid} глубина · ${d.clubs.free} база`;
   const leaguesExtra = p
     ? `${plural(p.leagues.length, 'лига', 'лиги', 'лиг')} · пирамида FFSPB`
@@ -119,7 +121,6 @@ export function RegionCensusBody() {
           <StatTile label="Лиги" value={leaguesCount} extra={leaguesExtra} accent="gold" big />
         </div>
         <div className="fed-census__cell"><StatTile label="Матчи" value={matches} accent="cyan" big /></div>
-        <div className="fed-census__cell"><StatTile label="Голы" value={d.goals} accent="green" big /></div>
       </div>
 
       {/* ---- По лигам: пирамида FFSPB (скрывается, если снимка ещё нет) ---- */}
