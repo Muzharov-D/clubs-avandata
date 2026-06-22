@@ -14,10 +14,44 @@ interface MinutesPayload {
   buckets: MinutesBuckets; byQuarter: MinutesQuarter[]; capturedAt?: string | null;
 }
 
-const useMinutes = () => useQuery({
+export const useMinutes = () => useQuery({
   queryKey: ['federation', 'minutes'],
   queryFn: () => api<MinutesPayload | null>('/federation/minutes'),
 });
+
+/**
+ * Компактная полоска «играют ядром / на лавке / не выходят» для Обзора —
+ * заголовочные числа из тех же `/minutes` (по региону, без среза по лигам:
+ * минутная статистика региональна по когортам/кварталам). Полный разбор —
+ * на экране «Потеря таланта». Если снапшот ещё не снят (data == null) — не
+ * засоряем Обзор, отдаём null.
+ */
+export function PlayTimeStripBody() {
+  const { data, isLoading } = useMinutes();
+  if (isLoading) return <div className="fed-skeleton" style={{ height: 120 }} />;
+  if (!data) return null;
+  const core = data.buckets.over50;            // ≥50% командных минут — играют ядром
+  const bench = data.buckets.zero + data.buckets.b0_15; // <15% — на лавке
+  return (
+    <div className="fed-grid fed-grid--3">
+      <div className="fed-metric">
+        <div className="fed-metric__label">Играют ядром</div>
+        <div className="fed-metric__value fed-metric__value--success">{core}%</div>
+        <div className="fed-metric__extra">≥50% командных минут · по региону</div>
+      </div>
+      <div className="fed-metric">
+        <div className="fed-metric__label">На лавке</div>
+        <div className="fed-metric__value fed-metric__value--warning">{bench}%</div>
+        <div className="fed-metric__extra">{'<'}15% минут · {num(data.buried15)} «погребённых»</div>
+      </div>
+      <div className="fed-metric">
+        <div className="fed-metric__label">Не выходят ни разу</div>
+        <div className="fed-metric__value" style={{ color: 'var(--danger)' }}>{data.neverPlayedPct}%</div>
+        <div className="fed-metric__extra">{num(data.neverPlayed)} из {num(data.evaluated)} в реестре</div>
+      </div>
+    </div>
+  );
+}
 
 export function FederationBuried() {
   const { federation } = useAuth() as { federation: { region?: string; name?: string } | null };

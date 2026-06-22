@@ -1,5 +1,6 @@
 import { useAuth } from '../../contexts/AuthContext';
 import { RegionCensusBody } from './RegionMap';
+import { PlayTimeStripBody } from './BuriedView';
 import { DiscoveriesBody } from './DiscoveriesView';
 import './federation.css';
 
@@ -16,6 +17,15 @@ export function FederationOverview() {
       </div>
 
       <RegionCensusBody />
+
+      <div className="fed-divider">
+        <h2 className="fed-divider__title">Игровое время региона</h2>
+        <div className="fed-divider__line" />
+      </div>
+      <p className="fed-note" style={{ marginTop: -8, marginBottom: 20 }}>
+        Сколько занимающихся реально выходят на поле, а сколько числятся на лавке — по региону.
+      </p>
+      <PlayTimeStripBody />
 
       <div className="fed-divider">
         <h2 className="fed-divider__title">Аналитические выводы</h2>
