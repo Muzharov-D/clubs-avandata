@@ -1,10 +1,12 @@
 import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { Link } from 'react-router-dom';
 import { api } from '../../api/client';
 import { ClubShield } from './ClubShield';
-import { useFedYear, yearQ, inDivision, type Division } from './avYear';
+import { PlayerAvatar } from './PlayerAvatar';
+import { useFedYear, yearQ, fedQ, inDivision, type Division } from './avYear';
 import { ratingLabel, rating10Color } from './ratings';
-import { plMesto } from './utils';
+import { plMesto, lineOf, LINE_LABEL, type Line } from './utils';
 import './federation.css';
 
 // ── Формы ответов существующих эндпоинтов (см. StandingsBody.tsx / AvClubs.tsx) ──
@@ -13,6 +15,9 @@ interface RatingRow { id: number; name: string; logo: string | null; rating: num
 interface Group<T> { division: string; rows: T[] }
 interface StandingsResp { groups: Group<StandRow>[]; source?: 'ffspb' | 'mirror'; degraded?: boolean; asOf?: string }
 interface RatingsResp { groups: Group<RatingRow>[] }
+// Реестр игроков региона (та же форма, что в AvPlayers.tsx). У игрока есть имя клуба
+// (club), но НЕ id клуба — стыковка игрок→лига идёт по canon(club) с таблицей лиги.
+interface RPlayer { id: number; name: string; birthYear: number | null; position: string | null; club: string | null; clubLogo: string | null; photo?: string | null; rating: number | null; mp?: number }
 
 // Лиги, охваченные рейтингом AvanData. Переходы — между ними.
 const TOP: Division = 'Высшая';
@@ -119,21 +124,19 @@ export function FederationLeagues() {
       <PromotionBoard />
 
       {/* ──────────────────────────────────────────────────────────────────────
-          МОДУЛЬ 2 — «Сравнение команд» (заготовка, подключается следующим этапом).
-          Здесь: выбор двух клубов из любой из лиг и стыковка их составов/рейтинга/
-          результата бок о бок (fed-grid fed-grid--2, две fed-card-колонки). Слот ниже.
+          МОДУЛЬ 2 — «Звёздочки проседающих команд» + «Где на его позиции играют
+          слабее». Оба — read-only, поверх тех же эндпоинтов, что и Δ-доска
+          (standings + club-ratings) плюс реестр игроков (/av/players). Между двумя
+          блоками — fed-divider.
           ────────────────────────────────────────────────────────────────────── */}
-      {/* <TeamComparison /> */}
-
-      {/* ──────────────────────────────────────────────────────────────────────
-          МОДУЛЬ 3 — «Сборные» (лига × возраст + регион × возраст), заготовка.
-          Здесь: символическая сборная лиги/региона по позициям для выбранной
-          когорты (поле «сборной» по позициям). Слот ниже.
-          ────────────────────────────────────────────────────────────────────── */}
-      {/* <BestSquads /> */}
+      <SinkingStars />
     </>
   );
 }
+
+// Лиги с рейтингом, по силе сверху вниз: индекс = «этаж» (меньше — выше).
+const LEAGUE_TIER: Division[] = [TOP, LOWER];
+const tierOf = (d: Division): number => LEAGUE_TIER.indexOf(d);
 
 /**
  * Модуль 1 — Δ-доска кандидатов на переход. Две лиги вместе (переход по своей
@@ -359,4 +362,297 @@ function whyPromote(c: LeagueClub, threshold: number, margin: number): string {
 function whyRelegate(c: LeagueClub, topBand: number): string {
   const place = c.tableRank != null ? `${c.tableRank}-е место из ${c.tableSize} в ${TOP}` : `${TOP} лига`;
   return `${place}, рейтинг ${ratingLabel(c.rating)} — ниже топ-банда ${LOWER} (${ratingLabel(topBand)})`;
+}
+
+/* ════════════════════════════════════════════════════════════════════════════
+   МОДУЛЬ 2 — «Звёздочки проседающих команд» + «Где на его позиции играют слабее».
+   Read-only советник: ни записей, ни состояния. Поверх тех же данных, что Δ-доска
+   (standings + club-ratings), плюс реестр игроков (/av/players). Рейтинги —
+   АБСОЛЮТНЫЕ (методика AvanData), не нормируем; лиги с рейтингом — Высшая/Первая.
+   ════════════════════════════════════════════════════════════════════════════ */
+
+// Клуб одной из рейтинговых лиг с турнирным контекстом и порогами своей лиги.
+interface ClubCtx {
+  name: string; logo: string | null;
+  league: Division;
+  rating: number | null;
+  tableRank: number | null;   // место в таблице лиги (1 = лидер); null — нет в таблице
+  tableSize: number;          // число команд в таблице лиги
+  sinking: boolean;           // «проседающий»: нижняя половина таблицы ИЛИ рейтинг < медианы лиги
+  median: number | null;      // медиана рейтинга своей лиги (для подписи «почему»)
+}
+
+// Звезда проседающего клуба — сильнейший игрок (по абсолютному рейтингу) в слабом окружении.
+interface Star { player: RPlayer; club: ClubCtx; line: Line | null }
+
+// Найденная позиционная возможность: звезда сильнее игрока на той же линии в клубе
+// не ниже этажом (та же когорта по году рождения).
+interface PosEdge {
+  star: Star;
+  rivalName: string; rivalRating: number; rivalClub: string; rivalLeague: Division;
+  lineLabel: string;
+}
+
+/**
+ * Тело Модуля 2. Один набор запросов (тех же queryKey, что Δ-доска — кэш TanStack
+ * дедуплицирует) + реестр игроков по году (обе лиги). Год берём из useFedYear;
+ * дивизион здесь НЕ режет данные — оба сюжета по своей природе межлиговые
+ * (фокус-фильтр лиги остаётся у Δ-доски выше).
+ */
+function SinkingStars() {
+  const { year } = useFedYear();
+  const q = yearQ(year);
+  const st = useQuery({ queryKey: ['av', 'standings', year], queryFn: () => api<StandingsResp>(`/federation/av/standings${q}`) });
+  const cr = useQuery({ queryKey: ['av', 'club-ratings', year], queryFn: () => api<RatingsResp>(`/federation/av/club-ratings${q}`) });
+  // Игроки обеих лиг: division=null → весь регион выбранной когорты (тот же ключ, что AvPlayers).
+  const pl = useQuery({ queryKey: ['av', 'players', year, null], queryFn: () => api<{ players: RPlayer[] }>(`/federation/av/players${fedQ(year, null)}`) });
+
+  const built = useMemo(() => buildSinking(st.data, cr.data, pl.data?.players ?? []), [st.data, cr.data, pl.data]);
+
+  const isLoading = st.isLoading || cr.isLoading || pl.isLoading;
+  const noClubs = !isLoading && built.clubCount === 0;
+
+  return (
+    <>
+      <section className="fed-card">
+        <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap' }}>
+          <div>
+            <h2 className="fed-card__title">Звёздочки проседающих команд</h2>
+            <p className="fed-card__sub" style={{ margin: '4px 0 0' }}>
+              Сильнейшие игроки в слабом окружении · {TOP} и {LOWER} · {scopeLabel(year)}
+            </p>
+          </div>
+          <span className="fed-badge fed-badge--accent" title="Проседающий клуб — в нижней половине таблицы своей лиги или с рейтингом ниже медианы лиги">
+            проседающих клубов: {built.sinkingCount}
+          </span>
+        </div>
+
+        {isLoading ? (
+          <div className="fed-skeleton" style={{ height: 280, marginTop: 20 }} />
+        ) : noClubs ? (
+          <div className="fed-note" style={{ marginTop: 20 }}>
+            Для выбранной когорты ({scopeLabel(year)}) нет клубов с рейтингом AvanData в {TOP} и {LOWER} лигах — модуль не строится.
+          </div>
+        ) : built.stars.length === 0 ? (
+          <div className="fed-note" style={{ marginTop: 20 }}>
+            В проседающих клубах этой когорты нет разобранных игроков (не менее 2 матчей) — выделить «звёздочку» не на чем.
+          </div>
+        ) : (
+          <>
+            <div style={{ marginTop: 16 }}>
+              {built.stars.map((s) => <StarRow key={`star-${s.player.id}`} star={s} />)}
+            </div>
+            <p className="fed-note" style={{ marginTop: 18 }}>
+              «Проседающий» клуб — в нижней половине таблицы своей лиги <b>или</b> с рейтингом ниже медианы лиги (по данным AvanData).
+              Внутри таких клубов показаны сильнейшие по абсолютному рейтингу игроки (не менее 2 разобранных матчей) — таланты,
+              которым окружение мешает раскрыться. Решение остаётся за федерацией.
+            </p>
+          </>
+        )}
+      </section>
+
+      {/* Между двумя блоками модуля — fed-divider (как просил владелец). */}
+      {!isLoading && built.stars.length > 0 && (
+        <>
+          <div className="fed-divider">
+            <h2 className="fed-divider__title">Где на его позиции играют слабее</h2>
+            <div className="fed-divider__line" />
+          </div>
+          <PositionOpportunity stars={built.stars} year={year} />
+        </>
+      )}
+    </>
+  );
+}
+
+/**
+ * Сборка обоих сюжетов из сырых ответов. Стыковка игрок→клуб→лига — по
+ * canon(club) (у игрока есть только имя клуба, не id). Возвращает звёзды
+ * (отсортированы по рейтингу, до 12) + счётчики для подписей.
+ */
+function buildSinking(
+  stand: StandingsResp | undefined,
+  rated: RatingsResp | undefined,
+  players: RPlayer[],
+): { stars: Star[]; clubCount: number; sinkingCount: number } {
+  const standOf = (d: Division) => (stand?.groups ?? []).find((g) => inDivision(g.division, d))?.rows ?? [];
+  const ratedOf = (d: Division) => (rated?.groups ?? []).find((g) => inDivision(g.division, d))?.rows ?? [];
+
+  // Контекст каждого клуба обеих лиг (место в таблице + рейтинг + «проседает ли»).
+  const clubByCanon = new Map<string, ClubCtx>();
+  LEAGUE_TIER.forEach((league) => {
+    const model = buildLeague(standOf(league), ratedOf(league));
+    model.clubs.forEach((c) => {
+      // Нижняя половина таблицы (по знаменателю команд в таблице) ИЛИ рейтинг < медианы лиги.
+      const lowerHalf = c.tableRank != null && c.tableRank > c.tableSize / 2;
+      const belowMedian = model.median != null && c.rating < model.median;
+      clubByCanon.set(canon(c.name), {
+        name: c.name, logo: c.logo, league, rating: c.rating,
+        tableRank: c.tableRank, tableSize: c.tableSize,
+        sinking: lowerHalf || belowMedian, median: model.median,
+      });
+    });
+  });
+
+  const clubCount = clubByCanon.size;
+  const sinkingCount = Array.from(clubByCanon.values()).filter((c) => c.sinking).length;
+
+  // Лучший разобранный игрок (≥2 матчей) каждого проседающего клуба → звезда.
+  const bestByClub = new Map<string, Star>();
+  players.forEach((p) => {
+    if (p.rating == null || (p.mp ?? 0) < 2 || !p.club) return;
+    const ctx = clubByCanon.get(canon(p.club));
+    if (!ctx || !ctx.sinking) return;
+    const key = canon(p.club);
+    const cur = bestByClub.get(key);
+    if (!cur || (p.rating ?? 0) > (cur.player.rating ?? 0)) {
+      bestByClub.set(key, { player: p, club: ctx, line: lineOf(p.position) });
+    }
+  });
+
+  const stars = Array.from(bestByClub.values())
+    .sort((a, b) => (b.player.rating ?? 0) - (a.player.rating ?? 0))
+    .slice(0, 12);
+
+  return { stars, clubCount, sinkingCount };
+}
+
+// Строка звезды: аватар, имя+клуб (с местом в таблице), позиция, абсолютный рейтинг, «почему».
+function StarRow({ star }: { star: Star }) {
+  const { player: p, club } = star;
+  const place = club.tableRank != null ? `${club.tableRank}-е место` : 'вне таблицы';
+  const why = club.tableRank != null
+    ? `сильнейший в «${club.name}» (${place} в ${club.league}) — рискует не раскрыться в слабом окружении`
+    : `сильнейший в «${club.name}» (${club.league}, вне таблицы) — рискует не раскрыться в слабом окружении`;
+  return (
+    <Link to={`/federation/players/${p.id}`} className="fed-row" style={{ alignItems: 'flex-start', textDecoration: 'none' }}>
+      <PlayerAvatar name={p.name} photoUrl={p.photo} size={40} />
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+          <span className="fed-row__name" style={{ flex: 'initial' }} title={p.name}>{p.name}</span>
+          <ClubShield name={club.name} logoUrl={club.logo} size={20} />
+          <span className="fed-row__meta" title="Клуб и его место в таблице лиги">{club.name} · {place} · {club.league}</span>
+          {p.position && <span className="fed-badge fed-badge--accent">{p.position}</span>}
+        </div>
+        <p className="fed-note" style={{ margin: '4px 0 0' }}>{why}</p>
+      </div>
+      <span className="fed-table__num" style={{ color: rating10Color(p.rating), fontWeight: 600, whiteSpace: 'nowrap' }} title="Абсолютный рейтинг игрока AvanData">
+        {ratingLabel(p.rating)}
+      </span>
+    </Link>
+  );
+}
+
+/**
+ * «Где на его позиции играют слабее» — для каждой звезды ищем клуб НЕ ниже этажом
+ * (та же или более высокая лига), где на ТОЙ ЖЕ канон-линии в ТОЙ ЖЕ когорте (год
+ * рождения) играет игрок со СЛАБЕЕ рейтингом. Это слот, который звезда усилила бы.
+ * Только реальные совпадения; честный пустой стейт; честная оговорка о рамках.
+ */
+function PositionOpportunity({ stars, year }: { stars: Star[]; year: number | null }) {
+  // Реестр игроков той же когорты (тот же queryKey — берётся из кэша).
+  const pl = useQuery({ queryKey: ['av', 'players', year, null], queryFn: () => api<{ players: RPlayer[] }>(`/federation/av/players${fedQ(year, null)}`) });
+  const st = useQuery({ queryKey: ['av', 'standings', year], queryFn: () => api<StandingsResp>(`/federation/av/standings${yearQ(year)}`) });
+  const cr = useQuery({ queryKey: ['av', 'club-ratings', year], queryFn: () => api<RatingsResp>(`/federation/av/club-ratings${yearQ(year)}`) });
+
+  const edges = useMemo(
+    () => buildPositionEdges(stars, pl.data?.players ?? [], st.data, cr.data),
+    [stars, pl.data, st.data, cr.data],
+  );
+
+  return (
+    <>
+      <p className="fed-note">
+        Где звезда из проседающего клуба сильнее игрока на той же позиции в клубе не ниже этажом — слот, который она бы усилила.
+      </p>
+      {pl.isLoading ? (
+        <div className="fed-skeleton" style={{ height: 160, marginTop: 12 }} />
+      ) : edges.length === 0 ? (
+        <div className="fed-note" style={{ marginTop: 12 }}>
+          В рамках этой когорты не нашлось клуба не ниже этажом, где на той же позиции играли бы слабее, — позиционной возможности нет.
+        </div>
+      ) : (
+        <section className="fed-card" style={{ marginTop: 12 }}>
+          {edges.map((e, i) => <PosEdgeRow key={`edge-${e.star.player.id}-${i}`} edge={e} />)}
+        </section>
+      )}
+      <p className="fed-note" style={{ marginTop: 12 }}>
+        Рамки сравнения честные: в пределах возраста {scopeLabel(year)}; лиги с рейтингом — {TOP} и {LOWER}; «не ниже этажом» —
+        та же или более высокая лига. Сравниваем абсолютные рейтинги AvanData (не нормируем).
+      </p>
+    </>
+  );
+}
+
+/**
+ * Подбор позиционных возможностей. Для каждой звезды: среди игроков той же когорты
+ * на той же канон-линии, чьи клубы попадают в лигу не ниже звезды, берём
+ * СИЛЬНЕЙШЕГО соперника со СЛАБЕЕ рейтингом (макс. разрыв) — самый показательный слот.
+ */
+function buildPositionEdges(
+  stars: Star[],
+  players: RPlayer[],
+  stand: StandingsResp | undefined,
+  rated: RatingsResp | undefined,
+): PosEdge[] {
+  // Лига каждого клуба по canon(name) (из таблицы или рейтинга обеих лиг).
+  const leagueByCanon = new Map<string, Division>();
+  LEAGUE_TIER.forEach((league) => {
+    const standRows = (stand?.groups ?? []).find((g) => inDivision(g.division, league))?.rows ?? [];
+    const ratedRows = (rated?.groups ?? []).find((g) => inDivision(g.division, league))?.rows ?? [];
+    [...standRows, ...ratedRows].forEach((r) => { if (!leagueByCanon.has(canon(r.name))) leagueByCanon.set(canon(r.name), league); });
+  });
+
+  const edges: PosEdge[] = [];
+  stars.forEach((star) => {
+    const myLine = star.line;
+    const myRating = star.player.rating;
+    const myYear = star.player.birthYear;
+    if (myLine == null || myRating == null) return;          // нет канон-линии или рейтинга — пропускаем
+    const myTier = tierOf(star.club.league);
+
+    // Соперники: та же линия, та же когорта (год рождения), клуб в лиге не ниже звезды,
+    // рейтинг строго слабее. Из них — сильнейший (показывает самый «дорогой» слот).
+    let best: { name: string; rating: number; club: string; league: Division } | null = null;
+    players.forEach((p) => {
+      if (p.id === star.player.id || p.rating == null || !p.club) return;
+      if (myYear != null && p.birthYear !== myYear) return;  // та же когорта (если у звезды известен год)
+      if (lineOf(p.position) !== myLine) return;
+      if (p.rating >= myRating) return;                      // слабее звезды
+      const rivalLeague = leagueByCanon.get(canon(p.club));
+      if (!rivalLeague || tierOf(rivalLeague) > myTier) return; // клуб должен быть не ниже этажом
+      if (!best || p.rating > best.rating) best = { name: p.name, rating: p.rating, club: p.club, league: rivalLeague };
+    });
+
+    if (best) {
+      const b = best as { name: string; rating: number; club: string; league: Division };
+      edges.push({ star, rivalName: b.name, rivalRating: b.rating, rivalClub: b.club, rivalLeague: b.league, lineLabel: LINE_LABEL[myLine] });
+    }
+  });
+
+  // Самые показательные сверху — по разрыву рейтингов (звезда − соперник).
+  return edges.sort((a, b) => ((b.star.player.rating ?? 0) - b.rivalRating) - ((a.star.player.rating ?? 0) - a.rivalRating));
+}
+
+// Строка позиционной возможности: звезда (рейтинг) → сильнее, чем [игрок] ([клуб], [лига]).
+function PosEdgeRow({ edge }: { edge: PosEdge }) {
+  const { star } = edge;
+  const p = star.player;
+  return (
+    <div className="fed-row" style={{ alignItems: 'flex-start' }}>
+      <PlayerAvatar name={p.name} photoUrl={p.photo} size={36} />
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+          <Link to={`/federation/players/${p.id}`} className="fed-row__name" style={{ flex: 'initial' }} title={p.name}>{p.name}</Link>
+          <span className="fed-badge fed-badge--accent">{star.club.league}</span>
+          <span className="fed-row__meta">{star.club.name}</span>
+        </div>
+        <p className="fed-note" style={{ margin: '4px 0 0' }}>
+          сильнее, чем {edge.rivalName} ({edge.rivalClub}, {edge.rivalLeague}) на позиции {edge.lineLabel}:&nbsp;
+          рейтинг <b style={{ color: rating10Color(p.rating) }}>{ratingLabel(p.rating)}</b> против{' '}
+          <span style={{ color: rating10Color(edge.rivalRating) }}>{ratingLabel(edge.rivalRating)}</span>
+        </p>
+      </div>
+    </div>
+  );
 }
