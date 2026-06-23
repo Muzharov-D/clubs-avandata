@@ -2,6 +2,7 @@ import { useFedYear } from './avYear';
 import { ClubsBody } from './AvClubs';
 import { StandingsBody } from './StandingsBody';
 import { QualityBody } from './QualityView';
+import { LeagueMgmtBody } from './LeaguesView';
 import './federation.css';
 
 export function FederationClubs() {
@@ -37,7 +38,7 @@ export function FederationClubs() {
       </section>
 
       {/* 4. Качество игроков — заменяет «Производство × результат». */}
-      <section>
+      <section style={{ marginBottom: 64 }}>
         <div className="fed-divider">
           <h2 className="fed-divider__title">Качество игроков</h2>
           <div className="fed-divider__line" />
@@ -46,6 +47,18 @@ export function FederationClubs() {
           {year == null ? 'Игроки клуба в топ-100 города · все возрасты' : `Игроки клуба в сборной · ${scope}`}
         </p>
         <QualityBody />
+      </section>
+
+      {/* 5. Управление лигами — read-only советник перехода (зона пересечения лиг). */}
+      <section>
+        <div className="fed-divider">
+          <h2 className="fed-divider__title">Управление лигами</h2>
+          <div className="fed-divider__line" />
+        </div>
+        <p className="fed-note" style={{ marginBottom: 24 }}>
+          Кто достоин выше, кого понизить — по зоне пересечения рейтингов соседних лиг · {scope}
+        </p>
+        <LeagueMgmtBody />
       </section>
     </div>
   );
