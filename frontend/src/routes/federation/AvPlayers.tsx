@@ -47,18 +47,19 @@ export function RegionLeaderboardBody({ withRising = true, withLeaderboard = tru
   const [peek, setPeek] = useState<RPlayer | null>(null);
 
   const clubs = useMemo(() => Array.from(new Set(players.map((p) => p.club).filter(Boolean))).sort() as string[], [players]);
-  // «С рейтингом» — минимум 2 оценённых матча (рейтинг = среднее по матчам, не пик).
-  const ratedTotal = useMemo(() => players.filter((p) => (p.mp ?? 0) >= 2).length, [players]);
 
-  const shown = useMemo(() => {
+  const filtered = useMemo(() => {
     // При поиске ищем по всем; при обычном просмотре — только игроки с рейтингом (≥2 матчей).
     let list = qStr.trim() ? players : players.filter((p) => (p.mp ?? 0) >= 2);
     if (club !== 'all') list = list.filter((p) => p.club === club);
     if (qStr.trim()) { const q = qStr.toLowerCase(); list = list.filter((p) => p.name.toLowerCase().includes(q)); }
     // Сортировка — по АБСОЛЮТНОМУ рейтингу AvanData (методика). Возрастной срез — через
     // верхний фильтр (год = одна когорта; «Все» = совокупность региона).
-    return list.slice().sort((a, b) => (b.rating ?? -1) - (a.rating ?? -1)).slice(0, 250);
+    return list.slice().sort((a, b) => (b.rating ?? -1) - (a.rating ?? -1));
   }, [players, club, qStr]);
+  // Лидерборд = ТОП-5 по рейтингу (declutter по просьбе владельца); остальных — поиском по
+  // имени. При активном поиске показываем ВСЕ совпадения (до 250).
+  const shown = filtered.slice(0, qStr.trim() ? 250 : 5);
 
   // Восходящие — высокий рейтинг среди МЛАДШИХ когорт (честный сигнал «кто растёт»):
   // ядро работы федерации — заметить талант в младших, пока есть время дать ему ход.
@@ -127,8 +128,8 @@ export function RegionLeaderboardBody({ withRising = true, withLeaderboard = tru
             </div>
           )}
 
-          {!isLoading && !qStr.trim() && ratedTotal > shown.length && (
-            <p className="fed-note" style={{ padding: '12px 16px 0', flex: 'none' }}>Отображены топ-{shown.length} из {num(ratedTotal)} игроков с рейтингом (не менее 2 матчей) — уточните выбор по клубу или поиску.</p>
+          {!isLoading && !qStr.trim() && filtered.length > shown.length && (
+            <p className="fed-note" style={{ padding: '12px 16px 0', flex: 'none' }}>Топ-{shown.length} по рейтингу из {num(filtered.length)} {club === 'all' ? 'игроков с рейтингом' : 'в клубе'} — остальных найдёте поиском по имени.</p>
           )}
         </section>
       )}
