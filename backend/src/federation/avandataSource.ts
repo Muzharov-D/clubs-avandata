@@ -17,6 +17,7 @@ import { logger } from '../shared/logger.js';
 import { env } from '../env.js';
 import { normTeam } from './teamName.js';
 import { DIVISION_ALIASES, matchesDivision } from './division.js';
+import { dedupPlayers } from './playerDedup.js';
 import { snapshotMeta, latestSnapshotsForCohort, type SnapPayload } from './snapshots.js';
 
 // ─── Детали матча (для карточки матча по клику) ──────────────────────────────
@@ -722,7 +723,14 @@ export async function regionPlayers(seasonId: number, year?: number, division?: 
       for (const [role, c] of roles) if (c > best || (c === best && pos != null && role < pos)) { best = c; pos = role; }
       return { ...p, position: pos, mp: n, rating: n > 0 ? Math.round(sum / n) : null };
     });
-    return out.sort((a, b) => (b.rating ?? -1e9) - (a.rating ?? -1e9));
+    // Дедуп: один человек с РАЗНЫМИ id AvanData (двойная регистрация/переход) иначе двоится
+    // в лидерборде и сборной. Сливаем по ФИО+г.р. (взвешенно по матчам); число слияний
+    // логируем — чтобы случай был ВИДИМ на реальных данных, а не молчалив.
+    const deduped = dedupPlayers(out);
+    if (deduped.length < out.length) {
+      logger.warn({ seasonId, year, division, removed: out.length - deduped.length }, `[federation] дедуп игроков: слито ${out.length - deduped.length} дублей (одинак. ФИО+г.р., разные id)`);
+    }
+    return deduped;
   });
 }
 
