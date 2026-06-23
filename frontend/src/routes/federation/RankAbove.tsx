@@ -53,7 +53,9 @@ export function RankAboveBody() {
       const weakest = Math.min(...group);
       out.push({ p, line: ln, beaten, total: group.length, weakest, margin: p.rating - weakest });
     }
-    return out.sort((a, b) => b.margin - a.margin);
+    // Сортировка по ЧИСЛУ обойдённых игроков Высшей (сильнее сигнал «достоин выше», устойчиво
+    // к выбросам-аутсайдерам Высшей), тай-брейк — по абсолютному рейтингу игрока.
+    return out.sort((a, b) => b.beaten - a.beaten || (b.p.rating ?? 0) - (a.p.rating ?? 0));
   }, [hi.data, lo.data]);
 
   if (hi.isLoading || lo.isLoading) return <div className="fed-skeleton" style={{ height: 200 }} />;
