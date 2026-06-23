@@ -18,9 +18,11 @@ export function FederationLayout() {
   const { user, logout } = useAuth() as FedAuth;
   const navigate = useNavigate();
   const { pathname } = useLocation();
-  // Обзор = птичий глаз (тоталы региона); год/лигу там нечем резать (перепись и минуты
-  // без годового среза) → фильтр-бар на нём НЕ показываем. Срезы — на профильных вкладках.
-  const onOverview = /\/federation\/?$/.test(pathname);
+  // Обзор и «Потеря таланта» — сравнительные/обзорные экраны: год/лигу там нечем резать
+  // (перепись, перекос по когортам и минуты — региональные/по-квартальные, без годового
+  // среза в данных) → фильтр-бар на них НЕ показываем, чтобы не было мёртвых контролов.
+  // Срезы по году/лиге — на drill-down экранах «Таланты» и «Клубы».
+  const noFilters = /\/federation\/?$/.test(pathname) || pathname.includes('/talent-loss');
   function handleLogout() {
     logout();
     toast.info('Вы вышли из кабинета');
@@ -51,7 +53,7 @@ export function FederationLayout() {
           <button className="fed-bar__out" onClick={handleLogout}>Выйти</button>
         </header>
 
-        {!onOverview && (
+        {!noFilters && (
           <div className="fed-filter">
             <div className="fed-filter__inner">
               <DivisionFilter />

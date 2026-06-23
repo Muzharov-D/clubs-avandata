@@ -109,7 +109,7 @@ export function RegionLeaderboardBody({ withRising = true, withLeaderboard = tru
           ) : shown.length === 0 ? (
             <FedEmpty>По заданному фильтру игроки не найдены.</FedEmpty>
           ) : (
-            <div>
+            <div style={{ maxHeight: '60vh', overflowY: 'auto' }}>
               {shown.map((p, i) => (
                 <Link key={p.id} to={`/federation/players/${p.id}`} className="fed-row" style={{ textDecoration: 'none' }}>
                   <span className="fed-table__num" style={{ width: 28, textAlign: 'right' }}>{i + 1}</span>

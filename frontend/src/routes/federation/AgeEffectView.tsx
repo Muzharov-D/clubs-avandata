@@ -1,7 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { api } from '../../api/client';
 import { useAuth } from '../../contexts/AuthContext';
-import { useFedYear } from './avYear';
 import { num } from './utils';
 import './federation.css';
 
@@ -33,7 +32,6 @@ export function FederationAgeEffect() {
 }
 
 export function AgeEffectBody() {
-  const { year } = useFedYear();
   const { data, isLoading, error } = useRegionMap();
   if (isLoading) return <div className="fed-skeleton" style={{ height: 320 }} />;
   if (error) return <div className="fed-empty" style={{ color: 'var(--danger)' }}>Не удалось загрузить возрастной эффект</div>;
@@ -46,8 +44,9 @@ export function AgeEffectBody() {
   const withSkew = cohorts.filter((c): c is AgeCohort & { skew: number } => c.skew != null);
   const maxC = withSkew.reduce<(AgeCohort & { skew: number }) | null>((m, c) => (m == null || c.skew > m.skew ? c : m), null);
   const minC = withSkew.reduce<(AgeCohort & { skew: number }) | null>((m, c) => (m == null || c.skew < m.skew ? c : m), null);
-  const selected = year != null ? cohorts.find((c) => c.year === year) ?? null : null;
-  const focusYear = selected?.year ?? maxC?.year ?? null;
+  // На «Потере таланта» фильтра года нет — перекос всегда общий по когортам (без «Выбран …»).
+  const selected: AgeCohort | null = null;
+  const focusYear = maxC?.year ?? null;
   const maxExcess = Math.max(0.1, ...withSkew.map((c) => c.skew - 1));
 
   return (
