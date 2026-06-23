@@ -77,7 +77,7 @@ export function RankAboveBody() {
               {r.p.birthYear != null && <span className="fed-row__meta">{r.p.birthYear} г.р.</span>}
             </div>
             <p className="fed-note" style={{ margin: '4px 0 0' }}>
-              обходит <b style={{ color: 'var(--accent)' }}>{Math.round((r.beaten / r.total) * 100)}%</b> {LINE_LABEL[r.line]} Высшей своего возраста ({r.beaten} из {r.total}) → достоин лиги выше
+              обходит <b style={{ color: 'var(--accent)' }}>{Math.round((r.beaten / r.total) * 100)}%</b> {LINE_LABEL[r.line]} Высшей своего возраста
             </p>
           </div>
           <span className="fed-table__num" style={{ color: rating10Color(r.p.rating), fontWeight: 600, whiteSpace: 'nowrap' }} title="Абсолютный рейтинг игрока AvanData">
