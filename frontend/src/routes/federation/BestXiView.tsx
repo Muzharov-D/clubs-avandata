@@ -18,11 +18,13 @@ interface XiPlayer {
 interface Cohort { year: number; ratedCount: number; clubs: number; xi: XiPlayer[]; }
 
 const LINE_TAG: Record<Line, string> = { GK: 'ВРТ', DEF: 'ЗАЩ', MID: 'ПЗ', FWD: 'НАП' };
+// Линии разнесены равномерно по высоте (~26% между рядами), чтобы на невысоком поле
+// карточки игроков (аватар + имя + клуб) не налезали по вертикали.
 const SLOTS: Record<Line, Array<{ l: number; t: number }>> = {
-  GK: [{ l: 50, t: 88 }],
-  DEF: [{ l: 14, t: 70 }, { l: 38, t: 74 }, { l: 62, t: 74 }, { l: 86, t: 70 }],
-  MID: [{ l: 24, t: 50 }, { l: 50, t: 46 }, { l: 76, t: 50 }],
-  FWD: [{ l: 24, t: 22 }, { l: 50, t: 18 }, { l: 76, t: 22 }],
+  GK: [{ l: 50, t: 92 }],
+  DEF: [{ l: 14, t: 66 }, { l: 38, t: 68 }, { l: 62, t: 68 }, { l: 86, t: 66 }],
+  MID: [{ l: 24, t: 41 }, { l: 50, t: 39 }, { l: 76, t: 41 }],
+  FWD: [{ l: 24, t: 15 }, { l: 50, t: 13 }, { l: 76, t: 15 }],
 };
 const LINE_ORDER: Line[] = ['GK', 'DEF', 'MID', 'FWD'];
 // Родительный падеж лиги для подписи «Сборная … лиги».
@@ -81,34 +83,33 @@ export function BestXiBody() {
     return out;
   }, [activeXi]);
 
-  // Поле вписано в высоту экрана (height-driven) → его ширина (pw) меняется с окном.
-  // Меряем её ResizeObserver-ом и масштабируем аватары/подписи ПРОПОРЦИОНАЛЬНО (1 ед = 1% ширины),
-  // иначе фикс-px аватары на сжатом поле налезают друг на друга. Дефолт 440 — близко к типовой
-  // половине, чтобы первый кадр был корректным до срабатывания обсервера.
+  // Поле заполняет всю половину (ширину И высоту). ВЫСОТА — узкое место (4 линии в стопке),
+  // поэтому игроков масштабируем по высоте поля (ph): на коротком окне поле ниже → игроки
+  // мельче → ряды не налезают; на высоком — крупнее. ph меряем ResizeObserver-ом; дефолт 340
+  // близок к типовому, чтобы первый кадр был корректным до срабатывания обсервера.
   const pitchRef = useRef<HTMLDivElement | null>(null);
-  const [pw, setPw] = useState(440);
+  const [ph, setPh] = useState(340);
   useEffect(() => {
     const el = pitchRef.current;
     if (!el) return;
     const ro = new ResizeObserver((entries) => {
-      const w = entries[0]?.contentRect.width;
-      if (w && w > 0) setPw(w);
+      const h = entries[0]?.contentRect.height;
+      if (h && h > 0) setPh(h);
     });
     ro.observe(el);
     return () => ro.disconnect();
   }, [activeXi.length]);
-  const u = pw / 100;
+  const u = ph / 100;                                 // 1% высоты поля
   const r = (k: number) => Math.round(k * u);
-  const avSize = Math.max(16, r(8.8));      // ~46px при pw≈520
-  const badgeFont = Math.max(8, r(2.1));
-  const badgeMinW = Math.max(16, r(4.2));
-  const tagFont = Math.max(7, r(1.9));
-  const nameFont = Math.max(8, r(2.1));
-  const clubFont = Math.max(7, r(1.85));
-  const shieldSize = Math.max(11, r(2.9));
-  const colGap = Math.max(2, r(0.8));
-  const chipPadV = Math.max(1, r(0.4));
-  const chipPadH = Math.max(4, r(1.5));
+  const avSize = Math.min(58, Math.max(20, r(11)));   // ~37px при ph≈340, растёт с высотой окна
+  const badgeFont = Math.max(8, r(2.5));
+  const badgeMinW = Math.max(16, r(5));
+  const nameFont = Math.max(9, r(3));
+  const clubFont = Math.max(8, r(2.5));
+  const shieldSize = Math.max(11, r(3.7));
+  const colGap = Math.max(2, r(1));
+  const chipPadV = Math.max(1, r(0.5));
+  const chipPadH = Math.max(4, r(2));
 
   return (
     <>
@@ -136,7 +137,7 @@ export function BestXiBody() {
                 само поле height-driven (height:100% + aspect-ratio 4/5), max-width:100% чтобы
                 не вылезать за узкую ячейку. Доминирующий элемент колонки. */}
             <div className="fed-xi-pitch-wrap">
-            <div ref={pitchRef} className="fed-xi-pitch" style={{ position: 'relative', aspectRatio: '4 / 5', borderRadius: 'var(--radius)', overflow: 'hidden', background: 'linear-gradient(180deg, #1a4a2a, #0e3d1f)' }}>
+            <div ref={pitchRef} className="fed-xi-pitch" style={{ position: 'relative', borderRadius: 'var(--radius)', overflow: 'hidden', background: 'linear-gradient(180deg, #1a4a2a, #0e3d1f)' }}>
               <svg viewBox="0 0 100 100" preserveAspectRatio="none" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }} aria-hidden>
                 <rect x="0" y="0" width="100" height="100" fill="url(#grass)" />
                 <defs>
@@ -174,7 +175,6 @@ export function BestXiBody() {
                       <PlayerAvatar name={player.name} photoUrl={player.photo} size={avSize} ring={player.line === 'GK'} />
                       <span style={{ position: 'absolute', bottom: -chipPadV * 2, right: -chipPadV * 2, minWidth: badgeMinW, padding: `${Math.max(0, chipPadV - 1)}px ${chipPadH - 2}px`, fontSize: badgeFont, fontWeight: 800, lineHeight: 1.1, background: 'rgba(8,12,20,0.92)', border: '1.5px solid rgba(255,255,255,0.16)', borderRadius: 7, color: rating10Color(player.rating), fontVariantNumeric: 'tabular-nums' }}>{ratingLabel(player.rating)}</span>
                     </span>
-                    <span style={{ fontSize: tagFont, fontWeight: 700, color: ring, textTransform: 'uppercase', lineHeight: 1 }}>{LINE_TAG[player.line]}</span>
                     <span style={{ fontSize: nameFont, fontWeight: 600, color: '#fff', background: 'rgba(0,0,0,0.5)', padding: `${chipPadV}px ${chipPadH}px`, borderRadius: 6, whiteSpace: 'nowrap', lineHeight: 1.15 }}>{lastName(player.name)}</span>
                     <span style={{ display: 'flex', alignItems: 'center', gap: colGap, padding: `${chipPadV}px ${chipPadH - 1}px`, borderRadius: 6, background: 'rgba(0,0,0,0.42)', whiteSpace: 'nowrap' }}>
                       <ClubShield name={player.club ?? player.name} logoUrl={player.clubLogo} size={shieldSize} />

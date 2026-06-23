@@ -224,15 +224,15 @@
 .fed-xi-card { display: flex; flex-direction: column; }
 /* Обёртка тянется на всю высоту карточки (flex:1) и центрирует поле по горизонтали. */
 .fed-xi-pitch-wrap { flex: 1; min-height: 0; display: flex; align-items: center; justify-content: center; }
-/* Питч height-driven: занимает всю высоту обёртки, ширина выводится из aspect-ratio 4/5,
-   max-width страхует от вылезания в узкой половине. Игроки масштабируются по этой ширине. */
-.fed-xi-pitch { height: 100%; max-width: 100%; }
+/* Питч заполняет обёртку и по ширине, и по высоте (без пустых боков, используем всё место);
+   игроки масштабируются по высоте поля (см. BestXiView), поэтому ряды не налезают. */
+.fed-xi-pitch { width: 100%; height: 100%; }
 
 /* На узких экранах карточка перестаёт быть фикс-высоты (см. .fed-talent-split media):
-   питч становится width-driven (полная ширина, высота из aspect-ratio), чтобы не схлопнуться. */
+   питч становится width-driven (полная ширина, высота из aspect-ratio 4/5), чтобы не схлопнуться. */
 @media (max-width: 900px) {
   .fed-xi-pitch-wrap { flex: none; }
-  .fed-xi-pitch { height: auto; width: 100%; max-width: 420px; }
+  .fed-xi-pitch { height: auto; aspect-ratio: 4 / 5; width: 100%; max-width: 460px; }
 }
 
 /* ---- Leaderboard panel (рейтинг, правая половина «Талантов») ---- */
