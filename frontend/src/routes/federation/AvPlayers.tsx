@@ -6,7 +6,7 @@ import { PlayerAvatar } from './PlayerAvatar';
 import { FedError, FedEmpty } from './FedState';
 import { ratingLabel, rating10Color } from './ratings';
 import { useFedYear, fedQ } from './avYear';
-import { num, plMatch } from './utils';
+import { plMatch } from './utils';
 import './federation.css';
 
 interface RPlayer { id: number; name: string; birthYear: number | null; position: string | null; club: string | null; clubLogo: string | null; photo?: string | null; rating: number | null; mp?: number }
@@ -125,9 +125,6 @@ export function RegionLeaderboardBody({ withRising = true, withLeaderboard = tru
             </div>
           )}
 
-          {!isLoading && !qStr.trim() && filtered.length > shown.length && (
-            <p className="fed-note" style={{ padding: '12px 16px 0', flex: 'none' }}>Топ-{shown.length} по рейтингу из {num(filtered.length)} {club === 'all' ? 'игроков с рейтингом' : 'в клубе'} — остальных найдёте поиском по имени.</p>
-          )}
         </section>
       )}
 
