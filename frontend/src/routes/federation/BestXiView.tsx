@@ -24,8 +24,8 @@ const LINE_TAG: Record<Line, string> = { GK: 'ВРТ', DEF: 'ЗАЩ', MID: 'ПЗ
 const SLOTS: Record<Line, Array<{ l: number; t: number }>> = {
   GK: [{ l: 50, t: 85 }],
   DEF: [{ l: 14, t: 61 }, { l: 38, t: 63 }, { l: 62, t: 63 }, { l: 86, t: 61 }],
-  MID: [{ l: 24, t: 37 }, { l: 50, t: 35 }, { l: 76, t: 37 }],
-  FWD: [{ l: 24, t: 12 }, { l: 50, t: 10 }, { l: 76, t: 12 }],
+  MID: [{ l: 24, t: 38 }, { l: 50, t: 36 }, { l: 76, t: 38 }],
+  FWD: [{ l: 24, t: 14 }, { l: 50, t: 13 }, { l: 76, t: 14 }],
 };
 const LINE_ORDER: Line[] = ['GK', 'DEF', 'MID', 'FWD'];
 // Родительный падеж лиги для подписи «Сборная … лиги».
@@ -102,15 +102,17 @@ export function BestXiBody() {
   }, [activeXi.length]);
   const u = ph / 100;                                 // 1% высоты поля
   const r = (k: number) => Math.round(k * u);
-  const avSize = Math.min(58, Math.max(20, r(11)));   // ~37px при ph≈340, растёт с высотой окна
-  const badgeFont = Math.max(8, r(2.5));
-  const badgeMinW = Math.max(16, r(5));
-  const nameFont = Math.max(9, r(3));
-  const clubFont = Math.max(8, r(2.5));
-  const shieldSize = Math.max(11, r(3.7));
-  const colGap = Math.max(2, r(1));
-  const chipPadV = Math.max(1, r(0.5));
-  const chipPadH = Math.max(4, r(2));
+  // Высота карточки игрока (аватар+имя+клуб) должна влезать 4 рядами в высоту поля:
+  // 4 ряда × ~24% = 96% диапазона, карточка ≤ ~22% высоты, иначе ряды/края подрезаются.
+  const avSize = Math.min(56, Math.max(20, r(8.5)));  // ~28px при ph≈330, растёт с высотой окна
+  const badgeFont = Math.max(8, r(2.4));
+  const badgeMinW = Math.max(16, r(4.6));
+  const nameFont = Math.max(9, r(2.7));
+  const clubFont = Math.max(8, r(2.3));
+  const shieldSize = Math.max(11, r(3.2));
+  const colGap = Math.max(2, r(0.7));
+  const chipPadV = Math.max(1, r(0.4));
+  const chipPadH = Math.max(4, r(1.7));
 
   return (
     <>
