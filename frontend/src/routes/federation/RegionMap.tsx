@@ -17,6 +17,7 @@ interface PyramidLeague {
   teams: number;
   clubs: number;
   players: number;
+  matches: number;
   q1pct: number;
   q4pct: number;
   skew: number | null;
@@ -106,11 +107,10 @@ export function RegionCensusBody() {
             <thead>
               <tr>
                 <th>Лига</th>
-                <th>Команды</th>
                 <th>Клубы</th>
+                <th>Команды</th>
                 <th>Игроки</th>
-                <th>Q4 доля</th>
-                <th>Перекос Q1÷Q4</th>
+                <th>Матчи</th>
               </tr>
             </thead>
             <tbody>
@@ -119,26 +119,17 @@ export function RegionCensusBody() {
                 return (
                   <tr key={l.league} style={sel ? { background: 'var(--accent-soft)' } : undefined}>
                     <td style={sel ? { color: 'var(--accent)', fontWeight: 600 } : undefined}>{l.league}</td>
-                    <td className="fed-table__num">{l.teams}</td>
                     <td className="fed-table__num">{l.clubs}</td>
+                    <td className="fed-table__num">{l.teams}</td>
                     <td className="fed-table__num">{l.players}</td>
-                    <td className="fed-table__num">{l.q4pct}%</td>
-                    <td>
-                      <div className="fed-track" style={{ maxWidth: 200 }}>
-                        <div
-                          className="fed-fill"
-                          style={{ width: `${l.skew != null ? Math.min(100, (l.skew / Math.max(1, ...p.leagues.map((x) => x.skew ?? 0))) * 100) : 0}%` }}
-                        />
-                      </div>
-                      <span className="fed-table__muted" style={{ marginLeft: 8 }}>{l.skew != null ? `${l.skew}×` : '—'}</span>
-                    </td>
+                    <td className="fed-table__num">{l.matches > 0 ? num(l.matches) : '—'}</td>
                   </tr>
                 );
               })}
             </tbody>
           </table>
           <p className="fed-note" style={{ marginTop: 16 }}>
-            Перекос Q1÷Q4 — во сколько раз больше игроков рождено в начале года (январь–март), чем в конце (октябрь–декабрь).
+            Путь данных по каждой лиге: клубы → команды → игроки → матчи.
           </p>
         </div>
       )}

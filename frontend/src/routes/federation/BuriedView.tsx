@@ -8,10 +8,15 @@ interface MinutesBuckets {
   zero: number; b0_15: number; b15_30: number; b30_50: number; over50: number;
 }
 interface MinutesQuarter { q: number; medianTime: number; buriedPct: number }
+interface MinutesLeague {
+  league: string; evaluated: number; neverPlayed: number; neverPlayedPct: number;
+  buried15: number; buried15Pct: number; medianTime: number; buckets: MinutesBuckets;
+}
 interface MinutesPayload {
   season: string; evaluated: number; neverPlayed: number; neverPlayedPct: number;
   buried15: number; buried15Pct: number; medianTime: number;
-  buckets: MinutesBuckets; byQuarter: MinutesQuarter[]; capturedAt?: string | null;
+  buckets: MinutesBuckets; byQuarter: MinutesQuarter[];
+  byLeague?: MinutesLeague[]; capturedAt?: string | null;
 }
 
 export const useMinutes = () => useQuery({
@@ -19,36 +24,66 @@ export const useMinutes = () => useQuery({
   queryFn: () => api<MinutesPayload | null>('/federation/minutes'),
 });
 
-/**
- * Компактная полоска «играют ядром / на лавке / не выходят» для Обзора —
- * заголовочные числа из тех же `/minutes` (по региону, без среза по лигам:
- * минутная статистика региональна по когортам/кварталам). Полный разбор —
- * на экране «Потеря таланта». Если снапшот ещё не снят (data == null) — не
- * засоряем Обзор, отдаём null.
- */
-export function PlayTimeStripBody() {
-  const { data, isLoading } = useMinutes();
-  if (isLoading) return <div className="fed-skeleton" style={{ height: 120 }} />;
-  if (!data) return null;
-  const core = data.buckets.over50;            // ≥50% командных минут — играют ядром
-  const bench = data.buckets.zero + data.buckets.b0_15; // <15% — на лавке
+/** Тройка «играют ядром / на лавке / не выходят» для набора чисел игрового времени. */
+function PlayTimeTriple({ m, scopeNote }: { m: MinutesLeague | MinutesPayload; scopeNote: string }) {
+  const core = m.buckets.over50;            // ≥50% командных минут — играют ядром
+  const bench = m.buckets.zero + m.buckets.b0_15; // <15% — на лавке
   return (
     <div className="fed-grid fed-grid--3">
       <div className="fed-metric">
         <div className="fed-metric__label">Играют ядром</div>
         <div className="fed-metric__value fed-metric__value--success">{core}%</div>
-        <div className="fed-metric__extra">≥50% командных минут · по региону</div>
+        <div className="fed-metric__extra">≥50% командных минут · {scopeNote}</div>
       </div>
       <div className="fed-metric">
         <div className="fed-metric__label">На лавке</div>
         <div className="fed-metric__value fed-metric__value--warning">{bench}%</div>
-        <div className="fed-metric__extra">{'<'}15% минут · {num(data.buried15)} «погребённых»</div>
+        <div className="fed-metric__extra">{'<'}15% минут · {num(m.buried15)} «погребённых»</div>
       </div>
       <div className="fed-metric">
         <div className="fed-metric__label">Не выходят ни разу</div>
-        <div className="fed-metric__value" style={{ color: 'var(--danger)' }}>{data.neverPlayedPct}%</div>
-        <div className="fed-metric__extra">{num(data.neverPlayed)} из {num(data.evaluated)} в реестре</div>
+        <div className="fed-metric__value" style={{ color: 'var(--danger)' }}>{m.neverPlayedPct}%</div>
+        <div className="fed-metric__extra">{num(m.neverPlayed)} из {num(m.evaluated)} в реестре</div>
       </div>
+    </div>
+  );
+}
+
+/**
+ * Полоска «играют ядром / на лавке / не выходят» для Обзора по лигам Высшая и
+ * Первая — единственным, по которым есть игровое время. Если снимок отдал
+ * `byLeague` — честно разводим Высшую и Первую отдельными карточками; иначе
+ * (старый снимок без среза) показываем агрегат, но называем его «Высшая и
+ * Первая» — это и есть все лиги минутной статистики, регион тут не при чём.
+ * Полный разбор — на экране «Потеря таланта». Если снапшот ещё не снят
+ * (data == null) — не засоряем Обзор, отдаём null.
+ */
+export function PlayTimeStripBody() {
+  const { data, isLoading } = useMinutes();
+  if (isLoading) return <div className="fed-skeleton" style={{ height: 120 }} />;
+  if (!data) return null;
+
+  const byLeague = data.byLeague ?? [];
+  if (byLeague.length > 0) {
+    return (
+      <div className="fed-grid fed-grid--2">
+        {byLeague.map((l) => (
+          <div key={l.league} className="fed-card">
+            <div className="fed-card__title">{l.league} лига</div>
+            <div className="fed-card__sub">{num(l.evaluated)} игроков в реестре · игровое время</div>
+            <PlayTimeTriple m={l} scopeNote={`лига ${l.league}`} />
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  // Старый снимок без byLeague — агрегат относится ровно к Высшей и Первой.
+  return (
+    <div className="fed-card">
+      <div className="fed-card__title">Высшая и Первая лиги</div>
+      <div className="fed-card__sub">единственные лиги, по которым есть игровое время · {num(data.evaluated)} игроков</div>
+      <PlayTimeTriple m={data} scopeNote="Высшая и Первая" />
     </div>
   );
 }
