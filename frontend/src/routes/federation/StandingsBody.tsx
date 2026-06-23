@@ -26,6 +26,11 @@ interface CombGroup { division: string; rows: CombRow[] }
 
 const pm = (n: number) => (n > 0 ? `+${n}` : String(n));
 
+// Режим сортировки единой таблицы: по очкам (порядок первенства) или по
+// абсолютному рейтингу AvanData (методика продукта, не нормируем). Ранг-колонка
+// следует за активной сортировкой.
+type SortMode = 'points' | 'rating';
+
 /**
  * Турнирная таблица выбранной лиги — официальная картина первенства как секция
  * «Клубов»: позиция (И/В/Н/П · разница · очки) против рейтинга AvanData + Δ
@@ -41,6 +46,7 @@ export function StandingsBody() {
   const { year, division } = useFedYear();
   const q = yearQ(year);
   const [selectedClub, setSelectedClub] = useState<number | null>(null);
+  const [sort, setSort] = useState<SortMode>('points');
   const st = useQuery({ queryKey: ['av', 'standings', year], queryFn: () => api<StandingsResp>(`/federation/av/standings${q}`) });
   const cr = useQuery({ queryKey: ['av', 'club-ratings', year], queryFn: () => api<{ groups: Group<RatingRow>[] }>(`/federation/av/club-ratings${q}`) });
 
@@ -70,6 +76,16 @@ export function StandingsBody() {
     return { division: (sg ?? cg)!.division, rows: [...ranked, ...extra] };
   }, [st.data, cr.data, division]);
 
+  // Сортировка отображения: «по очкам» — порядок первенства (как пришёл с бэка);
+  // «по рейтингу AvanData» — по абсолютному рейтингу desc (строки без рейтинга — в
+  // хвост). Δ и ranked не трогаем (считаются от турнирной позиции); меняется только
+  // порядок строк и ранг-колонка, которая следует за активной сортировкой.
+  const sortedRows = useMemo<CombRow[]>(() => {
+    const rows = combined?.rows ?? [];
+    if (sort === 'points') return rows;
+    return rows.slice().sort((a, b) => (b.rating ?? -Infinity) - (a.rating ?? -Infinity));
+  }, [combined, sort]);
+
   return (
     <section className="fed-card">
       <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap' }}>
@@ -84,9 +100,21 @@ export function StandingsBody() {
         <span className="fed-badge fed-badge--accent">{division} лига</span>
       </div>
       {st.data && <DataBadge source={st.data.source} degraded={st.data.degraded} asOf={st.data.asOf} />}
+
+      {/* Сегментный переключатель сортировки: порядок первенства ↔ рейтинг AvanData.
+          Ранг-колонка следует за активной сортировкой; Δ остаётся от турнирной позиции. */}
+      <div role="tablist" aria-label="Сортировка таблицы" style={{ display: 'flex', gap: 8, marginTop: 16 }}>
+        <button type="button" role="tab" aria-selected={sort === 'points'} className={`fed-pill${sort === 'points' ? ' fed-pill--active' : ''}`} onClick={() => setSort('points')}>
+          по очкам
+        </button>
+        <button type="button" role="tab" aria-selected={sort === 'rating'} className={`fed-pill${sort === 'rating' ? ' fed-pill--active' : ''}`} onClick={() => setSort('rating')}>
+          по рейтингу AvanData
+        </button>
+      </div>
+
       {st.isLoading || cr.isLoading ? <div className="fed-skeleton" style={{ height: 240 }} />
-        : !combined || combined.rows.length === 0 ? <div className="fed-note">Нет данных по выбранному фильтру.</div>
-        : <CombinedTable g={combined} onClub={setSelectedClub} />}
+        : !combined || sortedRows.length === 0 ? <div className="fed-note">Нет данных по выбранному фильтру.</div>
+        : <CombinedTable rows={sortedRows} sort={sort} onClub={setSelectedClub} />}
 
       {selectedClub != null && <ClubCard clubId={selectedClub} onClose={() => setSelectedClub(null)} />}
     </section>
@@ -112,7 +140,10 @@ function DataBadge({ source, degraded, asOf }: { source?: 'ffspb' | 'mirror'; de
   );
 }
 
-function CombinedTable({ g, onClub }: { g: CombGroup; onClub: (id: number) => void }) {
+function CombinedTable({ rows, sort, onClub }: { rows: CombRow[]; sort: SortMode; onClub: (id: number) => void }) {
+  // Ранг следует за активной сортировкой: по очкам — место в первенстве (ranked),
+  // по рейтингу — позиция среди клубов с рейтингом (строки без рейтинга — «—»).
+  let rRank = 0;
   return (
     <div style={{ marginTop: 16 }}>
       <table className="fed-table">
@@ -132,10 +163,14 @@ function CombinedTable({ g, onClub }: { g: CombGroup; onClub: (id: number) => vo
           </tr>
         </thead>
         <tbody>
-          {g.rows.map((r, i) => (
+          {rows.map((r, i) => {
+            // Номер строки по активной сортировке.
+            const hasRank = sort === 'points' ? r.ranked : r.rating != null;
+            const rankNo = sort === 'points' ? i + 1 : (r.rating != null ? ++rRank : null);
+            return (
             <tr key={r.id} onClick={() => onClub(r.id)} style={{ cursor: 'pointer' }}>
-              <td className="fed-table__num" style={{ color: r.ranked ? (i < 3 ? 'var(--accent)' : undefined) : 'var(--text-secondary)' }} title={r.ranked ? undefined : 'Есть рейтинг, но ещё нет в турнирной таблице'}>
-                {r.ranked ? i + 1 : '—'}
+              <td className="fed-table__num" style={{ color: hasRank ? ((rankNo ?? 99) <= 3 ? 'var(--accent)' : undefined) : 'var(--text-secondary)' }} title={hasRank ? undefined : (sort === 'points' ? 'Есть рейтинг, но ещё нет в турнирной таблице' : 'Нет рейтинга AvanData')}>
+                {hasRank ? rankNo : '—'}
               </td>
               <td><ClubShield name={r.name} logoUrl={r.logo} size={22} /></td>
               <td>
@@ -152,7 +187,8 @@ function CombinedTable({ g, onClub }: { g: CombGroup; onClub: (id: number) => vo
               <td style={{ color: rating10Color(r.rating) }} title="Клубный рейтинг AvanData (сумма рейтингов игроков)">{ratingLabel(r.rating)}</td>
               <td><DeltaChip delta={r.delta} /></td>
             </tr>
-          ))}
+            );
+          })}
         </tbody>
       </table>
       <p className="fed-note">
