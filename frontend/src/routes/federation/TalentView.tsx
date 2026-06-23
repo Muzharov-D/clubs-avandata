@@ -2,6 +2,7 @@ import { useFedYear } from './avYear';
 import { BestXiBody } from './BestXiView';
 import { RegionLeaderboardBody } from './AvPlayers';
 import { ScorersBody } from './ScorersView';
+import { LossMapBody } from './AvLossMap';
 import './federation.css';
 
 export function FederationTalent() {
@@ -13,7 +14,7 @@ export function FederationTalent() {
       <div className="fed-hero">
         <div className="fed-hero__kicker">Кто лучший в регионе</div>
         <h1 className="fed-hero__title">Таланты</h1>
-        <p className="fed-hero__sub">Сборная региона, рейтинг игроков и бомбардиры · {scope}</p>
+        <p className="fed-hero__sub">Сборная региона, рейтинг, бомбардиры и кого регион теряет · {scope}</p>
       </div>
 
       <div className="fed-grid fed-grid--2" style={{ marginBottom: 48 }}>
@@ -46,6 +47,15 @@ export function FederationTalent() {
         </div>
         <p className="fed-note" style={{ marginBottom: 24 }}>Голы из протоколов ФФСПб · {scope}</p>
         <ScorersBody />
+      </section>
+
+      <section style={{ marginTop: 48 }}>
+        <div className="fed-divider">
+          <h2 className="fed-divider__title">Кого теряет регион</h2>
+          <div className="fed-divider__line" />
+        </div>
+        <p className="fed-note" style={{ marginBottom: 24 }}>Воронка отбора и игрового времени: кого регион теряет на входе и на скамейке · {scope}</p>
+        <LossMapBody />
       </section>
     </div>
   );
