@@ -62,7 +62,6 @@ export function AgeEffectBody() {
           </h3>
           <p className="fed-note">
             Перекос Q1÷Q4 — отношение числа рождённых в начале года к рождённым в конце.
-            {selected && selected.skew != null ? ` Выбран ${selected.year} г.р.: ${selected.skew}× — подсвечен на графике.` : ''}
           </p>
         </div>
       ) : null}
