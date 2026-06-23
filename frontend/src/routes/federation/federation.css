@@ -3,7 +3,8 @@
    Premium dark navy with DEPTH — glassy translucent cards on a deep blue field,
    1px white-alpha hairlines, soft shadows, and a layered cyan/blue/purple glow
    at the top of the page (the site's wireframe-wave hero, approximated). The
-   signature accent is cyan (#00d4ff). Display numerals/titles in Xolonium.
+   ОФИЦИАЛЬНЫЙ бренд: фон #080820, основной синий #3054FF, cyan #5EEBFC (хайлайты/числа),
+   sky #12B3F9, magenta #FF0099 точечно. Карты — сине-стекло rgba(52,52,191,.10). Xolonium.
 
    VISUAL re-skin only — every layout/structural rule below is untouched. Tokens
    are the single home for hex; the .tsx files reference them inline by name.
@@ -16,42 +17,47 @@
    same stack legirus-base exposes, so it resolves either way. */
 
 :root {
-  /* — surfaces (deep navy, not flat black) — */
-  --bg: #0a0f2e;            /* avandata bg-primary */
-  --bg-elevated: rgba(255,255,255,0.05);  /* glass — used inline for chips/close btn */
-  --bg-card: #0d1540;       /* avandata bg-secondary (skeleton base) */
-  --bg-card-hover: #111a4d;
-  /* — hairlines (white-alpha) — */
+  /* ОФИЦИАЛЬНЫЙ бренд АванДата (гайдлайн + лендинг avandata.ru): фон #080820, основной
+     синий #3054FF, cyan #5EEBFC (хайлайты/stat-числа), sky #12B3F9, magenta #FF0099
+     (точечно). Имена токенов сохранены (чтобы не трогать .tsx) — изменены ЗНАЧЕНИЯ. */
+  /* — surfaces — */
+  --bg: #080820;            /* official bg */
+  --bg-elevated: rgba(94,235,252,0.06);   /* лёгкий cyan-tint для чипов/инпутов */
+  --bg-card: #121239;       /* official navy (skeleton base / тёмные поверхности) */
+  --bg-card-hover: #1a1a4a;
+  /* — hairlines — */
   --border: rgba(255,255,255,0.08);
-  --border-strong: rgba(255,255,255,0.16);
+  --border-strong: rgba(94,235,252,0.22);  /* cyan-hairline (как на лендинге) */
   /* — text — */
   --text: #ffffff;
-  --text-secondary: #8892b0;  /* avandata slate */
-  --text-tertiary: #5a6488;   /* dimmer slate */
-  /* — accents — */
-  --accent: #00d4ff;          /* SIGNATURE cyan — positive/highlight in BestXi/AvClubs/Standings */
-  --accent-cyan: #00d4ff;
-  --accent-blue: #4169e1;
-  --accent-purple: #7b2fff;
-  --accent-soft: rgba(0,212,255,0.12);   /* cyan tint */
-  /* — semantic, harmonised to the navy palette — */
-  --success: #2fe0b0;   /* teal-green, sits with cyan */
-  --warning: #ffb84d;   /* warm amber */
-  --danger:  #ff5d73;   /* rose-red, not fire-engine */
-  /* — rating scale (excellent→poor), harmonised; consumed by ratings.ts — */
+  --text-secondary: #8892b0;
+  --text-tertiary: #5a6488;
+  /* — accents (official) — */
+  --accent: #5EEBFC;          /* SIGNATURE cyan — хайлайты/активное/stat (official #5EEBFC) */
+  --accent-cyan: #5EEBFC;
+  --accent-blue: #3054FF;     /* official blue — CTA/первичный */
+  --accent-purple: #FF0099;   /* official magenta (репёрпоз токена — точечный акцент) */
+  --accent-soft: rgba(48,84,255,0.16);   /* blue-tint для активных/CTA-заливок */
+  --sky: #12B3F9;             /* official sky — иконки/конец градиента */
+  /* — semantic (дата-сигналы: НЕ хром; нужны для читаемости таблиц/рейтингов) — */
+  --success: #2fe0b0;   /* cool teal-green */
+  --warning: #ffb84d;
+  --danger:  #ff5d73;
+  /* — rating scale (excellent→poor); consumed by ratings.ts — */
   --av-rating-excellent: #2fe0b0;
-  --av-rating-good:      #00d4ff;
+  --av-rating-good:      #5EEBFC;
   --av-rating-ok:        #7aa2ff;
   --av-rating-weak:      #ffb84d;
   --av-rating-poor:      #ff5d73;
   --av-rating-none:      #5a6488;
-  /* — glass + glow — */
-  --glass: rgba(255,255,255,0.04);       /* card fill */
-  --glass-hover: rgba(255,255,255,0.06);
-  --glow: rgba(0,212,255,0.10);          /* cyan page-glow */
+  /* — glass + glow (official: сине-тонированное стекло, НЕ бело-стекло) — */
+  --glass: rgba(52,52,191,0.10);         /* official card-bg (критично: не rgba(255,255,255,...)) */
+  --glass-hover: rgba(52,52,191,0.18);
+  --fab-bg: rgba(94,235,252,0.20);       /* official плоская CTA-заливка (НЕ градиент) */
+  --glow: rgba(48,84,255,0.12);          /* blue page-glow */
   /* — geometry / motion — */
-  --radius: 20px;
-  --radius-sm: 12px;
+  --radius: 24px;            /* бренд-ward (лендинг 24px; маркетинг-карты до 36) */
+  --radius-sm: 14px;
   --font: 'Montserrat', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   --font-display: 'Xolonium', 'Montserrat', system-ui, sans-serif;
   --ease: cubic-bezier(0.22, 1, 0.36, 1);
@@ -66,12 +72,12 @@
   font-family: var(--font); color: var(--text); min-height: 100vh;
   display: flex; align-items: flex-start;
   -webkit-font-smoothing: antialiased;
-  /* deep navy field + layered cyan/blue/purple glow at the top (approximates the
-     site's animated wireframe-wave hero without building the mesh) */
+  /* #080820 + слоёный сине-голубой glow сверху (фирменная волна лендинга без меша):
+     синий #3054FF + cyan #5EEBFC; magenta — только точечно, в glow не выносим. */
   background:
     radial-gradient(120% 60% at 50% -10%, var(--glow) 0%, transparent 55%),
-    radial-gradient(80% 50% at 85% 0%, rgba(123,47,255,0.10) 0%, transparent 50%),
-    radial-gradient(70% 50% at 12% 4%, rgba(65,105,225,0.10) 0%, transparent 50%),
+    radial-gradient(80% 50% at 85% 0%, rgba(94,235,252,0.10) 0%, transparent 50%),
+    radial-gradient(70% 50% at 12% 4%, rgba(48,84,255,0.12) 0%, transparent 50%),
     var(--bg);
   background-attachment: fixed;
 }
@@ -182,9 +188,9 @@
 }
 .fed-pill:hover { border-color: var(--border-strong); color: var(--text); }
 .fed-pill--active {
-  background: linear-gradient(180deg, var(--accent-cyan), var(--accent-blue));
-  color: #04122a; border-color: transparent; font-weight: 600;
-  box-shadow: 0 4px 16px rgba(0,212,255,0.28);
+  background: var(--accent-blue);   /* official: плоская заливка #3054FF, НЕ градиент */
+  color: #fff; border-color: transparent; font-weight: 600;
+  box-shadow: 0 4px 16px rgba(48,84,255,0.30);
 }
 
 /* ---- Page ---- */
@@ -244,16 +250,16 @@
 
 /* ---- Metric Card (the hero) ---- */
 .fed-metric {
-  background: linear-gradient(180deg, var(--glass) 0%, rgba(255,255,255,0.015) 100%);
+  background: var(--glass);   /* official: плоское сине-стекло, без бело-sheen */
   border-radius: var(--radius); border: 1px solid var(--border);
   padding: 22px 24px;
   transition: all 0.3s var(--ease);
   box-shadow: 0 8px 28px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.06);
 }
 .fed-metric:hover {
-  background: linear-gradient(180deg, var(--glass-hover) 0%, rgba(255,255,255,0.025) 100%);
-  border-color: rgba(0,212,255,0.30);
-  box-shadow: 0 10px 34px rgba(0,0,0,0.40), 0 0 0 1px rgba(0,212,255,0.12), inset 0 1px 0 rgba(255,255,255,0.06);
+  background: var(--glass-hover);
+  border-color: rgba(94,235,252,0.30);
+  box-shadow: 0 10px 34px rgba(0,0,0,0.40), 0 0 0 1px rgba(94,235,252,0.12), inset 0 1px 0 rgba(255,255,255,0.06);
 }
 .fed-metric__label { font-size: 12px; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 12px; }
 .fed-metric__value { font-family: var(--font-display); font-size: 56px; font-weight: 700; letter-spacing: -0.01em; line-height: 1; color: var(--text); font-variant-numeric: tabular-nums; }
@@ -273,14 +279,14 @@
 
 /* ---- Card ---- */
 .fed-card {
-  background: linear-gradient(180deg, var(--glass) 0%, rgba(255,255,255,0.015) 100%);
+  background: var(--glass);   /* official: плоское сине-стекло, без бело-sheen */
   border-radius: var(--radius); border: 1px solid var(--border);
   padding: 20px;
   transition: all 0.3s var(--ease);
   box-shadow: 0 8px 28px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.06);
 }
 .fed-card:hover {
-  background: linear-gradient(180deg, var(--glass-hover) 0%, rgba(255,255,255,0.025) 100%);
+  background: var(--glass-hover);
   border-color: var(--border-strong);
 }
 .fed-card__title { font-size: 16px; font-weight: 600; color: var(--text); margin: 0 0 4px; }
@@ -347,7 +353,7 @@
 
 /* ---- Empty / Skeleton ---- */
 .fed-empty { padding: 60px; text-align: center; color: var(--text-secondary); font-size: 15px; }
-.fed-skeleton { background: linear-gradient(90deg, rgba(255,255,255,0.03) 25%, rgba(0,212,255,0.07) 50%, rgba(255,255,255,0.03) 75%); background-size: 200% 100%; animation: fed-skel 1.5s infinite; border-radius: var(--radius-sm); }
+.fed-skeleton { background: linear-gradient(90deg, rgba(255,255,255,0.03) 25%, rgba(94,235,252,0.07) 50%, rgba(255,255,255,0.03) 75%); background-size: 200% 100%; animation: fed-skel 1.5s infinite; border-radius: var(--radius-sm); }
 @keyframes fed-skel { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
 
 /* ---- Section divider ---- */
@@ -397,7 +403,7 @@
 }
 .fed-input::placeholder { color: var(--text-tertiary); }
 .fed-input:focus, .fed-select:focus {
-  outline: none; border-color: rgba(0,212,255,0.55);
+  outline: none; border-color: rgba(94,235,252,0.55);
   box-shadow: 0 0 0 3px var(--accent-soft);
 }
 .fed-input:disabled, .fed-select:disabled { opacity: 0.5; cursor: not-allowed; }
