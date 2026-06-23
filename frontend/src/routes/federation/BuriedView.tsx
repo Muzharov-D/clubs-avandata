@@ -201,7 +201,10 @@ function BuriedBodyInner({ p }: { p: MinutesPayload | null }) {
               {/* Кольцо-заливка: медиана времени (сильная метрика — разрыв 8 пп виден заливкой);
                   поздние амбер-приглушены = «играют меньше». */}
               <Donut
-                segments={[{ label: 'медиана времени', value: g.med, color: g.late ? 'var(--warning)' : 'var(--success)' }]}
+                segments={[
+                  { label: 'медиана времени', value: g.med, color: g.late ? 'var(--warning)' : 'var(--success)' },
+                  { label: '', value: Math.max(0, 100 - g.med), color: 'var(--bg-elevated)' },
+                ]}
                 size={150}
                 ariaLabel={`${g.title}: медиана времени ${g.med}%`}
                 center={(
