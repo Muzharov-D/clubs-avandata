@@ -144,6 +144,10 @@ function CombinedTable({ rows, sort, onClub }: { rows: CombRow[]; sort: SortMode
   // Ранг следует за активной сортировкой: по очкам — место в первенстве (ranked),
   // по рейтингу — позиция среди клубов с рейтингом (строки без рейтинга — «—»).
   let rRank = 0;
+  // Read-only вердикт лиги: синтез колонки Δ в слова (Δ — санкционированный критерий
+  // «место↔рейтинг», без нормализации/медианы). Недовыполняющие = состав сильнее результата.
+  const over = rows.filter((r) => r.delta != null && r.delta > 0).length;
+  const under = rows.filter((r) => r.delta != null && r.delta < 0).length;
   return (
     <div style={{ marginTop: 16 }}>
       <table className="fed-table">
@@ -191,6 +195,14 @@ function CombinedTable({ rows, sort, onClub }: { rows: CombRow[]; sort: SortMode
           })}
         </tbody>
       </table>
+      {(over > 0 || under > 0) && (
+        <p className="fed-note" style={{ marginTop: 12, borderLeft: '3px solid var(--accent)', paddingLeft: 12 }}>
+          <b>Вердикт лиги:</b> перевыполняют рейтинг — {over}, недовыполняют — {under}.{' '}
+          {under > 0
+            ? 'Недовыполняющие — состав сильнее результата (зона внимания федерации: тренерский процесс, игровое время).'
+            : 'Все клубы реализуют свой состав.'}
+        </p>
+      )}
       <p className="fed-note">
         <b>Рейтинг</b> — клубный рейтинг AvanData (сумма рейтингов игроков). <b>Δ</b> — место в таблице против места по рейтингу: {' '}
         <span className="fed-badge fed-badge--success">▲</span> перевыполняет, {' '}
