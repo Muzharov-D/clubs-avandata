@@ -102,16 +102,15 @@ export function BestXiBody() {
   }, [activeXi.length]);
   const u = ph / 100;                                 // 1% высоты поля
   const r = (k: number) => Math.round(k * u);
-  // Высота карточки игрока (аватар+имя+клуб) должна влезать 4 рядами в высоту поля:
-  // 4 ряда × ~24% = 96% диапазона, карточка ≤ ~22% высоты, иначе ряды/края подрезаются.
-  const avSize = Math.min(56, Math.max(20, r(8.5)));  // ~28px при ph≈330, растёт с высотой окна
-  const badgeFont = Math.max(8, r(2.4));
-  const badgeMinW = Math.max(16, r(4.6));
+  // Карточка игрока = аватар + 3 строки (Фамилия / Рейтинг / лого клуба). Высота должна
+  // влезать 4 рядами в высоту поля: 4 ряда × ~24% = 96% диапазона, карточка ≤ ~22% высоты,
+  // иначе ряды/края подрезаются. Аватар чуть меньше (r8), чтобы 3-я строка не распёрла карточку.
+  const avSize = Math.min(54, Math.max(20, r(8)));    // ~26px при ph≈330, растёт с высотой окна
   const nameFont = Math.max(9, r(2.7));
-  const clubFont = Math.max(8, r(2.3));
-  const shieldSize = Math.max(11, r(3.2));
-  const colGap = Math.max(2, r(0.7));
-  const chipPadV = Math.max(1, r(0.4));
+  const ratingFont = Math.max(10, r(3.1));            // рейтинг — заметнее (ключевая метрика)
+  const logoSize = Math.max(15, r(4.2));              // герб — отдельной строкой, крупнее
+  const colGap = Math.max(2, r(0.8));
+  const chipPadV = Math.max(1, r(0.45));
   const chipPadH = Math.max(4, r(1.7));
 
   return (
@@ -156,8 +155,9 @@ export function BestXiBody() {
               </svg>
 
               {placed.map(({ slot, player }) => {
-                // В совокупной сборной ring по перцентилю не имеет смысла (игроки из разных
-                // когорт) — красим обводку линией-нейтралью; чип «топ X%» меняем на герб + год.
+                // Обводка аватара: в совокупной сборной (игроки из разных когорт) перцентиль
+                // не имеет смысла → нейтраль; в когортной — по перцентилю линии.
+                // Подпись = 3 строки под аватаром: Фамилия / Рейтинг / лого клуба.
                 const ring = isUnion ? 'var(--text-secondary)' : pctRing(player.pct);
                 const title = isUnion
                   ? `${player.name}${player.club ? ` · ${player.club}` : ''} · ${LINE_TAG[player.line]}${player.year ? ` · ${player.year} г.р.` : ''}`
@@ -171,17 +171,13 @@ export function BestXiBody() {
                   >
                     <span style={{ borderRadius: '50%', boxShadow: `0 0 0 2px ${ring}, 0 3px 7px rgba(0,0,0,0.55)`, display: 'block' }}>
                       <PlayerAvatar name={player.name} photoUrl={player.photo} size={avSize} ring={player.line === 'GK'} />
-                      <span style={{ position: 'absolute', bottom: -chipPadV * 2, right: -chipPadV * 2, minWidth: badgeMinW, padding: `${Math.max(0, chipPadV - 1)}px ${chipPadH - 2}px`, fontSize: badgeFont, fontWeight: 800, lineHeight: 1.1, background: 'rgba(8,12,20,0.92)', border: '1.5px solid rgba(255,255,255,0.16)', borderRadius: 7, color: rating10Color(player.rating), fontVariantNumeric: 'tabular-nums' }}>{ratingLabel(player.rating)}</span>
                     </span>
-                    <span style={{ fontSize: nameFont, fontWeight: 600, color: '#fff', background: 'rgba(0,0,0,0.5)', padding: `${chipPadV}px ${chipPadH}px`, borderRadius: 6, whiteSpace: 'nowrap', lineHeight: 1.15 }}>{lastName(player.name)}</span>
-                    <span style={{ display: 'flex', alignItems: 'center', gap: colGap, padding: `${chipPadV}px ${chipPadH - 1}px`, borderRadius: 6, background: 'rgba(0,0,0,0.42)', whiteSpace: 'nowrap' }}>
-                      <ClubShield name={player.club ?? player.name} logoUrl={player.clubLogo} size={shieldSize} />
-                      {isUnion ? (
-                        <span style={{ fontSize: clubFont, fontWeight: 700, color: '#fff', fontVariantNumeric: 'tabular-nums' }}>{player.year ? `${player.year} г.р.` : '—'}</span>
-                      ) : (
-                        <span style={{ fontSize: clubFont, fontWeight: 700, color: ring, fontVariantNumeric: 'tabular-nums' }}>топ {player.pct}% линии</span>
-                      )}
-                    </span>
+                    {/* Строка 1 — Фамилия */}
+                    <span style={{ fontSize: nameFont, fontWeight: 600, color: '#fff', background: 'rgba(0,0,0,0.55)', padding: `${chipPadV}px ${chipPadH}px`, borderRadius: 6, whiteSpace: 'nowrap', lineHeight: 1.15 }}>{lastName(player.name)}</span>
+                    {/* Строка 2 — Рейтинг (ключевая метрика, заметным цветом по шкале) */}
+                    <span style={{ fontSize: ratingFont, fontWeight: 800, color: rating10Color(player.rating), background: 'rgba(8,12,20,0.92)', padding: `${chipPadV}px ${chipPadH}px`, borderRadius: 6, lineHeight: 1, fontVariantNumeric: 'tabular-nums', border: '1px solid rgba(255,255,255,0.12)' }}>{ratingLabel(player.rating)}</span>
+                    {/* Строка 3 — лого клуба */}
+                    <ClubShield name={player.club ?? player.name} logoUrl={player.clubLogo} size={logoSize} />
                   </button>
                 );
               })}
