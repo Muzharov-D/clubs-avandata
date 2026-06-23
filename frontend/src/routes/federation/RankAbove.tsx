@@ -53,9 +53,10 @@ export function RankAboveBody() {
       const weakest = Math.min(...group);
       out.push({ p, line: ln, beaten, total: group.length, weakest, margin: p.rating - weakest });
     }
-    // Сортировка по ЧИСЛУ обойдённых игроков Высшей (сильнее сигнал «достоин выше», устойчиво
-    // к выбросам-аутсайдерам Высшей), тай-брейк — по абсолютному рейтингу игрока.
-    return out.sort((a, b) => b.beaten - a.beaten || (b.p.rating ?? 0) - (a.p.rating ?? 0));
+    // Сортировка по ДОЛЕ обойдённых игроков Высшей (процентаж — как показываем); тай-брейки:
+    // абсолютное число обойдённых (крупный пул сильнее), затем рейтинг игрока.
+    return out.sort((a, b) =>
+      (b.beaten / b.total) - (a.beaten / a.total) || b.beaten - a.beaten || (b.p.rating ?? 0) - (a.p.rating ?? 0));
   }, [hi.data, lo.data]);
 
   if (hi.isLoading || lo.isLoading) return <div className="fed-skeleton" style={{ height: 200 }} />;
@@ -76,7 +77,7 @@ export function RankAboveBody() {
               {r.p.birthYear != null && <span className="fed-row__meta">{r.p.birthYear} г.р.</span>}
             </div>
             <p className="fed-note" style={{ margin: '4px 0 0' }}>
-              сильнее {r.beaten} из {r.total} {LINE_LABEL[r.line]} Высшей своего возраста (слабейший — {ratingLabel(r.weakest)}) → достоин лиги выше
+              обходит <b style={{ color: 'var(--accent)' }}>{Math.round((r.beaten / r.total) * 100)}%</b> {LINE_LABEL[r.line]} Высшей своего возраста ({r.beaten} из {r.total}) → достоин лиги выше
             </p>
           </div>
           <span className="fed-table__num" style={{ color: rating10Color(r.p.rating), fontWeight: 600, whiteSpace: 'nowrap' }} title="Абсолютный рейтинг игрока AvanData">
