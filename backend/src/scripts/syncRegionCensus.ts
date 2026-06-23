@@ -99,6 +99,29 @@ function normClub(n: string | null | undefined): string {
   return s.replace(/\s+/g, ' ').trim();
 }
 
+/**
+ * Самопроверка normClub перед тяжёлым обходом. Защищаем корень «кривого счёта клубов»:
+ * «ФК» снимается как ОТДЕЛЬНЫЙ токен (префикс/суффикс), но НЕ как подстрока внутри слова.
+ * Старое `\bфк\b` было no-op (JS `\b` — только ASCII, кириллицу не знает) → счёт клубов
+ * раздувался. Если правило normClub когда-нибудь регрессирует, валимся ДО обхода FFSPB.
+ */
+function assertNormClub(): void {
+  const cases: Array<[string, string]> = [
+    ['ФК Зенит', 'зенит'],   // префикс «ФК» снимается
+    ['Зенит ФК', 'зенит'],   // суффикс «ФК» снимается
+    ['Зенитфк', 'зенитфк'],  // НЕ отдельный токен — «фк» остаётся (не режем подстроку)
+  ];
+  for (const [input, expected] of cases) {
+    const got = normClub(input);
+    if (got !== expected) {
+      throw new Error(
+        `normClub самопроверка провалена: normClub(${JSON.stringify(input)}) = ` +
+        `${JSON.stringify(got)}, ожидалось ${JSON.stringify(expected)}`,
+      );
+    }
+  }
+}
+
 function leagueOf(group: string | null | undefined): League {
   const g = (group ?? '').toLowerCase();
   if (/высш/.test(g)) return 'Высшая';
@@ -301,6 +324,7 @@ function arg(name: string): string | undefined {
 }
 
 async function main() {
+  assertNormClub(); // fail-fast: ловим регрессию дедупа клубов ДО многоминутного обхода FFSPB
   if (!isFfspbConfigured()) { logger.error('FFSPB_API_KEY не задан в .env'); process.exit(1); }
   const federationSlug = arg('slug') ?? FEDERATION_DEFAULT;
   const season = Number(arg('season')) || Number(SEASON);
