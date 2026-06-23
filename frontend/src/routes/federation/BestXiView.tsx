@@ -23,9 +23,9 @@ const LINE_TAG: Record<Line, string> = { GK: 'ВРТ', DEF: 'ЗАЩ', MID: 'ПЗ
 // (overflow:hidden иначе подрезал год/рейтинг ВРТ), а ряды не налезали друг на друга.
 const SLOTS: Record<Line, Array<{ l: number; t: number }>> = {
   GK: [{ l: 50, t: 85 }],
-  DEF: [{ l: 14, t: 61 }, { l: 38, t: 63 }, { l: 62, t: 63 }, { l: 86, t: 61 }],
-  MID: [{ l: 24, t: 38 }, { l: 50, t: 36 }, { l: 76, t: 38 }],
-  FWD: [{ l: 24, t: 14 }, { l: 50, t: 13 }, { l: 76, t: 14 }],
+  DEF: [{ l: 9, t: 61 }, { l: 37, t: 63 }, { l: 63, t: 63 }, { l: 91, t: 61 }],
+  MID: [{ l: 17, t: 38 }, { l: 50, t: 36 }, { l: 83, t: 38 }],
+  FWD: [{ l: 17, t: 14 }, { l: 50, t: 13 }, { l: 83, t: 14 }],
 };
 const LINE_ORDER: Line[] = ['GK', 'DEF', 'MID', 'FWD'];
 // Родительный падеж лиги для подписи «Сборная … лиги».
@@ -129,11 +129,6 @@ export function BestXiBody() {
               <h3 style={{ fontSize: 18, fontWeight: 400, margin: 0 }}>
                 {isUnion ? `Сборная ${DIV_GEN[division] ?? division} лиги · все возрасты` : `Сборная ${DIV_GEN[division] ?? division} лиги · ${cohort!.year} года рождения`}
               </h3>
-              <p className="fed-note">
-                {isUnion
-                  ? 'лучшие по рейтингу в каждой линии со всех когорт'
-                  : `${cohort!.ratedCount.toLocaleString('ru-RU')} оценённых · ${cohort!.clubs} клубов`}
-              </p>
             </div>
 
             {/* Питч заполняет левую половину: обёртка flex:1 центрирует поле по горизонтали,
@@ -192,12 +187,6 @@ export function BestXiBody() {
               })}
             </div>
             </div>
-
-            <p className="fed-note" style={{ marginTop: 12, flex: 'none' }}>
-              {isUnion
-                ? `Совокупная сборная — сильнейшие по абсолютному рейтингу в каждой линии со всех возрастов. По данным разбора, лига ${division}.`
-                : `Перцентиль — позиция внутри линии среди оценённых игроков лиги. По данным разбора, лига ${division}.`}
-            </p>
           </>
         )}
       </div>

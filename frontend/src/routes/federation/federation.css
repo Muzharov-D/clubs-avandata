@@ -59,8 +59,12 @@
 }
 
 /* ---- Shell ---- */
+/* Кабинет = двухколоночный шелл: фикс-сайдбар слева + main-колонка справа. Раньше
+   был горизонтальный топбар сверху (съедал ~123px вертикали под бренд+nav+фильтры) —
+   владелец: «половину экрана сжираем». Перенос nav влево возвращает вертикаль контенту. */
 .fed-root {
   font-family: var(--font); color: var(--text); min-height: 100vh;
+  display: flex; align-items: flex-start;
   -webkit-font-smoothing: antialiased;
   /* deep navy field + layered cyan/blue/purple glow at the top (approximates the
      site's animated wireframe-wave hero without building the mesh) */
@@ -72,42 +76,93 @@
   background-attachment: fixed;
 }
 
-/* ---- Topbar ---- */
-.fed-bar {
+/* ---- Sidebar (левая вертикальная навигация) ---- */
+/* Sticky-колонка во всю высоту вьюпорта: стеклянный navy-фон + правая хайрлайна.
+   flex-колонка — бренд сверху, nav в середине, имя+«Выйти» прижаты вниз (margin-top:auto). */
+.fed-sidebar {
   position: sticky; top: 0; z-index: 50;
-  display: flex; align-items: center; gap: 32px;
-  padding: 16px 40px;
-  background: rgba(10,15,46,0.78); backdrop-filter: blur(24px) saturate(160%);
-  border-bottom: 1px solid var(--border);
+  flex: 0 0 212px; width: 212px; height: 100vh;
+  display: flex; flex-direction: column;
+  padding: 22px 16px 18px;
+  background: rgba(10,15,46,0.72); backdrop-filter: blur(24px) saturate(160%);
+  border-right: 1px solid var(--border);
 }
-.fed-bar__brand { font-size: 20px; font-weight: 600; letter-spacing: -0.02em; color: var(--text); text-decoration: none; }
-.fed-bar__brand span { font-weight: 700; color: var(--accent); }
-.fed-bar__nav { display: flex; gap: 8px; margin-left: auto; }
+.fed-sidebar__brand {
+  display: block; padding: 4px 12px 0; margin-bottom: 26px;
+  font-size: 21px; font-weight: 600; letter-spacing: -0.02em;
+  color: var(--text); text-decoration: none;
+}
+.fed-sidebar__brand span { font-weight: 700; color: var(--accent); }
+.fed-sidebar__nav { display: flex; flex-direction: column; gap: 4px; }
+/* Вертикальный пункт меню — полноширинная строка. Активный = cyan-текст + левый
+   акцент-рейл (через box-shadow inset, не сдвигает текст) + лёгкая стеклянная заливка. */
 .fed-tab {
-  padding: 8px 16px; border-radius: 999px; font-size: 14px; font-weight: 500;
-  color: var(--text-secondary); text-decoration: none; transition: all 0.2s var(--ease);
-  border-bottom: 2px solid transparent;
-  margin-bottom: -2px;
+  position: relative;
+  display: block; padding: 10px 14px; border-radius: 10px;
+  font-size: 14px; font-weight: 500; line-height: 1.2;
+  color: var(--text-secondary); text-decoration: none;
+  transition: color 0.2s var(--ease), background 0.2s var(--ease);
 }
-.fed-tab:hover { color: var(--text); }
-.fed-tab--active { color: var(--accent); border-bottom-color: var(--accent); }
-.fed-bar__who { font-size: 13px; color: var(--text-secondary); margin-left: 24px; }
-.fed-bar__out { font-size: 13px; color: var(--text-secondary); background: none; border: none; cursor: pointer; padding: 8px 12px; border-radius: 8px; transition: all 0.2s; }
-.fed-bar__out:hover { color: var(--danger); }
+.fed-tab:hover { color: var(--text); background: rgba(255,255,255,0.04); }
+.fed-tab--active {
+  color: var(--accent); background: var(--accent-soft);
+  box-shadow: inset 3px 0 0 var(--accent);
+}
+.fed-tab--active:hover { color: var(--accent); background: var(--accent-soft); }
+/* Подвал сайдбара — прижат вниз, отделён хайрлайном сверху. */
+.fed-sidebar__foot {
+  margin-top: auto; padding-top: 14px;
+  border-top: 1px solid var(--border);
+  display: flex; flex-direction: column; align-items: flex-start; gap: 6px;
+}
+.fed-sidebar__who { padding: 0 14px; font-size: 13px; color: var(--text-secondary); }
+.fed-sidebar__out {
+  font-size: 13px; color: var(--text-secondary); background: none; border: none; cursor: pointer;
+  padding: 8px 14px; border-radius: 8px; transition: color 0.2s, background 0.2s; text-align: left; width: 100%;
+}
+.fed-sidebar__out:hover { color: var(--danger); background: rgba(255,255,255,0.04); }
+
+/* ---- Main column (контент-колонка справа от сайдбара) ---- */
+.fed-main { flex: 1 1 auto; min-width: 0; }
+
+/* ---- Сайдбар → горизонтальная верхняя полоса на узких экранах ---- */
+/* <860px: вертикальный сайдбар ломал бы узкий экран. Шелл становится колонкой,
+   сайдбар сворачивается в тонкий sticky top-bar (бренд + nav в ряд, имя/«Выйти»
+   прижаты вправо), фильтр-бар липнет под ним. */
+@media (max-width: 860px) {
+  .fed-root { flex-direction: column; align-items: stretch; }
+  .fed-sidebar {
+    flex: 0 0 auto; width: auto; height: auto;
+    flex-direction: row; align-items: center; flex-wrap: wrap; gap: 4px 8px;
+    padding: 10px 16px;
+    border-right: none; border-bottom: 1px solid var(--border);
+  }
+  .fed-sidebar__brand { padding: 0; margin: 0 8px 0 0; font-size: 19px; }
+  .fed-sidebar__nav { flex-direction: row; flex-wrap: wrap; gap: 4px; }
+  .fed-tab { padding: 7px 12px; }
+  /* Активный пункт в ряду: левый рейл не читается → подсветка нижней рамкой. */
+  .fed-tab--active { box-shadow: inset 0 -2px 0 var(--accent); }
+  .fed-sidebar__foot {
+    margin: 0 0 0 auto; padding: 0; border-top: none;
+    flex-direction: row; align-items: center; gap: 4px;
+  }
+  .fed-sidebar__who { padding: 0; }
+  .fed-sidebar__out { width: auto; padding: 6px 10px; }
+  /* Фильтр-бар липнет ПОД top-bar (а не к верху окна, который занимает сайдбар). */
+  .fed-filter { top: 53px; padding: 12px 16px; }
+  .fed-page { padding: 20px 16px 48px; }
+}
 
 /* ---- Subbar (filters) ---- */
-/* Полоса-саббар тянется во всю ширину (фон + нижняя хайрлайн как у .fed-bar);
-   контент лежит во ВНУТРЕННЕМ треке, выровненном по странице (тот же max-width +
-   40px инсет, что у .fed-page) — иначе крайняя «Лига» подрезалась у левого края. */
+/* Фильтр-бар теперь в верху main-колонки. Топбара нет → sticky-оффсет top:0
+   (липнет к верху окна при скролле документа, как и сайдбар). Тянется во всю
+   ширину main; фильтры идут по этой ширине (центрированный __inner-трек удалён). */
 .fed-filter {
-  position: sticky; top: 65px; z-index: 40;
-  padding: 10px 40px;
+  position: sticky; top: 0; z-index: 40;
+  display: flex; flex-wrap: wrap; align-items: center; gap: 12px 28px;
+  padding: 12px 40px;
   background: rgba(10,15,46,0.62); backdrop-filter: blur(12px);
   border-bottom: 1px solid var(--border);
-}
-.fed-filter__inner {
-  display: flex; flex-wrap: wrap; align-items: center; gap: 12px 28px;
-  max-width: 1120px; margin: 0 auto;  /* 1200 − 2×40 инсет = трек контента .fed-page */
 }
 .fed-filter__group { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; min-width: 0; }
 .fed-filter__label {
@@ -127,7 +182,10 @@
 }
 
 /* ---- Page ---- */
-.fed-page { max-width: 1200px; margin: 0 auto; padding: 20px 40px 56px; }
+/* Топбара больше нет → верхний отступ убран (контент стартует сразу под фильтр-баром,
+   либо под верхом main, если фильтра нет). Боковые/нижние отступы сохранены.
+   max-width поднят (сайдбар уже забирает левую колонку) — контенту больше воздуха вширь. */
+.fed-page { max-width: 1320px; margin: 0 auto; padding: 24px 40px 56px; }
 .fed-hero { margin-bottom: 24px; }
 .fed-hero__kicker { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--accent-cyan); margin-bottom: 10px; }
 .fed-hero__title { font-family: var(--font-display); font-size: 40px; font-weight: 700; letter-spacing: -0.01em; line-height: 1.1; margin: 0 0 8px; }
@@ -146,10 +204,12 @@
 }
 /* На «Талантах» hero убран → сплит идёт первым блоком сразу под sticky-фильтром.
    Витрина региона: фолд (поле | рейтинг) вписан РОВНО в один экран — никакого скролла
-   страницы для главного блока. Высота = вьюпорт минус топбар(69)+фильтр(54)+верх .fed-page(20)
-   +этот margin(4)+нижнее дыхание(~11) ≈ 158px. min-height — пол для очень низких окон.
-   Поле внутри height-driven масштабирует игроков по своей ширине (см. BestXiView). */
-.fed-talent-split--lead { margin-top: 4px; height: calc(100vh - 158px); min-height: 380px; }
+   страницы для главного блока. Топбар УБРАН (кабинет на левом сайдбаре) → верхний хром
+   над полем = только фильтр-бар(~54) + верх .fed-page(24) + этот margin(4) + нижнее
+   дыхание(~12) ≈ 94px (раньше 158 с топбаром). Поле стало ВЫШЕ — крупнее/воздушнее.
+   min-height — пол для очень низких окон. Поле внутри height-driven масштабирует
+   игроков по своей высоте (см. BestXiView). */
+.fed-talent-split--lead { margin-top: 4px; height: calc(100vh - 94px); min-height: 380px; }
 /* Ячейка = flex-колонка: заголовок (auto) + панель (flex:1). min-height:0 разрешает
    внутренним скролл-контейнерам ужиматься, а не распирать ячейку. */
 .fed-talent-split__cell {

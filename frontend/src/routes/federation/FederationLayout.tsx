@@ -33,11 +33,11 @@ export function FederationLayout() {
   return (
     <FedYearProvider>
       <div className="fed-root">
-        <header className="fed-bar">
-          <Link to="/federation" className="fed-bar__brand">
+        <aside className="fed-sidebar">
+          <Link to="/federation" className="fed-sidebar__brand">
             Avan<span>Data</span>
           </Link>
-          <nav className="fed-bar__nav" aria-label="Разделы">
+          <nav className="fed-sidebar__nav" aria-label="Разделы">
             {TABS.map((t) => (
               <NavLink
                 key={t.to}
@@ -49,24 +49,26 @@ export function FederationLayout() {
               </NavLink>
             ))}
           </nav>
-          <span className="fed-bar__who">{who}</span>
-          <button className="fed-bar__out" onClick={handleLogout}>Выйти</button>
-        </header>
+          <div className="fed-sidebar__foot">
+            <span className="fed-sidebar__who">{who}</span>
+            <button className="fed-sidebar__out" onClick={handleLogout}>Выйти</button>
+          </div>
+        </aside>
 
-        {!noFilters && (
-          <div className="fed-filter">
-            <div className="fed-filter__inner">
+        <div className="fed-main">
+          {!noFilters && (
+            <div className="fed-filter">
               <DivisionFilter />
               <YearFilter />
             </div>
-          </div>
-        )}
+          )}
 
-        <main className="fed-page">
-          <Suspense fallback={<div className="fed-skeleton" style={{ height: 400 }} />}>
-            <Outlet />
-          </Suspense>
-        </main>
+          <main className="fed-page">
+            <Suspense fallback={<div className="fed-skeleton" style={{ height: 400 }} />}>
+              <Outlet />
+            </Suspense>
+          </main>
+        </div>
       </div>
     </FedYearProvider>
   );
