@@ -11,33 +11,22 @@ export function FederationTalent() {
 
   return (
     <div>
-      {/* Компактная шапка экрана: на «Талантах» главный фолд — две половины (питч | рейтинг)
-          во весь экран, поэтому hero ужат (мелкий титул, минимальные отступы), чтобы отдать
-          высоту двум панелям, но остаётся внятным заголовком раздела. */}
-      <div className="fed-hero fed-hero--compact">
-        <div className="fed-hero__kicker">Кто лучший в регионе</div>
-        <h1 className="fed-hero__title fed-hero__title--compact">Таланты</h1>
-        <p className="fed-hero__sub">Сборная региона, рейтинг, бомбардиры и кого регион теряет · {scope}</p>
-      </div>
+      {/* Hero и внешние разделители «Сборная региона»/«Рейтинг» УБРАНЫ намеренно: вкладка
+          «Таланты» уже подсвечена в топбаре, а обе карточки самоподписаны (левая — h3
+          «Сборная … лиги · …» в BestXiBody, правая — .fed-card__title «Рейтинг игроков»
+          + .fed-card__sub «N разобранных · …» в RegionLeaderboardBody). Поэтому главный
+          фолд (питч | рейтинг) стартует сразу под фильтр-баром — отдаём ему ~112px верхней
+          зоны, которые раньше съедали hero (~96px) и оба разделителя (~16px к старту колонки). */}
 
-      {/* Главный фолд: 50/50 две колонки, заполняющие высоту вьюпорта под шапкой.
-          Высота = экран минус топбар (~65) + фильтр-бар (~54) + верх .fed-page (~20) +
-          компактный hero (~80). Каждая ячейка — flex-колонка: заголовок сверху + панель
-          (питч слева / рейтинг справа), заполняющая остаток высоты. На узких — стек. */}
-      <div className="fed-talent-split">
+      {/* Главный фолд: 50/50 две колонки, заполняющие высоту вьюпорта под фильтр-баром.
+          Каждая ячейка — flex-колонка с самоподписанной карточкой (питч слева / рейтинг
+          справа). На узких — стек. */}
+      <div className="fed-talent-split fed-talent-split--lead">
         <div className="fed-talent-split__cell">
-          <div className="fed-divider fed-talent-split__head">
-            <h2 className="fed-divider__title">Сборная региона</h2>
-            <div className="fed-divider__line" />
-          </div>
           <BestXiBody />
         </div>
 
         <div className="fed-talent-split__cell">
-          <div className="fed-divider fed-talent-split__head">
-            <h2 className="fed-divider__title">Рейтинг</h2>
-            <div className="fed-divider__line" />
-          </div>
           <RegionLeaderboardBody withRising={false} />
         </div>
       </div>
