@@ -96,11 +96,23 @@
 .fed-bar__out:hover { color: var(--danger); }
 
 /* ---- Subbar (filters) ---- */
+/* Полоса-саббар тянется во всю ширину (фон + нижняя хайрлайн как у .fed-bar);
+   контент лежит во ВНУТРЕННЕМ треке, выровненном по странице (тот же max-width +
+   40px инсет, что у .fed-page) — иначе крайняя «Лига» подрезалась у левого края. */
 .fed-filter {
   position: sticky; top: 65px; z-index: 40;
-  display: flex; gap: 12px; padding: 12px 40px;
+  padding: 12px 40px;
   background: rgba(10,15,46,0.62); backdrop-filter: blur(12px);
   border-bottom: 1px solid var(--border);
+}
+.fed-filter__inner {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 12px 28px;
+  max-width: 1120px; margin: 0 auto;  /* 1200 − 2×40 инсет = трек контента .fed-page */
+}
+.fed-filter__group { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; min-width: 0; }
+.fed-filter__label {
+  font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em;
+  color: var(--text-tertiary); margin-right: 4px; white-space: nowrap;
 }
 .fed-pill {
   padding: 6px 14px; border-radius: 999px; font-size: 13px; font-weight: 500;
@@ -208,6 +220,13 @@
 .fed-link { color: var(--accent-cyan); text-decoration: none; font-size: 14px; font-weight: 500; transition: opacity 0.2s; }
 .fed-link:hover { opacity: 0.7; }
 .fed-note { font-size: 13px; color: var(--text-secondary); line-height: 1.6; }
+/* Пустая колонка борда (повышение/понижение без кандидатов): компактная,
+   центрированная, приглушённая заметка — чтобы пустота читалась как «намеренно»,
+   а не как сломанный пустой бокс. */
+.fed-note--empty {
+  margin: 12px 0 0; padding: 8px 4px; text-align: center;
+  color: var(--text-tertiary); font-size: 12.5px;
+}
 
 /* ---- Reduced motion ---- */
 @media (prefers-reduced-motion: reduce) {

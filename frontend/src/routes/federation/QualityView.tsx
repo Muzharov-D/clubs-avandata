@@ -18,6 +18,15 @@ interface Cohort { year: number; ratedCount: number; clubs: number; xi: XiPlayer
 const canon = (s: string): string =>
   s.toLowerCase().replace(/[«»"'()]/g, '').replace(/\bфк\b|\bсшор\b|\bсш\b|№\s*\d+/gi, '').replace(/\s+/g, ' ').trim();
 
+// Поле `club` из /av/players — это команда-с-годом («Автово 2011», «СШОР Зенит 2012»).
+// Для ЯРЛЫКА строки нужна чистая школа без года рождения, чтобы «Автово 2011» и
+// «Автово 2012» сливались в один читаемый «Автово» (группировка идёт по canon выше,
+// а здесь — человекочитаемое имя представителя клуба).
+const prettyClub = (s: string): string => {
+  const clean = s.replace(/[«»"]/g, '').replace(/\b(19|20)\d{2}\b/g, '').replace(/\s+г\.?\s*р\.?/gi, '').replace(/\s+/g, ' ').trim();
+  return clean || s.trim();
+};
+
 // Производный расширенный состав когорты: 2 ВРТ / 8 ЗАЩ / 6 ПЗ / 6 НАП = 22, отбор по
 // абсолютному рейтингу внутри линии (амплуа — через lineOf по реестру игроков).
 const SQUAD22: Record<Line, number> = { GK: 2, DEF: 8, MID: 6, FWD: 6 };
@@ -32,7 +41,9 @@ function tallyByClub(rows: Array<{ club: string | null; clubLogo?: string | null
     const key = canon(r.club);
     const cur = by.get(key);
     if (cur) cur.n += 1;
-    else by.set(key, { club: r.club, logo: r.clubLogo ?? null, n: 1 });
+    // Ярлык — чистое имя школы без года рождения (см. prettyClub): «Автово 2011» →
+    // «Автово»; группировка остаётся по canon-ключу, поэтому year-команды сливаются.
+    else by.set(key, { club: prettyClub(r.club), logo: r.clubLogo ?? null, n: 1 });
   });
   return Array.from(by.values()).sort((a, b) => b.n - a.n);
 }

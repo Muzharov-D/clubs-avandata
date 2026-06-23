@@ -1,5 +1,5 @@
 import { Suspense } from 'react';
-import { NavLink, Outlet, useNavigate, Link } from 'react-router-dom';
+import { NavLink, Outlet, useNavigate, useLocation, Link } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { toast } from '../../components/Toast';
 import { FedYearProvider, YearFilter, DivisionFilter } from './avYear';
@@ -17,6 +17,10 @@ const TABS: Array<{ to: string; end?: boolean; label: string }> = [
 export function FederationLayout() {
   const { user, logout } = useAuth() as FedAuth;
   const navigate = useNavigate();
+  const { pathname } = useLocation();
+  // Обзор = птичий глаз (тоталы региона); год/лигу там нечем резать (перепись и минуты
+  // без годового среза) → фильтр-бар на нём НЕ показываем. Срезы — на профильных вкладках.
+  const onOverview = /\/federation\/?$/.test(pathname);
   function handleLogout() {
     logout();
     toast.info('Вы вышли из кабинета');
@@ -47,10 +51,14 @@ export function FederationLayout() {
           <button className="fed-bar__out" onClick={handleLogout}>Выйти</button>
         </header>
 
-        <div className="fed-filter">
-          <DivisionFilter />
-          <YearFilter />
-        </div>
+        {!onOverview && (
+          <div className="fed-filter">
+            <div className="fed-filter__inner">
+              <DivisionFilter />
+              <YearFilter />
+            </div>
+          </div>
+        )}
 
         <main className="fed-page">
           <Suspense fallback={<div className="fed-skeleton" style={{ height: 400 }} />}>

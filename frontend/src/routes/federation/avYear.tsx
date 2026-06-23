@@ -37,10 +37,10 @@ export function FedYearProvider({ children }: { children: ReactNode }) {
 export function DivisionFilter() {
   const { division, setDivision } = useFedYear();
   return (
-    <div className="av-divbar" role="tablist" aria-label="Дивизион">
-      <span className="av-yearbar__label">Лига</span>
+    <div className="fed-filter__group" role="tablist" aria-label="Дивизион">
+      <span className="fed-filter__label">Лига</span>
       {DIVISIONS.map((d) => (
-        <button key={d} aria-label={`Лига: ${d}`} aria-pressed={division === d} className={`av-dchip${division === d ? ' av-dchip--active' : ''}`} onClick={() => setDivision(d)}>{d}</button>
+        <button type="button" key={d} aria-label={`Лига: ${d}`} aria-pressed={division === d} className={`fed-pill${division === d ? ' fed-pill--active' : ''}`} onClick={() => setDivision(d)}>{d}</button>
       ))}
     </div>
   );
@@ -50,11 +50,11 @@ export function DivisionFilter() {
 export function YearFilter() {
   const { year, setYear, years } = useFedYear();
   return (
-    <div className="av-yearbar" role="tablist" aria-label="Год рождения">
-      <span className="av-yearbar__label">Год рождения</span>
-      <button aria-label="Год рождения: все" aria-pressed={year == null} className={`av-ychip${year == null ? ' av-ychip--active' : ''}`} onClick={() => setYear(null)}>Все</button>
+    <div className="fed-filter__group" role="tablist" aria-label="Год рождения">
+      <span className="fed-filter__label">Год рождения</span>
+      <button type="button" aria-label="Год рождения: все" aria-pressed={year == null} className={`fed-pill${year == null ? ' fed-pill--active' : ''}`} onClick={() => setYear(null)}>Все</button>
       {years.map((y) => (
-        <button key={y} aria-label={`Год рождения: ${y}`} aria-pressed={year === y} className={`av-ychip${year === y ? ' av-ychip--active' : ''}`} onClick={() => setYear(y)}>{y}</button>
+        <button type="button" key={y} aria-label={`Год рождения: ${y}`} aria-pressed={year === y} className={`fed-pill${year === y ? ' fed-pill--active' : ''}`} onClick={() => setYear(y)}>{y}</button>
       ))}
     </div>
   );

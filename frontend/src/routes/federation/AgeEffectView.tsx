@@ -52,25 +52,19 @@ export function AgeEffectBody() {
 
   return (
     <div>
-      {/* Hero finding */}
-      {selected ? (
-        <div className="fed-card" style={{ marginBottom: 32, borderLeft: '3px solid var(--accent)' }}>
-          <div className="fed-badge fed-badge--accent" style={{ marginBottom: 12 }}>Перекос · {selected.year} г.р.</div>
-          <h3 style={{ fontSize: 24, fontWeight: 300, margin: '0 0 8px' }}>
-            {selected.year}: перекос {selected.skew != null ? `${selected.skew}×` : '—'} · Q1 {selected.q1pct}% — Q4 {selected.q4pct}%
-          </h3>
-          <p className="fed-note">
-            Расчёт по {num(selected.players)} игрокам когорты.
-            {maxC && minC ? ` В регионе наибольший перекос — ${maxC.year} (${maxC.skew}×), наименьший — ${minC.year} (${minC.skew}×).` : ''}
-          </p>
-        </div>
-      ) : maxC && minC ? (
+      {/* Вердикт ВСЕГДА общий (сравнение когорт): одиночное «2010: 2.39×» без контекста
+          бессмысленно — смысл перекоса в сравнении. Выбранный год не подменяет вердикт,
+          а лишь подсвечивается на графике (+ короткая строка). */}
+      {maxC && minC ? (
         <div className="fed-card" style={{ marginBottom: 32, borderLeft: '3px solid var(--accent)' }}>
           <div className="fed-badge fed-badge--accent" style={{ marginBottom: 12 }}>Перекос по когортам</div>
           <h3 style={{ fontSize: 24, fontWeight: 300, margin: '0 0 8px' }}>
             Наибольший перекос — {maxC.year}: {maxC.skew}×. Наименьший — {minC.year}: {minC.skew}×.
           </h3>
-          <p className="fed-note">Перекос Q1÷Q4 — отношение числа рождённых в начале года к рождённым в конце.</p>
+          <p className="fed-note">
+            Перекос Q1÷Q4 — отношение числа рождённых в начале года к рождённым в конце.
+            {selected && selected.skew != null ? ` Выбран ${selected.year} г.р.: ${selected.skew}× — подсвечен на графике.` : ''}
+          </p>
         </div>
       ) : null}
 

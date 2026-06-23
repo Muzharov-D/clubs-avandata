@@ -230,7 +230,7 @@ export function LeagueMgmtBody() {
               arrow="▲"
               focused={division === LOWER}
               subtitle={`Клубы ${LOWER} с рейтингом выше слабейшего клуба ${TOP} (${ratingLabel(model.minTop)})`}
-              empty={`Ни один клуб ${LOWER} не превосходит слабейший клуб ${TOP} в этой когорте.`}
+              empty="Нет кандидатов на повышение по данным выбранной когорты"
             >
               {model.promote.map((cc) => (
                 <BoardRow
@@ -250,7 +250,7 @@ export function LeagueMgmtBody() {
               arrow="▼"
               focused={division === TOP}
               subtitle={`Клубы ${TOP} с рейтингом ниже сильнейшего клуба ${LOWER} (${ratingLabel(model.maxLower)})`}
-              empty={`В ${TOP} нет клубов слабее сильнейшего клуба ${LOWER} в этой когорте.`}
+              empty="Нет кандидатов на понижение по данным выбранной когорты"
             >
               {model.relegate.map((cc) => (
                 <BoardRow
@@ -319,7 +319,7 @@ function BoardColumn({ tone, title, arrow, subtitle, empty, focused, children }:
       </div>
       {has
         ? <div style={{ marginTop: 12 }}>{children}</div>
-        : <div className="fed-note" style={{ marginTop: 12 }}>{empty}</div>}
+        : <p className="fed-note fed-note--empty">{empty}</p>}
     </div>
   );
 }
