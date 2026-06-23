@@ -1,4 +1,5 @@
 import { latestSnapshotsForCohort, snapshotMeta, type SnapPayload, type SnapTeam } from './snapshots.js';
+import { classifyDivision } from './division.js';
 
 /**
  * «За неделю» — передняя дверь недельного радара (Фаза C).
@@ -11,7 +12,7 @@ import { latestSnapshotsForCohort, snapshotMeta, type SnapPayload, type SnapTeam
  *    Пусто, пока не накопится 2 снимка; baseline=true = «база снята, ждём следующий срез».
  */
 
-const isTopDiv = (d: string): boolean => /Высшая|Боброва/i.test(d);
+const isTopDiv = (d: string): boolean => classifyDivision(d) === 'Высшая';
 const RATING_MOVE = 0.05;   // порог значимого изменения рейтинга за неделю (5%)
 const MONOPOLY_PCT = 50;    // топ-3 клуба держат ≥ N% таланта когорты → сигнал «монополия»
 const RAE_SKEW = 1.8;       // перекос Q1/Q4 ≥ N → сигнал «возрастная утечка»

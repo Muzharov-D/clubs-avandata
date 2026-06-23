@@ -16,6 +16,7 @@ import { getMatch as ffspbGetMatch, isFfspbConfigured } from '../services/ffspbA
 import { logger } from '../shared/logger.js';
 import { env } from '../env.js';
 import { normTeam } from './teamName.js';
+import { DIVISION_ALIASES, matchesDivision } from './division.js';
 import { snapshotMeta, latestSnapshotsForCohort, type SnapPayload } from './snapshots.js';
 
 // ─── Детали матча (для карточки матча по клику) ──────────────────────────────
@@ -281,6 +282,7 @@ export async function listTournaments(seasonId: number): Promise<TournamentRef[]
       divisionTitle: d.title, lastPlayedTour: d.lastPlayedTour,
     });
   }
+  auditDivisions(seasonId, out);
   return out;
 }
 
@@ -360,13 +362,22 @@ export interface RegionOverview {
   divisions: string[]; tournaments: number; teams: number; players: number;
   matches: number; analyzed: number; goals: number; byTournament: TournamentAgg[];
 }
-// Классификация дивизиона по названию турнира — единый источник истины и для
-// группировки (groupByDivision), и для фильтра. 'Высшая'/'Первая' приходят с фронта.
-const DIV_RE: Record<string, RegExp> = { 'Высшая': /Высшая|Боброва/i, 'Первая': /Первая|Дементьева/i };
-export const matchesDivision = (title: string, division: string): boolean => {
-  const re = DIV_RE[division];
-  return re ? re.test(title) : title.toLowerCase().includes(division.toLowerCase());
-};
+// Классификатор дивизионов вынесен в ./division (чистый, тестируется офлайн). Здесь — только
+// СТРАЖ переименования: один раз на сезон проверяем, что КАЖДАЯ ожидаемая лига (Высшая/Первая)
+// сопоставлена хотя бы одному дивизиону. Если нет — WARN с полным списком названий (видно в логах
+// прода → причина «пустого экрана» ясна сразу, а не спустя дни). function-declaration (hoisted),
+// поэтому безопасно вызывается из listTournaments выше по файлу.
+const auditedSeasons = new Set<number>();
+function auditDivisions(seasonId: number, refs: Array<{ divisionTitle: string }>): void {
+  if (auditedSeasons.has(seasonId)) return;
+  auditedSeasons.add(seasonId);
+  const titles = [...new Set(refs.map((r) => r.divisionTitle))];
+  for (const [key, re] of Object.entries(DIVISION_ALIASES)) {
+    if (!titles.some((t) => re.test(t))) {
+      logger.warn({ division: key, seasonId, titles }, `[federation] лига «${key}» не сопоставлена ни одному дивизиону сезона ${seasonId} — переименование? данные лиги молча пропадут`);
+    }
+  }
+}
 
 export async function regionOverview(seasonId: number, division?: string, year?: number): Promise<RegionOverview> {
   return cached(`overview:${seasonId}:${division ?? ''}:${year ?? 0}`, TTL, async () => {
