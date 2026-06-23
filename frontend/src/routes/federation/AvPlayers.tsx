@@ -82,12 +82,12 @@ export function RegionLeaderboardBody({ withRising = true, withLeaderboard = tru
             {num(players.length)} разобранных{year != null ? ` · ${year} г.р.` : ' · все возрасты'} · рейтинг AvanData
           </p>
 
-          <div className="fed-row" style={{ padding: '12px 16px', borderBottom: 'none' }}>
+          <div style={{ display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap', padding: '12px 0 16px' }}>
             <input
               placeholder="Поиск по имени…"
               value={qStr}
               onChange={(e) => setQStr(e.target.value)}
-              style={{ background: 'var(--bg-elevated)', border: '1px solid var(--border)', borderRadius: '8px', color: 'var(--text)', padding: '8px 12px', fontSize: '14px', flex: 1, maxWidth: 320 }}
+              style={{ background: 'var(--bg-elevated)', border: '1px solid var(--border)', borderRadius: '8px', color: 'var(--text)', padding: '8px 12px', fontSize: '14px', flex: '1 1 220px', maxWidth: 320 }}
             />
             {clubs.length > 1 && (
               <select
