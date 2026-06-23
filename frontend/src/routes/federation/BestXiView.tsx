@@ -104,7 +104,7 @@ export function BestXiBody() {
             </div>
 
             {/* Pitch */}
-            <div style={{ position: 'relative', aspectRatio: '4 / 5', maxWidth: 'calc(50vh * 4 / 5)', margin: '0 auto', borderRadius: 'var(--radius)', overflow: 'hidden', background: 'linear-gradient(180deg, #1a4a2a, #0e3d1f)' }}>
+            <div style={{ position: 'relative', aspectRatio: '4 / 5', maxWidth: 'calc(44vh * 4 / 5)', margin: '0 auto', borderRadius: 'var(--radius)', overflow: 'hidden', background: 'linear-gradient(180deg, #1a4a2a, #0e3d1f)' }}>
               <svg viewBox="0 0 100 100" preserveAspectRatio="none" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }} aria-hidden>
                 <rect x="0" y="0" width="100" height="100" fill="url(#grass)" />
                 <defs>
