@@ -1,55 +1,96 @@
 /* ============================================================================
-   Federation · Apple Pro Design Language — v2
-   Warm, deep, breathable. No neon, no flat boxes. Depth through subtle
-   gradient, thin borders, and tabular numerals. The accent is white, not blue.
+   Federation · AvanData Product Brand (avandata.ru)
+   Premium dark navy with DEPTH — glassy translucent cards on a deep blue field,
+   1px white-alpha hairlines, soft shadows, and a layered cyan/blue/purple glow
+   at the top of the page (the site's wireframe-wave hero, approximated). The
+   signature accent is cyan (#00d4ff). Display numerals/titles in Xolonium.
+
+   VISUAL re-skin only — every layout/structural rule below is untouched. Tokens
+   are the single home for hex; the .tsx files reference them inline by name.
    ============================================================================ */
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&display=swap');
+/* Xolonium @font-face lives in styles/legirus-base.css (imported globally in
+   main.tsx). Files are absent under public/fonts/Xolonium/ → the family is
+   declared but graceful-falls back to Montserrat. --font-display below is the
+   same stack legirus-base exposes, so it resolves either way. */
 
 :root {
-  --bg: #0a0a0c;
-  --bg-elevated: #111114;
-  --bg-card: #131316;
-  --bg-card-hover: #18181c;
+  /* — surfaces (deep navy, not flat black) — */
+  --bg: #0a0f2e;            /* avandata bg-primary */
+  --bg-elevated: rgba(255,255,255,0.05);  /* glass — used inline for chips/close btn */
+  --bg-card: #0d1540;       /* avandata bg-secondary (skeleton base) */
+  --bg-card-hover: #111a4d;
+  /* — hairlines (white-alpha) — */
   --border: rgba(255,255,255,0.08);
-  --border-strong: rgba(255,255,255,0.14);
-  --text: #f0f0f5;
-  --text-secondary: #8a8a93;
-  --text-tertiary: #4a4a52;
-  --accent: #ffffff;
-  --accent-soft: rgba(255,255,255,0.10);
-  --success: #34c759;
-  --warning: #ff9f0a;
-  --danger: #ff453a;
+  --border-strong: rgba(255,255,255,0.16);
+  /* — text — */
+  --text: #ffffff;
+  --text-secondary: #8892b0;  /* avandata slate */
+  --text-tertiary: #5a6488;   /* dimmer slate */
+  /* — accents — */
+  --accent: #00d4ff;          /* SIGNATURE cyan — positive/highlight in BestXi/AvClubs/Standings */
+  --accent-cyan: #00d4ff;
+  --accent-blue: #4169e1;
+  --accent-purple: #7b2fff;
+  --accent-soft: rgba(0,212,255,0.12);   /* cyan tint */
+  /* — semantic, harmonised to the navy palette — */
+  --success: #2fe0b0;   /* teal-green, sits with cyan */
+  --warning: #ffb84d;   /* warm amber */
+  --danger:  #ff5d73;   /* rose-red, not fire-engine */
+  /* — rating scale (excellent→poor), harmonised; consumed by ratings.ts — */
+  --av-rating-excellent: #2fe0b0;
+  --av-rating-good:      #00d4ff;
+  --av-rating-ok:        #7aa2ff;
+  --av-rating-weak:      #ffb84d;
+  --av-rating-poor:      #ff5d73;
+  --av-rating-none:      #5a6488;
+  /* — glass + glow — */
+  --glass: rgba(255,255,255,0.04);       /* card fill */
+  --glass-hover: rgba(255,255,255,0.06);
+  --glow: rgba(0,212,255,0.10);          /* cyan page-glow */
+  /* — geometry / motion — */
   --radius: 20px;
   --radius-sm: 12px;
-  --font: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font: 'Montserrat', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-display: 'Xolonium', 'Montserrat', system-ui, sans-serif;
   --ease: cubic-bezier(0.22, 1, 0.36, 1);
   --dur: 0.5s;
 }
 
 /* ---- Shell ---- */
-.fed-root { font-family: var(--font); color: var(--text); background: var(--bg); min-height: 100vh; -webkit-font-smoothing: antialiased; }
+.fed-root {
+  font-family: var(--font); color: var(--text); min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  /* deep navy field + layered cyan/blue/purple glow at the top (approximates the
+     site's animated wireframe-wave hero without building the mesh) */
+  background:
+    radial-gradient(120% 60% at 50% -10%, var(--glow) 0%, transparent 55%),
+    radial-gradient(80% 50% at 85% 0%, rgba(123,47,255,0.10) 0%, transparent 50%),
+    radial-gradient(70% 50% at 12% 4%, rgba(65,105,225,0.10) 0%, transparent 50%),
+    var(--bg);
+  background-attachment: fixed;
+}
 
 /* ---- Topbar ---- */
 .fed-bar {
   position: sticky; top: 0; z-index: 50;
   display: flex; align-items: center; gap: 32px;
   padding: 16px 40px;
-  background: rgba(10,10,12,0.85); backdrop-filter: blur(24px) saturate(160%);
+  background: rgba(10,15,46,0.78); backdrop-filter: blur(24px) saturate(160%);
   border-bottom: 1px solid var(--border);
 }
 .fed-bar__brand { font-size: 20px; font-weight: 600; letter-spacing: -0.02em; color: var(--text); text-decoration: none; }
-.fed-bar__brand span { font-weight: 700; color: var(--text); }
+.fed-bar__brand span { font-weight: 700; color: var(--accent); }
 .fed-bar__nav { display: flex; gap: 8px; margin-left: auto; }
 .fed-tab {
-  padding: 8px 16px; border-radius: 8px; font-size: 14px; font-weight: 500;
+  padding: 8px 16px; border-radius: 999px; font-size: 14px; font-weight: 500;
   color: var(--text-secondary); text-decoration: none; transition: all 0.2s var(--ease);
   border-bottom: 2px solid transparent;
   margin-bottom: -2px;
 }
 .fed-tab:hover { color: var(--text); }
-.fed-tab--active { color: var(--text); border-bottom-color: var(--accent); }
+.fed-tab--active { color: var(--accent); border-bottom-color: var(--accent); }
 .fed-bar__who { font-size: 13px; color: var(--text-secondary); margin-left: 24px; }
 .fed-bar__out { font-size: 13px; color: var(--text-secondary); background: none; border: none; cursor: pointer; padding: 8px 12px; border-radius: 8px; transition: all 0.2s; }
 .fed-bar__out:hover { color: var(--danger); }
@@ -58,38 +99,47 @@
 .fed-filter {
   position: sticky; top: 65px; z-index: 40;
   display: flex; gap: 12px; padding: 12px 40px;
-  background: rgba(10,10,12,0.70); backdrop-filter: blur(12px);
+  background: rgba(10,15,46,0.62); backdrop-filter: blur(12px);
   border-bottom: 1px solid var(--border);
 }
 .fed-pill {
-  padding: 6px 14px; border-radius: 8px; font-size: 13px; font-weight: 500;
-  background: transparent; border: 1px solid var(--border); color: var(--text-secondary);
+  padding: 6px 14px; border-radius: 999px; font-size: 13px; font-weight: 500;
+  background: rgba(255,255,255,0.03); border: 1px solid var(--border); color: var(--text-secondary);
   cursor: pointer; transition: all 0.2s;
 }
 .fed-pill:hover { border-color: var(--border-strong); color: var(--text); }
-.fed-pill--active { background: var(--text); color: var(--bg); border-color: var(--text); font-weight: 600; }
+.fed-pill--active {
+  background: linear-gradient(180deg, var(--accent-cyan), var(--accent-blue));
+  color: #04122a; border-color: transparent; font-weight: 600;
+  box-shadow: 0 4px 16px rgba(0,212,255,0.28);
+}
 
 /* ---- Page ---- */
 .fed-page { max-width: 1200px; margin: 0 auto; padding: 48px 40px 80px; }
 .fed-hero { margin-bottom: 64px; }
-.fed-hero__kicker { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-secondary); margin-bottom: 12px; }
-.fed-hero__title { font-size: 40px; font-weight: 500; letter-spacing: -0.03em; line-height: 1.1; margin: 0 0 8px; }
+.fed-hero__kicker { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--accent-cyan); margin-bottom: 12px; }
+.fed-hero__title { font-family: var(--font-display); font-size: 40px; font-weight: 700; letter-spacing: -0.01em; line-height: 1.1; margin: 0 0 8px; }
 .fed-hero__sub { font-size: 17px; color: var(--text-secondary); font-weight: 400; margin: 0; }
 
 /* ---- Metric Card (the hero) ---- */
 .fed-metric {
-  background: linear-gradient(180deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.01) 100%);
+  background: linear-gradient(180deg, var(--glass) 0%, rgba(255,255,255,0.015) 100%);
   border-radius: var(--radius); border: 1px solid var(--border);
   padding: 32px;
   transition: all 0.3s var(--ease);
-  box-shadow: 0 2px 8px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.04);
+  box-shadow: 0 8px 28px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.06);
 }
-.fed-metric:hover { background: linear-gradient(180deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.02) 100%); border-color: var(--border-strong); }
+.fed-metric:hover {
+  background: linear-gradient(180deg, var(--glass-hover) 0%, rgba(255,255,255,0.025) 100%);
+  border-color: rgba(0,212,255,0.30);
+  box-shadow: 0 10px 34px rgba(0,0,0,0.40), 0 0 0 1px rgba(0,212,255,0.12), inset 0 1px 0 rgba(255,255,255,0.06);
+}
 .fed-metric__label { font-size: 12px; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 12px; }
-.fed-metric__value { font-size: 56px; font-weight: 400; letter-spacing: -0.02em; line-height: 1; color: var(--text); font-variant-numeric: tabular-nums; }
-.fed-metric__value--accent { color: var(--text); font-weight: 500; }
-.fed-metric__value--success { color: var(--success); font-weight: 500; }
-.fed-metric__value--warning { color: var(--warning); font-weight: 500; }
+.fed-metric__value { font-family: var(--font-display); font-size: 56px; font-weight: 700; letter-spacing: -0.01em; line-height: 1; color: var(--text); font-variant-numeric: tabular-nums; }
+.fed-metric__value--accent { color: var(--accent-cyan); font-weight: 700; }
+.fed-metric__value--success { color: var(--success); font-weight: 700; }
+.fed-metric__value--warning { color: var(--warning); font-weight: 700; }
+.fed-metric__value--danger { color: var(--danger); font-weight: 700; }
 .fed-metric__extra { font-size: 13px; color: var(--text-secondary); margin-top: 12px; font-weight: 400; }
 
 /* ---- Grid ---- */
@@ -102,13 +152,16 @@
 
 /* ---- Card ---- */
 .fed-card {
-  background: linear-gradient(180deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.01) 100%);
+  background: linear-gradient(180deg, var(--glass) 0%, rgba(255,255,255,0.015) 100%);
   border-radius: var(--radius); border: 1px solid var(--border);
   padding: 28px;
   transition: all 0.3s var(--ease);
-  box-shadow: 0 2px 8px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.04);
+  box-shadow: 0 8px 28px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.06);
 }
-.fed-card:hover { background: linear-gradient(180deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.02) 100%); border-color: var(--border-strong); }
+.fed-card:hover {
+  background: linear-gradient(180deg, var(--glass-hover) 0%, rgba(255,255,255,0.025) 100%);
+  border-color: var(--border-strong);
+}
 .fed-card__title { font-size: 16px; font-weight: 600; color: var(--text); margin: 0 0 4px; }
 .fed-card__sub { font-size: 13px; color: var(--text-secondary); margin: 0 0 20px; font-weight: 400; }
 
@@ -127,32 +180,32 @@
 .fed-row__meta { font-size: 12px; color: var(--text-secondary); }
 
 /* ---- Badge ---- */
-.fed-badge { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 600; }
-.fed-badge--accent { background: var(--accent-soft); color: var(--text); }
-.fed-badge--success { background: rgba(52,199,89,0.12); color: var(--success); }
-.fed-badge--warning { background: rgba(255,159,10,0.12); color: var(--warning); }
-.fed-badge--danger { background: rgba(255,69,58,0.12); color: var(--danger); }
+.fed-badge { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 999px; font-size: 12px; font-weight: 600; }
+.fed-badge--accent { background: var(--accent-soft); color: var(--accent-cyan); }
+.fed-badge--success { background: rgba(47,224,176,0.14); color: var(--success); }
+.fed-badge--warning { background: rgba(255,184,77,0.14); color: var(--warning); }
+.fed-badge--danger { background: rgba(255,93,115,0.14); color: var(--danger); }
 
 /* ---- Bar (minimal) ---- */
-.fed-track { height: 4px; border-radius: 2px; background: var(--bg-elevated); overflow: hidden; }
+.fed-track { height: 4px; border-radius: 2px; background: rgba(255,255,255,0.08); overflow: hidden; }
 .fed-fill { height: 100%; border-radius: 2px; background: var(--text-secondary); transition: width 0.8s var(--ease); }
 .fed-fill--success { background: var(--success); }
 .fed-fill--warning { background: var(--warning); }
 .fed-fill--danger { background: var(--danger); }
-.fed-fill--accent { background: var(--text); }
+.fed-fill--accent { background: linear-gradient(90deg, var(--accent-cyan), var(--accent-blue)); }
 
 /* ---- Empty / Skeleton ---- */
 .fed-empty { padding: 60px; text-align: center; color: var(--text-secondary); font-size: 15px; }
-.fed-skeleton { background: linear-gradient(90deg, var(--bg-card) 25%, var(--bg-elevated) 50%, var(--bg-card) 75%); background-size: 200% 100%; animation: fed-skel 1.5s infinite; border-radius: var(--radius-sm); }
+.fed-skeleton { background: linear-gradient(90deg, rgba(255,255,255,0.03) 25%, rgba(0,212,255,0.07) 50%, rgba(255,255,255,0.03) 75%); background-size: 200% 100%; animation: fed-skel 1.5s infinite; border-radius: var(--radius-sm); }
 @keyframes fed-skel { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
 
 /* ---- Section divider ---- */
 .fed-divider { display: flex; align-items: baseline; gap: 16px; margin: 48px 0 24px; }
-.fed-divider__title { font-size: 24px; font-weight: 500; letter-spacing: -0.02em; margin: 0; }
-.fed-divider__line { flex: 1; height: 1px; background: var(--border); }
+.fed-divider__title { font-family: var(--font-display); font-size: 24px; font-weight: 700; letter-spacing: -0.01em; margin: 0; }
+.fed-divider__line { flex: 1; height: 1px; background: linear-gradient(90deg, var(--border-strong), transparent); }
 
 /* ---- Misc ---- */
-.fed-link { color: var(--text); text-decoration: none; font-size: 14px; font-weight: 500; transition: opacity 0.2s; }
+.fed-link { color: var(--accent-cyan); text-decoration: none; font-size: 14px; font-weight: 500; transition: opacity 0.2s; }
 .fed-link:hover { opacity: 0.7; }
 .fed-note { font-size: 13px; color: var(--text-secondary); line-height: 1.6; }
 
