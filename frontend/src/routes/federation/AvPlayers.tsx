@@ -84,17 +84,18 @@ export function RegionLeaderboardBody({ withRising = true, withLeaderboard = tru
 
           <div style={{ display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap', padding: '12px 0 16px', flex: 'none' }}>
             <input
+              className="fed-input"
               placeholder="Поиск по имени…"
               value={qStr}
               onChange={(e) => setQStr(e.target.value)}
-              style={{ background: 'var(--bg-elevated)', border: '1px solid var(--border)', borderRadius: '8px', color: 'var(--text)', padding: '8px 12px', fontSize: '14px', flex: '1 1 220px', maxWidth: 320 }}
+              style={{ flex: '1 1 220px', maxWidth: 320 }}
             />
             {clubs.length > 1 && (
               <select
+                className="fed-select"
                 value={club}
                 onChange={(e) => setClub(e.target.value)}
                 aria-label="Фильтр по клубу"
-                style={{ background: 'var(--bg-elevated)', border: '1px solid var(--border)', borderRadius: '8px', color: 'var(--text)', padding: '8px 12px', fontSize: '14px' }}
               >
                 <option value="all">Все клубы ({clubs.length})</option>
                 {clubs.map((c) => <option key={c} value={c}>{c}</option>)}
