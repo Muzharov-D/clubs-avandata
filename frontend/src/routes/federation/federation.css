@@ -145,8 +145,11 @@
   margin-bottom: 32px;
 }
 /* На «Талантах» hero убран → сплит идёт первым блоком сразу под sticky-фильтром.
-   Небольшой top-отступ, чтобы стеклянные карточки не липли к хайрлайну фильтр-бара. */
-.fed-talent-split--lead { margin-top: 4px; }
+   Витрина региона: фолд (поле | рейтинг) вписан РОВНО в один экран — никакого скролла
+   страницы для главного блока. Высота = вьюпорт минус топбар(69)+фильтр(54)+верх .fed-page(20)
+   +этот margin(4)+нижнее дыхание(~11) ≈ 158px. min-height — пол для очень низких окон.
+   Поле внутри height-driven масштабирует игроков по своей ширине (см. BestXiView). */
+.fed-talent-split--lead { margin-top: 4px; height: calc(100vh - 158px); min-height: 380px; }
 /* Ячейка = flex-колонка: заголовок (auto) + панель (flex:1). min-height:0 разрешает
    внутренним скролл-контейнерам ужиматься, а не распирать ячейку. */
 .fed-talent-split__cell {
@@ -156,11 +159,13 @@
 }
 /* Прямой ребёнок-обёртка панели (BestXiBody / RegionLeaderboardBody рендерят фрагмент,
    поэтому тянем .fed-card напрямую) заполняет остаток высоты ячейки. */
-.fed-talent-split__cell > .fed-card { min-width: 0; }
+.fed-talent-split__cell > .fed-card { flex: 1; min-height: 0; min-width: 0; }
 
-/* На узких экранах две половины складываются в обычный поток (без фикс-высоты). */
+/* На узких экранах две половины складываются в обычный поток (без фикс-высоты):
+   поле уже не вписываем в экран, оно растёт по контенту (width-driven, см. ниже). */
 @media (max-width: 900px) {
-  .fed-talent-split {
+  .fed-talent-split,
+  .fed-talent-split--lead {
     grid-template-columns: 1fr;
     height: auto;
     min-height: 0;
@@ -217,10 +222,11 @@
 /* Карточка — flex-колонка во всю высоту ячейки: компактная шапка сверху, питч-обёртка
    тянется (flex:1), сноска снизу (flex:none). */
 .fed-xi-card { display: flex; flex-direction: column; }
-.fed-xi-pitch-wrap { display: block; }
+/* Обёртка тянется на всю высоту карточки (flex:1) и центрирует поле по горизонтали. */
+.fed-xi-pitch-wrap { flex: 1; min-height: 0; display: flex; align-items: center; justify-content: center; }
 /* Питч height-driven: занимает всю высоту обёртки, ширина выводится из aspect-ratio 4/5,
-   max-width страхует от вылезания в узкой половине. Центрируется обёрткой. */
-.fed-xi-pitch { width: 100%; }
+   max-width страхует от вылезания в узкой половине. Игроки масштабируются по этой ширине. */
+.fed-xi-pitch { height: 100%; max-width: 100%; }
 
 /* На узких экранах карточка перестаёт быть фикс-высоты (см. .fed-talent-split media):
    питч становится width-driven (полная ширина, высота из aspect-ratio), чтобы не схлопнуться. */
@@ -234,8 +240,8 @@
    список (flex:1, overflow-y:auto) тянется и скроллится внутри, сноска (flex:none) снизу.
    Высоту даёт ячейка .fed-talent-split (flex:1); вне сплита панель просто растёт по контенту. */
 .fed-leaderboard-panel { display: flex; flex-direction: column; }
-/* Лёгкий внутренний отступ скролл-листа, чтобы строки не липли к скроллбару. */
-.fed-leaderboard-list { margin-right: -4px; padding-right: 4px; }
+/* Список тянется (flex:1) и скроллится ВНУТРИ панели; лёгкий отступ, чтобы строки не липли к скроллбару. */
+.fed-leaderboard-list { flex: 1; min-height: 0; overflow-y: auto; margin-right: -4px; padding-right: 4px; }
 
 /* На узких экранах список не скроллится внутри (нет фикс-высоты у ячейки) — растёт по контенту. */
 @media (max-width: 900px) {

@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useRef, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { api } from '../../api/client';
 import { PlayerAvatar } from './PlayerAvatar';
@@ -81,6 +81,35 @@ export function BestXiBody() {
     return out;
   }, [activeXi]);
 
+  // Поле вписано в высоту экрана (height-driven) → его ширина (pw) меняется с окном.
+  // Меряем её ResizeObserver-ом и масштабируем аватары/подписи ПРОПОРЦИОНАЛЬНО (1 ед = 1% ширины),
+  // иначе фикс-px аватары на сжатом поле налезают друг на друга. Дефолт 440 — близко к типовой
+  // половине, чтобы первый кадр был корректным до срабатывания обсервера.
+  const pitchRef = useRef<HTMLDivElement | null>(null);
+  const [pw, setPw] = useState(440);
+  useEffect(() => {
+    const el = pitchRef.current;
+    if (!el) return;
+    const ro = new ResizeObserver((entries) => {
+      const w = entries[0]?.contentRect.width;
+      if (w && w > 0) setPw(w);
+    });
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [activeXi.length]);
+  const u = pw / 100;
+  const r = (k: number) => Math.round(k * u);
+  const avSize = Math.max(16, r(8.8));      // ~46px при pw≈520
+  const badgeFont = Math.max(8, r(2.1));
+  const badgeMinW = Math.max(16, r(4.2));
+  const tagFont = Math.max(7, r(1.9));
+  const nameFont = Math.max(8, r(2.1));
+  const clubFont = Math.max(7, r(1.85));
+  const shieldSize = Math.max(11, r(2.9));
+  const colGap = Math.max(2, r(0.8));
+  const chipPadV = Math.max(1, r(0.4));
+  const chipPadH = Math.max(4, r(1.5));
+
   return (
     <>
       {error && <FedError />}
@@ -107,7 +136,7 @@ export function BestXiBody() {
                 само поле height-driven (height:100% + aspect-ratio 4/5), max-width:100% чтобы
                 не вылезать за узкую ячейку. Доминирующий элемент колонки. */}
             <div className="fed-xi-pitch-wrap">
-            <div className="fed-xi-pitch" style={{ position: 'relative', aspectRatio: '4 / 5', borderRadius: 'var(--radius)', overflow: 'hidden', background: 'linear-gradient(180deg, #1a4a2a, #0e3d1f)' }}>
+            <div ref={pitchRef} className="fed-xi-pitch" style={{ position: 'relative', aspectRatio: '4 / 5', borderRadius: 'var(--radius)', overflow: 'hidden', background: 'linear-gradient(180deg, #1a4a2a, #0e3d1f)' }}>
               <svg viewBox="0 0 100 100" preserveAspectRatio="none" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }} aria-hidden>
                 <rect x="0" y="0" width="100" height="100" fill="url(#grass)" />
                 <defs>
@@ -137,22 +166,22 @@ export function BestXiBody() {
                 return (
                   <button
                     key={player.id} type="button"
-                    style={{ position: 'absolute', left: `${slot.l}%`, top: `${slot.t}%`, transform: 'translate(-50%, -50%)', zIndex: 2, background: 'none', border: 'none', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}
+                    style={{ position: 'absolute', left: `${slot.l}%`, top: `${slot.t}%`, transform: 'translate(-50%, -50%)', zIndex: 2, background: 'none', border: 'none', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: colGap }}
                     title={title}
                     onClick={() => setPeek(player)}
                   >
                     <span style={{ borderRadius: '50%', boxShadow: `0 0 0 2px ${ring}, 0 3px 7px rgba(0,0,0,0.55)`, display: 'block' }}>
-                      <PlayerAvatar name={player.name} photoUrl={player.photo} size={46} ring={player.line === 'GK'} />
-                      <span style={{ position: 'absolute', bottom: -4, right: -4, minWidth: 22, padding: '1px 4px', fontSize: 11, fontWeight: 800, background: 'rgba(8,12,20,0.92)', border: '1.5px solid rgba(255,255,255,0.16)', borderRadius: 7, color: rating10Color(player.rating) }}>{ratingLabel(player.rating)}</span>
+                      <PlayerAvatar name={player.name} photoUrl={player.photo} size={avSize} ring={player.line === 'GK'} />
+                      <span style={{ position: 'absolute', bottom: -chipPadV * 2, right: -chipPadV * 2, minWidth: badgeMinW, padding: `${Math.max(0, chipPadV - 1)}px ${chipPadH - 2}px`, fontSize: badgeFont, fontWeight: 800, lineHeight: 1.1, background: 'rgba(8,12,20,0.92)', border: '1.5px solid rgba(255,255,255,0.16)', borderRadius: 7, color: rating10Color(player.rating), fontVariantNumeric: 'tabular-nums' }}>{ratingLabel(player.rating)}</span>
                     </span>
-                    <span style={{ fontSize: 10, fontWeight: 700, color: ring, textTransform: 'uppercase' }}>{LINE_TAG[player.line]}</span>
-                    <span style={{ fontSize: 11, fontWeight: 600, color: '#fff', background: 'rgba(0,0,0,0.5)', padding: '2px 8px', borderRadius: 6, whiteSpace: 'nowrap' }}>{lastName(player.name)}</span>
-                    <span style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '2px 7px', borderRadius: 6, background: 'rgba(0,0,0,0.42)', whiteSpace: 'nowrap' }}>
-                      <ClubShield name={player.club ?? player.name} logoUrl={player.clubLogo} size={15} />
+                    <span style={{ fontSize: tagFont, fontWeight: 700, color: ring, textTransform: 'uppercase', lineHeight: 1 }}>{LINE_TAG[player.line]}</span>
+                    <span style={{ fontSize: nameFont, fontWeight: 600, color: '#fff', background: 'rgba(0,0,0,0.5)', padding: `${chipPadV}px ${chipPadH}px`, borderRadius: 6, whiteSpace: 'nowrap', lineHeight: 1.15 }}>{lastName(player.name)}</span>
+                    <span style={{ display: 'flex', alignItems: 'center', gap: colGap, padding: `${chipPadV}px ${chipPadH - 1}px`, borderRadius: 6, background: 'rgba(0,0,0,0.42)', whiteSpace: 'nowrap' }}>
+                      <ClubShield name={player.club ?? player.name} logoUrl={player.clubLogo} size={shieldSize} />
                       {isUnion ? (
-                        <span style={{ fontSize: 9.5, fontWeight: 700, color: '#fff', fontVariantNumeric: 'tabular-nums' }}>{player.year ? `${player.year} г.р.` : '—'}</span>
+                        <span style={{ fontSize: clubFont, fontWeight: 700, color: '#fff', fontVariantNumeric: 'tabular-nums' }}>{player.year ? `${player.year} г.р.` : '—'}</span>
                       ) : (
-                        <span style={{ fontSize: 9.5, fontWeight: 700, color: ring, fontVariantNumeric: 'tabular-nums' }}>топ {player.pct}% линии</span>
+                        <span style={{ fontSize: clubFont, fontWeight: 700, color: ring, fontVariantNumeric: 'tabular-nums' }}>топ {player.pct}% линии</span>
                       )}
                     </span>
                   </button>
