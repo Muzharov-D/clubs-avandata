@@ -3,6 +3,7 @@ import { BestXiBody } from './BestXiView';
 import { RegionLeaderboardBody } from './AvPlayers';
 import { ScorersBody } from './ScorersView';
 import { LossMapBody } from './AvLossMap';
+import { RankAboveBody } from './RankAbove';
 import './federation.css';
 
 export function FederationTalent() {
@@ -34,6 +35,17 @@ export function FederationTalent() {
       <div style={{ marginBottom: 32 }}>
         <RegionLeaderboardBody withLeaderboard={false} withRising />
       </div>
+
+      <section style={{ marginBottom: 32 }}>
+        <div className="fed-divider">
+          <h2 className="fed-divider__title">Достойны лиги выше</h2>
+          <div className="fed-divider__line" />
+        </div>
+        <p className="fed-note" style={{ marginBottom: 16 }}>
+          Игроки Первой, обходящие по рейтингу AvanData слабейших в Высшей на своей позиции и в своём возрасте — кандидаты на переход вверх · {scope} · решение за федерацией
+        </p>
+        <RankAboveBody />
+      </section>
 
       <section>
         <div className="fed-divider">
