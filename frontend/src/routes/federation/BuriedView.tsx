@@ -65,8 +65,11 @@ export function PlayTimeStripBody() {
 
   const byLeague = data.byLeague ?? [];
   if (byLeague.length > 0) {
+    // Лиги — В СТОЛБИК (каждая на всю ширину со своей тройкой плиток). Раньше стояли
+    // рядом (fed-grid--2), и 6 крупных плиток в ряд не влезали — у «Первой» третья
+    // плитка обрезалась за краем. Стопка убирает горизонтальное переполнение.
     return (
-      <div className="fed-grid fed-grid--2">
+      <div style={{ display: 'grid', gap: 20 }}>
         {byLeague.map((l) => (
           <div key={l.league} className="fed-card">
             <div className="fed-card__title">{l.league} лига</div>
