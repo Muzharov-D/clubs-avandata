@@ -16,6 +16,7 @@ interface PyramidLeague {
   league: string;
   teams: number;
   clubs: number;
+  clubNames?: string[];
   players: number;
   matches: number;
   q1pct: number;
@@ -119,7 +120,7 @@ export function RegionCensusBody() {
                 return (
                   <tr key={l.league} style={sel ? { background: 'var(--accent-soft)' } : undefined}>
                     <td style={sel ? { color: 'var(--accent)', fontWeight: 600 } : undefined}>{l.league}</td>
-                    <td className="fed-table__num">{l.clubs}</td>
+                    <td className="fed-table__num" title={l.clubNames?.length ? `Клубы: ${l.clubNames.join(', ')}` : undefined}>{l.clubs}</td>
                     <td className="fed-table__num">{l.teams}</td>
                     <td className="fed-table__num">{l.players}</td>
                     <td className="fed-table__num">{l.matches > 0 ? num(l.matches) : '—'}</td>
