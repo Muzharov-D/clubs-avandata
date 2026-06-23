@@ -190,41 +190,39 @@ function BuriedBodyInner({ p }: { p: MinutesPayload | null }) {
       {/* Ранние vs поздние — кольца доступа к игре (вместо столбцов Q1-Q4). */}
       <div className="fed-card" style={{ marginBottom: 32 }}>
         <div className="fed-card__title">Ранние vs поздние — доступ к игре</div>
-        <div className="fed-card__sub">доля «погребённых» ({'<'}15% минут) у рождённых в начале и в конце года</div>
+        <div className="fed-card__sub">медиана игрового времени (% командных минут) у рождённых в начале и в конце года</div>
 
-        <div style={{ display: 'flex', gap: 40, flexWrap: 'wrap', justifyContent: 'center', margin: '24px 0 8px' }}>
+        <div style={{ display: 'flex', gap: 40, flexWrap: 'wrap', justifyContent: 'center', margin: '24px 0 12px' }}>
           {[
-            { title: 'Ранние · Q1–Q2', buried: earlyBuried, med: earlyMed, late: false },
-            { title: 'Поздние · Q3–Q4', buried: lateBuried, med: lateMed, late: true },
-          ].map((g) => {
-            const segs = [
-              { label: 'Погребены', value: g.buried, color: 'var(--danger)' },
-              { label: 'Играют', value: Math.max(0, 100 - g.buried), color: 'var(--success)' },
-            ];
-            return (
-              <div key={g.title} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10 }}>
-                <Donut
-                  segments={segs} size={150}
-                  ariaLabel={`${g.title}: погребены ${g.buried}%`}
-                  center={(
-                    <>
-                      <span style={{ fontSize: 28, fontWeight: 300, letterSpacing: '-0.02em', color: g.late ? 'var(--danger)' : 'var(--text)' }}>{g.buried}%</span>
-                      <span className="fed-note" style={{ fontSize: 11 }}>погребены</span>
-                    </>
-                  )}
-                />
-                <div style={{ textAlign: 'center' }}>
-                  <div className="fed-row__name" style={{ fontSize: 14 }}>{g.title}</div>
-                  <div className="fed-note">медиана времени {g.med}%</div>
-                </div>
+            { title: 'Ранние · Q1–Q2', med: earlyMed, buried: earlyBuried, late: false },
+            { title: 'Поздние · Q3–Q4', med: lateMed, buried: lateBuried, late: true },
+          ].map((g) => (
+            <div key={g.title} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10 }}>
+              {/* Кольцо-заливка: медиана времени (сильная метрика — разрыв 8 пп виден заливкой);
+                  поздние амбер-приглушены = «играют меньше». */}
+              <Donut
+                segments={[{ label: 'медиана времени', value: g.med, color: g.late ? 'var(--warning)' : 'var(--success)' }]}
+                size={150}
+                ariaLabel={`${g.title}: медиана времени ${g.med}%`}
+                center={(
+                  <>
+                    <span style={{ fontSize: 32, fontWeight: 300, letterSpacing: '-0.02em', color: g.late ? 'var(--warning)' : 'var(--text)' }}>{g.med}%</span>
+                    <span className="fed-note" style={{ fontSize: 11 }}>медиана времени</span>
+                  </>
+                )}
+              />
+              <div style={{ textAlign: 'center' }}>
+                <div className="fed-row__name" style={{ fontSize: 14 }}>{g.title}</div>
+                <div className="fed-note">погребены {g.buried}% ({'<'}15% минут)</div>
               </div>
-            );
-          })}
+            </div>
+          ))}
         </div>
 
-        <p className="fed-note" style={{ marginTop: 8 }}>
-          Поздно рождённые не только реже проходят отбор, но и меньше играют: доля «погребённых»
-          ({'<'}15% командных минут) среди них выше — вторая потеря после селекции.
+        {/* Явная дельта (а не «близнецы») — где разрыв реальный. */}
+        <p className="fed-note" style={{ borderLeft: '3px solid var(--warning)', paddingLeft: 12, marginTop: 4 }}>
+          <b>Поздние играют меньше:</b> медиана времени {lateMed}% против {earlyMed}% — <b style={{ color: 'var(--warning)' }}>−{Math.max(0, earlyMed - lateMed)} пп</b>;
+          погребённых {lateBuried}% против {earlyBuried}% (+{Math.max(0, lateBuried - earlyBuried)} пп). Вторая потеря после селекции.
         </p>
       </div>
 

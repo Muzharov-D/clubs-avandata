@@ -68,6 +68,10 @@ export function PyramidBody() {
   const topQ1Share = q1Total > 0 ? top.q1count / q1Total : 0;
   const topQ4Share = q4Total > 0 ? top.q4count / q4Total : 0;
   const reachTopRatio = topQ4Share > 0 ? round1(topQ1Share / topQ4Share) : null;
+  // Дельта-воронка: доля поздних падает при подъёме по эшелонам (приговор отбора в одну строку).
+  const topLate = Math.round(top.q3pct + top.q4pct);
+  const lowerLate = Math.round(lower.q3pct + lower.q4pct);
+  const lateDrop = lowerLate - topLate;
 
   return (
     <div>
@@ -75,6 +79,11 @@ export function PyramidBody() {
         <TierCard tone="top" title="Верхний эшелон" leagues="Высшая + Первая" t={top} />
         <TierCard tone="lower" title="Нижний эшелон" leagues="Вторая · Третья · Четвёртая" t={lower} />
       </div>
+
+      <p className="fed-note" style={{ borderLeft: '3px solid var(--warning)', paddingLeft: 12, marginBottom: 22 }}>
+        <b>Воронка отбора:</b> поздних {lowerLate}% в нижнем эшелоне → {topLate}% в верхнем —
+        отсев <b style={{ color: 'var(--danger)' }}>−{lateDrop} пп</b> при подъёме по лигам.
+      </p>
 
       <div className="fed-card" style={{ borderLeft: '3px solid var(--warning)' }}>
         <div className="fed-badge fed-badge--warning" style={{ marginBottom: 16 }}>Пирамида отбора</div>
