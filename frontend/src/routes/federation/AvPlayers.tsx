@@ -78,10 +78,7 @@ export function RegionLeaderboardBody({ withRising = true, withLeaderboard = tru
 
       {withLeaderboard && (
         <section className="fed-card fed-leaderboard-panel">
-          <h2 className="fed-card__title" style={{ flex: 'none' }}>Рейтинг игроков</h2>
-          <p className="fed-card__sub" style={{ flex: 'none' }}>
-            {num(players.length)} разобранных{year != null ? ` · ${year} г.р.` : ' · все возрасты'} · рейтинг AvanData
-          </p>
+          <h2 className="fed-card__title" style={{ flex: 'none', marginBottom: 0 }}>Рейтинг игроков</h2>
 
           <div style={{ display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap', padding: '12px 0 16px', flex: 'none' }}>
             <input
@@ -116,13 +113,13 @@ export function RegionLeaderboardBody({ withRising = true, withLeaderboard = tru
             <div className="fed-leaderboard-list">
               {shown.map((p, i) => (
                 <Link key={p.id} to={`/federation/players/${p.id}`} className="fed-row" style={{ textDecoration: 'none' }}>
-                  <span className="fed-table__num" style={{ width: 28, textAlign: 'right' }}>{i + 1}</span>
-                  <PlayerAvatar name={p.name} photoUrl={p.photo} size={40} />
+                  <span className="fed-table__num" style={{ width: 24, textAlign: 'right' }}>{i + 1}</span>
+                  <PlayerAvatar name={p.name} photoUrl={p.photo} size={36} />
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div className="fed-row__name" title={p.name}>{p.name}</div>
-                    <div className="fed-row__meta">{p.club ?? '—'}{p.position ? ` · ${p.position}` : ''}{p.birthYear ? ` · ${p.birthYear}` : ''}</div>
+                    <div className="fed-row__meta" style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{p.club ?? '—'}{p.position ? ` · ${p.position}` : ''}{p.birthYear ? ` · ${p.birthYear}` : ''}</div>
                   </div>
-                  <span style={{ fontSize: 24, fontWeight: 200, letterSpacing: '-0.02em', color: rating10Color(p.rating) }} title="рейтинг AvanData">{ratingLabel(p.rating)}</span>
+                  <span style={{ fontSize: 22, fontWeight: 200, letterSpacing: '-0.02em', color: rating10Color(p.rating) }} title="рейтинг AvanData">{ratingLabel(p.rating)}</span>
                 </Link>
               ))}
             </div>

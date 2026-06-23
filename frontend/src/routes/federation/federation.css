@@ -316,6 +316,8 @@
 .fed-leaderboard-panel { display: flex; flex-direction: column; }
 /* Список тянется (flex:1) и скроллится ВНУТРИ панели; лёгкий отступ, чтобы строки не липли к скроллбару. */
 .fed-leaderboard-list { flex: 1; min-height: 0; overflow-y: auto; margin-right: -4px; padding-right: 4px; }
+/* Плотные строки лидерборга, чтобы топ-5 влезал без скролла (мета в 1 строку, см. AvPlayers). */
+.fed-leaderboard-list .fed-row { padding: 9px 8px; gap: 12px; }
 
 /* На узких экранах список не скроллится внутри (нет фикс-высоты у ячейки) — растёт по контенту. */
 @media (max-width: 900px) {
