@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { api } from '../../api/client';
 import { useAuth } from '../../contexts/AuthContext';
 import { num } from './utils';
+import { Donut } from './Donut';
 import './federation.css';
 
 interface MinutesBuckets {
@@ -128,8 +129,15 @@ function BuriedBodyInner({ p }: { p: MinutesPayload | null }) {
   if (!p) return <div className="fed-empty">Данные по игровому времени ещё не сформированы.</div>;
 
   const captured = p.capturedAt ? new Date(p.capturedAt).toLocaleDateString('ru-RU') : null;
-  const q4 = p.byQuarter.find((q) => q.q === 4) ?? null;
-  const lowest = p.byQuarter.reduce<MinutesQuarter | null>((m, q) => (m == null || q.medianTime < m.medianTime ? q : m), null);
+  // «Ранние vs поздние» (Q1+Q2 vs Q3+Q4): средняя доля «погребённых» (<15% минут) и медиана
+  // времени по группе. Среднее по двум кварталам (per-quarter численности нет в /minutes —
+  // знаменатель один реестр, оценка направления). Поздние = зона риска (красный сектор больше).
+  const qBuried = (q: number) => p.byQuarter.find((x) => x.q === q)?.buriedPct ?? 0;
+  const qMed = (q: number) => p.byQuarter.find((x) => x.q === q)?.medianTime ?? 0;
+  const earlyBuried = Math.round((qBuried(1) + qBuried(2)) / 2);
+  const lateBuried = Math.round((qBuried(3) + qBuried(4)) / 2);
+  const earlyMed = Math.round((qMed(1) + qMed(2)) / 2);
+  const lateMed = Math.round((qMed(3) + qMed(4)) / 2);
 
   return (
     <div>
@@ -179,33 +187,44 @@ function BuriedBodyInner({ p }: { p: MinutesPayload | null }) {
         </div>
       </div>
 
-      {/* Quarter bars */}
+      {/* Ранние vs поздние — кольца доступа к игре (вместо столбцов Q1-Q4). */}
       <div className="fed-card" style={{ marginBottom: 32 }}>
-        <div className="fed-card__title">Игровое время по кварталам рождения</div>
-        <div className="fed-card__sub">медиана % от командных минут</div>
+        <div className="fed-card__title">Ранние vs поздние — доступ к игре</div>
+        <div className="fed-card__sub">доля «погребённых» ({'<'}15% минут) у рождённых в начале и в конце года</div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: `repeat(${p.byQuarter.length}, 1fr)`, gap: 16, alignItems: 'end', marginTop: 22 }}>
-          {p.byQuarter.map((r) => {
-            const isLow = lowest?.q === r.q;
-            const maxTime = Math.max(1, ...p.byQuarter.map((x) => x.medianTime));
-            const heightPct = (r.medianTime / maxTime) * 100;
+        <div style={{ display: 'flex', gap: 40, flexWrap: 'wrap', justifyContent: 'center', margin: '24px 0 8px' }}>
+          {[
+            { title: 'Ранние · Q1–Q2', buried: earlyBuried, med: earlyMed, late: false },
+            { title: 'Поздние · Q3–Q4', buried: lateBuried, med: lateMed, late: true },
+          ].map((g) => {
+            const segs = [
+              { label: 'Погребены', value: g.buried, color: 'var(--danger)' },
+              { label: 'Играют', value: Math.max(0, 100 - g.buried), color: 'var(--success)' },
+            ];
             return (
-              <div key={r.q} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
-                <span style={{ fontSize: 14, fontWeight: 600, color: isLow ? 'var(--danger)' : 'var(--text)' }}>{r.medianTime}%</span>
-                <div style={{ height: 120, width: '100%', display: 'flex', alignItems: 'flex-end', background: 'var(--bg-elevated)', borderRadius: 4, overflow: 'hidden' }}>
-                  <div style={{ width: '100%', height: `${heightPct}%`, background: isLow ? 'var(--danger)' : 'var(--text-secondary)', transition: 'all 0.5s' }} />
+              <div key={g.title} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10 }}>
+                <Donut
+                  segments={segs} size={150}
+                  ariaLabel={`${g.title}: погребены ${g.buried}%`}
+                  center={(
+                    <>
+                      <span style={{ fontSize: 28, fontWeight: 300, letterSpacing: '-0.02em', color: g.late ? 'var(--danger)' : 'var(--text)' }}>{g.buried}%</span>
+                      <span className="fed-note" style={{ fontSize: 11 }}>погребены</span>
+                    </>
+                  )}
+                />
+                <div style={{ textAlign: 'center' }}>
+                  <div className="fed-row__name" style={{ fontSize: 14 }}>{g.title}</div>
+                  <div className="fed-note">медиана времени {g.med}%</div>
                 </div>
-                <span style={{ fontSize: 12, fontWeight: isLow ? 600 : 400, color: isLow ? 'var(--danger)' : 'var(--text-secondary)' }}>Q{r.q}</span>
               </div>
             );
           })}
         </div>
 
-        <p className="fed-note" style={{ marginTop: 24 }}>
-          Поздно рождённые получают меньше игрового времени — вторая потеря после отбора.
-          {q4 != null && lowest?.q === 4 && (
-            <> Q4 — минимальный показатель ({q4.medianTime}%): прошедшие отбор по дате рождения дополнительно ограничены.</>
-          )}
+        <p className="fed-note" style={{ marginTop: 8 }}>
+          Поздно рождённые не только реже проходят отбор, но и меньше играют: доля «погребённых»
+          ({'<'}15% командных минут) среди них выше — вторая потеря после селекции.
         </p>
       </div>
 

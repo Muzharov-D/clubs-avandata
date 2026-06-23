@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { api } from '../../api/client';
 import { useAuth } from '../../contexts/AuthContext';
 import { num } from './utils';
+import { Donut, DonutLegend } from './Donut';
 import './federation.css';
 
 interface PyramidLeague {
@@ -93,19 +94,22 @@ export function PyramidBody() {
 }
 
 function TierCard({ tone, title, leagues, t }: { tone: 'top' | 'lower'; title: string; leagues: string; t: Tier }) {
-  const q4Color = tone === 'top' ? 'var(--danger)' : 'var(--success)';
-  const quarters = [
-    { k: 'Q1', pct: t.q1pct }, { k: 'Q2', pct: t.q2pct },
-    { k: 'Q3', pct: t.q3pct }, { k: 'Q4', pct: t.q4pct },
+  // Логика «ранние vs поздние»: ранние = Q1+Q2, поздние = Q3+Q4 (доли суммируются в 100%).
+  // Поздние — зона риска: в верхнем эшелоне их мало (отсев), краснеем; в нижнем они копятся.
+  const early = Math.round(t.q1pct + t.q2pct);
+  const late = Math.round(t.q3pct + t.q4pct);
+  const lateColor = tone === 'top' ? 'var(--danger)' : 'var(--success)';
+  const segments = [
+    { label: 'Ранние (Q1–Q2)', value: early, color: 'var(--text-secondary)' },
+    { label: 'Поздние (Q3–Q4)', value: late, color: lateColor },
   ];
-  const maxPct = Math.max(1, ...quarters.map((q) => q.pct));
 
   return (
     <div className="fed-card">
       <div className="fed-card__title">{title}</div>
       <div className="fed-card__sub">{leagues}</div>
 
-      <div style={{ display: 'flex', alignItems: 'baseline', gap: 12, marginBottom: 24 }}>
+      <div style={{ display: 'flex', alignItems: 'baseline', gap: 12, marginBottom: 20 }}>
         <span style={{ fontSize: 48, fontWeight: 200, letterSpacing: '-0.03em' }}>{num(t.players)}</span>
         <span className="fed-note">игроков</span>
         {t.skew != null && (
@@ -113,19 +117,18 @@ function TierCard({ tone, title, leagues, t }: { tone: 'top' | 'lower'; title: s
         )}
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16 }}>
-        {quarters.map((q) => {
-          const isQ4 = q.k === 'Q4';
-          return (
-            <div key={q.k} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
-              <span style={{ fontSize: 14, fontWeight: 600, color: isQ4 ? q4Color : 'var(--text)' }}>{q.pct}%</span>
-              <div style={{ height: 100, width: '100%', display: 'flex', alignItems: 'flex-end', background: 'var(--bg-elevated)', borderRadius: 4, overflow: 'hidden' }}>
-                <div style={{ width: '100%', height: `${(q.pct / maxPct) * 100}%`, background: isQ4 ? q4Color : 'var(--text-secondary)', transition: 'all 0.5s' }} />
-              </div>
-              <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>{q.k}</span>
-            </div>
-          );
-        })}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 24, flexWrap: 'wrap' }}>
+        <Donut
+          segments={segments}
+          ariaLabel={`${title}: ранние ${early}%, поздние ${late}%`}
+          center={(
+            <>
+              <span style={{ fontSize: 26, fontWeight: 300, color: lateColor, letterSpacing: '-0.02em' }}>{late}%</span>
+              <span className="fed-note" style={{ fontSize: 11 }}>поздние</span>
+            </>
+          )}
+        />
+        <DonutLegend segments={segments} />
       </div>
     </div>
   );
