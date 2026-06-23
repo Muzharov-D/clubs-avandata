@@ -76,13 +76,13 @@ export function RegionLeaderboardBody({ withRising = true, withLeaderboard = tru
       {error && <FedError />}
 
       {withLeaderboard && (
-        <section className="fed-card">
-          <h2 className="fed-card__title">Рейтинг игроков</h2>
-          <p className="fed-card__sub">
+        <section className="fed-card fed-leaderboard-panel">
+          <h2 className="fed-card__title" style={{ flex: 'none' }}>Рейтинг игроков</h2>
+          <p className="fed-card__sub" style={{ flex: 'none' }}>
             {num(players.length)} разобранных{year != null ? ` · ${year} г.р.` : ' · все возрасты'} · рейтинг AvanData
           </p>
 
-          <div style={{ display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap', padding: '12px 0 16px' }}>
+          <div style={{ display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap', padding: '12px 0 16px', flex: 'none' }}>
             <input
               placeholder="Поиск по имени…"
               value={qStr}
@@ -103,13 +103,15 @@ export function RegionLeaderboardBody({ withRising = true, withLeaderboard = tru
           </div>
 
           {isLoading ? (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 8, padding: '16px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8, padding: '16px', flex: 1, minHeight: 0 }}>
               {[0, 1, 2, 3, 4, 5, 6].map((i) => <div key={i} className="fed-skeleton" style={{ height: 42 }} />)}
             </div>
           ) : shown.length === 0 ? (
-            <FedEmpty>По заданному фильтру игроки не найдены.</FedEmpty>
+            <div style={{ flex: 1, minHeight: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <FedEmpty>По заданному фильтру игроки не найдены.</FedEmpty>
+            </div>
           ) : (
-            <div style={{ maxHeight: '44vh', overflowY: 'auto' }}>
+            <div className="fed-leaderboard-list" style={{ flex: 1, minHeight: 0, overflowY: 'auto' }}>
               {shown.map((p, i) => (
                 <Link key={p.id} to={`/federation/players/${p.id}`} className="fed-row" style={{ textDecoration: 'none' }}>
                   <span className="fed-table__num" style={{ width: 28, textAlign: 'right' }}>{i + 1}</span>
@@ -125,7 +127,7 @@ export function RegionLeaderboardBody({ withRising = true, withLeaderboard = tru
           )}
 
           {!isLoading && !qStr.trim() && ratedTotal > shown.length && (
-            <p className="fed-note" style={{ padding: '12px 16px' }}>Отображены топ-{shown.length} из {num(ratedTotal)} игроков с рейтингом (не менее 2 матчей) — уточните выбор по клубу или поиску.</p>
+            <p className="fed-note" style={{ padding: '12px 16px 0', flex: 'none' }}>Отображены топ-{shown.length} из {num(ratedTotal)} игроков с рейтингом (не менее 2 матчей) — уточните выбор по клубу или поиску.</p>
           )}
         </section>
       )}

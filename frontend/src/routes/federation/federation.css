@@ -132,6 +132,45 @@
 .fed-hero__kicker { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--accent-cyan); margin-bottom: 10px; }
 .fed-hero__title { font-family: var(--font-display); font-size: 40px; font-weight: 700; letter-spacing: -0.01em; line-height: 1.1; margin: 0 0 8px; }
 .fed-hero__sub { font-size: 17px; color: var(--text-secondary); font-weight: 400; margin: 0; }
+/* Компактный вариант hero для экрана «Таланты» — отдаёт высоту главному 50/50 фолду. */
+.fed-hero--compact { margin-bottom: 16px; }
+.fed-hero--compact .fed-hero__kicker { margin-bottom: 6px; }
+.fed-hero__title--compact { font-size: 28px; margin: 0 0 4px; }
+.fed-hero--compact .fed-hero__sub { font-size: 14px; }
+
+/* ---- Talent split (главный фолд «Таланты»: пол-экрана сборная | пол-экрана рейтинг) ---- */
+.fed-talent-split {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  /* Заполняем высоту вьюпорта под закреплённой шапкой (топбар + фильтр-бар + верх страницы +
+     компактный hero ≈ 220px). min-height страхует низкие окна, чтобы фолд не схлопнулся. */
+  height: calc(100vh - 220px);
+  min-height: 520px;
+  margin-bottom: 32px;
+}
+/* Ячейка = flex-колонка: заголовок (auto) + панель (flex:1). min-height:0 разрешает
+   внутренним скролл-контейнерам ужиматься, а не распирать ячейку. */
+.fed-talent-split__cell {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+.fed-talent-split__head { margin: 0 0 16px; flex: none; }
+/* Прямой ребёнок-обёртка панели (BestXiBody / RegionLeaderboardBody рендерят фрагмент,
+   поэтому тянем .fed-card напрямую) заполняет остаток высоты ячейки. */
+.fed-talent-split__cell > .fed-card { flex: 1; min-height: 0; }
+
+/* На узких экранах две половины складываются в обычный поток (без фикс-высоты). */
+@media (max-width: 900px) {
+  .fed-talent-split {
+    grid-template-columns: 1fr;
+    height: auto;
+    min-height: 0;
+  }
+  .fed-talent-split__cell { min-height: 0; }
+  .fed-talent-split__cell > .fed-card { flex: none; }
+}
 
 /* ---- Metric Card (the hero) ---- */
 .fed-metric {
@@ -176,6 +215,38 @@
 }
 .fed-card__title { font-size: 16px; font-weight: 600; color: var(--text); margin: 0 0 4px; }
 .fed-card__sub { font-size: 13px; color: var(--text-secondary); margin: 0 0 14px; font-weight: 400; }
+
+/* ---- Best XI card (сборная, левая половина «Талантов») ---- */
+/* Карточка — flex-колонка во всю высоту ячейки: компактная шапка сверху, питч-обёртка
+   тянется (flex:1), сноска снизу (flex:none). */
+.fed-xi-card { display: flex; flex-direction: column; }
+.fed-xi-pitch-wrap {
+  flex: 1; min-height: 0;
+  display: flex; align-items: center; justify-content: center;
+}
+/* Питч height-driven: занимает всю высоту обёртки, ширина выводится из aspect-ratio 4/5,
+   max-width страхует от вылезания в узкой половине. Центрируется обёрткой. */
+.fed-xi-pitch { height: 100%; max-width: 100%; }
+
+/* На узких экранах карточка перестаёт быть фикс-высоты (см. .fed-talent-split media):
+   питч становится width-driven (полная ширина, высота из aspect-ratio), чтобы не схлопнуться. */
+@media (max-width: 900px) {
+  .fed-xi-pitch-wrap { flex: none; }
+  .fed-xi-pitch { height: auto; width: 100%; max-width: 420px; }
+}
+
+/* ---- Leaderboard panel (рейтинг, правая половина «Талантов») ---- */
+/* Панель — flex-колонка: заголовок + подзаголовок + строка фильтров (flex:none) сверху,
+   список (flex:1, overflow-y:auto) тянется и скроллится внутри, сноска (flex:none) снизу.
+   Высоту даёт ячейка .fed-talent-split (flex:1); вне сплита панель просто растёт по контенту. */
+.fed-leaderboard-panel { display: flex; flex-direction: column; }
+/* Лёгкий внутренний отступ скролл-листа, чтобы строки не липли к скроллбару. */
+.fed-leaderboard-list { margin-right: -4px; padding-right: 4px; }
+
+/* На узких экранах список не скроллится внутри (нет фикс-высоты у ячейки) — растёт по контенту. */
+@media (max-width: 900px) {
+  .fed-leaderboard-list { max-height: 60vh; }
+}
 
 /* ---- Table ---- */
 .fed-table { width: 100%; border-collapse: collapse; font-size: 14px; }

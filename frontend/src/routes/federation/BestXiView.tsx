@@ -85,15 +85,15 @@ export function BestXiBody() {
     <>
       {error && <FedError />}
 
-      <div className="fed-card" style={{ position: 'relative', overflow: 'hidden' }}>
+      <div className="fed-card fed-xi-card" style={{ position: 'relative', overflow: 'hidden' }}>
         {isLoading ? (
-          <div className="fed-skeleton" style={{ aspectRatio: '4 / 5' }} />
+          <div className="fed-skeleton" style={{ flex: 1, minHeight: 0 }} />
         ) : activeXi.length === 0 ? (
           <FedEmpty>Недостаточно разобранных игроков для формирования сборной.</FedEmpty>
         ) : (
           <>
-            <div style={{ marginBottom: 16 }}>
-              <h3 style={{ fontSize: 20, fontWeight: 400, margin: 0 }}>
+            <div style={{ marginBottom: 12, flex: 'none' }}>
+              <h3 style={{ fontSize: 18, fontWeight: 400, margin: 0 }}>
                 {isUnion ? `Сборная ${DIV_GEN[division] ?? division} лиги · все возрасты` : `Сборная ${DIV_GEN[division] ?? division} лиги · ${cohort!.year} года рождения`}
               </h3>
               <p className="fed-note">
@@ -103,8 +103,11 @@ export function BestXiBody() {
               </p>
             </div>
 
-            {/* Pitch */}
-            <div style={{ position: 'relative', aspectRatio: '4 / 5', maxWidth: 'calc(44vh * 4 / 5)', margin: '0 auto', borderRadius: 'var(--radius)', overflow: 'hidden', background: 'linear-gradient(180deg, #1a4a2a, #0e3d1f)' }}>
+            {/* Питч заполняет левую половину: обёртка flex:1 центрирует поле по горизонтали,
+                само поле height-driven (height:100% + aspect-ratio 4/5), max-width:100% чтобы
+                не вылезать за узкую ячейку. Доминирующий элемент колонки. */}
+            <div className="fed-xi-pitch-wrap">
+            <div className="fed-xi-pitch" style={{ position: 'relative', aspectRatio: '4 / 5', borderRadius: 'var(--radius)', overflow: 'hidden', background: 'linear-gradient(180deg, #1a4a2a, #0e3d1f)' }}>
               <svg viewBox="0 0 100 100" preserveAspectRatio="none" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }} aria-hidden>
                 <rect x="0" y="0" width="100" height="100" fill="url(#grass)" />
                 <defs>
@@ -156,8 +159,9 @@ export function BestXiBody() {
                 );
               })}
             </div>
+            </div>
 
-            <p className="fed-note" style={{ marginTop: 16 }}>
+            <p className="fed-note" style={{ marginTop: 12, flex: 'none' }}>
               {isUnion
                 ? `Совокупная сборная — сильнейшие по абсолютному рейтингу в каждой линии со всех возрастов. По данным разбора, лига ${division}.`
                 : `Перцентиль — позиция внутри линии среди оценённых игроков лиги. По данным разбора, лига ${division}.`}
