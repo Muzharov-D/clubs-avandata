@@ -202,12 +202,15 @@ export async function federationRoutes(app: FastifyInstance) {
     return { season, cohorts: await cohortMatrix(season) };
   });
 
-  /** GET /federation/av/best-xi — сборная региона (лучшая XI 1-4-3-3) по когортам
-   *  2009..2013 из живых рейтингов AvanData: топ по индексу внутри линии. */
+  /** GET /federation/av/best-xi?division= — сборная региона (лучшая XI 1-4-3-3) по когортам
+   *  2009..2013 из живых рейтингов AvanData: топ по индексу внутри линии. division (Высшая/Первая)
+   *  → сборная одной лиги; иначе (или невалидное) → региональная совокупность обеих лиг. */
   app.get('/av/best-xi', async (req, reply) => {
     if (avOff(reply)) return { error: 'AVANDATA_API_KEY не задан', code: 'AVANDATA_OFF' };
     const season = Number((req.query as { season?: string }).season) || AV_SEASON;
-    return { season, cohorts: await federationRegionBestXi(season) };
+    const d = divisionOf(req);
+    const division = d === 'Высшая' || d === 'Первая' ? d : undefined; // AvanData оценивает только эти две лиги
+    return { season, cohorts: await federationRegionBestXi(season, division) };
   });
 
   /** GET /federation/av/talent-production?year= — производство талантов × результат (PPG):

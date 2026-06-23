@@ -5,7 +5,7 @@ import { PlayerAvatar } from './PlayerAvatar';
 import { ClubShield } from './ClubShield';
 import { FedError, FedEmpty } from './FedState';
 import { ratingLabel, rating10Color } from './ratings';
-import { useFedYear } from './avYear';
+import { useFedYear, fedQ } from './avYear';
 import { lastName, plMatch } from './utils';
 import './federation.css';
 
@@ -29,10 +29,12 @@ const pctRing = (pct: number): string =>
   pct >= 97 ? 'var(--success)' : pct >= 93 ? 'var(--accent)' : 'var(--text-secondary)';
 
 export function BestXiBody() {
-  const { year: globalYear } = useFedYear();
+  const { year: globalYear, division } = useFedYear();
   const { data, isLoading, error } = useQuery({
-    queryKey: ['av', 'best-xi'],
-    queryFn: () => api<{ cohorts: Cohort[] }>('/federation/av/best-xi'),
+    queryKey: ['av', 'best-xi', division],
+    // year не шлём: эндпоинт всегда отдаёт все когорты, год выбирается на клиенте; division
+    // фильтрует игроков по лиге на бэке → сборная Высшей/Первой отдельно.
+    queryFn: () => api<{ cohorts: Cohort[] }>(`/federation/av/best-xi${fedQ(null, division)}`),
   });
   const cohorts = useMemo(() => (data?.cohorts ?? []).slice().sort((a, b) => b.year - a.year), [data]);
   const [peek, setPeek] = useState<XiPlayer | null>(null);
@@ -90,7 +92,7 @@ export function BestXiBody() {
           <>
             <div style={{ marginBottom: 16 }}>
               <h3 style={{ fontSize: 20, fontWeight: 400, margin: 0 }}>
-                {isUnion ? 'Сборная региона · все возрасты' : `Сборная ${cohort!.year} года рождения`}
+                {isUnion ? `Сборная ${division} лиги · все возрасты` : `Сборная ${division} лиги · ${cohort!.year} года рождения`}
               </h3>
               <p className="fed-note">
                 {isUnion
@@ -155,8 +157,8 @@ export function BestXiBody() {
 
             <p className="fed-note" style={{ marginTop: 16 }}>
               {isUnion
-                ? 'Совокупная сборная региона — сильнейшие по абсолютному рейтингу в каждой линии со всех возрастов. По данным разбора двух высших лиг.'
-                : 'Перцентиль — позиция внутри линии среди оценённых игроков региона. По данным разбора двух высших лиг.'}
+                ? `Совокупная сборная — сильнейшие по абсолютному рейтингу в каждой линии со всех возрастов. По данным разбора, лига ${division}.`
+                : `Перцентиль — позиция внутри линии среди оценённых игроков лиги. По данным разбора, лига ${division}.`}
             </p>
           </>
         )}

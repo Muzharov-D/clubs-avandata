@@ -1089,11 +1089,13 @@ const BEST_XI_YEARS = [2009, 2010, 2011, 2012, 2013] as const;
 const BEST_XI_SHAPE: Record<BestXiLine, number> = { GK: 1, DEF: 4, MID: 3, FWD: 3 };
 
 /** Сборная региона по когортам 2009..2013: на каждую — лучшая XI (1-4-3-3) из
- *  оценённых игроков региона (≥2 матчей, рейтинг != null), перцентиль внутри линии. */
-export async function federationRegionBestXi(seasonId: number): Promise<BestXiCohort[]> {
-  return cached(`bestxi:${seasonId}`, TTL, async () => {
+ *  оценённых игроков региона (≥2 матчей, рейтинг != null), перцентиль внутри линии.
+ *  division задан (Высшая/Первая) → XI строится ТОЛЬКО из игроков этой лиги (regionPlayers
+ *  фильтрует по дивизиону); отсутствует → региональная совокупность обеих лиг (back-compat). */
+export async function federationRegionBestXi(seasonId: number, division?: string): Promise<BestXiCohort[]> {
+  return cached(`bestxi:${seasonId}:${division ?? 'all'}`, TTL, async () => {
     const cohorts = await pmap([...BEST_XI_YEARS], 3, async (year): Promise<BestXiCohort> => {
-      const players = (await regionPlayers(seasonId, year))
+      const players = (await regionPlayers(seasonId, year, division))
         .filter((p) => p.mp >= 2 && p.rating != null);
       const byLine: Record<BestXiLine, RegionPlayer[]> = { GK: [], DEF: [], MID: [], FWD: [] };
       for (const p of players) { const ln = bestXiLineOf(p.position); if (ln) byLine[ln].push(p); }
