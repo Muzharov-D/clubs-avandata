@@ -264,12 +264,22 @@ async function buildPayload(): Promise<RegionPyramidPayload> {
   }
 
   // 3) Агрегаты по лигам (дедуп).
-  const byLeague: Record<League, { teams: number; clubs: Set<string>; players: number; matches: Set<string>; q: { 1: number; 2: number; 3: number; 4: number; u: number } }> =
+  // clubs: Map<dedup-ключ → ОРИГИНАЛЬНОЕ имя для показа>. Ключ (normClub) — для подсчёта
+  // различимых клубов; значение — оригинальное имя ФФСПб (правильный регистр: «СШОР Зенит»,
+  // «Алмаз-Антей»), для tooltip. Из вариантов одного клуба берём САМОЕ КОРОТКОЕ (чище: «Зенит», «Сестрорецк»).
+  const byLeague: Record<League, { teams: number; clubs: Map<string, string>; players: number; matches: Set<string>; q: { 1: number; 2: number; 3: number; 4: number; u: number } }> =
     Object.fromEntries(
-      ORDER.map((lg) => [lg, { teams: 0, clubs: new Set<string>(), players: 0, matches: new Set<string>(), q: { 1: 0, 2: 0, 3: 0, 4: 0, u: 0 } }]),
+      ORDER.map((lg) => [lg, { teams: 0, clubs: new Map<string, string>(), players: 0, matches: new Set<string>(), q: { 1: 0, 2: 0, 3: 0, 4: 0, u: 0 } }]),
     ) as typeof byLeague;
 
-  for (const tm of teams) { byLeague[tm.league].teams++; byLeague[tm.league].clubs.add(normClub(tm.name)); }
+  const displayClub = (s: string) => s.replace(/\s*20\d{2}\s*$/, '').trim(); // оригинальное имя без хвостового года
+  for (const tm of teams) {
+    byLeague[tm.league].teams++;
+    const k = normClub(tm.name);
+    const disp = displayClub(tm.name);
+    const cur = byLeague[tm.league].clubs.get(k);
+    if (cur == null || disp.length < cur.length) byLeague[tm.league].clubs.set(k, disp);
+  }
   const regionClubs = new Set<string>();
   for (const tm of teams) regionClubs.add(normClub(tm.name));
 
@@ -300,7 +310,7 @@ async function buildPayload(): Promise<RegionPyramidPayload> {
         league: lg,
         teams: b.teams,
         clubs: b.clubs.size,
-        clubNames: [...b.clubs].sort(),
+        clubNames: [...b.clubs.values()].sort((a, c) => a.localeCompare(c, 'ru')),
         players: b.players,
         matches: b.matches.size,
         q1pct: known ? Math.round((b.q[1] / known) * 1000) / 10 : 0,
@@ -315,8 +325,8 @@ async function buildPayload(): Promise<RegionPyramidPayload> {
   // расходится с ожиданием (Высшая 8, Первая 8), в логе сразу видно, какой клуб расщепился
   // на 2 ключа (вариант имени) — чинить точечно в normClub, а не гадать.
   for (const lg of ORDER) {
-    const keys = [...byLeague[lg].clubs].sort();
-    if (keys.length > 0) logger.info({ league: lg, count: keys.length, clubs: keys }, `[census] ${lg}: клубов ${keys.length} → ${keys.join(', ')}`);
+    const names = [...byLeague[lg].clubs.values()].sort((a, c) => a.localeCompare(c, 'ru'));
+    if (names.length > 0) logger.info({ league: lg, count: names.length, clubs: names }, `[census] ${lg}: клубов ${names.length} → ${names.join(', ')}`);
   }
 
   // 3b) Перекос даты рождения по когортам Первенства (= лиги Высшая+Первая),
