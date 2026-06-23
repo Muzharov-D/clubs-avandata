@@ -25,6 +25,8 @@ const SLOTS: Record<Line, Array<{ l: number; t: number }>> = {
   FWD: [{ l: 24, t: 22 }, { l: 50, t: 18 }, { l: 76, t: 22 }],
 };
 const LINE_ORDER: Line[] = ['GK', 'DEF', 'MID', 'FWD'];
+// Родительный падеж лиги для подписи «Сборная … лиги».
+const DIV_GEN: Record<string, string> = { 'Высшая': 'Высшей', 'Первая': 'Первой' };
 const pctRing = (pct: number): string =>
   pct >= 97 ? 'var(--success)' : pct >= 93 ? 'var(--accent)' : 'var(--text-secondary)';
 
@@ -92,7 +94,7 @@ export function BestXiBody() {
           <>
             <div style={{ marginBottom: 16 }}>
               <h3 style={{ fontSize: 20, fontWeight: 400, margin: 0 }}>
-                {isUnion ? `Сборная ${division} лиги · все возрасты` : `Сборная ${division} лиги · ${cohort!.year} года рождения`}
+                {isUnion ? `Сборная ${DIV_GEN[division] ?? division} лиги · все возрасты` : `Сборная ${DIV_GEN[division] ?? division} лиги · ${cohort!.year} года рождения`}
               </h3>
               <p className="fed-note">
                 {isUnion
