@@ -183,9 +183,11 @@
 
 /* ---- Page ---- */
 /* Топбара больше нет → верхний отступ убран (контент стартует сразу под фильтр-баром,
-   либо под верхом main, если фильтра нет). Боковые/нижние отступы сохранены.
-   max-width поднят (сайдбар уже забирает левую колонку) — контенту больше воздуха вширь. */
-.fed-page { max-width: 1320px; margin: 0 auto; padding: 24px 40px 56px; }
+   либо под верхом main, если фильтра нет). Сайдбар уже забирает левую колонку, поэтому
+   центрировать контент НЕ нужно — на широком экране max-width:1320 жал его в узкую полосу
+   с гигантскими пустыми полями («как для мобилки»). Контент заполняет ВСЮ ширину main,
+   дыхание дают боковые padding'и. */
+.fed-page { max-width: none; margin: 0; padding: 24px 40px 56px; }
 .fed-hero { margin-bottom: 24px; }
 .fed-hero__kicker { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--accent-cyan); margin-bottom: 10px; }
 .fed-hero__title { font-family: var(--font-display); font-size: 40px; font-weight: 700; letter-spacing: -0.01em; line-height: 1.1; margin: 0 0 8px; }
