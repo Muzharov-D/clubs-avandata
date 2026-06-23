@@ -134,7 +134,7 @@ function BuriedBodyInner({ p }: { p: MinutesPayload | null }) {
   return (
     <div>
       {/* Metrics */}
-      <div className="fed-grid fed-grid--3" style={{ marginBottom: 48 }}>
+      <div className="fed-grid fed-grid--3" style={{ marginBottom: 32 }}>
         <div className="fed-metric">
           <div className="fed-metric__label">В реестре</div>
           <div className="fed-metric__value">{num(p.evaluated)}</div>
@@ -153,7 +153,7 @@ function BuriedBodyInner({ p }: { p: MinutesPayload | null }) {
       </div>
 
       {/* Distribution */}
-      <div className="fed-card" style={{ marginBottom: 48 }}>
+      <div className="fed-card" style={{ marginBottom: 32 }}>
         <div className="fed-card__title">Распределение игрового времени</div>
         <div className="fed-card__sub">медиана {p.medianTime}% от командных минут</div>
 
@@ -180,11 +180,11 @@ function BuriedBodyInner({ p }: { p: MinutesPayload | null }) {
       </div>
 
       {/* Quarter bars */}
-      <div className="fed-card" style={{ marginBottom: 48 }}>
+      <div className="fed-card" style={{ marginBottom: 32 }}>
         <div className="fed-card__title">Игровое время по кварталам рождения</div>
         <div className="fed-card__sub">медиана % от командных минут</div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: `repeat(${p.byQuarter.length}, 1fr)`, gap: 16, alignItems: 'end', marginTop: 32 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: `repeat(${p.byQuarter.length}, 1fr)`, gap: 16, alignItems: 'end', marginTop: 22 }}>
           {p.byQuarter.map((r) => {
             const isLow = lowest?.q === r.q;
             const maxTime = Math.max(1, ...p.byQuarter.map((x) => x.medianTime));

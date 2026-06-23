@@ -101,7 +101,7 @@
    40px инсет, что у .fed-page) — иначе крайняя «Лига» подрезалась у левого края. */
 .fed-filter {
   position: sticky; top: 65px; z-index: 40;
-  padding: 12px 40px;
+  padding: 10px 40px;
   background: rgba(10,15,46,0.62); backdrop-filter: blur(12px);
   border-bottom: 1px solid var(--border);
 }
@@ -127,9 +127,9 @@
 }
 
 /* ---- Page ---- */
-.fed-page { max-width: 1200px; margin: 0 auto; padding: 48px 40px 80px; }
-.fed-hero { margin-bottom: 64px; }
-.fed-hero__kicker { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--accent-cyan); margin-bottom: 12px; }
+.fed-page { max-width: 1200px; margin: 0 auto; padding: 30px 40px 56px; }
+.fed-hero { margin-bottom: 40px; }
+.fed-hero__kicker { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--accent-cyan); margin-bottom: 10px; }
 .fed-hero__title { font-family: var(--font-display); font-size: 40px; font-weight: 700; letter-spacing: -0.01em; line-height: 1.1; margin: 0 0 8px; }
 .fed-hero__sub { font-size: 17px; color: var(--text-secondary); font-weight: 400; margin: 0; }
 
@@ -137,7 +137,7 @@
 .fed-metric {
   background: linear-gradient(180deg, var(--glass) 0%, rgba(255,255,255,0.015) 100%);
   border-radius: var(--radius); border: 1px solid var(--border);
-  padding: 32px;
+  padding: 22px 24px;
   transition: all 0.3s var(--ease);
   box-shadow: 0 8px 28px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.06);
 }
@@ -166,7 +166,7 @@
 .fed-card {
   background: linear-gradient(180deg, var(--glass) 0%, rgba(255,255,255,0.015) 100%);
   border-radius: var(--radius); border: 1px solid var(--border);
-  padding: 28px;
+  padding: 20px;
   transition: all 0.3s var(--ease);
   box-shadow: 0 8px 28px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.06);
 }
@@ -175,7 +175,7 @@
   border-color: var(--border-strong);
 }
 .fed-card__title { font-size: 16px; font-weight: 600; color: var(--text); margin: 0 0 4px; }
-.fed-card__sub { font-size: 13px; color: var(--text-secondary); margin: 0 0 20px; font-weight: 400; }
+.fed-card__sub { font-size: 13px; color: var(--text-secondary); margin: 0 0 14px; font-weight: 400; }
 
 /* ---- Table ---- */
 .fed-table { width: 100%; border-collapse: collapse; font-size: 14px; }
@@ -212,7 +212,7 @@
 @keyframes fed-skel { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
 
 /* ---- Section divider ---- */
-.fed-divider { display: flex; align-items: baseline; gap: 16px; margin: 48px 0 24px; }
+.fed-divider { display: flex; align-items: baseline; gap: 16px; margin: 32px 0 16px; }
 .fed-divider__title { font-family: var(--font-display); font-size: 24px; font-weight: 700; letter-spacing: -0.01em; margin: 0; }
 .fed-divider__line { flex: 1; height: 1px; background: linear-gradient(90deg, var(--border-strong), transparent); }
 

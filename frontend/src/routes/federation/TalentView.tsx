@@ -17,13 +17,13 @@ export function FederationTalent() {
         <p className="fed-hero__sub">Сборная региона, рейтинг, бомбардиры и кого регион теряет · {scope}</p>
       </div>
 
-      <div className="fed-grid fed-grid--2" style={{ marginBottom: 48 }}>
+      <div className="fed-grid fed-grid--2" style={{ marginBottom: 32 }}>
         <div>
           <div className="fed-divider" style={{ marginTop: 0 }}>
             <h2 className="fed-divider__title">Сборная региона</h2>
             <div className="fed-divider__line" />
           </div>
-          <p className="fed-note" style={{ marginBottom: 24 }}>Сильнейшие игроки по рейтингу в каждой линии · схема 1-4-3-3</p>
+          <p className="fed-note" style={{ marginBottom: 16 }}>Сильнейшие игроки по рейтингу в каждой линии · схема 1-4-3-3</p>
           <BestXiBody />
         </div>
 
@@ -36,7 +36,7 @@ export function FederationTalent() {
         </div>
       </div>
 
-      <div style={{ marginBottom: 48 }}>
+      <div style={{ marginBottom: 32 }}>
         <RegionLeaderboardBody withLeaderboard={false} withRising />
       </div>
 
@@ -45,16 +45,16 @@ export function FederationTalent() {
           <h2 className="fed-divider__title">Бомбардиры</h2>
           <div className="fed-divider__line" />
         </div>
-        <p className="fed-note" style={{ marginBottom: 24 }}>Голы из протоколов ФФСПб · {scope}</p>
+        <p className="fed-note" style={{ marginBottom: 16 }}>Голы из протоколов ФФСПб · {scope}</p>
         <ScorersBody />
       </section>
 
-      <section style={{ marginTop: 48 }}>
+      <section style={{ marginTop: 32 }}>
         <div className="fed-divider">
           <h2 className="fed-divider__title">Кого теряет регион</h2>
           <div className="fed-divider__line" />
         </div>
-        <p className="fed-note" style={{ marginBottom: 24 }}>Воронка отбора и игрового времени: кого регион теряет на входе и на скамейке · {scope}</p>
+        <p className="fed-note" style={{ marginBottom: 16 }}>Воронка отбора и игрового времени: кого регион теряет на входе и на скамейке · {scope}</p>
         <LossMapBody />
       </section>
     </div>

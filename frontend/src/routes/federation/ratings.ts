@@ -1,16 +1,17 @@
 /**
- * Цвет рейтинга ИГРОКА (шкала 0–10) = смысл (отлично-зелёный → плохо-красный).
- * Порт utils/colors.js клубного фронта на токены федерации (--av-rating-*).
- * Только для рейтингов игроков 0–10; клубные очки (тысячи) — отдельная шкала.
+ * Цвет-смысл рейтинга AvanData по АБСОЛЮТНОЙ шкале (раз показываем абсолют — и красим
+ * по абсолюту, не по нормализованным 0–10). Порог зелёного — 400 (директива владельца:
+ * «всё выше 400 уже зелёное»). Принимает СЫРОЙ рейтинг.
+ *  ≥400 — зелёное · 300–399 — жёлтое · 200–299 — янтарь · <200 — красное.
+ * Клубные суммы (десятки тысяч) всегда ≥400 → зелёные (отдельной семантики у них нет).
  */
-export function ratingColor(value: number | null | undefined): string {
-  if (value == null || Number.isNaN(value)) return 'var(--av-rating-none)';
-  const n = Number(value);
+export function ratingColor(raw: number | null | undefined): string {
+  if (raw == null || Number.isNaN(Number(raw))) return 'var(--av-rating-none)';
+  const n = Number(raw);
   if (n <= 0) return 'var(--av-rating-none)';
-  if (n >= 9.0) return 'var(--av-rating-excellent)';
-  if (n >= 8.0) return 'var(--av-rating-good)';
-  if (n >= 7.0) return 'var(--av-rating-ok)';
-  if (n >= 6.0) return 'var(--av-rating-weak)';
+  if (n >= 400) return 'var(--av-rating-excellent)';
+  if (n >= 300) return 'var(--av-rating-ok)';
+  if (n >= 200) return 'var(--av-rating-weak)';
   return 'var(--av-rating-poor)';
 }
 
@@ -38,5 +39,5 @@ export const ratingLabel = (raw: number | null | undefined): string => {
   if (n <= 0) return '—';
   return Math.round(n).toLocaleString('ru-RU');
 };
-/** Цвет-смысл по СЫРОМУ рейтингу: нормализуем в 0–10, затем тот же ratingColor. */
-export const rating10Color = (raw: number | null | undefined): string => ratingColor(rating10(raw));
+/** Цвет-смысл по СЫРОМУ рейтингу — абсолютная шкала (тот же ratingColor, без деления на 100). */
+export const rating10Color = ratingColor;

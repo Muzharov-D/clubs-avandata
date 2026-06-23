@@ -56,7 +56,7 @@ export function AgeEffectBody() {
           бессмысленно — смысл перекоса в сравнении. Выбранный год не подменяет вердикт,
           а лишь подсвечивается на графике (+ короткая строка). */}
       {maxC && minC ? (
-        <div className="fed-card" style={{ marginBottom: 32, borderLeft: '3px solid var(--accent)' }}>
+        <div className="fed-card" style={{ marginBottom: 20, borderLeft: '3px solid var(--accent)' }}>
           <div className="fed-badge fed-badge--accent" style={{ marginBottom: 12 }}>Перекос по когортам</div>
           <h3 style={{ fontSize: 24, fontWeight: 300, margin: '0 0 8px' }}>
             Наибольший перекос — {maxC.year}: {maxC.skew}×. Наименьший — {minC.year}: {minC.skew}×.
@@ -73,7 +73,7 @@ export function AgeEffectBody() {
         <div className="fed-card__title">Перекос Q1÷Q4 по когортам</div>
         <div className="fed-card__sub">Первенство · паритет 1.0×</div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: `repeat(${cohorts.length}, 1fr)`, gap: 12, alignItems: 'end', marginTop: 32 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: `repeat(${cohorts.length}, 1fr)`, gap: 12, alignItems: 'end', marginTop: 22 }}>
           {cohorts.map((c) => {
             const isFocus = focusYear != null && c.year === focusYear;
             const isMin = !selected && minC != null && c.year === minC.year;

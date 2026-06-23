@@ -70,7 +70,7 @@ export function PyramidBody() {
 
   return (
     <div>
-      <div className="fed-grid fed-grid--2" style={{ marginBottom: 32 }}>
+      <div className="fed-grid fed-grid--2" style={{ marginBottom: 22 }}>
         <TierCard tone="top" title="Верхний эшелон" leagues="Высшая + Первая" t={top} />
         <TierCard tone="lower" title="Нижний эшелон" leagues="Вторая · Третья · Четвёртая" t={lower} />
       </div>

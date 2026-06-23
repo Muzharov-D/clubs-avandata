@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { api } from '../../api/client';
 import { PlayerAvatar } from './PlayerAvatar';
+import { ClubShield } from './ClubShield';
 import { FedError, FedEmpty } from './FedState';
 import { ratingLabel, rating10Color } from './ratings';
 import { useFedYear } from './avYear';
@@ -96,7 +97,7 @@ export function BestXiBody() {
                   <button
                     key={player.id} type="button"
                     style={{ position: 'absolute', left: `${slot.l}%`, top: `${slot.t}%`, transform: 'translate(-50%, -50%)', zIndex: 2, background: 'none', border: 'none', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}
-                    title={`${player.name} · ${LINE_TAG[player.line]} · топ ${player.pct}%`}
+                    title={`${player.name}${player.club ? ` · ${player.club}` : ''} · ${LINE_TAG[player.line]} · топ ${player.pct}% линии`}
                     onClick={() => setPeek(player)}
                   >
                     <span style={{ borderRadius: '50%', boxShadow: `0 0 0 2px ${ring}, 0 3px 7px rgba(0,0,0,0.55)`, display: 'block' }}>
@@ -105,7 +106,10 @@ export function BestXiBody() {
                     </span>
                     <span style={{ fontSize: 10, fontWeight: 700, color: ring, textTransform: 'uppercase' }}>{LINE_TAG[player.line]}</span>
                     <span style={{ fontSize: 11, fontWeight: 600, color: '#fff', background: 'rgba(0,0,0,0.5)', padding: '2px 8px', borderRadius: 6, whiteSpace: 'nowrap' }}>{lastName(player.name)}</span>
-                    <span style={{ fontSize: 9, fontWeight: 600, color: 'var(--text-secondary)', background: 'rgba(0,0,0,0.42)' }}>{player.club ?? '—'} · топ {player.pct}%</span>
+                    <span style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '2px 7px', borderRadius: 6, background: 'rgba(0,0,0,0.42)', whiteSpace: 'nowrap' }}>
+                      <ClubShield name={player.club ?? player.name} logoUrl={player.clubLogo} size={15} />
+                      <span style={{ fontSize: 9.5, fontWeight: 700, color: ring, fontVariantNumeric: 'tabular-nums' }}>топ {player.pct}% линии</span>
+                    </span>
                   </button>
                 );
               })}
@@ -125,8 +129,8 @@ export function BestXiBody() {
 
 function XiPeek({ p, onClose }: { p: XiPlayer; onClose: () => void }) {
   return (
-    <div style={{ position: 'fixed', inset: 0, zIndex: 60, display: 'flex', alignItems: 'flex-start', justifyContent: 'center', padding: 48, background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(6px)' }} onClick={onClose} role="presentation">
-      <div className="fed-card" style={{ width: '100%', maxWidth: 400, position: 'relative', marginTop: 48 }} onClick={(e) => e.stopPropagation()} role="dialog" aria-label={p.name}>
+    <div style={{ position: 'fixed', inset: 0, zIndex: 60, display: 'flex', alignItems: 'flex-start', justifyContent: 'center', padding: 32, background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(6px)' }} onClick={onClose} role="presentation">
+      <div className="fed-card" style={{ width: '100%', maxWidth: 400, position: 'relative', marginTop: 56 }} onClick={(e) => e.stopPropagation()} role="dialog" aria-label={p.name}>
         <button type="button" onClick={onClose} aria-label="Закрыть" style={{ position: 'absolute', top: 12, right: 14, width: 30, height: 30, borderRadius: 8, fontSize: 18, background: 'var(--bg-elevated)', border: '1px solid var(--border)', color: 'var(--text-secondary)', cursor: 'pointer' }}>✕</button>
         <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 16 }}>
           <PlayerAvatar name={p.name} photoUrl={p.photo} size={66} ring />

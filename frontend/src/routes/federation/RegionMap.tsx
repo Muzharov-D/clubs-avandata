@@ -77,7 +77,7 @@ export function RegionCensusBody() {
   return (
     <div>
       {/* ---- Hero Metrics ---- */}
-      <div className="fed-grid fed-grid--4" style={{ marginBottom: 48 }}>
+      <div className="fed-grid fed-grid--4" style={{ marginBottom: 32 }}>
         <div className="fed-metric">
           <div className="fed-metric__label">Футболисты</div>
           <div className="fed-metric__value">{num(players)}</div>
@@ -100,7 +100,7 @@ export function RegionCensusBody() {
 
       {/* ---- Pyramid Leagues ---- */}
       {p && p.leagues.length > 0 && (
-        <div className="fed-card" style={{ marginBottom: 48 }}>
+        <div className="fed-card" style={{ marginBottom: 32 }}>
           <div className="fed-card__title">По лигам</div>
           <div className="fed-card__sub">сезон {p.season} · пирамида FFSPB{p.capturedAt ? ` · данные с ${new Date(p.capturedAt).toLocaleDateString('ru-RU')}` : ''}</div>
           <table className="fed-table">
