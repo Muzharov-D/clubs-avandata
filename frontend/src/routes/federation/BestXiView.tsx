@@ -13,6 +13,7 @@ type Line = 'GK' | 'DEF' | 'MID' | 'FWD';
 interface XiPlayer {
   id: number; name: string; club: string | null; clubLogo: string | null; photo: string | null;
   line: Line; position: string | null; rating: number | null; mp: number; pct: number;
+  year?: number; // присваивается только при сборке совокупной XI (когорта, из которой взят игрок)
 }
 interface Cohort { year: number; ratedCount: number; clubs: number; xi: XiPlayer[]; }
 
@@ -35,21 +36,46 @@ export function BestXiBody() {
   });
   const cohorts = useMemo(() => (data?.cohorts ?? []).slice().sort((a, b) => b.year - a.year), [data]);
   const [peek, setPeek] = useState<XiPlayer | null>(null);
-  const active = (globalYear != null ? cohorts.find((c) => c.year === globalYear) : null) ?? cohorts[0] ?? null;
+
+  // «Все» (globalYear == null) → СОВОКУПНАЯ сборная региона: объединяем xi всех когорт
+  // (каждый — топ-по-линии своей когорты, значит в союзе лежат сильнейшие региона по линии),
+  // помечаем каждого годом его когорты, и в каждой линии берём top-N по АБСОЛЮТНОМУ рейтингу
+  // (число слотов = SLOTS[line].length → 1 ВРТ / 4 ЗАЩ / 3 ПЗ / 3 НАП = 11).
+  const unionXi = useMemo<XiPlayer[]>(() => {
+    if (cohorts.length === 0) return [];
+    const byLine: Record<Line, XiPlayer[]> = { GK: [], DEF: [], MID: [], FWD: [] };
+    for (const cohort of cohorts) {
+      for (const p of cohort.xi) byLine[p.line].push({ ...p, year: cohort.year });
+    }
+    const out: XiPlayer[] = [];
+    for (const line of LINE_ORDER) {
+      const top = byLine[line]
+        .slice()
+        .sort((a, b) => (b.rating ?? 0) - (a.rating ?? 0))
+        .slice(0, SLOTS[line].length);
+      out.push(...top);
+    }
+    return out;
+  }, [cohorts]);
+
+  const isUnion = globalYear == null && cohorts.length > 0;
+  const cohort = globalYear != null ? cohorts.find((c) => c.year === globalYear) ?? null : null;
+  // xi для отрисовки: при «Все» — совокупная, иначе — выбранная когорта.
+  const activeXi = isUnion ? unionXi : cohort?.xi ?? [];
 
   const placed = useMemo(() => {
-    if (!active) return [];
+    if (activeXi.length === 0) return [];
     const idx: Record<Line, number> = { GK: 0, DEF: 0, MID: 0, FWD: 0 };
     const out: Array<{ slot: { l: number; t: number }; player: XiPlayer }> = [];
     for (const line of LINE_ORDER) {
-      const inLine = active.xi.filter((p) => p.line === line);
+      const inLine = activeXi.filter((p) => p.line === line);
       for (const player of inLine) {
         const slot = SLOTS[line][idx[line]++];
         if (slot) out.push({ slot, player });
       }
     }
     return out;
-  }, [active]);
+  }, [activeXi]);
 
   return (
     <>
@@ -58,15 +84,18 @@ export function BestXiBody() {
       <div className="fed-card" style={{ position: 'relative', overflow: 'hidden' }}>
         {isLoading ? (
           <div className="fed-skeleton" style={{ aspectRatio: '4 / 5' }} />
-        ) : !active || active.xi.length === 0 ? (
+        ) : activeXi.length === 0 ? (
           <FedEmpty>Недостаточно разобранных игроков для формирования сборной.</FedEmpty>
         ) : (
           <>
             <div style={{ marginBottom: 16 }}>
-              <h3 style={{ fontSize: 20, fontWeight: 400, margin: 0 }}>Сборная {active.year} года рождения</h3>
+              <h3 style={{ fontSize: 20, fontWeight: 400, margin: 0 }}>
+                {isUnion ? 'Сборная региона · все возрасты' : `Сборная ${cohort!.year} года рождения`}
+              </h3>
               <p className="fed-note">
-                {active.ratedCount.toLocaleString('ru-RU')} оценённых · {active.clubs} клубов
-                {globalYear == null ? ' · младшая когорта по умолчанию' : ''}
+                {isUnion
+                  ? 'лучшие по рейтингу в каждой линии со всех когорт'
+                  : `${cohort!.ratedCount.toLocaleString('ru-RU')} оценённых · ${cohort!.clubs} клубов`}
               </p>
             </div>
 
@@ -92,12 +121,17 @@ export function BestXiBody() {
               </svg>
 
               {placed.map(({ slot, player }) => {
-                const ring = pctRing(player.pct);
+                // В совокупной сборной ring по перцентилю не имеет смысла (игроки из разных
+                // когорт) — красим обводку линией-нейтралью; чип «топ X%» меняем на герб + год.
+                const ring = isUnion ? 'var(--text-secondary)' : pctRing(player.pct);
+                const title = isUnion
+                  ? `${player.name}${player.club ? ` · ${player.club}` : ''} · ${LINE_TAG[player.line]}${player.year ? ` · ${player.year} г.р.` : ''}`
+                  : `${player.name}${player.club ? ` · ${player.club}` : ''} · ${LINE_TAG[player.line]} · топ ${player.pct}% линии`;
                 return (
                   <button
                     key={player.id} type="button"
                     style={{ position: 'absolute', left: `${slot.l}%`, top: `${slot.t}%`, transform: 'translate(-50%, -50%)', zIndex: 2, background: 'none', border: 'none', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}
-                    title={`${player.name}${player.club ? ` · ${player.club}` : ''} · ${LINE_TAG[player.line]} · топ ${player.pct}% линии`}
+                    title={title}
                     onClick={() => setPeek(player)}
                   >
                     <span style={{ borderRadius: '50%', boxShadow: `0 0 0 2px ${ring}, 0 3px 7px rgba(0,0,0,0.55)`, display: 'block' }}>
@@ -108,7 +142,11 @@ export function BestXiBody() {
                     <span style={{ fontSize: 11, fontWeight: 600, color: '#fff', background: 'rgba(0,0,0,0.5)', padding: '2px 8px', borderRadius: 6, whiteSpace: 'nowrap' }}>{lastName(player.name)}</span>
                     <span style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '2px 7px', borderRadius: 6, background: 'rgba(0,0,0,0.42)', whiteSpace: 'nowrap' }}>
                       <ClubShield name={player.club ?? player.name} logoUrl={player.clubLogo} size={15} />
-                      <span style={{ fontSize: 9.5, fontWeight: 700, color: ring, fontVariantNumeric: 'tabular-nums' }}>топ {player.pct}% линии</span>
+                      {isUnion ? (
+                        <span style={{ fontSize: 9.5, fontWeight: 700, color: '#fff', fontVariantNumeric: 'tabular-nums' }}>{player.year ? `${player.year} г.р.` : '—'}</span>
+                      ) : (
+                        <span style={{ fontSize: 9.5, fontWeight: 700, color: ring, fontVariantNumeric: 'tabular-nums' }}>топ {player.pct}% линии</span>
+                      )}
                     </span>
                   </button>
                 );
@@ -116,7 +154,9 @@ export function BestXiBody() {
             </div>
 
             <p className="fed-note" style={{ marginTop: 16 }}>
-              Перцентиль — позиция внутри линии среди оценённых игроков региона. По данным разбора двух высших лиг.
+              {isUnion
+                ? 'Совокупная сборная региона — сильнейшие по абсолютному рейтингу в каждой линии со всех возрастов. По данным разбора двух высших лиг.'
+                : 'Перцентиль — позиция внутри линии среди оценённых игроков региона. По данным разбора двух высших лиг.'}
             </p>
           </>
         )}
@@ -136,7 +176,7 @@ function XiPeek({ p, onClose }: { p: XiPlayer; onClose: () => void }) {
           <PlayerAvatar name={p.name} photoUrl={p.photo} size={66} ring />
           <div style={{ minWidth: 0 }}>
             <div style={{ fontSize: 18, fontWeight: 600, color: 'var(--text)' }}>{p.name}</div>
-            <div className="fed-note">{p.club ?? '—'}{p.position ? ` · ${p.position}` : ''} · топ {p.pct}%</div>
+            <div className="fed-note">{p.club ?? '—'}{p.position ? ` · ${p.position}` : ''}{p.year ? ` · ${p.year} г.р.` : ` · топ ${p.pct}%`}</div>
           </div>
           <span style={{ marginLeft: 'auto', fontSize: 24, fontWeight: 700, color: rating10Color(p.rating) }}>{ratingLabel(p.rating)}</span>
         </div>
