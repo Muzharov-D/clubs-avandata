@@ -8,6 +8,7 @@ import {
 import { regionMinutes } from '../db/schema/regionMinutes.js';
 import type {
   RegionMinutesBuckets,
+  RegionMinutesLeague,
   RegionMinutesPayload,
   RegionMinutesQuarter,
 } from '../federation/regionMinutes.js';
@@ -51,6 +52,22 @@ const COHORTS: Cohort[] = [
   { tid: 44331, year: 2016, label: 'до 11' },
 ];
 
+// ---- Лиги Первенства (только Высшая/Первая есть в этих данных) ------------
+// Игровое время Первенства живёт только в лигах «Высшая» и «Первая» — других
+// (Вторая/Третья/Четвёртая) в этом датасете НЕТ, не выдумываем. byLeague эмитим
+// ровно по этим двум; игрок без распознанной лиги в byLeague НЕ попадает (но
+// остаётся в региональном пуле).
+const MINUTES_LEAGUES = ['Высшая', 'Первая'] as const;
+type MinutesLeague = (typeof MINUTES_LEAGUES)[number];
+
+/** Лига из имени группы standings; null, если не Высшая/Первая (в byLeague не идёт). */
+function minutesLeagueOf(group: string | null | undefined): MinutesLeague | null {
+  const g = (group ?? '').toLowerCase();
+  if (/высш/.test(g)) return 'Высшая';
+  if (/перв/.test(g)) return 'Первая';
+  return null;
+}
+
 // ---- Помощники (порт из .mjs) -------------------------------------------
 function idOf(iri: unknown): string | null {
   if (iri == null) return null;
@@ -88,6 +105,7 @@ function median(a: number[]): number | null {
 
 // ---- Формы FFSPB (минимально-типизированы) -------------------------------
 interface StandingsGroup {
+  groupName?: string;
   teams?: Array<{ team?: { '@id'?: string; id?: number | string } }>;
 }
 interface RosterPlayer {
@@ -150,8 +168,8 @@ function matchMinutes(pp: ParticipatedPlayer[], lengthSec: number | null | undef
   return { Lmin, res };
 }
 
-/** Один оценённый игрок пула: игровое время% + квартал рождения + было ли появление. */
-interface PoolRow { pct: number; q: number | null; played: boolean }
+/** Один оценённый игрок пула: игровое время% + квартал рождения + появление + лига. */
+interface PoolRow { pct: number; q: number | null; played: boolean; league: MinutesLeague | null }
 
 // ---- Главный обход -------------------------------------------------------
 async function buildPayload(): Promise<RegionMinutesPayload> {
@@ -160,14 +178,16 @@ async function buildPayload(): Promise<RegionMinutesPayload> {
   for (const c of COHORTS) {
     const t0 = Date.now();
 
-    // 1) команды турнира из standings.
+    // 1) команды турнира из standings (+ лига команды из имени группы).
     let teams: number[] = [];
+    const teamLeague = new Map<number, MinutesLeague | null>();
     try {
       const groups = (await listStandings(c.tid)) as StandingsGroup[];
       for (const g of groups) {
+        const lg = minutesLeagueOf(g.groupName);
         for (const tm of g.teams ?? []) {
           const id = idOf(tm.team?.['@id']) ?? (tm.team?.id != null ? String(tm.team.id) : null);
-          if (id) teams.push(Number(id));
+          if (id) { teams.push(Number(id)); teamLeague.set(Number(id), lg); }
         }
       }
     } catch (e) {
@@ -175,9 +195,10 @@ async function buildPayload(): Promise<RegionMinutesPayload> {
     }
     teams = [...new Set(teams)];
 
-    // 2) ростеры → реестр игроков + DOB + клуб (команда).
+    // 2) ростеры → реестр игроков + DOB + клуб (команда) + лига (через команду).
     const dob = new Map<string, unknown>();
     const pteam = new Map<string, number>();
+    const pleague = new Map<string, MinutesLeague | null>();
     const registry = new Set<string>();
     const rosters = await pmap(teams, 6, async (tid) => ({
       tid,
@@ -190,6 +211,7 @@ async function buildPayload(): Promise<RegionMinutesPayload> {
         if (!pid) continue;
         registry.add(pid);
         pteam.set(pid, r.tid);
+        pleague.set(pid, teamLeague.get(r.tid) ?? null);
         dob.set(pid, p.birthDate ?? p.dateOfBirth ?? p.birthday ?? null);
       }
     }
@@ -237,7 +259,7 @@ async function buildPayload(): Promise<RegionMinutesPayload> {
       const mins = minutes.get(pid) ?? 0;
       const pct = Math.round((mins / avail) * 1000) / 10;
       const q = quarterOf(dob.get(pid));
-      pool.push({ pct, q, played: (apps.get(pid) ?? 0) > 0 });
+      pool.push({ pct, q, played: (apps.get(pid) ?? 0) > 0, league: pleague.get(pid) ?? null });
     }
 
     logger.info(
@@ -247,18 +269,7 @@ async function buildPayload(): Promise<RegionMinutesPayload> {
   }
 
   // ---- Пул по всем когортам ------------------------------------------------
-  const evaluated = pool.length;
-  const neverPlayed = pool.filter((p) => !p.played).length;
-  const buried15 = pool.filter((p) => p.pct < 15).length;
-  const pct1 = (n: number): number => (evaluated ? Math.round((n / evaluated) * 1000) / 10 : 0);
-
-  const buckets: RegionMinutesBuckets = {
-    zero: pct1(pool.filter((p) => p.pct <= 0).length),
-    b0_15: pct1(pool.filter((p) => p.pct > 0 && p.pct < 15).length),
-    b15_30: pct1(pool.filter((p) => p.pct >= 15 && p.pct < 30).length),
-    b30_50: pct1(pool.filter((p) => p.pct >= 30 && p.pct < 50).length),
-    over50: pct1(pool.filter((p) => p.pct >= 50).length),
-  };
+  const region = aggregatePool(pool);
 
   const byQuarter: RegionMinutesQuarter[] = [1, 2, 3, 4].map((q) => {
     const rows = pool.filter((p) => p.q === q);
@@ -270,16 +281,56 @@ async function buildPayload(): Promise<RegionMinutesPayload> {
     };
   });
 
+  // По лигам Первенства — РОВНО Высшая и Первая (других в данных нет). Та же форма
+  // агрегата; берём только игроков с распознанной лигой (resolvable-only) — игрок без
+  // лиги не выдумывается, поэтому Σ evaluated по лигам ≤ региональному evaluated.
+  const byLeague: RegionMinutesLeague[] = MINUTES_LEAGUES
+    .map((lg) => ({ league: lg as string, ...aggregatePool(pool.filter((p) => p.league === lg)) }))
+    .filter((l) => l.evaluated > 0);
+
   return {
     season: SEASON,
+    ...region,
+    byQuarter,
+    byLeague,
+  };
+}
+
+/**
+ * Региональный/лиговой агрегат игрового времени из набора оценённых игроков.
+ * Та же форма для региона и для каждой лиги (evaluated, neverPlayed%, buried<15%%,
+ * медиана, бакеты). Проценты — от evaluated этого набора (1 знак).
+ */
+function aggregatePool(rows: PoolRow[]): {
+  evaluated: number;
+  neverPlayed: number;
+  neverPlayedPct: number;
+  buried15: number;
+  buried15Pct: number;
+  medianTime: number;
+  buckets: RegionMinutesBuckets;
+} {
+  const evaluated = rows.length;
+  const neverPlayed = rows.filter((p) => !p.played).length;
+  const buried15 = rows.filter((p) => p.pct < 15).length;
+  const pct1 = (n: number): number => (evaluated ? Math.round((n / evaluated) * 1000) / 10 : 0);
+
+  const buckets: RegionMinutesBuckets = {
+    zero: pct1(rows.filter((p) => p.pct <= 0).length),
+    b0_15: pct1(rows.filter((p) => p.pct > 0 && p.pct < 15).length),
+    b15_30: pct1(rows.filter((p) => p.pct >= 15 && p.pct < 30).length),
+    b30_50: pct1(rows.filter((p) => p.pct >= 30 && p.pct < 50).length),
+    over50: pct1(rows.filter((p) => p.pct >= 50).length),
+  };
+
+  return {
     evaluated,
     neverPlayed,
     neverPlayedPct: pct1(neverPlayed),
     buried15,
     buried15Pct: pct1(buried15),
-    medianTime: median(pool.map((p) => p.pct)) ?? 0,
+    medianTime: median(rows.map((p) => p.pct)) ?? 0,
     buckets,
-    byQuarter,
   };
 }
 
@@ -323,6 +374,12 @@ async function main() {
   );
   for (const q of payload.byQuarter) {
     logger.info({ q: q.q, medianTime: q.medianTime, buriedPct: q.buriedPct }, `Q${q.q}: медиана ${q.medianTime}% · погребённые ${q.buriedPct}%`);
+  }
+  for (const l of payload.byLeague ?? []) {
+    logger.info(
+      { league: l.league, evaluated: l.evaluated, neverPlayedPct: l.neverPlayedPct, buried15Pct: l.buried15Pct, medianTime: l.medianTime, over50: l.buckets.over50 },
+      `ЛИГА ${l.league}: оценено ${l.evaluated} · не выходят ${l.neverPlayedPct}% · погребённые<15% ${l.buried15Pct}% · медиана ${l.medianTime}% · ≥50% ${l.buckets.over50}%`,
+    );
   }
   logger.info({ federationSlug, season, dryRun }, dryRun ? '✓ DRY-RUN завершён (без записи)' : '✓ снимок region_minutes записан');
 

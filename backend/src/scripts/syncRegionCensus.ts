@@ -66,14 +66,37 @@ function quarterOf(b: unknown): number | null {
 }
 
 function normClub(n: string | null | undefined): string {
-  return (n ?? '')
+  // КОНСЕРВАТИВНАЯ нормализация имени клуба: схлопывает фарм-/филиал-команды ОДНОГО клуба
+  // в один клуб, но НИКОГДА не сливает два разных клуба. Снимаем только однозначные
+  // суффиксы дубль-составов и географических филиалов; базовое имя клуба не трогаем.
+  // ВАЖНО: после этого per-league счётчики клубов ЗАКОННО суммируются БОЛЬШЕ, чем тотал
+  // региона (один клуб выставляет команды в несколько лиг) — это корректная семантика
+  // регулятора, НЕ баг; не пытаться свести суммы.
+  let s = (n ?? '')
     .toLowerCase()
-    .replace(/["']/g, '')
-    .replace(/\bфк\b/g, '')
+    .replace(/["'«»]/g, '')
+    // JS `\b` — только ASCII, для кириллицы no-op (старое `\bфк\b` не срабатывало →
+    // «ФК Зенит» ≠ «Зенит», счёт клубов раздувался). Снимаем тип-токены клуба как
+    // отдельные слова (по краю/пробелу), а не подстроки: фикс корня «кривого счёта».
+    .replace(/(?:^|\s)(?:фк|ооо|ао)(?=\s|$)/gu, ' ')
     .replace(/\s*20\d{2}\b.*$/, '')
-    .replace(/-спб|санкт-петербург/g, '')
-    .replace(/\s+/g, ' ')
-    .trim();
+    .replace(/-спб|санкт-петербург/g, '');
+  // Снимаем хвостовые суффиксы итеративно (имя может нести и индекс, и филиал):
+  //  - индекс дубль-состава: «-2…-5» / «-II…-V» (римские) на конце;
+  //  - географический филиал: «-север/центр/юг/восток/запад» (и через дефис, и словом);
+  //  - залётный 2-значный суффикс вроде «-84».
+  // Якорим на конце строки и только после дефиса/пробела — «-2» отрезаем, но «зенит-2009»
+  // уже срезан годом выше, а «динамо» / «спартак-2» → «спартак». Один разряд («-2»), не
+  // «-22», чтобы не задеть номерные имена; 2-значный хвост ловим отдельным правилом «-84».
+  let prev: string;
+  do {
+    prev = s;
+    s = s
+      .replace(/[\s-](?:[2-5]|i{2,3}|iv|v)$/u, '')
+      .replace(/[\s-](?:север|центр|юг|восток|запад)$/u, '')
+      .replace(/[\s-]\d{2}$/u, '');
+  } while (s !== prev);
+  return s.replace(/\s+/g, ' ').trim();
 }
 
 function leagueOf(group: string | null | undefined): League {
@@ -110,12 +133,25 @@ interface RosterPlayer {
   '@id'?: string; id?: number | string;
   birthDate?: unknown; dateOfBirth?: unknown; birthday?: unknown;
 }
+interface MatchListItem {
+  id?: number | string; '@id'?: string;
+  host?: { '@id'?: string; id?: number | string } | string | null;
+  guest?: { '@id'?: string; id?: number | string } | string | null;
+}
 
 // ---- Главный обход -------------------------------------------------------
 async function buildPayload(): Promise<RegionPyramidPayload> {
   // 1) Команды с лигой по всем турнирам + матчи на тир.
   const teamLeague = new Map<string, { league: League; name: string; year: number }>();
   const tierMatches: RegionPyramidTotals['tierMatches'] = { 'Первенство': 0, 'Турнир': 0 };
+  // Сырые матчи всех турниров (id + команды) — лигу резолвим ВТОРЫМ проходом, когда
+  // teamLeague финализирован (лига команды могла подняться в более позднем турнире).
+  const matchRows: Array<{ mid: string; host: string | null; guest: string | null }> = [];
+  const teamIdOf = (t: { '@id'?: string; id?: number | string } | string | null | undefined): string | null => {
+    if (t == null) return null;
+    if (typeof t === 'string') return idOf(t);
+    return idOf(t['@id']) ?? (t.id != null ? String(t.id) : null);
+  };
 
   for (const t of TOURN) {
     try {
@@ -135,7 +171,13 @@ async function buildPayload(): Promise<RegionPyramidPayload> {
       logger.error({ tid: t.tid, err: e instanceof Error ? e.message : String(e) }, 'standings ERR');
     }
     try {
-      tierMatches[t.tier] += ((await listMatches(t.tid)) as unknown[]).length;
+      const matches = (await listMatches(t.tid)) as MatchListItem[];
+      tierMatches[t.tier] += matches.length;
+      for (const m of matches) {
+        const mid = idOf(m['@id']) ?? (m.id != null ? String(m.id) : null);
+        if (!mid) continue;
+        matchRows.push({ mid, host: teamIdOf(m.host), guest: teamIdOf(m.guest) });
+      }
     } catch (e) {
       logger.error({ tid: t.tid, err: e instanceof Error ? e.message : String(e) }, 'matches ERR');
     }
@@ -164,14 +206,23 @@ async function buildPayload(): Promise<RegionPyramidPayload> {
   }
 
   // 3) Агрегаты по лигам (дедуп).
-  const byLeague: Record<League, { teams: number; clubs: Set<string>; players: number; q: { 1: number; 2: number; 3: number; 4: number; u: number } }> =
+  const byLeague: Record<League, { teams: number; clubs: Set<string>; players: number; matches: Set<string>; q: { 1: number; 2: number; 3: number; 4: number; u: number } }> =
     Object.fromEntries(
-      ORDER.map((lg) => [lg, { teams: 0, clubs: new Set<string>(), players: 0, q: { 1: 0, 2: 0, 3: 0, 4: 0, u: 0 } }]),
+      ORDER.map((lg) => [lg, { teams: 0, clubs: new Set<string>(), players: 0, matches: new Set<string>(), q: { 1: 0, 2: 0, 3: 0, 4: 0, u: 0 } }]),
     ) as typeof byLeague;
 
   for (const tm of teams) { byLeague[tm.league].teams++; byLeague[tm.league].clubs.add(normClub(tm.name)); }
   const regionClubs = new Set<string>();
   for (const tm of teams) regionClubs.add(normClub(tm.name));
+
+  // Матчи по лигам: лига матча = лига его команд (host, затем guest) из финального
+  // teamLeague. Матч без распознанной команды (нет в standings) в per-league НЕ
+  // попадает (не выдумываем лигу), но он уже посчитан в tierMatches/totals.matches.
+  // Set по mid дедуплит, если матч пришёл в нескольких турнирах.
+  for (const m of matchRows) {
+    const lg = (m.host && teamLeague.get(m.host)?.league) || (m.guest && teamLeague.get(m.guest)?.league);
+    if (lg) byLeague[lg].matches.add(m.mid);
+  }
 
   const regionQ = { 1: 0, 2: 0, 3: 0, 4: 0 };
   for (const { league, dob } of player.values()) {
@@ -192,6 +243,7 @@ async function buildPayload(): Promise<RegionPyramidPayload> {
         teams: b.teams,
         clubs: b.clubs.size,
         players: b.players,
+        matches: b.matches.size,
         q1pct: known ? Math.round((b.q[1] / known) * 1000) / 10 : 0,
         q2pct: known ? Math.round((b.q[2] / known) * 1000) / 10 : 0,
         q3pct: known ? Math.round((b.q[3] / known) * 1000) / 10 : 0,
@@ -273,8 +325,8 @@ async function main() {
   logger.info('=== ПО ЛИГАМ (дедуп) ===');
   for (const l of payload.leagues) {
     logger.info(
-      { league: l.league, teams: l.teams, clubs: l.clubs, players: l.players, q4pct: l.q4pct, skew: l.skew },
-      `${l.league}: команд ${l.teams} · клубов ${l.clubs} · игроков ${l.players} · Q4 ${l.q4pct}% · перекос ${l.skew ?? '—'}×`,
+      { league: l.league, teams: l.teams, clubs: l.clubs, players: l.players, matches: l.matches, q4pct: l.q4pct, skew: l.skew },
+      `${l.league}: команд ${l.teams} · клубов ${l.clubs} · игроков ${l.players} · матчей ${l.matches} · Q4 ${l.q4pct}% · перекос ${l.skew ?? '—'}×`,
     );
   }
   const t = payload.totals;
