@@ -1,11 +1,34 @@
 import { Suspense } from 'react';
 import { NavLink, Outlet, useNavigate, useLocation, Link } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '../../contexts/AuthContext';
+import { api } from '../../api/client';
 import { toast } from '../../components/Toast';
 import { FedYearProvider, YearFilter, DivisionFilter } from './avYear';
 import './federation.css';
 
 interface FedAuth { user: { fullName?: string; email?: string } | null; logout: () => void }
+
+/** Бейдж свежести региональных данных (синки гоняются вручную → могут протухнуть).
+ *  Дата последнего снимка; краснеет, если данные старше 14 дней. Глобально, в подвале сайдбара. */
+function FreshnessBadge() {
+  const { data } = useQuery({
+    queryKey: ['federation', 'freshness'],
+    queryFn: () => api<{ capturedAt: string | null; ageDays: number | null; stale: boolean }>('/federation/freshness'),
+    staleTime: 5 * 60_000,
+  });
+  if (!data || data.capturedAt == null) return null;
+  const date = new Date(data.capturedAt).toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit', year: 'numeric' });
+  return (
+    <div
+      className={`fed-freshness${data.stale ? ' fed-freshness--stale' : ''}`}
+      title={`Последний снимок региональных данных: ${date}${data.ageDays != null ? ` · ${data.ageDays} дн. назад` : ''}`}
+    >
+      <span className="fed-freshness__dot" />
+      {data.stale ? `Данные устарели · ${data.ageDays} дн.` : `Данные: ${date}`}
+    </div>
+  );
+}
 
 const TABS: Array<{ to: string; end?: boolean; label: string }> = [
   { to: '/federation', end: true, label: 'Обзор' },
@@ -50,6 +73,7 @@ export function FederationLayout() {
             ))}
           </nav>
           <div className="fed-sidebar__foot">
+            <FreshnessBadge />
             <span className="fed-sidebar__who">{who}</span>
             <button className="fed-sidebar__out" onClick={handleLogout}>Выйти</button>
           </div>

@@ -270,6 +270,19 @@ export async function federationRoutes(app: FastifyInstance) {
     }));
   });
 
+  /** GET /api/v1/federation/freshness — свежесть региональных данных (бейдж в кабинете):
+   *  дата последнего снимка переписи + возраст в днях + флаг устаревания (>14 дней). Региональные
+   *  синки (census/minutes/scorers) гоняются вручную (ФФСПб заблокён с Render) → могут молча
+   *  протухнуть; бейдж делает это видимым. Дёшево — один ряд по federationSlug. */
+  app.get('/freshness', async (req) => {
+    const federationId = req.user?.federationId;
+    if (!federationId) throw new BadRequestError('no federation context', 'NO_FEDERATION');
+    const census = await latestRegionCensus(federationId);
+    const capturedAt = census?.capturedAt ?? null;
+    const ageDays = capturedAt ? Math.floor((Date.now() - new Date(capturedAt).getTime()) / 86_400_000) : null;
+    return { capturedAt, ageDays, stale: ageDays != null && ageDays > 14 };
+  });
+
   /** GET /api/v1/federation/minutes — карта возможностей: игровое время Первенства
    *  (последний месячный снимок region_minutes, null если ещё нет). Только ЧИТАЕТ —
    *  живой FFSPB здесь не дёргаем (отдельный bypass-рид по federationSlug). */

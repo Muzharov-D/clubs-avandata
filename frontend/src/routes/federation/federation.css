@@ -121,6 +121,11 @@
   padding: 8px 14px; border-radius: 8px; transition: color 0.2s, background 0.2s; text-align: left; width: 100%;
 }
 .fed-sidebar__out:hover { color: var(--danger); background: rgba(255,255,255,0.04); }
+/* Бейдж свежести региональных данных: зелёная точка = свежо, амбер = устарело (>14 дн). */
+.fed-freshness { display: inline-flex; align-items: center; gap: 6px; padding: 0 14px 2px; font-size: 11.5px; line-height: 1.4; color: var(--text-tertiary); }
+.fed-freshness__dot { width: 7px; height: 7px; border-radius: 50%; background: var(--success); box-shadow: 0 0 6px var(--success); flex: none; }
+.fed-freshness--stale { color: var(--warning); font-weight: 600; }
+.fed-freshness--stale .fed-freshness__dot { background: var(--warning); box-shadow: 0 0 6px var(--warning); }
 
 /* ---- Main column (контент-колонка справа от сайдбара) ---- */
 .fed-main { flex: 1 1 auto; min-width: 0; }
@@ -148,6 +153,7 @@
   }
   .fed-sidebar__who { padding: 0; }
   .fed-sidebar__out { width: auto; padding: 6px 10px; }
+  .fed-freshness { display: none; }   /* в узкой верхней полосе бейдж теснит — прячем */
   /* Фильтр-бар липнет ПОД top-bar (а не к верху окна, который занимает сайдбар). */
   .fed-filter { top: 53px; padding: 12px 16px; }
   .fed-page { padding: 20px 16px 48px; }
