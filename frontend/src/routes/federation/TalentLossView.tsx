@@ -33,7 +33,7 @@ export function FederationTalentLoss() {
           <h2 className="fed-divider__title">Пирамида лиг</h2>
           <div className="fed-divider__line" />
         </div>
-        <p className="fed-note" style={{ marginBottom: 16 }}>Два эшелона · в разрезе региона</p>
+        <p className="fed-note" style={{ marginBottom: 16 }}>Два эшелона</p>
         <PyramidBody />
       </section>
 
@@ -42,7 +42,7 @@ export function FederationTalentLoss() {
           <h2 className="fed-divider__title">Карта возможностей</h2>
           <div className="fed-divider__line" />
         </div>
-        <p className="fed-note" style={{ marginBottom: 16 }}>Распределение игрового времени · в разрезе региона</p>
+        <p className="fed-note" style={{ marginBottom: 16 }}>Распределение игрового времени</p>
         <BuriedBody />
       </section>
 
@@ -51,7 +51,7 @@ export function FederationTalentLoss() {
           <h2 className="fed-divider__title">Как избежать потери</h2>
           <div className="fed-divider__line" />
         </div>
-        <p className="fed-note" style={{ marginBottom: 16 }}>Меры регулятора · выводимы из показателей выше</p>
+        <p className="fed-note" style={{ marginBottom: 16 }}>Меры регулятора</p>
         <AvoidLossBody />
       </section>
     </div>
@@ -64,7 +64,7 @@ interface Recommendation { title: string; rationale: string }
  * «Как избежать потери» — редакционные рекомендации регулятора, НЕ метрика.
  * Текст привязан к реальным числам с этого же экрана: перекос когорт берём из
  * того же `region-map` (`useRegionMap`, ключ ['federation','region-map']), долю
- * «погребённых» и медиану Q4 — из тех же `/minutes` (`useMinutes`, ключ
+ * долю на скамейке и медиану Q4 — из тех же `/minutes` (`useMinutes`, ключ
  * ['federation','minutes']). Никаких новых запросов и никаких выдуманных цифр:
  * если число недоступно из этих ответов — формулировка остаётся качественной.
  */
@@ -91,7 +91,7 @@ function AvoidLossBody() {
     {
       title: 'Контроль минимального игрового времени',
       rationale: minutes
-        ? `Доля «погребённых» (<15% командных минут) — ${minutes.buried15Pct}% реестра, не выходят ни разу — ${minutes.neverPlayedPct}%. Ввести норматив минимального времени для прошедших отбор, иначе зачисление не конвертируется в развитие.`
+        ? `Доля игроков на скамейке (<15% командных минут) — ${minutes.buried15Pct}% реестра, не выходят ни разу — ${minutes.neverPlayedPct}%. Ввести норматив минимального времени для прошедших отбор, иначе зачисление не конвертируется в развитие.`
         : 'Ввести норматив минимального игрового времени для прошедших отбор: зачисление в заявку без выхода на поле не конвертируется в развитие.',
     },
     {
@@ -109,7 +109,7 @@ function AvoidLossBody() {
   return (
     <div className="fed-card">
       <div className="fed-card__title">Рекомендации регулятора</div>
-      <div className="fed-card__sub">Не данные, а меры на основе показателей выше — для решения федерации</div>
+      <div className="fed-card__sub">Меры на основе показателей выше — для решения федерации</div>
       <div>
         {recs.map((r, i) => (
           <div

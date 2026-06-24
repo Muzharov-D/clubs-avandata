@@ -22,7 +22,7 @@ export function FederationOverview() {
         <div className="fed-divider__line" />
       </div>
       <p className="fed-note" style={{ marginTop: -8, marginBottom: 20 }}>
-        Сколько занимающихся реально выходят на поле, а сколько числятся на лавке — по лигам Высшая и Первая (единственные, по которым есть игровое время).
+        Сколько занимающихся реально выходят на поле, а сколько числятся на скамейке.
       </p>
       <PlayTimeStripBody />
     </div>

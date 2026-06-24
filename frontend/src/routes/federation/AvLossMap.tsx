@@ -71,7 +71,7 @@ function Body({ d, year }: { d: LossMap; year: number | null }) {
           </div>
           <div>
             <div className="fed-metric__value fed-metric__value--warning">{q4.buried15}%</div>
-            <div className="fed-metric__extra">из включённых — «погребённые» на скамейке (Q1 {q1.buried15}%)</div>
+            <div className="fed-metric__extra">из включённых — остаются на скамейке (Q1 {q1.buried15}%)</div>
           </div>
         </div>
         <p className="fed-note" style={{ marginTop: 16 }}>
@@ -82,14 +82,14 @@ function Body({ d, year }: { d: LossMap; year: number | null }) {
       {/* Воронка по кварталам рождения */}
       <section className="fed-card">
         <h2 className="fed-card__title">По кварталу рождения</h2>
-        <p className="fed-card__sub">Размер заявки · медиана игрового времени · доля «погребённых» (&lt;15% времени)</p>
+        <p className="fed-card__sub">Размер заявки · медиана игрового времени · доля на скамейке (&lt;15% времени)</p>
         <table className="fed-table">
           <thead>
             <tr>
               <th>Квартал</th>
               <th>В заявке</th>
               <th>Медиана времени</th>
-              <th>«Погребены» &lt;15%</th>
+              <th>На скамейке &lt;15%</th>
             </tr>
           </thead>
           <tbody>
@@ -117,7 +117,7 @@ function Body({ d, year }: { d: LossMap; year: number | null }) {
             ))}
           </tbody>
         </table>
-        <p className="fed-note" style={{ marginTop: 16 }}>«Погребённые» — игроки в заявке, проведшие на поле менее 15% игрового времени команды. Приоритетные зоны для мер федерации — <b>отбор</b> (основной перекос) и контроль доступа молодых игроков к игровой практике.</p>
+        <p className="fed-note" style={{ marginTop: 16 }}>На скамейке — игроки в заявке, проведшие на поле менее 15% игрового времени команды. Приоритетные зоны для мер федерации — <b>отбор</b> (основной перекос) и контроль доступа молодых игроков к игровой практике.</p>
       </section>
 
       {/* Кого именно теряем */}

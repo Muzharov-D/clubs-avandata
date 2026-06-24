@@ -39,7 +39,7 @@ function PlayTimeTriple({ m, scopeNote }: { m: MinutesLeague | MinutesPayload; s
       <div className="fed-metric">
         <div className="fed-metric__label">На лавке</div>
         <div className="fed-metric__value fed-metric__value--warning">{bench}%</div>
-        <div className="fed-metric__extra">{'<'}15% минут · {num(m.buried15)} «погребённых»</div>
+        <div className="fed-metric__extra">{'<'}15% минут · {num(m.buried15)} на скамейке</div>
       </div>
       <div className="fed-metric">
         <div className="fed-metric__label">Не выходят ни разу</div>
@@ -86,7 +86,7 @@ export function PlayTimeStripBody() {
   return (
     <div className="fed-card">
       <div className="fed-card__title">Высшая и Первая лиги</div>
-      <div className="fed-card__sub">единственные лиги, по которым есть игровое время · {num(data.evaluated)} игроков</div>
+      <div className="fed-card__sub">{num(data.evaluated)} игроков в реестре</div>
       <PlayTimeTriple m={data} scopeNote="Высшая и Первая" />
     </div>
   );
@@ -129,7 +129,7 @@ function BuriedBodyInner({ p }: { p: MinutesPayload | null }) {
   if (!p) return <div className="fed-empty">Данные по игровому времени ещё не сформированы.</div>;
 
   const captured = p.capturedAt ? new Date(p.capturedAt).toLocaleDateString('ru-RU') : null;
-  // «Ранние vs поздние» (Q1+Q2 vs Q3+Q4): средняя доля «погребённых» (<15% минут) и медиана
+  // «Ранние vs поздние» (Q1+Q2 vs Q3+Q4): средняя доля на скамейке (<15% минут) и медиана
   // времени по группе. Среднее по двум кварталам (per-quarter численности нет в /minutes —
   // знаменатель один реестр, оценка направления). Поздние = зона риска (красный сектор больше).
   const qBuried = (q: number) => p.byQuarter.find((x) => x.q === q)?.buriedPct ?? 0;
@@ -154,7 +154,7 @@ function BuriedBodyInner({ p }: { p: MinutesPayload | null }) {
           <div className="fed-metric__extra">{p.neverPlayedPct}% реестра</div>
         </div>
         <div className="fed-metric">
-          <div className="fed-metric__label">Погребённые {'<'}15%</div>
+          <div className="fed-metric__label">На скамейке · {'<'}15%</div>
           <div className="fed-metric__value fed-metric__value--warning">{num(p.buried15)}</div>
           <div className="fed-metric__extra">{p.buried15Pct}% реестра</div>
         </div>
@@ -216,7 +216,7 @@ function BuriedBodyInner({ p }: { p: MinutesPayload | null }) {
               />
               <div style={{ textAlign: 'center' }}>
                 <div className="fed-row__name" style={{ fontSize: 14 }}>{g.title}</div>
-                <div className="fed-note">погребены {g.buried}% ({'<'}15% минут)</div>
+                <div className="fed-note">на скамейке {g.buried}% ({'<'}15% минут)</div>
               </div>
             </div>
           ))}
@@ -225,7 +225,7 @@ function BuriedBodyInner({ p }: { p: MinutesPayload | null }) {
         {/* Явная дельта (а не «близнецы») — где разрыв реальный. */}
         <p className="fed-note" style={{ borderLeft: '3px solid var(--warning)', paddingLeft: 12, marginTop: 4 }}>
           <b>Поздние играют меньше:</b> медиана времени {lateMed}% против {earlyMed}% — <b style={{ color: 'var(--warning)' }}>−{Math.max(0, earlyMed - lateMed)} пп</b>;
-          погребённых {lateBuried}% против {earlyBuried}% (+{Math.max(0, lateBuried - earlyBuried)} пп). Вторая потеря после селекции.
+          на скамейке {lateBuried}% против {earlyBuried}% (+{Math.max(0, lateBuried - earlyBuried)} пп).
         </p>
       </div>
 

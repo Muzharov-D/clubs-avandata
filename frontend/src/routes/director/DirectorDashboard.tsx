@@ -147,7 +147,7 @@ export function DirectorDashboard() {
             {/* Карта потерь — квартальная воронка game-time% (клин стратегии B) */}
             {lossQ.data?.hasData && (
               <section className="dir-card">
-                <div className="dir-card__head"><h2>Карта потерь</h2><span>game-time% по кварталу рождения · кого теряем</span></div>
+                <div className="dir-card__head"><h2>Карта потерь</h2><span>игровое время по кварталу рождения · кого теряем</span></div>
                 <div className="dir-loss">
                   {lossQ.data.byQuarter.map((q) => (
                     <div key={q.q} className={`dir-lossq${q.q === 4 ? ' dir-lossq--late' : ''}`}>
@@ -160,7 +160,7 @@ export function DirectorDashboard() {
                       ) : (
                         <>
                           <div className="dir-lossq__med">медиана {q.medianPct}%</div>
-                          <div className="dir-lossq__buried">погребены &lt;15%: <b>{q.buried15}%</b></div>
+                          <div className="dir-lossq__buried">на скамейке &lt;15%: <b>{q.buried15}%</b></div>
                         </>
                       )}
                     </div>
