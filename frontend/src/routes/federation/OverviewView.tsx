@@ -9,10 +9,9 @@ export function FederationOverview() {
 
   return (
     <div>
-      <div className="fed-hero">
-        <div className="fed-hero__kicker">Кабинет федерации</div>
-        <h1 className="fed-hero__title">{region}</h1>
-        <p className="fed-hero__sub">Сводные данные детско-юношеского футбола и аналитические выводы для регулятора</p>
+      <div className="fed-hero" style={{ marginBottom: 14 }}>
+        <h1 className="fed-hero__title" style={{ fontSize: 28 }}>{region}</h1>
+        <p className="fed-hero__sub" style={{ fontSize: 14 }}>Сводные данные детско-юношеского футбола и аналитические выводы для регулятора</p>
       </div>
 
       <RegionCensusBody />

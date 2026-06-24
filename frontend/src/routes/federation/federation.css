@@ -280,6 +280,12 @@
 .fed-metric__value--warning { color: var(--warning); font-weight: 700; }
 .fed-metric__value--danger { color: var(--danger); font-weight: 700; }
 .fed-metric__extra { font-size: 13px; color: var(--text-secondary); margin-top: 12px; font-weight: 400; }
+/* Компактные KPI Обзора: крупные плитки спихивали таблицу «По лигам» под фолд —
+   ужимаем значение/паддинги, чтобы все 5 лиг влезали без скролла. Только на Обзоре. */
+.fed-census-kpi .fed-metric { padding: 14px 18px; }
+.fed-census-kpi .fed-metric__label { margin-bottom: 6px; }
+.fed-census-kpi .fed-metric__value { font-size: 40px; }
+.fed-census-kpi .fed-metric__extra { margin-top: 6px; }
 
 /* ---- Grid ---- */
 .fed-grid { display: grid; gap: 16px; }

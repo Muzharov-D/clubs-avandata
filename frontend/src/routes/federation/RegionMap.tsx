@@ -78,7 +78,7 @@ export function RegionCensusBody() {
   return (
     <div>
       {/* ---- Hero Metrics ---- */}
-      <div className="fed-grid fed-grid--4" style={{ marginBottom: 32 }}>
+      <div className="fed-grid fed-grid--4 fed-census-kpi" style={{ marginBottom: 20 }}>
         <div className="fed-metric">
           <div className="fed-metric__label">Футболисты</div>
           <div className="fed-metric__value">{num(players)}</div>
