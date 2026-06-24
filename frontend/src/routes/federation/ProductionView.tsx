@@ -24,7 +24,7 @@ export function FederationProduction() {
     <>
       <header className="fed-hero">
         <h1 className="fed-hero__title">Производство талантов</h1>
-        <p className="fed-hero__sub">Топ-игроки клуба × результат · по разбору AvanData</p>
+        <p className="fed-hero__sub">Топ-игроки клуба × результат · по данным AvanData</p>
       </header>
       <ProductionBody />
     </>
@@ -65,12 +65,12 @@ export function ProductionBody() {
         {isLoading ? (
           <div className="fed-skeleton" style={{ height: 240 }} />
         ) : clubs.length === 0 ? (
-          <FedEmpty>Недостаточно разобранных когорт для построения карты производства талантов.</FedEmpty>
+          <FedEmpty>Недостаточно данных по возрастам для карты производства талантов.</FedEmpty>
         ) : (
           <>
             <h2 className="fed-card__title">Производство × результат</h2>
             <p className="fed-card__sub">
-              {year == null ? 'по региону · все когорты (совокупность)' : `когорта ${year} г.р.`} · {clubs.length} {plClub(clubs.length)} · медианы: талантов {data!.medianTalents}, PPG {data!.medianPpg}
+              {year == null ? 'по региону · все возрасты (совокупность)' : `возраст ${year} г.р.`} · {clubs.length} {plClub(clubs.length)} · медианы: талантов {data!.medianTalents}, очки/игра {data!.medianPpg}
             </p>
 
             <table className="fed-table">
@@ -78,7 +78,7 @@ export function ProductionBody() {
                 <tr>
                   <th>Клуб</th>
                   <th>Топ-игроков</th>
-                  <th>PPG</th>
+                  <th>Очки/игра</th>
                   <th>Зона</th>
                 </tr>
               </thead>
@@ -124,7 +124,7 @@ export function ProductionBody() {
   );
 }
 
-const plYear = (n: number) => { const a = n % 100, b = n % 10; if (a >= 11 && a <= 14) return 'когорт'; if (b === 1) return 'когорту'; if (b >= 2 && b <= 4) return 'когорты'; return 'когорт'; };
+const plYear = (n: number) => { const a = n % 100, b = n % 10; if (a >= 11 && a <= 14) return 'возрастов'; if (b === 1) return 'возрасту'; if (b >= 2 && b <= 4) return 'возраста'; return 'возрастов'; };
 
 /** Карточка клуба из карты — по клику на герб, без ухода со страницы. */
 function ProdPeek({ c, onClose }: { c: ProdClub; onClose: () => void }) {
@@ -141,7 +141,7 @@ function ProdPeek({ c, onClose }: { c: ProdClub; onClose: () => void }) {
           <span style={{ fontSize: 32, fontWeight: 200, letterSpacing: '-0.02em' }}>{c.ppg}</span>
         </div>
         <div className="fed-row" style={{ borderBottom: 'none', padding: '12px 0 0', marginTop: 12 }}>
-          <span className="fed-row__meta">очки за игру (PPG) · среднее по когортам</span>
+          <span className="fed-row__meta">очки за игру · среднее по возрастам</span>
         </div>
       </div>
     </div>

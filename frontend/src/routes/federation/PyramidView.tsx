@@ -57,7 +57,7 @@ export function PyramidBody() {
   if (error) return <div className="fed-empty" style={{ color: 'var(--danger)' }}>Не удалось загрузить пирамиду лиг</div>;
   const p = data?.pyramid ?? null;
   if (!p || p.leagues.length === 0) {
-    return <div className="fed-empty">Данные по пирамиде лиг ещё не сформированы.</div>;
+    return <div className="fed-empty">Данные по пирамиде лиг ещё не готовы.</div>;
   }
 
   const top = buildTier(p.leagues.filter((l) => TOP_LEAGUES.includes(l.league)));
@@ -76,24 +76,24 @@ export function PyramidBody() {
   return (
     <div>
       <div className="fed-grid fed-grid--2" style={{ marginBottom: 22 }}>
-        <TierCard tone="top" title="Верхний эшелон" leagues="Высшая + Первая" t={top} />
-        <TierCard tone="lower" title="Нижний эшелон" leagues="Вторая · Третья · Четвёртая" t={lower} />
+        <TierCard tone="top" title="Верхние лиги" leagues="Высшая + Первая" t={top} />
+        <TierCard tone="lower" title="Нижние лиги" leagues="Вторая · Третья · Четвёртая" t={lower} />
       </div>
 
       <p className="fed-note" style={{ borderLeft: '3px solid var(--warning)', paddingLeft: 12, marginBottom: 22 }}>
-        <b>Воронка отбора:</b> поздних {lowerLate}% в нижнем эшелоне → {topLate}% в верхнем —
+        <b>Воронка отбора:</b> поздних {lowerLate}% в нижних лигах против {topLate}% в верхних —
         отсев <b style={{ color: 'var(--danger)' }}>−{lateDrop} пп</b> при подъёме по лигам.
       </p>
 
       <div className="fed-card" style={{ borderLeft: '3px solid var(--warning)' }}>
-        <div className="fed-badge fed-badge--warning" style={{ marginBottom: 16 }}>Пирамида отбора</div>
+        <div className="fed-badge fed-badge--warning" style={{ marginBottom: 16 }}>Воронка отбора</div>
         <h3 style={{ fontSize: 28, fontWeight: 300, margin: '0 0 12px' }}>
           {shareOfQ4InLower}% всех поздно рождённых региона выступают в нижних лигах
         </h3>
         {reachTopRatio != null && (
           <p className="fed-note">
             Рождённые в начале года попадают в Высшую и Первую лиги в <strong>{reachTopRatio}×</strong> чаще,
-            чем рождённые в конце. Чем выше эшелон, тем строже отбор по физической зрелости.
+            чем рождённые в конце. Чем выше лига, тем строже отбор по росту и телосложению.
           </p>
         )}
         <p className="fed-note" style={{ marginTop: 16 }}>Сезон {p.season}. Q1 — январь–март, Q4 — октябрь–декабрь.</p>
@@ -148,9 +148,9 @@ export function FederationPyramid() {
   return (
     <div>
       <div className="fed-hero">
-        <div className="fed-hero__kicker">Два эшелона</div>
+        <div className="fed-hero__kicker">Верхние и нижние лиги</div>
         <h1 className="fed-hero__title">Пирамида лиг</h1>
-        <p className="fed-hero__sub">{federation?.region ?? federation?.name ?? 'Регион'} · где скапливаются поздно-рождённые</p>
+        <p className="fed-hero__sub">{federation?.region ?? federation?.name ?? 'Регион'} · где сосредоточены поздно рождённые</p>
       </div>
       <PyramidBody />
     </div>

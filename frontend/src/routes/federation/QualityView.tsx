@@ -103,7 +103,7 @@ function QualityTop100() {
         {isLoading ? (
           <div className="fed-skeleton" style={{ height: 280 }} />
         ) : tally.length === 0 ? (
-          <FedEmpty>Недостаточно разобранных игроков (не менее 2 матчей) для построения топ-100 города.</FedEmpty>
+          <FedEmpty>Недостаточно данных по игрокам (не менее 2 матчей) для топ-100 города.</FedEmpty>
         ) : (
           <>
             {tally.slice(0, 12).map((c, i) => (
@@ -119,7 +119,7 @@ function QualityTop100() {
             ))}
             {tally.length > 12 && <p className="fed-note">Отображены 12 клубов из {tally.length}.</p>}
             <p className="fed-note" style={{ marginTop: 12 }}>
-              Пул — топ-100 игроков города по абсолютному рейтингу AvanData (не менее 2 разобранных матчей). Команды объединены в школы по названию клуба. Число у строки — <b>игроков клуба в топ-100 города</b>.
+              Пул — топ-100 игроков города по абсолютному рейтингу AvanData (не менее 2 сыгранных матчей). Команды объединены в школы по названию клуба. Число у строки — <b>игроков клуба в топ-100 города</b>.
             </p>
           </>
         )}
@@ -186,7 +186,7 @@ function QualitySquad({ year }: { year: number }) {
             {noCohort ? (
               <p className="fed-note">Сборная для этого года не считается — основная сборная региона строится только для когорт 2009–2013.</p>
             ) : xiTally.length === 0 ? (
-              <FedEmpty>Недостаточно разобранных игроков для формирования основной сборной {year} г.р.</FedEmpty>
+              <FedEmpty>Недостаточно данных по игрокам для основной сборной {year} г.р.</FedEmpty>
             ) : (
               <SquadTally rows={xiTally} unit="в сборной (11)" />
             )}
@@ -197,7 +197,7 @@ function QualitySquad({ year }: { year: number }) {
               <div className="fed-divider__line" />
             </div>
             {sqTally.length === 0 ? (
-              <FedEmpty>Недостаточно разобранных игроков (не менее 2 матчей) для расширенного состава {year} г.р.</FedEmpty>
+              <FedEmpty>Недостаточно данных по игрокам (не менее 2 матчей) для расширенного состава {year} г.р.</FedEmpty>
             ) : (
               <SquadTally rows={sqTally} unit="в расширенном 22" />
             )}

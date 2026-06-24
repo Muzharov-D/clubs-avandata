@@ -103,7 +103,7 @@ export function RegionCensusBody() {
       {p && p.leagues.length > 0 && (
         <div className="fed-card" style={{ marginBottom: 32 }}>
           <div className="fed-card__title">По лигам</div>
-          <div className="fed-card__sub">сезон {p.season} · пирамида FFSPB{p.capturedAt ? ` · данные с ${new Date(p.capturedAt).toLocaleDateString('ru-RU')}` : ''}</div>
+          <div className="fed-card__sub">сезон {p.season} · пирамида FFSPB{p.capturedAt ? ` · по состоянию на ${new Date(p.capturedAt).toLocaleDateString('ru-RU')}` : ''}</div>
           <table className="fed-table">
             <thead>
               <tr>
@@ -130,7 +130,7 @@ export function RegionCensusBody() {
             </tbody>
           </table>
           <p className="fed-note" style={{ marginTop: 16 }}>
-            Путь данных по каждой лиге: клубы → команды → игроки → матчи.
+            Иерархия пирамиды: клубы собирают команды, команды — игроков, игроки играют матчи.
           </p>
         </div>
       )}
@@ -163,7 +163,7 @@ export function RegionCensusBody() {
 
       {/* ---- Scope Note ---- */}
       <p className="fed-note" style={{ marginTop: 24 }}>
-        Перепись региона — по всем лигам и всем когортам.
+        Перепись региона — по всем лигам и всем возрастам.
         {year != null
           ? ` Срез по году рождения (${year}) применяется на экранах «Таланты» и «Клубы».`
           : ' Срез по году рождения доступен на экранах «Таланты» и «Клубы».'}

@@ -38,7 +38,7 @@ export function FederationTalent() {
 
       <section style={{ marginBottom: 32 }}>
         <div className="fed-divider">
-          <h2 className="fed-divider__title">Достойны лиги выше</h2>
+          <h2 className="fed-divider__title">Претенденты на повышение</h2>
           <div className="fed-divider__line" />
         </div>
         <p className="fed-note" style={{ marginBottom: 16 }}>

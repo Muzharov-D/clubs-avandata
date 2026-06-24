@@ -18,8 +18,8 @@ export function FederationAgeEffect() {
   return (
     <div>
       <div className="fed-hero">
-        <div className="fed-hero__kicker">Возрастной эффект</div>
-        <h1 className="fed-hero__title">Перекос по когортам</h1>
+        <div className="fed-hero__kicker">Перекос по дате рождения</div>
+        <h1 className="fed-hero__title">Перекос по возрастам</h1>
         <p className="fed-hero__sub">
           {data && cohorts.length > 0
             ? `Перекос даты рождения по годам · ${num(totalPlayers)} игроков`
@@ -38,7 +38,7 @@ export function AgeEffectBody() {
   const p = data?.pyramid ?? null;
   const cohorts = p?.ageEffect ?? [];
   if (!p || cohorts.length === 0) {
-    return <div className="fed-empty">Данные по когортам ещё не сформированы.</div>;
+    return <div className="fed-empty">Данные по возрастам ещё не готовы.</div>;
   }
 
   const withSkew = cohorts.filter((c): c is AgeCohort & { skew: number } => c.skew != null);
@@ -56,7 +56,7 @@ export function AgeEffectBody() {
           а лишь подсвечивается на графике (+ короткая строка). */}
       {maxC && minC ? (
         <div className="fed-card" style={{ marginBottom: 20, borderLeft: '3px solid var(--accent)' }}>
-          <div className="fed-badge fed-badge--accent" style={{ marginBottom: 12 }}>Перекос по когортам</div>
+          <div className="fed-badge fed-badge--accent" style={{ marginBottom: 12 }}>Перекос по возрастам</div>
           <h3 style={{ fontSize: 24, fontWeight: 300, margin: '0 0 8px' }}>
             Наибольший перекос — {maxC.year}: {maxC.skew}×. Наименьший — {minC.year}: {minC.skew}×.
           </h3>
@@ -68,8 +68,8 @@ export function AgeEffectBody() {
 
       {/* Chart */}
       <div className="fed-card">
-        <div className="fed-card__title">Перекос Q1÷Q4 по когортам</div>
-        <div className="fed-card__sub">Первенство · паритет 1.0×</div>
+        <div className="fed-card__title">Перекос Q1÷Q4 по возрастам</div>
+        <div className="fed-card__sub">Первенство · норма 1.0×</div>
 
         <div style={{ display: 'grid', gridTemplateColumns: `repeat(${cohorts.length}, 1fr)`, gap: 12, alignItems: 'end', marginTop: 22 }}>
           {cohorts.map((c) => {
@@ -93,7 +93,7 @@ export function AgeEffectBody() {
         </div>
 
         <p className="fed-note" style={{ marginTop: 24 }}>
-          Перекос усиливается к возрасту отбора (13–16 лет). Сезон {p.season}.
+          Перекос усиливается к 13–16 годам — это возраст отбора. Сезон {p.season}.
         </p>
       </div>
     </div>

@@ -121,7 +121,7 @@ export function BestXiBody() {
         {isLoading ? (
           <div className="fed-skeleton" style={{ flex: 1, minHeight: 0 }} />
         ) : activeXi.length === 0 ? (
-          <FedEmpty>Недостаточно разобранных игроков для формирования сборной.</FedEmpty>
+          <FedEmpty>Недостаточно данных по игрокам для сборной.</FedEmpty>
         ) : (
           <>
             <div style={{ marginBottom: 12, flex: 'none' }}>

@@ -67,7 +67,7 @@ function Body({ d, year }: { d: LossMap; year: number | null }) {
         <div className="fed-grid fed-grid--2">
           <div>
             <div className="fed-metric__value">{skew != null ? `×${skew}` : '—'}</div>
-            <div className="fed-metric__extra">реже включаются в заявку на этапе отбора (Q1 {q1.roster} · Q4 {q4.roster})</div>
+            <div className="fed-metric__extra">реже попадают в заявку при отборе (Q1 {q1.roster} · Q4 {q4.roster})</div>
           </div>
           <div>
             <div className="fed-metric__value fed-metric__value--warning">{q4.buried15}%</div>
@@ -75,7 +75,7 @@ function Body({ d, year }: { d: LossMap; year: number | null }) {
           </div>
         </div>
         <p className="fed-note" style={{ marginTop: 16 }}>
-          Регион теряет поздно рождённых дважды: их <b>в {skew ?? '—'} раза реже</b> включают в заявку, а включённые — <b>чаще остаются на скамейке</b> (менее 15% игрового времени). Низкая игровая практика при формальном участии распределена неравномерно — перекос направлен против рождённых в конце года.
+          Регион теряет поздно рождённых дважды: их <b>в {skew ?? '—'} раза реже</b> включают в заявку, а включённые — <b>чаще остаются на скамейке</b> (менее 15% игрового времени). И те, кто всё-таки попал в заявку, чаще сидят на скамейке — перекос бьёт по рождённым в конце года.
         </p>
       </section>
 

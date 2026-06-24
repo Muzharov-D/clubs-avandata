@@ -61,7 +61,7 @@ export function RankAboveBody() {
 
   if (hi.isLoading || lo.isLoading) return <div className="fed-skeleton" style={{ height: 200 }} />;
   if (list.length === 0) {
-    return <div className="fed-note">Нет игроков Первой, обходящих по рейтингу кого-либо в Высшей на своей позиции и в своём возрасте.</div>;
+    return <div className="fed-note">Пока нет игроков Первой, которые по рейтингу обходили бы кого-то из Высшей на той же позиции и в том же возрасте.</div>;
   }
 
   return (

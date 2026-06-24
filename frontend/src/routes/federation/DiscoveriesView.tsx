@@ -36,7 +36,7 @@ export function DiscoveriesBody() {
 
   if (region.isLoading) return <div className="fed-skeleton" style={{ height: 320 }} />;
   if (region.error) return <div className="fed-empty">Не удалось загрузить открытия региона</div>;
-  if (!ready) return <div className="fed-empty">Сводные данные региона ещё не сформированы.</div>;
+  if (!ready) return <div className="fed-empty">Сводные данные региона ещё не готовы.</div>;
 
   return (
     <div className="fed-grid fed-grid--2">
@@ -59,13 +59,13 @@ export function DiscoveriesBody() {
         <h3 style={{ fontSize: 20, fontWeight: 400, margin: '0 0 8px' }}>
           {lowerShare != null ? `${lowerShare}% поздно рождённых в нижних лигах` : 'Распределение по лигам'}
         </h3>
-        <p className="fed-note">Не выбывают из системы, а смещаются в нижние эшелоны. Перейти →</p>
+        <p className="fed-note">Не выбывают из системы, а смещаются в нижние лиги. Перейти →</p>
       </Link>
 
       <Link to="/federation/talent-loss" className="fed-card" style={{ textDecoration: 'none', color: 'inherit' }}>
         <div className="fed-badge fed-badge--danger" style={{ marginBottom: 16 }}>Карта возможностей</div>
         <h3 style={{ fontSize: 20, fontWeight: 400, margin: '0 0 8px' }}>
-          {never != null ? `${never.toLocaleString('ru-RU')} игроков не выходят на поле` : 'Доступ к игровому времени'}
+          {never != null ? `${never.toLocaleString('ru-RU')} игроков не выходят на поле` : 'Игровое время'}
         </h3>
         <p className="fed-note">Прошли отбор, но остаются без игровой практики. Перейти →</p>
       </Link>

@@ -44,7 +44,7 @@ const shortName = (s: string) => { const w = (s || '').trim().split(/\s+/); retu
 const initials = (s: string) => { const w = (s || '').trim().split(/\s+/).filter(Boolean); return ((w[0]?.[0] ?? '') + (w[1]?.[0] ?? '')).toUpperCase() || '?'; };
 const trendMark = (t: number | null) => (t == null ? '' : t > 0.05 ? `▲ +${t}` : t < -0.05 ? `▼ ${t}` : '= 0');
 const trendCls = (t: number | null) => (t == null ? '' : t > 0.05 ? 'up' : t < -0.05 ? 'down' : 'eq');
-// Цвет для game-time% (0–100): своя шкала, НЕ rating-шкала 4–10. <15 красный … ≥50 зелёный.
+// Цвет для доли игрового времени, % (0–100): своя шкала, НЕ rating-шкала 4–10. <15 красный … ≥50 зелёный.
 const lossColor = (pct: number): string =>
   pct >= 50 ? 'var(--rating-excellent)' : pct >= 30 ? 'var(--rating-ok)' : pct >= 15 ? 'var(--rating-weak)' : 'var(--rating-poor)';
 
@@ -112,8 +112,8 @@ export function DirectorDashboard() {
             {/* KPI */}
             <section className="dir-kpis">
               <Kpi label="Команд в клубе" value={kpi.teams} />
-              <Kpi label="Разобрано матчей" value={kpi.matches} />
-              <Kpi label="Игроков в резерве" value={kpi.players} />
+              <Kpi label="Сыграно матчей" value={kpi.matches} />
+              <Kpi label="Игроков в анализе" value={kpi.players} />
               <Kpi label="Средний рейтинг клуба" value={kpi.clubAvg ?? '—'} color={kpi.clubAvg != null ? ratingColor(kpi.clubAvg) : undefined} />
             </section>
 
@@ -144,10 +144,10 @@ export function DirectorDashboard() {
               </section>
             )}
 
-            {/* Карта потерь — квартальная воронка game-time% (клин стратегии B) */}
+            {/* Кого теряет клуб — квартальная воронка доли игрового времени (клин стратегии B) */}
             {lossQ.data?.hasData && (
               <section className="dir-card">
-                <div className="dir-card__head"><h2>Карта потерь</h2><span>игровое время по кварталу рождения · кого теряем</span></div>
+                <div className="dir-card__head"><h2>Кого теряет клуб</h2><span>игровое время по кварталу рождения · кто меньше играет</span></div>
                 <div className="dir-loss">
                   {lossQ.data.byQuarter.map((q) => (
                     <div key={q.q} className={`dir-lossq${q.q === 4 ? ' dir-lossq--late' : ''}`}>
@@ -166,7 +166,7 @@ export function DirectorDashboard() {
                     </div>
                   ))}
                 </div>
-                <p className="dir-loss__note">Поздно рождённые (Q3–Q4) системно получают меньше игрового времени — измеримая утечка таланта.</p>
+                <p className="dir-loss__note">Поздно рождённые (Q3–Q4) системно получают меньше игрового времени — это тормозит их развитие.</p>
                 {lossQ.data.examplesBuried.length > 0 && (
                   <div className="dir-loss__ex">
                     <span className="dir-loss__ex-lbl">Q4 почти не играют:</span>
@@ -238,15 +238,15 @@ export function DirectorDashboard() {
 
             {/* Таланты клуба */}
             <section className="dir-card">
-              <div className="dir-card__head"><h2>Кадровый резерв</h2><span>топ игроков по всем командам · ↑ заметно выше своей команды</span></div>
-              {talent.length === 0 ? <div className="dir-note">Нет разобранных игроков.</div> : (
+              <div className="dir-card__head"><h2>Кадровый резерв</h2><span>топ игроков по всем командам · ↑ сильнее своей команды</span></div>
+              {talent.length === 0 ? <div className="dir-note">Нет данных по игрокам.</div> : (
                 <div className="dir-talent">
                   {talent.slice(0, 12).map((p, i) => (
                     <div key={p.id} className="dir-tcard">
                       <span className="dir-tcard__rank">{i + 1}</span>
                       <Avatar name={p.fullName} photo={p.photoUrl} size={40} />
                       <div className="dir-tcard__id">
-                        <div className="dir-tcard__name" title={p.fullName}>{shortName(p.fullName)}{p.aboveTeam && <i className="dir-up" title="заметно выше своей команды"> ↑</i>}</div>
+                        <div className="dir-tcard__name" title={p.fullName}>{shortName(p.fullName)}{p.aboveTeam && <i className="dir-up" title="сильнее своей команды"> ↑</i>}</div>
                         <div className="dir-tcard__meta">{p.teamLabel ?? '—'}{p.position ? ` · ${p.position}` : ''}</div>
                       </div>
                       <span className="dir-tcard__rate" style={{ color: ratingColor(p.avgOverall ?? 0) }}>{p.avgOverall ?? '—'}</span>

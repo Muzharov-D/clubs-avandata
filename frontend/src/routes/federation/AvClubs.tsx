@@ -62,7 +62,7 @@ export function ClubsBody() {
                   {l.avgRating != null ? num(l.avgRating) : '—'}
                 </div>
                 <div className="fed-metric__extra">
-                  средний рейтинг AvanData · {plClub(l.clubs)} в лиге{l.topClub ? ` · лидер ${l.topClub}` : ''}
+                  {plClub(l.clubs)} в лиге · средний рейтинг AvanData{l.topClub ? ` (лидер ${l.topClub})` : ''}
                 </div>
               </div>
             );
@@ -94,7 +94,7 @@ export function ClubsBody() {
               {d.totalClubs > d.clubs.slice(0, 10).length && <p className="fed-note">Отображены 10 школ из {d.totalClubs}.</p>}
             </>
           );
-        })() : <div className="fed-note">Недостаточно разобранных игроков для оценки.</div>}
+        })() : <div className="fed-note">Мало данных по игрокам для этого анализа.</div>}
       </section>
 
       {cr.error && <FedError />}

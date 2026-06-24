@@ -93,7 +93,7 @@ export function StandingsBody() {
           <h2 className="fed-card__title">Турнирная таблица</h2>
           <p className="fed-card__sub">
             {year == null
-              ? 'Свод по всем годам рождения — суммарно по когортам, не единое первенство'
+              ? 'Суммарно по всем возрастам — каждый отдельно, не единое первенство'
               : 'Позиция в первенстве против рейтинга AvanData — кто перевыполняет'}
           </p>
         </div>
@@ -130,7 +130,7 @@ function DataBadge({ source, degraded, asOf }: { source?: 'ffspb' | 'mirror'; de
     ? { cls: 'fed-badge--warning', text: 'Зеркало AvanData — данные могут быть неполными', tip: 'Официальный API ФФСПб был недоступен — показано зеркало, в нём бывают пропуски команд.' }
     : source === 'ffspb'
       ? { cls: 'fed-badge--success', text: 'Официальные данные ФФСПб', tip: 'Турнирная таблица получена напрямую из официального API ФФСПб.' }
-      : { cls: '', text: 'Свод AvanData по когортам', tip: 'Агрегат по всем годам рождения из базы AvanData.' };
+      : { cls: '', text: 'Данные AvanData по возрастам', tip: 'Агрегат по всем годам рождения из базы AvanData.' };
   return (
     <div className={`fed-badge ${cfg.cls}`} style={{ marginTop: 12 }} title={cfg.tip}>
       <span style={{ marginRight: 4 }}>{degraded ? '⚠' : '●'}</span>
@@ -173,7 +173,7 @@ function CombinedTable({ rows, sort, onClub }: { rows: CombRow[]; sort: SortMode
             const rankNo = sort === 'points' ? i + 1 : (r.rating != null ? ++rRank : null);
             return (
             <tr key={r.id} onClick={() => onClub(r.id)} style={{ cursor: 'pointer' }}>
-              <td className="fed-table__num" style={{ color: hasRank ? ((rankNo ?? 99) <= 3 ? 'var(--accent)' : undefined) : 'var(--text-secondary)' }} title={hasRank ? undefined : (sort === 'points' ? 'Есть рейтинг, но ещё нет в турнирной таблице' : 'Нет рейтинга AvanData')}>
+              <td className="fed-table__num" style={{ color: hasRank ? ((rankNo ?? 99) <= 3 ? 'var(--accent)' : undefined) : 'var(--text-secondary)' }} title={hasRank ? undefined : (sort === 'points' ? 'Рейтинг есть, но команда ещё не играла' : 'Нет рейтинга AvanData')}>
                 {hasRank ? rankNo : '—'}
               </td>
               <td><ClubShield name={r.name} logoUrl={r.logo} size={22} /></td>
@@ -199,7 +199,7 @@ function CombinedTable({ rows, sort, onClub }: { rows: CombRow[]; sort: SortMode
         <p className="fed-note" style={{ marginTop: 12, borderLeft: '3px solid var(--accent)', paddingLeft: 12 }}>
           <b>Вердикт лиги:</b> перевыполняют рейтинг — {over}, недовыполняют — {under}.{' '}
           {under > 0
-            ? 'Недовыполняющие — состав сильнее результата (зона внимания федерации: тренерский процесс, игровое время).'
+            ? 'Недовыполняющие: состав сильнее результата. Вероятно, вопросы с тренировками или игровым временем.'
             : 'Все клубы реализуют свой состав.'}
         </p>
       )}
@@ -215,7 +215,7 @@ function CombinedTable({ rows, sort, onClub }: { rows: CombRow[]; sort: SortMode
 // Δ-чип: на сколько мест команда выше (перевыполняет) / ниже (недовыполняет) своего рейтинга.
 function DeltaChip({ delta }: { delta: number | null }) {
   if (delta == null) return <span className="fed-table__muted">—</span>;
-  if (delta === 0) return <span className="fed-table__muted" title="Ровно на уровне своего рейтинга">0</span>;
+  if (delta === 0) return <span className="fed-table__muted" title="Совпадает со своим рейтингом">0</span>;
   const up = delta > 0, n = Math.abs(delta);
   return (
     <span className={up ? 'fed-badge fed-badge--success' : 'fed-badge fed-badge--danger'}

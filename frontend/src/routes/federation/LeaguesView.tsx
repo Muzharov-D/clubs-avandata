@@ -114,7 +114,7 @@ export function FederationLeagues() {
       <header className="fed-hero">
         <h1 className="fed-hero__title">Управление лигами</h1>
         <p className="fed-hero__sub">
-          Кто достоин выше, кого понизить — по данным AvanData · {scopeLabel(year)} · решение за федерацией
+          Кого повысить, кого понизить — по данным AvanData · {scopeLabel(year)} · решение за федерацией
         </p>
       </header>
       <LeagueMgmtBody />
@@ -200,7 +200,7 @@ export function LeagueMgmtBody() {
         <div>
           <h2 className="fed-card__title">Кандидаты на переход</h2>
           <p className="fed-card__sub" style={{ margin: '4px 0 0' }}>
-            Зона пересечения рейтингов соседних лиг · {TOP} над {LOWER} · {scopeLabel(year)}
+            Граничная зона между соседними лигами · {TOP} над {LOWER} · {scopeLabel(year)}
           </p>
         </div>
         <span className="fed-badge fed-badge--accent" title="Верхний фильтр лиги фокусирует колонку, но борд показывает обе лиги — переход межлиговый">
@@ -229,7 +229,7 @@ export function LeagueMgmtBody() {
               title="Кандидаты на повышение"
               arrow="▲"
               focused={division === LOWER}
-              subtitle={`Клубы ${LOWER} с рейтингом выше слабейшего клуба ${TOP} (${ratingLabel(model.minTop)})`}
+              subtitle={`Клубы ${LOWER}, обходящие по рейтингу слабейший клуб ${TOP} (${ratingLabel(model.minTop)})`}
               empty="Нет кандидатов на повышение по данным выбранной когорты"
             >
               {model.promote.map((cc) => (
@@ -249,7 +249,7 @@ export function LeagueMgmtBody() {
               title="Кандидаты на понижение"
               arrow="▼"
               focused={division === TOP}
-              subtitle={`Клубы ${TOP} с рейтингом ниже сильнейшего клуба ${LOWER} (${ratingLabel(model.maxLower)})`}
+              subtitle={`Клубы ${TOP}, уступающие по рейтингу сильнейшему клубу ${LOWER} (${ratingLabel(model.maxLower)})`}
               empty="Нет кандидатов на понижение по данным выбранной когорты"
             >
               {model.relegate.map((cc) => (
@@ -267,8 +267,8 @@ export function LeagueMgmtBody() {
           <StarTeams promote={model.promote} relegate={model.relegate} />
 
           <p className="fed-note" style={{ marginTop: 18 }}>
-            Критерий — зона пересечения рейтингов двух соседних лиг ({TOP} над {LOWER}): клуб {LOWER} достоин выше,
-            если по рейтингу AvanData обходит хотя бы слабейший клуб {TOP}; клуб {TOP} — кандидат вниз, если уступает
+            Правило — граничная зона между двумя соседними лигами ({TOP} над {LOWER}): клуб {LOWER} готов к повышению,
+            если по рейтингу AvanData обходит хотя бы слабейший клуб {TOP}; клуб {TOP} — кандидат на понижение, если уступает
             хотя бы сильнейшему клубу {LOWER}. Рейтинг абсолютный (сумма рейтингов игроков, методика AvanData; не нормируем).
             «<b>Звёздочка команды</b>» — игрок в топ-{COHORT_TOP} своей возрастной когорты. Решение остаётся за федерацией.
           </p>

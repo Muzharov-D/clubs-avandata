@@ -26,7 +26,7 @@ export function FederationAvPlayers() {
     <>
       <header className="fed-hero">
         <h1 className="fed-hero__title">Игроки региона</h1>
-        <p className="fed-hero__sub">Рейтинг игроков по разбору AvanData · клик → профиль</p>
+        <p className="fed-hero__sub">Рейтинг игроков AvanData · клик → профиль</p>
       </header>
       <RegionLeaderboardBody />
     </>
@@ -107,7 +107,7 @@ export function RegionLeaderboardBody({ withRising = true, withLeaderboard = tru
             </div>
           ) : shown.length === 0 ? (
             <div style={{ flex: 1, minHeight: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <FedEmpty>По заданному фильтру игроки не найдены.</FedEmpty>
+              <FedEmpty>По условиям поиска никого не нашли.</FedEmpty>
             </div>
           ) : (
             <div className="fed-leaderboard-list">
@@ -134,7 +134,7 @@ export function RegionLeaderboardBody({ withRising = true, withLeaderboard = tru
             <h2 className="fed-divider__title">Восходящие игроки</h2>
             <div className="fed-divider__line" />
           </div>
-          <p className="fed-note">Сильнейшие в младших когортах{risingYears.length ? ` · ${risingYears.join(' · ')} г.р.` : ''} — кого регион обязан не потерять</p>
+          <p className="fed-note">Сильнейшие в младших возрастах{risingYears.length ? ` · ${risingYears.join(' · ')} г.р.` : ''} — кого нельзя упустить</p>
           <div className="fed-grid fed-grid--4">
             {rising.map((p, i) => (
               <Link key={p.id} to={`/federation/players/${p.id}`} className="fed-card" style={{ textDecoration: 'none' }}>

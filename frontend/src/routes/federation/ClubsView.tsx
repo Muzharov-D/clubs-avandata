@@ -56,7 +56,7 @@ export function FederationClubs() {
           <div className="fed-divider__line" />
         </div>
         <p className="fed-note" style={{ marginBottom: 16 }}>
-          Кто достоин выше, кого понизить — по зоне пересечения рейтингов соседних лиг · {scope}
+          Кого повысить, кого понизить — по граничной зоне между лигами · {scope}
         </p>
         <LeagueMgmtBody />
       </section>

@@ -98,7 +98,7 @@ export function FederationBuried() {
   return (
     <div>
       <div className="fed-hero">
-        <div className="fed-hero__kicker">Доступ к игровому времени</div>
+        <div className="fed-hero__kicker">Игровое время</div>
         <h1 className="fed-hero__title">Карта возможностей</h1>
         <p className="fed-hero__sub">
           {data ? `${num(data.evaluated)} игроков в реестре` : (federation?.region ?? federation?.name ?? 'Регион')}
@@ -126,7 +126,7 @@ const BUCKET_DEFS: BucketDef[] = [
 ];
 
 function BuriedBodyInner({ p }: { p: MinutesPayload | null }) {
-  if (!p) return <div className="fed-empty">Данные по игровому времени ещё не сформированы.</div>;
+  if (!p) return <div className="fed-empty">Данные по игровому времени ещё не готовы.</div>;
 
   const captured = p.capturedAt ? new Date(p.capturedAt).toLocaleDateString('ru-RU') : null;
   // «Ранние vs поздние» (Q1+Q2 vs Q3+Q4): средняя доля на скамейке (<15% минут) и медиана
@@ -146,7 +146,7 @@ function BuriedBodyInner({ p }: { p: MinutesPayload | null }) {
         <div className="fed-metric">
           <div className="fed-metric__label">В реестре</div>
           <div className="fed-metric__value">{num(p.evaluated)}</div>
-          <div className="fed-metric__extra">оценено игроков</div>
+          <div className="fed-metric__extra">игроков в анализе</div>
         </div>
         <div className="fed-metric">
           <div className="fed-metric__label">Не выходят ни разу</div>
@@ -229,7 +229,7 @@ function BuriedBodyInner({ p }: { p: MinutesPayload | null }) {
         </p>
       </div>
 
-      <p className="fed-note">Сезон {p.season}{captured ? ` · данные с ${captured}` : ''}.</p>
+      <p className="fed-note">Сезон {p.season}{captured ? ` · по состоянию на ${captured}` : ''}.</p>
     </div>
   );
 }
