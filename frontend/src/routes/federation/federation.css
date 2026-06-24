@@ -99,6 +99,7 @@
   color: var(--text); text-decoration: none;
 }
 .fed-sidebar__brand span { font-weight: 700; color: var(--accent); }
+.fed-sidebar__logo { display: block; width: 168px; max-width: 100%; height: auto; }
 .fed-sidebar__nav { display: flex; flex-direction: column; gap: 4px; }
 /* Вертикальный пункт меню — полноширинная строка. Активный = cyan-текст + левый
    акцент-рейл (через box-shadow inset, не сдвигает текст) + лёгкая стеклянная заливка. */
@@ -149,6 +150,7 @@
     border-right: none; border-bottom: 1px solid var(--border);
   }
   .fed-sidebar__brand { padding: 0; margin: 0 8px 0 0; font-size: 19px; }
+  .fed-sidebar__logo { width: auto; height: 22px; }
   .fed-sidebar__nav { flex-direction: row; flex-wrap: wrap; gap: 4px; }
   .fed-tab { padding: 7px 12px; }
   /* Активный пункт в ряду: левый рейл не читается → подсветка нижней рамкой. */

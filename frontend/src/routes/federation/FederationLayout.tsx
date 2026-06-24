@@ -57,8 +57,8 @@ export function FederationLayout() {
     <FedYearProvider>
       <div className="fed-root">
         <aside className="fed-sidebar">
-          <Link to="/federation" className="fed-sidebar__brand">
-            Avan<span>Data</span>
+          <Link to="/federation" className="fed-sidebar__brand" aria-label="АванData">
+            <img src="/brand/logo-dark.svg" alt="АванData" className="fed-sidebar__logo" />
           </Link>
           <nav className="fed-sidebar__nav" aria-label="Разделы">
             {TABS.map((t) => (
