@@ -3,13 +3,14 @@ import { useFedYear } from './avYear';
 import { AgeEffectBody, useRegionMap, type AgeCohort } from './AgeEffectView';
 import { PyramidBody } from './PyramidView';
 import { BuriedBody, useMinutes } from './BuriedView';
+import { LossMapBody } from './AvLossMap';
 import './federation.css';
 
 export function FederationTalentLoss() {
   const { federation } = useAuth() as { federation: { region?: string; name?: string } | null };
   const { year } = useFedYear();
   const region = federation?.region ?? federation?.name ?? 'Регион';
-  const scope = year != null ? `${year} г.р.` : 'все когорты';
+  const scope = year != null ? `${year} г.р.` : 'все возрасты';
 
   return (
     <div>
@@ -35,6 +36,15 @@ export function FederationTalentLoss() {
         </div>
         <p className="fed-note" style={{ marginBottom: 16 }}>Верхние и нижние лиги</p>
         <PyramidBody />
+      </section>
+
+      <section style={{ marginBottom: 40 }}>
+        <div className="fed-divider">
+          <h2 className="fed-divider__title">Двойная потеря: отбор и скамейка</h2>
+          <div className="fed-divider__line" />
+        </div>
+        <p className="fed-note" style={{ marginBottom: 16 }}>Кого регион теряет на отборе и на скамейке · по кварталу рождения</p>
+        <LossMapBody />
       </section>
 
       <section style={{ marginBottom: 40 }}>
@@ -85,7 +95,7 @@ function AvoidLossBody() {
     {
       title: 'Возрастные квоты и группировка по зрелости при отборе',
       rationale: maxC
-        ? `Перекос Q1÷Q4 в когорте ${maxC.year} достигает ${maxC.skew}×: при просмотре группировать игроков по биологической зрелости, а не только по году рождения, и резервировать места для поздно рождённых.`
+        ? `Перекос Q1÷Q4 в возрасте ${maxC.year} достигает ${maxC.skew}×: при просмотре группировать игроков по биологической зрелости, а не только по году рождения, и резервировать места для поздно рождённых.`
         : 'Группировать игроков при просмотре по биологической зрелости, а не только по году рождения, и резервировать места для поздно рождённых, чтобы перекос по дате рождения не определял отбор.',
     },
     {
@@ -102,7 +112,7 @@ function AvoidLossBody() {
     },
     {
       title: 'Регулярный мониторинг воронки отбора',
-      rationale: 'Закрепить перекос когорт, пирамиду лиг и распределение игрового времени как периодические показатели и сверять динамику от сезона к сезону — мера управляема только при постоянном наблюдении.',
+      rationale: 'Закрепить перекос по возрастам, пирамиду лиг и распределение игрового времени как периодические показатели и сверять динамику от сезона к сезону — мера управляема только при постоянном наблюдении.',
     },
   ];
 

@@ -15,6 +15,11 @@ interface Concentration { topPool: number; totalClubs: number; top3Share: number
 
 const plClub = (n: number) => { const a = n % 100, b = n % 10; if (a >= 11 && a <= 14) return 'клубов'; if (b === 1) return 'клуб'; if (b >= 2 && b <= 4) return 'клуба'; return 'клубов'; };
 
+// Канон-склейка названий клубов (как в LeaguesView/StandingsBody/QualityView): «СШОР
+// Зенит»/«ФК Зенит» → один «Зенит», варианты «Автово» → один. ФК/СШОР/СШ/№, кавычки, скобки.
+const canon = (s: string): string =>
+  s.toLowerCase().replace(/[«»"'()]/g, '').replace(/\bфк\b|\bсшор\b|\bсш\b|№\s*\d+/gi, '').replace(/\s+/g, ' ').trim();
+
 /** Клубы региона — рейтинг школ по данным + сила лиг + кто производит талант. */
 export function FederationAvClubs() {
   const { division } = useFedYear();
@@ -43,8 +48,21 @@ export function ClubsBody() {
 
   const [selectedClub, setSelectedClub] = useState<number | null>(null);
   const groups = cr.data?.groups ?? [];
-  const all = useMemo(() => groups.flatMap((g) => g.rows.map((r) => ({ ...r, division: g.division }))).sort((a, b) => b.rating - a.rating), [groups]);
-  const shown = all.filter((r) => inDivision(r.division, division));
+  // Рейтинг клубов = ОБЕ лиги в одной таблице (рейтинг абсолютный — сравним между лигами)
+  // + склейка вариантов имени одного клуба по canon: суммируем рейтинги (методика — сумма
+  // рейтингов игроков), представитель строки — сильнейший вариант (имя/лого/лига). Так не
+  // двоятся «СШОР Зенит»/«ФК Зенит» и не троятся «Автово».
+  const shown = useMemo(() => {
+    const flat = groups.flatMap((g) => g.rows.map((r) => ({ ...r, division: g.division })))
+      .sort((a, b) => b.rating - a.rating);
+    const m = new Map<string, RatingRow & { division: string }>();
+    for (const r of flat) {
+      const k = canon(r.name);
+      const cur = m.get(k);
+      if (cur) cur.rating += r.rating; else m.set(k, { ...r });
+    }
+    return Array.from(m.values()).sort((a, b) => b.rating - a.rating);
+  }, [groups]);
   const max = Math.max(...shown.map((r) => Math.abs(r.rating)), 1);
 
   return (

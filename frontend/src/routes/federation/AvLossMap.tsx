@@ -140,7 +140,7 @@ function Body({ d, year }: { d: LossMap; year: number | null }) {
         </section>
       )}
 
-      <p className="fed-note">Снимок официального FFSPB от {fmtStamp(d.generatedAt)} · реестр {view.roster} игроков{cohort ? '' : ` (${d.cohorts.length} когорт)`}. {d.note}.</p>
+      <p className="fed-note">Снимок официального FFSPB от {fmtStamp(d.generatedAt)} · реестр {view.roster} игроков{cohort ? '' : ` (${d.cohorts.length} возрастов)`}. {d.note}.</p>
     </>
   );
 }

@@ -51,21 +51,6 @@ export function AgeEffectBody() {
 
   return (
     <div>
-      {/* Вердикт ВСЕГДА общий (сравнение когорт): одиночное «2010: 2.39×» без контекста
-          бессмысленно — смысл перекоса в сравнении. Выбранный год не подменяет вердикт,
-          а лишь подсвечивается на графике (+ короткая строка). */}
-      {maxC && minC ? (
-        <div className="fed-card" style={{ marginBottom: 20, borderLeft: '3px solid var(--accent)' }}>
-          <div className="fed-badge fed-badge--accent" style={{ marginBottom: 12 }}>Перекос по возрастам</div>
-          <h3 style={{ fontSize: 24, fontWeight: 300, margin: '0 0 8px' }}>
-            Наибольший перекос — {maxC.year}: {maxC.skew}×. Наименьший — {minC.year}: {minC.skew}×.
-          </h3>
-          <p className="fed-note">
-            Перекос Q1÷Q4 — отношение числа рождённых в начале года к рождённым в конце.
-          </p>
-        </div>
-      ) : null}
-
       {/* Chart */}
       <div className="fed-card">
         <div className="fed-card__title">Перекос Q1÷Q4 по возрастам</div>

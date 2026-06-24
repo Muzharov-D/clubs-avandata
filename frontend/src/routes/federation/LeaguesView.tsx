@@ -212,11 +212,11 @@ export function LeagueMgmtBody() {
         <div className="fed-skeleton" style={{ height: 300, marginTop: 20 }} />
       ) : noRated ? (
         <div className="fed-note" style={{ marginTop: 20 }}>
-          Для выбранной когорты ({scopeLabel(year)}) нет клубов с рейтингом AvanData в {TOP} и {LOWER} лигах — рекомендация не строится.
+          Для выбранного возраста ({scopeLabel(year)}) нет клубов с рейтингом AvanData в {TOP} и {LOWER} лигах — рекомендация не строится.
         </div>
       ) : noBoundary ? (
         <div className="fed-note" style={{ marginTop: 20 }}>
-          В этой когорте рейтинг есть только в одной из лиг ({TOP} / {LOWER}) — границу пересечения не на чем построить.
+          В этом возрасте рейтинг есть только в одной из лиг ({TOP} / {LOWER}) — границу пересечения не на чем построить.
         </div>
       ) : (
         <>
@@ -230,7 +230,7 @@ export function LeagueMgmtBody() {
               arrow="▲"
               focused={division === LOWER}
               subtitle={`Клубы ${LOWER}, обходящие по рейтингу слабейший клуб ${TOP} (${ratingLabel(model.minTop)})`}
-              empty="Нет кандидатов на повышение по данным выбранной когорты"
+              empty="Нет кандидатов на повышение по данным выбранного возраста"
             >
               {model.promote.map((cc) => (
                 <BoardRow
@@ -250,7 +250,7 @@ export function LeagueMgmtBody() {
               arrow="▼"
               focused={division === TOP}
               subtitle={`Клубы ${TOP}, уступающие по рейтингу сильнейшему клубу ${LOWER} (${ratingLabel(model.maxLower)})`}
-              empty="Нет кандидатов на понижение по данным выбранной когорты"
+              empty="Нет кандидатов на понижение по данным выбранного возраста"
             >
               {model.relegate.map((cc) => (
                 <BoardRow
@@ -266,12 +266,6 @@ export function LeagueMgmtBody() {
 
           <StarTeams promote={model.promote} relegate={model.relegate} />
 
-          <p className="fed-note" style={{ marginTop: 18 }}>
-            Правило — граничная зона между двумя соседними лигами ({TOP} над {LOWER}): клуб {LOWER} готов к повышению,
-            если по рейтингу AvanData обходит хотя бы слабейший клуб {TOP}; клуб {TOP} — кандидат на понижение, если уступает
-            хотя бы сильнейшему клубу {LOWER}. Рейтинг абсолютный (сумма рейтингов игроков, методика AvanData; не нормируем).
-            «<b>Звёздочка команды</b>» — игрок в топ-{COHORT_TOP} своей возрастной когорты. Решение остаётся за федерацией.
-          </p>
         </>
       )}
 
@@ -338,7 +332,7 @@ function BoardRow({ cand, league, tone, why }: { cand: CandidateClub; league: Di
             <span className="fed-row__meta" title="Место в турнирной таблице лиги">{club.tableRank} место</span>
           )}
           {cand.stars.length > 0 && (
-            <span className="fed-badge fed-badge--success" title={`Игроков клуба в топ-${COHORT_TOP} своей возрастной когорты`}>
+            <span className="fed-badge fed-badge--success" title={`Игроков клуба в топ-${COHORT_TOP} своего возраста`}>
               {cand.stars.length} в топ-{COHORT_TOP} возраста
             </span>
           )}
@@ -419,6 +413,8 @@ function StarTeams({ promote, relegate }: { promote: CandidateClub[]; relegate: 
     return Array.from(byId.values()).sort((a, b) => b.stars.length - a.stars.length);
   }, [promote, relegate]);
 
+  if (teams.length === 0) return null;
+
   return (
     <>
       <div className="fed-divider">
@@ -426,17 +422,11 @@ function StarTeams({ promote, relegate }: { promote: CandidateClub[]; relegate: 
         <div className="fed-divider__line" />
       </div>
       <p className="fed-note">
-        Игроки клубов-кандидатов, попавшие в топ-{COHORT_TOP} своей возрастной когорты по абсолютному рейтингу AvanData.
+        Игроки клубов-кандидатов из топ-{COHORT_TOP} своего возраста (рейтинг AvanData).
       </p>
-      {teams.length === 0 ? (
-        <div className="fed-note" style={{ marginTop: 12 }}>
-          Среди клубов-кандидатов нет игроков в топ-{COHORT_TOP} своих возрастных когорт в этой выборке.
-        </div>
-      ) : (
-        <div style={{ marginTop: 12 }}>
-          {teams.map((cc) => <StarTeamRow key={`stars-${cc.club.id}`} cand={cc} />)}
-        </div>
-      )}
+      <div style={{ marginTop: 12 }}>
+        {teams.map((cc) => <StarTeamRow key={`stars-${cc.club.id}`} cand={cc} />)}
+      </div>
     </>
   );
 }
@@ -449,7 +439,7 @@ function StarTeamRow({ cand }: { cand: CandidateClub }) {
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
           <span className="fed-row__name" style={{ flex: 'initial' }} title={club.name}>{club.name}</span>
-          <span className="fed-badge fed-badge--success" title={`Игроков клуба в топ-${COHORT_TOP} своей когорты`}>
+          <span className="fed-badge fed-badge--success" title={`Игроков клуба в топ-${COHORT_TOP} своего возраста`}>
             {stars.length} в топ-{COHORT_TOP} возраста
           </span>
         </div>
@@ -460,8 +450,8 @@ function StarTeamRow({ cand }: { cand: CandidateClub }) {
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
                   <span className="fed-row__name" style={{ flex: 'initial' }} title={s.player.name}>{s.player.name}</span>
-                  <span className="fed-row__meta" title="Возрастная когорта (год рождения)">{s.cohort} г.р.</span>
-                  <span className="fed-row__meta" title={`Место в топ-${COHORT_TOP} когорты`}>№{s.cohortRank} в когорте</span>
+                  <span className="fed-row__meta" title="Возраст (год рождения)">{s.cohort} г.р.</span>
+                  <span className="fed-row__meta" title={`Место в топ-${COHORT_TOP} возраста`}>№{s.cohortRank} по возрасту</span>
                   {s.player.position && <span className="fed-badge fed-badge--accent">{s.player.position}</span>}
                 </div>
               </div>
