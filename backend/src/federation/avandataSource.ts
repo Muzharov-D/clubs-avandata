@@ -600,9 +600,20 @@ export async function regionClubRatings(seasonId: number, year?: number): Promis
   return cached(`clubratings:${seasonId}:${year ?? 0}`, TTL, async () => {
     const tid = year != null ? await tournamentIdForYear(seasonId, year) : undefined;
     const teams = tid ? await getClubRatingsByTournament(seasonId, tid) : await getClubRatingsOverview(seasonId);
-    return groupByDivision(teams.map((t: AvRatingTeam) => ({
+    const rows: ClubRatingRow[] = teams.map((t: AvRatingTeam) => ({
       id: t.id, name: t.name, logo: t.logo ?? null, division: t.division?.name ?? 'Лига', rating: t.points,
-    })), (r) => r.rating);
+    })).sort((a, b) => b.rating - a.rating);
+    // Склейка ВАРИАНТОВ имени одного клуба по normTeam (год/«ФК»/программа/город — шум; СШ/СШОР
+    // НЕ схлопываем — это РАЗНЫЕ школы): рейтинги суммируем (сумма рейтингов игроков), представитель
+    // строки — сильнейший вариант. Единый дедуп для ВСЕХ списков клубов (рейтинг клубов, сила лиг,
+    // джойн таблицы): «Автово 2011/2012» → один, но «ФК Зенит» ≠ «СШОР Зенит» (остаются двумя).
+    const byKey = new Map<string, ClubRatingRow>();
+    for (const r of rows) {
+      const k = normTeam(r.name);
+      const cur = byKey.get(k);
+      if (cur) cur.rating += r.rating; else byKey.set(k, { ...r });
+    }
+    return groupByDivision([...byKey.values()], (r) => r.rating);
   });
 }
 

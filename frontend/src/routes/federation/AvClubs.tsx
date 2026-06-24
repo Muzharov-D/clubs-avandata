@@ -15,18 +15,6 @@ interface Concentration { topPool: number; totalClubs: number; top3Share: number
 
 const plClub = (n: number) => { const a = n % 100, b = n % 10; if (a >= 11 && a <= 14) return 'клубов'; if (b === 1) return 'клуб'; if (b >= 2 && b <= 4) return 'клуба'; return 'клубов'; };
 
-// Зеркало backend `federation/teamName.ts` (normTeam) — ключ клуба для склейки ВАРИАНТОВ имени.
-// СШ/СШОР НЕ схлопываем (это РАЗНЫЕ школы); срезаем «ФК», хвостовой год, скобку-программу,
-// дефисы, город-квалификатор. Итог: «ФК Зенит» ≠ «СШОР Зенит», но «Автово 2011/2012» → один.
-const normTeam = (s: string): string => s.toLowerCase()
-  .replace(/[«»"']/g, '')
-  .replace(/\([^)]*\)/g, ' ')
-  .replace(/^фк\s+/, '')
-  .replace(/\s*\d{4}\s*$/, '')
-  .replace(/[-–—]/g, ' ')
-  .replace(/(^|\s)(спб|санкт петербург)(?=\s|$)/g, ' ')
-  .replace(/\s+/g, ' ').trim();
-
 /** Клубы региона — рейтинг школ по данным + сила лиг + кто производит талант. */
 export function FederationAvClubs() {
   const { division } = useFedYear();
@@ -55,21 +43,12 @@ export function ClubsBody() {
 
   const [selectedClub, setSelectedClub] = useState<number | null>(null);
   const groups = cr.data?.groups ?? [];
-  // Рейтинг клубов = ОБЕ лиги в одной таблице (рейтинг абсолютный — сравним между лигами) +
-  // склейка ВАРИАНТОВ ИМЕНИ одного клуба по normTeam (год/«ФК»/программа/город — шум; СШ/СШОР
-  // НЕ схлопываем — разные школы). Рейтинги вариантов суммируем (сумма рейтингов игроков),
-  // представитель строки — сильнейший вариант. «ФК Зенит» и «СШОР Зенит» остаются ДВУМЯ.
-  const shown = useMemo(() => {
-    const flat = groups.flatMap((g) => g.rows.map((r) => ({ ...r, division: g.division })))
-      .sort((a, b) => b.rating - a.rating);
-    const m = new Map<string, RatingRow & { division: string }>();
-    for (const r of flat) {
-      const k = normTeam(r.name);
-      const cur = m.get(k);
-      if (cur) cur.rating += r.rating; else m.set(k, { ...r });
-    }
-    return Array.from(m.values()).sort((a, b) => b.rating - a.rating);
-  }, [groups]);
+  // Рейтинг клубов = ОБЕ лиги в одной таблице (рейтинг абсолютный — сравним между лигами).
+  // Дедуп вариантов имени делает backend (regionClubRatings через normTeam) — тут лишь
+  // разворачиваем группы дивизионов в один сортированный список.
+  const shown = useMemo(() =>
+    groups.flatMap((g) => g.rows.map((r) => ({ ...r, division: g.division }))).sort((a, b) => b.rating - a.rating),
+  [groups]);
   const max = Math.max(...shown.map((r) => Math.abs(r.rating)), 1);
 
   return (
