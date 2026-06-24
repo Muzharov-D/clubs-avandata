@@ -1,7 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
 import { api } from '../../api/client';
-import { ClubShield } from './ClubShield';
-import { PlayerAvatar } from './PlayerAvatar';
 import { FedError } from './FedState';
 import { useFedYear } from './avYear';
 import { fmtStamp } from './utils';
@@ -53,32 +51,10 @@ function Body({ d, year }: { d: LossMap; year: number | null }) {
   const cohort = year != null ? d.cohorts.find((c) => c.year === year) ?? null : null;
   const view = cohort ?? d.pooled;
   const bq = view.byQuarter;
-  const q1 = bq[0]!, q4 = bq[3]!;
   const maxRoster = Math.max(...bq.map((q) => q.roster), 1);
-  const skew = q4.roster > 0 ? Math.round((q1.roster / q4.roster) * 10) / 10 : null;
-  const examples = (cohort ? d.examplesBuriedQ4.filter((e) => e.year === cohort.year) : d.examplesBuriedQ4).slice(0, 8);
-  const scopeLabel = cohort ? `${cohort.year} г.р. · ${cohort.label}` : 'все возрасты';
 
   return (
     <>
-      {/* Двойной штраф — герой */}
-      <section className="fed-metric">
-        <div className="fed-metric__label">Двойная потеря поздно рождённых · {scopeLabel}</div>
-        <div className="fed-grid fed-grid--2">
-          <div>
-            <div className="fed-metric__value">{skew != null ? `×${skew}` : '—'}</div>
-            <div className="fed-metric__extra">реже попадают в заявку при отборе (Q1 {q1.roster} · Q4 {q4.roster})</div>
-          </div>
-          <div>
-            <div className="fed-metric__value fed-metric__value--warning">{q4.buried15}%</div>
-            <div className="fed-metric__extra">из включённых — остаются на скамейке (Q1 {q1.buried15}%)</div>
-          </div>
-        </div>
-        <p className="fed-note" style={{ marginTop: 16 }}>
-          Регион теряет поздно рождённых дважды: их <b>в {skew ?? '—'} раза реже</b> включают в заявку, а включённые — <b>чаще остаются на скамейке</b> (менее 15% игрового времени). И те, кто всё-таки попал в заявку, чаще сидят на скамейке — перекос бьёт по рождённым в конце года.
-        </p>
-      </section>
-
       {/* Воронка по кварталам рождения */}
       <section className="fed-card">
         <h2 className="fed-card__title">По кварталу рождения</h2>
@@ -119,26 +95,6 @@ function Body({ d, year }: { d: LossMap; year: number | null }) {
         </table>
         <p className="fed-note" style={{ marginTop: 16 }}>На скамейке — игроки в заявке, проведшие на поле менее 15% игрового времени команды. Приоритетные зоны для мер федерации — <b>отбор</b> (основной перекос) и контроль доступа молодых игроков к игровой практике.</p>
       </section>
-
-      {/* Кого именно теряем */}
-      {examples.length > 0 && (
-        <section className="fed-card">
-          <h2 className="fed-card__title">Кого регион теряет</h2>
-          <p className="fed-card__sub">поздно рождённые игроки в заявке с минимальным игровым временем</p>
-          <div>
-            {examples.map((e, i) => (
-              <div key={i} className="fed-row">
-                <PlayerAvatar name={e.name} size={38} />
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div className="fed-row__name" title={e.name}>{e.name}</div>
-                  <div className="fed-row__meta"><ClubShield name={e.team} size={16} /> {e.team} · {e.year} г.р.</div>
-                </div>
-                <span style={{ fontSize: 24, fontWeight: 200, letterSpacing: '-0.02em', color: 'var(--danger)' }}>{e.pct}%</span>
-              </div>
-            ))}
-          </div>
-        </section>
-      )}
 
       <p className="fed-note">Снимок официального FFSPB от {fmtStamp(d.generatedAt)} · реестр {view.roster} игроков{cohort ? '' : ` (${d.cohorts.length} возрастов)`}. {d.note}.</p>
     </>

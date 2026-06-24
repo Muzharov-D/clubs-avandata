@@ -11,10 +11,9 @@ export function FederationClubs() {
 
   return (
     <div>
-      <div className="fed-hero">
-        <div className="fed-hero__kicker">Единица производства</div>
-        <h1 className="fed-hero__title">Клубы</h1>
-        <p className="fed-hero__sub">Таблица, рейтинг и качество игроков школ · {division} лига · {scope}</p>
+      <div className="fed-hero" style={{ marginBottom: 12 }}>
+        <h1 className="fed-hero__title" style={{ fontSize: 26 }}>Клубы</h1>
+        <p className="fed-hero__sub" style={{ fontSize: 14 }}>Таблица, рейтинг и качество игроков школ · {division} лига · {scope}</p>
       </div>
 
       {/* 1. Турнирная таблица — сортируемая по очкам и по рейтингу AvanData. */}

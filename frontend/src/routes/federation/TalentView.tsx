@@ -1,7 +1,6 @@
 import { useFedYear } from './avYear';
 import { BestXiBody } from './BestXiView';
 import { RegionLeaderboardBody } from './AvPlayers';
-import { ScorersBody } from './ScorersView';
 import { RankAboveBody } from './RankAbove';
 import './federation.css';
 
@@ -44,15 +43,6 @@ export function FederationTalent() {
           Игроки Первой, обходящие по рейтингу AvanData слабейших в Высшей на своей позиции и в своём возрасте — кандидаты на переход вверх · {scope} · решение за федерацией
         </p>
         <RankAboveBody />
-      </section>
-
-      <section>
-        <div className="fed-divider">
-          <h2 className="fed-divider__title">Бомбардиры</h2>
-          <div className="fed-divider__line" />
-        </div>
-        <p className="fed-note" style={{ marginBottom: 16 }}>Голы из протоколов ФФСПб · {scope}</p>
-        <ScorersBody />
       </section>
 
     </div>

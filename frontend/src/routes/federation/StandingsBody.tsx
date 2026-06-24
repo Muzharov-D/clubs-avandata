@@ -90,7 +90,6 @@ export function StandingsBody() {
     <section className="fed-card">
       <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap' }}>
         <div>
-          <h2 className="fed-card__title">Турнирная таблица</h2>
           <p className="fed-card__sub">
             {year == null
               ? 'Суммарно по всем возрастам — каждый отдельно, не единое первенство'

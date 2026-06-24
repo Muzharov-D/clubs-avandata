@@ -39,11 +39,6 @@ export function FederationTalentLoss() {
       </section>
 
       <section style={{ marginBottom: 40 }}>
-        <div className="fed-divider">
-          <h2 className="fed-divider__title">Двойная потеря: отбор и скамейка</h2>
-          <div className="fed-divider__line" />
-        </div>
-        <p className="fed-note" style={{ marginBottom: 16 }}>Кого регион теряет на отборе и на скамейке · по кварталу рождения</p>
         <LossMapBody />
       </section>
 
