@@ -15,7 +15,7 @@ export function FederationTalentLoss() {
     <div>
       <div className="fed-hero">
         <div className="fed-hero__kicker">Воронка отбора</div>
-        <h1 className="fed-hero__title">Потеря таланта</h1>
+        <h1 className="fed-hero__title">Кого теряет регион</h1>
         <p className="fed-hero__sub">{region} · перекос по дате рождения, распределение по лигам, игровое время · {scope}</p>
       </div>
 
@@ -48,7 +48,7 @@ export function FederationTalentLoss() {
 
       <section>
         <div className="fed-divider">
-          <h2 className="fed-divider__title">Как избежать потери</h2>
+          <h2 className="fed-divider__title">Как сохранить таланты</h2>
           <div className="fed-divider__line" />
         </div>
         <p className="fed-note" style={{ marginBottom: 16 }}>Меры регулятора</p>

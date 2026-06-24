@@ -32,7 +32,7 @@ function FreshnessBadge() {
 
 const TABS: Array<{ to: string; end?: boolean; label: string }> = [
   { to: '/federation', end: true, label: 'Обзор' },
-  { to: '/federation/talent-loss', label: 'Потеря таланта' },
+  { to: '/federation/talent-loss', label: 'Кого теряет регион' },
   { to: '/federation/talent', label: 'Таланты' },
   { to: '/federation/clubs', label: 'Клубы' },
 ];

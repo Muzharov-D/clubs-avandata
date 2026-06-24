@@ -49,7 +49,7 @@ export function DiscoveriesBody() {
         <p className="fed-note">
           По данным {totalPlayers.toLocaleString('ru-RU')} игроков Первенства рождённых в начале года
           {raeSkew != null ? <> в <strong>{raeSkew}×</strong> больше</> : ''}, чем в конце.
-          Перейти к разделу «Потеря таланта» →
+          Перейти к разделу «Кого теряет регион» →
         </p>
       </Link>
 
