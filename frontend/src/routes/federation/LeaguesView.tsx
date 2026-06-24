@@ -6,6 +6,7 @@ import { ClubShield } from './ClubShield';
 import { PlayerAvatar } from './PlayerAvatar';
 import { useFedYear, yearQ, fedQ, inDivision, type Division } from './avYear';
 import { ratingLabel, rating10Color } from './ratings';
+import { normTeam } from './utils';
 import './federation.css';
 
 // ── Формы ответов существующих эндпоинтов (см. StandingsBody.tsx / AvClubs.tsx) ──
@@ -26,18 +27,9 @@ const LOWER: Division = 'Первая';
 // Звёздочка команды = игрок в топ-N своей возрастной когорты по абсолютному рейтингу.
 const COHORT_TOP = 22;
 
-// Канон-склейка названий клубов = зеркало backend normTeam (teamName.ts): срезаем «ФК»,
-// ХВОСТОВОЙ ГОД (у игроков club = «Автово 2011»!), скобку-программу, дефисы, город-квалификатор;
-// СШ/СШОР НЕ схлопываем (разные школы). КРИТИЧНО: без срезания года звёзды игроков (club c годом)
-// не стыковались с клубами-кандидатами (без года) → «Звёздочки команд» были ПУСТЫ. Фикс по репро.
-const canon = (s: string): string => s.toLowerCase()
-  .replace(/[«»"']/g, '')
-  .replace(/\([^)]*\)/g, ' ')
-  .replace(/^фк\s+/, '')
-  .replace(/\s*\d{4}\s*$/, '')
-  .replace(/[-–—]/g, ' ')
-  .replace(/(^|\s)(спб|санкт петербург)(?=\s|$)/g, ' ')
-  .replace(/\s+/g, ' ').trim();
+// Канон-склейка имён клубов = общий normTeam (utils). КРИТИЧНО срезает хвостовой год: у игроков
+// club = «Автово 2011», а кандидаты — «ФК Автово»; без среза года звёзды не стыковались → блок был пуст.
+const canon = normTeam;
 
 // Медиана / квартиль по массиву рейтингов (по возрастанию). q ∈ [0,1].
 // Оставлен для совместимости с buildLeague (модель лиги шире, чем новые критерии).

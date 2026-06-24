@@ -4,7 +4,7 @@ import { api } from '../../api/client';
 import { ClubShield } from './ClubShield';
 import { FedError, FedEmpty } from './FedState';
 import { useFedYear, fedQ } from './avYear';
-import { lineOf, type Line } from './utils';
+import { lineOf, normTeam, type Line } from './utils';
 import './federation.css';
 
 // ── Формы ответов существующих эндпоинтов (см. AvPlayers.tsx / BestXiView.tsx) ──
@@ -13,10 +13,9 @@ type XiLine = 'GK' | 'DEF' | 'MID' | 'FWD';
 interface XiPlayer { id: number; name: string; club: string | null; clubLogo: string | null; photo: string | null; line: XiLine; position: string | null; rating: number | null; mp: number; pct: number }
 interface Cohort { year: number; ratedCount: number; clubs: number; xi: XiPlayer[] }
 
-// Канон-склейка названий клубов — та же нормализация, что в StandingsBody/LeaguesView
-// (ФК/СШОР/№, кавычки), чтобы «ФК Зенит» и «Зенит» не расходились в две школы.
-const canon = (s: string): string =>
-  s.toLowerCase().replace(/[«»"'()]/g, '').replace(/\bфк\b|\bсшор\b|\bсш\b|№\s*\d+/gi, '').replace(/\s+/g, ' ').trim();
+// Канон-ключ клуба = общий normTeam (utils): срезает ФК/хвостовой ГОД/скобку/дефис/город, держит
+// СШ/СШОР раздельно. Год критичен: без среза «Автово 2011»/«Автово 2012» дробились на разные школы.
+const canon = normTeam;
 
 // Поле `club` из /av/players — это команда-с-годом («Автово 2011», «СШОР Зенит 2012»).
 // Для ЯРЛЫКА строки нужна чистая школа без года рождения, чтобы «Автово 2011» и

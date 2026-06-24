@@ -76,6 +76,22 @@ export const LINE_LABEL: Record<Line, string> = {
   GK: 'вратарей', DEF: 'защитников', MID: 'полузащитников', FWD: 'нападающих',
 };
 
+/**
+ * Канон-ключ клуба для склейки источников и year-вариантов = ЗЕРКАЛО backend `federation/teamName.ts`.
+ * Срезает «ФК», ХВОСТОВОЙ ГОД (у игроков club = «Автово 2011»!), скобку-программу «(…)», дефисы,
+ * город-квалификатор (спб/санкт-петербург). СШ/СШОР НЕ схлопывает — это РАЗНЫЕ школы. Критично:
+ * без среза года звёзды игроков не стыковались с клубами-кандидатами (LeaguesView), а школы
+ * дробились по годам (QualityView). Один ключ для сборной, звёздочек и качества игроков.
+ */
+export const normTeam = (s: string): string => s.toLowerCase()
+  .replace(/[«»"']/g, '')
+  .replace(/\([^)]*\)/g, ' ')
+  .replace(/^фк\s+/, '')
+  .replace(/\s*\d{4}\s*$/, '')
+  .replace(/[-–—]/g, ' ')
+  .replace(/(^|\s)(спб|санкт петербург)(?=\s|$)/g, ' ')
+  .replace(/\s+/g, ' ').trim();
+
 /** Перцентиль «топ X%» внутри пула: меньше = лучше. null — пул мал. */
 export const topPctOf = (mine: number, pool: number[], min = 5): number | null => {
   if (pool.length < min) return null;
