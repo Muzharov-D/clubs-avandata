@@ -100,6 +100,15 @@
 }
 .fed-sidebar__brand span { font-weight: 700; color: var(--accent); }
 .fed-sidebar__logo { display: block; width: 168px; max-width: 100%; height: auto; }
+/* Брендовая волна-меш — тонкий акцент внизу сайдбара (не касается данных). Гаснет кверху,
+   pointer-events off; подвал поднят над ней z-index'ом, чтобы имя/«Выйти» читались чётко. */
+.fed-sidebar__weeb {
+  position: absolute; left: 0; right: 0; bottom: 0; width: 100%;
+  opacity: 0.22; pointer-events: none; user-select: none; z-index: 0;
+  -webkit-mask-image: linear-gradient(to top, #000, transparent);
+          mask-image: linear-gradient(to top, #000, transparent);
+}
+.fed-sidebar__foot { position: relative; z-index: 1; }
 .fed-sidebar__nav { display: flex; flex-direction: column; gap: 4px; }
 /* Вертикальный пункт меню — полноширинная строка. Активный = cyan-текст + левый
    акцент-рейл (через box-shadow inset, не сдвигает текст) + лёгкая стеклянная заливка. */
@@ -151,6 +160,7 @@
   }
   .fed-sidebar__brand { padding: 0; margin: 0 8px 0 0; font-size: 19px; }
   .fed-sidebar__logo { width: auto; height: 22px; }
+  .fed-sidebar__weeb { display: none; }
   .fed-sidebar__nav { flex-direction: row; flex-wrap: wrap; gap: 4px; }
   .fed-tab { padding: 7px 12px; }
   /* Активный пункт в ряду: левый рейл не читается → подсветка нижней рамкой. */

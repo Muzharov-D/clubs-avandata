@@ -77,6 +77,7 @@ export function FederationLayout() {
             <span className="fed-sidebar__who">{who}</span>
             <button className="fed-sidebar__out" onClick={handleLogout}>Выйти</button>
           </div>
+          <img src="/brand/weeb.svg" alt="" aria-hidden="true" className="fed-sidebar__weeb" />
         </aside>
 
         <div className="fed-main">
