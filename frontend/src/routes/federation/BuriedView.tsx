@@ -25,21 +25,21 @@ export const useMinutes = () => useQuery({
   queryFn: () => api<MinutesPayload | null>('/federation/minutes'),
 });
 
-/** Тройка «играют ядром / на лавке / не выходят» для набора чисел игрового времени. */
+/** Тройка «основной состав / на скамейке / не выходят» для набора чисел игрового времени. */
 function PlayTimeTriple({ m, scopeNote }: { m: MinutesLeague | MinutesPayload; scopeNote: string }) {
-  const core = m.buckets.over50;            // ≥50% командных минут — играют ядром
-  const bench = m.buckets.zero + m.buckets.b0_15; // <15% — на лавке
+  const core = m.buckets.over50;            // ≥50% командных минут — основной состав
+  const bench = m.buckets.zero + m.buckets.b0_15; // <15% — на скамейке
   return (
     <div className="fed-grid fed-grid--3">
       <div className="fed-metric">
-        <div className="fed-metric__label">Играют ядром</div>
+        <div className="fed-metric__label">Основной состав</div>
         <div className="fed-metric__value fed-metric__value--success">{core}%</div>
         <div className="fed-metric__extra">≥50% командных минут · {scopeNote}</div>
       </div>
       <div className="fed-metric">
-        <div className="fed-metric__label">На лавке</div>
+        <div className="fed-metric__label">На скамейке</div>
         <div className="fed-metric__value fed-metric__value--warning">{bench}%</div>
-        <div className="fed-metric__extra">{'<'}15% минут · {num(m.buried15)} на скамейке</div>
+        <div className="fed-metric__extra">{'<'}15% минут · {num(m.buried15)} игроков</div>
       </div>
       <div className="fed-metric">
         <div className="fed-metric__label">Не выходят ни разу</div>
@@ -51,7 +51,7 @@ function PlayTimeTriple({ m, scopeNote }: { m: MinutesLeague | MinutesPayload; s
 }
 
 /**
- * Полоска «играют ядром / на лавке / не выходят» для Обзора по лигам Высшая и
+ * Полоска «основной состав / на скамейке / не выходят» для Обзора по лигам Высшая и
  * Первая — единственным, по которым есть игровое время. Если снимок отдал
  * `byLeague` — честно разводим Высшую и Первую отдельными карточками; иначе
  * (старый снимок без среза) показываем агрегат, но называем его «Высшая и
