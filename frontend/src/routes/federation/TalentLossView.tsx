@@ -3,7 +3,6 @@ import { useFedYear } from './avYear';
 import { AgeEffectBody, useRegionMap, type AgeCohort } from './AgeEffectView';
 import { PyramidBody } from './PyramidView';
 import { BuriedBody, useMinutes } from './BuriedView';
-import { LossMapBody } from './AvLossMap';
 import './federation.css';
 
 export function FederationTalentLoss() {
@@ -36,10 +35,6 @@ export function FederationTalentLoss() {
         </div>
         <p className="fed-note" style={{ marginBottom: 16 }}>Верхние и нижние лиги</p>
         <PyramidBody />
-      </section>
-
-      <section style={{ marginBottom: 40 }}>
-        <LossMapBody />
       </section>
 
       <section style={{ marginBottom: 40 }}>
