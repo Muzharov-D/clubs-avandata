@@ -1,13 +1,9 @@
-import { useFedYear } from './avYear';
 import { BestXiBody } from './BestXiView';
 import { RegionLeaderboardBody } from './AvPlayers';
 import { RankAboveBody } from './RankAbove';
 import './federation.css';
 
 export function FederationTalent() {
-  const { year } = useFedYear();
-  const scope = year != null ? `${year} г.р.` : 'все возрасты';
-
   return (
     <div>
       {/* Hero и внешние разделители «Сборная региона»/«Рейтинг» УБРАНЫ намеренно: вкладка
@@ -39,9 +35,6 @@ export function FederationTalent() {
           <h2 className="fed-divider__title">Претенденты на повышение</h2>
           <div className="fed-divider__line" />
         </div>
-        <p className="fed-note" style={{ marginBottom: 16 }}>
-          Игроки Первой, обходящие по рейтингу AvanData слабейших в Высшей на своей позиции и в своём возрасте — кандидаты на переход вверх · {scope} · решение за федерацией
-        </p>
         <RankAboveBody />
       </section>
 
