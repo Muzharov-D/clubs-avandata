@@ -366,10 +366,8 @@
 /* ---- Bar (minimal) ---- */
 .fed-track { height: 4px; border-radius: 2px; background: rgba(255,255,255,0.08); overflow: hidden; }
 .fed-fill { height: 100%; border-radius: 2px; background: var(--text-secondary); transition: width 0.8s var(--ease); }
-.fed-fill--success { background: var(--success); }
 .fed-fill--warning { background: var(--warning); }
 .fed-fill--danger { background: var(--danger); }
-.fed-fill--accent { background: linear-gradient(90deg, var(--accent-cyan), var(--accent-blue)); }
 
 /* ---- Empty / Skeleton ---- */
 .fed-empty { padding: 60px; text-align: center; color: var(--text-secondary); font-size: 15px; }

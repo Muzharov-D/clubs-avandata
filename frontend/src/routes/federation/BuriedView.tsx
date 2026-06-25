@@ -44,7 +44,7 @@ function PlayTimeTriple({ m, scopeNote }: { m: MinutesLeague | MinutesPayload; s
       <div className="fed-metric">
         <div className="fed-metric__label">Не выходят ни разу</div>
         <div className="fed-metric__value" style={{ color: 'var(--danger)' }}>{m.neverPlayedPct}%</div>
-        <div className="fed-metric__extra">{num(m.neverPlayed)} из {num(m.evaluated)} в реестре</div>
+        <div className="fed-metric__extra">{num(m.neverPlayed)} из {num(m.evaluated)} в анализе</div>
       </div>
     </div>
   );
@@ -74,7 +74,7 @@ export function PlayTimeStripBody() {
         {byLeague.map((l) => (
           <div key={l.league} className="fed-card">
             <div className="fed-card__title">{l.league} лига</div>
-            <div className="fed-card__sub">{num(l.evaluated)} игроков в реестре · игровое время</div>
+            <div className="fed-card__sub">{num(l.evaluated)} игроков в анализе · игровое время</div>
             <PlayTimeTriple m={l} scopeNote={`лига ${l.league}`} />
           </div>
         ))}
@@ -86,7 +86,7 @@ export function PlayTimeStripBody() {
   return (
     <div className="fed-card">
       <div className="fed-card__title">Высшая и Первая лиги</div>
-      <div className="fed-card__sub">{num(data.evaluated)} игроков в реестре</div>
+      <div className="fed-card__sub">{num(data.evaluated)} игроков в анализе</div>
       <PlayTimeTriple m={data} scopeNote="Высшая и Первая" />
     </div>
   );
@@ -101,7 +101,7 @@ export function FederationBuried() {
         <div className="fed-hero__kicker">Игровое время</div>
         <h1 className="fed-hero__title">Карта возможностей</h1>
         <p className="fed-hero__sub">
-          {data ? `${num(data.evaluated)} игроков в реестре` : (federation?.region ?? federation?.name ?? 'Регион')}
+          {data ? `${num(data.evaluated)} игроков в анализе` : (federation?.region ?? federation?.name ?? 'Регион')}
         </p>
       </div>
       <BuriedBody />
@@ -144,7 +144,7 @@ function BuriedBodyInner({ p }: { p: MinutesPayload | null }) {
       {/* Metrics */}
       <div className="fed-grid fed-grid--3" style={{ marginBottom: 32 }}>
         <div className="fed-metric">
-          <div className="fed-metric__label">В реестре</div>
+          <div className="fed-metric__label">В анализе</div>
           <div className="fed-metric__value">{num(p.evaluated)}</div>
           <div className="fed-metric__extra">игроков в анализе</div>
         </div>

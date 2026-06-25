@@ -517,7 +517,9 @@ async function ffspbDirectStandings(seasonId: number, year: number): Promise<Div
         const s = tm.stats ?? {};
         const gf = Number(s.scored ?? 0), ga = Number(s.missed ?? 0);
         return {
-          id: nameToId.get(normTeam(name)) ?? (team.id != null ? Number(team.id) : 0), name, logo: team.logoSrc ?? team.thumbnails?.square_xs ?? null, division,
+          // Несшитая команда без id ФФСПб: вместо 0 (две такие → коллизия id/React-ключа) —
+          // стабильный отрицательный id из имени (не пересекается с реальными положительными).
+          id: nameToId.get(normTeam(name)) ?? (team.id != null ? Number(team.id) : -(([...normTeam(name)].reduce((h, c) => (Math.imul(h, 31) + c.charCodeAt(0)) | 0, 7) >>> 0) % 1000000 + 1)), name, logo: team.logoSrc ?? team.thumbnails?.square_xs ?? null, division,
           played: Number(s.games ?? 0), won: Number(s.wins ?? 0), drawn: Number(s.draws ?? 0), lost: Number(s.loses ?? 0),
           goalDiff: typeof s.difference === 'number' ? s.difference : gf - ga, points: Number(s.points ?? 0),
         };
