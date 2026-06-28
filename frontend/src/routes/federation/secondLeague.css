@@ -119,9 +119,16 @@
 .sl-root .sl-rk tbody tr:hover{background:linear-gradient(90deg,rgba(48,84,255,.12),transparent)}
 .sl-root .sl-rk tbody tr:last-child td{border-bottom:0}
 .sl-root .sl-medal{display:inline-grid;place-items:center;width:30px;height:30px;border-radius:9px;font-family:'Exo 2';font-weight:900;font-size:15px;background:rgba(120,140,255,.10);color:var(--sl-txt)}
+/* зоны зачёта: 2 первых (топ региона) cyan, 2 последних красные; левый бар + тинт бейджа */
+.sl-root .sl-rk tbody td:first-child{position:relative}
+.sl-root .sl-rk tr.sl-rk-top td:first-child::before,.sl-root .sl-rk tr.sl-rk-rel td:first-child::before{content:"";position:absolute;left:0;top:12px;bottom:12px;width:3px;border-radius:3px}
+.sl-root .sl-rk tr.sl-rk-top td:first-child::before{background:linear-gradient(var(--sl-cyan),var(--sl-sky));box-shadow:0 0 12px var(--sl-cyan)}
+.sl-root .sl-rk tr.sl-rk-rel td:first-child::before{background:linear-gradient(var(--sl-red),var(--sl-mag))}
+.sl-root .sl-rk tr.sl-rk-top{background:linear-gradient(90deg,rgba(94,235,252,.06),transparent)}
+.sl-root .sl-rk tr.sl-rk-rel{background:linear-gradient(90deg,rgba(255,92,114,.06),transparent)}
+.sl-root tr.sl-rk-top .sl-medal{background:linear-gradient(135deg,var(--sl-cyan),var(--sl-sky));color:#06122b}
+.sl-root tr.sl-rk-rel .sl-medal{background:linear-gradient(135deg,var(--sl-red),var(--sl-mag));color:#fff}
 .sl-root tr.sl-m1 .sl-medal{background:linear-gradient(135deg,var(--sl-amber),#ff8a3d);color:#2a1500;box-shadow:0 0 14px rgba(255,197,61,.45)}
-.sl-root tr.sl-m2 .sl-medal{background:linear-gradient(135deg,#dfe7ff,#aab6e8);color:#1a2140}
-.sl-root tr.sl-m3 .sl-medal{background:linear-gradient(135deg,#e0925a,#b86a35);color:#2a1500}
 .sl-root .sl-agecell{font-family:'Exo 2';font-weight:700;color:var(--sl-mut)}
 .sl-root .sl-agecell b{color:var(--sl-txt)}
 .sl-root .sl-sigma{font-family:'Exo 2';font-weight:900;font-size:19px;color:var(--sl-cyan)}

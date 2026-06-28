@@ -55,7 +55,7 @@ export function SecondLeague() {
   const yearsQ = useQuery({ queryKey: ['sl', 'years'], queryFn: () => api<{ years: number[] }>('/federation/av/second-league/years') });
   const years = yearsQ.data?.years ?? [2013, 2012, 2011, 2010];
   const [year, setYear] = useState<number>(2013);
-  const [view, setView] = useState<ViewMode>('table');
+  const [view, setView] = useState<ViewMode>('club');
   const [video, setVideo] = useState<{ slug: string; title: string } | null>(null);
 
   const ageQ = useQuery({
@@ -68,17 +68,22 @@ export function SecondLeague() {
     queryFn: () => api<{ years: number[]; ranking: SlClubRow[] }>('/federation/av/second-league/club-ranking'),
     enabled: view === 'club',
   });
+  // Сводка по ВСЕМУ турниру (все возрасты), а не по одному U14 — для шапки.
+  const ovQ = useQuery({
+    queryKey: ['sl', 'overview'],
+    queryFn: () => api<{ clubs: number; ages: number; matches: number; goals: number; leader: string }>('/federation/av/second-league/overview'),
+  });
 
-  const t = ageQ.data?.table ?? [];
-  const stats = t.length
+  const ov = ovQ.data;
+  const stats: Array<[string, string]> = ov
     ? [
-        ['Команд', String(t.length)],
-        ['Туров сыграно', String(Math.max(...t.map((r) => r.games)))],
-        ['Матчей', String(ageQ.data!.matches.filter((m) => m.played).length)],
-        ['Голов', String(t.reduce((a, r) => a + r.scored, 0))],
-        ['Лидер', clean(t[0].team)],
+        ['Клубов', String(ov.clubs)],
+        ['Возрастов', String(ov.ages)],
+        ['Матчей', String(ov.matches)],
+        ['Голов', String(ov.goals)],
+        ['Лидер зачёта', ov.leader],
       ]
-    : [['Команд', '—'], ['Туров сыграно', '—'], ['Матчей', '—'], ['Голов', '—'], ['Лидер', '—']];
+    : [['Клубов', '—'], ['Возрастов', '—'], ['Матчей', '—'], ['Голов', '—'], ['Лидер зачёта', '—']];
 
   return (
     <div className="sl-root">
@@ -105,21 +110,23 @@ export function SecondLeague() {
       </section>
 
       <div className="sl-controls">
-        <div className="sl-seg sl-ages" role="tablist" aria-label="Возраст">
-          {years.map((y) => (
-            <button key={y} type="button" aria-pressed={year === y} onClick={() => setYear(y)}>{AGE_BY_YEAR[y] ?? `${y} г.р.`}</button>
-          ))}
-        </div>
         <div className="sl-seg" role="tablist" aria-label="Раздел">
-          {([['table', 'Таблица'], ['calendar', 'Календарь'], ['club', 'Клубный зачёт']] as Array<[ViewMode, string]>).map(([v, label]) => (
+          {([['club', 'Клубный зачёт'], ['table', 'Таблица'], ['calendar', 'Календарь']] as Array<[ViewMode, string]>).map(([v, label]) => (
             <button key={v} type="button" aria-pressed={view === v} onClick={() => setView(v)}>{label}</button>
           ))}
         </div>
+        {view !== 'club' && (
+          <div className="sl-seg sl-ages" role="tablist" aria-label="Возраст">
+            {years.map((y) => (
+              <button key={y} type="button" aria-pressed={year === y} onClick={() => setYear(y)}>{AGE_BY_YEAR[y] ?? `${y} г.р.`}</button>
+            ))}
+          </div>
+        )}
       </div>
 
+      {view === 'club' && <ClubRankingView data={clubQ.data} loading={clubQ.isLoading} />}
       {view === 'table' && <TableView data={ageQ.data} loading={ageQ.isLoading} />}
       {view === 'calendar' && <CalendarView data={ageQ.data} loading={ageQ.isLoading} onVideo={setVideo} />}
-      {view === 'club' && <ClubRankingView data={clubQ.data} loading={clubQ.isLoading} />}
 
       {video && <VideoModal slug={video.slug} title={video.title} onClose={() => setVideo(null)} />}
     </div>
@@ -230,19 +237,27 @@ function ClubRankingView({ data, loading }: { data?: { years: number[]; ranking:
           <th>Σ мест</th><th>Очки</th><th>±</th>
         </tr></thead>
         <tbody>
-          {data.ranking.map((c) => (
-            <tr key={c.name} className={c.rank <= 3 ? `sl-m${c.rank}` : ''}>
-              <td><span className="sl-medal">{c.rank}</span></td>
-              <td className="sl-club"><div className="row"><ClubShield logoUrl={c.logo} name={clean(c.name)} size={34} /><span className="sl-nm">{clean(c.name)}</span></div></td>
-              {ys.map((y) => { const p = c.breakdown[y]?.pos; return <td key={y} className="sl-agecell">{p ? <b>{p}</b> : '—'}</td>; })}
-              <td className="sl-sigma">{c.posSum}</td>
-              <td>{c.points}</td>
-              <td className={`sl-diff ${c.diff >= 0 ? 'pos' : 'neg'}`}>{c.diff > 0 ? '+' : ''}{c.diff}</td>
-            </tr>
-          ))}
+          {data.ranking.map((c) => {
+            const n = data.ranking.length;
+            const cls = [c.rank === 1 ? 'sl-m1' : '', c.rank <= 2 ? 'sl-rk-top' : '', c.rank >= n - 1 ? 'sl-rk-rel' : ''].join(' ').trim();
+            return (
+              <tr key={c.name} className={cls}>
+                <td><span className="sl-medal">{c.rank}</span></td>
+                <td className="sl-club"><div className="row"><ClubShield logoUrl={c.logo} name={clean(c.name)} size={34} /><span className="sl-nm">{clean(c.name)}</span></div></td>
+                {ys.map((y) => { const p = c.breakdown[y]?.pos; return <td key={y} className="sl-agecell">{p ? <b>{p}</b> : '—'}</td>; })}
+                <td className="sl-sigma">{c.posSum}</td>
+                <td>{c.points}</td>
+                <td className={`sl-diff ${c.diff >= 0 ? 'pos' : 'neg'}`}>{c.diff > 0 ? '+' : ''}{c.diff}</td>
+              </tr>
+            );
+          })}
         </tbody>
       </table>
-      <div className="sl-legend"><span style={{ color: 'var(--sl-mut2)' }}>Меньше сумма занятых мест по 4 возрастам — выше клуб в общем зачёте региона</span></div>
+      <div className="sl-legend">
+        <span><i className="sl-lg-top" /> Топ-2 региона</span>
+        <span><i className="sl-lg-rel" /> Замыкают зачёт</span>
+        <span style={{ color: 'var(--sl-mut2)' }}>Меньше сумма мест по 4 возрастам — выше клуб</span>
+      </div>
     </div>
   );
 }

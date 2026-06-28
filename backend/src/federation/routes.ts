@@ -262,6 +262,25 @@ export async function federationRoutes(app: FastifyInstance) {
   });
   /** GET /federation/av/second-league/club-ranking — клубный зачёт «сумма мест». */
   app.get('/av/second-league/club-ranking', async () => SECOND_LEAGUE.clubRanking);
+  /** GET /federation/av/second-league/overview — общая сводка по ВСЕМУ турниру
+   *  (по всем возрастам), не по одному U14. Для шапки раздела. */
+  app.get('/av/second-league/overview', async () => {
+    let matches = 0, goals = 0;
+    for (const y of SECOND_LEAGUE.years) {
+      const a = SECOND_LEAGUE.ages[y];
+      if (!a) continue;
+      matches += a.matches.filter((m) => m.played).length;
+      goals += a.table.reduce((s, r) => s + r.scored, 0);
+    }
+    const r = SECOND_LEAGUE.clubRanking.ranking;
+    return {
+      clubs: r.length,
+      ages: SECOND_LEAGUE.years.length,
+      matches,
+      goals,
+      leader: (r[0]?.name ?? '').trim() || '—',
+    };
+  });
   /** GET /federation/av/second-league/match-video?slug= — прямые видео-файлы матча.
    *  Big Bro подписывает URL на ~3 дня, поэтому резолвим СВЕЖИЙ при клике (один лёгкий
    *  вызов, 8с таймаут) → видео не протухает. Если Render не дотянется до Big Bro —
