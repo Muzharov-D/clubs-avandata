@@ -26,7 +26,7 @@ interface SlStandRow {
   position: number | null; teamId: number | null; team: string; logo: string | null;
   games: number; wins: number; draws: number; losses: number; scored: number; missed: number; diff: number; points: number;
 }
-interface SlAgeData { age: string; year: number; total: number; matches: SlMatch[]; table: SlStandRow[] }
+interface SlAgeData { age: string; year: number; total: number; matches: SlMatch[]; table: SlStandRow[]; degraded?: boolean }
 interface SlClubRow {
   rank: number; name: string; logo: string | null; posSum: number; participated: number;
   points: number; diff: number; breakdown: Record<number, { pos: number | null; total: number }>;
@@ -86,6 +86,7 @@ export function SecondLeague() {
 
 function CalendarView({ data, loading, onVideo }: { data?: SlAgeData; loading: boolean; onVideo: (v: { slug: string; title: string }) => void }) {
   if (loading) return <div className="fed-skeleton" style={{ height: 280 }} />;
+  if (data?.degraded) return <div className="fed-note fed-note--empty">Данные ФФСПб временно недоступны. Обновите страницу через минуту.</div>;
   if (!data || !data.matches.length) return <div className="fed-note fed-note--empty">Матчей по выбранному возрасту нет.</div>;
   const byTour = new Map<number | 'none', SlMatch[]>();
   for (const m of data.matches) { const k = m.tour ?? 'none'; if (!byTour.has(k)) byTour.set(k, []); byTour.get(k)!.push(m); }
@@ -124,6 +125,7 @@ function CalendarView({ data, loading, onVideo }: { data?: SlAgeData; loading: b
 
 function TableView({ data, loading }: { data?: SlAgeData; loading: boolean }) {
   if (loading) return <div className="fed-skeleton" style={{ height: 280 }} />;
+  if (data?.degraded) return <div className="fed-note fed-note--empty">Данные ФФСПб временно недоступны. Обновите страницу через минуту.</div>;
   if (!data || !data.table.length) return <div className="fed-note fed-note--empty">Таблица недоступна.</div>;
   return (
     <section className="fed-card">

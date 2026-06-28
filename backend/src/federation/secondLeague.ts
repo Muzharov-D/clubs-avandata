@@ -16,9 +16,12 @@ import { env } from '../env.js';
 import { normTeam } from './teamName.js';
 
 const SECOND_LEAGUE = 'Вторая лига';
-const FFSPB_API = (process.env.FFSPB_API_BASE ?? 'https://clubs-avandata.vercel.app/ffspb-api').replace(/\/+$/, '');
+// Прямой FFSPB быстрый (~3с); Vercel-прокси (обход IP-блока Render) бывает дико
+// медленным (>60с). Поэтому: пробуем ПРЯМОЙ, при неудаче — прокси с большим таймаутом.
+const FFSPB_DIRECT = 'https://stat.ffspb.org/api';
+const FFSPB_PROXY = (process.env.FFSPB_API_BASE ?? 'https://clubs-avandata.vercel.app/ffspb-api').replace(/\/+$/, '');
 const FFSPB_KEY = env.FFSPB_API_KEY ?? '';
-const TTL = 10 * 60 * 1000;
+const TTL = 30 * 60 * 1000;
 
 export interface SlTournament { tid: number; age: string; year: number }
 export const SL_TOURNAMENTS: SlTournament[] = [
@@ -42,26 +45,26 @@ async function cached<T>(key: string, ttlMs: number, fn: () => Promise<T>): Prom
   return val;
 }
 
-// ── FFSPB через прокси ───────────────────────────────────────────────────────
-async function ffspbGet(path: string, attempts = 3): Promise<Record<string, unknown>> {
-  let lastErr: unknown;
-  for (let i = 0; i < attempts; i++) {
-    try {
-      const res = await fetch(`${FFSPB_API}${path}`, {
-        headers: { Accept: 'application/ld+json', 'X-AUTH-TOKEN': FFSPB_KEY },
-        signal: AbortSignal.timeout(12000),
-      });
-      if (!res.ok) {
-        if (res.status >= 400 && res.status < 500) throw new Error(`FFSPB ${res.status} ${path}`);
-        throw new Error(`FFSPB ${res.status}`);
-      }
-      return (await res.json()) as Record<string, unknown>;
-    } catch (e) {
-      lastErr = e;
-      if (i < attempts - 1) await new Promise((r) => setTimeout(r, 300 * (i + 1)));
-    }
+// ── FFSPB: прямой (быстро) → прокси (фолбэк) ─────────────────────────────────
+async function ffspbFetch(base: string, path: string, timeoutMs: number): Promise<Record<string, unknown>> {
+  const res = await fetch(`${base}${path}`, {
+    headers: { Accept: 'application/ld+json', 'X-AUTH-TOKEN': FFSPB_KEY },
+    signal: AbortSignal.timeout(timeoutMs),
+  });
+  if (!res.ok) throw new Error(`FFSPB ${res.status} ${base}${path}`);
+  return (await res.json()) as Record<string, unknown>;
+}
+async function ffspbGet(path: string): Promise<Record<string, unknown>> {
+  // Прямой stat.ffspb.org быстрый (~3с). Если недоступен (IP-блок Render) —
+  // фолбэк на Vercel-прокси с большим таймаутом (прокси бывает дико медленным).
+  // 4xx (напр. 401) не фолбэчим — ключ/путь и на прокси те же.
+  try {
+    return await ffspbFetch(FFSPB_DIRECT, path, 12000);
+  } catch (e) {
+    const msg = String((e as Error)?.message ?? '');
+    if (/FFSPB 4\d\d/.test(msg)) throw e;
+    return await ffspbFetch(FFSPB_PROXY, path, 50000);
   }
-  throw lastErr;
 }
 const members = (d: Record<string, unknown>): Array<Record<string, unknown>> =>
   (d['hydra:member'] as Array<Record<string, unknown>> | undefined) ?? [];

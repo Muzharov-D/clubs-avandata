@@ -263,14 +263,26 @@ export async function federationRoutes(app: FastifyInstance) {
   app.get('/av/second-league/age', async (req, reply) => {
     if (slOff(reply)) return { error: 'FFSPB_API_KEY не задан', code: 'FFSPB_OFF' };
     const year = yearOf(req) ?? slYears()[0] ?? 2013;
-    const data = await secondLeagueAge(year);
-    if (!data) { reply.code(404); return { error: 'возраст не найден', code: 'AGE_NOT_FOUND' }; }
-    return data;
+    try {
+      const data = await secondLeagueAge(year);
+      if (!data) { reply.code(404); return { error: 'возраст не найден', code: 'AGE_NOT_FOUND' }; }
+      return data;
+    } catch (e) {
+      // FFSPB недоступен (прямой блок + медленный прокси) — не роняем 500/hang,
+      // отдаём пустой валидный календарь с флагом, UI покажет «данные недоступны».
+      req.log.error({ err: e, year }, 'second-league/age failed');
+      return { age: '', year, ageTitle: null, total: 0, matches: [], table: [], degraded: true, code: 'FFSPB_UNAVAILABLE' };
+    }
   });
   /** GET /federation/av/second-league/club-ranking — клубный зачёт «сумма мест». */
-  app.get('/av/second-league/club-ranking', async (_req, reply) => {
+  app.get('/av/second-league/club-ranking', async (req, reply) => {
     if (slOff(reply)) return { error: 'FFSPB_API_KEY не задан', code: 'FFSPB_OFF' };
-    return await secondLeagueClubRanking();
+    try {
+      return await secondLeagueClubRanking();
+    } catch (e) {
+      req.log.error({ err: e }, 'second-league/club-ranking failed');
+      return { years: [], ranking: [], degraded: true, code: 'FFSPB_UNAVAILABLE' };
+    }
   });
   /** GET /federation/av/second-league/match-video?slug= — прямые видео-файлы матча (Big Bro). */
   app.get('/av/second-league/match-video', async (req, reply) => {
