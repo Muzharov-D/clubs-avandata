@@ -11,6 +11,7 @@ import {
   federationRegionBestXi, federationTalentProduction,
 } from './avandataSource.js';
 import { SECOND_LEAGUE } from './secondLeague.generated.js';
+import { secondLeagueMatchVideo, isBigbroConfigured } from './secondLeague.js';
 import { snapshotMeta, captureSnapshotIfDue } from './snapshots.js';
 import { latestRegionCensus } from './regionCensus.js';
 import { latestRegionMinutes } from './regionMinutes.js';
@@ -261,10 +262,19 @@ export async function federationRoutes(app: FastifyInstance) {
   });
   /** GET /federation/av/second-league/club-ranking — клубный зачёт «сумма мест». */
   app.get('/av/second-league/club-ranking', async () => SECOND_LEAGUE.clubRanking);
-  /** GET /federation/av/second-league/match-video?slug= — прямые видео-файлы матча (из снимка). */
+  /** GET /federation/av/second-league/match-video?slug= — прямые видео-файлы матча.
+   *  Big Bro подписывает URL на ~3 дня, поэтому резолвим СВЕЖИЙ при клике (один лёгкий
+   *  вызов, 8с таймаут) → видео не протухает. Если Render не дотянется до Big Bro —
+   *  фолбэк на URL из снимка (его освежает периодический ре-синк). */
   app.get('/av/second-league/match-video', async (req, reply) => {
     const slug = String((req.query as { slug?: string }).slug ?? '');
     if (!slug) { reply.code(400); return { error: 'нет slug', code: 'NO_SLUG' }; }
+    if (isBigbroConfigured()) {
+      try {
+        const live = await secondLeagueMatchVideo(slug);
+        if (live.parts.length) return live;
+      } catch { /* фолбэк ниже */ }
+    }
     return SECOND_LEAGUE.videos[slug] ?? { status: null, name: null, parts: [] };
   });
 
