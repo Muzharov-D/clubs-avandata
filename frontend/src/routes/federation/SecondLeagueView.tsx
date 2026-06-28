@@ -174,52 +174,78 @@ function TableView({ data, loading }: { data?: SlAgeData; loading: boolean }) {
   );
 }
 
+function tourTag(ms: SlMatch[]): string {
+  const days = ms.map((m) => (m.date ? new Date(m.date) : null)).filter(Boolean) as Date[];
+  if (!days.length) return '';
+  const dd = days.map((d) => d.getDate());
+  const lo = Math.min(...dd), hi = Math.max(...dd);
+  return `${lo === hi ? lo : `${lo}–${hi}`} ${MONTHS[days[0].getMonth()]}`;
+}
+
 function CalendarView({ data, loading, onVideo }: { data?: SlAgeData; loading: boolean; onVideo: (v: { slug: string; title: string }) => void }) {
+  // Хуки — всегда до ранних возвратов (правила хуков).
+  const [sel, setSel] = useState<number | 'none' | null>(null);
+  const byTour = new Map<number | 'none', SlMatch[]>();
+  for (const m of data?.matches ?? []) { const k = m.tour ?? 'none'; if (!byTour.has(k)) byTour.set(k, []); byTour.get(k)!.push(m); }
+  const tours = [...byTour.keys()].sort((a, b) => (a === 'none' ? 1e9 : a) - (b === 'none' ? 1e9 : b));
+  // Текущий тур: выбранный, иначе последний (свежий). При смене возраста (другой
+  // набор туров) автоматически откатывается к последнему туру нового возраста.
+  const cur = sel != null && tours.includes(sel) ? sel : (tours[tours.length - 1] ?? null);
+  const idx = cur != null ? tours.indexOf(cur) : -1;
+
   if (loading) return <div className="sl-skel" />;
   if (data?.degraded) return <div className="sl-card"><div className="sl-empty">Данные ФФСПб временно недоступны. Обновите страницу через минуту.</div></div>;
-  if (!data || !data.matches.length) return <div className="sl-card"><div className="sl-empty">Матчей по выбранному возрасту нет.</div></div>;
-  const byTour = new Map<number | 'none', SlMatch[]>();
-  for (const m of data.matches) { const k = m.tour ?? 'none'; if (!byTour.has(k)) byTour.set(k, []); byTour.get(k)!.push(m); }
-  const tours = [...byTour.keys()].sort((a, b) => (a === 'none' ? 1e9 : a) - (b === 'none' ? 1e9 : b));
+  if (!data || !data.matches.length || cur == null) return <div className="sl-card"><div className="sl-empty">Матчей по выбранному возрасту нет.</div></div>;
+
+  const ms = byTour.get(cur)!;
+
   return (
     <>
-      {tours.map((tk) => {
-        const ms = byTour.get(tk)!;
-        const days = ms.map((m) => m.date ? new Date(m.date) : null).filter(Boolean) as Date[];
-        const tag = days.length
-          ? (() => { const dd = days.map((d) => d.getDate()); const lo = Math.min(...dd), hi = Math.max(...dd); return `${lo === hi ? lo : `${lo}–${hi}`} ${MONTHS[days[0].getMonth()]}`; })()
-          : '';
-        return (
-          <div key={String(tk)}>
-            <div className="sl-tour"><h3>{tk === 'none' ? 'Без тура' : `Тур ${tk}`}</h3>{tag && <span className="tag">{tag}</span>}<div className="ln" /></div>
-            <div className="sl-fix-grid">
-              {ms.map((m) => {
-                const hWin = m.played && (m.scoreHome ?? 0) > (m.scoreAway ?? 0);
-                const aWin = m.played && (m.scoreAway ?? 0) > (m.scoreHome ?? 0);
-                return (
-                  <div key={m.id} className="sl-fix">
-                    <div className="sl-teams">
-                      <div className={`sl-t h${m.played && !hWin ? ' dim' : ''}`}><span className="sl-nm">{clean(m.home)}</span><ClubShield logoUrl={m.homeLogo} name={clean(m.home)} size={30} /></div>
-                      <div className={`sl-score${m.played ? '' : ' up'}`}>
-                        {m.played
-                          ? <><span>{m.scoreHome}</span><span className="vs">:</span><span>{m.scoreAway}</span></>
-                          : <span className="vs">{hhmm(m.date) || '—'}</span>}
-                      </div>
-                      <div className={`sl-t${m.played && !aWin ? ' dim' : ''}`}><ClubShield logoUrl={m.awayLogo} name={clean(m.away)} size={30} /><span className="sl-nm">{clean(m.away)}</span></div>
-                    </div>
-                    <div className="sl-meta">
-                      <span className={`sl-bdg ${m.techDefeat ? 'tech' : m.played ? 'ok' : 'up'}`}>{m.techDefeat ? 'тех. поражение' : m.played ? 'сыгран' : 'предстоит'}</span>
-                      <span className="sep" />{fmtDate(m.date) || 'дата уточняется'}
-                      {m.venue && <><span className="sep" />{m.venue}</>}
-                      {m.videoSlug && <button type="button" className="sl-watch" onClick={() => onVideo({ slug: m.videoSlug!, title: `${clean(m.home)} — ${clean(m.away)}` })}>▶ Смотреть</button>}
-                    </div>
-                  </div>
-                );
-              })}
+      {/* Навигатор туров — стрелки + полоса номеров (без бесконечного скролла) */}
+      <div className="sl-tournav">
+        <button type="button" className="sl-tournav__arr" disabled={idx <= 0} onClick={() => setSel(tours[idx - 1])} aria-label="Предыдущий тур">‹</button>
+        <div className="sl-tournav__pills" role="tablist" aria-label="Тур">
+          {tours.map((tk) => (
+            <button key={String(tk)} type="button" aria-pressed={tk === cur}
+              className={`sl-tournav__pill${tk === cur ? ' on' : ''}`} onClick={() => setSel(tk)}>
+              {tk === 'none' ? '—' : tk}
+            </button>
+          ))}
+        </div>
+        <button type="button" className="sl-tournav__arr" disabled={idx >= tours.length - 1} onClick={() => setSel(tours[idx + 1])} aria-label="Следующий тур">›</button>
+      </div>
+
+      <div className="sl-tour">
+        <h3>{cur === 'none' ? 'Без тура' : `Тур ${cur}`}</h3>
+        {tourTag(ms) && <span className="tag">{tourTag(ms)}</span>}
+        <span className="sl-tour__count">{ms.length} {ms.length === 1 ? 'матч' : ms.length < 5 ? 'матча' : 'матчей'}</span>
+        <div className="ln" />
+      </div>
+      <div className="sl-fix-grid">
+        {ms.map((m) => {
+          const hWin = m.played && (m.scoreHome ?? 0) > (m.scoreAway ?? 0);
+          const aWin = m.played && (m.scoreAway ?? 0) > (m.scoreHome ?? 0);
+          return (
+            <div key={m.id} className="sl-fix">
+              <div className="sl-teams">
+                <div className={`sl-t h${m.played && !hWin ? ' dim' : ''}`}><span className="sl-nm">{clean(m.home)}</span><ClubShield logoUrl={m.homeLogo} name={clean(m.home)} size={30} /></div>
+                <div className={`sl-score${m.played ? '' : ' up'}`}>
+                  {m.played
+                    ? <><span>{m.scoreHome}</span><span className="vs">:</span><span>{m.scoreAway}</span></>
+                    : <span className="vs">{hhmm(m.date) || '—'}</span>}
+                </div>
+                <div className={`sl-t${m.played && !aWin ? ' dim' : ''}`}><ClubShield logoUrl={m.awayLogo} name={clean(m.away)} size={30} /><span className="sl-nm">{clean(m.away)}</span></div>
+              </div>
+              <div className="sl-meta">
+                <span className={`sl-bdg ${m.techDefeat ? 'tech' : m.played ? 'ok' : 'up'}`}>{m.techDefeat ? 'тех. поражение' : m.played ? 'сыгран' : 'предстоит'}</span>
+                <span className="sep" />{fmtDate(m.date) || 'дата уточняется'}
+                {m.venue && <><span className="sep" />{m.venue}</>}
+                {m.videoSlug && <button type="button" className="sl-watch" onClick={() => onVideo({ slug: m.videoSlug!, title: `${clean(m.home)} — ${clean(m.away)}` })}>▶ Смотреть</button>}
+              </div>
             </div>
-          </div>
-        );
-      })}
+          );
+        })}
+      </div>
     </>
   );
 }

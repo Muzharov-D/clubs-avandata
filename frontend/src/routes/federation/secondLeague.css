@@ -88,9 +88,21 @@
 .sl-root .sl-lg-rel{background:linear-gradient(var(--sl-red),var(--sl-mag))}
 
 /* FIXTURES */
-.sl-root .sl-tour{margin:26px 0 14px;display:flex;align-items:center;gap:16px}
+/* навигатор туров — стрелки + полоса номеров (вместо бесконечного скролла) */
+.sl-root .sl-tournav{display:flex;align-items:center;gap:10px;margin:4px 0 6px}
+.sl-root .sl-tournav__arr{width:36px;height:36px;border-radius:10px;border:1px solid var(--sl-line);background:rgba(7,7,22,.55);color:var(--sl-txt);font-size:18px;font-weight:700;cursor:pointer;flex:none;display:grid;place-items:center;transition:.15s}
+.sl-root .sl-tournav__arr:hover:not(:disabled){border-color:var(--sl-line2);background:var(--sl-panel2)}
+.sl-root .sl-tournav__arr:disabled{opacity:.35;cursor:default}
+.sl-root .sl-tournav__pills{display:flex;gap:6px;overflow-x:auto;padding:4px 2px;scrollbar-width:thin}
+.sl-root .sl-tournav__pills::-webkit-scrollbar{height:6px}
+.sl-root .sl-tournav__pills::-webkit-scrollbar-thumb{background:var(--sl-line2);border-radius:3px}
+.sl-root .sl-tournav__pill{min-width:38px;height:36px;padding:0 10px;border-radius:10px;border:1px solid var(--sl-line);background:rgba(7,7,22,.4);color:var(--sl-mut);font-family:'Exo 2';font-weight:800;font-size:14px;cursor:pointer;flex:none;transition:.15s}
+.sl-root .sl-tournav__pill:hover{color:var(--sl-txt);border-color:var(--sl-line2)}
+.sl-root .sl-tournav__pill.on{color:#06122b;background:linear-gradient(135deg,var(--sl-cyan),var(--sl-sky));border-color:transparent;box-shadow:0 6px 16px -8px rgba(94,235,252,.8)}
+.sl-root .sl-tour{margin:10px 0 14px;display:flex;align-items:center;gap:14px}
 .sl-root .sl-tour h3{font-family:'Exo 2';font-size:15px;font-weight:800;text-transform:uppercase;letter-spacing:.12em;color:var(--sl-txt);white-space:nowrap;margin:0}
 .sl-root .sl-tour .tag{font-size:12px;font-weight:700;color:var(--sl-cyan);background:var(--sl-panel2);border:1px solid var(--sl-line2);padding:5px 11px;border-radius:999px}
+.sl-root .sl-tour__count{font-size:12px;font-weight:600;color:var(--sl-mut2);white-space:nowrap}
 .sl-root .sl-tour .ln{flex:1;height:1px;background:linear-gradient(90deg,var(--sl-line2),transparent)}
 .sl-root .sl-fix-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
 .sl-root .sl-fix{background:var(--sl-panel);border:1px solid var(--sl-line);border-radius:var(--sl-r2);padding:16px 18px;transition:.18s;position:relative;overflow:hidden}
