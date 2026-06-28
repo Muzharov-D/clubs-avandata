@@ -5,10 +5,14 @@
  *
  * Правила (зафиксированы ревью):
  * - Запись по матчам/тренировкам: head_coach — любая команда клуба; team_coach —
- *   ТОЛЬКО своя (teamId обязателен, иначе deny — fail-closed); спортдиректор/игрок
- *   — read-only → deny. Составы (callups) — то же, но «своя» = совпадение возраста.
+ *   ТОЛЬКО своя (teamId обязателен, иначе deny — fail-closed); игрок — read-only → deny.
+ *   Составы (callups) — то же, но «своя» = совпадение возраста.
  * - Чтение клубной аналитики (сводка/таланты/карта потерь): club-wide роли
- *   (head_coach / sporting_director / platform_admin), НЕ игрок и НЕ тренер команды.
+ *   (head_coach / platform_admin), НЕ игрок и НЕ тренер команды.
+ *
+ * NB: роль sporting_director слита в head_coach (миграция 0019) — единый клубный
+ * кабинет «Старший тренер». Ветки sporting_director ниже сохранены как безвредный
+ * мёртвый код (значение валидно в CHECK, но более не назначается).
  */
 
 export type WriteScope = 'all' | 'deny' | { ownTeam: string };

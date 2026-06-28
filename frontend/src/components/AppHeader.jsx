@@ -10,9 +10,10 @@ import { toast } from './Toast';
 import './AppHeader.css';
 
 const ROLE_LABELS = {
-  head_coach: 'Главный тренер',
+  head_coach: 'Старший тренер',
   team_coach: 'Тренер команды',
-  sporting_director: 'Спортивный директор',
+  // Роль слита со старшим тренером (миграция 0019); legacy-токен подписываем так же.
+  sporting_director: 'Старший тренер',
   player: 'Игрок',
 };
 

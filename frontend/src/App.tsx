@@ -46,7 +46,6 @@ import { AdminLayout } from './routes/admin/AdminLayout';
 import { AdminTenantsList } from './routes/admin/AdminTenantsList';
 import { AdminTenantNew } from './routes/admin/AdminTenantNew';
 import { AdminTenantDetail } from './routes/admin/AdminTenantDetail';
-import { DirectorDashboard } from './routes/director/DirectorDashboard';
 
 // Кабинет федерации региона (federation_admin) — оболочка eager, экраны lazy
 // (отдельные чанки: фед-код грузится только при заходе в /federation, не в клубный бандл).
@@ -75,7 +74,8 @@ function RootRoute() {
   // platform_admin → в админку; обычный пользователь → в свой кабинет
   if (user.role === 'platform_admin') return <Navigate to="/admin" replace />;
   if (user.role === 'federation_admin') return <Navigate to="/federation" replace />;
-  if (user.role === 'sporting_director') return <Navigate to="/director" replace />;
+  // Спортдиректор слит со старшим тренером (одна роль) → единый клубный кабинет.
+  if (user.role === 'sporting_director') return <Navigate to="/club-hub" replace />;
   // Игрок — сразу на свой профиль
   if (user.role === 'player' && user.playerId) {
     return <Navigate to={`/players/${user.playerId}`} replace />;
@@ -87,10 +87,10 @@ function RootRoute() {
 }
 
 function CoachOnly({ children }: { children: React.ReactNode }) {
-  // Спортдиректор (read-only аналитик) пускается во все аналитические экраны
-  // наравне с тренером; кнопки записи внутри экранов гейтятся isCoach (он false → read-only).
-  const { isCoach, isDirector, isPlayer, user } = useAuth() as { isCoach: boolean; isDirector: boolean; isPlayer: boolean; user: any };
-  if (isCoach || isDirector) return <>{children}</>;
+  // Тренер (включая старшего, в т.ч. бывшего спортдиректора — роли слиты) видит
+  // аналитические экраны. Игрок — на свой профиль.
+  const { isCoach, isPlayer, user } = useAuth() as { isCoach: boolean; isPlayer: boolean; user: any };
+  if (isCoach) return <>{children}</>;
   if (isPlayer && user?.playerId) {
     return <Navigate to={`/players/${user.playerId}`} replace />;
   }
@@ -139,14 +139,6 @@ function FederationOnly({ children }: { children: React.ReactNode }) {
   if (loading) return null;
   if (!user) return <Navigate to="/login" replace />;
   if (user.role !== 'federation_admin') return <Navigate to="/club" replace />;
-  return <>{children}</>;
-}
-
-function DirectorOnly({ children }: { children: React.ReactNode }) {
-  const { user, loading } = useAuth() as { user: any; loading: boolean };
-  if (loading) return null;
-  if (!user) return <Navigate to="/login" replace />;
-  if (user.role !== 'sporting_director') return <Navigate to="/club" replace />;
   return <>{children}</>;
 }
 
@@ -227,8 +219,8 @@ export function App() {
 
                   {/* Авторизованный кабинет клуба */}
                   <Route element={<ProtectedRoute roles={[]}><MainLayout /></ProtectedRoute>}>
-                    {/* Спортивный директор: «Сводка»-дом внутри клубной оболочки (полный доступ к экранам через меню) */}
-                    <Route path="/director" element={<DirectorOnly><DirectorDashboard /></DirectorOnly>} />
+                    {/* Спортдиректор слит со старшим тренером — старый дом редиректит в единый кабинет. */}
+                    <Route path="/director" element={<Navigate to="/club-hub" replace />} />
                     <Route path="/club" element={<ClubDashboard />} />
                     <Route path="/club-hub" element={<HeadCoachOnly><ClubHub /></HeadCoachOnly>} />
                     <Route path="/analytics" element={<CoachOnly><ClubOverview /></CoachOnly>} />

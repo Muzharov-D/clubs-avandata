@@ -1,13 +1,13 @@
 /**
- * Создать (или обновить) аккаунт СПОРТИВНОГО ДИРЕКТОРА клуба.
+ * Создать (или обновить) аккаунт СТАРШЕГО ТРЕНЕРА клуба.
  *
  *   npm run seed:sporting-director                          # legirus / director
  *   npm run seed:sporting-director -- --tenant=legirus --username=director \
- *                          --password="director 2026" --name="Спортивный директор"
+ *                          --password="director 2026" --name="Старший тренер"
  *
- * Роль — sporting_director: tenant-scoped (видит ВЕСЬ клуб, read-only аналитика —
- * выжимка как у федерации, но в границах клуба). teamId = NULL (не привязан к команде).
- * Логин по username + клуб (как у тренеров).
+ * Роль — head_coach: tenant-scoped, видит ВЕСЬ клуб (единый кабинет) и пишет по
+ * любой команде. teamId = NULL (не привязан к одной команде). Логин по username + клуб.
+ * (Прежняя роль sporting_director слита в head_coach — см. миграцию 0019.)
  *
  * users — tenant-scoped под RLS: нужен `SET app.bypass_rls = 'on'` на том же
  * соединении. Идемпотентно по (tenant_id, username). Читает DATABASE_URL из .env.
@@ -25,8 +25,8 @@ async function main(): Promise<void> {
   const tenant = arg('tenant', 'legirus');
   const username = arg('username', 'director');
   const password = arg('password', 'director 2026');
-  const fullName = arg('name', 'Спортивный директор');
-  const role = 'sporting_director';
+  const fullName = arg('name', 'Старший тренер');
+  const role = 'head_coach';
 
   if (password.length < 8) {
     console.error('Пароль должен быть не короче 8 символов');
@@ -55,15 +55,15 @@ async function main(): Promise<void> {
         'UPDATE users SET password_hash = $1, full_name = $2, role = $3, team_id = NULL WHERE id = $4',
         [passwordHash, fullName, role, id],
       );
-      console.log(`✓ Обновлён спортдиректор: ${username} (id=${id}) · ${role} · tenant=${tenant}`);
+      console.log(`✓ Обновлён старший тренер: ${username} (id=${id}) · ${role} · tenant=${tenant}`);
     } else {
-      const id = `u-${tenant}-sd-${randomBytes(3).toString('hex')}`;
+      const id = `u-${tenant}-hc-${randomBytes(3).toString('hex')}`;
       await c.query(
         `INSERT INTO users (id, tenant_id, username, password_hash, full_name, role, team_id)
          VALUES ($1, $2, $3, $4, $5, $6, NULL)`,
         [id, tenant, username, passwordHash, fullName, role],
       );
-      console.log(`✓ Создан спортдиректор: ${username} (id=${id}) · ${role} · tenant=${tenant}`);
+      console.log(`✓ Создан старший тренер: ${username} (id=${id}) · ${role} · tenant=${tenant}`);
     }
     console.log(`  Логин: ${username}  ·  клуб: ${tenant}  ·  пароль: ${password}`);
   } finally {

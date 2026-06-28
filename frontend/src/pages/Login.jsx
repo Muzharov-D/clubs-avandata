@@ -16,7 +16,7 @@ export default function Login() {
   const [busy, setBusy] = useState(false);
 
   // Если уже залогинен — отдаём в RootRoute ('/'): он раскидывает по роли
-  // (директор → /director, ст. тренер → /club-hub, и т.д.). Единый источник.
+  // (ст. тренер → /club-hub — единый клубный кабинет, и т.д.). Единый источник.
   if (user) return <Navigate to="/" replace />;
 
   async function submit(e) {
@@ -29,7 +29,7 @@ export default function Login() {
       const normalized = value.includes('@') ? value : value.toLowerCase();
       const loggedUser = await login(normalized, p);
       // Куда: либо откуда пришли (deep-link), либо в RootRoute ('/'), который
-      // раскидывает по роли — включая директора (/director) и ст. тренера (/club-hub).
+      // раскидывает по роли — старший тренер → /club-hub (единый кабинет).
       const target = location.state?.from?.pathname || '/';
       const greeting = loggedUser?.fullName ? `Здравствуй, ${loggedUser.fullName}!` : 'Вход выполнен';
       toast.success(greeting);

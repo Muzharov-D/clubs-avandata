@@ -87,13 +87,15 @@ export function AuthProvider({ children }) {
     }
   }, [tenant]);
 
-  const isCoach = user ? COACH_ROLES.has(user.role) : false;
+  // Роль sporting_director слита со старшим тренером (миграция 0019). Старый JWT
+  // (≤15 мин) ещё может нести sporting_director до рефреша /me — трактуем его как
+  // старшего тренера, чтобы единый кабинет не ломался в это окно.
+  const isLegacyDirector = user?.role === 'sporting_director';
+  const isCoach = user ? (COACH_ROLES.has(user.role) || isLegacyDirector) : false;
   const isPlayer = user?.role === 'player';
-  const isHeadCoach = user?.role === 'head_coach';
+  const isHeadCoach = user?.role === 'head_coach' || isLegacyDirector;
   const isTeamCoach = user?.role === 'team_coach';
-  // Спортивный директор — клуб-scoped аналитик (read-only), НЕ тренер (вне COACH_ROLES):
-  // у него собственный кабинет /director, без тренерских прав записи.
-  const isDirector = user?.role === 'sporting_director';
+  const isDirector = false; // deprecated: роль слита со старшим тренером
 
   const value = {
     user,
