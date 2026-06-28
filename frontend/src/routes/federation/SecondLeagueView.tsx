@@ -188,9 +188,11 @@ function CalendarView({ data, loading, onVideo }: { data?: SlAgeData; loading: b
   const byTour = new Map<number | 'none', SlMatch[]>();
   for (const m of data?.matches ?? []) { const k = m.tour ?? 'none'; if (!byTour.has(k)) byTour.set(k, []); byTour.get(k)!.push(m); }
   const tours = [...byTour.keys()].sort((a, b) => (a === 'none' ? 1e9 : a) - (b === 'none' ? 1e9 : b));
-  // Текущий тур: выбранный, иначе последний (свежий). При смене возраста (другой
-  // набор туров) автоматически откатывается к последнему туру нового возраста.
-  const cur = sel != null && tours.includes(sel) ? sel : (tours[tours.length - 1] ?? null);
+  // Текущий тур: выбранный, иначе последний СЫГРАННЫЙ (свежие результаты, а не
+  // пустой будущий тур). При смене возраста откатывается к его актуальному туру.
+  const playedTours = tours.filter((t) => byTour.get(t)!.some((m) => m.played));
+  const defaultTour = playedTours.length ? playedTours[playedTours.length - 1] : (tours[tours.length - 1] ?? null);
+  const cur = sel != null && tours.includes(sel) ? sel : defaultTour;
   const idx = cur != null ? tours.indexOf(cur) : -1;
 
   if (loading) return <div className="sl-skel" />;
