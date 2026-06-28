@@ -159,11 +159,13 @@ async function secondLeagueMatches(tid: number): Promise<{ matches: SlMatch[]; t
 interface BbVideo { home: string; away: string; day: string | null; year: number | null; slug: string; status: string | null }
 
 let _bbTok: string | null = null; let _bbTokAt = 0;
+const BB_TIMEOUT = 8000;
 async function bbToken(): Promise<string> {
   if (_bbTok && Date.now() - _bbTokAt < 9 * 24 * 3600e3) return _bbTok;
   const res = await fetch(`${env.BIGBRO_ENDPOINT}/api/auth/token/`, {
     method: 'POST', headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ username: env.BIGBRO_USERNAME, password: env.BIGBRO_PASSWORD }),
+    signal: AbortSignal.timeout(BB_TIMEOUT),
   });
   if (!res.ok) throw new Error(`BigBro auth ${res.status}`);
   _bbTok = ((await res.json()) as { access: string }).access; _bbTokAt = Date.now();
@@ -174,12 +176,16 @@ const bandYear = (name: string | null): number | null => { const m = String(name
 
 async function bbVideos(): Promise<BbVideo[]> {
   if (!isBigbroConfigured()) return [];
-  return cached('sl:bbvideos', 6 * 60 * 60 * 1000, async () => {
+  // Устойчиво: если Big Bro недоступен/медленный (напр. блок по IP с Render) —
+  // НЕ виснем (таймаут на каждый фетч) и НЕ роняем календарь (catch → []).
+  // Ошибку не кешируем (throw внутри cached не кешируется) — следующий заход ретраит.
+  try {
+    return await cached('sl:bbvideos', 6 * 60 * 60 * 1000, async () => {
     const tok = await bbToken();
     const out: BbVideo[] = [];
     let page = 1; let safety = 50;
     while (safety-- > 0) {
-      const r = await fetch(`${env.BIGBRO_ENDPOINT}/api/activities/?page=${page}`, { headers: { Authorization: `Bearer ${tok}` } });
+      const r = await fetch(`${env.BIGBRO_ENDPOINT}/api/activities/?page=${page}`, { headers: { Authorization: `Bearer ${tok}` }, signal: AbortSignal.timeout(BB_TIMEOUT) });
       if (!r.ok) break;
       const d = (await r.json()) as { results?: Array<Record<string, unknown>>; next?: string | null };
       for (const a of d.results ?? []) {
@@ -201,7 +207,8 @@ async function bbVideos(): Promise<BbVideo[]> {
       if (!prev || rank(o) > rank(prev)) by.set(k, o);
     }
     return [...by.values()];
-  });
+    });
+  } catch { return []; }
 }
 
 // Толерантная стыковка имён (срез года/ФК/СШ через normTeam + перекрытие токенов).
@@ -293,9 +300,10 @@ export async function secondLeagueClubRanking(): Promise<{ years: number[]; rank
 // Прямые видео-файлы матча (панорама) по слагу Big Bro.
 export async function secondLeagueMatchVideo(slug: string): Promise<{ status: string | null; name: string | null; parts: string[] }> {
   if (!isBigbroConfigured()) return { status: null, name: null, parts: [] };
-  const tok = await bbToken();
-  const r = await fetch(`${env.BIGBRO_ENDPOINT}/api/activities?show_link_slug=${encodeURIComponent(slug)}`, { headers: { Authorization: `Bearer ${tok}` } });
-  if (!r.ok) return { status: null, name: null, parts: [] };
+  let tok: string;
+  try { tok = await bbToken(); } catch { return { status: null, name: null, parts: [] }; }
+  const r = await fetch(`${env.BIGBRO_ENDPOINT}/api/activities?show_link_slug=${encodeURIComponent(slug)}`, { headers: { Authorization: `Bearer ${tok}` }, signal: AbortSignal.timeout(BB_TIMEOUT) }).catch(() => null);
+  if (!r || !r.ok) return { status: null, name: null, parts: [] };
   const d = (await r.json()) as { results?: Array<Record<string, unknown>> };
   const r0 = (d.results ?? [])[0];
   if (!r0) return { status: null, name: null, parts: [] };
