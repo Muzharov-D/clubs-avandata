@@ -2,18 +2,20 @@ import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { api } from '../../api/client';
 import { ClubShield } from './ClubShield';
-import './federation.css';
 import './secondLeague.css';
 
-// Вторая лига (детско-юношеская, ФФСПб): календарь · таблица · клубный зачёт · видео.
+// Управление лигами — premium-раздел кабинета федерации (уровень EPL).
+// Вторая лига (ФФСПб): таблица · календарь · клубный зачёт · видео.
 
 const AGE_BY_YEAR: Record<number, string> = { 2013: 'До 14', 2012: 'До 15', 2011: 'До 16', 2010: 'До 17' };
 const MONTHS = ['янв', 'фев', 'мар', 'апр', 'мая', 'июн', 'июл', 'авг', 'сен', 'окт', 'ноя', 'дек'];
+const clean = (s: string): string => (s || '').trim();
+const hhmm = (iso: string | null): string => (iso ? new Date(iso).toTimeString().slice(0, 5) : '');
 function fmtDate(iso: string | null): string {
   if (!iso) return '';
   const d = new Date(iso);
   if (isNaN(d.getTime())) return '';
-  return `${d.getDate()} ${MONTHS[d.getMonth()]}, ${d.toTimeString().slice(0, 5)}`;
+  return `${d.getDate()} ${MONTHS[d.getMonth()]}, ${hhmm(iso)}`;
 }
 
 interface SlMatch {
@@ -32,13 +34,28 @@ interface SlClubRow {
   points: number; diff: number; breakdown: Record<number, { pos: number | null; total: number }>;
 }
 
-type ViewMode = 'calendar' | 'table' | 'club';
+type ViewMode = 'table' | 'calendar' | 'club';
+type Res = 'W' | 'D' | 'L';
+
+/** Гид формы — 5 последних сыгранных матчей команды (В/Н/П), свежий справа. */
+function formOf(matches: SlMatch[], team: string): Res[] {
+  const t = clean(team);
+  return matches
+    .filter((m) => m.played && (clean(m.home) === t || clean(m.away) === t))
+    .sort((a, b) => String(a.date).localeCompare(String(b.date)))
+    .slice(-5)
+    .map((m) => {
+      const gf = clean(m.home) === t ? (m.scoreHome ?? 0) : (m.scoreAway ?? 0);
+      const ga = clean(m.home) === t ? (m.scoreAway ?? 0) : (m.scoreHome ?? 0);
+      return gf > ga ? 'W' : gf < ga ? 'L' : 'D';
+    });
+}
 
 export function SecondLeague() {
   const yearsQ = useQuery({ queryKey: ['sl', 'years'], queryFn: () => api<{ years: number[] }>('/federation/av/second-league/years') });
   const years = yearsQ.data?.years ?? [2013, 2012, 2011, 2010];
   const [year, setYear] = useState<number>(2013);
-  const [view, setView] = useState<ViewMode>('calendar');
+  const [view, setView] = useState<ViewMode>('table');
   const [video, setVideo] = useState<{ slug: string; title: string } | null>(null);
 
   const ageQ = useQuery({
@@ -52,31 +69,56 @@ export function SecondLeague() {
     enabled: view === 'club',
   });
 
+  const t = ageQ.data?.table ?? [];
+  const stats = t.length
+    ? [
+        ['Команд', String(t.length)],
+        ['Туров сыграно', String(Math.max(...t.map((r) => r.games)))],
+        ['Матчей', String(ageQ.data!.matches.filter((m) => m.played).length)],
+        ['Голов', String(t.reduce((a, r) => a + r.scored, 0))],
+        ['Лидер', clean(t[0].team)],
+      ]
+    : [['Команд', '—'], ['Туров сыграно', '—'], ['Матчей', '—'], ['Голов', '—'], ['Лидер', '—']];
+
   return (
-    <div>
-      <div className="fed-hero">
-        <span className="fed-hero__kicker">Вторая лига · ФФСПб</span>
-        <h1 className="fed-hero__title">Календарь и результаты</h1>
-        <p className="fed-hero__sub">Турнирная таблица, клубный зачёт и видео матчей · сезон 2026</p>
-      </div>
+    <div className="sl-root">
+      <div className="sl-kick">Кабинет федерации <span className="sl-d" /> <b>Управление лигами</b></div>
 
-      <div className="sl-tabs" role="tablist" aria-label="Раздел">
-        {([['calendar', 'Календарь'], ['table', 'Таблица'], ['club', 'Клубный зачёт']] as Array<[ViewMode, string]>).map(([v, label]) => (
-          <button key={v} type="button" aria-pressed={view === v} className={`fed-tab${view === v ? ' fed-tab--active' : ''}`} onClick={() => setView(v)}>{label}</button>
-        ))}
-      </div>
-
-      {view !== 'club' && (
-        <div className="fed-filter__group" role="tablist" aria-label="Возраст" style={{ marginBottom: 14 }}>
-          <span className="fed-filter__label">Возраст</span>
-          {years.map((y) => (
-            <button key={y} type="button" aria-pressed={year === y} className={`fed-pill${year === y ? ' fed-pill--active' : ''}`} onClick={() => setYear(y)}>{AGE_BY_YEAR[y] ?? `${y} г.р.`}</button>
+      <section className="sl-hero">
+        <div className="sl-hero-row">
+          <div className="sl-league">
+            <div className="sl-league-badge">
+              <svg viewBox="0 0 24 24" fill="none"><path d="M12 2l2.4 5 5.6.7-4 4 1 5.6L12 19.8 6.9 22.3l1-5.6-4-4 5.6-.7L12 2z" stroke="#fff" strokeWidth="1.6" strokeLinejoin="round" /></svg>
+            </div>
+            <div>
+              <h1 className="sl-disp">Вторая лига</h1>
+              <div className="sl-league-sub">Первенство Санкт-Петербурга · ФФСПб <span className="sl-d" /> детско-юношеская</div>
+            </div>
+          </div>
+          <span className="sl-season"><i /> Сезон 2025/26 · идёт</span>
+        </div>
+        <div className="sl-stats">
+          {stats.map(([l, v]) => (
+            <div className="sl-stat" key={l}><div className="v">{v}</div><div className="l">{l}</div></div>
           ))}
         </div>
-      )}
+      </section>
 
-      {view === 'calendar' && <CalendarView data={ageQ.data} loading={ageQ.isLoading} onVideo={setVideo} />}
+      <div className="sl-controls">
+        <div className="sl-seg sl-ages" role="tablist" aria-label="Возраст">
+          {years.map((y) => (
+            <button key={y} type="button" aria-pressed={year === y} onClick={() => setYear(y)}>{AGE_BY_YEAR[y] ?? `${y} г.р.`}</button>
+          ))}
+        </div>
+        <div className="sl-seg" role="tablist" aria-label="Раздел">
+          {([['table', 'Таблица'], ['calendar', 'Календарь'], ['club', 'Клубный зачёт']] as Array<[ViewMode, string]>).map(([v, label]) => (
+            <button key={v} type="button" aria-pressed={view === v} onClick={() => setView(v)}>{label}</button>
+          ))}
+        </div>
+      </div>
+
       {view === 'table' && <TableView data={ageQ.data} loading={ageQ.isLoading} />}
+      {view === 'calendar' && <CalendarView data={ageQ.data} loading={ageQ.isLoading} onVideo={setVideo} />}
       {view === 'club' && <ClubRankingView data={clubQ.data} loading={clubQ.isLoading} />}
 
       {video && <VideoModal slug={video.slug} title={video.title} onClose={() => setVideo(null)} />}
@@ -84,93 +126,124 @@ export function SecondLeague() {
   );
 }
 
-function CalendarView({ data, loading, onVideo }: { data?: SlAgeData; loading: boolean; onVideo: (v: { slug: string; title: string }) => void }) {
-  if (loading) return <div className="fed-skeleton" style={{ height: 280 }} />;
-  if (data?.degraded) return <div className="fed-note fed-note--empty">Данные ФФСПб временно недоступны. Обновите страницу через минуту.</div>;
-  if (!data || !data.matches.length) return <div className="fed-note fed-note--empty">Матчей по выбранному возрасту нет.</div>;
-  const byTour = new Map<number | 'none', SlMatch[]>();
-  for (const m of data.matches) { const k = m.tour ?? 'none'; if (!byTour.has(k)) byTour.set(k, []); byTour.get(k)!.push(m); }
-  const tours = [...byTour.keys()].sort((a, b) => (a === 'none' ? 1e9 : a) - (b === 'none' ? 1e9 : b));
-  return (
-    <>
-      {tours.map((tk) => (
-        <div key={String(tk)}>
-          <div className="fed-divider"><h2 className="fed-divider__title">{tk === 'none' ? 'Без тура' : `Тур ${tk}`}</h2><div className="fed-divider__line" /></div>
-          <div className="sl-grid">
-            {byTour.get(tk)!.map((m) => {
-              const hWin = m.played && (m.scoreHome ?? 0) > (m.scoreAway ?? 0);
-              const aWin = m.played && (m.scoreAway ?? 0) > (m.scoreHome ?? 0);
-              return (
-                <div key={m.id} className="sl-match">
-                  <div className="sl-match__row">
-                    <div className={`sl-team sl-team--h${m.played && !hWin ? ' sl-team--dim' : ''}`}><span className="sl-team__nm">{m.home}</span><ClubShield logoUrl={m.homeLogo} name={m.home} /></div>
-                    <div className="sl-score">{m.played ? <span className="sl-score__v">{m.scoreHome} : {m.scoreAway}</span> : (m.date ? <span className="sl-score__time">{new Date(m.date).toTimeString().slice(0, 5)}</span> : <span className="sl-score__vs">—</span>)}</div>
-                    <div className={`sl-team${m.played && !aWin ? ' sl-team--dim' : ''}`}><ClubShield logoUrl={m.awayLogo} name={m.away} /><span className="sl-team__nm">{m.away}</span></div>
-                  </div>
-                  <div className="sl-match__meta">
-                    <span className={`fed-badge${m.techDefeat ? ' fed-badge--danger' : m.played ? ' fed-badge--success' : ''}`}>{m.techDefeat ? 'тех. поражение' : m.played ? 'сыгран' : 'предстоит'}</span>
-                    <span className="sl-dot" />{fmtDate(m.date) || 'дата уточняется'}
-                    {m.venue && <><span className="sl-dot" />{m.venue}</>}
-                    {m.videoSlug && <button type="button" className="sl-vbtn" onClick={() => onVideo({ slug: m.videoSlug!, title: `${m.home} — ${m.away}` })}>▶ Видео</button>}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      ))}
-    </>
-  );
-}
-
 function TableView({ data, loading }: { data?: SlAgeData; loading: boolean }) {
-  if (loading) return <div className="fed-skeleton" style={{ height: 280 }} />;
-  if (data?.degraded) return <div className="fed-note fed-note--empty">Данные ФФСПб временно недоступны. Обновите страницу через минуту.</div>;
-  if (!data || !data.table.length) return <div className="fed-note fed-note--empty">Таблица недоступна.</div>;
+  if (loading) return <div className="sl-skel" />;
+  if (data?.degraded) return <div className="sl-card"><div className="sl-empty">Данные ФФСПб временно недоступны. Обновите страницу через минуту.</div></div>;
+  if (!data || !data.table.length) return <div className="sl-card"><div className="sl-empty">Таблица недоступна.</div></div>;
+  const n = data.table.length;
   return (
-    <section className="fed-card">
-      <table className="fed-table">
-        <thead><tr><th style={{ width: 40 }} /><th>Команда</th><th className="fed-table__num">И</th><th className="fed-table__num">В</th><th className="fed-table__num">Н</th><th className="fed-table__num">П</th><th className="fed-table__num">Мячи</th><th className="fed-table__num">±</th><th className="fed-table__num">ОЧ</th></tr></thead>
+    <div className="sl-card">
+      <table className="sl-tbl">
+        <thead><tr>
+          <th className="l" style={{ width: 54 }}>#</th><th className="l">Клуб</th>
+          <th>И</th><th>В</th><th>Н</th><th>П</th><th>Голы</th><th>±</th><th>Очки</th>
+          <th className="r">Форма</th>
+        </tr></thead>
         <tbody>
-          {data.table.map((r) => (
-            <tr key={r.teamId ?? r.team}>
-              <td className="fed-table__num" style={{ color: (r.position ?? 99) <= 1 ? 'var(--accent)' : 'var(--text-secondary)' }}>{r.position}</td>
-              <td><span className="sl-cell-team"><ClubShield logoUrl={r.logo} name={r.team} /><span>{r.team}</span></span></td>
-              <td className="fed-table__num">{r.games}</td><td className="fed-table__num">{r.wins}</td><td className="fed-table__num">{r.draws}</td><td className="fed-table__num">{r.losses}</td>
-              <td className="fed-table__num">{r.scored}–{r.missed}</td><td className="fed-table__num">{r.diff > 0 ? '+' : ''}{r.diff}</td>
-              <td className="fed-table__num" style={{ color: 'var(--accent)', fontWeight: 700 }}>{r.points}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </section>
-  );
-}
-
-function ClubRankingView({ data, loading }: { data?: { years: number[]; ranking: SlClubRow[] }; loading: boolean }) {
-  if (loading) return <div className="fed-skeleton" style={{ height: 280 }} />;
-  if (!data || !data.ranking.length) return <div className="fed-note fed-note--empty">Зачёт недоступен.</div>;
-  return (
-    <section className="fed-card">
-      <table className="fed-table">
-        <thead><tr><th style={{ width: 40 }} /><th>Клуб</th>{data.years.map((y) => <th key={y} className="fed-table__num">{AGE_BY_YEAR[y] ?? y}</th>)}<th className="fed-table__num">Σмест</th><th className="fed-table__num">ОЧ</th><th className="fed-table__num">±</th></tr></thead>
-        <tbody>
-          {data.ranking.map((c) => {
-            const best = Math.min(...data.years.map((y) => c.breakdown[y]?.pos ?? 99));
+          {data.table.map((r) => {
+            const pos = r.position ?? 99;
+            const cls = [pos === 1 ? 'sl-champ' : '', pos <= 3 ? 'sl-zone-top' : '', pos >= n - 2 ? 'sl-zone-rel' : ''].join(' ').trim();
+            const form = formOf(data.matches, r.team);
             return (
-              <tr key={c.name}>
-                <td className="fed-table__num" style={{ color: c.rank <= 1 ? 'var(--accent)' : 'var(--text-secondary)' }}>{c.rank}</td>
-                <td><span className="sl-cell-team"><ClubShield logoUrl={c.logo} name={c.name} /><span>{c.name}</span></span></td>
-                {data.years.map((y) => { const p = c.breakdown[y]?.pos; return <td key={y} className="fed-table__num" style={{ color: p === best ? 'var(--accent)' : 'var(--text-tertiary)' }}>{p ?? '—'}</td>; })}
-                <td className="fed-table__num" style={{ color: 'var(--accent)', fontWeight: 700 }}>{c.posSum}</td>
-                <td className="fed-table__num">{c.points}</td><td className="fed-table__num">{c.diff > 0 ? '+' : ''}{c.diff}</td>
+              <tr key={r.teamId ?? r.team} className={cls}>
+                <td className="sl-pos"><span className="n">{r.position}</span></td>
+                <td className="sl-club"><div className="row"><ClubShield logoUrl={r.logo} name={clean(r.team)} size={34} /><span className="sl-nm">{clean(r.team)}</span></div></td>
+                <td className="sl-mut">{r.games}</td><td>{r.wins}</td><td>{r.draws}</td><td>{r.losses}</td>
+                <td className="sl-gd">{r.scored}<b>:</b>{r.missed}</td>
+                <td className={`sl-diff ${r.diff >= 0 ? 'pos' : 'neg'}`}>{r.diff > 0 ? '+' : ''}{r.diff}</td>
+                <td className="sl-pts">{r.points}</td>
+                <td className="r"><span className="sl-form">{form.map((f, i) => <span key={i} className={`sl-fp ${f}`}>{f === 'W' ? 'В' : f === 'D' ? 'Н' : 'П'}</span>)}</span></td>
               </tr>
             );
           })}
         </tbody>
       </table>
-      <p className="fed-note" style={{ marginTop: 12 }}>«Сумма мест»: для каждого возраста берём место клуба, суммируем по всем четырём. Меньше сумма — выше клуб.</p>
-    </section>
+      <div className="sl-legend">
+        <span><i className="sl-lg-top" /> Лидеры дивизиона</span>
+        <span><i className="sl-lg-rel" /> Зона вылета</span>
+        <span style={{ color: 'var(--sl-mut2)' }}>Форма — 5 последних матчей, свежий справа</span>
+      </div>
+    </div>
+  );
+}
+
+function CalendarView({ data, loading, onVideo }: { data?: SlAgeData; loading: boolean; onVideo: (v: { slug: string; title: string }) => void }) {
+  if (loading) return <div className="sl-skel" />;
+  if (data?.degraded) return <div className="sl-card"><div className="sl-empty">Данные ФФСПб временно недоступны. Обновите страницу через минуту.</div></div>;
+  if (!data || !data.matches.length) return <div className="sl-card"><div className="sl-empty">Матчей по выбранному возрасту нет.</div></div>;
+  const byTour = new Map<number | 'none', SlMatch[]>();
+  for (const m of data.matches) { const k = m.tour ?? 'none'; if (!byTour.has(k)) byTour.set(k, []); byTour.get(k)!.push(m); }
+  const tours = [...byTour.keys()].sort((a, b) => (a === 'none' ? 1e9 : a) - (b === 'none' ? 1e9 : b));
+  return (
+    <>
+      {tours.map((tk) => {
+        const ms = byTour.get(tk)!;
+        const days = ms.map((m) => m.date ? new Date(m.date) : null).filter(Boolean) as Date[];
+        const tag = days.length
+          ? (() => { const dd = days.map((d) => d.getDate()); const lo = Math.min(...dd), hi = Math.max(...dd); return `${lo === hi ? lo : `${lo}–${hi}`} ${MONTHS[days[0].getMonth()]}`; })()
+          : '';
+        return (
+          <div key={String(tk)}>
+            <div className="sl-tour"><h3>{tk === 'none' ? 'Без тура' : `Тур ${tk}`}</h3>{tag && <span className="tag">{tag}</span>}<div className="ln" /></div>
+            <div className="sl-fix-grid">
+              {ms.map((m) => {
+                const hWin = m.played && (m.scoreHome ?? 0) > (m.scoreAway ?? 0);
+                const aWin = m.played && (m.scoreAway ?? 0) > (m.scoreHome ?? 0);
+                return (
+                  <div key={m.id} className="sl-fix">
+                    <div className="sl-teams">
+                      <div className={`sl-t h${m.played && !hWin ? ' dim' : ''}`}><span className="sl-nm">{clean(m.home)}</span><ClubShield logoUrl={m.homeLogo} name={clean(m.home)} size={30} /></div>
+                      <div className={`sl-score${m.played ? '' : ' up'}`}>
+                        {m.played
+                          ? <><span>{m.scoreHome}</span><span className="vs">:</span><span>{m.scoreAway}</span></>
+                          : <span className="vs">{hhmm(m.date) || '—'}</span>}
+                      </div>
+                      <div className={`sl-t${m.played && !aWin ? ' dim' : ''}`}><ClubShield logoUrl={m.awayLogo} name={clean(m.away)} size={30} /><span className="sl-nm">{clean(m.away)}</span></div>
+                    </div>
+                    <div className="sl-meta">
+                      <span className={`sl-bdg ${m.techDefeat ? 'tech' : m.played ? 'ok' : 'up'}`}>{m.techDefeat ? 'тех. поражение' : m.played ? 'сыгран' : 'предстоит'}</span>
+                      <span className="sep" />{fmtDate(m.date) || 'дата уточняется'}
+                      {m.venue && <><span className="sep" />{m.venue}</>}
+                      {m.videoSlug && <button type="button" className="sl-watch" onClick={() => onVideo({ slug: m.videoSlug!, title: `${clean(m.home)} — ${clean(m.away)}` })}>▶ Смотреть</button>}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        );
+      })}
+    </>
+  );
+}
+
+function ClubRankingView({ data, loading }: { data?: { years: number[]; ranking: SlClubRow[] }; loading: boolean }) {
+  if (loading) return <div className="sl-skel" />;
+  if (!data || !data.ranking.length) return <div className="sl-card"><div className="sl-empty">Зачёт недоступен.</div></div>;
+  const ys = data.years;
+  return (
+    <div className="sl-card">
+      <table className="sl-rk">
+        <thead><tr>
+          <th className="l" style={{ width: 54 }}>#</th><th className="l">Клуб</th>
+          {ys.map((y) => <th key={y}>{AGE_BY_YEAR[y] ?? y}</th>)}
+          <th>Σ мест</th><th>Очки</th><th>±</th>
+        </tr></thead>
+        <tbody>
+          {data.ranking.map((c) => (
+            <tr key={c.name} className={c.rank <= 3 ? `sl-m${c.rank}` : ''}>
+              <td><span className="sl-medal">{c.rank}</span></td>
+              <td className="sl-club"><div className="row"><ClubShield logoUrl={c.logo} name={clean(c.name)} size={34} /><span className="sl-nm">{clean(c.name)}</span></div></td>
+              {ys.map((y) => { const p = c.breakdown[y]?.pos; return <td key={y} className="sl-agecell">{p ? <b>{p}</b> : '—'}</td>; })}
+              <td className="sl-sigma">{c.posSum}</td>
+              <td>{c.points}</td>
+              <td className={`sl-diff ${c.diff >= 0 ? 'pos' : 'neg'}`}>{c.diff > 0 ? '+' : ''}{c.diff}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      <div className="sl-legend"><span style={{ color: 'var(--sl-mut2)' }}>Меньше сумма занятых мест по 4 возрастам — выше клуб в общем зачёте региона</span></div>
+    </div>
   );
 }
 
@@ -179,16 +252,18 @@ function VideoModal({ slug, title, onClose }: { slug: string; title: string; onC
   const [part, setPart] = useState(0);
   const parts = vq.data?.parts ?? [];
   return (
-    <div className="sl-modal" onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
-      <div className="sl-modal__box">
-        <div className="sl-modal__head"><span className="sl-modal__t">{title}</span><button type="button" className="sl-modal__x" onClick={onClose} aria-label="Закрыть">✕</button></div>
-        <div className="sl-modal__frame">
-          {vq.isLoading ? <div className="sl-modal__msg">Загрузка видео…</div>
-            : parts.length ? <video key={part} controls autoPlay playsInline src={parts[part]} className="sl-modal__video" />
-              : <div className="sl-modal__msg">Видео ещё рендерится (статус {vq.data?.status ?? '?'}).</div>}
+    <div className="sl-modal-ov" onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
+      <div className="sl-modal-box">
+        <div className="sl-modal-hd"><h3>{title}</h3><button type="button" className="sl-modal-x" onClick={onClose} aria-label="Закрыть">✕</button></div>
+        <div className="sl-modal-body">
           {parts.length > 1 && (
-            <div className="sl-parts">{parts.map((_, i) => <button key={i} type="button" className={`sl-part${i === part ? ' sl-part--on' : ''}`} onClick={() => setPart(i)}>{i + 1}-я половина</button>)}</div>
+            <div className="sl-halves">{parts.map((_, i) => <button key={i} type="button" aria-pressed={i === part} onClick={() => setPart(i)}>{i + 1}-я половина</button>)}</div>
           )}
+          <div className="sl-vstage">
+            {vq.isLoading ? 'Загрузка видео…'
+              : parts.length ? <video key={part} controls autoPlay playsInline src={parts[part]} />
+                : `Видео ещё рендерится (статус ${vq.data?.status ?? '?'}).`}
+          </div>
         </div>
       </div>
     </div>
