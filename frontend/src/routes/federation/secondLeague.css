@@ -158,7 +158,8 @@
 .sl-modal-box{width:min(960px,96vw);background:#0b0b22;border:1px solid rgba(120,140,255,.28);border-radius:24px;overflow:hidden;box-shadow:0 40px 120px -30px #000;color:#EAF0FF}
 .sl-modal-hd{display:flex;align-items:center;justify-content:space-between;padding:18px 22px;border-bottom:1px solid rgba(120,140,255,.14)}
 .sl-modal-hd h3{font-family:'Exo 2';font-size:17px;font-weight:800;margin:0}
-.sl-modal-x{appearance:none;border:1px solid rgba(120,140,255,.28);background:rgba(120,140,255,.08);color:#EAF0FF;width:34px;height:34px;border-radius:10px;cursor:pointer;font-size:16px}
+.sl-modal-x{appearance:none;display:grid;place-items:center;border:1px solid rgba(120,140,255,.28);background:rgba(120,140,255,.08);color:#EAF0FF;width:34px;height:34px;border-radius:10px;cursor:pointer;font-size:15px;line-height:1;padding:0;flex:none;transition:.15s}
+.sl-modal-x:hover{background:rgba(120,140,255,.18);border-color:rgba(120,140,255,.45)}
 .sl-modal-body{padding:18px 22px 22px}
 .sl-halves{display:inline-flex;gap:8px;margin-bottom:14px}
 .sl-halves button{font-family:'Exo 2';font-weight:700;font-size:13px;padding:8px 16px;border-radius:9px;border:1px solid rgba(120,140,255,.14);background:transparent;color:#9098C0;cursor:pointer}
