@@ -1,9 +1,19 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { useQuery } from '@tanstack/react-query';
 import { api } from '../../api/client';
 import { toast } from '../../components/Toast';
 import { ClubShield } from './ClubShield';
 import './secondLeague.css';
+
+/** Закрытие модалки по Escape (надёжно, не зависит от клика по ✕/бэкдропу). */
+function useEscClose(onClose: () => void) {
+  useEffect(() => {
+    const h = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
+    window.addEventListener('keydown', h);
+    return () => window.removeEventListener('keydown', h);
+  }, [onClose]);
+}
 
 // Управление лигами — premium-раздел кабинета федерации (уровень EPL).
 // Вторая лига (ФФСПб): таблица · календарь · клубный зачёт · видео.
@@ -331,11 +341,12 @@ function protocolEvents(p: SlProtocol): TlEvent[] {
 }
 
 function MatchDetailModal({ m, onClose, onVideo }: { m: SlMatch; onClose: () => void; onVideo: () => void }) {
+  useEscClose(onClose);
   const events = m.protocol ? protocolEvents(m.protocol) : [];
-  return (
+  return createPortal(
     <div className="sl-modal-ov" onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
-      <div className="sl-modal-box">
-        <div className="sl-modal-hd"><h3>Протокол матча</h3><button type="button" className="sl-modal-x" onClick={onClose} aria-label="Закрыть">✕</button></div>
+      <div className="sl-modal-box" onClick={(e) => e.stopPropagation()}>
+        <div className="sl-modal-hd"><h3>Протокол матча</h3><button type="button" className="sl-modal-x" onClick={(e) => { e.stopPropagation(); onClose(); }} aria-label="Закрыть">✕</button></div>
         <div className="sl-modal-body">
           <MatchHead m={m} big />
           {m.videoSlug && <button type="button" className="sl-watch sl-watch--wide" onClick={onVideo}>▶ Смотреть видео матча</button>}
@@ -354,7 +365,8 @@ function MatchDetailModal({ m, onClose, onVideo }: { m: SlMatch; onClose: () => 
           )}
         </div>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }
 
@@ -385,14 +397,16 @@ function VideoWindow({ m, onClose }: { m: SlMatch; onClose: () => void }) {
     navigator.clipboard?.writeText(url).then(() => toast.success('Ссылка на видео скопирована')).catch(() => toast.info(url));
   }
 
-  return (
+  useEscClose(onClose);
+
+  return createPortal(
     <div className="sl-modal-ov" onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
-      <div className="sl-modal-box sl-modal-box--video">
+      <div className="sl-modal-box sl-modal-box--video" onClick={(e) => e.stopPropagation()}>
         <div className="sl-modal-hd">
           <h3>Видео матча</h3>
           <div className="sl-modal-hd__actions">
-            <button type="button" className="sl-share" onClick={share}>↗ Поделиться</button>
-            <button type="button" className="sl-modal-x" onClick={onClose} aria-label="Закрыть">✕</button>
+            <button type="button" className="sl-share" onClick={(e) => { e.stopPropagation(); share(); }}>↗ Поделиться</button>
+            <button type="button" className="sl-modal-x" onClick={(e) => { e.stopPropagation(); onClose(); }} aria-label="Закрыть">✕</button>
           </div>
         </div>
         <div className="sl-modal-body">
@@ -407,6 +421,7 @@ function VideoWindow({ m, onClose }: { m: SlMatch; onClose: () => void }) {
           </div>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }
