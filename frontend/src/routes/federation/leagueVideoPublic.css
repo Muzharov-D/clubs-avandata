@@ -1,0 +1,21 @@
+/* Публичная страница видео матча (без входа) — на бренде АванData. */
+.lvp{
+  min-height:100vh;
+  background:
+    radial-gradient(900px 500px at 82% -8%, rgba(48,84,255,.28), transparent 60%),
+    radial-gradient(700px 420px at 8% 0%, rgba(94,235,252,.10), transparent 55%),
+    #070716;
+  color:#EAF0FF;
+  font-family:Inter,system-ui,sans-serif;
+  display:flex;flex-direction:column;
+}
+.lvp__top{display:flex;align-items:center;gap:14px;padding:20px 26px;border-bottom:1px solid rgba(120,140,255,.14)}
+.lvp__logo{height:30px}
+.lvp__league{font-family:'Exo 2',sans-serif;font-weight:700;font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:#5EEBFC}
+.lvp__main{flex:1;display:flex;align-items:flex-start;justify-content:center;padding:32px 22px 60px}
+.lvp__card{width:min(1000px,96vw);background:rgba(52,52,191,.10);border:1px solid rgba(120,140,255,.18);border-radius:24px;box-shadow:0 30px 80px -30px #000;padding:26px}
+.lvp__age{text-align:center;font-family:'Exo 2',sans-serif;font-weight:700;font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:#9098C0;margin-bottom:10px}
+.lvp__share{margin:18px auto 0;display:flex}
+.lvp__empty{color:#9098C0;font-weight:600;padding:60px;text-align:center}
+.lvp__foot{text-align:center;color:#6B72A0;font-size:12px;padding:18px;border-top:1px solid rgba(120,140,255,.10)}
+@media(max-width:560px){.lvp__card{padding:16px}.sl-mh__nm{font-size:13px}.sl-mh__score{font-size:24px}}

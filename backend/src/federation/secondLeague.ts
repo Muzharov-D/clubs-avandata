@@ -103,12 +103,17 @@ async function secondLeagueGroup(tid: number): Promise<SlGroup> {
 }
 
 // ── Календарь (только матчи Второй лиги) ─────────────────────────────────────
+export interface SlGoal { team: 'home' | 'away'; player: string; minute: number | null; assist: string | null; kind: 'goal' | 'own_goal' | 'penalty'; addedTime: boolean }
+export interface SlCard { team: 'home' | 'away'; player: string; minute: number | null; kind: 'yellow' | 'red' | 'yellow_to_red' }
+export interface SlSub { team: 'home' | 'away'; minute: number | null; on: string; off: string }
+export interface SlProtocol { goals: SlGoal[]; cards: SlCard[]; subs: SlSub[] }
 export interface SlMatch {
   id: number; date: string | null; tour: number | null;
   home: string; away: string; homeLogo: string | null; awayLogo: string | null;
   score: string | null; scoreHome: number | null; scoreAway: number | null; played: boolean;
   techDefeat: boolean; venue: string | null;
   videoSlug?: string | null;
+  protocol?: SlProtocol | null; // голы/карточки/замены (пре-синк из FFSPB-протокола)
 }
 const nm = (x: unknown): string | null => (x && typeof x === 'object' ? ((x as Record<string, unknown>).name as string) : (x as string)) ?? null;
 
@@ -156,6 +161,44 @@ async function secondLeagueMatches(tid: number): Promise<{ matches: SlMatch[]; t
     };
   }).sort((a, b) => String(a.date ?? '').localeCompare(String(b.date ?? '')));
   return { matches, teamIds: grp.teamIds };
+}
+
+// ── Протокол матча (голы/карточки/замены) из FFSPB /matches/{id} ──────────────
+// eventType: 0 гол / 1 автогол / 2 пенальти / 4 ЖК / 5 КК / 6 2ЖК→удаление.
+// Замены — из participatedPlayers (replaceMin>0 + replacedBy). Команда → home/away
+// по host @id. Пре-синкается в снимок (Render заблокён от FFSPB).
+const GOAL_KIND: Record<number, SlGoal['kind']> = { 0: 'goal', 1: 'own_goal', 2: 'penalty' };
+const CARD_KIND: Record<number, SlCard['kind']> = { 4: 'yellow', 5: 'red', 6: 'yellow_to_red' };
+interface FfPerson { surname?: string; firstName?: string; member?: { surname?: string; firstName?: string } }
+const pname = (p?: FfPerson | null): string => {
+  if (!p) return '—';
+  const last = p.surname || p.member?.surname || '';
+  const first = p.firstName || p.member?.firstName || '';
+  return (last + (first ? ` ${first.slice(0, 1)}.` : '')).trim() || '—';
+};
+interface FfEvent { eventType?: number; minute?: number | null; addedTime?: boolean; team?: { '@id'?: string }; author?: FfPerson; assist?: FfPerson | null }
+interface FfPart { replaceMin?: number; replacedBy?: FfPerson; request?: FfPerson; team?: { '@id'?: string } }
+
+export async function secondLeagueMatchProtocol(matchId: number): Promise<SlProtocol> {
+  const fm = await ffspbGet(`/matches/${matchId}`);
+  const hostId = (fm.host as { '@id'?: string } | undefined)?.['@id'];
+  const side = (tid?: string): 'home' | 'away' => (tid && tid === hostId ? 'home' : 'away');
+  const goals: SlGoal[] = [];
+  const cards: SlCard[] = [];
+  for (const e of (fm.events as FfEvent[] | undefined) ?? []) {
+    if (e.eventType == null) continue;
+    const gk = GOAL_KIND[e.eventType];
+    const ck = CARD_KIND[e.eventType];
+    if (gk) goals.push({ team: side(e.team?.['@id']), player: pname(e.author), minute: e.minute ?? null, assist: e.assist ? pname(e.assist) : null, kind: gk, addedTime: !!e.addedTime });
+    else if (ck) cards.push({ team: side(e.team?.['@id']), player: pname(e.author), minute: e.minute ?? null, kind: ck });
+  }
+  const subs: SlSub[] = [];
+  for (const p of (fm.participatedPlayers as FfPart[] | undefined) ?? []) {
+    if (Number(p.replaceMin) > 0 && p.replacedBy) subs.push({ team: side(p.team?.['@id']), minute: Number(p.replaceMin), off: pname(p.request), on: pname(p.replacedBy) });
+  }
+  const byMin = (a: { minute: number | null }, b: { minute: number | null }) => (a.minute ?? 0) - (b.minute ?? 0);
+  goals.sort(byMin); cards.sort(byMin); subs.sort(byMin);
+  return { goals, cards, subs };
 }
 
 // ── Big Bro: видео-матчи аккаунта + стыковка ─────────────────────────────────

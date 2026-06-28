@@ -1,4 +1,4 @@
-import { lazy } from 'react';
+import { lazy, Suspense } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useParams } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
@@ -56,6 +56,7 @@ const FederationTalentLoss = lazy(() => import('./routes/federation/TalentLossVi
 const FederationTalent = lazy(() => import('./routes/federation/TalentView').then((m) => ({ default: m.FederationTalent })));
 const FederationClubs = lazy(() => import('./routes/federation/ClubsView').then((m) => ({ default: m.FederationClubs })));
 const FederationSecondLeague = lazy(() => import('./routes/federation/SecondLeagueView').then((m) => ({ default: m.SecondLeague })));
+const LeagueVideoPublic = lazy(() => import('./routes/federation/LeagueVideoPublic').then((m) => ({ default: m.LeagueVideoPublic })));
 // Глубокий маршрут профиля игрока — достижим, но вне главного нав.
 const FederationAvPlayerProfile = lazy(() => import('./routes/federation/AvPlayerProfile').then((m) => ({ default: m.FederationAvPlayerProfile })));
 
@@ -164,6 +165,8 @@ export function App() {
                   <Route path="/public/team/:age/league" element={<LeagueFixture />} />
                   {/* Multi-tenant public — главное для родителя */}
                   <Route path="/m/:slug/team/:age" element={<PublicTenantTeam />} />
+                  {/* Публичное видео матча Второй лиги (цель «поделиться») */}
+                  <Route path="/league/video/:id" element={<Suspense fallback={null}><LeagueVideoPublic /></Suspense>} />
 
                   {/* Платформенный админ (Clubs Avandata) */}
                   <Route

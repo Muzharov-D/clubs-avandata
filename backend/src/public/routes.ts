@@ -4,6 +4,18 @@ import { resolveOurExtId, markOurStandingsRow } from '../data/ourTeam.js';
 import { eq } from 'drizzle-orm';
 import { tenants } from '../db/schema/tenants.js';
 import { NotFoundError } from '../shared/errors.js';
+import { SECOND_LEAGUE } from '../federation/secondLeague.generated.js';
+import { secondLeagueMatchVideo, isBigbroConfigured } from '../federation/secondLeague.js';
+
+/** Найти матч Второй лиги по id в снимке (по всем возрастам). */
+function slMatchById(id: number) {
+  for (const y of SECOND_LEAGUE.years) {
+    const a = SECOND_LEAGUE.ages[y];
+    const m = a?.matches.find((x) => x.id === id);
+    if (m) return { match: m, age: a!.age };
+  }
+  return null;
+}
 
 // Слово-группа позиции по коду SportVisor/FFSPB. ЗЕРКАЛО posFullFromCode из
 // data/routes.ts — источник истины позиции = match_players.position по минутам
@@ -45,6 +57,27 @@ export async function publicRoutes(app: FastifyInstance) {
   // Stub для club-rank — legacy ClubPage его дёргает, чтобы не падал.
   app.get('/club-rank', async () => {
     return { ranks: [], updatedAt: null };
+  });
+
+  // ПУБЛИЧНОЕ видео матча Второй лиги (для «поделиться» — открывается без входа).
+  // Мета из снимка + свежий URL видео вживую (Big Bro) → фолбэк на снимок.
+  app.get<{ Params: { id: string } }>('/second-league/match/:id', async (req, reply) => {
+    const id = Number(req.params.id);
+    const found = slMatchById(id);
+    if (!found) { reply.code(404); return { error: 'матч не найден', code: 'NOT_FOUND' }; }
+    const m = found.match;
+    let video = m.videoSlug ? (SECOND_LEAGUE.videos[m.videoSlug] ?? { status: null, name: null, parts: [] }) : { status: null, name: null, parts: [] };
+    if (m.videoSlug && isBigbroConfigured()) {
+      try { const live = await secondLeagueMatchVideo(m.videoSlug); if (live.parts.length) video = live; } catch { /* фолбэк на снимок */ }
+    }
+    return {
+      id: m.id, age: found.age, tour: m.tour,
+      home: m.home.trim(), away: m.away.trim(),
+      homeLogo: m.homeLogo, awayLogo: m.awayLogo,
+      date: m.date, venue: m.venue,
+      score: m.score, scoreHome: m.scoreHome, scoreAway: m.scoreAway, played: m.played,
+      parts: video.parts, status: video.status,
+    };
   });
 
   // Public tenant info (brand + name)

@@ -6,11 +6,20 @@ import {
   secondLeagueAge,
   secondLeagueClubRanking,
   secondLeagueMatchVideo,
+  secondLeagueMatchProtocol,
   isSecondLeagueConfigured,
   isBigbroConfigured,
   type SlAgeData,
   type SlClubRow,
 } from '../federation/secondLeague.js';
+
+// Простой пул параллелизма (щадим FFSPB).
+async function pmap<T>(items: T[], limit: number, fn: (x: T) => Promise<void>): Promise<void> {
+  let i = 0;
+  await Promise.all(Array.from({ length: Math.min(limit, items.length) }, async () => {
+    while (i < items.length) { const k = i++; await fn(items[k]!); }
+  }));
+}
 
 /**
  * SYNC Второй лиги (ФФСПб) в статический снимок: запускать ЛОКАЛЬНО/где есть доступ
@@ -47,6 +56,18 @@ async function main() {
     for (const m of age.matches) if (m.videoSlug) { slugs.add(m.videoSlug); vids++; }
     console.log(`  ${y} (${age.age}): матчей ${age.matches.length}, таблица ${age.table.length}, привязок видео ${vids}`);
   }
+
+  // Пре-синк протокола (голы/карточки/замены) по сыгранным матчам — для модалки.
+  const playedMatches = years.flatMap((y) => ages[y]?.matches.filter((m) => m.played) ?? []);
+  console.log(`  протокол по ${playedMatches.length} сыгранным матчам…`);
+  let prOk = 0;
+  await pmap(playedMatches, 6, async (m) => {
+    try {
+      m.protocol = await secondLeagueMatchProtocol(m.id);
+      if (m.protocol.goals.length || m.protocol.cards.length || m.protocol.subs.length) prOk++;
+    } catch { m.protocol = null; }
+  });
+  console.log(`  протокол собран: ${prOk}/${playedMatches.length} с событиями`);
 
   console.log('  клубный зачёт…');
   const clubRanking = await secondLeagueClubRanking();

@@ -14,7 +14,7 @@ export interface SecondLeagueSnapshot {
 }
 
 export const SECOND_LEAGUE: SecondLeagueSnapshot = {
-  "generatedAt": "2026-06-28T12:49:07.056Z",
+  "generatedAt": "2026-06-28T16:08:27.837Z",
   "years": [
     2013,
     2012,
@@ -566,7 +566,107 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "scoreAway": 1,
           "played": true,
           "techDefeat": false,
-          "venue": "Балтика"
+          "venue": "Балтика",
+          "protocol": {
+            "goals": [
+              {
+                "team": "home",
+                "player": "Дайтов Г.",
+                "minute": 8,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Новиков С.",
+                "minute": 36,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Новиков С.",
+                "minute": 44,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Коршунов А.",
+                "minute": 56,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              }
+            ],
+            "cards": [
+              {
+                "team": "away",
+                "player": "Байрамов К.",
+                "minute": 52,
+                "kind": "yellow"
+              },
+              {
+                "team": "away",
+                "player": "Омурканов И.",
+                "minute": 72,
+                "kind": "yellow"
+              }
+            ],
+            "subs": [
+              {
+                "team": "home",
+                "minute": 41,
+                "off": "Пустозвонов Д.",
+                "on": "Докукин Н."
+              },
+              {
+                "team": "away",
+                "minute": 41,
+                "off": "Калинин А.",
+                "on": "Румянцев Н."
+              },
+              {
+                "team": "away",
+                "minute": 41,
+                "off": "Климов Т.",
+                "on": "Омурканов И."
+              },
+              {
+                "team": "away",
+                "minute": 41,
+                "off": "Падерин А.",
+                "on": "Зинаков Е."
+              },
+              {
+                "team": "home",
+                "minute": 58,
+                "off": "Новиков Р.",
+                "on": "Никитов Д."
+              },
+              {
+                "team": "home",
+                "minute": 64,
+                "off": "Василевский И.",
+                "on": "Липский М."
+              },
+              {
+                "team": "home",
+                "minute": 78,
+                "off": "Дайтов Г.",
+                "on": "Жуков А."
+              },
+              {
+                "team": "home",
+                "minute": 78,
+                "off": "Новиков С.",
+                "on": "Буйдоков А."
+              }
+            ]
+          }
         },
         {
           "id": 3844256,
@@ -582,7 +682,187 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "played": true,
           "techDefeat": false,
           "venue": "СОШ № 303",
-          "videoSlug": "v9vUSyOxJCtQKQMKBRj0Lj"
+          "videoSlug": "v9vUSyOxJCtQKQMKBRj0Lj",
+          "protocol": {
+            "goals": [
+              {
+                "team": "away",
+                "player": "Седов Т.",
+                "minute": 20,
+                "assist": null,
+                "kind": "penalty",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Седов Т.",
+                "minute": 24,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Павлов Ф.",
+                "minute": 39,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Погребняк И.",
+                "minute": 49,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Седов Т.",
+                "minute": 50,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Домашнев А.",
+                "minute": 61,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Рудинский С.",
+                "minute": 70,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Рудинский С.",
+                "minute": 78,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              }
+            ],
+            "cards": [
+              {
+                "team": "home",
+                "player": "Тимофеев Р.",
+                "minute": 13,
+                "kind": "yellow"
+              },
+              {
+                "team": "home",
+                "player": "Кулишкин А.",
+                "minute": 19,
+                "kind": "red"
+              }
+            ],
+            "subs": [
+              {
+                "team": "away",
+                "minute": 19,
+                "off": "Сиренко М.",
+                "on": "Рудинский С."
+              },
+              {
+                "team": "home",
+                "minute": 19,
+                "off": "Лавриненко Е.",
+                "on": "Королев А."
+              },
+              {
+                "team": "home",
+                "minute": 30,
+                "off": "Абушов Д.",
+                "on": "Черепанов Н."
+              },
+              {
+                "team": "away",
+                "minute": 41,
+                "off": "Камакин Р.",
+                "on": "Барановский Д."
+              },
+              {
+                "team": "away",
+                "minute": 41,
+                "off": "Кушнеров В.",
+                "on": "Черепанов М."
+              },
+              {
+                "team": "away",
+                "minute": 41,
+                "off": "Симоненков О.",
+                "on": "Ванюшин Т."
+              },
+              {
+                "team": "home",
+                "minute": 41,
+                "off": "Антонов Р.",
+                "on": "Гулов А."
+              },
+              {
+                "team": "away",
+                "minute": 48,
+                "off": "Кузнецов И.",
+                "on": "Устинов Н."
+              },
+              {
+                "team": "away",
+                "minute": 51,
+                "off": "Погребняк И.",
+                "on": "Домашнев А."
+              },
+              {
+                "team": "home",
+                "minute": 55,
+                "off": "Варзин И.",
+                "on": "Кириллов В."
+              },
+              {
+                "team": "home",
+                "minute": 60,
+                "off": "Деменок Д.",
+                "on": "Михайлов Б."
+              },
+              {
+                "team": "home",
+                "minute": 60,
+                "off": "Плешаков Г.",
+                "on": "Русаков Ф."
+              },
+              {
+                "team": "away",
+                "minute": 61,
+                "off": "Павлов Ф.",
+                "on": "Позднухов Е."
+              },
+              {
+                "team": "away",
+                "minute": 61,
+                "off": "Седов Т.",
+                "on": "Шершнев М."
+              },
+              {
+                "team": "away",
+                "minute": 62,
+                "off": "Муравейко А.",
+                "on": "Лысенко В."
+              },
+              {
+                "team": "home",
+                "minute": 67,
+                "off": "Черепанов Н.",
+                "on": "Бондаренко С."
+              }
+            ]
+          }
         },
         {
           "id": 3844255,
@@ -598,7 +878,82 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "played": true,
           "techDefeat": false,
           "venue": "ЦФКСиЗ Василеостровского района",
-          "videoSlug": "9yLurWW2bSRW7RJz8RlWUx"
+          "videoSlug": "9yLurWW2bSRW7RJz8RlWUx",
+          "protocol": {
+            "goals": [
+              {
+                "team": "home",
+                "player": "Октябрев А.",
+                "minute": 24,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Воронков В.",
+                "minute": 36,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Воронков В.",
+                "minute": 52,
+                "assist": null,
+                "kind": "penalty",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Закусилов А.",
+                "minute": 80,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": true
+              }
+            ],
+            "cards": [],
+            "subs": [
+              {
+                "team": "away",
+                "minute": 47,
+                "off": "Вяткин В.",
+                "on": "Скляр З."
+              },
+              {
+                "team": "away",
+                "minute": 47,
+                "off": "Грибин В.",
+                "on": "Веденеев Д."
+              },
+              {
+                "team": "home",
+                "minute": 55,
+                "off": "Бондарь Д.",
+                "on": "Безбородкин Д."
+              },
+              {
+                "team": "home",
+                "minute": 63,
+                "off": "Воронков В.",
+                "on": "Ахмадов Д."
+              },
+              {
+                "team": "home",
+                "minute": 70,
+                "off": "Татарченко Г.",
+                "on": "Семёнов М."
+              },
+              {
+                "team": "home",
+                "minute": 73,
+                "off": "Дютиль А.",
+                "on": "Кондаков А."
+              }
+            ]
+          }
         },
         {
           "id": 3844254,
@@ -613,7 +968,121 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "scoreAway": 1,
           "played": true,
           "techDefeat": false,
-          "venue": "Московский (Скороход)"
+          "venue": "Московский (Скороход)",
+          "protocol": {
+            "goals": [
+              {
+                "team": "away",
+                "player": "Мирошников Д.",
+                "minute": 34,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Януш А.",
+                "minute": 67,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              }
+            ],
+            "cards": [
+              {
+                "team": "home",
+                "player": "Любченко Н.",
+                "minute": 0,
+                "kind": "yellow"
+              },
+              {
+                "team": "home",
+                "player": "Оберняк Р.",
+                "minute": 0,
+                "kind": "yellow"
+              },
+              {
+                "team": "home",
+                "player": "Доморощенов Ф.",
+                "minute": 0,
+                "kind": "yellow"
+              },
+              {
+                "team": "home",
+                "player": "Железный Г.",
+                "minute": 0,
+                "kind": "yellow"
+              },
+              {
+                "team": "away",
+                "player": "Макаров М.",
+                "minute": 0,
+                "kind": "yellow_to_red"
+              },
+              {
+                "team": "away",
+                "player": "Макаров М.",
+                "minute": 0,
+                "kind": "yellow_to_red"
+              },
+              {
+                "team": "away",
+                "player": "Савельев Н.",
+                "minute": 0,
+                "kind": "yellow"
+              }
+            ],
+            "subs": [
+              {
+                "team": "home",
+                "minute": 41,
+                "off": "Верниковский П.",
+                "on": "Доморощенов Ф."
+              },
+              {
+                "team": "home",
+                "minute": 41,
+                "off": "Викулов А.",
+                "on": "Железный Г."
+              },
+              {
+                "team": "home",
+                "minute": 41,
+                "off": "Ткаченко М.",
+                "on": "Януш А."
+              },
+              {
+                "team": "home",
+                "minute": 52,
+                "off": "Черваков А.",
+                "on": "Лаврентьев М."
+              },
+              {
+                "team": "home",
+                "minute": 58,
+                "off": "Бовкун А.",
+                "on": "Акулов А."
+              },
+              {
+                "team": "away",
+                "minute": 70,
+                "off": "Краевский М.",
+                "on": "Смирнов Е."
+              },
+              {
+                "team": "away",
+                "minute": 70,
+                "off": "Смирнов А.",
+                "on": "Мухин Я."
+              },
+              {
+                "team": "away",
+                "minute": 80,
+                "off": "Тюфякин В.",
+                "on": "Гарг Д."
+              }
+            ]
+          }
         },
         {
           "id": 3844257,
@@ -628,7 +1097,121 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "scoreAway": 2,
           "played": true,
           "techDefeat": false,
-          "venue": "Балтика"
+          "venue": "Балтика",
+          "protocol": {
+            "goals": [
+              {
+                "team": "home",
+                "player": "Костин А.",
+                "minute": 2,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Костин А.",
+                "minute": 21,
+                "assist": null,
+                "kind": "penalty",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Дудкин Е.",
+                "minute": 52,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Дудкин Е.",
+                "minute": 67,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Воронец Д.",
+                "minute": 80,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": true
+              }
+            ],
+            "cards": [
+              {
+                "team": "away",
+                "player": "Сенчуков М.",
+                "minute": 11,
+                "kind": "yellow"
+              },
+              {
+                "team": "away",
+                "player": "Заморский А.",
+                "minute": 32,
+                "kind": "yellow"
+              },
+              {
+                "team": "away",
+                "player": "Румянцев Н.",
+                "minute": 80,
+                "kind": "yellow"
+              }
+            ],
+            "subs": [
+              {
+                "team": "away",
+                "minute": 22,
+                "off": "Кертиев Д.",
+                "on": "Токарев А."
+              },
+              {
+                "team": "away",
+                "minute": 22,
+                "off": "Сафронов А.",
+                "on": "Вихров К."
+              },
+              {
+                "team": "away",
+                "minute": 34,
+                "off": "Платов М.",
+                "on": "Суббота С."
+              },
+              {
+                "team": "away",
+                "minute": 50,
+                "off": "Сенчуков М.",
+                "on": "Курдюков И."
+              },
+              {
+                "team": "home",
+                "minute": 59,
+                "off": "Кожанов С.",
+                "on": "Карягин М."
+              },
+              {
+                "team": "away",
+                "minute": 75,
+                "off": "Заморский А.",
+                "on": "Симонов И."
+              },
+              {
+                "team": "home",
+                "minute": 76,
+                "off": "Карягин М.",
+                "on": "Беляков А."
+              },
+              {
+                "team": "away",
+                "minute": 79,
+                "off": "Кондратенко В.",
+                "on": "Смирнов М."
+              }
+            ]
+          }
         },
         {
           "id": 3844260,
@@ -644,7 +1227,105 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "played": true,
           "techDefeat": false,
           "venue": "Ижорец. Поле № 1",
-          "videoSlug": "36wT6nfbA6sgRmpJBFXp1S"
+          "videoSlug": "36wT6nfbA6sgRmpJBFXp1S",
+          "protocol": {
+            "goals": [
+              {
+                "team": "away",
+                "player": "Кондратьев Н.",
+                "minute": 14,
+                "assist": null,
+                "kind": "own_goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Докукин Н.",
+                "minute": 44,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Кузнецов А.",
+                "minute": 59,
+                "assist": null,
+                "kind": "penalty",
+                "addedTime": false
+              }
+            ],
+            "cards": [
+              {
+                "team": "away",
+                "player": "Жуков Е.",
+                "minute": 21,
+                "kind": "yellow"
+              },
+              {
+                "team": "home",
+                "player": "Дудкин Е.",
+                "minute": 23,
+                "kind": "yellow"
+              }
+            ],
+            "subs": [
+              {
+                "team": "home",
+                "minute": 35,
+                "off": "Кертиев Д.",
+                "on": "Токарев А."
+              },
+              {
+                "team": "home",
+                "minute": 41,
+                "off": "Сафронов А.",
+                "on": "Силин М."
+              },
+              {
+                "team": "away",
+                "minute": 56,
+                "off": "Боровков И.",
+                "on": "Никитов Д."
+              },
+              {
+                "team": "away",
+                "minute": 56,
+                "off": "Липский М.",
+                "on": "Жуков А."
+              },
+              {
+                "team": "away",
+                "minute": 65,
+                "off": "Дайтов Г.",
+                "on": "Гусев А."
+              },
+              {
+                "team": "home",
+                "minute": 65,
+                "off": "Курдюков И.",
+                "on": "Сенчуков М."
+              },
+              {
+                "team": "away",
+                "minute": 71,
+                "off": "Василевский И.",
+                "on": "Буйдоков А."
+              },
+              {
+                "team": "away",
+                "minute": 71,
+                "off": "Старков Р.",
+                "on": "Петров М."
+              },
+              {
+                "team": "home",
+                "minute": 80,
+                "off": "Дудкин Е.",
+                "on": "Смирнов М."
+              }
+            ]
+          }
         },
         {
           "id": 3844261,
@@ -660,7 +1341,157 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "played": true,
           "techDefeat": false,
           "venue": "СОШ 363",
-          "videoSlug": "PGb9iCZHmusAp8ZFe0xtQM"
+          "videoSlug": "PGb9iCZHmusAp8ZFe0xtQM",
+          "protocol": {
+            "goals": [
+              {
+                "team": "home",
+                "player": "Седов Т.",
+                "minute": 6,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Комков Т.",
+                "minute": 22,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Черепанов М.",
+                "minute": 29,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Седов Т.",
+                "minute": 42,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Муравейко А.",
+                "minute": 57,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Комков Т.",
+                "minute": 59,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Седов Т.",
+                "minute": 63,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Домашнев А.",
+                "minute": 79,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              }
+            ],
+            "cards": [
+              {
+                "team": "home",
+                "player": "Погребняк И.",
+                "minute": 62,
+                "kind": "yellow"
+              },
+              {
+                "team": "home",
+                "player": "Кушнеров В.",
+                "minute": 71,
+                "kind": "yellow"
+              }
+            ],
+            "subs": [
+              {
+                "team": "away",
+                "minute": 41,
+                "off": "Садовский М.",
+                "on": "Карягин М."
+              },
+              {
+                "team": "home",
+                "minute": 44,
+                "off": "Ванюшин Т.",
+                "on": "Устинов Н."
+              },
+              {
+                "team": "home",
+                "minute": 44,
+                "off": "Павлов Ф.",
+                "on": "Кушнеров В."
+              },
+              {
+                "team": "away",
+                "minute": 49,
+                "off": "Кожанов С.",
+                "on": "Тасоев Р."
+              },
+              {
+                "team": "home",
+                "minute": 61,
+                "off": "Симоненков О.",
+                "on": "Домашнев А."
+              },
+              {
+                "team": "away",
+                "minute": 61,
+                "off": "Воронец Д.",
+                "on": "Беляков А."
+              },
+              {
+                "team": "away",
+                "minute": 67,
+                "off": "Ляпустин В.",
+                "on": "Петрусь М."
+              },
+              {
+                "team": "home",
+                "minute": 70,
+                "off": "Погребняк И.",
+                "on": "Позднухов Е."
+              },
+              {
+                "team": "away",
+                "minute": 70,
+                "off": "Бублик Н.",
+                "on": "Зенченко Т."
+              },
+              {
+                "team": "home",
+                "minute": 73,
+                "off": "Черепанов М.",
+                "on": "Шершнев М."
+              },
+              {
+                "team": "home",
+                "minute": 76,
+                "off": "Рудинский С.",
+                "on": "Лысенко В."
+              }
+            ]
+          }
         },
         {
           "id": 3844259,
@@ -675,7 +1506,107 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "scoreAway": 3,
           "played": true,
           "techDefeat": false,
-          "venue": "СШОР Кировского района"
+          "venue": "СШОР Кировского района",
+          "protocol": {
+            "goals": [
+              {
+                "team": "away",
+                "player": "Филатов В.",
+                "minute": 5,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Панков А.",
+                "minute": 9,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Байрамов К.",
+                "minute": 25,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Байрамов К.",
+                "minute": 74,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              }
+            ],
+            "cards": [
+              {
+                "team": "away",
+                "player": "Коршунов А.",
+                "minute": 44,
+                "kind": "yellow"
+              },
+              {
+                "team": "home",
+                "player": "Мирошников Д.",
+                "minute": 48,
+                "kind": "yellow"
+              },
+              {
+                "team": "home",
+                "player": "Ионов А.",
+                "minute": 70,
+                "kind": "yellow"
+              }
+            ],
+            "subs": [
+              {
+                "team": "home",
+                "minute": 41,
+                "off": "Смирнов А.",
+                "on": "Мухин Я."
+              },
+              {
+                "team": "away",
+                "minute": 41,
+                "off": "Зинаков Е.",
+                "on": "Падерин А."
+              },
+              {
+                "team": "away",
+                "minute": 41,
+                "off": "Калинин А.",
+                "on": "Климов Т."
+              },
+              {
+                "team": "home",
+                "minute": 62,
+                "off": "Тюфякин В.",
+                "on": "Ионов А."
+              },
+              {
+                "team": "away",
+                "minute": 70,
+                "off": "Филатов В.",
+                "on": "Зырянов Л."
+              },
+              {
+                "team": "away",
+                "minute": 71,
+                "off": "Костиков А.",
+                "on": "Румянцев Н."
+              },
+              {
+                "team": "away",
+                "minute": 75,
+                "off": "Фёдоров Д.",
+                "on": "Омурканов И."
+              }
+            ]
+          }
         },
         {
           "id": 3844262,
@@ -691,7 +1622,123 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "played": true,
           "techDefeat": false,
           "venue": "Химик",
-          "videoSlug": "1afst6D7cVDVl0tj0mD9eb"
+          "videoSlug": "1afst6D7cVDVl0tj0mD9eb",
+          "protocol": {
+            "goals": [
+              {
+                "team": "home",
+                "player": "Миненко Е.",
+                "minute": 28,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Росланов Д.",
+                "minute": 69,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Веденеев Д.",
+                "minute": 76,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": true
+              }
+            ],
+            "cards": [
+              {
+                "team": "away",
+                "player": "Кириллов Е.",
+                "minute": 17,
+                "kind": "yellow"
+              },
+              {
+                "team": "home",
+                "player": "Лаврищев Е.",
+                "minute": 26,
+                "kind": "yellow_to_red"
+              },
+              {
+                "team": "away",
+                "player": "Антонов Р.",
+                "minute": 53,
+                "kind": "red"
+              },
+              {
+                "team": "home",
+                "player": "Гурбанов А.",
+                "minute": 72,
+                "kind": "yellow"
+              },
+              {
+                "team": "home",
+                "player": "Лаврищев Е.",
+                "minute": 74,
+                "kind": "yellow_to_red"
+              }
+            ],
+            "subs": [
+              {
+                "team": "away",
+                "minute": 36,
+                "off": "Шлионский Л.",
+                "on": "Новицкий А."
+              },
+              {
+                "team": "home",
+                "minute": 41,
+                "off": "Грибин В.",
+                "on": "Веденеев Д."
+              },
+              {
+                "team": "away",
+                "minute": 41,
+                "off": "Варзин И.",
+                "on": "Гулов А."
+              },
+              {
+                "team": "away",
+                "minute": 50,
+                "off": "Абушов Д.",
+                "on": "Лавриненко Е."
+              },
+              {
+                "team": "home",
+                "minute": 54,
+                "off": "Вяткин В.",
+                "on": "Рыбка Г."
+              },
+              {
+                "team": "home",
+                "minute": 68,
+                "off": "Миненко Е.",
+                "on": "Скляр З."
+              },
+              {
+                "team": "away",
+                "minute": 68,
+                "off": "Кириллов В.",
+                "on": "Михайлов Б."
+              },
+              {
+                "team": "away",
+                "minute": 68,
+                "off": "Плешаков Г.",
+                "on": "Бондаренко С."
+              },
+              {
+                "team": "away",
+                "minute": 80,
+                "off": "Деменок Д.",
+                "on": "Русаков Ф."
+              }
+            ]
+          }
         },
         {
           "id": 3844263,
@@ -706,7 +1753,95 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "scoreAway": 3,
           "played": true,
           "techDefeat": false,
-          "venue": "Московский (Скороход)"
+          "venue": "Московский (Скороход)",
+          "protocol": {
+            "goals": [
+              {
+                "team": "away",
+                "player": "Макаров К.",
+                "minute": 13,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Бобин Д.",
+                "minute": 15,
+                "assist": "Воронков В.",
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Турапин М.",
+                "minute": 32,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Черваков А.",
+                "minute": 40,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              }
+            ],
+            "cards": [
+              {
+                "team": "home",
+                "player": "Железный Г.",
+                "minute": 46,
+                "kind": "yellow"
+              },
+              {
+                "team": "home",
+                "player": "Оберняк Р.",
+                "minute": 49,
+                "kind": "yellow"
+              },
+              {
+                "team": "away",
+                "player": "Ахмадов Д.",
+                "minute": 77,
+                "kind": "yellow"
+              }
+            ],
+            "subs": [
+              {
+                "team": "away",
+                "minute": 40,
+                "off": "Дютиль А.",
+                "on": "Ахмадов Д."
+              },
+              {
+                "team": "home",
+                "minute": 48,
+                "off": "Ткаченко М.",
+                "on": "Верниковский П."
+              },
+              {
+                "team": "home",
+                "minute": 60,
+                "off": "Бовкун А.",
+                "on": "Викулов А."
+              },
+              {
+                "team": "home",
+                "minute": 67,
+                "off": "Терещенко И.",
+                "on": "Бугай Н."
+              },
+              {
+                "team": "away",
+                "minute": 67,
+                "off": "Татарченко Г.",
+                "on": "Семёнов М."
+              }
+            ]
+          }
         },
         {
           "id": 3844267,
@@ -721,7 +1856,109 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "scoreAway": 1,
           "played": true,
           "techDefeat": false,
-          "venue": "Балтика"
+          "venue": "Балтика",
+          "protocol": {
+            "goals": [
+              {
+                "team": "home",
+                "player": "Новиков С.",
+                "minute": 46,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Рудинский С.",
+                "minute": 61,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              }
+            ],
+            "cards": [
+              {
+                "team": "away",
+                "player": "Рудинский С.",
+                "minute": 49,
+                "kind": "yellow"
+              },
+              {
+                "team": "home",
+                "player": "Грибов А.",
+                "minute": 51,
+                "kind": "yellow"
+              },
+              {
+                "team": "away",
+                "player": "Ванюшин Т.",
+                "minute": 59,
+                "kind": "yellow"
+              },
+              {
+                "team": "home",
+                "player": "Сковорода Д.",
+                "minute": 74,
+                "kind": "yellow"
+              }
+            ],
+            "subs": [
+              {
+                "team": "away",
+                "minute": 44,
+                "off": "Домашнев А.",
+                "on": "Позднухов Е."
+              },
+              {
+                "team": "away",
+                "minute": 52,
+                "off": "Янкин А.",
+                "on": "Барановский Д."
+              },
+              {
+                "team": "away",
+                "minute": 60,
+                "off": "Ванюшин Т.",
+                "on": "Лысенко В."
+              },
+              {
+                "team": "home",
+                "minute": 65,
+                "off": "Дайтов Г.",
+                "on": "Жуков А."
+              },
+              {
+                "team": "home",
+                "minute": 65,
+                "off": "Кондратьев Н.",
+                "on": "Никитов Д."
+              },
+              {
+                "team": "home",
+                "minute": 65,
+                "off": "Новиков Р.",
+                "on": "Гусев А."
+              },
+              {
+                "team": "home",
+                "minute": 65,
+                "off": "Новиков С.",
+                "on": "Липский М."
+              },
+              {
+                "team": "home",
+                "minute": 71,
+                "off": "Василевский И.",
+                "on": "Аликузуев И."
+              },
+              {
+                "team": "home",
+                "minute": 71,
+                "off": "Грибов А.",
+                "on": "Буйдоков А."
+              }
+            ]
+          }
         },
         {
           "id": 3844264,
@@ -736,7 +1973,69 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "scoreAway": 1,
           "played": true,
           "techDefeat": false,
-          "venue": "ЦФКСиЗ Василеостровского района"
+          "venue": "ЦФКСиЗ Василеостровского района",
+          "protocol": {
+            "goals": [
+              {
+                "team": "home",
+                "player": "Дютиль А.",
+                "minute": 7,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Клебанов С.",
+                "minute": 23,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Денисюк К.",
+                "minute": 74,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              }
+            ],
+            "cards": [
+              {
+                "team": "away",
+                "player": "Макаров М.",
+                "minute": 39,
+                "kind": "yellow"
+              },
+              {
+                "team": "away",
+                "player": "Мирошников Д.",
+                "minute": 70,
+                "kind": "yellow"
+              }
+            ],
+            "subs": [
+              {
+                "team": "away",
+                "minute": 54,
+                "off": "Смирнов Е.",
+                "on": "Денисюк К."
+              },
+              {
+                "team": "home",
+                "minute": 58,
+                "off": "Воронков В.",
+                "on": "Ахмадов Д."
+              },
+              {
+                "team": "away",
+                "minute": 75,
+                "off": "Холматов Т.",
+                "on": "Мирошников М."
+              }
+            ]
+          }
         },
         {
           "id": 3844265,
@@ -751,7 +2050,111 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "scoreAway": 1,
           "played": true,
           "techDefeat": false,
-          "venue": "СОШ № 303"
+          "venue": "СОШ № 303",
+          "protocol": {
+            "goals": [
+              {
+                "team": "home",
+                "player": "Харин М.",
+                "minute": 19,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Оберняк Р.",
+                "minute": 21,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Гулов А.",
+                "minute": 76,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              }
+            ],
+            "cards": [
+              {
+                "team": "home",
+                "player": "Харин М.",
+                "minute": 25,
+                "kind": "yellow"
+              },
+              {
+                "team": "away",
+                "player": "Оберняк Р.",
+                "minute": 33,
+                "kind": "yellow"
+              },
+              {
+                "team": "away",
+                "player": "Любченко Н.",
+                "minute": 40,
+                "kind": "yellow"
+              },
+              {
+                "team": "home",
+                "player": "Варзин И.",
+                "minute": 51,
+                "kind": "yellow"
+              },
+              {
+                "team": "away",
+                "player": "Януш А.",
+                "minute": 74,
+                "kind": "yellow"
+              }
+            ],
+            "subs": [
+              {
+                "team": "away",
+                "minute": 41,
+                "off": "Викулов А.",
+                "on": "Смирнов С."
+              },
+              {
+                "team": "away",
+                "minute": 41,
+                "off": "Терещенко И.",
+                "on": "Бугай Н."
+              },
+              {
+                "team": "away",
+                "minute": 58,
+                "off": "Оберняк Р.",
+                "on": "Верниковский П."
+              },
+              {
+                "team": "home",
+                "minute": 62,
+                "off": "Шлионский Л.",
+                "on": "Новицкий А."
+              },
+              {
+                "team": "home",
+                "minute": 69,
+                "off": "Кириллов Е.",
+                "on": "Михайлов Б."
+              },
+              {
+                "team": "home",
+                "minute": 72,
+                "off": "Новицкий А.",
+                "on": "Русаков Ф."
+              },
+              {
+                "team": "home",
+                "minute": 80,
+                "off": "Плешаков Г.",
+                "on": "Бондаренко С."
+              }
+            ]
+          }
         },
         {
           "id": 3844268,
@@ -766,7 +2169,89 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "scoreAway": 1,
           "played": true,
           "techDefeat": false,
-          "venue": "Московский (Скороход)"
+          "venue": "Московский (Скороход)",
+          "protocol": {
+            "goals": [
+              {
+                "team": "away",
+                "player": "Вихров К.",
+                "minute": 6,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              }
+            ],
+            "cards": [
+              {
+                "team": "home",
+                "player": "Байрамов К.",
+                "minute": 76,
+                "kind": "yellow"
+              },
+              {
+                "team": "away",
+                "player": "Дмитриев А.",
+                "minute": 80,
+                "kind": "yellow"
+              }
+            ],
+            "subs": [
+              {
+                "team": "away",
+                "minute": 31,
+                "off": "Иванов В.",
+                "on": "Токарев А."
+              },
+              {
+                "team": "home",
+                "minute": 41,
+                "off": "Падерин А.",
+                "on": "Зинаков Е."
+              },
+              {
+                "team": "away",
+                "minute": 53,
+                "off": "Суббота С.",
+                "on": "Смирнов М."
+              },
+              {
+                "team": "home",
+                "minute": 60,
+                "off": "Будулуца Р.",
+                "on": "Калинин А."
+              },
+              {
+                "team": "home",
+                "minute": 60,
+                "off": "Климов Т.",
+                "on": "Омурканов И."
+              },
+              {
+                "team": "home",
+                "minute": 60,
+                "off": "Коршунов А.",
+                "on": "Зырянов Л."
+              },
+              {
+                "team": "away",
+                "minute": 63,
+                "off": "Вихров К.",
+                "on": "Силин М."
+              },
+              {
+                "team": "away",
+                "minute": 66,
+                "off": "Курдюков И.",
+                "on": "Дмитриев А."
+              },
+              {
+                "team": "away",
+                "minute": 76,
+                "off": "Дудкин Е.",
+                "on": "Сенчуков М."
+              }
+            ]
+          }
         },
         {
           "id": 3844266,
@@ -781,7 +2266,117 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "scoreAway": 0,
           "played": true,
           "techDefeat": false,
-          "venue": "Балтика"
+          "venue": "Балтика",
+          "protocol": {
+            "goals": [
+              {
+                "team": "home",
+                "player": "Воронец Д.",
+                "minute": 10,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Костин А.",
+                "minute": 19,
+                "assist": null,
+                "kind": "penalty",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Воронец Д.",
+                "minute": 71,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              }
+            ],
+            "cards": [
+              {
+                "team": "away",
+                "player": "Егоров Д.",
+                "minute": 17,
+                "kind": "red"
+              },
+              {
+                "team": "home",
+                "player": "Садовский М.",
+                "minute": 21,
+                "kind": "yellow"
+              },
+              {
+                "team": "away",
+                "player": "Ишутин Я.",
+                "minute": 58,
+                "kind": "yellow"
+              },
+              {
+                "team": "home",
+                "player": "Тян Р.",
+                "minute": 60,
+                "kind": "yellow"
+              }
+            ],
+            "subs": [
+              {
+                "team": "away",
+                "minute": 28,
+                "off": "Рыбка Г.",
+                "on": "Вяткин В."
+              },
+              {
+                "team": "away",
+                "minute": 41,
+                "off": "Грибин В.",
+                "on": "Веденеев Д."
+              },
+              {
+                "team": "away",
+                "minute": 41,
+                "off": "Миненко Е.",
+                "on": "Скляр З."
+              },
+              {
+                "team": "home",
+                "minute": 47,
+                "off": "Ульянов А.",
+                "on": "Карягин М."
+              },
+              {
+                "team": "home",
+                "minute": 48,
+                "off": "Садовский М.",
+                "on": "Тасоев Р."
+              },
+              {
+                "team": "home",
+                "minute": 77,
+                "off": "Бигаев А.",
+                "on": "Касапоглу Ф."
+              },
+              {
+                "team": "home",
+                "minute": 77,
+                "off": "Воронец Д.",
+                "on": "Беруашвили И."
+              },
+              {
+                "team": "home",
+                "minute": 77,
+                "off": "Кожанов С.",
+                "on": "Зенченко Т."
+              },
+              {
+                "team": "home",
+                "minute": 78,
+                "off": "Тян Р.",
+                "on": "Петрусь М."
+              }
+            ]
+          }
         },
         {
           "id": 3844270,
@@ -796,7 +2391,129 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "scoreAway": 1,
           "played": true,
           "techDefeat": false,
-          "venue": "СОШ № 303"
+          "venue": "СОШ № 303",
+          "protocol": {
+            "goals": [
+              {
+                "team": "home",
+                "player": "Седов Т.",
+                "minute": 27,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Седов Т.",
+                "minute": 48,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Кузнецов И.",
+                "minute": 51,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Рудинский С.",
+                "minute": 58,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Коршунов А.",
+                "minute": 66,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Симоненков О.",
+                "minute": 73,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              }
+            ],
+            "cards": [
+              {
+                "team": "away",
+                "player": "Фёдоров Д.",
+                "minute": 31,
+                "kind": "yellow"
+              }
+            ],
+            "subs": [
+              {
+                "team": "away",
+                "minute": 41,
+                "off": "Калинин А.",
+                "on": "Зинаков Е."
+              },
+              {
+                "team": "away",
+                "minute": 41,
+                "off": "Кубышкин М.",
+                "on": "Гвоздев Я."
+              },
+              {
+                "team": "home",
+                "minute": 41,
+                "off": "Ванюшин Т.",
+                "on": "Кузнецов И."
+              },
+              {
+                "team": "home",
+                "minute": 51,
+                "off": "Погребняк И.",
+                "on": "Домашнев А."
+              },
+              {
+                "team": "away",
+                "minute": 55,
+                "off": "Байрамов К.",
+                "on": "Омурканов И."
+              },
+              {
+                "team": "away",
+                "minute": 55,
+                "off": "Будулуца Р.",
+                "on": "Румянцев Н."
+              },
+              {
+                "team": "away",
+                "minute": 55,
+                "off": "Фёдоров Д.",
+                "on": "Зырянов Л."
+              },
+              {
+                "team": "home",
+                "minute": 58,
+                "off": "Барановский Д.",
+                "on": "Камакин Р."
+              },
+              {
+                "team": "home",
+                "minute": 64,
+                "off": "Рудинский С.",
+                "on": "Лысенко В."
+              },
+              {
+                "team": "home",
+                "minute": 66,
+                "off": "Кушнеров В.",
+                "on": "Шершнев М."
+              }
+            ]
+          }
         },
         {
           "id": 3844272,
@@ -811,7 +2528,113 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "scoreAway": 1,
           "played": true,
           "techDefeat": false,
-          "venue": "Московский (Скороход)"
+          "venue": "Московский (Скороход)",
+          "protocol": {
+            "goals": [
+              {
+                "team": "home",
+                "player": "Палкин Б.",
+                "minute": 17,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Акулов А.",
+                "minute": 19,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Януш А.",
+                "minute": 22,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Воронец Д.",
+                "minute": 36,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              }
+            ],
+            "cards": [
+              {
+                "team": "away",
+                "player": "Костин А.",
+                "minute": 47,
+                "kind": "yellow"
+              },
+              {
+                "team": "home",
+                "player": "Дубровский С.",
+                "minute": 70,
+                "kind": "yellow"
+              },
+              {
+                "team": "home",
+                "player": "Януш А.",
+                "minute": 77,
+                "kind": "yellow"
+              },
+              {
+                "team": "home",
+                "player": "Оберняк Р.",
+                "minute": 80,
+                "kind": "yellow"
+              }
+            ],
+            "subs": [
+              {
+                "team": "away",
+                "minute": 23,
+                "off": "Ляпустин В.",
+                "on": "Карягин М."
+              },
+              {
+                "team": "away",
+                "minute": 31,
+                "off": "Кожанов С.",
+                "on": "Тасоев Р."
+              },
+              {
+                "team": "home",
+                "minute": 50,
+                "off": "Акулов А.",
+                "on": "Любченко Н."
+              },
+              {
+                "team": "home",
+                "minute": 50,
+                "off": "Железный Г.",
+                "on": "Дубровский С."
+              },
+              {
+                "team": "away",
+                "minute": 50,
+                "off": "Садовский М.",
+                "on": "Беляков А."
+              },
+              {
+                "team": "home",
+                "minute": 55,
+                "off": "Бугай Н.",
+                "on": "Терещенко И."
+              },
+              {
+                "team": "home",
+                "minute": 59,
+                "off": "Викулов А.",
+                "on": "Бизяев А."
+              }
+            ]
+          }
         },
         {
           "id": 3844269,
@@ -826,7 +2649,123 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "scoreAway": 1,
           "played": true,
           "techDefeat": false,
-          "venue": "СШОР Кировского района"
+          "venue": "СШОР Кировского района",
+          "protocol": {
+            "goals": [
+              {
+                "team": "home",
+                "player": "Панков А.",
+                "minute": 11,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Дудкин Е.",
+                "minute": 56,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Панков А.",
+                "minute": 60,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              }
+            ],
+            "cards": [
+              {
+                "team": "away",
+                "player": "Румянцев Н.",
+                "minute": 20,
+                "kind": "yellow"
+              },
+              {
+                "team": "home",
+                "player": "Панков А.",
+                "minute": 54,
+                "kind": "yellow"
+              }
+            ],
+            "subs": [
+              {
+                "team": "away",
+                "minute": 22,
+                "off": "Вихров К.",
+                "on": "Суббота С."
+              },
+              {
+                "team": "away",
+                "minute": 31,
+                "off": "Иванов В.",
+                "on": "Токарев А."
+              },
+              {
+                "team": "away",
+                "minute": 39,
+                "off": "Немиров А.",
+                "on": "Дмитриев А."
+              },
+              {
+                "team": "home",
+                "minute": 61,
+                "off": "Мирошников Д.",
+                "on": "Денисюк К."
+              },
+              {
+                "team": "away",
+                "minute": 61,
+                "off": "Курдюков И.",
+                "on": "Силин М."
+              },
+              {
+                "team": "away",
+                "minute": 61,
+                "off": "Сенчуков М.",
+                "on": "Смирнов М."
+              },
+              {
+                "team": "away",
+                "minute": 61,
+                "off": "Шубин Е.",
+                "on": "Симонов И."
+              },
+              {
+                "team": "home",
+                "minute": 64,
+                "off": "Мухин Я.",
+                "on": "Писарев А."
+              },
+              {
+                "team": "home",
+                "minute": 69,
+                "off": "Смирнов А.",
+                "on": "Гарг Д."
+              },
+              {
+                "team": "away",
+                "minute": 71,
+                "off": "Токарев А.",
+                "on": "Кертиев Д."
+              },
+              {
+                "team": "away",
+                "minute": 76,
+                "off": "Дудкин Е.",
+                "on": "Панов А."
+              },
+              {
+                "team": "home",
+                "minute": 80,
+                "off": "Тюфякин В.",
+                "on": "Левачин А."
+              }
+            ]
+          }
         },
         {
           "id": 3844271,
@@ -841,7 +2780,109 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "scoreAway": 1,
           "played": true,
           "techDefeat": false,
-          "venue": "Химик"
+          "venue": "Химик",
+          "protocol": {
+            "goals": [
+              {
+                "team": "away",
+                "player": "Новиков С.",
+                "minute": 45,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Гурбанов А.",
+                "minute": 50,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              }
+            ],
+            "cards": [
+              {
+                "team": "home",
+                "player": "Миненко Е.",
+                "minute": 32,
+                "kind": "yellow"
+              },
+              {
+                "team": "home",
+                "player": "Ишутин Я.",
+                "minute": 60,
+                "kind": "yellow"
+              },
+              {
+                "team": "away",
+                "player": "Жуков Е.",
+                "minute": 67,
+                "kind": "yellow"
+              },
+              {
+                "team": "away",
+                "player": "Докукин Н.",
+                "minute": 69,
+                "kind": "yellow"
+              },
+              {
+                "team": "home",
+                "player": "Лаврищев Е.",
+                "minute": 77,
+                "kind": "yellow"
+              }
+            ],
+            "subs": [
+              {
+                "team": "away",
+                "minute": 41,
+                "off": "Жуков А.",
+                "on": "Докукин Н."
+              },
+              {
+                "team": "home",
+                "minute": 50,
+                "off": "Грибин В.",
+                "on": "Веденеев Д."
+              },
+              {
+                "team": "home",
+                "minute": 52,
+                "off": "Рыбка Г.",
+                "on": "Тепляков Н."
+              },
+              {
+                "team": "away",
+                "minute": 56,
+                "off": "Новиков Р.",
+                "on": "Никитов Д."
+              },
+              {
+                "team": "home",
+                "minute": 65,
+                "off": "Вяткин В.",
+                "on": "Добрынин В."
+              },
+              {
+                "team": "away",
+                "minute": 69,
+                "off": "Грибов А.",
+                "on": "Липский М."
+              },
+              {
+                "team": "home",
+                "minute": 73,
+                "off": "Росланов Д.",
+                "on": "Скляр З."
+              },
+              {
+                "team": "away",
+                "minute": 78,
+                "off": "Дайтов Г.",
+                "on": "Буйдоков А."
+              }
+            ]
+          }
         },
         {
           "id": 3844273,
@@ -856,7 +2897,115 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "scoreAway": 2,
           "played": true,
           "techDefeat": false,
-          "venue": "ЦФКСиЗ Василеостровского района"
+          "venue": "ЦФКСиЗ Василеостровского района",
+          "protocol": {
+            "goals": [
+              {
+                "team": "home",
+                "player": "Дютиль А.",
+                "minute": 7,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Тимофеев Р.",
+                "minute": 11,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Дютиль А.",
+                "minute": 36,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Деменок Д.",
+                "minute": 41,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Воронков В.",
+                "minute": 55,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              }
+            ],
+            "cards": [
+              {
+                "team": "home",
+                "player": "Клебанов С.",
+                "minute": 67,
+                "kind": "yellow"
+              },
+              {
+                "team": "home",
+                "player": "Турапин М.",
+                "minute": 69,
+                "kind": "yellow"
+              },
+              {
+                "team": "home",
+                "player": "Бобин Д.",
+                "minute": 77,
+                "kind": "yellow"
+              }
+            ],
+            "subs": [
+              {
+                "team": "away",
+                "minute": 41,
+                "off": "Шлионский Л.",
+                "on": "Антонов Р."
+              },
+              {
+                "team": "home",
+                "minute": 57,
+                "off": "Воронков В.",
+                "on": "Ахмадов Д."
+              },
+              {
+                "team": "away",
+                "minute": 57,
+                "off": "Варзин И.",
+                "on": "Русаков Ф."
+              },
+              {
+                "team": "away",
+                "minute": 62,
+                "off": "Гулов А.",
+                "on": "Кириллов В."
+              },
+              {
+                "team": "home",
+                "minute": 64,
+                "off": "Бондарь Д.",
+                "on": "Кондаков А."
+              },
+              {
+                "team": "away",
+                "minute": 73,
+                "off": "Антонов Р.",
+                "on": "Новицкий А."
+              },
+              {
+                "team": "away",
+                "minute": 73,
+                "off": "Кириллов В.",
+                "on": "Михайлов Б."
+              }
+            ]
+          }
         },
         {
           "id": 3844276,
@@ -872,7 +3021,147 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "played": true,
           "techDefeat": false,
           "venue": "Балтика",
-          "videoSlug": "vC9t1CtZmAfOWA22cIUXc0"
+          "videoSlug": "vC9t1CtZmAfOWA22cIUXc0",
+          "protocol": {
+            "goals": [
+              {
+                "team": "home",
+                "player": "Новиков С.",
+                "minute": 30,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Лаврентьев М.",
+                "minute": 59,
+                "assist": null,
+                "kind": "penalty",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Новиков С.",
+                "minute": 65,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Януш А.",
+                "minute": 68,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Верниковский П.",
+                "minute": 73,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Верниковский П.",
+                "minute": 79,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              }
+            ],
+            "cards": [
+              {
+                "team": "away",
+                "player": "Любченко Н.",
+                "minute": 37,
+                "kind": "yellow"
+              },
+              {
+                "team": "home",
+                "player": "Старков Р.",
+                "minute": 58,
+                "kind": "yellow"
+              },
+              {
+                "team": "home",
+                "player": "Новиков С.",
+                "minute": 71,
+                "kind": "yellow"
+              },
+              {
+                "team": "away",
+                "player": "Черваков А.",
+                "minute": 79,
+                "kind": "yellow"
+              }
+            ],
+            "subs": [
+              {
+                "team": "home",
+                "minute": 23,
+                "off": "Грибов А.",
+                "on": "Василевский И."
+              },
+              {
+                "team": "away",
+                "minute": 41,
+                "off": "Любченко Н.",
+                "on": "Черваков А."
+              },
+              {
+                "team": "away",
+                "minute": 47,
+                "off": "Терещенко И.",
+                "on": "Бугай Н."
+              },
+              {
+                "team": "away",
+                "minute": 62,
+                "off": "Акулов А.",
+                "on": "Верниковский П."
+              },
+              {
+                "team": "home",
+                "minute": 62,
+                "off": "Новиков Р.",
+                "on": "Аликузуев И."
+              },
+              {
+                "team": "home",
+                "minute": 63,
+                "off": "Боровков И.",
+                "on": "Никитов Д."
+              },
+              {
+                "team": "home",
+                "minute": 71,
+                "off": "Дайтов Г.",
+                "on": "Жуков А."
+              },
+              {
+                "team": "away",
+                "minute": 74,
+                "off": "Викулов А.",
+                "on": "Ткаченко М."
+              },
+              {
+                "team": "home",
+                "minute": 77,
+                "off": "Докукин Н.",
+                "on": "Буйдоков А."
+              },
+              {
+                "team": "away",
+                "minute": 80,
+                "off": "Яковлев А.",
+                "on": "Бизяев А."
+              }
+            ]
+          }
         },
         {
           "id": 3844278,
@@ -888,7 +3177,163 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "played": true,
           "techDefeat": false,
           "venue": "Ижорец. Поле № 1",
-          "videoSlug": "EffKaN9QQ5vbMhUX2DHL80"
+          "videoSlug": "EffKaN9QQ5vbMhUX2DHL80",
+          "protocol": {
+            "goals": [
+              {
+                "team": "home",
+                "player": "Кузнецов А.",
+                "minute": 17,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Седов Т.",
+                "minute": 28,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Муравейко А.",
+                "minute": 30,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Рудинский С.",
+                "minute": 41,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Ванюшин Т.",
+                "minute": 77,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              }
+            ],
+            "cards": [
+              {
+                "team": "home",
+                "player": "Немиров А.",
+                "minute": 55,
+                "kind": "yellow_to_red"
+              },
+              {
+                "team": "away",
+                "player": "Иноземцев С.",
+                "minute": 56,
+                "kind": "yellow"
+              },
+              {
+                "team": "away",
+                "player": "Ванюшин Т.",
+                "minute": 63,
+                "kind": "yellow"
+              },
+              {
+                "team": "away",
+                "player": "Рудинский С.",
+                "minute": 69,
+                "kind": "yellow"
+              },
+              {
+                "team": "home",
+                "player": "Немиров А.",
+                "minute": 72,
+                "kind": "yellow_to_red"
+              }
+            ],
+            "subs": [
+              {
+                "team": "away",
+                "minute": 40,
+                "off": "Погребняк И.",
+                "on": "Устинов Н."
+              },
+              {
+                "team": "home",
+                "minute": 40,
+                "off": "Кертиев Д.",
+                "on": "Токарев А."
+              },
+              {
+                "team": "home",
+                "minute": 40,
+                "off": "Силин М.",
+                "on": "Дмитриев А."
+              },
+              {
+                "team": "away",
+                "minute": 45,
+                "off": "Кузнецов И.",
+                "on": "Ванюшин Т."
+              },
+              {
+                "team": "away",
+                "minute": 62,
+                "off": "Черепанов М.",
+                "on": "Домашнев А."
+              },
+              {
+                "team": "home",
+                "minute": 64,
+                "off": "Шубин Е.",
+                "on": "Заморский А."
+              },
+              {
+                "team": "home",
+                "minute": 67,
+                "off": "Курдюков И.",
+                "on": "Платов М."
+              },
+              {
+                "team": "home",
+                "minute": 67,
+                "off": "Сенчуков М.",
+                "on": "Румянцев Н."
+              },
+              {
+                "team": "away",
+                "minute": 72,
+                "off": "Барановский Д.",
+                "on": "Янкин А."
+              },
+              {
+                "team": "away",
+                "minute": 72,
+                "off": "Рудинский С.",
+                "on": "Позднухов Е."
+              },
+              {
+                "team": "away",
+                "minute": 75,
+                "off": "Симоненков О.",
+                "on": "Лысенко В."
+              },
+              {
+                "team": "home",
+                "minute": 75,
+                "off": "Дудкин Е.",
+                "on": "Сафронов А."
+              },
+              {
+                "team": "home",
+                "minute": 78,
+                "off": "Заморский А.",
+                "on": "Панов А."
+              }
+            ]
+          }
         },
         {
           "id": 3844277,
@@ -903,7 +3348,97 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "scoreAway": 3,
           "played": true,
           "techDefeat": false,
-          "venue": "Московский (Скороход)"
+          "venue": "Московский (Скороход)",
+          "protocol": {
+            "goals": [
+              {
+                "team": "away",
+                "player": "Ишутин Я.",
+                "minute": 6,
+                "assist": null,
+                "kind": "penalty",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Гурбанов А.",
+                "minute": 18,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Тепляков Н.",
+                "minute": 21,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Филатов В.",
+                "minute": 76,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Филиппов М.",
+                "minute": 80,
+                "assist": null,
+                "kind": "penalty",
+                "addedTime": true
+              }
+            ],
+            "cards": [
+              {
+                "team": "home",
+                "player": "Зырянов Л.",
+                "minute": 0,
+                "kind": "red"
+              },
+              {
+                "team": "home",
+                "player": "Байрамов К.",
+                "minute": 39,
+                "kind": "yellow"
+              }
+            ],
+            "subs": [
+              {
+                "team": "away",
+                "minute": 41,
+                "off": "Егоров Д.",
+                "on": "Середкин К."
+              },
+              {
+                "team": "away",
+                "minute": 51,
+                "off": "Ишутин Я.",
+                "on": "Добрынин В."
+              },
+              {
+                "team": "away",
+                "minute": 51,
+                "off": "Миненко Е.",
+                "on": "Грибин В."
+              },
+              {
+                "team": "away",
+                "minute": 57,
+                "off": "Тепляков Н.",
+                "on": "Веденеев Д."
+              },
+              {
+                "team": "away",
+                "minute": 74,
+                "off": "Вяткин В.",
+                "on": "Рыбка Г."
+              }
+            ]
+          }
         },
         {
           "id": 3844275,
@@ -918,7 +3453,87 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "scoreAway": 1,
           "played": true,
           "techDefeat": false,
-          "venue": "Балтика"
+          "venue": "Балтика",
+          "protocol": {
+            "goals": [
+              {
+                "team": "home",
+                "player": "Тян Р.",
+                "minute": 33,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Комков Т.",
+                "minute": 43,
+                "assist": "Костин А.",
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Клебанов С.",
+                "minute": 80,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              }
+            ],
+            "cards": [
+              {
+                "team": "away",
+                "player": "Новский М.",
+                "minute": 78,
+                "kind": "yellow"
+              }
+            ],
+            "subs": [
+              {
+                "team": "home",
+                "minute": 30,
+                "off": "Садовский М.",
+                "on": "Тасоев Р."
+              },
+              {
+                "team": "away",
+                "minute": 40,
+                "off": "Ахмадов Д.",
+                "on": "Новский М."
+              },
+              {
+                "team": "away",
+                "minute": 57,
+                "off": "Бондарь Д.",
+                "on": "Кондаков А."
+              },
+              {
+                "team": "home",
+                "minute": 62,
+                "off": "Бигаев А.",
+                "on": "Вострилов Е."
+              },
+              {
+                "team": "home",
+                "minute": 71,
+                "off": "Кожанов С.",
+                "on": "Беляков А."
+              },
+              {
+                "team": "away",
+                "minute": 71,
+                "off": "Татарченко Г.",
+                "on": "Семёнов М."
+              },
+              {
+                "team": "home",
+                "minute": 76,
+                "off": "Ульянов А.",
+                "on": "Зенченко Т."
+              }
+            ]
+          }
         },
         {
           "id": 3844274,
@@ -934,7 +3549,89 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "played": true,
           "techDefeat": false,
           "venue": "СОШ 363",
-          "videoSlug": "GEujvGMyrUUHXrmXHxzdCu"
+          "videoSlug": "GEujvGMyrUUHXrmXHxzdCu",
+          "protocol": {
+            "goals": [
+              {
+                "team": "home",
+                "player": "Тимофеев Р.",
+                "minute": 22,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              }
+            ],
+            "cards": [
+              {
+                "team": "away",
+                "player": "Мирошников Д.",
+                "minute": 23,
+                "kind": "yellow_to_red"
+              },
+              {
+                "team": "away",
+                "player": "Мирошников Д.",
+                "minute": 38,
+                "kind": "yellow_to_red"
+              }
+            ],
+            "subs": [
+              {
+                "team": "away",
+                "minute": 32,
+                "off": "Денисюк К.",
+                "on": "Смирнов А."
+              },
+              {
+                "team": "away",
+                "minute": 41,
+                "off": "Гарг Д.",
+                "on": "Писарев А."
+              },
+              {
+                "team": "away",
+                "minute": 42,
+                "off": "Макаров М.",
+                "on": "Краевский М."
+              },
+              {
+                "team": "home",
+                "minute": 50,
+                "off": "Шлионский Л.",
+                "on": "Новицкий А."
+              },
+              {
+                "team": "home",
+                "minute": 59,
+                "off": "Абушов Д.",
+                "on": "Черепанов Н."
+              },
+              {
+                "team": "away",
+                "minute": 59,
+                "off": "Тюфякин В.",
+                "on": "Левачин А."
+              },
+              {
+                "team": "home",
+                "minute": 65,
+                "off": "Плешаков Г.",
+                "on": "Русаков Ф."
+              },
+              {
+                "team": "home",
+                "minute": 70,
+                "off": "Черепанов Н.",
+                "on": "Кириллов В."
+              },
+              {
+                "team": "away",
+                "minute": 72,
+                "off": "Ионов А.",
+                "on": "Мухин Я."
+              }
+            ]
+          }
         },
         {
           "id": 3844283,
@@ -949,7 +3646,93 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "scoreAway": 0,
           "played": true,
           "techDefeat": false,
-          "venue": "СОШ № 303"
+          "venue": "СОШ № 303",
+          "protocol": {
+            "goals": [
+              {
+                "team": "home",
+                "player": "Плешаков Г.",
+                "minute": 11,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Тимофеев Р.",
+                "minute": 65,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Гулов А.",
+                "minute": 67,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              }
+            ],
+            "cards": [
+              {
+                "team": "home",
+                "player": "Тимофеев Р.",
+                "minute": 35,
+                "kind": "yellow"
+              },
+              {
+                "team": "away",
+                "player": "Ульянов А.",
+                "minute": 39,
+                "kind": "yellow"
+              },
+              {
+                "team": "away",
+                "player": "Комков Т.",
+                "minute": 43,
+                "kind": "yellow"
+              }
+            ],
+            "subs": [
+              {
+                "team": "home",
+                "minute": 51,
+                "off": "Новицкий А.",
+                "on": "Шлионский Л."
+              },
+              {
+                "team": "away",
+                "minute": 58,
+                "off": "Ульянов А.",
+                "on": "Беляков А."
+              },
+              {
+                "team": "home",
+                "minute": 60,
+                "off": "Варзин И.",
+                "on": "Русаков Ф."
+              },
+              {
+                "team": "home",
+                "minute": 68,
+                "off": "Плешаков Г.",
+                "on": "Абушов Д."
+              },
+              {
+                "team": "home",
+                "minute": 75,
+                "off": "Гулов А.",
+                "on": "Емельянов Н."
+              },
+              {
+                "team": "home",
+                "minute": 79,
+                "off": "Лавриненко Е.",
+                "on": "Кириллов В."
+              }
+            ]
+          }
         },
         {
           "id": 3844280,
@@ -964,7 +3747,115 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "scoreAway": 3,
           "played": true,
           "techDefeat": false,
-          "venue": "Химик"
+          "venue": "Химик",
+          "protocol": {
+            "goals": [
+              {
+                "team": "home",
+                "player": "Росланов Д.",
+                "minute": 7,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Дудкин Е.",
+                "minute": 20,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Сенчуков М.",
+                "minute": 65,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Сенчуков М.",
+                "minute": 65,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Смирнов М.",
+                "minute": 80,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": true
+              }
+            ],
+            "cards": [
+              {
+                "team": "home",
+                "player": "Росланов Д.",
+                "minute": 0,
+                "kind": "yellow"
+              },
+              {
+                "team": "away",
+                "player": "Суббота С.",
+                "minute": 0,
+                "kind": "yellow"
+              },
+              {
+                "team": "away",
+                "player": "Дмитриев А.",
+                "minute": 47,
+                "kind": "yellow_to_red"
+              },
+              {
+                "team": "away",
+                "player": "Дмитриев А.",
+                "minute": 70,
+                "kind": "yellow_to_red"
+              }
+            ],
+            "subs": [
+              {
+                "team": "home",
+                "minute": 40,
+                "off": "Середкин К.",
+                "on": "Рыбка Г."
+              },
+              {
+                "team": "home",
+                "minute": 52,
+                "off": "Тепляков Н.",
+                "on": "Веденеев Д."
+              },
+              {
+                "team": "home",
+                "minute": 62,
+                "off": "Рыбка Г.",
+                "on": "Грибин В."
+              },
+              {
+                "team": "away",
+                "minute": 67,
+                "off": "Токарев А.",
+                "on": "Силин М."
+              },
+              {
+                "team": "home",
+                "minute": 74,
+                "off": "Егоров Д.",
+                "on": "Добрынин В."
+              },
+              {
+                "team": "away",
+                "minute": 78,
+                "off": "Дудкин Е.",
+                "on": "Смирнов М."
+              }
+            ]
+          }
         },
         {
           "id": 3844281,
@@ -979,7 +3870,123 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "scoreAway": 3,
           "played": true,
           "techDefeat": false,
-          "venue": "Московский (Скороход)"
+          "venue": "Московский (Скороход)",
+          "protocol": {
+            "goals": [
+              {
+                "team": "home",
+                "player": "Бовкун А.",
+                "minute": 1,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Филиппов М.",
+                "minute": 3,
+                "assist": null,
+                "kind": "penalty",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Яковлев А.",
+                "minute": 33,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Януш А.",
+                "minute": 39,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Коршунов А.",
+                "minute": 68,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Байрамов К.",
+                "minute": 80,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": true
+              }
+            ],
+            "cards": [
+              {
+                "team": "home",
+                "player": "Оберняк Р.",
+                "minute": 10,
+                "kind": "yellow"
+              },
+              {
+                "team": "away",
+                "player": "Костиков А.",
+                "minute": 19,
+                "kind": "yellow"
+              },
+              {
+                "team": "home",
+                "player": "Яковлев А.",
+                "minute": 58,
+                "kind": "yellow"
+              },
+              {
+                "team": "away",
+                "player": "Бакаржиев Ю.",
+                "minute": 73,
+                "kind": "red"
+              }
+            ],
+            "subs": [
+              {
+                "team": "away",
+                "minute": 29,
+                "off": "Калинин А.",
+                "on": "Зинаков Е."
+              },
+              {
+                "team": "away",
+                "minute": 41,
+                "off": "Фёдоров Д.",
+                "on": "Климов Т."
+              },
+              {
+                "team": "home",
+                "minute": 53,
+                "off": "Верниковский П.",
+                "on": "Сусоров Д."
+              },
+              {
+                "team": "home",
+                "minute": 53,
+                "off": "Палкин Б.",
+                "on": "Любченко Н."
+              },
+              {
+                "team": "away",
+                "minute": 58,
+                "off": "Будулуца Р.",
+                "on": "Бакаржиев Ю."
+              },
+              {
+                "team": "home",
+                "minute": 58,
+                "off": "Викулов А.",
+                "on": "Ткаченко М."
+              }
+            ]
+          }
         },
         {
           "id": 3844282,
@@ -994,7 +4001,118 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "scoreAway": 3,
           "played": true,
           "techDefeat": false,
-          "venue": "ЦФКСиЗ Василеостровского района"
+          "venue": "ЦФКСиЗ Василеостровского района",
+          "protocol": {
+            "goals": [
+              {
+                "team": "away",
+                "player": "Василевский И.",
+                "minute": 7,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Турапин М.",
+                "minute": 16,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Грибов А.",
+                "minute": 22,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Турапин М.",
+                "minute": 24,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Василевский И.",
+                "minute": 56,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Новский М.",
+                "minute": 72,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Новский М.",
+                "minute": 78,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              }
+            ],
+            "cards": [],
+            "subs": [
+              {
+                "team": "home",
+                "minute": 41,
+                "off": "Бондарь Д.",
+                "on": "Новский М."
+              },
+              {
+                "team": "away",
+                "minute": 41,
+                "off": "Старков Р.",
+                "on": "Петров М."
+              },
+              {
+                "team": "home",
+                "minute": 60,
+                "off": "Воронков В.",
+                "on": "Пугачев М."
+              },
+              {
+                "team": "away",
+                "minute": 62,
+                "off": "Грибов А.",
+                "on": "Гусев А."
+              },
+              {
+                "team": "away",
+                "minute": 62,
+                "off": "Дайтов Г.",
+                "on": "Аликузуев И."
+              },
+              {
+                "team": "home",
+                "minute": 67,
+                "off": "Татарченко Г.",
+                "on": "Семёнов М."
+              },
+              {
+                "team": "away",
+                "minute": 69,
+                "off": "Новиков Р.",
+                "on": "Никитов Д."
+              },
+              {
+                "team": "away",
+                "minute": 75,
+                "off": "Василевский И.",
+                "on": "Липский М."
+              }
+            ]
+          }
         },
         {
           "id": 3844279,
@@ -1009,7 +4127,135 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "scoreAway": 5,
           "played": true,
           "techDefeat": false,
-          "venue": "СШОР Кировского района"
+          "venue": "СШОР Кировского района",
+          "protocol": {
+            "goals": [
+              {
+                "team": "away",
+                "player": "Рудинский С.",
+                "minute": 26,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Рудинский С.",
+                "minute": 36,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Седов Т.",
+                "minute": 36,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Тюфякин В.",
+                "minute": 45,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Седов Т.",
+                "minute": 72,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Седов Т.",
+                "minute": 74,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              }
+            ],
+            "cards": [
+              {
+                "team": "home",
+                "player": "Гарг Д.",
+                "minute": 46,
+                "kind": "yellow"
+              }
+            ],
+            "subs": [
+              {
+                "team": "home",
+                "minute": 37,
+                "off": "Писарев А.",
+                "on": "Ашихмин Р."
+              },
+              {
+                "team": "home",
+                "minute": 41,
+                "off": "Смирнов Е.",
+                "on": "Краевский М."
+              },
+              {
+                "team": "away",
+                "minute": 41,
+                "off": "Ванюшин Т.",
+                "on": "Кузнецов И."
+              },
+              {
+                "team": "away",
+                "minute": 41,
+                "off": "Камакин Р.",
+                "on": "Барановский Д."
+              },
+              {
+                "team": "away",
+                "minute": 41,
+                "off": "Симоненков О.",
+                "on": "Устинов Н."
+              },
+              {
+                "team": "home",
+                "minute": 42,
+                "off": "Смирнов А.",
+                "on": "Панков А."
+              },
+              {
+                "team": "home",
+                "minute": 64,
+                "off": "Гарг Д.",
+                "on": "Мухин Я."
+              },
+              {
+                "team": "away",
+                "minute": 66,
+                "off": "Кушнеров В.",
+                "on": "Домашнев А."
+              },
+              {
+                "team": "away",
+                "minute": 66,
+                "off": "Рудинский С.",
+                "on": "Позднухов Е."
+              },
+              {
+                "team": "home",
+                "minute": 68,
+                "off": "Ионов А.",
+                "on": "Денисюк К."
+              },
+              {
+                "team": "away",
+                "minute": 71,
+                "off": "Погребняк И.",
+                "on": "Лысенко В."
+              }
+            ]
+          }
         },
         {
           "id": 3844287,
@@ -1025,7 +4271,99 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "played": true,
           "techDefeat": false,
           "venue": "Ижорец. Поле № 2",
-          "videoSlug": "hllpoHUVs2klHNLD9eClc4"
+          "videoSlug": "hllpoHUVs2klHNLD9eClc4",
+          "protocol": {
+            "goals": [
+              {
+                "team": "home",
+                "player": "Токарев А.",
+                "minute": 35,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Яковлев А.",
+                "minute": 51,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Дудкин Е.",
+                "minute": 68,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              }
+            ],
+            "cards": [
+              {
+                "team": "away",
+                "player": "Мокров И.",
+                "minute": 17,
+                "kind": "yellow"
+              },
+              {
+                "team": "away",
+                "player": "Яковлев А.",
+                "minute": 65,
+                "kind": "yellow"
+              },
+              {
+                "team": "home",
+                "player": "Шубин Е.",
+                "minute": 65,
+                "kind": "yellow"
+              },
+              {
+                "team": "home",
+                "player": "Немиров А.",
+                "minute": 73,
+                "kind": "yellow"
+              }
+            ],
+            "subs": [
+              {
+                "team": "home",
+                "minute": 68,
+                "off": "Токарев А.",
+                "on": "Силин М."
+              },
+              {
+                "team": "home",
+                "minute": 75,
+                "off": "Суббота С.",
+                "on": "Смирнов М."
+              },
+              {
+                "team": "away",
+                "minute": 80,
+                "off": "Бугай Н.",
+                "on": "Терещенко И."
+              },
+              {
+                "team": "away",
+                "minute": 80,
+                "off": "Любченко Н.",
+                "on": "Сусоров Д."
+              },
+              {
+                "team": "home",
+                "minute": 80,
+                "off": "Дудкин Е.",
+                "on": "Панов А."
+              },
+              {
+                "team": "home",
+                "minute": 80,
+                "off": "Курдюков И.",
+                "on": "Сафронов А."
+              }
+            ]
+          }
         },
         {
           "id": 3844285,
@@ -1040,7 +4378,85 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "scoreAway": 0,
           "played": true,
           "techDefeat": false,
-          "venue": "Балтика"
+          "venue": "Балтика",
+          "protocol": {
+            "goals": [
+              {
+                "team": "home",
+                "player": "Дайтов Г.",
+                "minute": 18,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Сковорода Д.",
+                "minute": 76,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              }
+            ],
+            "cards": [
+              {
+                "team": "away",
+                "player": "Кириллов Е.",
+                "minute": 15,
+                "kind": "yellow"
+              },
+              {
+                "team": "away",
+                "player": "Тимофеев Р.",
+                "minute": 65,
+                "kind": "yellow"
+              }
+            ],
+            "subs": [
+              {
+                "team": "away",
+                "minute": 52,
+                "off": "Новицкий А.",
+                "on": "Шлионский Л."
+              },
+              {
+                "team": "away",
+                "minute": 56,
+                "off": "Плешаков Г.",
+                "on": "Абушов Д."
+              },
+              {
+                "team": "home",
+                "minute": 66,
+                "off": "Новиков Р.",
+                "on": "Сковорода Д."
+              },
+              {
+                "team": "away",
+                "minute": 75,
+                "off": "Варзин И.",
+                "on": "Русаков Ф."
+              },
+              {
+                "team": "home",
+                "minute": 78,
+                "off": "Грибов А.",
+                "on": "Липский М."
+              },
+              {
+                "team": "home",
+                "minute": 80,
+                "off": "Дайтов Г.",
+                "on": "Никитов Д."
+              },
+              {
+                "team": "home",
+                "minute": 80,
+                "off": "Докукин Н.",
+                "on": "Аликузуев И."
+              }
+            ]
+          }
         },
         {
           "id": 3844288,
@@ -1055,7 +4471,135 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "scoreAway": 3,
           "played": true,
           "techDefeat": false,
-          "venue": "СОШ 363"
+          "venue": "СОШ 363",
+          "protocol": {
+            "goals": [
+              {
+                "team": "away",
+                "player": "Гурбанов А.",
+                "minute": 24,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Росланов Д.",
+                "minute": 29,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Скляр З.",
+                "minute": 80,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              }
+            ],
+            "cards": [
+              {
+                "team": "away",
+                "player": "Лаврищев Е.",
+                "minute": 10,
+                "kind": "yellow"
+              },
+              {
+                "team": "home",
+                "player": "Иноземцев С.",
+                "minute": 40,
+                "kind": "yellow"
+              },
+              {
+                "team": "home",
+                "player": "Кузнецов И.",
+                "minute": 55,
+                "kind": "yellow"
+              },
+              {
+                "team": "home",
+                "player": "Домашнев А.",
+                "minute": 58,
+                "kind": "yellow"
+              },
+              {
+                "team": "home",
+                "player": "Погребняк И.",
+                "minute": 59,
+                "kind": "yellow"
+              },
+              {
+                "team": "home",
+                "player": "Погребняк И.",
+                "minute": 59,
+                "kind": "red"
+              },
+              {
+                "team": "away",
+                "player": "Гурбанов А.",
+                "minute": 62,
+                "kind": "yellow"
+              },
+              {
+                "team": "away",
+                "player": "Середкин К.",
+                "minute": 78,
+                "kind": "red"
+              }
+            ],
+            "subs": [
+              {
+                "team": "home",
+                "minute": 25,
+                "off": "Камакин Р.",
+                "on": "Янкин А."
+              },
+              {
+                "team": "home",
+                "minute": 40,
+                "off": "Муравейко А.",
+                "on": "Кузнецов И."
+              },
+              {
+                "team": "home",
+                "minute": 41,
+                "off": "Кушнеров В.",
+                "on": "Устинов Н."
+              },
+              {
+                "team": "away",
+                "minute": 49,
+                "off": "Тепляков Н.",
+                "on": "Веденеев Д."
+              },
+              {
+                "team": "home",
+                "minute": 54,
+                "off": "Ванюшин Т.",
+                "on": "Домашнев А."
+              },
+              {
+                "team": "away",
+                "minute": 81,
+                "off": "Миненко Е.",
+                "on": "Скляр З."
+              },
+              {
+                "team": "away",
+                "minute": 81,
+                "off": "Росланов Д.",
+                "on": "Рыбка Г."
+              },
+              {
+                "team": "away",
+                "minute": 84,
+                "off": "Гурбанов А.",
+                "on": "Добрынин В."
+              }
+            ]
+          }
         },
         {
           "id": 3844286,
@@ -1070,7 +4614,82 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "scoreAway": 2,
           "played": true,
           "techDefeat": false,
-          "venue": "Московский (Скороход)"
+          "venue": "Московский (Скороход)",
+          "protocol": {
+            "goals": [
+              {
+                "team": "away",
+                "player": "Дютиль А.",
+                "minute": 1,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Костиков А.",
+                "minute": 5,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Воронков В.",
+                "minute": 25,
+                "assist": null,
+                "kind": "penalty",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Филиппов М.",
+                "minute": 80,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              }
+            ],
+            "cards": [],
+            "subs": [
+              {
+                "team": "home",
+                "minute": 41,
+                "off": "Падерин А.",
+                "on": "Климов Т."
+              },
+              {
+                "team": "away",
+                "minute": 41,
+                "off": "Бондарь Д.",
+                "on": "Новский М."
+              },
+              {
+                "team": "away",
+                "minute": 48,
+                "off": "Воронков В.",
+                "on": "Пугачев М."
+              },
+              {
+                "team": "away",
+                "minute": 48,
+                "off": "Татарченко Г.",
+                "on": "Семёнов М."
+              },
+              {
+                "team": "home",
+                "minute": 49,
+                "off": "Фёдоров Д.",
+                "on": "Омурканов И."
+              },
+              {
+                "team": "home",
+                "minute": 53,
+                "off": "Слободин Д.",
+                "on": "Калинин А."
+              }
+            ]
+          }
         },
         {
           "id": 3844284,
@@ -1085,7 +4704,113 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "scoreAway": 1,
           "played": true,
           "techDefeat": false,
-          "venue": "Балтика"
+          "venue": "Балтика",
+          "protocol": {
+            "goals": [
+              {
+                "team": "home",
+                "player": "Воронец Д.",
+                "minute": 6,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Кожанов С.",
+                "minute": 8,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Кожанов С.",
+                "minute": 16,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Панков А.",
+                "minute": 64,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              }
+            ],
+            "cards": [
+              {
+                "team": "home",
+                "player": "Тян Р.",
+                "minute": 70,
+                "kind": "yellow"
+              },
+              {
+                "team": "away",
+                "player": "Макаров М.",
+                "minute": 70,
+                "kind": "yellow"
+              },
+              {
+                "team": "home",
+                "player": "Кожанов С.",
+                "minute": 75,
+                "kind": "yellow"
+              }
+            ],
+            "subs": [
+              {
+                "team": "away",
+                "minute": 41,
+                "off": "Левачин А.",
+                "on": "Ашихмин Р."
+              },
+              {
+                "team": "away",
+                "minute": 41,
+                "off": "Смирнов Е.",
+                "on": "Смирнов А."
+              },
+              {
+                "team": "away",
+                "minute": 41,
+                "off": "Тюфякин В.",
+                "on": "Мухин Я."
+              },
+              {
+                "team": "home",
+                "minute": 41,
+                "off": "Бублик Н.",
+                "on": "Беляков А."
+              },
+              {
+                "team": "away",
+                "minute": 49,
+                "off": "Ионов А.",
+                "on": "Краевский М."
+              },
+              {
+                "team": "home",
+                "minute": 52,
+                "off": "Абрамов В.",
+                "on": "Ульянов А."
+              },
+              {
+                "team": "away",
+                "minute": 55,
+                "off": "Холматов Т.",
+                "on": "Гарг Д."
+              },
+              {
+                "team": "home",
+                "minute": 75,
+                "off": "Кожанов С.",
+                "on": "Зенченко Т."
+              }
+            ]
+          }
         },
         {
           "id": 3844292,
@@ -1101,7 +4826,125 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "played": true,
           "techDefeat": false,
           "venue": "СОШ № 303",
-          "videoSlug": "81E5Sd4xlIyoMTmKTGc1nU"
+          "videoSlug": "81E5Sd4xlIyoMTmKTGc1nU",
+          "protocol": {
+            "goals": [
+              {
+                "team": "away",
+                "player": "Филатов В.",
+                "minute": 44,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Коршунов А.",
+                "minute": 72,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Будулуца Р.",
+                "minute": 75,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Байрамов К.",
+                "minute": 78,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              }
+            ],
+            "cards": [
+              {
+                "team": "home",
+                "player": "Варзин И.",
+                "minute": 47,
+                "kind": "yellow"
+              },
+              {
+                "team": "home",
+                "player": "Антонов Р.",
+                "minute": 68,
+                "kind": "yellow"
+              }
+            ],
+            "subs": [
+              {
+                "team": "home",
+                "minute": 41,
+                "off": "Абушов Д.",
+                "on": "Деменок Д."
+              },
+              {
+                "team": "home",
+                "minute": 41,
+                "off": "Новицкий А.",
+                "on": "Антонов Р."
+              },
+              {
+                "team": "away",
+                "minute": 41,
+                "off": "Зинаков Е.",
+                "on": "Будулуца Р."
+              },
+              {
+                "team": "home",
+                "minute": 48,
+                "off": "Варзин И.",
+                "on": "Русаков Ф."
+              },
+              {
+                "team": "home",
+                "minute": 51,
+                "off": "Гулов А.",
+                "on": "Шлионский Л."
+              },
+              {
+                "team": "away",
+                "minute": 52,
+                "off": "Падерин А.",
+                "on": "Калинин А."
+              },
+              {
+                "team": "home",
+                "minute": 56,
+                "off": "Плешаков Г.",
+                "on": "Бондаренко С."
+              },
+              {
+                "team": "away",
+                "minute": 62,
+                "off": "Климов Т.",
+                "on": "Румянцев Н."
+              },
+              {
+                "team": "home",
+                "minute": 68,
+                "off": "Бондаренко С.",
+                "on": "Кириллов В."
+              },
+              {
+                "team": "away",
+                "minute": 71,
+                "off": "Фёдоров Д.",
+                "on": "Омурканов И."
+              },
+              {
+                "team": "home",
+                "minute": 77,
+                "off": "Кириллов В.",
+                "on": "Михайлов Б."
+              }
+            ]
+          }
         },
         {
           "id": 3844291,
@@ -1117,7 +4960,111 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "played": true,
           "techDefeat": false,
           "venue": "ЦФКСиЗ Василеостровского района",
-          "videoSlug": "VrTI39iKYurkaXIINs2LCI"
+          "videoSlug": "VrTI39iKYurkaXIINs2LCI",
+          "protocol": {
+            "goals": [
+              {
+                "team": "away",
+                "player": "Дудкин Е.",
+                "minute": 27,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Суббота С.",
+                "minute": 43,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Дудкин Е.",
+                "minute": 57,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              }
+            ],
+            "cards": [
+              {
+                "team": "away",
+                "player": "Панов А.",
+                "minute": 80,
+                "kind": "yellow"
+              }
+            ],
+            "subs": [
+              {
+                "team": "away",
+                "minute": 41,
+                "off": "Сафронов А.",
+                "on": "Токарев А."
+              },
+              {
+                "team": "home",
+                "minute": 41,
+                "off": "Бондарь Д.",
+                "on": "Новский М."
+              },
+              {
+                "team": "home",
+                "minute": 41,
+                "off": "Семёнов М.",
+                "on": "Татарченко Г."
+              },
+              {
+                "team": "home",
+                "minute": 43,
+                "off": "Закусилов А.",
+                "on": "Пугачев М."
+              },
+              {
+                "team": "home",
+                "minute": 58,
+                "off": "Галицкий М.",
+                "on": "Кондаков А."
+              },
+              {
+                "team": "away",
+                "minute": 61,
+                "off": "Кондратенко В.",
+                "on": "Силин М."
+              },
+              {
+                "team": "away",
+                "minute": 61,
+                "off": "Курдюков И.",
+                "on": "Дмитриев А."
+              },
+              {
+                "team": "away",
+                "minute": 77,
+                "off": "Сенчуков М.",
+                "on": "Смирнов М."
+              },
+              {
+                "team": "away",
+                "minute": 77,
+                "off": "Токарев А.",
+                "on": "Платов М."
+              },
+              {
+                "team": "away",
+                "minute": 80,
+                "off": "Дудкин Е.",
+                "on": "Симонов И."
+              },
+              {
+                "team": "away",
+                "minute": 80,
+                "off": "Шубин Е.",
+                "on": "Панов А."
+              }
+            ]
+          }
         },
         {
           "id": 3844289,
@@ -1132,7 +5079,91 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "scoreAway": 1,
           "played": true,
           "techDefeat": false,
-          "venue": "СШОР Кировского района"
+          "venue": "СШОР Кировского района",
+          "protocol": {
+            "goals": [
+              {
+                "team": "away",
+                "player": "Миненко Е.",
+                "minute": 22,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Панков А.",
+                "minute": 50,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              }
+            ],
+            "cards": [
+              {
+                "team": "home",
+                "player": "Савельев Н.",
+                "minute": 52,
+                "kind": "yellow"
+              },
+              {
+                "team": "home",
+                "player": "Холматов Т.",
+                "minute": 80,
+                "kind": "yellow"
+              }
+            ],
+            "subs": [
+              {
+                "team": "home",
+                "minute": 41,
+                "off": "Смирнов А.",
+                "on": "Краевский М."
+              },
+              {
+                "team": "home",
+                "minute": 41,
+                "off": "Смирнов Е.",
+                "on": "Мухин Я."
+              },
+              {
+                "team": "home",
+                "minute": 50,
+                "off": "Мирошников Д.",
+                "on": "Ашихмин Р."
+              },
+              {
+                "team": "home",
+                "minute": 57,
+                "off": "Тюфякин В.",
+                "on": "Гарг Д."
+              },
+              {
+                "team": "away",
+                "minute": 59,
+                "off": "Рыбка Г.",
+                "on": "Грибин В."
+              },
+              {
+                "team": "away",
+                "minute": 65,
+                "off": "Тепляков Н.",
+                "on": "Веденеев Д."
+              },
+              {
+                "team": "away",
+                "minute": 74,
+                "off": "Росланов Д.",
+                "on": "Скляр З."
+              },
+              {
+                "team": "home",
+                "minute": 78,
+                "off": "Ионов А.",
+                "on": "Левачин А."
+              }
+            ]
+          }
         },
         {
           "id": 3844293,
@@ -1147,7 +5178,151 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "scoreAway": 1,
           "played": true,
           "techDefeat": false,
-          "venue": "Балтика"
+          "venue": "Балтика",
+          "protocol": {
+            "goals": [
+              {
+                "team": "home",
+                "player": "Комков Т.",
+                "minute": 44,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Бублик Н.",
+                "minute": 49,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Жуков Е.",
+                "minute": 55,
+                "assist": null,
+                "kind": "penalty",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Воронец Д.",
+                "minute": 65,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Костин А.",
+                "minute": 71,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              }
+            ],
+            "cards": [
+              {
+                "team": "away",
+                "player": "Боровков И.",
+                "minute": 43,
+                "kind": "red"
+              },
+              {
+                "team": "away",
+                "player": "Кондратьев Н.",
+                "minute": 48,
+                "kind": "yellow"
+              },
+              {
+                "team": "away",
+                "player": "Новиков С.",
+                "minute": 51,
+                "kind": "yellow"
+              },
+              {
+                "team": "away",
+                "player": "Жуков Е.",
+                "minute": 63,
+                "kind": "yellow"
+              }
+            ],
+            "subs": [
+              {
+                "team": "away",
+                "minute": 41,
+                "off": "Грибов А.",
+                "on": "Новиков Р."
+              },
+              {
+                "team": "away",
+                "minute": 52,
+                "off": "Василевский И.",
+                "on": "Аликузуев И."
+              },
+              {
+                "team": "away",
+                "minute": 52,
+                "off": "Кондратьев Н.",
+                "on": "Гусев А."
+              },
+              {
+                "team": "home",
+                "minute": 57,
+                "off": "Бублик Н.",
+                "on": "Ульянов А."
+              },
+              {
+                "team": "away",
+                "minute": 63,
+                "off": "Старков Р.",
+                "on": "Петров М."
+              },
+              {
+                "team": "home",
+                "minute": 65,
+                "off": "Кожанов С.",
+                "on": "Садовский М."
+              },
+              {
+                "team": "away",
+                "minute": 70,
+                "off": "Дайтов Г.",
+                "on": "Липский М."
+              },
+              {
+                "team": "away",
+                "minute": 70,
+                "off": "Жуков Е.",
+                "on": "Буйдоков А."
+              },
+              {
+                "team": "home",
+                "minute": 71,
+                "off": "Воронец Д.",
+                "on": "Петрусь М."
+              },
+              {
+                "team": "away",
+                "minute": 74,
+                "off": "Докукин Н.",
+                "on": "Никитов Д."
+              },
+              {
+                "team": "away",
+                "minute": 74,
+                "off": "Сковорода Д.",
+                "on": "Жуков А."
+              },
+              {
+                "team": "home",
+                "minute": 76,
+                "off": "Тян Р.",
+                "on": "Касапоглу Ф."
+              }
+            ]
+          }
         },
         {
           "id": 3844290,
@@ -1163,7 +5338,77 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "played": true,
           "techDefeat": false,
           "venue": "Московский (Скороход)",
-          "videoSlug": "0VFaBudWkC1MDXvHxU1vsB"
+          "videoSlug": "0VFaBudWkC1MDXvHxU1vsB",
+          "protocol": {
+            "goals": [
+              {
+                "team": "away",
+                "player": "Седов Т.",
+                "minute": 70,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              }
+            ],
+            "cards": [
+              {
+                "team": "home",
+                "player": "Оберняк Р.",
+                "minute": 47,
+                "kind": "yellow"
+              },
+              {
+                "team": "away",
+                "player": "Седов Т.",
+                "minute": 77,
+                "kind": "yellow"
+              }
+            ],
+            "subs": [
+              {
+                "team": "away",
+                "minute": 47,
+                "off": "Ванюшин Т.",
+                "on": "Устинов Н."
+              },
+              {
+                "team": "away",
+                "minute": 51,
+                "off": "Домашнев А.",
+                "on": "Позднухов Е."
+              },
+              {
+                "team": "home",
+                "minute": 52,
+                "off": "Акулов А.",
+                "on": "Ткаченко М."
+              },
+              {
+                "team": "home",
+                "minute": 52,
+                "off": "Верниковский П.",
+                "on": "Железный Г."
+              },
+              {
+                "team": "home",
+                "minute": 73,
+                "off": "Мокров И.",
+                "on": "Сусоров Д."
+              },
+              {
+                "team": "away",
+                "minute": 75,
+                "off": "Кузнецов И.",
+                "on": "Сиренко М."
+              },
+              {
+                "team": "away",
+                "minute": 78,
+                "off": "Черепанов М.",
+                "on": "Шершнев М."
+              }
+            ]
+          }
         },
         {
           "id": 3844294,
@@ -1178,7 +5423,107 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "scoreAway": 3,
           "played": true,
           "techDefeat": false,
-          "venue": "Балтика"
+          "venue": "Балтика",
+          "protocol": {
+            "goals": [
+              {
+                "team": "away",
+                "player": "Тюфякин В.",
+                "minute": 12,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Панков А.",
+                "minute": 45,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Краевский М.",
+                "minute": 47,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Аликузуев И.",
+                "minute": 74,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              }
+            ],
+            "cards": [
+              {
+                "team": "away",
+                "player": "Панков А.",
+                "minute": 21,
+                "kind": "yellow"
+              },
+              {
+                "team": "home",
+                "player": "Новиков С.",
+                "minute": 22,
+                "kind": "yellow"
+              }
+            ],
+            "subs": [
+              {
+                "team": "home",
+                "minute": 47,
+                "off": "Дайтов Г.",
+                "on": "Жуков А."
+              },
+              {
+                "team": "home",
+                "minute": 50,
+                "off": "Петров М.",
+                "on": "Старков Р."
+              },
+              {
+                "team": "away",
+                "minute": 54,
+                "off": "Панков А.",
+                "on": "Смирнов А."
+              },
+              {
+                "team": "home",
+                "minute": 56,
+                "off": "Докукин Н.",
+                "on": "Буйдоков А."
+              },
+              {
+                "team": "home",
+                "minute": 60,
+                "off": "Новиков С.",
+                "on": "Никитов Д."
+              },
+              {
+                "team": "away",
+                "minute": 67,
+                "off": "Мухин Я.",
+                "on": "Ионов А."
+              },
+              {
+                "team": "away",
+                "minute": 67,
+                "off": "Тюфякин В.",
+                "on": "Денисюк К."
+              },
+              {
+                "team": "away",
+                "minute": 67,
+                "off": "Холматов Т.",
+                "on": "Левачин А."
+              }
+            ]
+          }
         },
         {
           "id": 3844297,
@@ -1193,7 +5538,111 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "scoreAway": 0,
           "played": true,
           "techDefeat": false,
-          "venue": "СОШ 363"
+          "venue": "СОШ 363",
+          "protocol": {
+            "goals": [
+              {
+                "team": "home",
+                "player": "Седов Т.",
+                "minute": 35,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Устинов Н.",
+                "minute": 55,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Домашнев А.",
+                "minute": 76,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              }
+            ],
+            "cards": [
+              {
+                "team": "away",
+                "player": "Пугачев М.",
+                "minute": 65,
+                "kind": "yellow"
+              }
+            ],
+            "subs": [
+              {
+                "team": "home",
+                "minute": 41,
+                "off": "Кузнецов И.",
+                "on": "Устинов Н."
+              },
+              {
+                "team": "away",
+                "minute": 41,
+                "off": "Бондарь Д.",
+                "on": "Турапин М."
+              },
+              {
+                "team": "home",
+                "minute": 51,
+                "off": "Ванюшин Т.",
+                "on": "Позднухов Е."
+              },
+              {
+                "team": "away",
+                "minute": 59,
+                "off": "Галицкий М.",
+                "on": "Пугачев М."
+              },
+              {
+                "team": "away",
+                "minute": 59,
+                "off": "Татарченко Г.",
+                "on": "Семёнов М."
+              },
+              {
+                "team": "home",
+                "minute": 65,
+                "off": "Погребняк И.",
+                "on": "Домашнев А."
+              },
+              {
+                "team": "home",
+                "minute": 71,
+                "off": "Рудинский С.",
+                "on": "Сиренко М."
+              },
+              {
+                "team": "away",
+                "minute": 71,
+                "off": "Новский М.",
+                "on": "Кондаков А."
+              },
+              {
+                "team": "home",
+                "minute": 75,
+                "off": "Седов Т.",
+                "on": "Лысенко В."
+              },
+              {
+                "team": "home",
+                "minute": 76,
+                "off": "Барановский Д.",
+                "on": "Янкин А."
+              },
+              {
+                "team": "home",
+                "minute": 76,
+                "off": "Черепанов М.",
+                "on": "Шершнев М."
+              }
+            ]
+          }
         },
         {
           "id": 3844295,
@@ -1208,7 +5657,98 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "scoreAway": 3,
           "played": true,
           "techDefeat": false,
-          "venue": "Московский (Скороход)"
+          "venue": "Московский (Скороход)",
+          "protocol": {
+            "goals": [
+              {
+                "team": "away",
+                "player": "Бублик Н.",
+                "minute": 13,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Бублик Н.",
+                "minute": 15,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Садовский М.",
+                "minute": 64,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              }
+            ],
+            "cards": [],
+            "subs": [
+              {
+                "team": "home",
+                "minute": 41,
+                "off": "Зинаков Е.",
+                "on": "Бакаржиев Ю."
+              },
+              {
+                "team": "home",
+                "minute": 41,
+                "off": "Падерин А.",
+                "on": "Будулуца Р."
+              },
+              {
+                "team": "home",
+                "minute": 48,
+                "off": "Климов Т.",
+                "on": "Румянцев Н."
+              },
+              {
+                "team": "home",
+                "minute": 52,
+                "off": "Фёдоров Д.",
+                "on": "Зырянов Л."
+              },
+              {
+                "team": "away",
+                "minute": 52,
+                "off": "Бублик Н.",
+                "on": "Садовский М."
+              },
+              {
+                "team": "away",
+                "minute": 58,
+                "off": "Кожанов С.",
+                "on": "Ульянов А."
+              },
+              {
+                "team": "home",
+                "minute": 64,
+                "off": "Байрамов К.",
+                "on": "Омурканов И."
+              },
+              {
+                "team": "away",
+                "minute": 73,
+                "off": "Тян Р.",
+                "on": "Зенченко Т."
+              },
+              {
+                "team": "away",
+                "minute": 75,
+                "off": "Бигаев А.",
+                "on": "Петрусь М."
+              },
+              {
+                "team": "away",
+                "minute": 75,
+                "off": "Карягин М.",
+                "on": "Беруашвили И."
+              }
+            ]
+          }
         },
         {
           "id": 3844298,
@@ -1223,7 +5763,113 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "scoreAway": 4,
           "played": true,
           "techDefeat": false,
-          "venue": "ЦФК Красногвардейского района"
+          "venue": "ЦФК Красногвардейского района",
+          "protocol": {
+            "goals": [
+              {
+                "team": "away",
+                "player": "Палкин Б.",
+                "minute": 10,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Оберняк Р.",
+                "minute": 26,
+                "assist": null,
+                "kind": "penalty",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Лаврентьев М.",
+                "minute": 43,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Януш А.",
+                "minute": 67,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              }
+            ],
+            "cards": [
+              {
+                "team": "away",
+                "player": "Доморощенов Ф.",
+                "minute": 29,
+                "kind": "yellow"
+              },
+              {
+                "team": "away",
+                "player": "Лаврентьев М.",
+                "minute": 43,
+                "kind": "yellow"
+              },
+              {
+                "team": "away",
+                "player": "Бугай Н.",
+                "minute": 51,
+                "kind": "yellow"
+              }
+            ],
+            "subs": [
+              {
+                "team": "away",
+                "minute": 49,
+                "off": "Доморощенов Ф.",
+                "on": "Смирнов С."
+              },
+              {
+                "team": "away",
+                "minute": 57,
+                "off": "Акулов А.",
+                "on": "Верниковский П."
+              },
+              {
+                "team": "home",
+                "minute": 63,
+                "off": "Тепляков Н.",
+                "on": "Грибин В."
+              },
+              {
+                "team": "away",
+                "minute": 65,
+                "off": "Яковлев А.",
+                "on": "Любченко Н."
+              },
+              {
+                "team": "home",
+                "minute": 67,
+                "off": "Егоров Д.",
+                "on": "Скляр З."
+              },
+              {
+                "team": "away",
+                "minute": 68,
+                "off": "Бугай Н.",
+                "on": "Терещенко И."
+              },
+              {
+                "team": "home",
+                "minute": 71,
+                "off": "Середкин К.",
+                "on": "Вяткин В."
+              },
+              {
+                "team": "home",
+                "minute": 71,
+                "off": "Росланов Д.",
+                "on": "Рыбка Г."
+              }
+            ]
+          }
         },
         {
           "id": 3844296,
@@ -1239,7 +5885,98 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "played": true,
           "techDefeat": false,
           "venue": "Спартак",
-          "videoSlug": "A4CpzlZBLy8M6hPmKItvaj"
+          "videoSlug": "A4CpzlZBLy8M6hPmKItvaj",
+          "protocol": {
+            "goals": [],
+            "cards": [
+              {
+                "team": "home",
+                "player": "Дудкин Е.",
+                "minute": 0,
+                "kind": "yellow"
+              },
+              {
+                "team": "away",
+                "player": "Тимофеев Р.",
+                "minute": 12,
+                "kind": "yellow"
+              },
+              {
+                "team": "home",
+                "player": "Сенчуков М.",
+                "minute": 56,
+                "kind": "yellow"
+              },
+              {
+                "team": "home",
+                "player": "Дмитриев А.",
+                "minute": 71,
+                "kind": "yellow"
+              },
+              {
+                "team": "home",
+                "player": "Немиров А.",
+                "minute": 75,
+                "kind": "yellow"
+              }
+            ],
+            "subs": [
+              {
+                "team": "away",
+                "minute": 34,
+                "off": "Черепанов Н.",
+                "on": "Гулов А."
+              },
+              {
+                "team": "home",
+                "minute": 41,
+                "off": "Сафронов А.",
+                "on": "Токарев А."
+              },
+              {
+                "team": "away",
+                "minute": 45,
+                "off": "Чопалаев Ш.",
+                "on": "Русаков Ф."
+              },
+              {
+                "team": "home",
+                "minute": 60,
+                "off": "Курдюков И.",
+                "on": "Платов М."
+              },
+              {
+                "team": "home",
+                "minute": 65,
+                "off": "Дудкин Е.",
+                "on": "Дмитриев А."
+              },
+              {
+                "team": "away",
+                "minute": 66,
+                "off": "Русаков Ф.",
+                "on": "Абушов Д."
+              },
+              {
+                "team": "home",
+                "minute": 76,
+                "off": "Кондратенко В.",
+                "on": "Силин М."
+              },
+              {
+                "team": "away",
+                "minute": 80,
+                "off": "Абушов Д.",
+                "on": "Шлионский Л."
+              },
+              {
+                "team": "home",
+                "minute": 80,
+                "off": "Сенчуков М.",
+                "on": "Смирнов М."
+              }
+            ]
+          }
         },
         {
           "id": 3844301,
@@ -1255,7 +5992,103 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "played": true,
           "techDefeat": false,
           "venue": "СОШ № 303",
-          "videoSlug": "Jyw7R11ZPLEcbbTBh7rRD9"
+          "videoSlug": "Jyw7R11ZPLEcbbTBh7rRD9",
+          "protocol": {
+            "goals": [
+              {
+                "team": "home",
+                "player": "Седов Т.",
+                "minute": 29,
+                "assist": null,
+                "kind": "penalty",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Варзин И.",
+                "minute": 38,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Седов Т.",
+                "minute": 40,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Барановский Д.",
+                "minute": 61,
+                "assist": null,
+                "kind": "own_goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Седов Т.",
+                "minute": 78,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              }
+            ],
+            "cards": [
+              {
+                "team": "away",
+                "player": "Новицкий А.",
+                "minute": 68,
+                "kind": "yellow"
+              }
+            ],
+            "subs": [
+              {
+                "team": "home",
+                "minute": 41,
+                "off": "Кузнецов И.",
+                "on": "Позднухов Е."
+              },
+              {
+                "team": "home",
+                "minute": 41,
+                "off": "Шершнев М.",
+                "on": "Барановский Д."
+              },
+              {
+                "team": "away",
+                "minute": 54,
+                "off": "Плешаков Г.",
+                "on": "Абушов Д."
+              },
+              {
+                "team": "away",
+                "minute": 58,
+                "off": "Черепанов Н.",
+                "on": "Чопалаев Ш."
+              },
+              {
+                "team": "home",
+                "minute": 74,
+                "off": "Домашнев А.",
+                "on": "Лысенко В."
+              },
+              {
+                "team": "away",
+                "minute": 74,
+                "off": "Чопалаев Ш.",
+                "on": "Королев А."
+              },
+              {
+                "team": "away",
+                "minute": 76,
+                "off": "Абушов Д.",
+                "on": "Емельянов Н."
+              }
+            ]
+          }
         },
         {
           "id": 3844303,
@@ -1270,7 +6103,167 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "scoreAway": 2,
           "played": true,
           "techDefeat": false,
-          "venue": "Московский (Скороход)"
+          "venue": "Московский (Скороход)",
+          "protocol": {
+            "goals": [
+              {
+                "team": "away",
+                "player": "Василевский И.",
+                "minute": 3,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Фёдоров Д.",
+                "minute": 22,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Падерин А.",
+                "minute": 48,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Байрамов К.",
+                "minute": 55,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Байрамов К.",
+                "minute": 64,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Новиков С.",
+                "minute": 71,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Костиков А.",
+                "minute": 80,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": true
+              }
+            ],
+            "cards": [
+              {
+                "team": "home",
+                "player": "Фёдоров Д.",
+                "minute": 44,
+                "kind": "yellow"
+              },
+              {
+                "team": "home",
+                "player": "Коршунов А.",
+                "minute": 57,
+                "kind": "yellow"
+              },
+              {
+                "team": "home",
+                "player": "Климов Т.",
+                "minute": 64,
+                "kind": "red"
+              }
+            ],
+            "subs": [
+              {
+                "team": "home",
+                "minute": 11,
+                "off": "Калинин А.",
+                "on": "Климов Т."
+              },
+              {
+                "team": "away",
+                "minute": 41,
+                "off": "Липский М.",
+                "on": "Новиков С."
+              },
+              {
+                "team": "home",
+                "minute": 49,
+                "off": "Падерин А.",
+                "on": "Зинаков Е."
+              },
+              {
+                "team": "away",
+                "minute": 50,
+                "off": "Василевский И.",
+                "on": "Жуков А."
+              },
+              {
+                "team": "away",
+                "minute": 50,
+                "off": "Дайтов Г.",
+                "on": "Новиков Р."
+              },
+              {
+                "team": "home",
+                "minute": 56,
+                "off": "Филатов В.",
+                "on": "Румянцев Н."
+              },
+              {
+                "team": "away",
+                "minute": 56,
+                "off": "Грибов А.",
+                "on": "Аликузуев И."
+              },
+              {
+                "team": "away",
+                "minute": 56,
+                "off": "Докукин Н.",
+                "on": "Буйдоков А."
+              },
+              {
+                "team": "home",
+                "minute": 66,
+                "off": "Байрамов К.",
+                "on": "Омурканов И."
+              },
+              {
+                "team": "home",
+                "minute": 66,
+                "off": "Будулуца Р.",
+                "on": "Зырянов Л."
+              },
+              {
+                "team": "away",
+                "minute": 66,
+                "off": "Жуков Е.",
+                "on": "Гусев А."
+              },
+              {
+                "team": "away",
+                "minute": 66,
+                "off": "Старков Р.",
+                "on": "Петров М."
+              },
+              {
+                "team": "away",
+                "minute": 75,
+                "off": "Боровков И.",
+                "on": "Никитов Д."
+              }
+            ]
+          }
         },
         {
           "id": 3844299,
@@ -1286,7 +6279,111 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "played": true,
           "techDefeat": false,
           "venue": "СШОР Кировского района",
-          "videoSlug": "fkJHb5TH94CkSuNt2mFN1Y"
+          "videoSlug": "fkJHb5TH94CkSuNt2mFN1Y",
+          "protocol": {
+            "goals": [
+              {
+                "team": "away",
+                "player": "Акулов А.",
+                "minute": 18,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Панков А.",
+                "minute": 79,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Ионов А.",
+                "minute": 80,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": true
+              }
+            ],
+            "cards": [
+              {
+                "team": "away",
+                "player": "Любченко Н.",
+                "minute": 16,
+                "kind": "yellow"
+              },
+              {
+                "team": "away",
+                "player": "Палкин Б.",
+                "minute": 68,
+                "kind": "yellow"
+              },
+              {
+                "team": "away",
+                "player": "Доморощенов Ф.",
+                "minute": 70,
+                "kind": "yellow"
+              },
+              {
+                "team": "away",
+                "player": "Бовкун А.",
+                "minute": 78,
+                "kind": "red"
+              }
+            ],
+            "subs": [
+              {
+                "team": "home",
+                "minute": 41,
+                "off": "Мухин Я.",
+                "on": "Смирнов А."
+              },
+              {
+                "team": "away",
+                "minute": 52,
+                "off": "Любченко Н.",
+                "on": "Бугай Н."
+              },
+              {
+                "team": "home",
+                "minute": 55,
+                "off": "Краевский М.",
+                "on": "Ионов А."
+              },
+              {
+                "team": "away",
+                "minute": 58,
+                "off": "Викулов А.",
+                "on": "Ткаченко М."
+              },
+              {
+                "team": "home",
+                "minute": 65,
+                "off": "Смирнов Е.",
+                "on": "Левачин А."
+              },
+              {
+                "team": "home",
+                "minute": 65,
+                "off": "Мирошников Д.",
+                "on": "Ашихмин Р."
+              },
+              {
+                "team": "away",
+                "minute": 74,
+                "off": "Лаврентьев М.",
+                "on": "Сусоров Д."
+              },
+              {
+                "team": "home",
+                "minute": 80,
+                "off": "Панков А.",
+                "on": "Микоян Г."
+              }
+            ]
+          }
         },
         {
           "id": 3844300,
@@ -1302,7 +6399,68 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "played": true,
           "techDefeat": false,
           "venue": "ЦФК Красногвардейского района",
-          "videoSlug": "C3jzOuSHE9PEkaVgBxpqaI"
+          "videoSlug": "C3jzOuSHE9PEkaVgBxpqaI",
+          "protocol": {
+            "goals": [],
+            "cards": [
+              {
+                "team": "away",
+                "player": "Бобин Д.",
+                "minute": 34,
+                "kind": "yellow"
+              }
+            ],
+            "subs": [
+              {
+                "team": "home",
+                "minute": 51,
+                "off": "Грибин В.",
+                "on": "Веденеев Д."
+              },
+              {
+                "team": "away",
+                "minute": 51,
+                "off": "Бондарь Д.",
+                "on": "Галицкий М."
+              },
+              {
+                "team": "home",
+                "minute": 53,
+                "off": "Тепляков Н.",
+                "on": "Вяткин В."
+              },
+              {
+                "team": "away",
+                "minute": 61,
+                "off": "Татарченко Г.",
+                "on": "Семёнов М."
+              },
+              {
+                "team": "away",
+                "minute": 66,
+                "off": "Новский М.",
+                "on": "Пугачев М."
+              },
+              {
+                "team": "home",
+                "minute": 71,
+                "off": "Росланов Д.",
+                "on": "Рыбка Г."
+              },
+              {
+                "team": "home",
+                "minute": 74,
+                "off": "Веденеев Д.",
+                "on": "Скляр З."
+              },
+              {
+                "team": "home",
+                "minute": 77,
+                "off": "Егоров Д.",
+                "on": "Добрынин В."
+              }
+            ]
+          }
         },
         {
           "id": 3844302,
@@ -1318,7 +6476,56 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "played": true,
           "techDefeat": false,
           "venue": "Спартак",
-          "videoSlug": "EFyEuMqEfFzQh3txzVEFFQ"
+          "videoSlug": "EFyEuMqEfFzQh3txzVEFFQ",
+          "protocol": {
+            "goals": [],
+            "cards": [
+              {
+                "team": "home",
+                "player": "Немиров А.",
+                "minute": 58,
+                "kind": "yellow"
+              },
+              {
+                "team": "home",
+                "player": "Дудкин Е.",
+                "minute": 70,
+                "kind": "yellow"
+              }
+            ],
+            "subs": [
+              {
+                "team": "away",
+                "minute": 25,
+                "off": "Ульянов А.",
+                "on": "Воронец Д."
+              },
+              {
+                "team": "home",
+                "minute": 41,
+                "off": "Курдюков И.",
+                "on": "Дмитриев А."
+              },
+              {
+                "team": "home",
+                "minute": 41,
+                "off": "Сафронов А.",
+                "on": "Токарев А."
+              },
+              {
+                "team": "away",
+                "minute": 48,
+                "off": "Кожанов С.",
+                "on": "Садовский М."
+              },
+              {
+                "team": "home",
+                "minute": 52,
+                "off": "Силин М.",
+                "on": "Суббота С."
+              }
+            ]
+          }
         },
         {
           "id": 3844308,
@@ -1333,7 +6540,113 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "scoreAway": 3,
           "played": true,
           "techDefeat": false,
-          "venue": "ЦФКСиЗ Василеостровского района"
+          "venue": "ЦФКСиЗ Василеостровского района",
+          "protocol": {
+            "goals": [
+              {
+                "team": "away",
+                "player": "Верниковский П.",
+                "minute": 59,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Черваков А.",
+                "minute": 69,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Лаврентьев М.",
+                "minute": 73,
+                "assist": null,
+                "kind": "penalty",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Карасев А.",
+                "minute": 80,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": true
+              }
+            ],
+            "cards": [
+              {
+                "team": "home",
+                "player": "Бобин Д.",
+                "minute": 42,
+                "kind": "yellow"
+              },
+              {
+                "team": "away",
+                "player": "Доморощенов Ф.",
+                "minute": 58,
+                "kind": "yellow"
+              },
+              {
+                "team": "away",
+                "player": "Януш А.",
+                "minute": 58,
+                "kind": "yellow"
+              },
+              {
+                "team": "home",
+                "player": "Галицкий М.",
+                "minute": 72,
+                "kind": "red"
+              },
+              {
+                "team": "away",
+                "player": "Лаврентьев М.",
+                "minute": 76,
+                "kind": "yellow"
+              }
+            ],
+            "subs": [
+              {
+                "team": "home",
+                "minute": 41,
+                "off": "Новский М.",
+                "on": "Васильев О."
+              },
+              {
+                "team": "home",
+                "minute": 46,
+                "off": "Бондарь Д.",
+                "on": "Галицкий М."
+              },
+              {
+                "team": "home",
+                "minute": 46,
+                "off": "Татарченко Г.",
+                "on": "Семёнов М."
+              },
+              {
+                "team": "away",
+                "minute": 57,
+                "off": "Викулов А.",
+                "on": "Сусоров Д."
+              },
+              {
+                "team": "away",
+                "minute": 62,
+                "off": "Верниковский П.",
+                "on": "Железный Г."
+              },
+              {
+                "team": "away",
+                "minute": 73,
+                "off": "Бугай Н.",
+                "on": "Терещенко И."
+              }
+            ]
+          }
         },
         {
           "id": 3844305,
@@ -1348,7 +6661,131 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "scoreAway": 4,
           "played": true,
           "techDefeat": false,
-          "venue": "Балтика"
+          "venue": "Балтика",
+          "protocol": {
+            "goals": [
+              {
+                "team": "away",
+                "player": "Смирнов М.",
+                "minute": 31,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Сафронов А.",
+                "minute": 35,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Немиров А.",
+                "minute": 60,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Суббота С.",
+                "minute": 66,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              }
+            ],
+            "cards": [
+              {
+                "team": "away",
+                "player": "Немиров А.",
+                "minute": 44,
+                "kind": "yellow"
+              },
+              {
+                "team": "home",
+                "player": "Сковорода Д.",
+                "minute": 59,
+                "kind": "yellow"
+              },
+              {
+                "team": "home",
+                "player": "Гусев А.",
+                "minute": 62,
+                "kind": "yellow"
+              }
+            ],
+            "subs": [
+              {
+                "team": "away",
+                "minute": 41,
+                "off": "Сафронов А.",
+                "on": "Токарев А."
+              },
+              {
+                "team": "home",
+                "minute": 41,
+                "off": "Никитов Д.",
+                "on": "Гусев А."
+              },
+              {
+                "team": "home",
+                "minute": 41,
+                "off": "Старков Р.",
+                "on": "Петров М."
+              },
+              {
+                "team": "home",
+                "minute": 44,
+                "off": "Липский М.",
+                "on": "Дайтов Г."
+              },
+              {
+                "team": "away",
+                "minute": 56,
+                "off": "Симонов И.",
+                "on": "Шубин Е."
+              },
+              {
+                "team": "home",
+                "minute": 63,
+                "off": "Грибов А.",
+                "on": "Буйдоков А."
+              },
+              {
+                "team": "away",
+                "minute": 64,
+                "off": "Смирнов М.",
+                "on": "Курдюков И."
+              },
+              {
+                "team": "away",
+                "minute": 73,
+                "off": "Суббота С.",
+                "on": "Силин М."
+              },
+              {
+                "team": "away",
+                "minute": 77,
+                "off": "Бирюк А.",
+                "on": "Асонов А."
+              },
+              {
+                "team": "away",
+                "minute": 77,
+                "off": "Дудкин Е.",
+                "on": "Панов А."
+              },
+              {
+                "team": "away",
+                "minute": 78,
+                "off": "Кондратенко В.",
+                "on": "Левашко П."
+              }
+            ]
+          }
         },
         {
           "id": 3844304,
@@ -1358,12 +6795,100 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "away": "СШОР Кировского района",
           "homeLogo": "https://img.nagradion.ru/images/bf300x500/shields/eeOo1gvl.png",
           "awayLogo": "https://img.nagradion.ru/images/bf300x500/shields/kVikmdcU.png",
-          "score": null,
-          "scoreHome": null,
-          "scoreAway": null,
-          "played": false,
+          "score": "3:1",
+          "scoreHome": 3,
+          "scoreAway": 1,
+          "played": true,
           "techDefeat": false,
-          "venue": "Московский (Скороход)"
+          "venue": "Московский (Скороход)",
+          "protocol": {
+            "goals": [
+              {
+                "team": "home",
+                "player": "Фёдоров Д.",
+                "minute": 19,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Падерин А.",
+                "minute": 37,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Мирошников Д.",
+                "minute": 58,
+                "assist": null,
+                "kind": "penalty",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Байрамов К.",
+                "minute": 70,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              }
+            ],
+            "cards": [
+              {
+                "team": "away",
+                "player": "Макаров М.",
+                "minute": 50,
+                "kind": "yellow"
+              },
+              {
+                "team": "home",
+                "player": "Будулуца Р.",
+                "minute": 57,
+                "kind": "yellow"
+              }
+            ],
+            "subs": [
+              {
+                "team": "home",
+                "minute": 41,
+                "off": "Зинаков Е.",
+                "on": "Бакаржиев Ю."
+              },
+              {
+                "team": "away",
+                "minute": 53,
+                "off": "Тюфякин В.",
+                "on": "Левачин А."
+              },
+              {
+                "team": "away",
+                "minute": 60,
+                "off": "Краевский М.",
+                "on": "Денисюк К."
+              },
+              {
+                "team": "home",
+                "minute": 70,
+                "off": "Будулуца Р.",
+                "on": "Калинин А."
+              },
+              {
+                "team": "home",
+                "minute": 70,
+                "off": "Фёдоров Д.",
+                "on": "Румянцев Н."
+              },
+              {
+                "team": "away",
+                "minute": 77,
+                "off": "Мирошников Д.",
+                "on": "Мишин Е."
+              }
+            ]
+          }
         },
         {
           "id": 3844306,
@@ -1373,12 +6898,106 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "away": "СШОР Лидер-Купчино",
           "homeLogo": "https://img.nagradion.ru/images/bf300x500/shields/8KFwrPB6.png",
           "awayLogo": "https://img.nagradion.ru/images/bf300x500/shields/14B5x4iq.png",
-          "score": null,
-          "scoreHome": null,
-          "scoreAway": null,
-          "played": false,
+          "score": "3:1",
+          "scoreHome": 3,
+          "scoreAway": 1,
+          "played": true,
           "techDefeat": false,
-          "venue": "Балтика"
+          "venue": "Балтика",
+          "protocol": {
+            "goals": [
+              {
+                "team": "away",
+                "player": "Сиренко М.",
+                "minute": 2,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Костин А.",
+                "minute": 12,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Воронец Д.",
+                "minute": 36,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Воронец Д.",
+                "minute": 78,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              }
+            ],
+            "cards": [
+              {
+                "team": "away",
+                "player": "Погребняк И.",
+                "minute": 29,
+                "kind": "yellow"
+              },
+              {
+                "team": "home",
+                "player": "Бублик Н.",
+                "minute": 44,
+                "kind": "yellow"
+              },
+              {
+                "team": "home",
+                "player": "Тасоев Р.",
+                "minute": 67,
+                "kind": "yellow"
+              },
+              {
+                "team": "home",
+                "player": "Кожанов С.",
+                "minute": 80,
+                "kind": "yellow"
+              }
+            ],
+            "subs": [
+              {
+                "team": "away",
+                "minute": 37,
+                "off": "Черепанов М.",
+                "on": "Кузнецов И."
+              },
+              {
+                "team": "home",
+                "minute": 41,
+                "off": "Садовский М.",
+                "on": "Тасоев Р."
+              },
+              {
+                "team": "away",
+                "minute": 54,
+                "off": "Ванюшин Т.",
+                "on": "Домашнев А."
+              },
+              {
+                "team": "away",
+                "minute": 66,
+                "off": "Погребняк И.",
+                "on": "Позднухов Е."
+              },
+              {
+                "team": "home",
+                "minute": 79,
+                "off": "Тян Р.",
+                "on": "Касапоглу Ф."
+              }
+            ]
+          }
         },
         {
           "id": 3844307,
@@ -1402,17 +7021,31 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "teamId": 420746,
           "team": "СШОР Лидер-Купчино",
           "logo": "https://img.nagradion.ru/images/bf300x500/shields/14B5x4iq.png",
-          "games": 10,
+          "games": 11,
           "wins": 8,
           "draws": 1,
-          "losses": 1,
-          "scored": 36,
-          "missed": 11,
-          "diff": 25,
+          "losses": 2,
+          "scored": 37,
+          "missed": 14,
+          "diff": 23,
           "points": 25
         },
         {
           "position": 2,
+          "teamId": 420740,
+          "team": "СШ Выборжанин ",
+          "logo": "https://img.nagradion.ru/images/bf300x500/shields/8KFwrPB6.png",
+          "games": 11,
+          "wins": 7,
+          "draws": 1,
+          "losses": 3,
+          "scored": 24,
+          "missed": 18,
+          "diff": 6,
+          "points": 22
+        },
+        {
+          "position": 3,
           "teamId": 420738,
           "team": "Самсон",
           "logo": "https://img.nagradion.ru/images/bf300x500/shields/D6EpC2Z8.png",
@@ -1424,20 +7057,6 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "missed": 12,
           "diff": 7,
           "points": 20
-        },
-        {
-          "position": 3,
-          "teamId": 420740,
-          "team": "СШ Выборжанин ",
-          "logo": "https://img.nagradion.ru/images/bf300x500/shields/8KFwrPB6.png",
-          "games": 10,
-          "wins": 6,
-          "draws": 1,
-          "losses": 3,
-          "scored": 21,
-          "missed": 17,
-          "diff": 4,
-          "points": 19
         },
         {
           "position": 4,
@@ -1469,6 +7088,20 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
         },
         {
           "position": 6,
+          "teamId": 420743,
+          "team": "СШОР №2 Невского района",
+          "logo": "https://img.nagradion.ru/images/bf300x500/shields/eeOo1gvl.png",
+          "games": 11,
+          "wins": 4,
+          "draws": 2,
+          "losses": 5,
+          "scored": 24,
+          "missed": 24,
+          "diff": 0,
+          "points": 14
+        },
+        {
+          "position": 7,
           "teamId": 420742,
           "team": "Пороховчанин-Тосно",
           "logo": "https://img.nagradion.ru/images/bf300x500/shields/r9g4gspC.png",
@@ -1482,31 +7115,17 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "points": 12
         },
         {
-          "position": 7,
-          "teamId": 420743,
-          "team": "СШОР №2 Невского района",
-          "logo": "https://img.nagradion.ru/images/bf300x500/shields/eeOo1gvl.png",
-          "games": 10,
-          "wins": 3,
-          "draws": 2,
-          "losses": 5,
-          "scored": 21,
-          "missed": 23,
-          "diff": -2,
-          "points": 11
-        },
-        {
           "position": 8,
           "teamId": 420749,
           "team": "СШОР Кировского района",
           "logo": "https://img.nagradion.ru/images/bf300x500/shields/kVikmdcU.png",
-          "games": 10,
+          "games": 11,
           "wins": 3,
           "draws": 2,
-          "losses": 5,
-          "scored": 13,
-          "missed": 19,
-          "diff": -6,
+          "losses": 6,
+          "scored": 14,
+          "missed": 22,
+          "diff": -8,
           "points": 11
         },
         {
@@ -2084,7 +7703,101 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "played": true,
           "techDefeat": false,
           "venue": "СОШ № 303",
-          "videoSlug": "k4DxCtdjob4yiKvpVFi6oB"
+          "videoSlug": "k4DxCtdjob4yiKvpVFi6oB",
+          "protocol": {
+            "goals": [
+              {
+                "team": "home",
+                "player": "Чивилёв К.",
+                "minute": 2,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Голубицкий Е.",
+                "minute": 8,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Богданов В.",
+                "minute": 35,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Богданов В.",
+                "minute": 48,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              }
+            ],
+            "cards": [
+              {
+                "team": "home",
+                "player": "Алешин Г.",
+                "minute": 58,
+                "kind": "yellow"
+              }
+            ],
+            "subs": [
+              {
+                "team": "home",
+                "minute": 22,
+                "off": "Пайкин М.",
+                "on": "Шабанов Г."
+              },
+              {
+                "team": "away",
+                "minute": 36,
+                "off": "Голубицкий Е.",
+                "on": "Протасенко А."
+              },
+              {
+                "team": "away",
+                "minute": 36,
+                "off": "Островский Д.",
+                "on": "Еськин Д."
+              },
+              {
+                "team": "away",
+                "minute": 36,
+                "off": "Ребров А.",
+                "on": "Волоцуев Е."
+              },
+              {
+                "team": "home",
+                "minute": 36,
+                "off": "Карклинис А.",
+                "on": "Алаши Д."
+              },
+              {
+                "team": "away",
+                "minute": 55,
+                "off": "Галунов А.",
+                "on": "Мусиенко Г."
+              },
+              {
+                "team": "home",
+                "minute": 67,
+                "off": "Богданов В.",
+                "on": "Прилуцкий В."
+              },
+              {
+                "team": "home",
+                "minute": 67,
+                "off": "Екимов Т.",
+                "on": "Марков Д."
+              }
+            ]
+          }
         },
         {
           "id": 3844078,
@@ -2099,7 +7812,185 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "scoreAway": 10,
           "played": true,
           "techDefeat": false,
-          "venue": "Балтика"
+          "venue": "Балтика",
+          "protocol": {
+            "goals": [
+              {
+                "team": "away",
+                "player": "Бируля Я.",
+                "minute": 5,
+                "assist": null,
+                "kind": "penalty",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Бируля Я.",
+                "minute": 24,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Глазков С.",
+                "minute": 32,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Ушаков М.",
+                "minute": 35,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Сичинава Д.",
+                "minute": 39,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Глазков С.",
+                "minute": 40,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Бируля Я.",
+                "minute": 44,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Глазков С.",
+                "minute": 48,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Тихонов Р.",
+                "minute": 56,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Глазков С.",
+                "minute": 66,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              }
+            ],
+            "cards": [
+              {
+                "team": "home",
+                "player": "Яикин М.",
+                "minute": 27,
+                "kind": "yellow"
+              },
+              {
+                "team": "home",
+                "player": "Пашаев И.",
+                "minute": 53,
+                "kind": "yellow"
+              },
+              {
+                "team": "away",
+                "player": "Ганжа В.",
+                "minute": 53,
+                "kind": "yellow"
+              },
+              {
+                "team": "away",
+                "player": "Кикало М.",
+                "minute": 60,
+                "kind": "yellow"
+              }
+            ],
+            "subs": [
+              {
+                "team": "home",
+                "minute": 27,
+                "off": "Яикин М.",
+                "on": "Пашаев И."
+              },
+              {
+                "team": "away",
+                "minute": 41,
+                "off": "Куранов Д.",
+                "on": "Тихонов Р."
+              },
+              {
+                "team": "home",
+                "minute": 43,
+                "off": "Сковородко Т.",
+                "on": "Шотовский А."
+              },
+              {
+                "team": "home",
+                "minute": 47,
+                "off": "Лешкин К.",
+                "on": "Секретарев А."
+              },
+              {
+                "team": "home",
+                "minute": 47,
+                "off": "Морозов Г.",
+                "on": "Курсов Д."
+              },
+              {
+                "team": "home",
+                "minute": 47,
+                "off": "Перепелицын А.",
+                "on": "Суханов М."
+              },
+              {
+                "team": "away",
+                "minute": 48,
+                "off": "Ушаков М.",
+                "on": "Михель С."
+              },
+              {
+                "team": "away",
+                "minute": 51,
+                "off": "Бируля Я.",
+                "on": "Прокопьев Е."
+              },
+              {
+                "team": "away",
+                "minute": 51,
+                "off": "Лебедев М.",
+                "on": "Кикало М."
+              },
+              {
+                "team": "away",
+                "minute": 57,
+                "off": "Мишкин Н.",
+                "on": "Есипов И."
+              },
+              {
+                "team": "away",
+                "minute": 57,
+                "off": "Сичинава Д.",
+                "on": "Лосин А."
+              }
+            ]
+          }
         },
         {
           "id": 3844075,
@@ -2115,7 +8006,111 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "played": true,
           "techDefeat": false,
           "venue": "ЦФКСиЗ Василеостровского района",
-          "videoSlug": "kouIZrKDhsvQcEWNcQjdds"
+          "videoSlug": "kouIZrKDhsvQcEWNcQjdds",
+          "protocol": {
+            "goals": [
+              {
+                "team": "away",
+                "player": "Дайбов Д.",
+                "minute": 35,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Волков А.",
+                "minute": 37,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Волков А.",
+                "minute": 70,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": true
+              }
+            ],
+            "cards": [
+              {
+                "team": "home",
+                "player": "Волков А.",
+                "minute": 24,
+                "kind": "yellow"
+              },
+              {
+                "team": "home",
+                "player": "Ефимов Д.",
+                "minute": 48,
+                "kind": "yellow"
+              },
+              {
+                "team": "home",
+                "player": "Ёздемир Э.",
+                "minute": 51,
+                "kind": "yellow"
+              },
+              {
+                "team": "away",
+                "player": "Гаршин Т.",
+                "minute": 65,
+                "kind": "yellow"
+              }
+            ],
+            "subs": [
+              {
+                "team": "home",
+                "minute": 36,
+                "off": "Ермолаев Д.",
+                "on": "Аруссон Н."
+              },
+              {
+                "team": "away",
+                "minute": 42,
+                "off": "Елкин К.",
+                "on": "Башаров И."
+              },
+              {
+                "team": "away",
+                "minute": 42,
+                "off": "Стенников Н.",
+                "on": "Скоков Д."
+              },
+              {
+                "team": "away",
+                "minute": 47,
+                "off": "Ильясов Р.",
+                "on": "Гизатуллин Д."
+              },
+              {
+                "team": "away",
+                "minute": 54,
+                "off": "Сердюк М.",
+                "on": "Тихомиров В."
+              },
+              {
+                "team": "away",
+                "minute": 59,
+                "off": "Дайбов Д.",
+                "on": "Сири Рам М."
+              },
+              {
+                "team": "away",
+                "minute": 59,
+                "off": "Пиденко Н.",
+                "on": "Филатов А."
+              },
+              {
+                "team": "away",
+                "minute": 68,
+                "off": "Цырин В.",
+                "on": "Островский А."
+              }
+            ]
+          }
         },
         {
           "id": 3844074,
@@ -2130,7 +8125,95 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "scoreAway": 1,
           "played": true,
           "techDefeat": false,
-          "venue": "Московский (Скороход)"
+          "venue": "Московский (Скороход)",
+          "protocol": {
+            "goals": [
+              {
+                "team": "away",
+                "player": "Завалинов Д.",
+                "minute": 30,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              }
+            ],
+            "cards": [
+              {
+                "team": "home",
+                "player": "Вовк К.",
+                "minute": 0,
+                "kind": "yellow"
+              },
+              {
+                "team": "away",
+                "player": "Макарчук Д.",
+                "minute": 0,
+                "kind": "yellow"
+              },
+              {
+                "team": "away",
+                "player": "Коротун К.",
+                "minute": 0,
+                "kind": "yellow"
+              }
+            ],
+            "subs": [
+              {
+                "team": "home",
+                "minute": 36,
+                "off": "Клепинин П.",
+                "on": "Миняев А."
+              },
+              {
+                "team": "home",
+                "minute": 36,
+                "off": "Ус И.",
+                "on": "Фролов Д."
+              },
+              {
+                "team": "away",
+                "minute": 36,
+                "off": "Неменков Д.",
+                "on": "Коротун К."
+              },
+              {
+                "team": "home",
+                "minute": 49,
+                "off": "Негара Р.",
+                "on": "Черняев В."
+              },
+              {
+                "team": "away",
+                "minute": 58,
+                "off": "Кочуланов М.",
+                "on": "Андреев И."
+              },
+              {
+                "team": "away",
+                "minute": 58,
+                "off": "Степанов Д.",
+                "on": "Каданер М."
+              },
+              {
+                "team": "away",
+                "minute": 60,
+                "off": "Поповченко А.",
+                "on": "Смирнов А."
+              },
+              {
+                "team": "home",
+                "minute": 68,
+                "off": "Стрельников А.",
+                "on": "Басанов Р."
+              },
+              {
+                "team": "away",
+                "minute": 68,
+                "off": "Каракунов Д.",
+                "on": "Хотунцов К."
+              }
+            ]
+          }
         },
         {
           "id": 3844077,
@@ -2145,7 +8228,141 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "scoreAway": 3,
           "played": true,
           "techDefeat": false,
-          "venue": "Балтика"
+          "venue": "Балтика",
+          "protocol": {
+            "goals": [
+              {
+                "team": "away",
+                "player": "Румачик И.",
+                "minute": 25,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Лащенко А.",
+                "minute": 56,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Румачик И.",
+                "minute": 65,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              }
+            ],
+            "cards": [
+              {
+                "team": "away",
+                "player": "Семенов В.",
+                "minute": 13,
+                "kind": "yellow"
+              },
+              {
+                "team": "away",
+                "player": "Малашин С.",
+                "minute": 23,
+                "kind": "yellow"
+              },
+              {
+                "team": "away",
+                "player": "Румачик И.",
+                "minute": 34,
+                "kind": "yellow"
+              },
+              {
+                "team": "home",
+                "player": "Пинус Д.",
+                "minute": 66,
+                "kind": "yellow"
+              }
+            ],
+            "subs": [
+              {
+                "team": "home",
+                "minute": 16,
+                "off": "Хватков А.",
+                "on": "Летягин Е."
+              },
+              {
+                "team": "home",
+                "minute": 31,
+                "off": "Кухарчук И.",
+                "on": "Иванов Л."
+              },
+              {
+                "team": "home",
+                "minute": 41,
+                "off": "Семёнов Р.",
+                "on": "Лепинь Р."
+              },
+              {
+                "team": "away",
+                "minute": 51,
+                "off": "Цветков А.",
+                "on": "Мраморнов Д."
+              },
+              {
+                "team": "home",
+                "minute": 61,
+                "off": "Дмитриев В.",
+                "on": "Шитов И."
+              },
+              {
+                "team": "home",
+                "minute": 61,
+                "off": "Пантефоров В.",
+                "on": "Абрамов Д."
+              },
+              {
+                "team": "home",
+                "minute": 63,
+                "off": "Фокша Д.",
+                "on": "Попов М."
+              },
+              {
+                "team": "home",
+                "minute": 64,
+                "off": "Игнашев Я.",
+                "on": "Магомедов А."
+              },
+              {
+                "team": "away",
+                "minute": 71,
+                "off": "Разиньков М.",
+                "on": "Краснов А."
+              },
+              {
+                "team": "away",
+                "minute": 72,
+                "off": "Обозов П.",
+                "on": "Валентиров Е."
+              },
+              {
+                "team": "away",
+                "minute": 73,
+                "off": "Веденский М.",
+                "on": "Храменков Д."
+              },
+              {
+                "team": "away",
+                "minute": 73,
+                "off": "Иконников М.",
+                "on": "Нестеров А."
+              },
+              {
+                "team": "away",
+                "minute": 73,
+                "off": "Шестаков А.",
+                "on": "Демаков К."
+              }
+            ]
+          }
         },
         {
           "id": 3844080,
@@ -2161,7 +8378,147 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "played": true,
           "techDefeat": false,
           "venue": "Ижорец. Поле № 1",
-          "videoSlug": "HiibRbLQIZA2yu44AU0yQK"
+          "videoSlug": "HiibRbLQIZA2yu44AU0yQK",
+          "protocol": {
+            "goals": [
+              {
+                "team": "home",
+                "player": "Румачик И.",
+                "minute": 7,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Веденский М.",
+                "minute": 27,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Рябов Д.",
+                "minute": 41,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Пекарчук А.",
+                "minute": 44,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Румачик И.",
+                "minute": 52,
+                "assist": null,
+                "kind": "penalty",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Пекарчук А.",
+                "minute": 61,
+                "assist": null,
+                "kind": "penalty",
+                "addedTime": false
+              }
+            ],
+            "cards": [
+              {
+                "team": "home",
+                "player": "Кошелев Г.",
+                "minute": 0,
+                "kind": "yellow"
+              },
+              {
+                "team": "away",
+                "player": "Пашаев И.",
+                "minute": 44,
+                "kind": "yellow"
+              },
+              {
+                "team": "home",
+                "player": "Румачик Р.",
+                "minute": 56,
+                "kind": "yellow"
+              },
+              {
+                "team": "home",
+                "player": "Румачик И.",
+                "minute": 58,
+                "kind": "yellow"
+              },
+              {
+                "team": "home",
+                "player": "Лащенко А.",
+                "minute": 70,
+                "kind": "yellow"
+              },
+              {
+                "team": "away",
+                "player": "Пекарчук А.",
+                "minute": 70,
+                "kind": "yellow"
+              }
+            ],
+            "subs": [
+              {
+                "team": "away",
+                "minute": 47,
+                "off": "Рассказов Д.",
+                "on": "Шотовский А."
+              },
+              {
+                "team": "home",
+                "minute": 53,
+                "off": "Цветков А.",
+                "on": "Кошелев Г."
+              },
+              {
+                "team": "home",
+                "minute": 57,
+                "off": "Шестаков А.",
+                "on": "Мраморнов Д."
+              },
+              {
+                "team": "away",
+                "minute": 59,
+                "off": "Базовкин С.",
+                "on": "Пчелин Г."
+              },
+              {
+                "team": "home",
+                "minute": 62,
+                "off": "Семенов В.",
+                "on": "Храменков Д."
+              },
+              {
+                "team": "away",
+                "minute": 66,
+                "off": "Денисов И.",
+                "on": "Погосян А."
+              },
+              {
+                "team": "home",
+                "minute": 66,
+                "off": "Иконников М.",
+                "on": "Нестеров А."
+              },
+              {
+                "team": "away",
+                "minute": 68,
+                "off": "Рябов Д.",
+                "on": "Суханов М."
+              }
+            ]
+          }
         },
         {
           "id": 3844081,
@@ -2177,7 +8534,62 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "played": true,
           "techDefeat": false,
           "venue": "СОШ 363",
-          "videoSlug": "da4SzrFT9e3bfCIb3h8U4D"
+          "videoSlug": "da4SzrFT9e3bfCIb3h8U4D",
+          "protocol": {
+            "goals": [],
+            "cards": [
+              {
+                "team": "away",
+                "player": "Пантефоров В.",
+                "minute": 54,
+                "kind": "yellow"
+              }
+            ],
+            "subs": [
+              {
+                "team": "away",
+                "minute": 36,
+                "off": "Иванов Л.",
+                "on": "Игнашев Я."
+              },
+              {
+                "team": "away",
+                "minute": 36,
+                "off": "Фокша Д.",
+                "on": "Летягин Е."
+              },
+              {
+                "team": "home",
+                "minute": 46,
+                "off": "Голубицкий Е.",
+                "on": "Волоцуев Е."
+              },
+              {
+                "team": "home",
+                "minute": 54,
+                "off": "Болатов У.",
+                "on": "Быков Г."
+              },
+              {
+                "team": "away",
+                "minute": 54,
+                "off": "Семёнов Р.",
+                "on": "Лепинь Р."
+              },
+              {
+                "team": "home",
+                "minute": 61,
+                "off": "Галунов А.",
+                "on": "Мусиенко Г."
+              },
+              {
+                "team": "away",
+                "minute": 64,
+                "off": "Пантефоров В.",
+                "on": "Хватков А."
+              }
+            ]
+          }
         },
         {
           "id": 3844079,
@@ -2192,7 +8604,167 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "scoreAway": 3,
           "played": true,
           "techDefeat": false,
-          "venue": "СШОР Кировского района"
+          "venue": "СШОР Кировского района",
+          "protocol": {
+            "goals": [
+              {
+                "team": "away",
+                "player": "Сичинава Д.",
+                "minute": 5,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Микаелян Д.",
+                "minute": 12,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Щербаков М.",
+                "minute": 25,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Лебедев М.",
+                "minute": 42,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              }
+            ],
+            "cards": [
+              {
+                "team": "home",
+                "player": "Салтыков И.",
+                "minute": 6,
+                "kind": "yellow"
+              },
+              {
+                "team": "away",
+                "player": "Куранов Д.",
+                "minute": 21,
+                "kind": "yellow"
+              },
+              {
+                "team": "home",
+                "player": "Макарчук Д.",
+                "minute": 23,
+                "kind": "yellow"
+              },
+              {
+                "team": "home",
+                "player": "Чернов Д.",
+                "minute": 35,
+                "kind": "yellow"
+              },
+              {
+                "team": "away",
+                "player": "Ганжа В.",
+                "minute": 45,
+                "kind": "yellow"
+              },
+              {
+                "team": "away",
+                "player": "Михель С.",
+                "minute": 60,
+                "kind": "yellow"
+              },
+              {
+                "team": "away",
+                "player": "Мишкин Н.",
+                "minute": 65,
+                "kind": "red"
+              },
+              {
+                "team": "away",
+                "player": "Лосин А.",
+                "minute": 67,
+                "kind": "yellow"
+              },
+              {
+                "team": "away",
+                "player": "Сичинава Д.",
+                "minute": 68,
+                "kind": "yellow"
+              },
+              {
+                "team": "away",
+                "player": "Тихонов Р.",
+                "minute": 70,
+                "kind": "yellow"
+              }
+            ],
+            "subs": [
+              {
+                "team": "home",
+                "minute": 36,
+                "off": "Красноумов М.",
+                "on": "Степанов Д."
+              },
+              {
+                "team": "home",
+                "minute": 36,
+                "off": "Салтыков И.",
+                "on": "Неменков Д."
+              },
+              {
+                "team": "away",
+                "minute": 49,
+                "off": "Бируля Я.",
+                "on": "Ушаков М."
+              },
+              {
+                "team": "away",
+                "minute": 51,
+                "off": "Куранов Д.",
+                "on": "Тихонов Р."
+              },
+              {
+                "team": "home",
+                "minute": 55,
+                "off": "Завалинов Д.",
+                "on": "Смирнов А."
+              },
+              {
+                "team": "home",
+                "minute": 55,
+                "off": "Поповченко А.",
+                "on": "Хотунцов К."
+              },
+              {
+                "team": "away",
+                "minute": 58,
+                "off": "Ганжа В.",
+                "on": "Лосин А."
+              },
+              {
+                "team": "home",
+                "minute": 61,
+                "off": "Каракунов Д.",
+                "on": "Андреев И."
+              },
+              {
+                "team": "away",
+                "minute": 63,
+                "off": "Михель С.",
+                "on": "Косенко М."
+              },
+              {
+                "team": "away",
+                "minute": 70,
+                "off": "Сичинава Д.",
+                "on": "Кикало М."
+              }
+            ]
+          }
         },
         {
           "id": 3844082,
@@ -2208,7 +8780,165 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "played": true,
           "techDefeat": false,
           "venue": "Химик",
-          "videoSlug": "Led751wxepWedcz2NPJ9xK"
+          "videoSlug": "Led751wxepWedcz2NPJ9xK",
+          "protocol": {
+            "goals": [
+              {
+                "team": "home",
+                "player": "Черненко Т.",
+                "minute": 5,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Пиденко Н.",
+                "minute": 16,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Пиденко Н.",
+                "minute": 31,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Башаров И.",
+                "minute": 37,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": true
+              },
+              {
+                "team": "away",
+                "player": "Кузнецов К.",
+                "minute": 37,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Тихомиров В.",
+                "minute": 41,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Кириллов А.",
+                "minute": 53,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Пиденко Н.",
+                "minute": 58,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Прилуцкий В.",
+                "minute": 59,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              }
+            ],
+            "cards": [
+              {
+                "team": "home",
+                "player": "Пиденко Н.",
+                "minute": 64,
+                "kind": "red"
+              }
+            ],
+            "subs": [
+              {
+                "team": "away",
+                "minute": 36,
+                "off": "Богданов В.",
+                "on": "Устенко Е."
+              },
+              {
+                "team": "away",
+                "minute": 36,
+                "off": "Пайкин М.",
+                "on": "Карклинис А."
+              },
+              {
+                "team": "away",
+                "minute": 36,
+                "off": "Чивилёв К.",
+                "on": "Екимов Т."
+              },
+              {
+                "team": "away",
+                "minute": 36,
+                "off": "Шабанов Г.",
+                "on": "Прилуцкий В."
+              },
+              {
+                "team": "home",
+                "minute": 36,
+                "off": "Дайбов Д.",
+                "on": "Тихомиров В."
+              },
+              {
+                "team": "home",
+                "minute": 36,
+                "off": "Черненко Т.",
+                "on": "Островский А."
+              },
+              {
+                "team": "home",
+                "minute": 49,
+                "off": "Гаршин Т.",
+                "on": "Гизатуллин Д."
+              },
+              {
+                "team": "home",
+                "minute": 49,
+                "off": "Елкин К.",
+                "on": "Аверьянов Н."
+              },
+              {
+                "team": "home",
+                "minute": 49,
+                "off": "Сердюк М.",
+                "on": "Сири Рам М."
+              },
+              {
+                "team": "home",
+                "minute": 49,
+                "off": "Скоков Д.",
+                "on": "Стенников Н."
+              },
+              {
+                "team": "home",
+                "minute": 54,
+                "off": "Ильясов Р.",
+                "on": "Башаров И."
+              },
+              {
+                "team": "home",
+                "minute": 60,
+                "off": "Скороспелов А.",
+                "on": "Грибцов А."
+              }
+            ]
+          }
         },
         {
           "id": 3844083,
@@ -2224,7 +8954,56 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "played": true,
           "techDefeat": false,
           "venue": "Московский (Скороход)",
-          "videoSlug": "GXpus88IsbRB3vyiKZw0eV"
+          "videoSlug": "GXpus88IsbRB3vyiKZw0eV",
+          "protocol": {
+            "goals": [],
+            "cards": [
+              {
+                "team": "home",
+                "player": "Сигуа А.",
+                "minute": 49,
+                "kind": "yellow"
+              },
+              {
+                "team": "away",
+                "player": "Васильев О.",
+                "minute": 54,
+                "kind": "yellow"
+              }
+            ],
+            "subs": [
+              {
+                "team": "away",
+                "minute": 35,
+                "off": "Ермолаев Д.",
+                "on": "Аруссон Н."
+              },
+              {
+                "team": "home",
+                "minute": 60,
+                "off": "Стрельников А.",
+                "on": "Басанов Р."
+              },
+              {
+                "team": "home",
+                "minute": 60,
+                "off": "Фролов Д.",
+                "on": "Дербнёв М."
+              },
+              {
+                "team": "away",
+                "minute": 65,
+                "off": "Волков А.",
+                "on": "Сунцов А."
+              },
+              {
+                "team": "away",
+                "minute": 65,
+                "off": "Сахаров И.",
+                "on": "Дмитриев М."
+              }
+            ]
+          }
         },
         {
           "id": 3844087,
@@ -2239,7 +9018,139 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "scoreAway": 1,
           "played": true,
           "techDefeat": false,
-          "venue": "Балтика"
+          "venue": "Балтика",
+          "protocol": {
+            "goals": [
+              {
+                "team": "home",
+                "player": "Пекарчук А.",
+                "minute": 16,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Пекарчук А.",
+                "minute": 35,
+                "assist": null,
+                "kind": "penalty",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Волоцуев Е.",
+                "minute": 37,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Рассказов Д.",
+                "minute": 44,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Пекарчук А.",
+                "minute": 65,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              }
+            ],
+            "cards": [
+              {
+                "team": "home",
+                "player": "Перепелицын А.",
+                "minute": 15,
+                "kind": "yellow"
+              },
+              {
+                "team": "away",
+                "player": "Анисимов Д.",
+                "minute": 20,
+                "kind": "yellow"
+              },
+              {
+                "team": "away",
+                "player": "Еськин Д.",
+                "minute": 44,
+                "kind": "yellow"
+              },
+              {
+                "team": "away",
+                "player": "Галунов А.",
+                "minute": 47,
+                "kind": "yellow"
+              },
+              {
+                "team": "home",
+                "player": "Давыдкин А.",
+                "minute": 59,
+                "kind": "red"
+              },
+              {
+                "team": "away",
+                "player": "Островский Д.",
+                "minute": 70,
+                "kind": "yellow"
+              }
+            ],
+            "subs": [
+              {
+                "team": "away",
+                "minute": 36,
+                "off": "Анисимов Д.",
+                "on": "Протасенко А."
+              },
+              {
+                "team": "away",
+                "minute": 36,
+                "off": "Ермоченко Е.",
+                "on": "Смоглюк А."
+              },
+              {
+                "team": "away",
+                "minute": 36,
+                "off": "Ребров А.",
+                "on": "Волоцуев Е."
+              },
+              {
+                "team": "away",
+                "minute": 36,
+                "off": "Якимов Д.",
+                "on": "Галунов А."
+              },
+              {
+                "team": "home",
+                "minute": 51,
+                "off": "Базовкин С.",
+                "on": "Морозов Г."
+              },
+              {
+                "team": "away",
+                "minute": 51,
+                "off": "Афанасьев Я.",
+                "on": "Быков Г."
+              },
+              {
+                "team": "home",
+                "minute": 54,
+                "off": "Яикин М.",
+                "on": "Хомутов Д."
+              },
+              {
+                "team": "home",
+                "minute": 64,
+                "off": "Рассказов Д.",
+                "on": "Погосян А."
+              }
+            ]
+          }
         },
         {
           "id": 3844084,
@@ -2254,7 +9165,82 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "scoreAway": 3,
           "played": true,
           "techDefeat": false,
-          "venue": "ЦФКСиЗ Василеостровского района"
+          "venue": "ЦФКСиЗ Василеостровского района",
+          "protocol": {
+            "goals": [
+              {
+                "team": "home",
+                "player": "Волков А.",
+                "minute": 10,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Сосновский В.",
+                "minute": 16,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Сосновский В.",
+                "minute": 43,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Завалинов Д.",
+                "minute": 46,
+                "assist": null,
+                "kind": "penalty",
+                "addedTime": false
+              }
+            ],
+            "cards": [],
+            "subs": [
+              {
+                "team": "away",
+                "minute": 44,
+                "off": "Степанов Д.",
+                "on": "Неменков Д."
+              },
+              {
+                "team": "home",
+                "minute": 47,
+                "off": "Сахаров И.",
+                "on": "Ермолаев Д."
+              },
+              {
+                "team": "away",
+                "minute": 53,
+                "off": "Кириллов И.",
+                "on": "Андреев И."
+              },
+              {
+                "team": "home",
+                "minute": 53,
+                "off": "Аруссон Н.",
+                "on": "Дмитриев М."
+              },
+              {
+                "team": "away",
+                "minute": 62,
+                "off": "Каракунов Д.",
+                "on": "Хотунцов К."
+              },
+              {
+                "team": "home",
+                "minute": 63,
+                "off": "Ефимов Д.",
+                "on": "Цветков В."
+              }
+            ]
+          }
         },
         {
           "id": 3844085,
@@ -2269,7 +9255,117 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "scoreAway": 2,
           "played": true,
           "techDefeat": false,
-          "venue": "СОШ № 303"
+          "venue": "СОШ № 303",
+          "protocol": {
+            "goals": [
+              {
+                "team": "home",
+                "player": "Устенко Е.",
+                "minute": 6,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Сигуа А.",
+                "minute": 15,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Сигуа А.",
+                "minute": 29,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Семихов А.",
+                "minute": 42,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Семихов А.",
+                "minute": 47,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Кузнецов К.",
+                "minute": 55,
+                "assist": null,
+                "kind": "penalty",
+                "addedTime": false
+              }
+            ],
+            "cards": [
+              {
+                "team": "home",
+                "player": "Кириллов А.",
+                "minute": 43,
+                "kind": "yellow_to_red"
+              },
+              {
+                "team": "away",
+                "player": "Вовк К.",
+                "minute": 63,
+                "kind": "yellow"
+              },
+              {
+                "team": "home",
+                "player": "Богданов В.",
+                "minute": 65,
+                "kind": "yellow"
+              },
+              {
+                "team": "home",
+                "player": "Кириллов А.",
+                "minute": 65,
+                "kind": "yellow_to_red"
+              }
+            ],
+            "subs": [
+              {
+                "team": "home",
+                "minute": 31,
+                "off": "Карклинис А.",
+                "on": "Кириллов А."
+              },
+              {
+                "team": "away",
+                "minute": 47,
+                "off": "Черняев В.",
+                "on": "Негара Р."
+              },
+              {
+                "team": "away",
+                "minute": 50,
+                "off": "Миняев А.",
+                "on": "Клепинин П."
+              },
+              {
+                "team": "home",
+                "minute": 60,
+                "off": "Прилуцкий В.",
+                "on": "Шабанов Г."
+              },
+              {
+                "team": "away",
+                "minute": 60,
+                "off": "Дорничев В.",
+                "on": "Кочетов М."
+              }
+            ]
+          }
         },
         {
           "id": 3844088,
@@ -2284,7 +9380,132 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "scoreAway": 2,
           "played": true,
           "techDefeat": false,
-          "venue": "Московский (Скороход)"
+          "venue": "Московский (Скороход)",
+          "protocol": {
+            "goals": [
+              {
+                "team": "home",
+                "player": "Тихонов Р.",
+                "minute": 8,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Румачик Р.",
+                "minute": 17,
+                "assist": null,
+                "kind": "own_goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Румачик И.",
+                "minute": 35,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Граф Д.",
+                "minute": 45,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Сичинава Д.",
+                "minute": 60,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Демаков К.",
+                "minute": 63,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Глазков С.",
+                "minute": 65,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Щербаков М.",
+                "minute": 68,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              }
+            ],
+            "cards": [],
+            "subs": [
+              {
+                "team": "home",
+                "minute": 28,
+                "off": "Прокопьев Е.",
+                "on": "Граф Д."
+              },
+              {
+                "team": "home",
+                "minute": 33,
+                "off": "Косенко М.",
+                "on": "Глазков С."
+              },
+              {
+                "team": "away",
+                "minute": 35,
+                "off": "Цветков А.",
+                "on": "Кошелев Г."
+              },
+              {
+                "team": "away",
+                "minute": 51,
+                "off": "Румачик И.",
+                "on": "Демаков К."
+              },
+              {
+                "team": "away",
+                "minute": 56,
+                "off": "Шестаков А.",
+                "on": "Краснов А."
+              },
+              {
+                "team": "home",
+                "minute": 59,
+                "off": "Бируля Я.",
+                "on": "Кикало М."
+              },
+              {
+                "team": "home",
+                "minute": 59,
+                "off": "Тихонов Р.",
+                "on": "Лосин А."
+              },
+              {
+                "team": "away",
+                "minute": 62,
+                "off": "Кошелев Г.",
+                "on": "Нестеров А."
+              },
+              {
+                "team": "home",
+                "minute": 62,
+                "off": "Куранов Д.",
+                "on": "Есипов И."
+              }
+            ]
+          }
         },
         {
           "id": 3844086,
@@ -2300,7 +9521,105 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "played": true,
           "techDefeat": false,
           "venue": "Балтика",
-          "videoSlug": "LiMwa0vijMnCHfLYOyndZ8"
+          "videoSlug": "LiMwa0vijMnCHfLYOyndZ8",
+          "protocol": {
+            "goals": [
+              {
+                "team": "home",
+                "player": "Дмитриев В.",
+                "minute": 35,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Гаршин Т.",
+                "minute": 41,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Дмитриев В.",
+                "minute": 56,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              }
+            ],
+            "cards": [
+              {
+                "team": "home",
+                "player": "Иванов Л.",
+                "minute": 60,
+                "kind": "yellow_to_red"
+              },
+              {
+                "team": "home",
+                "player": "Иванов Л.",
+                "minute": 65,
+                "kind": "yellow_to_red"
+              }
+            ],
+            "subs": [
+              {
+                "team": "away",
+                "minute": 36,
+                "off": "Тихомиров В.",
+                "on": "Сири Рам М."
+              },
+              {
+                "team": "away",
+                "minute": 36,
+                "off": "Филатов А.",
+                "on": "Елкин К."
+              },
+              {
+                "team": "away",
+                "minute": 36,
+                "off": "Черненко Т.",
+                "on": "Островский А."
+              },
+              {
+                "team": "away",
+                "minute": 45,
+                "off": "Скоков Д.",
+                "on": "Стенников Н."
+              },
+              {
+                "team": "away",
+                "minute": 53,
+                "off": "Ильясов Р.",
+                "on": "Башаров И."
+              },
+              {
+                "team": "home",
+                "minute": 53,
+                "off": "Фокша Д.",
+                "on": "Хватков А."
+              },
+              {
+                "team": "away",
+                "minute": 58,
+                "off": "Сердюк М.",
+                "on": "Аверьянов Н."
+              },
+              {
+                "team": "home",
+                "minute": 62,
+                "off": "Семёнов Р.",
+                "on": "Лепинь Р."
+              },
+              {
+                "team": "home",
+                "minute": 70,
+                "off": "Дмитриев В.",
+                "on": "Попов М."
+              }
+            ]
+          }
         },
         {
           "id": 3844090,
@@ -2315,7 +9634,119 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "scoreAway": 3,
           "played": true,
           "techDefeat": false,
-          "venue": "СОШ № 303"
+          "venue": "СОШ № 303",
+          "protocol": {
+            "goals": [
+              {
+                "team": "away",
+                "player": "Глазков С.",
+                "minute": 13,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Бируля Я.",
+                "minute": 40,
+                "assist": null,
+                "kind": "penalty",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Протасенко А.",
+                "minute": 50,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Лосин А.",
+                "minute": 63,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              }
+            ],
+            "cards": [
+              {
+                "team": "home",
+                "player": "Еськин Д.",
+                "minute": 8,
+                "kind": "yellow"
+              },
+              {
+                "team": "home",
+                "player": "Ребров А.",
+                "minute": 17,
+                "kind": "yellow"
+              }
+            ],
+            "subs": [
+              {
+                "team": "home",
+                "minute": 36,
+                "off": "Болатов У.",
+                "on": "Быков Г."
+              },
+              {
+                "team": "home",
+                "minute": 36,
+                "off": "Ермоченко Е.",
+                "on": "Протасенко А."
+              },
+              {
+                "team": "home",
+                "minute": 36,
+                "off": "Ребров А.",
+                "on": "Галунов А."
+              },
+              {
+                "team": "home",
+                "minute": 36,
+                "off": "Якимов Д.",
+                "on": "Волоцуев Е."
+              },
+              {
+                "team": "away",
+                "minute": 59,
+                "off": "Прокопьев Е.",
+                "on": "Лосин А."
+              },
+              {
+                "team": "away",
+                "minute": 59,
+                "off": "Тихонов Р.",
+                "on": "Кикало М."
+              },
+              {
+                "team": "away",
+                "minute": 63,
+                "off": "Куранов Д.",
+                "on": "Ушаков М."
+              },
+              {
+                "team": "home",
+                "minute": 64,
+                "off": "Афанасьев Я.",
+                "on": "Михайлов В."
+              },
+              {
+                "team": "home",
+                "minute": 64,
+                "off": "Голубицкий Е.",
+                "on": "Мусиенко Г."
+              },
+              {
+                "team": "away",
+                "minute": 68,
+                "off": "Бируля Я.",
+                "on": "Климов С."
+              }
+            ]
+          }
         },
         {
           "id": 3844092,
@@ -2330,7 +9761,95 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "scoreAway": 0,
           "played": true,
           "techDefeat": false,
-          "venue": "Московский (Скороход)"
+          "venue": "Московский (Скороход)",
+          "protocol": {
+            "goals": [
+              {
+                "team": "home",
+                "player": "Сигуа А.",
+                "minute": 4,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              }
+            ],
+            "cards": [
+              {
+                "team": "home",
+                "player": "Изотов И.",
+                "minute": 11,
+                "kind": "yellow"
+              },
+              {
+                "team": "away",
+                "player": "Пинус Д.",
+                "minute": 11,
+                "kind": "yellow"
+              },
+              {
+                "team": "away",
+                "player": "Пантефоров В.",
+                "minute": 14,
+                "kind": "yellow_to_red"
+              },
+              {
+                "team": "away",
+                "player": "Пантефоров В.",
+                "minute": 44,
+                "kind": "yellow_to_red"
+              },
+              {
+                "team": "away",
+                "player": "Кухарчук И.",
+                "minute": 49,
+                "kind": "yellow"
+              },
+              {
+                "team": "home",
+                "player": "Фролов Д.",
+                "minute": 59,
+                "kind": "yellow"
+              }
+            ],
+            "subs": [
+              {
+                "team": "away",
+                "minute": 50,
+                "off": "Кухарчук И.",
+                "on": "Лепинь Р."
+              },
+              {
+                "team": "away",
+                "minute": 50,
+                "off": "Хватков А.",
+                "on": "Игнашев Я."
+              },
+              {
+                "team": "away",
+                "minute": 54,
+                "off": "Пинус Д.",
+                "on": "Летягин Е."
+              },
+              {
+                "team": "away",
+                "minute": 54,
+                "off": "Фокша Д.",
+                "on": "Попов М."
+              },
+              {
+                "team": "home",
+                "minute": 62,
+                "off": "Лисохмара М.",
+                "on": "Клепинин П."
+              },
+              {
+                "team": "home",
+                "minute": 62,
+                "off": "Стрельников А.",
+                "on": "Негара Р."
+              }
+            ]
+          }
         },
         {
           "id": 3844089,
@@ -2345,7 +9864,107 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "scoreAway": 2,
           "played": true,
           "techDefeat": false,
-          "venue": "СШОР Кировского района"
+          "venue": "СШОР Кировского района",
+          "protocol": {
+            "goals": [
+              {
+                "team": "away",
+                "player": "Шестаков А.",
+                "minute": 22,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Сосновский В.",
+                "minute": 24,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Красноумов М.",
+                "minute": 50,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Лащенко А.",
+                "minute": 53,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              }
+            ],
+            "cards": [
+              {
+                "team": "home",
+                "player": "Микаелян Д.",
+                "minute": 23,
+                "kind": "yellow"
+              },
+              {
+                "team": "home",
+                "player": "Каракунов Д.",
+                "minute": 45,
+                "kind": "yellow"
+              }
+            ],
+            "subs": [
+              {
+                "team": "home",
+                "minute": 36,
+                "off": "Микаелян Д.",
+                "on": "Коротун К."
+              },
+              {
+                "team": "home",
+                "minute": 36,
+                "off": "Поповченко А.",
+                "on": "Хотунцов К."
+              },
+              {
+                "team": "away",
+                "minute": 36,
+                "off": "Семенов В.",
+                "on": "Кошелев Г."
+              },
+              {
+                "team": "home",
+                "minute": 48,
+                "off": "Каракунов Д.",
+                "on": "Красноумов М."
+              },
+              {
+                "team": "away",
+                "minute": 48,
+                "off": "Цветков А.",
+                "on": "Краснов А."
+              },
+              {
+                "team": "away",
+                "minute": 61,
+                "off": "Малашин С.",
+                "on": "Скопич А."
+              },
+              {
+                "team": "away",
+                "minute": 61,
+                "off": "Шестаков А.",
+                "on": "Демаков К."
+              },
+              {
+                "team": "home",
+                "minute": 64,
+                "off": "Кириллов И.",
+                "on": "Андреев И."
+              }
+            ]
+          }
         },
         {
           "id": 3844091,
@@ -2360,7 +9979,153 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "scoreAway": 1,
           "played": true,
           "techDefeat": false,
-          "venue": "Химик"
+          "venue": "Химик",
+          "protocol": {
+            "goals": [
+              {
+                "team": "away",
+                "player": "Перепелицын А.",
+                "minute": 13,
+                "assist": null,
+                "kind": "own_goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Ильясов Р.",
+                "minute": 21,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Тихомиров В.",
+                "minute": 28,
+                "assist": null,
+                "kind": "penalty",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Ильясов Р.",
+                "minute": 42,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Гаршин Т.",
+                "minute": 58,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Пчелин Г.",
+                "minute": 68,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              }
+            ],
+            "cards": [
+              {
+                "team": "home",
+                "player": "Скоков Д.",
+                "minute": 49,
+                "kind": "yellow"
+              },
+              {
+                "team": "away",
+                "player": "Рассказов Д.",
+                "minute": 70,
+                "kind": "yellow"
+              }
+            ],
+            "subs": [
+              {
+                "team": "away",
+                "minute": 28,
+                "off": "Пашаев И.",
+                "on": "Морозов Г."
+              },
+              {
+                "team": "away",
+                "minute": 35,
+                "off": "Пекарчук А.",
+                "on": "Пчелин Г."
+              },
+              {
+                "team": "home",
+                "minute": 35,
+                "off": "Михайловский А.",
+                "on": "Михалёв А."
+              },
+              {
+                "team": "home",
+                "minute": 42,
+                "off": "Аверьянов Н.",
+                "on": "Грибцов А."
+              },
+              {
+                "team": "home",
+                "minute": 42,
+                "off": "Филатов А.",
+                "on": "Елкин К."
+              },
+              {
+                "team": "home",
+                "minute": 45,
+                "off": "Дайбов Д.",
+                "on": "Сири Рам М."
+              },
+              {
+                "team": "away",
+                "minute": 55,
+                "off": "Лешкин К.",
+                "on": "Секретарев А."
+              },
+              {
+                "team": "away",
+                "minute": 55,
+                "off": "Погосян А.",
+                "on": "Хомутов Д."
+              },
+              {
+                "team": "home",
+                "minute": 55,
+                "off": "Скоков Д.",
+                "on": "Башаров И."
+              },
+              {
+                "team": "home",
+                "minute": 55,
+                "off": "Стенников Н.",
+                "on": "Островский А."
+              },
+              {
+                "team": "home",
+                "minute": 55,
+                "off": "Тихомиров В.",
+                "on": "Гусенцов Н."
+              },
+              {
+                "team": "away",
+                "minute": 58,
+                "off": "Мирковец Д.",
+                "on": "Суханов М."
+              },
+              {
+                "team": "away",
+                "minute": 58,
+                "off": "Яикин М.",
+                "on": "Курсов Д."
+              }
+            ]
+          }
         },
         {
           "id": 3844093,
@@ -2375,7 +10140,70 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "scoreAway": 2,
           "played": true,
           "techDefeat": false,
-          "venue": "ЦФКСиЗ Василеостровского района"
+          "venue": "ЦФКСиЗ Василеостровского района",
+          "protocol": {
+            "goals": [
+              {
+                "team": "home",
+                "player": "Ёздемир Э.",
+                "minute": 7,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Богданов В.",
+                "minute": 16,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Шабанов Г.",
+                "minute": 41,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Карасев А.",
+                "minute": 68,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              }
+            ],
+            "cards": [],
+            "subs": [
+              {
+                "team": "home",
+                "minute": 20,
+                "off": "Ефимов Д.",
+                "on": "Цветков В."
+              },
+              {
+                "team": "away",
+                "minute": 36,
+                "off": "Карклинис А.",
+                "on": "Прилуцкий В."
+              },
+              {
+                "team": "away",
+                "minute": 46,
+                "off": "Екимов Т.",
+                "on": "Пайкин М."
+              },
+              {
+                "team": "home",
+                "minute": 46,
+                "off": "Аруссон Н.",
+                "on": "Дмитриев М."
+              }
+            ]
+          }
         },
         {
           "id": 3844098,
@@ -2391,7 +10219,128 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "played": true,
           "techDefeat": false,
           "venue": "Ижорец. Поле № 1",
-          "videoSlug": "Mv9erX85CoP6ueATRpA4l6"
+          "videoSlug": "Mv9erX85CoP6ueATRpA4l6",
+          "protocol": {
+            "goals": [
+              {
+                "team": "away",
+                "player": "Ребров А.",
+                "minute": 11,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Галунов А.",
+                "minute": 29,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Румачик И.",
+                "minute": 47,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Лащенко А.",
+                "minute": 51,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Шестаков А.",
+                "minute": 56,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Лащенко А.",
+                "minute": 58,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              }
+            ],
+            "cards": [],
+            "subs": [
+              {
+                "team": "home",
+                "minute": 36,
+                "off": "Валентиров Е.",
+                "on": "Обозов П."
+              },
+              {
+                "team": "home",
+                "minute": 45,
+                "off": "Кошелев Г.",
+                "on": "Демаков К."
+              },
+              {
+                "team": "away",
+                "minute": 53,
+                "off": "Голубицкий Е.",
+                "on": "Ермоченко Е."
+              },
+              {
+                "team": "home",
+                "minute": 57,
+                "off": "Иконников М.",
+                "on": "Скопич А."
+              },
+              {
+                "team": "away",
+                "minute": 59,
+                "off": "Анисимов Д.",
+                "on": "Болатов У."
+              },
+              {
+                "team": "away",
+                "minute": 59,
+                "off": "Волоцуев Е.",
+                "on": "Войчишин Е."
+              },
+              {
+                "team": "away",
+                "minute": 59,
+                "off": "Иванов Д.",
+                "on": "Терещук И."
+              },
+              {
+                "team": "away",
+                "minute": 59,
+                "off": "Островский Д.",
+                "on": "Михайлов В."
+              },
+              {
+                "team": "away",
+                "minute": 59,
+                "off": "Ребров А.",
+                "on": "Якимов Д."
+              },
+              {
+                "team": "home",
+                "minute": 63,
+                "off": "Румачик Р.",
+                "on": "Храменков Д."
+              },
+              {
+                "team": "away",
+                "minute": 67,
+                "off": "Галунов А.",
+                "on": "Мусиенко Г."
+              }
+            ]
+          }
         },
         {
           "id": 3844097,
@@ -2406,7 +10355,129 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "scoreAway": 1,
           "played": true,
           "techDefeat": false,
-          "venue": "Московский (Скороход)"
+          "venue": "Московский (Скороход)",
+          "protocol": {
+            "goals": [
+              {
+                "team": "home",
+                "player": "Глазков С.",
+                "minute": 15,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Цырин В.",
+                "minute": 51,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Сичинава Д.",
+                "minute": 54,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              }
+            ],
+            "cards": [
+              {
+                "team": "home",
+                "player": "Кикало М.",
+                "minute": 0,
+                "kind": "red"
+              },
+              {
+                "team": "away",
+                "player": "Гаршин Т.",
+                "minute": 35,
+                "kind": "yellow"
+              },
+              {
+                "team": "home",
+                "player": "Лебедев М.",
+                "minute": 50,
+                "kind": "yellow"
+              },
+              {
+                "team": "away",
+                "player": "Пиденко Н.",
+                "minute": 70,
+                "kind": "yellow"
+              }
+            ],
+            "subs": [
+              {
+                "team": "home",
+                "minute": 26,
+                "off": "Прокопьев Е.",
+                "on": "Тихонов Р."
+              },
+              {
+                "team": "home",
+                "minute": 29,
+                "off": "Куранов Д.",
+                "on": "Лосин А."
+              },
+              {
+                "team": "away",
+                "minute": 47,
+                "off": "Дайбов Д.",
+                "on": "Сири Рам М."
+              },
+              {
+                "team": "away",
+                "minute": 47,
+                "off": "Елкин К.",
+                "on": "Филатов А."
+              },
+              {
+                "team": "away",
+                "minute": 47,
+                "off": "Тихомиров В.",
+                "on": "Стенников Н."
+              },
+              {
+                "team": "away",
+                "minute": 47,
+                "off": "Черненко Т.",
+                "on": "Гизатуллин Д."
+              },
+              {
+                "team": "home",
+                "minute": 54,
+                "off": "Тихонов Р.",
+                "on": "Ушаков М."
+              },
+              {
+                "team": "away",
+                "minute": 65,
+                "off": "Ильясов Р.",
+                "on": "Грибцов А."
+              },
+              {
+                "team": "away",
+                "minute": 65,
+                "off": "Гизатуллин Д.",
+                "on": "Гусенцов Н."
+              },
+              {
+                "team": "home",
+                "minute": 72,
+                "off": "Бируля Я.",
+                "on": "Кикало М."
+              },
+              {
+                "team": "home",
+                "minute": 72,
+                "off": "Сичинава Д.",
+                "on": "Косенко М."
+              }
+            ]
+          }
         },
         {
           "id": 3844095,
@@ -2421,7 +10492,123 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "scoreAway": 1,
           "played": true,
           "techDefeat": false,
-          "venue": "Балтика"
+          "venue": "Балтика",
+          "protocol": {
+            "goals": [
+              {
+                "team": "home",
+                "player": "Дмитриев В.",
+                "minute": 57,
+                "assist": "Семёнов Р.",
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Дмитриев В.",
+                "minute": 59,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Карасев А.",
+                "minute": 70,
+                "assist": "Ёздемир Э.",
+                "kind": "goal",
+                "addedTime": false
+              }
+            ],
+            "cards": [
+              {
+                "team": "away",
+                "player": "Володин А.",
+                "minute": 32,
+                "kind": "yellow"
+              },
+              {
+                "team": "away",
+                "player": "Васильев О.",
+                "minute": 67,
+                "kind": "yellow"
+              }
+            ],
+            "subs": [
+              {
+                "team": "home",
+                "minute": 35,
+                "off": "Сенюк П.",
+                "on": "Геращенко А."
+              },
+              {
+                "team": "away",
+                "minute": 35,
+                "off": "Макуха И.",
+                "on": "Сахаров И."
+              },
+              {
+                "team": "home",
+                "minute": 49,
+                "off": "Иванов Л.",
+                "on": "Лепинь Р."
+              },
+              {
+                "team": "home",
+                "minute": 53,
+                "off": "Фокша Д.",
+                "on": "Хватков А."
+              },
+              {
+                "team": "away",
+                "minute": 54,
+                "off": "Дмитриев М.",
+                "on": "Цветков В."
+              },
+              {
+                "team": "away",
+                "minute": 54,
+                "off": "Ермолаев Д.",
+                "on": "Сунцов А."
+              },
+              {
+                "team": "home",
+                "minute": 63,
+                "off": "Семёнов Р.",
+                "on": "Летягин Е."
+              },
+              {
+                "team": "home",
+                "minute": 66,
+                "off": "Пинус Д.",
+                "on": "Попов М."
+              },
+              {
+                "team": "away",
+                "minute": 66,
+                "off": "Зоренко И.",
+                "on": "Семин С."
+              },
+              {
+                "team": "home",
+                "minute": 68,
+                "off": "Дмитриев В.",
+                "on": "Шитов И."
+              },
+              {
+                "team": "home",
+                "minute": 68,
+                "off": "Игнашев Я.",
+                "on": "Абрамов Д."
+              },
+              {
+                "team": "home",
+                "minute": 68,
+                "off": "Кухарчук И.",
+                "on": "Магомедов А."
+              }
+            ]
+          }
         },
         {
           "id": 3844094,
@@ -2437,7 +10624,111 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "played": true,
           "techDefeat": false,
           "venue": "СОШ 363",
-          "videoSlug": "XDzhLTcwvCLEyekNpMnv0n"
+          "videoSlug": "XDzhLTcwvCLEyekNpMnv0n",
+          "protocol": {
+            "goals": [
+              {
+                "team": "away",
+                "player": "Кочуланов М.",
+                "minute": 30,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Кириллов А.",
+                "minute": 56,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Степанов Д.",
+                "minute": 70,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": true
+              }
+            ],
+            "cards": [
+              {
+                "team": "away",
+                "player": "Неменков Д.",
+                "minute": 17,
+                "kind": "yellow"
+              },
+              {
+                "team": "away",
+                "player": "Коротун К.",
+                "minute": 43,
+                "kind": "yellow"
+              },
+              {
+                "team": "home",
+                "player": "Кириллов А.",
+                "minute": 59,
+                "kind": "yellow"
+              },
+              {
+                "team": "away",
+                "player": "Чернов Д.",
+                "minute": 62,
+                "kind": "yellow"
+              }
+            ],
+            "subs": [
+              {
+                "team": "home",
+                "minute": 31,
+                "off": "Кузьмин Т.",
+                "on": "Алешин Г."
+              },
+              {
+                "team": "away",
+                "minute": 36,
+                "off": "Кочуланов М.",
+                "on": "Степанов Д."
+              },
+              {
+                "team": "away",
+                "minute": 36,
+                "off": "Неменков Д.",
+                "on": "Кириллов И."
+              },
+              {
+                "team": "home",
+                "minute": 49,
+                "off": "Пайкин М.",
+                "on": "Шабанов Г."
+              },
+              {
+                "team": "home",
+                "minute": 54,
+                "off": "Карклинис А.",
+                "on": "Прилуцкий В."
+              },
+              {
+                "team": "home",
+                "minute": 58,
+                "off": "Богданов В.",
+                "on": "Устенко Е."
+              },
+              {
+                "team": "away",
+                "minute": 58,
+                "off": "Коротун К.",
+                "on": "Хотунцов К."
+              },
+              {
+                "team": "away",
+                "minute": 64,
+                "off": "Чернов Д.",
+                "on": "Андреев И."
+              }
+            ]
+          }
         },
         {
           "id": 3844096,
@@ -2452,7 +10743,157 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "scoreAway": 5,
           "played": true,
           "techDefeat": false,
-          "venue": "Балтика"
+          "venue": "Балтика",
+          "protocol": {
+            "goals": [
+              {
+                "team": "away",
+                "player": "Лисохмара М.",
+                "minute": 3,
+                "assist": null,
+                "kind": "penalty",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Лисохмара М.",
+                "minute": 16,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Лисохмара М.",
+                "minute": 42,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Лисохмара М.",
+                "minute": 44,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Фролов Д.",
+                "minute": 51,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              }
+            ],
+            "cards": [
+              {
+                "team": "home",
+                "player": "Базовкин С.",
+                "minute": 3,
+                "kind": "yellow"
+              },
+              {
+                "team": "away",
+                "player": "Изотов И.",
+                "minute": 22,
+                "kind": "yellow"
+              },
+              {
+                "team": "home",
+                "player": "Лешкин К.",
+                "minute": 41,
+                "kind": "yellow"
+              },
+              {
+                "team": "home",
+                "player": "Сковородко Т.",
+                "minute": 66,
+                "kind": "yellow"
+              }
+            ],
+            "subs": [
+              {
+                "team": "home",
+                "minute": 36,
+                "off": "Базовкин С.",
+                "on": "Хомутов Д."
+              },
+              {
+                "team": "home",
+                "minute": 45,
+                "off": "Мирковец Д.",
+                "on": "Суханов М."
+              },
+              {
+                "team": "home",
+                "minute": 45,
+                "off": "Перепелицын А.",
+                "on": "Морозов Г."
+              },
+              {
+                "team": "away",
+                "minute": 45,
+                "off": "Изотов И.",
+                "on": "Негара Р."
+              },
+              {
+                "team": "home",
+                "minute": 48,
+                "off": "Пекарчук А.",
+                "on": "Погосян А."
+              },
+              {
+                "team": "home",
+                "minute": 50,
+                "off": "Лешкин К.",
+                "on": "Секретарев А."
+              },
+              {
+                "team": "home",
+                "minute": 50,
+                "off": "Пчелин Г.",
+                "on": "Пашаев И."
+              },
+              {
+                "team": "home",
+                "minute": 50,
+                "off": "Яикин М.",
+                "on": "Курсов Д."
+              },
+              {
+                "team": "away",
+                "minute": 50,
+                "off": "Стрельников А.",
+                "on": "Черняев В."
+              },
+              {
+                "team": "away",
+                "minute": 53,
+                "off": "Миняев А.",
+                "on": "Кочетов М."
+              },
+              {
+                "team": "away",
+                "minute": 53,
+                "off": "Ус И.",
+                "on": "Клепинин П."
+              },
+              {
+                "team": "away",
+                "minute": 60,
+                "off": "Фролов Д.",
+                "on": "Дербнёв М."
+              },
+              {
+                "team": "away",
+                "minute": 65,
+                "off": "Лисохмара М.",
+                "on": "Беляев Ф."
+              }
+            ]
+          }
         },
         {
           "id": 3844103,
@@ -2467,7 +10908,93 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "scoreAway": 1,
           "played": true,
           "techDefeat": false,
-          "venue": "СОШ № 303"
+          "venue": "СОШ № 303",
+          "protocol": {
+            "goals": [
+              {
+                "team": "home",
+                "player": "Карклинис А.",
+                "minute": 25,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Кириллов А.",
+                "minute": 35,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Дмитриев В.",
+                "minute": 50,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              }
+            ],
+            "cards": [
+              {
+                "team": "away",
+                "player": "Пантефоров В.",
+                "minute": 0,
+                "kind": "red"
+              },
+              {
+                "team": "home",
+                "player": "Кириллов А.",
+                "minute": 17,
+                "kind": "yellow"
+              },
+              {
+                "team": "home",
+                "player": "Кузнецов К.",
+                "minute": 26,
+                "kind": "yellow"
+              }
+            ],
+            "subs": [
+              {
+                "team": "home",
+                "minute": 36,
+                "off": "Прилуцкий В.",
+                "on": "Пайкин М."
+              },
+              {
+                "team": "away",
+                "minute": 36,
+                "off": "Сенюк П.",
+                "on": "Геращенко А."
+              },
+              {
+                "team": "away",
+                "minute": 43,
+                "off": "Фокша Д.",
+                "on": "Лепинь Р."
+              },
+              {
+                "team": "home",
+                "minute": 60,
+                "off": "Богданов В.",
+                "on": "Екимов Т."
+              },
+              {
+                "team": "away",
+                "minute": 62,
+                "off": "Семёнов Р.",
+                "on": "Хватков А."
+              },
+              {
+                "team": "home",
+                "minute": 68,
+                "off": "Кириллов А.",
+                "on": "Шабанов Г."
+              }
+            ]
+          }
         },
         {
           "id": 3844100,
@@ -2482,7 +11009,163 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "scoreAway": 1,
           "played": true,
           "techDefeat": false,
-          "venue": "Химик"
+          "venue": "Химик",
+          "protocol": {
+            "goals": [
+              {
+                "team": "home",
+                "player": "Аверьянов Н.",
+                "minute": 12,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Пиденко Н.",
+                "minute": 20,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Румачик И.",
+                "minute": 26,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Пиденко Н.",
+                "minute": 29,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Аверьянов Н.",
+                "minute": 40,
+                "assist": null,
+                "kind": "penalty",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Филатов А.",
+                "minute": 62,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Пиденко Н.",
+                "minute": 67,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Тихомиров В.",
+                "minute": 69,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              }
+            ],
+            "cards": [
+              {
+                "team": "away",
+                "player": "Семенов В.",
+                "minute": 0,
+                "kind": "yellow"
+              }
+            ],
+            "subs": [
+              {
+                "team": "home",
+                "minute": 36,
+                "off": "Сири Рам М.",
+                "on": "Тихомиров В."
+              },
+              {
+                "team": "away",
+                "minute": 36,
+                "off": "Шестаков А.",
+                "on": "Науменко К."
+              },
+              {
+                "team": "away",
+                "minute": 41,
+                "off": "Обозов П.",
+                "on": "Валентиров Е."
+              },
+              {
+                "team": "home",
+                "minute": 47,
+                "off": "Аверьянов Н.",
+                "on": "Островский А."
+              },
+              {
+                "team": "away",
+                "minute": 47,
+                "off": "Разиньков М.",
+                "on": "Демаков К."
+              },
+              {
+                "team": "away",
+                "minute": 50,
+                "off": "Цветков А.",
+                "on": "Нестеров А."
+              },
+              {
+                "team": "home",
+                "minute": 52,
+                "off": "Гизатуллин Д.",
+                "on": "Башаров И."
+              },
+              {
+                "team": "home",
+                "minute": 52,
+                "off": "Дайбов Д.",
+                "on": "Стенников Н."
+              },
+              {
+                "team": "home",
+                "minute": 52,
+                "off": "Скоков Д.",
+                "on": "Филатов А."
+              },
+              {
+                "team": "home",
+                "minute": 52,
+                "off": "Черненко Т.",
+                "on": "Елкин К."
+              },
+              {
+                "team": "home",
+                "minute": 52,
+                "off": "Шлык Я.",
+                "on": "Михайловский А."
+              },
+              {
+                "team": "away",
+                "minute": 52,
+                "off": "Румачик И.",
+                "on": "Краснов А."
+              },
+              {
+                "team": "away",
+                "minute": 63,
+                "off": "Иконников М.",
+                "on": "Храменков Д."
+              }
+            ]
+          }
         },
         {
           "id": 3844101,
@@ -2497,7 +11180,85 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "scoreAway": 1,
           "played": true,
           "techDefeat": false,
-          "venue": "Московский (Скороход)"
+          "venue": "Московский (Скороход)",
+          "protocol": {
+            "goals": [
+              {
+                "team": "home",
+                "player": "Ус И.",
+                "minute": 8,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Ушаков М.",
+                "minute": 39,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              }
+            ],
+            "cards": [
+              {
+                "team": "away",
+                "player": "Лосин А.",
+                "minute": 57,
+                "kind": "yellow"
+              },
+              {
+                "team": "home",
+                "player": "Клепинин П.",
+                "minute": 65,
+                "kind": "yellow"
+              },
+              {
+                "team": "away",
+                "player": "Граф Д.",
+                "minute": 65,
+                "kind": "yellow"
+              }
+            ],
+            "subs": [
+              {
+                "team": "away",
+                "minute": 33,
+                "off": "Тихонов Р.",
+                "on": "Глазков С."
+              },
+              {
+                "team": "home",
+                "minute": 36,
+                "off": "Изотов И.",
+                "on": "Негара Р."
+              },
+              {
+                "team": "away",
+                "minute": 38,
+                "off": "Куранов Д.",
+                "on": "Ушаков М."
+              },
+              {
+                "team": "home",
+                "minute": 43,
+                "off": "Миняев А.",
+                "on": "Клепинин П."
+              },
+              {
+                "team": "home",
+                "minute": 43,
+                "off": "Стрельников А.",
+                "on": "Черняев В."
+              },
+              {
+                "team": "away",
+                "minute": 58,
+                "off": "Бируля Я.",
+                "on": "Косенко М."
+              }
+            ]
+          }
         },
         {
           "id": 3844102,
@@ -2512,7 +11273,57 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "scoreAway": 1,
           "played": true,
           "techDefeat": false,
-          "venue": "ЦФКСиЗ Василеостровского района"
+          "venue": "ЦФКСиЗ Василеостровского района",
+          "protocol": {
+            "goals": [
+              {
+                "team": "away",
+                "player": "Давыдкин А.",
+                "minute": 26,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Карасев А.",
+                "minute": 34,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Карасев А.",
+                "minute": 55,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              }
+            ],
+            "cards": [
+              {
+                "team": "home",
+                "player": "Николаев В.",
+                "minute": 25,
+                "kind": "red"
+              }
+            ],
+            "subs": [
+              {
+                "team": "home",
+                "minute": 36,
+                "off": "Макуха И.",
+                "on": "Цветков В."
+              },
+              {
+                "team": "home",
+                "minute": 44,
+                "off": "Сахаров И.",
+                "on": "Сунцов А."
+              }
+            ]
+          }
         },
         {
           "id": 3844099,
@@ -2527,7 +11338,133 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "scoreAway": 0,
           "played": true,
           "techDefeat": false,
-          "venue": "СШОР Кировского района"
+          "venue": "СШОР Кировского района",
+          "protocol": {
+            "goals": [
+              {
+                "team": "home",
+                "player": "Кочуланов М.",
+                "minute": 23,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Чернов Д.",
+                "minute": 48,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              }
+            ],
+            "cards": [
+              {
+                "team": "home",
+                "player": "Микаелян Д.",
+                "minute": 55,
+                "kind": "yellow_to_red"
+              },
+              {
+                "team": "home",
+                "player": "Неменков Д.",
+                "minute": 55,
+                "kind": "yellow"
+              },
+              {
+                "team": "home",
+                "player": "Микаелян Д.",
+                "minute": 63,
+                "kind": "yellow_to_red"
+              },
+              {
+                "team": "away",
+                "player": "Быков Г.",
+                "minute": 70,
+                "kind": "yellow"
+              }
+            ],
+            "subs": [
+              {
+                "team": "away",
+                "minute": 7,
+                "off": "Островский Д.",
+                "on": "Михайлов В."
+              },
+              {
+                "team": "away",
+                "minute": 36,
+                "off": "Волоцуев Е.",
+                "on": "Быков Г."
+              },
+              {
+                "team": "home",
+                "minute": 36,
+                "off": "Андреев И.",
+                "on": "Кириллов И."
+              },
+              {
+                "team": "home",
+                "minute": 36,
+                "off": "Смирнов А.",
+                "on": "Микаелян Д."
+              },
+              {
+                "team": "home",
+                "minute": 36,
+                "off": "Хотунцов К.",
+                "on": "Завалинов Д."
+              },
+              {
+                "team": "home",
+                "minute": 44,
+                "off": "Кочуланов М.",
+                "on": "Неменков Д."
+              },
+              {
+                "team": "away",
+                "minute": 46,
+                "off": "Ермоченко Е.",
+                "on": "Мусиенко Г."
+              },
+              {
+                "team": "away",
+                "minute": 46,
+                "off": "Ребров А.",
+                "on": "Болатов У."
+              },
+              {
+                "team": "away",
+                "minute": 49,
+                "off": "Иванов Д.",
+                "on": "Терещук И."
+              },
+              {
+                "team": "away",
+                "minute": 59,
+                "off": "Галунов А.",
+                "on": "Якимов Д."
+              },
+              {
+                "team": "home",
+                "minute": 59,
+                "off": "Коротун К.",
+                "on": "Сметана И."
+              },
+              {
+                "team": "home",
+                "minute": 66,
+                "off": "Макарчук Д.",
+                "on": "Михалевич А."
+              },
+              {
+                "team": "home",
+                "minute": 70,
+                "off": "Чернов Д.",
+                "on": "Хаджиогло А."
+              }
+            ]
+          }
         },
         {
           "id": 3844107,
@@ -2543,7 +11480,107 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "played": true,
           "techDefeat": false,
           "venue": "Ижорец. Поле № 2",
-          "videoSlug": "OWHchQrK4omsL6rTcwCN1T"
+          "videoSlug": "OWHchQrK4omsL6rTcwCN1T",
+          "protocol": {
+            "goals": [
+              {
+                "team": "away",
+                "player": "Клепинин П.",
+                "minute": 43,
+                "assist": null,
+                "kind": "penalty",
+                "addedTime": false
+              }
+            ],
+            "cards": [
+              {
+                "team": "home",
+                "player": "Румачик И.",
+                "minute": 9,
+                "kind": "yellow"
+              },
+              {
+                "team": "home",
+                "player": "Иконников М.",
+                "minute": 48,
+                "kind": "yellow"
+              },
+              {
+                "team": "away",
+                "player": "Стрельников А.",
+                "minute": 49,
+                "kind": "yellow"
+              },
+              {
+                "team": "away",
+                "player": "Вовк К.",
+                "minute": 66,
+                "kind": "yellow"
+              }
+            ],
+            "subs": [
+              {
+                "team": "home",
+                "minute": 46,
+                "off": "Цветков А.",
+                "on": "Кошелев Г."
+              },
+              {
+                "team": "away",
+                "minute": 52,
+                "off": "Миняев А.",
+                "on": "Басанов Р."
+              },
+              {
+                "team": "home",
+                "minute": 55,
+                "off": "Веденский М.",
+                "on": "Краснов А."
+              },
+              {
+                "team": "away",
+                "minute": 58,
+                "off": "Дербнёв М.",
+                "on": "Кочетов М."
+              },
+              {
+                "team": "away",
+                "minute": 60,
+                "off": "Негара Р.",
+                "on": "Черняев В."
+              },
+              {
+                "team": "away",
+                "minute": 60,
+                "off": "Пуховский Д.",
+                "on": "Клепинин П."
+              },
+              {
+                "team": "away",
+                "minute": 62,
+                "off": "Гусак Л.",
+                "on": "Рамалданов И."
+              },
+              {
+                "team": "away",
+                "minute": 62,
+                "off": "Сигуа А.",
+                "on": "Назима Е."
+              },
+              {
+                "team": "home",
+                "minute": 62,
+                "off": "Иконников М.",
+                "on": "Демаков К."
+              },
+              {
+                "team": "home",
+                "minute": 68,
+                "off": "Шестаков А.",
+                "on": "Нестеров А."
+              }
+            ]
+          }
         },
         {
           "id": 3844106,
@@ -2558,7 +11595,116 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "scoreAway": 2,
           "played": true,
           "techDefeat": false,
-          "venue": "Московский (Скороход)"
+          "venue": "Московский (Скороход)",
+          "protocol": {
+            "goals": [
+              {
+                "team": "home",
+                "player": "Бируля Я.",
+                "minute": 20,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Сичинава Д.",
+                "minute": 28,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Глазков С.",
+                "minute": 31,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Ёздемир Э.",
+                "minute": 43,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Ушаков М.",
+                "minute": 51,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Ёздемир Э.",
+                "minute": 68,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              }
+            ],
+            "cards": [],
+            "subs": [
+              {
+                "team": "away",
+                "minute": 36,
+                "off": "Дмитриев М.",
+                "on": "Сунцов А."
+              },
+              {
+                "team": "away",
+                "minute": 36,
+                "off": "Сахаров И.",
+                "on": "Цветков В."
+              },
+              {
+                "team": "home",
+                "minute": 49,
+                "off": "Бируля Я.",
+                "on": "Тихонов Р."
+              },
+              {
+                "team": "home",
+                "minute": 49,
+                "off": "Куранов Д.",
+                "on": "Ушаков М."
+              },
+              {
+                "team": "away",
+                "minute": 54,
+                "off": "Зоренко И.",
+                "on": "Семин С."
+              },
+              {
+                "team": "home",
+                "minute": 60,
+                "off": "Лосин А.",
+                "on": "Косенко М."
+              },
+              {
+                "team": "home",
+                "minute": 64,
+                "off": "Ганжа В.",
+                "on": "Климов С."
+              },
+              {
+                "team": "home",
+                "minute": 64,
+                "off": "Глазков С.",
+                "on": "Есипов И."
+              },
+              {
+                "team": "home",
+                "minute": 64,
+                "off": "Мишкин Н.",
+                "on": "Прокопьев Е."
+              }
+            ]
+          }
         },
         {
           "id": 3844104,
@@ -2573,7 +11719,102 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "scoreAway": 2,
           "played": true,
           "techDefeat": false,
-          "venue": "Балтика"
+          "venue": "Балтика",
+          "protocol": {
+            "goals": [
+              {
+                "team": "away",
+                "player": "Неменков Д.",
+                "minute": 30,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Завалинов Д.",
+                "minute": 36,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              }
+            ],
+            "cards": [],
+            "subs": [
+              {
+                "team": "away",
+                "minute": 27,
+                "off": "Кочуланов М.",
+                "on": "Неменков Д."
+              },
+              {
+                "team": "home",
+                "minute": 36,
+                "off": "Сенюк П.",
+                "on": "Геращенко А."
+              },
+              {
+                "team": "away",
+                "minute": 42,
+                "off": "Степанов Д.",
+                "on": "Кириллов И."
+              },
+              {
+                "team": "home",
+                "minute": 46,
+                "off": "Игнашев Я.",
+                "on": "Лепинь Р."
+              },
+              {
+                "team": "home",
+                "minute": 46,
+                "off": "Семёнов Р.",
+                "on": "Летягин Е."
+              },
+              {
+                "team": "home",
+                "minute": 50,
+                "off": "Хватков А.",
+                "on": "Фокша Д."
+              },
+              {
+                "team": "away",
+                "minute": 61,
+                "off": "Сосновский В.",
+                "on": "Андреев И."
+              },
+              {
+                "team": "home",
+                "minute": 65,
+                "off": "Пинус Д.",
+                "on": "Попов М."
+              },
+              {
+                "team": "away",
+                "minute": 67,
+                "off": "Каракунов Д.",
+                "on": "Сметана И."
+              },
+              {
+                "team": "home",
+                "minute": 69,
+                "off": "Кухарчук И.",
+                "on": "Шитов И."
+              },
+              {
+                "team": "away",
+                "minute": 69,
+                "off": "Поповченко А.",
+                "on": "Михалевич А."
+              },
+              {
+                "team": "away",
+                "minute": 69,
+                "off": "Смирнов А.",
+                "on": "Хаджиогло А."
+              }
+            ]
+          }
         },
         {
           "id": 3844108,
@@ -2588,7 +11829,135 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "scoreAway": 2,
           "played": true,
           "techDefeat": false,
-          "venue": "СОШ 363"
+          "venue": "СОШ 363",
+          "protocol": {
+            "goals": [
+              {
+                "team": "home",
+                "player": "Протасенко А.",
+                "minute": 1,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Пиденко Н.",
+                "minute": 6,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Черненко Т.",
+                "minute": 24,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              }
+            ],
+            "cards": [
+              {
+                "team": "home",
+                "player": "Ермоченко Е.",
+                "minute": 16,
+                "kind": "yellow"
+              },
+              {
+                "team": "home",
+                "player": "Протасенко А.",
+                "minute": 63,
+                "kind": "yellow"
+              }
+            ],
+            "subs": [
+              {
+                "team": "home",
+                "minute": 36,
+                "off": "Анисимов Д.",
+                "on": "Смоглюк А."
+              },
+              {
+                "team": "home",
+                "minute": 36,
+                "off": "Волоцуев Е.",
+                "on": "Болатов У."
+              },
+              {
+                "team": "home",
+                "minute": 36,
+                "off": "Галунов А.",
+                "on": "Голубицкий Е."
+              },
+              {
+                "team": "home",
+                "minute": 36,
+                "off": "Иванов Д.",
+                "on": "Терещук И."
+              },
+              {
+                "team": "away",
+                "minute": 36,
+                "off": "Аверьянов Н.",
+                "on": "Грибцов А."
+              },
+              {
+                "team": "away",
+                "minute": 36,
+                "off": "Стенников Н.",
+                "on": "Скоков Д."
+              },
+              {
+                "team": "away",
+                "minute": 45,
+                "off": "Ильясов Р.",
+                "on": "Островский А."
+              },
+              {
+                "team": "away",
+                "minute": 45,
+                "off": "Филатов А.",
+                "on": "Тихомиров В."
+              },
+              {
+                "team": "away",
+                "minute": 45,
+                "off": "Черненко Т.",
+                "on": "Башаров И."
+              },
+              {
+                "team": "away",
+                "minute": 49,
+                "off": "Дайбов Д.",
+                "on": "Гизатуллин Д."
+              },
+              {
+                "team": "away",
+                "minute": 49,
+                "off": "Елкин К.",
+                "on": "Скороспелов А."
+              },
+              {
+                "team": "away",
+                "minute": 49,
+                "off": "Пиденко Н.",
+                "on": "Сири Рам М."
+              },
+              {
+                "team": "home",
+                "minute": 55,
+                "off": "Быков Г.",
+                "on": "Якимов Д."
+              },
+              {
+                "team": "home",
+                "minute": 55,
+                "off": "Ермоченко Е.",
+                "on": "Мусиенко Г."
+              }
+            ]
+          }
         },
         {
           "id": 3844105,
@@ -2603,7 +11972,155 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "scoreAway": 1,
           "played": true,
           "techDefeat": false,
-          "venue": "Балтика"
+          "venue": "Балтика",
+          "protocol": {
+            "goals": [
+              {
+                "team": "home",
+                "player": "Мирковец Д.",
+                "minute": 5,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Кириллов А.",
+                "minute": 7,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Давыдкин А.",
+                "minute": 25,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Давыдкин А.",
+                "minute": 30,
+                "assist": null,
+                "kind": "penalty",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Базовкин С.",
+                "minute": 32,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Перепелицын А.",
+                "minute": 51,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Пекарчук А.",
+                "minute": 70,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": true
+              }
+            ],
+            "cards": [
+              {
+                "team": "home",
+                "player": "Давыдкин А.",
+                "minute": 11,
+                "kind": "yellow"
+              },
+              {
+                "team": "home",
+                "player": "Сковородко Т.",
+                "minute": 24,
+                "kind": "yellow"
+              },
+              {
+                "team": "home",
+                "player": "Морозов Г.",
+                "minute": 70,
+                "kind": "yellow"
+              }
+            ],
+            "subs": [
+              {
+                "team": "away",
+                "minute": 36,
+                "off": "Богданов В.",
+                "on": "Шабанов Г."
+              },
+              {
+                "team": "away",
+                "minute": 36,
+                "off": "Екимов Т.",
+                "on": "Устенко Е."
+              },
+              {
+                "team": "away",
+                "minute": 36,
+                "off": "Карклинис А.",
+                "on": "Пайкин М."
+              },
+              {
+                "team": "away",
+                "minute": 45,
+                "off": "Марков Д.",
+                "on": "Алешин Г."
+              },
+              {
+                "team": "away",
+                "minute": 45,
+                "off": "Чивилёв К.",
+                "on": "Кузьмин Т."
+              },
+              {
+                "team": "home",
+                "minute": 50,
+                "off": "Сковородко Т.",
+                "on": "Пекарчук А."
+              },
+              {
+                "team": "home",
+                "minute": 52,
+                "off": "Яикин М.",
+                "on": "Шотовский А."
+              },
+              {
+                "team": "home",
+                "minute": 58,
+                "off": "Пчелин Г.",
+                "on": "Погосян А."
+              },
+              {
+                "team": "away",
+                "minute": 60,
+                "off": "Петров А.",
+                "on": "Хотелев Р."
+              },
+              {
+                "team": "home",
+                "minute": 67,
+                "off": "Рассказов Д.",
+                "on": "Пашаев И."
+              },
+              {
+                "team": "home",
+                "minute": 67,
+                "off": "Хомутов Д.",
+                "on": "Морозов Г."
+              }
+            ]
+          }
         },
         {
           "id": 3844112,
@@ -2619,7 +12136,113 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "played": true,
           "techDefeat": false,
           "venue": "СОШ № 303",
-          "videoSlug": "Wg9NZmvSkI53DxjBZcsM0U"
+          "videoSlug": "Wg9NZmvSkI53DxjBZcsM0U",
+          "protocol": {
+            "goals": [
+              {
+                "team": "away",
+                "player": "Ушаков М.",
+                "minute": 42,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Сичинава Д.",
+                "minute": 47,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Граф Д.",
+                "minute": 50,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Лебедев М.",
+                "minute": 65,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              }
+            ],
+            "cards": [
+              {
+                "team": "home",
+                "player": "Варякин О.",
+                "minute": 27,
+                "kind": "yellow"
+              }
+            ],
+            "subs": [
+              {
+                "team": "away",
+                "minute": 36,
+                "off": "Бируля Я.",
+                "on": "Ушаков М."
+              },
+              {
+                "team": "home",
+                "minute": 51,
+                "off": "Устенко Е.",
+                "on": "Екимов Т."
+              },
+              {
+                "team": "home",
+                "minute": 55,
+                "off": "Шабанов Г.",
+                "on": "Алешин Г."
+              },
+              {
+                "team": "away",
+                "minute": 56,
+                "off": "Ганжа В.",
+                "on": "Тихонов Р."
+              },
+              {
+                "team": "home",
+                "minute": 61,
+                "off": "Пайкин М.",
+                "on": "Кузьмин Т."
+              },
+              {
+                "team": "away",
+                "minute": 61,
+                "off": "Лосин А.",
+                "on": "Прокопьев Е."
+              },
+              {
+                "team": "away",
+                "minute": 61,
+                "off": "Мишкин Н.",
+                "on": "Косенко М."
+              },
+              {
+                "team": "away",
+                "minute": 61,
+                "off": "Сичинава Д.",
+                "on": "Климов С."
+              },
+              {
+                "team": "away",
+                "minute": 67,
+                "off": "Глазков С.",
+                "on": "Есипов И."
+              },
+              {
+                "team": "away",
+                "minute": 67,
+                "off": "Куранов Д.",
+                "on": "Кикало М."
+              }
+            ]
+          }
         },
         {
           "id": 3844111,
@@ -2634,7 +12257,111 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "scoreAway": 0,
           "played": true,
           "techDefeat": false,
-          "venue": "ЦФКСиЗ Василеостровского района"
+          "venue": "ЦФКСиЗ Василеостровского района",
+          "protocol": {
+            "goals": [
+              {
+                "team": "home",
+                "player": "Волков А.",
+                "minute": 36,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Волков А.",
+                "minute": 52,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Волков А.",
+                "minute": 72,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              }
+            ],
+            "cards": [
+              {
+                "team": "home",
+                "player": "Макуха И.",
+                "minute": 38,
+                "kind": "yellow"
+              },
+              {
+                "team": "away",
+                "player": "Науменко К.",
+                "minute": 54,
+                "kind": "yellow"
+              }
+            ],
+            "subs": [
+              {
+                "team": "away",
+                "minute": 10,
+                "off": "Иконников М.",
+                "on": "Разиньков М."
+              },
+              {
+                "team": "away",
+                "minute": 36,
+                "off": "Веденский М.",
+                "on": "Кошелев Г."
+              },
+              {
+                "team": "away",
+                "minute": 41,
+                "off": "Цветков А.",
+                "on": "Краснов А."
+              },
+              {
+                "team": "home",
+                "minute": 43,
+                "off": "Макуха И.",
+                "on": "Цветков В."
+              },
+              {
+                "team": "home",
+                "minute": 43,
+                "off": "Сахаров И.",
+                "on": "Дмитриев М."
+              },
+              {
+                "team": "home",
+                "minute": 50,
+                "off": "Аруссон Н.",
+                "on": "Сунцов А."
+              },
+              {
+                "team": "home",
+                "minute": 57,
+                "off": "Зоренко И.",
+                "on": "Семин С."
+              },
+              {
+                "team": "away",
+                "minute": 62,
+                "off": "Краснов А.",
+                "on": "Демаков К."
+              },
+              {
+                "team": "away",
+                "minute": 62,
+                "off": "Румачик И.",
+                "on": "Храменков Д."
+              },
+              {
+                "team": "away",
+                "minute": 62,
+                "off": "Шестаков А.",
+                "on": "Нестеров А."
+              }
+            ]
+          }
         },
         {
           "id": 3844109,
@@ -2649,7 +12376,159 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "scoreAway": 0,
           "played": true,
           "techDefeat": false,
-          "venue": "СШОР Кировского района"
+          "venue": "СШОР Кировского района",
+          "protocol": {
+            "goals": [
+              {
+                "team": "home",
+                "player": "Завалинов Д.",
+                "minute": 10,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Сосновский В.",
+                "minute": 65,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Андреев И.",
+                "minute": 70,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              }
+            ],
+            "cards": [
+              {
+                "team": "home",
+                "player": "Чернов Д.",
+                "minute": 47,
+                "kind": "red"
+              },
+              {
+                "team": "away",
+                "player": "Елкин К.",
+                "minute": 47,
+                "kind": "red"
+              },
+              {
+                "team": "home",
+                "player": "Каракунов Д.",
+                "minute": 50,
+                "kind": "yellow"
+              },
+              {
+                "team": "home",
+                "player": "Степанов Д.",
+                "minute": 60,
+                "kind": "yellow"
+              },
+              {
+                "team": "away",
+                "player": "Грибцов А.",
+                "minute": 70,
+                "kind": "yellow"
+              }
+            ],
+            "subs": [
+              {
+                "team": "away",
+                "minute": 31,
+                "off": "Шлык Я.",
+                "on": "Михайловский А."
+              },
+              {
+                "team": "away",
+                "minute": 36,
+                "off": "Башаров И.",
+                "on": "Елкин К."
+              },
+              {
+                "team": "home",
+                "minute": 41,
+                "off": "Кириллов И.",
+                "on": "Степанов Д."
+              },
+              {
+                "team": "home",
+                "minute": 47,
+                "off": "Смирнов А.",
+                "on": "Коротун К."
+              },
+              {
+                "team": "away",
+                "minute": 51,
+                "off": "Дайбов Д.",
+                "on": "Тихомиров В."
+              },
+              {
+                "team": "away",
+                "minute": 51,
+                "off": "Скороспелов А.",
+                "on": "Филатов А."
+              },
+              {
+                "team": "home",
+                "minute": 63,
+                "off": "Каракунов Д.",
+                "on": "Андреев И."
+              },
+              {
+                "team": "away",
+                "minute": 63,
+                "off": "Гаршин Т.",
+                "on": "Островский А."
+              },
+              {
+                "team": "away",
+                "minute": 63,
+                "off": "Скоков Д.",
+                "on": "Грибцов А."
+              },
+              {
+                "team": "away",
+                "minute": 63,
+                "off": "Стенников Н.",
+                "on": "Сири Рам М."
+              },
+              {
+                "team": "home",
+                "minute": 65,
+                "off": "Сосновский В.",
+                "on": "Хотунцов К."
+              },
+              {
+                "team": "away",
+                "minute": 65,
+                "off": "Ильясов Р.",
+                "on": "Гусенцов Н."
+              },
+              {
+                "team": "away",
+                "minute": 65,
+                "off": "Черненко Т.",
+                "on": "Аверьянов Н."
+              },
+              {
+                "team": "home",
+                "minute": 68,
+                "off": "Завалинов Д.",
+                "on": "Сметана И."
+              },
+              {
+                "team": "home",
+                "minute": 68,
+                "off": "Неменков Д.",
+                "on": "Михалевич А."
+              }
+            ]
+          }
         },
         {
           "id": 3844113,
@@ -2664,7 +12543,115 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "scoreAway": 3,
           "played": true,
           "techDefeat": false,
-          "venue": "Балтика"
+          "venue": "Балтика",
+          "protocol": {
+            "goals": [
+              {
+                "team": "away",
+                "player": "Сковородко Т.",
+                "minute": 10,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Дмитриев В.",
+                "minute": 42,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Сковородко Т.",
+                "minute": 49,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Давыдкин А.",
+                "minute": 52,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Летягин Е.",
+                "minute": 65,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              }
+            ],
+            "cards": [
+              {
+                "team": "away",
+                "player": "Сковородко Т.",
+                "minute": 70,
+                "kind": "yellow"
+              },
+              {
+                "team": "away",
+                "player": "Морозов Г.",
+                "minute": 70,
+                "kind": "yellow"
+              }
+            ],
+            "subs": [
+              {
+                "team": "home",
+                "minute": 36,
+                "off": "Сенюк П.",
+                "on": "Геращенко А."
+              },
+              {
+                "team": "home",
+                "minute": 52,
+                "off": "Семёнов Р.",
+                "on": "Летягин Е."
+              },
+              {
+                "team": "home",
+                "minute": 52,
+                "off": "Хватков А.",
+                "on": "Фокша Д."
+              },
+              {
+                "team": "away",
+                "minute": 58,
+                "off": "Денисов И.",
+                "on": "Пекарчук А."
+              },
+              {
+                "team": "home",
+                "minute": 58,
+                "off": "Бойцов В.",
+                "on": "Игнашев Я."
+              },
+              {
+                "team": "away",
+                "minute": 59,
+                "off": "Базовкин С.",
+                "on": "Шотовский А."
+              },
+              {
+                "team": "away",
+                "minute": 59,
+                "off": "Яикин М.",
+                "on": "Морозов Г."
+              },
+              {
+                "team": "away",
+                "minute": 70,
+                "off": "Пчелин Г.",
+                "on": "Пашаев И."
+              }
+            ]
+          }
         },
         {
           "id": 3844110,
@@ -2680,7 +12667,135 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "played": true,
           "techDefeat": false,
           "venue": "Московский (Скороход)",
-          "videoSlug": "cTXvszKYLzVZED0ANVj2Yh"
+          "videoSlug": "cTXvszKYLzVZED0ANVj2Yh",
+          "protocol": {
+            "goals": [
+              {
+                "team": "home",
+                "player": "Ус И.",
+                "minute": 2,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Вовк К.",
+                "minute": 25,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Пуховский Д.",
+                "minute": 52,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              }
+            ],
+            "cards": [
+              {
+                "team": "away",
+                "player": "Островский Д.",
+                "minute": 48,
+                "kind": "yellow"
+              }
+            ],
+            "subs": [
+              {
+                "team": "away",
+                "minute": 36,
+                "off": "Ребров А.",
+                "on": "Галунов А."
+              },
+              {
+                "team": "home",
+                "minute": 36,
+                "off": "Негара Р.",
+                "on": "Изотов И."
+              },
+              {
+                "team": "home",
+                "minute": 47,
+                "off": "Миняев А.",
+                "on": "Черняев В."
+              },
+              {
+                "team": "home",
+                "minute": 47,
+                "off": "Рамалданов И.",
+                "on": "Гусак Л."
+              },
+              {
+                "team": "home",
+                "minute": 47,
+                "off": "Стрельников А.",
+                "on": "Пуховский Д."
+              },
+              {
+                "team": "away",
+                "minute": 50,
+                "off": "Быков Г.",
+                "on": "Анисимов Д."
+              },
+              {
+                "team": "away",
+                "minute": 50,
+                "off": "Волоцуев Е.",
+                "on": "Якимов Д."
+              },
+              {
+                "team": "away",
+                "minute": 50,
+                "off": "Ермоченко Е.",
+                "on": "Мусиенко Г."
+              },
+              {
+                "team": "away",
+                "minute": 50,
+                "off": "Островский Д.",
+                "on": "Голубицкий Е."
+              },
+              {
+                "team": "away",
+                "minute": 53,
+                "off": "Протасенко А.",
+                "on": "Болатов У."
+              },
+              {
+                "team": "away",
+                "minute": 53,
+                "off": "Смоглюк А.",
+                "on": "Войчишин Е."
+              },
+              {
+                "team": "home",
+                "minute": 55,
+                "off": "Вовк К.",
+                "on": "Дербнёв М."
+              },
+              {
+                "team": "home",
+                "minute": 55,
+                "off": "Сигуа А.",
+                "on": "Клепинин П."
+              },
+              {
+                "team": "home",
+                "minute": 55,
+                "off": "Ус И.",
+                "on": "Кочетов М."
+              },
+              {
+                "team": "home",
+                "minute": 55,
+                "off": "Фролов Д.",
+                "on": "Назима Е."
+              }
+            ]
+          }
         },
         {
           "id": 3844114,
@@ -2695,7 +12810,143 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "scoreAway": 4,
           "played": true,
           "techDefeat": false,
-          "venue": "Балтика"
+          "venue": "Балтика",
+          "protocol": {
+            "goals": [
+              {
+                "team": "away",
+                "player": "Каракунов Д.",
+                "minute": 31,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Кочуланов М.",
+                "minute": 34,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Каракунов Д.",
+                "minute": 38,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Завалинов Д.",
+                "minute": 39,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Сковородко Т.",
+                "minute": 43,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Давыдкин А.",
+                "minute": 51,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Давыдкин А.",
+                "minute": 68,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              }
+            ],
+            "cards": [
+              {
+                "team": "home",
+                "player": "Давыдкин А.",
+                "minute": 49,
+                "kind": "yellow"
+              },
+              {
+                "team": "away",
+                "player": "Каракунов Д.",
+                "minute": 57,
+                "kind": "yellow"
+              }
+            ],
+            "subs": [
+              {
+                "team": "home",
+                "minute": 36,
+                "off": "Пчелин Г.",
+                "on": "Рассказов Д."
+              },
+              {
+                "team": "home",
+                "minute": 39,
+                "off": "Мирковец Д.",
+                "on": "Суханов М."
+              },
+              {
+                "team": "home",
+                "minute": 39,
+                "off": "Перепелицын А.",
+                "on": "Морозов Г."
+              },
+              {
+                "team": "away",
+                "minute": 43,
+                "off": "Кочуланов М.",
+                "on": "Кириллов И."
+              },
+              {
+                "team": "away",
+                "minute": 43,
+                "off": "Неменков Д.",
+                "on": "Степанов Д."
+              },
+              {
+                "team": "home",
+                "minute": 46,
+                "off": "Пекарчук А.",
+                "on": "Денисов И."
+              },
+              {
+                "team": "away",
+                "minute": 51,
+                "off": "Сосновский В.",
+                "on": "Андреев И."
+              },
+              {
+                "team": "home",
+                "minute": 55,
+                "off": "Морозов Г.",
+                "on": "Шотовский А."
+              },
+              {
+                "team": "away",
+                "minute": 63,
+                "off": "Каракунов Д.",
+                "on": "Хотунцов К."
+              },
+              {
+                "team": "away",
+                "minute": 67,
+                "off": "Смирнов А.",
+                "on": "Сметана И."
+              }
+            ]
+          }
         },
         {
           "id": 3844115,
@@ -2710,7 +12961,141 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "scoreAway": 0,
           "played": true,
           "techDefeat": false,
-          "venue": "Московский (Скороход)"
+          "venue": "Московский (Скороход)",
+          "protocol": {
+            "goals": [
+              {
+                "team": "home",
+                "player": "Сичинава Д.",
+                "minute": 3,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Ушаков М.",
+                "minute": 41,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Ушаков М.",
+                "minute": 52,
+                "assist": null,
+                "kind": "penalty",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Бируля Я.",
+                "minute": 53,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Глазков С.",
+                "minute": 66,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Глазков С.",
+                "minute": 67,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              }
+            ],
+            "cards": [
+              {
+                "team": "away",
+                "player": "Бойцов В.",
+                "minute": 36,
+                "kind": "yellow"
+              },
+              {
+                "team": "home",
+                "player": "Сичинава Д.",
+                "minute": 58,
+                "kind": "yellow"
+              },
+              {
+                "team": "home",
+                "player": "Лебедев М.",
+                "minute": 69,
+                "kind": "yellow"
+              }
+            ],
+            "subs": [
+              {
+                "team": "away",
+                "minute": 36,
+                "off": "Сенюк П.",
+                "on": "Геращенко А."
+              },
+              {
+                "team": "away",
+                "minute": 36,
+                "off": "Фокша Д.",
+                "on": "Хватков А."
+              },
+              {
+                "team": "home",
+                "minute": 36,
+                "off": "Тихонов Р.",
+                "on": "Ушаков М."
+              },
+              {
+                "team": "away",
+                "minute": 55,
+                "off": "Летягин Е.",
+                "on": "Лепинь Р."
+              },
+              {
+                "team": "home",
+                "minute": 55,
+                "off": "Куранов Д.",
+                "on": "Лосин А."
+              },
+              {
+                "team": "home",
+                "minute": 55,
+                "off": "Щербаков М.",
+                "on": "Прокопьев Е."
+              },
+              {
+                "team": "away",
+                "minute": 56,
+                "off": "Семёнов Р.",
+                "on": "Магомедов А."
+              },
+              {
+                "team": "home",
+                "minute": 60,
+                "off": "Бируля Я.",
+                "on": "Кикало М."
+              },
+              {
+                "team": "home",
+                "minute": 60,
+                "off": "Мишкин Н.",
+                "on": "Косенко М."
+              },
+              {
+                "team": "away",
+                "minute": 66,
+                "off": "Пинус Д.",
+                "on": "Шитов И."
+              }
+            ]
+          }
         },
         {
           "id": 3844118,
@@ -2725,7 +13110,103 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "scoreAway": 1,
           "played": true,
           "techDefeat": false,
-          "venue": "ЦФК Красногвардейского района"
+          "venue": "ЦФК Красногвардейского района",
+          "protocol": {
+            "goals": [
+              {
+                "team": "home",
+                "player": "Черненко Т.",
+                "minute": 30,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Миняев А.",
+                "minute": 38,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              }
+            ],
+            "cards": [
+              {
+                "team": "home",
+                "player": "Гаршин Т.",
+                "minute": 33,
+                "kind": "yellow"
+              },
+              {
+                "team": "away",
+                "player": "Сигуа А.",
+                "minute": 52,
+                "kind": "yellow"
+              },
+              {
+                "team": "home",
+                "player": "Гизатуллин Д.",
+                "minute": 63,
+                "kind": "yellow"
+              }
+            ],
+            "subs": [
+              {
+                "team": "home",
+                "minute": 48,
+                "off": "Сердюк М.",
+                "on": "Гизатуллин Д."
+              },
+              {
+                "team": "home",
+                "minute": 48,
+                "off": "Черненко Т.",
+                "on": "Ильясов Р."
+              },
+              {
+                "team": "away",
+                "minute": 52,
+                "off": "Миняев А.",
+                "on": "Негара Р."
+              },
+              {
+                "team": "home",
+                "minute": 57,
+                "off": "Дайбов Д.",
+                "on": "Филатов А."
+              },
+              {
+                "team": "home",
+                "minute": 57,
+                "off": "Стенников Н.",
+                "on": "Островский А."
+              },
+              {
+                "team": "away",
+                "minute": 58,
+                "off": "Фролов Д.",
+                "on": "Назима Е."
+              },
+              {
+                "team": "away",
+                "minute": 62,
+                "off": "Лисохмара М.",
+                "on": "Клепинин П."
+              },
+              {
+                "team": "away",
+                "minute": 62,
+                "off": "Сигуа А.",
+                "on": "Пуховский Д."
+              },
+              {
+                "team": "home",
+                "minute": 67,
+                "off": "Скоков Д.",
+                "on": "Башаров И."
+              }
+            ]
+          }
         },
         {
           "id": 3844116,
@@ -2741,7 +13222,121 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "played": true,
           "techDefeat": false,
           "venue": "Спартак",
-          "videoSlug": "Q4t3ut7TTGXLOBhjgZqbRj"
+          "videoSlug": "Q4t3ut7TTGXLOBhjgZqbRj",
+          "protocol": {
+            "goals": [
+              {
+                "team": "home",
+                "player": "Румачик И.",
+                "minute": 13,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Веденский М.",
+                "minute": 35,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              }
+            ],
+            "cards": [
+              {
+                "team": "home",
+                "player": "Лащенко А.",
+                "minute": 45,
+                "kind": "yellow"
+              },
+              {
+                "team": "home",
+                "player": "Семенов В.",
+                "minute": 47,
+                "kind": "yellow_to_red"
+              },
+              {
+                "team": "home",
+                "player": "Семенов В.",
+                "minute": 59,
+                "kind": "yellow_to_red"
+              },
+              {
+                "team": "away",
+                "player": "Кузнецов К.",
+                "minute": 63,
+                "kind": "yellow"
+              }
+            ],
+            "subs": [
+              {
+                "team": "away",
+                "minute": 36,
+                "off": "Алешин Г.",
+                "on": "Кириллов А."
+              },
+              {
+                "team": "away",
+                "minute": 36,
+                "off": "Петров А.",
+                "on": "Хотелев Р."
+              },
+              {
+                "team": "away",
+                "minute": 36,
+                "off": "Прилуцкий В.",
+                "on": "Богданов В."
+              },
+              {
+                "team": "away",
+                "minute": 36,
+                "off": "Шабанов Г.",
+                "on": "Пайкин М."
+              },
+              {
+                "team": "home",
+                "minute": 39,
+                "off": "Иконников М.",
+                "on": "Разиньков М."
+              },
+              {
+                "team": "home",
+                "minute": 39,
+                "off": "Кошелев Г.",
+                "on": "Цветков А."
+              },
+              {
+                "team": "home",
+                "minute": 45,
+                "off": "Малашин С.",
+                "on": "Храменков Д."
+              },
+              {
+                "team": "home",
+                "minute": 51,
+                "off": "Цветков А.",
+                "on": "Беляев М."
+              },
+              {
+                "team": "home",
+                "minute": 58,
+                "off": "Шестаков А.",
+                "on": "Демаков К."
+              },
+              {
+                "team": "home",
+                "minute": 67,
+                "off": "Беляев М.",
+                "on": "Нестеров А."
+              },
+              {
+                "team": "home",
+                "minute": 67,
+                "off": "Храменков Д.",
+                "on": "Краснов А."
+              }
+            ]
+          }
         },
         {
           "id": 3844117,
@@ -2756,7 +13351,105 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "scoreAway": 3,
           "played": true,
           "techDefeat": false,
-          "venue": "СОШ 363"
+          "venue": "СОШ 363",
+          "protocol": {
+            "goals": [
+              {
+                "team": "away",
+                "player": "Карасев А.",
+                "minute": 13,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Еськин Д.",
+                "minute": 15,
+                "assist": "Афанасьев Я.",
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Протасенко А.",
+                "minute": 26,
+                "assist": "Афанасьев Я.",
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Анисимов Д.",
+                "minute": 35,
+                "assist": null,
+                "kind": "own_goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Володин А.",
+                "minute": 36,
+                "assist": null,
+                "kind": "own_goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Волков А.",
+                "minute": 46,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              }
+            ],
+            "cards": [
+              {
+                "team": "home",
+                "player": "Быков Г.",
+                "minute": 58,
+                "kind": "yellow"
+              },
+              {
+                "team": "home",
+                "player": "Протасенко А.",
+                "minute": 63,
+                "kind": "yellow"
+              }
+            ],
+            "subs": [
+              {
+                "team": "home",
+                "minute": 26,
+                "off": "Ермоченко Е.",
+                "on": "Мусиенко Г."
+              },
+              {
+                "team": "away",
+                "minute": 35,
+                "off": "Зоренко И.",
+                "on": "Семин С."
+              },
+              {
+                "team": "home",
+                "minute": 46,
+                "off": "Якимов Д.",
+                "on": "Болатов У."
+              },
+              {
+                "team": "away",
+                "minute": 46,
+                "off": "Аруссон Н.",
+                "on": "Дмитриев М."
+              },
+              {
+                "team": "away",
+                "minute": 62,
+                "off": "Ермолаев Д.",
+                "on": "Цветков В."
+              }
+            ]
+          }
         },
         {
           "id": 3844121,
@@ -2772,7 +13465,92 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "played": true,
           "techDefeat": false,
           "venue": "СОШ № 303",
-          "videoSlug": "yi2SRYjJ7mJy8LFyN9ns5Z"
+          "videoSlug": "yi2SRYjJ7mJy8LFyN9ns5Z",
+          "protocol": {
+            "goals": [
+              {
+                "team": "away",
+                "player": "Устенко Е.",
+                "minute": 3,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Галунов А.",
+                "minute": 10,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Кириллов А.",
+                "minute": 14,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              }
+            ],
+            "cards": [],
+            "subs": [
+              {
+                "team": "home",
+                "minute": 36,
+                "off": "Анисимов Д.",
+                "on": "Ребров А."
+              },
+              {
+                "team": "home",
+                "minute": 36,
+                "off": "Быков Г.",
+                "on": "Болатов У."
+              },
+              {
+                "team": "home",
+                "minute": 36,
+                "off": "Ермоченко Е.",
+                "on": "Мусиенко Г."
+              },
+              {
+                "team": "home",
+                "minute": 36,
+                "off": "Иванов Д.",
+                "on": "Терещук И."
+              },
+              {
+                "team": "home",
+                "minute": 36,
+                "off": "Якимов Д.",
+                "on": "Волоцуев Е."
+              },
+              {
+                "team": "home",
+                "minute": 46,
+                "off": "Протасенко А.",
+                "on": "Голубицкий Е."
+              },
+              {
+                "team": "away",
+                "minute": 53,
+                "off": "Екимов Т.",
+                "on": "Прилуцкий В."
+              },
+              {
+                "team": "home",
+                "minute": 62,
+                "off": "Галунов А.",
+                "on": "Войчишин Е."
+              },
+              {
+                "team": "home",
+                "minute": 69,
+                "off": "Мусиенко Г.",
+                "on": "Кузнецов Т."
+              }
+            ]
+          }
         },
         {
           "id": 3844123,
@@ -2787,7 +13565,143 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "scoreAway": 0,
           "played": true,
           "techDefeat": false,
-          "venue": "Московский (Скороход)"
+          "venue": "Московский (Скороход)",
+          "protocol": {
+            "goals": [
+              {
+                "team": "home",
+                "player": "Бируля Я.",
+                "minute": 3,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Ушаков М.",
+                "minute": 50,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Глазков С.",
+                "minute": 65,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Глазков С.",
+                "minute": 70,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              }
+            ],
+            "cards": [
+              {
+                "team": "home",
+                "player": "Глазков С.",
+                "minute": 30,
+                "kind": "yellow"
+              },
+              {
+                "team": "away",
+                "player": "Рябов Д.",
+                "minute": 61,
+                "kind": "yellow"
+              },
+              {
+                "team": "home",
+                "player": "Лосин А.",
+                "minute": 65,
+                "kind": "yellow"
+              },
+              {
+                "team": "home",
+                "player": "Прокопьев Е.",
+                "minute": 67,
+                "kind": "yellow"
+              }
+            ],
+            "subs": [
+              {
+                "team": "away",
+                "minute": 40,
+                "off": "Шотовский А.",
+                "on": "Рябов Д."
+              },
+              {
+                "team": "away",
+                "minute": 44,
+                "off": "Базовкин С.",
+                "on": "Пчелин Г."
+              },
+              {
+                "team": "home",
+                "minute": 44,
+                "off": "Бируля Я.",
+                "on": "Ушаков М."
+              },
+              {
+                "team": "away",
+                "minute": 51,
+                "off": "Суханов М.",
+                "on": "Пекарчук А."
+              },
+              {
+                "team": "away",
+                "minute": 62,
+                "off": "Хомутов Д.",
+                "on": "Пашаев И."
+              },
+              {
+                "team": "away",
+                "minute": 66,
+                "off": "Лешкин К.",
+                "on": "Секретарев А."
+              },
+              {
+                "team": "away",
+                "minute": 66,
+                "off": "Пчелин Г.",
+                "on": "Погосян А."
+              },
+              {
+                "team": "home",
+                "minute": 66,
+                "off": "Ганжа В.",
+                "on": "Кикало М."
+              },
+              {
+                "team": "home",
+                "minute": 66,
+                "off": "Лосин А.",
+                "on": "Тихонов Р."
+              },
+              {
+                "team": "home",
+                "minute": 66,
+                "off": "Мишкин Н.",
+                "on": "Климов С."
+              },
+              {
+                "team": "home",
+                "minute": 66,
+                "off": "Сичинава Д.",
+                "on": "Косенко М."
+              },
+              {
+                "team": "home",
+                "minute": 66,
+                "off": "Щербаков М.",
+                "on": "Есипов И."
+              }
+            ]
+          }
         },
         {
           "id": 3844119,
@@ -2803,7 +13717,145 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "played": true,
           "techDefeat": false,
           "venue": "СШОР Кировского района",
-          "videoSlug": "2lrrTNvgoQkuuR0XYV3Vk6"
+          "videoSlug": "2lrrTNvgoQkuuR0XYV3Vk6",
+          "protocol": {
+            "goals": [
+              {
+                "team": "away",
+                "player": "Лисохмара М.",
+                "minute": 29,
+                "assist": null,
+                "kind": "penalty",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Черняев В.",
+                "minute": 38,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Сигуа А.",
+                "minute": 40,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Завалинов Д.",
+                "minute": 60,
+                "assist": null,
+                "kind": "penalty",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Кочуланов М.",
+                "minute": 61,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              }
+            ],
+            "cards": [
+              {
+                "team": "home",
+                "player": "Коротун К.",
+                "minute": 50,
+                "kind": "yellow"
+              },
+              {
+                "team": "away",
+                "player": "Вовк К.",
+                "minute": 57,
+                "kind": "yellow_to_red"
+              },
+              {
+                "team": "away",
+                "player": "Вовк К.",
+                "minute": 59,
+                "kind": "yellow_to_red"
+              },
+              {
+                "team": "home",
+                "player": "Каракунов Д.",
+                "minute": 62,
+                "kind": "yellow"
+              }
+            ],
+            "subs": [
+              {
+                "team": "away",
+                "minute": 36,
+                "off": "Стрельников А.",
+                "on": "Черняев В."
+              },
+              {
+                "team": "home",
+                "minute": 36,
+                "off": "Неменков Д.",
+                "on": "Микаелян Д."
+              },
+              {
+                "team": "home",
+                "minute": 36,
+                "off": "Соболев И.",
+                "on": "Сосновский В."
+              },
+              {
+                "team": "home",
+                "minute": 47,
+                "off": "Макарчук Д.",
+                "on": "Кириллов И."
+              },
+              {
+                "team": "home",
+                "minute": 47,
+                "off": "Смирнов А.",
+                "on": "Хотунцов К."
+              },
+              {
+                "team": "away",
+                "minute": 52,
+                "off": "Миняев А.",
+                "on": "Пуховский Д."
+              },
+              {
+                "team": "away",
+                "minute": 54,
+                "off": "Негара Р.",
+                "on": "Клепинин П."
+              },
+              {
+                "team": "home",
+                "minute": 55,
+                "off": "Сметана И.",
+                "on": "Андреев И."
+              },
+              {
+                "team": "away",
+                "minute": 61,
+                "off": "Лисохмара М.",
+                "on": "Фролов Д."
+              },
+              {
+                "team": "home",
+                "minute": 67,
+                "off": "Каракунов Д.",
+                "on": "Степанов Д."
+              },
+              {
+                "team": "home",
+                "minute": 67,
+                "off": "Кочуланов М.",
+                "on": "Каданер М."
+              }
+            ]
+          }
         },
         {
           "id": 3844120,
@@ -2819,7 +13871,75 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "played": true,
           "techDefeat": false,
           "venue": "ЦФК Красногвардейского района",
-          "videoSlug": "MzJXcPFU8x3mNjc9ipqTXi"
+          "videoSlug": "MzJXcPFU8x3mNjc9ipqTXi",
+          "protocol": {
+            "goals": [
+              {
+                "team": "home",
+                "player": "Островский А.",
+                "minute": 11,
+                "assist": null,
+                "kind": "penalty",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Васильев О.",
+                "minute": 41,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Карасев А.",
+                "minute": 61,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              }
+            ],
+            "cards": [
+              {
+                "team": "away",
+                "player": "Карасев А.",
+                "minute": 70,
+                "kind": "yellow"
+              }
+            ],
+            "subs": [
+              {
+                "team": "home",
+                "minute": 16,
+                "off": "Гаршин Т.",
+                "on": "Филатов А."
+              },
+              {
+                "team": "home",
+                "minute": 36,
+                "off": "Островский А.",
+                "on": "Стенников Н."
+              },
+              {
+                "team": "away",
+                "minute": 36,
+                "off": "Кичигин Ф.",
+                "on": "Цветков В."
+              },
+              {
+                "team": "home",
+                "minute": 46,
+                "off": "Черненко Т.",
+                "on": "Скороспелов А."
+              },
+              {
+                "team": "home",
+                "minute": 62,
+                "off": "Сердюк М.",
+                "on": "Гизатуллин Д."
+              }
+            ]
+          }
         },
         {
           "id": 3844122,
@@ -2835,7 +13955,99 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "played": true,
           "techDefeat": false,
           "venue": "Спартак",
-          "videoSlug": "1kVXfDq7g8mSh60xuWqv39"
+          "videoSlug": "1kVXfDq7g8mSh60xuWqv39",
+          "protocol": {
+            "goals": [
+              {
+                "team": "away",
+                "player": "Летягин Е.",
+                "minute": 43,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Румачик И.",
+                "minute": 45,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Лепинь Р.",
+                "minute": 60,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              }
+            ],
+            "cards": [
+              {
+                "team": "home",
+                "player": "Науменко К.",
+                "minute": 29,
+                "kind": "yellow_to_red"
+              },
+              {
+                "team": "home",
+                "player": "Науменко К.",
+                "minute": 30,
+                "kind": "yellow_to_red"
+              },
+              {
+                "team": "away",
+                "player": "Иванов Л.",
+                "minute": 32,
+                "kind": "yellow"
+              },
+              {
+                "team": "away",
+                "player": "Пинус Д.",
+                "minute": 57,
+                "kind": "yellow"
+              },
+              {
+                "team": "home",
+                "player": "Краснов А.",
+                "minute": 69,
+                "kind": "yellow"
+              }
+            ],
+            "subs": [
+              {
+                "team": "away",
+                "minute": 36,
+                "off": "Сенюк П.",
+                "on": "Геращенко А."
+              },
+              {
+                "team": "home",
+                "minute": 41,
+                "off": "Нестеров А.",
+                "on": "Краснов А."
+              },
+              {
+                "team": "home",
+                "minute": 44,
+                "off": "Демаков К.",
+                "on": "Цветков А."
+              },
+              {
+                "team": "away",
+                "minute": 56,
+                "off": "Семёнов Р.",
+                "on": "Хватков А."
+              },
+              {
+                "team": "home",
+                "minute": 57,
+                "off": "Кошелев Г.",
+                "on": "Беляев М."
+              }
+            ]
+          }
         },
         {
           "id": 3844124,
@@ -2845,12 +14057,164 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "away": "СШОР Кировского района",
           "homeLogo": "https://img.nagradion.ru/images/bf300x500/shields/zTxbk2OV.png",
           "awayLogo": "https://img.nagradion.ru/images/bf300x500/shields/EpfiLJlm.png",
-          "score": null,
-          "scoreHome": null,
-          "scoreAway": null,
-          "played": false,
+          "score": "6:3",
+          "scoreHome": 6,
+          "scoreAway": 3,
+          "played": true,
           "techDefeat": false,
-          "venue": "Московский (Скороход)"
+          "venue": "Московский (Скороход)",
+          "protocol": {
+            "goals": [
+              {
+                "team": "home",
+                "player": "Глазков С.",
+                "minute": 2,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Бируля Я.",
+                "minute": 15,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Глазков С.",
+                "minute": 22,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Куранов Д.",
+                "minute": 26,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Глазков С.",
+                "minute": 40,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Кочуланов М.",
+                "minute": 50,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Кочуланов М.",
+                "minute": 60,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Климов С.",
+                "minute": 70,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Сосновский В.",
+                "minute": 70,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              }
+            ],
+            "cards": [
+              {
+                "team": "home",
+                "player": "Лебедев М.",
+                "minute": 25,
+                "kind": "yellow"
+              },
+              {
+                "team": "away",
+                "player": "Завалинов Д.",
+                "minute": 35,
+                "kind": "red"
+              },
+              {
+                "team": "home",
+                "player": "Мишкин Н.",
+                "minute": 44,
+                "kind": "yellow"
+              },
+              {
+                "team": "home",
+                "player": "Граф Д.",
+                "minute": 46,
+                "kind": "yellow"
+              }
+            ],
+            "subs": [
+              {
+                "team": "away",
+                "minute": 22,
+                "off": "Кириллов И.",
+                "on": "Хотунцов К."
+              },
+              {
+                "team": "home",
+                "minute": 37,
+                "off": "Тихонов Р.",
+                "on": "Ушаков М."
+              },
+              {
+                "team": "away",
+                "minute": 38,
+                "off": "Смирнов А.",
+                "on": "Степанов Д."
+              },
+              {
+                "team": "home",
+                "minute": 56,
+                "off": "Ганжа В.",
+                "on": "Прокопьев Е."
+              },
+              {
+                "team": "home",
+                "minute": 56,
+                "off": "Мишкин Н.",
+                "on": "Косенко М."
+              },
+              {
+                "team": "home",
+                "minute": 61,
+                "off": "Лосин А.",
+                "on": "Климов С."
+              },
+              {
+                "team": "home",
+                "minute": 64,
+                "off": "Бируля Я.",
+                "on": "Кикало М."
+              },
+              {
+                "team": "home",
+                "minute": 66,
+                "off": "Сичинава Д.",
+                "on": "Есипов И."
+              }
+            ]
+          }
         },
         {
           "id": 3844128,
@@ -2865,7 +14229,108 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "scoreAway": 4,
           "played": true,
           "techDefeat": false,
-          "venue": "ЦФКСиЗ Василеостровского района"
+          "venue": "ЦФКСиЗ Василеостровского района",
+          "protocol": {
+            "goals": [
+              {
+                "team": "home",
+                "player": "Ермолаев Д.",
+                "minute": 10,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Карасев А.",
+                "minute": 28,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Дютиль А.",
+                "minute": 35,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Лисохмара М.",
+                "minute": 37,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Пуховский Д.",
+                "minute": 38,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Сигуа А.",
+                "minute": 47,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Дютиль А.",
+                "minute": 50,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Лисохмара М.",
+                "minute": 70,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": true
+              }
+            ],
+            "cards": [],
+            "subs": [
+              {
+                "team": "away",
+                "minute": 36,
+                "off": "Негара Р.",
+                "on": "Черняев В."
+              },
+              {
+                "team": "away",
+                "minute": 36,
+                "off": "Стрельников А.",
+                "on": "Пуховский Д."
+              },
+              {
+                "team": "home",
+                "minute": 46,
+                "off": "Цветков В.",
+                "on": "Кичигин Ф."
+              },
+              {
+                "team": "away",
+                "minute": 55,
+                "off": "Миняев А.",
+                "on": "Клепинин П."
+              },
+              {
+                "team": "away",
+                "minute": 62,
+                "off": "Сигуа А.",
+                "on": "Басанов Р."
+              }
+            ]
+          }
         },
         {
           "id": 3844126,
@@ -2875,12 +14340,120 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "away": "СШОР Лидер-Купчино",
           "homeLogo": "https://img.nagradion.ru/images/bf300x500/shields/xYHzYRPP.png",
           "awayLogo": "https://img.nagradion.ru/images/bf300x500/shields/OCnBslWj.png",
-          "score": null,
-          "scoreHome": null,
-          "scoreAway": null,
-          "played": false,
+          "score": "2:0",
+          "scoreHome": 2,
+          "scoreAway": 0,
+          "played": true,
           "techDefeat": false,
-          "venue": "Балтика"
+          "venue": "Балтика",
+          "protocol": {
+            "goals": [
+              {
+                "team": "home",
+                "player": "Дмитриев В.",
+                "minute": 2,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Дмитриев В.",
+                "minute": 37,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              }
+            ],
+            "cards": [
+              {
+                "team": "away",
+                "player": "Волоцуев Е.",
+                "minute": 58,
+                "kind": "yellow"
+              }
+            ],
+            "subs": [
+              {
+                "team": "away",
+                "minute": 36,
+                "off": "Еськин Д.",
+                "on": "Анисимов Д."
+              },
+              {
+                "team": "away",
+                "minute": 36,
+                "off": "Мусиенко Г.",
+                "on": "Протасенко А."
+              },
+              {
+                "team": "away",
+                "minute": 36,
+                "off": "Якимов Д.",
+                "on": "Быков Г."
+              },
+              {
+                "team": "home",
+                "minute": 36,
+                "off": "Сенюк П.",
+                "on": "Геращенко А."
+              },
+              {
+                "team": "home",
+                "minute": 46,
+                "off": "Летягин Е.",
+                "on": "Фокша Д."
+              },
+              {
+                "team": "away",
+                "minute": 50,
+                "off": "Болатов У.",
+                "on": "Михайлов В."
+              },
+              {
+                "team": "away",
+                "minute": 50,
+                "off": "Ермоченко Е.",
+                "on": "Волоцуев Е."
+              },
+              {
+                "team": "away",
+                "minute": 50,
+                "off": "Островский Д.",
+                "on": "Голубицкий Е."
+              },
+              {
+                "team": "home",
+                "minute": 56,
+                "off": "Кухарчук И.",
+                "on": "Игнашев Я."
+              },
+              {
+                "team": "away",
+                "minute": 62,
+                "off": "Галунов А.",
+                "on": "Войчишин Е."
+              },
+              {
+                "team": "away",
+                "minute": 62,
+                "off": "Ребров А.",
+                "on": "Кузнецов Т."
+              },
+              {
+                "team": "home",
+                "minute": 62,
+                "off": "Лепинь Р.",
+                "on": "Магомедов А."
+              },
+              {
+                "team": "home",
+                "minute": 62,
+                "off": "Семёнов Р.",
+                "on": "Шитов И."
+              }
+            ]
+          }
         },
         {
           "id": 3844127,
@@ -2919,27 +14492,27 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "teamId": 420722,
           "team": "СШОР №2 Невского района",
           "logo": "https://img.nagradion.ru/images/bf300x500/shields/zTxbk2OV.png",
-          "games": 10,
-          "wins": 9,
+          "games": 11,
+          "wins": 10,
           "draws": 1,
           "losses": 0,
-          "scored": 43,
-          "missed": 8,
-          "diff": 35,
-          "points": 28
+          "scored": 49,
+          "missed": 11,
+          "diff": 38,
+          "points": 31
         },
         {
           "position": 2,
           "teamId": 420727,
           "team": "СШОР Кировского района",
           "logo": "https://img.nagradion.ru/images/bf300x500/shields/EpfiLJlm.png",
-          "games": 10,
+          "games": 11,
           "wins": 7,
           "draws": 1,
-          "losses": 2,
-          "scored": 22,
-          "missed": 13,
-          "diff": 9,
+          "losses": 3,
+          "scored": 25,
+          "missed": 19,
+          "diff": 6,
           "points": 22
         },
         {
@@ -2986,6 +14559,20 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
         },
         {
           "position": 6,
+          "teamId": 420717,
+          "team": "СШ Выборжанин ",
+          "logo": "https://img.nagradion.ru/images/bf300x500/shields/xYHzYRPP.png",
+          "games": 11,
+          "wins": 4,
+          "draws": 1,
+          "losses": 6,
+          "scored": 11,
+          "missed": 20,
+          "diff": -9,
+          "points": 13
+        },
+        {
+          "position": 7,
           "teamId": 420726,
           "team": "СШОР Лидер",
           "logo": "https://img.nagradion.ru/images/bf300x500/shields/GxioFOOv.png",
@@ -2999,7 +14586,7 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "points": 13
         },
         {
-          "position": 7,
+          "position": 8,
           "teamId": 420715,
           "team": "Самсон",
           "logo": "https://img.nagradion.ru/images/bf300x500/shields/pYOMOZN7.png",
@@ -3013,7 +14600,7 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "points": 11
         },
         {
-          "position": 8,
+          "position": 9,
           "teamId": 420724,
           "team": "СШ Экран",
           "logo": "https://img.nagradion.ru/images/bf300x500/shields/JWr3EPer.png",
@@ -3027,31 +14614,17 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "points": 10
         },
         {
-          "position": 9,
-          "teamId": 420717,
-          "team": "СШ Выборжанин ",
-          "logo": "https://img.nagradion.ru/images/bf300x500/shields/xYHzYRPP.png",
-          "games": 10,
-          "wins": 3,
-          "draws": 1,
-          "losses": 6,
-          "scored": 9,
-          "missed": 20,
-          "diff": -11,
-          "points": 10
-        },
-        {
           "position": 10,
           "teamId": 420725,
           "team": "СШОР Лидер-Купчино",
           "logo": "https://img.nagradion.ru/images/bf300x500/shields/OCnBslWj.png",
-          "games": 10,
+          "games": 11,
           "wins": 0,
           "draws": 2,
-          "losses": 8,
+          "losses": 9,
           "scored": 10,
-          "missed": 26,
-          "diff": -16,
+          "missed": 28,
+          "diff": -18,
           "points": 2
         }
       ]
@@ -3601,7 +15174,119 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "played": true,
           "techDefeat": false,
           "venue": "СОШ № 303",
-          "videoSlug": "6oI4wX1wqGgnRb2nlfsay8"
+          "videoSlug": "6oI4wX1wqGgnRb2nlfsay8",
+          "protocol": {
+            "goals": [
+              {
+                "team": "home",
+                "player": "Кравченко М.",
+                "minute": 4,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Черняков Д.",
+                "minute": 24,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Абдулазизов Г.",
+                "minute": 34,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Пухов А.",
+                "minute": 45,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Кравченко М.",
+                "minute": 53,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Можейко М.",
+                "minute": 54,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Исираилов Б.",
+                "minute": 67,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              }
+            ],
+            "cards": [
+              {
+                "team": "away",
+                "player": "Суханов И.",
+                "minute": 37,
+                "kind": "yellow"
+              },
+              {
+                "team": "home",
+                "player": "Катрушенко А.",
+                "minute": 69,
+                "kind": "yellow"
+              }
+            ],
+            "subs": [
+              {
+                "team": "away",
+                "minute": 36,
+                "off": "Антонов М.",
+                "on": "Куваев Н."
+              },
+              {
+                "team": "away",
+                "minute": 36,
+                "off": "Моисеев А.",
+                "on": "Григорьев Р."
+              },
+              {
+                "team": "home",
+                "minute": 36,
+                "off": "Колесник И.",
+                "on": "Пухов А."
+              },
+              {
+                "team": "away",
+                "minute": 50,
+                "off": "Исмаилов С.",
+                "on": "Осиков К."
+              },
+              {
+                "team": "home",
+                "minute": 50,
+                "off": "Денисов А.",
+                "on": "Герасимяк М."
+              },
+              {
+                "team": "home",
+                "minute": 59,
+                "off": "Черняков Д.",
+                "on": "Костищин С."
+              }
+            ]
+          }
         },
         {
           "id": 3843774,
@@ -3616,7 +15301,97 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "scoreAway": 1,
           "played": true,
           "techDefeat": false,
-          "venue": "Московский (Скороход)"
+          "venue": "Московский (Скороход)",
+          "protocol": {
+            "goals": [
+              {
+                "team": "home",
+                "player": "Скиба А.",
+                "minute": 33,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Самойлов М.",
+                "minute": 48,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              }
+            ],
+            "cards": [
+              {
+                "team": "away",
+                "player": "Красноумов М.",
+                "minute": 8,
+                "kind": "red"
+              },
+              {
+                "team": "away",
+                "player": "Салтыков И.",
+                "minute": 54,
+                "kind": "yellow_to_red"
+              },
+              {
+                "team": "away",
+                "player": "Салтыков И.",
+                "minute": 67,
+                "kind": "yellow_to_red"
+              }
+            ],
+            "subs": [
+              {
+                "team": "home",
+                "minute": 36,
+                "off": "Жаботинский Д.",
+                "on": "Грачёв М."
+              },
+              {
+                "team": "away",
+                "minute": 43,
+                "off": "Лоскутов Д.",
+                "on": "Шаймухаметов Р."
+              },
+              {
+                "team": "away",
+                "minute": 47,
+                "off": "Игамов А.",
+                "on": "Травкин М."
+              },
+              {
+                "team": "home",
+                "minute": 48,
+                "off": "Басыров И.",
+                "on": "Колотиев А."
+              },
+              {
+                "team": "home",
+                "minute": 58,
+                "off": "Чертков М.",
+                "on": "Сорин В."
+              },
+              {
+                "team": "away",
+                "minute": 58,
+                "off": "Васильев А.",
+                "on": "Чмеленко Д."
+              },
+              {
+                "team": "away",
+                "minute": 60,
+                "off": "Алсуфьев С.",
+                "on": "Парохин Р."
+              },
+              {
+                "team": "away",
+                "minute": 70,
+                "off": "Травкин М.",
+                "on": "Алексеев К."
+              }
+            ]
+          }
         },
         {
           "id": 3843775,
@@ -3632,7 +15407,114 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "played": true,
           "techDefeat": false,
           "venue": "ЦФКСиЗ Василеостровского района",
-          "videoSlug": "HTMRK1fdqc6FuIoyCbENhv"
+          "videoSlug": "HTMRK1fdqc6FuIoyCbENhv",
+          "protocol": {
+            "goals": [
+              {
+                "team": "away",
+                "player": "Покинтелица А.",
+                "minute": 6,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Гроза Н.",
+                "minute": 24,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Ковалев А.",
+                "minute": 46,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Ким М.",
+                "minute": 53,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Покинтелица А.",
+                "minute": 68,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              }
+            ],
+            "cards": [],
+            "subs": [
+              {
+                "team": "away",
+                "minute": 36,
+                "off": "Соломатин А.",
+                "on": "Мазунов В."
+              },
+              {
+                "team": "away",
+                "minute": 36,
+                "off": "Щедров И.",
+                "on": "Якимов А."
+              },
+              {
+                "team": "home",
+                "minute": 44,
+                "off": "Панченко И.",
+                "on": "Сидоренков М."
+              },
+              {
+                "team": "away",
+                "minute": 47,
+                "off": "Гроза Н.",
+                "on": "Зайнитдинов А."
+              },
+              {
+                "team": "away",
+                "minute": 47,
+                "off": "Нестеров Я.",
+                "on": "Русецкий Н."
+              },
+              {
+                "team": "home",
+                "minute": 53,
+                "off": "Ким М.",
+                "on": "Верещак Е."
+              },
+              {
+                "team": "home",
+                "minute": 57,
+                "off": "Ковалев А.",
+                "on": "Дутко М."
+              },
+              {
+                "team": "away",
+                "minute": 57,
+                "off": "Зайнитдинов А.",
+                "on": "Зиявитдинов Т."
+              },
+              {
+                "team": "away",
+                "minute": 60,
+                "off": "Троицкий И.",
+                "on": "Галенко К."
+              },
+              {
+                "team": "away",
+                "minute": 64,
+                "off": "Карташов А.",
+                "on": "Козлов М."
+              }
+            ]
+          }
         },
         {
           "id": 3843777,
@@ -3647,7 +15529,95 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "scoreAway": 0,
           "played": true,
           "techDefeat": false,
-          "venue": "Балтика"
+          "venue": "Балтика",
+          "protocol": {
+            "goals": [
+              {
+                "team": "home",
+                "player": "Кавтарадзе Г.",
+                "minute": 16,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              }
+            ],
+            "cards": [
+              {
+                "team": "away",
+                "player": "Амельченко М.",
+                "minute": 25,
+                "kind": "yellow"
+              },
+              {
+                "team": "home",
+                "player": "Кавтарадзе Г.",
+                "minute": 54,
+                "kind": "yellow"
+              }
+            ],
+            "subs": [
+              {
+                "team": "away",
+                "minute": 36,
+                "off": "Еналиев Д.",
+                "on": "Григоренко Н."
+              },
+              {
+                "team": "home",
+                "minute": 39,
+                "off": "Аникеев Д.",
+                "on": "Евстафьев М."
+              },
+              {
+                "team": "away",
+                "minute": 51,
+                "off": "Гриднев В.",
+                "on": "Ибрагимов В."
+              },
+              {
+                "team": "home",
+                "minute": 53,
+                "off": "Кузьмин Д.",
+                "on": "Евтюков Н."
+              },
+              {
+                "team": "home",
+                "minute": 53,
+                "off": "Филатов Е.",
+                "on": "Верхозин А."
+              },
+              {
+                "team": "away",
+                "minute": 63,
+                "off": "Григоренко Н.",
+                "on": "Бастрыгин И."
+              },
+              {
+                "team": "home",
+                "minute": 63,
+                "off": "Горбатенко Н.",
+                "on": "Букин И."
+              },
+              {
+                "team": "home",
+                "minute": 68,
+                "off": "Кавтарадзе Г.",
+                "on": "Дубоделов К."
+              },
+              {
+                "team": "home",
+                "minute": 68,
+                "off": "Шибанов Т.",
+                "on": "Иванов А."
+              },
+              {
+                "team": "home",
+                "minute": 70,
+                "off": "Ловков К.",
+                "on": "Большаков А."
+              }
+            ]
+          }
         },
         {
           "id": 3843778,
@@ -3662,7 +15632,126 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "scoreAway": 6,
           "played": true,
           "techDefeat": false,
-          "venue": "Балтика"
+          "venue": "Балтика",
+          "protocol": {
+            "goals": [
+              {
+                "team": "home",
+                "player": "Анашкин А.",
+                "minute": 25,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Якуненков М.",
+                "minute": 26,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Фролов Р.",
+                "minute": 32,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Рубцов Д.",
+                "minute": 37,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Рубцов Д.",
+                "minute": 41,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Швецов Д.",
+                "minute": 45,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Швецов Д.",
+                "minute": 49,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Рубцов Д.",
+                "minute": 65,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              }
+            ],
+            "cards": [],
+            "subs": [
+              {
+                "team": "home",
+                "minute": 28,
+                "off": "Якуненков М.",
+                "on": "Голиков М."
+              },
+              {
+                "team": "away",
+                "minute": 28,
+                "off": "Олейник Д.",
+                "on": "Поддубный М."
+              },
+              {
+                "team": "away",
+                "minute": 53,
+                "off": "Фролов Р.",
+                "on": "Кузнецов С."
+              },
+              {
+                "team": "away",
+                "minute": 57,
+                "off": "Швецов Д.",
+                "on": "Заикин Д."
+              },
+              {
+                "team": "home",
+                "minute": 58,
+                "off": "Анашкин А.",
+                "on": "Солопан Я."
+              },
+              {
+                "team": "home",
+                "minute": 58,
+                "off": "Кичев М.",
+                "on": "Иванов М."
+              },
+              {
+                "team": "home",
+                "minute": 58,
+                "off": "Шушунов Д.",
+                "on": "Качусов Я."
+              },
+              {
+                "team": "away",
+                "minute": 58,
+                "off": "Масловатый Р.",
+                "on": "Зинченко И."
+              }
+            ]
+          }
         },
         {
           "id": 3843780,
@@ -3678,7 +15767,123 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "played": true,
           "techDefeat": false,
           "venue": "Ижорец. Поле № 1",
-          "videoSlug": "YVDwTqCE4bPKw2xNz111Yz"
+          "videoSlug": "YVDwTqCE4bPKw2xNz111Yz",
+          "protocol": {
+            "goals": [
+              {
+                "team": "home",
+                "player": "Амельченко М.",
+                "minute": 39,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Гриднев В.",
+                "minute": 45,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Кочеванский А.",
+                "minute": 64,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              }
+            ],
+            "cards": [
+              {
+                "team": "home",
+                "player": "Александров Л.",
+                "minute": 3,
+                "kind": "yellow"
+              },
+              {
+                "team": "away",
+                "player": "Голиков М.",
+                "minute": 28,
+                "kind": "yellow"
+              }
+            ],
+            "subs": [
+              {
+                "team": "home",
+                "minute": 36,
+                "off": "Мокин А.",
+                "on": "Милонов Н."
+              },
+              {
+                "team": "away",
+                "minute": 36,
+                "off": "Голиков М.",
+                "on": "Миклин А."
+              },
+              {
+                "team": "away",
+                "minute": 36,
+                "off": "Якуненков М.",
+                "on": "Меняйлов А."
+              },
+              {
+                "team": "away",
+                "minute": 51,
+                "off": "Анашкин А.",
+                "on": "Морозов Я."
+              },
+              {
+                "team": "home",
+                "minute": 57,
+                "off": "Еналиев Д.",
+                "on": "Ибрагимов В."
+              },
+              {
+                "team": "away",
+                "minute": 57,
+                "off": "Пивник Р.",
+                "on": "Иванов М."
+              },
+              {
+                "team": "away",
+                "minute": 57,
+                "off": "Притычкин М.",
+                "on": "Раченко Е."
+              },
+              {
+                "team": "home",
+                "minute": 63,
+                "off": "Гриднев В.",
+                "on": "Масляков М."
+              },
+              {
+                "team": "home",
+                "minute": 66,
+                "off": "Вихко М.",
+                "on": "Ипполитов М."
+              },
+              {
+                "team": "away",
+                "minute": 66,
+                "off": "Миклин А.",
+                "on": "Солопан Я."
+              },
+              {
+                "team": "home",
+                "minute": 69,
+                "off": "Самарин И.",
+                "on": "Беляев К."
+              },
+              {
+                "team": "home",
+                "minute": 70,
+                "off": "Александров Л.",
+                "on": "Катечкин Н."
+              }
+            ]
+          }
         },
         {
           "id": 3843781,
@@ -3694,7 +15899,135 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "played": true,
           "techDefeat": false,
           "venue": "СОШ 363",
-          "videoSlug": "m6zyMWsK1m2iE0llH7tGkk"
+          "videoSlug": "m6zyMWsK1m2iE0llH7tGkk",
+          "protocol": {
+            "goals": [
+              {
+                "team": "home",
+                "player": "Суханов И.",
+                "minute": 9,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Шибанов Т.",
+                "minute": 42,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Евстафьев М.",
+                "minute": 45,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Горбатенко Н.",
+                "minute": 47,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Ловков К.",
+                "minute": 52,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Ловков К.",
+                "minute": 69,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              }
+            ],
+            "cards": [
+              {
+                "team": "home",
+                "player": "Исираилов Б.",
+                "minute": 36,
+                "kind": "yellow"
+              }
+            ],
+            "subs": [
+              {
+                "team": "home",
+                "minute": 29,
+                "off": "Моисеев А.",
+                "on": "Рыжков А."
+              },
+              {
+                "team": "home",
+                "minute": 35,
+                "off": "Бурба М.",
+                "on": "Шалонин М."
+              },
+              {
+                "team": "home",
+                "minute": 35,
+                "off": "Даткунас М.",
+                "on": "Подгайный К."
+              },
+              {
+                "team": "away",
+                "minute": 42,
+                "off": "Аникеев Д.",
+                "on": "Евстафьев М."
+              },
+              {
+                "team": "away",
+                "minute": 52,
+                "off": "Кузьмин Д.",
+                "on": "Евтюков Н."
+              },
+              {
+                "team": "home",
+                "minute": 52,
+                "off": "Волков В.",
+                "on": "Антонов М."
+              },
+              {
+                "team": "home",
+                "minute": 52,
+                "off": "Павлов Р.",
+                "on": "Куваев Н."
+              },
+              {
+                "team": "away",
+                "minute": 57,
+                "off": "Орлов И.",
+                "on": "Иванов А."
+              },
+              {
+                "team": "away",
+                "minute": 58,
+                "off": "Ан Н.",
+                "on": "Никифоров Е."
+              },
+              {
+                "team": "away",
+                "minute": 60,
+                "off": "Кавтарадзе Г.",
+                "on": "Морозов П."
+              },
+              {
+                "team": "home",
+                "minute": 68,
+                "off": "Подгайный К.",
+                "on": "Григорьев Р."
+              }
+            ]
+          }
         },
         {
           "id": 3843779,
@@ -3709,7 +16042,97 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "scoreAway": 2,
           "played": true,
           "techDefeat": false,
-          "venue": "СШОР Кировского района"
+          "venue": "СШОР Кировского района",
+          "protocol": {
+            "goals": [
+              {
+                "team": "away",
+                "player": "Фролов Р.",
+                "minute": 43,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Рубцов Д.",
+                "minute": 70,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": true
+              }
+            ],
+            "cards": [
+              {
+                "team": "home",
+                "player": "Алсуфьев С.",
+                "minute": 0,
+                "kind": "yellow"
+              },
+              {
+                "team": "away",
+                "player": "Синицын К.",
+                "minute": 0,
+                "kind": "yellow"
+              }
+            ],
+            "subs": [
+              {
+                "team": "away",
+                "minute": 5,
+                "off": "Швецов Д.",
+                "on": "Фролов Р."
+              },
+              {
+                "team": "away",
+                "minute": 28,
+                "off": "Кузнецов С.",
+                "on": "Поддубный М."
+              },
+              {
+                "team": "away",
+                "minute": 36,
+                "off": "Олейник Д.",
+                "on": "Заикин Д."
+              },
+              {
+                "team": "home",
+                "minute": 36,
+                "off": "Парохин Р.",
+                "on": "Карпицкий М."
+              },
+              {
+                "team": "home",
+                "minute": 36,
+                "off": "Чмеленко Д.",
+                "on": "Самойлов М."
+              },
+              {
+                "team": "home",
+                "minute": 44,
+                "off": "Алсуфьев С.",
+                "on": "Данилов М."
+              },
+              {
+                "team": "home",
+                "minute": 55,
+                "off": "Игамов А.",
+                "on": "Алексеев К."
+              },
+              {
+                "team": "home",
+                "minute": 63,
+                "off": "Дюндар Д.",
+                "on": "Горюнов Т."
+              },
+              {
+                "team": "away",
+                "minute": 67,
+                "off": "Заикин Д.",
+                "on": "Легош Н."
+              }
+            ]
+          }
         },
         {
           "id": 3843782,
@@ -3725,7 +16148,66 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "played": true,
           "techDefeat": false,
           "venue": "Химик",
-          "videoSlug": "SoBjilZHt1GLDDPaMVwROV"
+          "videoSlug": "SoBjilZHt1GLDDPaMVwROV",
+          "protocol": {
+            "goals": [
+              {
+                "team": "away",
+                "player": "Черняков Д.",
+                "minute": 5,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Нестеров Я.",
+                "minute": 54,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              }
+            ],
+            "cards": [],
+            "subs": [
+              {
+                "team": "away",
+                "minute": 21,
+                "off": "Черняков Д.",
+                "on": "Катрушенко А."
+              },
+              {
+                "team": "home",
+                "minute": 55,
+                "off": "Гроза Н.",
+                "on": "Русецкий Н."
+              },
+              {
+                "team": "home",
+                "minute": 55,
+                "off": "Гусев А.",
+                "on": "Зиявитдинов Т."
+              },
+              {
+                "team": "home",
+                "minute": 55,
+                "off": "Троицкий И.",
+                "on": "Соломатин А."
+              },
+              {
+                "team": "away",
+                "minute": 55,
+                "off": "Пухов А.",
+                "on": "Колесник И."
+              },
+              {
+                "team": "away",
+                "minute": 61,
+                "off": "Антонов Т.",
+                "on": "Герасимяк М."
+              }
+            ]
+          }
         },
         {
           "id": 3843783,
@@ -3741,7 +16223,74 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "played": true,
           "techDefeat": false,
           "venue": "Московский (Скороход)",
-          "videoSlug": "sLL6W2DncK4SkBgvs7Phdz"
+          "videoSlug": "sLL6W2DncK4SkBgvs7Phdz",
+          "protocol": {
+            "goals": [
+              {
+                "team": "home",
+                "player": "Рыбин М.",
+                "minute": 50,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Рыбин М.",
+                "minute": 65,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Колотиев А.",
+                "minute": 70,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              }
+            ],
+            "cards": [],
+            "subs": [
+              {
+                "team": "home",
+                "minute": 36,
+                "off": "Жаботинский Д.",
+                "on": "Грачёв М."
+              },
+              {
+                "team": "away",
+                "minute": 43,
+                "off": "Панченко И.",
+                "on": "Сидоренков М."
+              },
+              {
+                "team": "home",
+                "minute": 50,
+                "off": "Тетерин А.",
+                "on": "Путров Я."
+              },
+              {
+                "team": "home",
+                "minute": 50,
+                "off": "Шайкин Е.",
+                "on": "Колотиев А."
+              },
+              {
+                "team": "away",
+                "minute": 57,
+                "off": "Ким М.",
+                "on": "Задорин М."
+              },
+              {
+                "team": "away",
+                "minute": 57,
+                "off": "Ковалев А.",
+                "on": "Верещак Е."
+              }
+            ]
+          }
         },
         {
           "id": 3843784,
@@ -3756,7 +16305,85 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "scoreAway": 2,
           "played": true,
           "techDefeat": false,
-          "venue": "ЦФКСиЗ Василеостровского района"
+          "venue": "ЦФКСиЗ Василеостровского района",
+          "protocol": {
+            "goals": [
+              {
+                "team": "away",
+                "player": "Красноумов М.",
+                "minute": 1,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Красноумов М.",
+                "minute": 64,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              }
+            ],
+            "cards": [
+              {
+                "team": "home",
+                "player": "Абдуллах Д.",
+                "minute": 38,
+                "kind": "yellow"
+              },
+              {
+                "team": "away",
+                "player": "Андреев Т.",
+                "minute": 46,
+                "kind": "yellow"
+              },
+              {
+                "team": "home",
+                "player": "Ким М.",
+                "minute": 55,
+                "kind": "yellow"
+              }
+            ],
+            "subs": [
+              {
+                "team": "away",
+                "minute": 50,
+                "off": "Лоскутов Д.",
+                "on": "Дюндар Д."
+              },
+              {
+                "team": "away",
+                "minute": 50,
+                "off": "Салтыков И.",
+                "on": "Шаймухаметов Р."
+              },
+              {
+                "team": "home",
+                "minute": 50,
+                "off": "Панченко И.",
+                "on": "Верещак Е."
+              },
+              {
+                "team": "home",
+                "minute": 56,
+                "off": "Дутко М.",
+                "on": "Скапишев М."
+              },
+              {
+                "team": "away",
+                "minute": 59,
+                "off": "Васильев А.",
+                "on": "Травкин М."
+              },
+              {
+                "team": "away",
+                "minute": 68,
+                "off": "Самойлов М.",
+                "on": "Данилов М."
+              }
+            ]
+          }
         },
         {
           "id": 3843787,
@@ -3771,7 +16398,91 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "scoreAway": 2,
           "played": true,
           "techDefeat": false,
-          "venue": "Балтика"
+          "venue": "Балтика",
+          "protocol": {
+            "goals": [
+              {
+                "team": "away",
+                "player": "Антонов М.",
+                "minute": 68,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Шалонин М.",
+                "minute": 70,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": true
+              }
+            ],
+            "cards": [
+              {
+                "team": "home",
+                "player": "Кичев М.",
+                "minute": 70,
+                "kind": "yellow"
+              },
+              {
+                "team": "away",
+                "player": "Исираилов Б.",
+                "minute": 70,
+                "kind": "yellow"
+              }
+            ],
+            "subs": [
+              {
+                "team": "home",
+                "minute": 36,
+                "off": "Зверьков Д.",
+                "on": "Тополя З."
+              },
+              {
+                "team": "home",
+                "minute": 36,
+                "off": "Морозов Я.",
+                "on": "Якуненков М."
+              },
+              {
+                "team": "away",
+                "minute": 36,
+                "off": "Исмаилов С.",
+                "on": "Шалонин М."
+              },
+              {
+                "team": "away",
+                "minute": 49,
+                "off": "Моисеев А.",
+                "on": "Григорьев Р."
+              },
+              {
+                "team": "away",
+                "minute": 49,
+                "off": "Павлов Р.",
+                "on": "Куваев Н."
+              },
+              {
+                "team": "home",
+                "minute": 51,
+                "off": "Меняйлов А.",
+                "on": "Раченко Е."
+              },
+              {
+                "team": "away",
+                "minute": 62,
+                "off": "Григорьев Р.",
+                "on": "Суханов И."
+              },
+              {
+                "team": "home",
+                "minute": 66,
+                "off": "Притычкин М.",
+                "on": "Пивник Р."
+              }
+            ]
+          }
         },
         {
           "id": 3843785,
@@ -3786,7 +16497,86 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "scoreAway": 0,
           "played": true,
           "techDefeat": false,
-          "venue": "СОШ № 303"
+          "venue": "СОШ № 303",
+          "protocol": {
+            "goals": [
+              {
+                "team": "home",
+                "player": "Абдулазизов Г.",
+                "minute": 13,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Кравченко М.",
+                "minute": 36,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Катрушенко А.",
+                "minute": 60,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              }
+            ],
+            "cards": [],
+            "subs": [
+              {
+                "team": "away",
+                "minute": 36,
+                "off": "Хоботов М.",
+                "on": "Колотиев А."
+              },
+              {
+                "team": "away",
+                "minute": 36,
+                "off": "Чертков М.",
+                "on": "Грачёв М."
+              },
+              {
+                "team": "home",
+                "minute": 50,
+                "off": "Пухов А.",
+                "on": "Катрушенко А."
+              },
+              {
+                "team": "home",
+                "minute": 58,
+                "off": "Герасимяк М.",
+                "on": "Антонов Т."
+              },
+              {
+                "team": "away",
+                "minute": 61,
+                "off": "Комаровский С.",
+                "on": "Думин А."
+              },
+              {
+                "team": "away",
+                "minute": 61,
+                "off": "Скиба А.",
+                "on": "Тепляков Л."
+              },
+              {
+                "team": "away",
+                "minute": 61,
+                "off": "Тетерин А.",
+                "on": "Путров Я."
+              },
+              {
+                "team": "home",
+                "minute": 63,
+                "off": "Денисов А.",
+                "on": "Костищин С."
+              }
+            ]
+          }
         },
         {
           "id": 3843786,
@@ -3801,7 +16591,143 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "scoreAway": 3,
           "played": true,
           "techDefeat": false,
-          "venue": "Балтика"
+          "venue": "Балтика",
+          "protocol": {
+            "goals": [
+              {
+                "team": "home",
+                "player": "Гриценко М.",
+                "minute": 3,
+                "assist": null,
+                "kind": "penalty",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Карташов А.",
+                "minute": 13,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Гусев А.",
+                "minute": 28,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Покинтелица А.",
+                "minute": 70,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": true
+              }
+            ],
+            "cards": [
+              {
+                "team": "away",
+                "player": "Гроза Н.",
+                "minute": 3,
+                "kind": "yellow"
+              },
+              {
+                "team": "home",
+                "player": "Ан Н.",
+                "minute": 18,
+                "kind": "yellow"
+              },
+              {
+                "team": "home",
+                "player": "Шибанов Т.",
+                "minute": 41,
+                "kind": "yellow"
+              },
+              {
+                "team": "away",
+                "player": "Троицкий И.",
+                "minute": 61,
+                "kind": "yellow"
+              },
+              {
+                "team": "home",
+                "player": "Филатов Е.",
+                "minute": 70,
+                "kind": "yellow"
+              }
+            ],
+            "subs": [
+              {
+                "team": "home",
+                "minute": 27,
+                "off": "Ан Н.",
+                "on": "Никифоров Е."
+              },
+              {
+                "team": "home",
+                "minute": 36,
+                "off": "Аникеев Д.",
+                "on": "Евстафьев М."
+              },
+              {
+                "team": "away",
+                "minute": 54,
+                "off": "Гусев А.",
+                "on": "Зиявитдинов Т."
+              },
+              {
+                "team": "away",
+                "minute": 54,
+                "off": "Соломатин А.",
+                "on": "Троицкий И."
+              },
+              {
+                "team": "home",
+                "minute": 57,
+                "off": "Кузьмин Д.",
+                "on": "Евтюков Н."
+              },
+              {
+                "team": "home",
+                "minute": 61,
+                "off": "Горбатенко Н.",
+                "on": "Иванов А."
+              },
+              {
+                "team": "away",
+                "minute": 65,
+                "off": "Гроза Н.",
+                "on": "Зайнитдинов А."
+              },
+              {
+                "team": "home",
+                "minute": 65,
+                "off": "Евстафьев М.",
+                "on": "Морозов П."
+              },
+              {
+                "team": "home",
+                "minute": 65,
+                "off": "Шибанов Т.",
+                "on": "Дубоделов К."
+              },
+              {
+                "team": "away",
+                "minute": 67,
+                "off": "Карташов А.",
+                "on": "Козлов М."
+              },
+              {
+                "team": "home",
+                "minute": 68,
+                "off": "Гриценко М.",
+                "on": "Верхозин А."
+              }
+            ]
+          }
         },
         {
           "id": 3843788,
@@ -3816,7 +16742,119 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "scoreAway": 0,
           "played": true,
           "techDefeat": false,
-          "venue": "Московский (Скороход)"
+          "venue": "Московский (Скороход)",
+          "protocol": {
+            "goals": [
+              {
+                "team": "home",
+                "player": "Заикин Д.",
+                "minute": 10,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Заикин Д.",
+                "minute": 34,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Рубцов Д.",
+                "minute": 38,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Рубцов Д.",
+                "minute": 70,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": true
+              }
+            ],
+            "cards": [
+              {
+                "team": "away",
+                "player": "Туралиев Н.",
+                "minute": 15,
+                "kind": "yellow"
+              },
+              {
+                "team": "away",
+                "player": "Милонов Н.",
+                "minute": 27,
+                "kind": "yellow"
+              },
+              {
+                "team": "home",
+                "player": "Данилов А.",
+                "minute": 63,
+                "kind": "yellow"
+              },
+              {
+                "team": "away",
+                "player": "Александров Л.",
+                "minute": 87,
+                "kind": "yellow"
+              }
+            ],
+            "subs": [
+              {
+                "team": "away",
+                "minute": 36,
+                "off": "Еналиев Д.",
+                "on": "Гриднев В."
+              },
+              {
+                "team": "away",
+                "minute": 36,
+                "off": "Самарин И.",
+                "on": "Мацало К."
+              },
+              {
+                "team": "home",
+                "minute": 46,
+                "off": "Фролов Р.",
+                "on": "Синицын К."
+              },
+              {
+                "team": "away",
+                "minute": 47,
+                "off": "Кочеванский А.",
+                "on": "Масляков М."
+              },
+              {
+                "team": "away",
+                "minute": 52,
+                "off": "Вихко М.",
+                "on": "Ибрагимов В."
+              },
+              {
+                "team": "home",
+                "minute": 52,
+                "off": "Заикин Д.",
+                "on": "Кузнецов С."
+              },
+              {
+                "team": "home",
+                "minute": 52,
+                "off": "Легош Н.",
+                "on": "Олейник Д."
+              },
+              {
+                "team": "away",
+                "minute": 70,
+                "off": "Григоренко Н.",
+                "on": "Катечкин Н."
+              }
+            ]
+          }
         },
         {
           "id": 3843790,
@@ -3831,7 +16869,113 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "scoreAway": 4,
           "played": true,
           "techDefeat": false,
-          "venue": "СОШ № 303"
+          "venue": "СОШ № 303",
+          "protocol": {
+            "goals": [
+              {
+                "team": "away",
+                "player": "Рубцов Д.",
+                "minute": 10,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Гилев И.",
+                "minute": 20,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Рубцов Д.",
+                "minute": 35,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Исираилов Б.",
+                "minute": 61,
+                "assist": null,
+                "kind": "own_goal",
+                "addedTime": false
+              }
+            ],
+            "cards": [
+              {
+                "team": "away",
+                "player": "Рубцов Д.",
+                "minute": 15,
+                "kind": "yellow"
+              },
+              {
+                "team": "away",
+                "player": "Легош Н.",
+                "minute": 53,
+                "kind": "yellow"
+              }
+            ],
+            "subs": [
+              {
+                "team": "home",
+                "minute": 36,
+                "off": "Исмаилов С.",
+                "on": "Селютин Г."
+              },
+              {
+                "team": "home",
+                "minute": 36,
+                "off": "Моисеев А.",
+                "on": "Шалонин М."
+              },
+              {
+                "team": "away",
+                "minute": 39,
+                "off": "Кузнецов С.",
+                "on": "Заикин Д."
+              },
+              {
+                "team": "away",
+                "minute": 39,
+                "off": "Олейник Д.",
+                "on": "Поддубный М."
+              },
+              {
+                "team": "home",
+                "minute": 43,
+                "off": "Рыжков А.",
+                "on": "Подгайный К."
+              },
+              {
+                "team": "away",
+                "minute": 55,
+                "off": "Легош Н.",
+                "on": "Родин В."
+              },
+              {
+                "team": "home",
+                "minute": 57,
+                "off": "Бурба М.",
+                "on": "Куваев Н."
+              },
+              {
+                "team": "home",
+                "minute": 57,
+                "off": "Павлов Р.",
+                "on": "Григорьев Р."
+              },
+              {
+                "team": "away",
+                "minute": 61,
+                "off": "Рубцов Д.",
+                "on": "Осокин А."
+              }
+            ]
+          }
         },
         {
           "id": 3843789,
@@ -3846,7 +16990,116 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "scoreAway": 4,
           "played": true,
           "techDefeat": false,
-          "venue": "СШОР Кировского района"
+          "venue": "СШОР Кировского района",
+          "protocol": {
+            "goals": [
+              {
+                "team": "away",
+                "player": "Амельченко М.",
+                "minute": 2,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Еналиев Д.",
+                "minute": 17,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Амельченко М.",
+                "minute": 28,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Амельченко М.",
+                "minute": 52,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Самойлов М.",
+                "minute": 56,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Васильев А.",
+                "minute": 68,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              }
+            ],
+            "cards": [],
+            "subs": [
+              {
+                "team": "away",
+                "minute": 36,
+                "off": "Самарин И.",
+                "on": "Александров Л."
+              },
+              {
+                "team": "home",
+                "minute": 36,
+                "off": "Алсуфьев С.",
+                "on": "Самойлов М."
+              },
+              {
+                "team": "home",
+                "minute": 36,
+                "off": "Андреев Т.",
+                "on": "Семехин Д."
+              },
+              {
+                "team": "home",
+                "minute": 45,
+                "off": "Дюндар Д.",
+                "on": "Лебедев И."
+              },
+              {
+                "team": "away",
+                "minute": 51,
+                "off": "Еналиев Д.",
+                "on": "Гриднев В."
+              },
+              {
+                "team": "home",
+                "minute": 55,
+                "off": "Лоскутов Д.",
+                "on": "Данилов М."
+              },
+              {
+                "team": "away",
+                "minute": 73,
+                "off": "Туралиев Н.",
+                "on": "Мокин А."
+              },
+              {
+                "team": "away",
+                "minute": 75,
+                "off": "Амельченко М.",
+                "on": "Ибрагимов В."
+              },
+              {
+                "team": "away",
+                "minute": 75,
+                "off": "Григоренко Н.",
+                "on": "Масляков М."
+              }
+            ]
+          }
         },
         {
           "id": 3843791,
@@ -3861,7 +17114,163 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "scoreAway": 1,
           "played": true,
           "techDefeat": false,
-          "venue": "Химик"
+          "venue": "Химик",
+          "protocol": {
+            "goals": [
+              {
+                "team": "home",
+                "player": "Покинтелица А.",
+                "minute": 1,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Степанов Р.",
+                "minute": 10,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Покинтелица А.",
+                "minute": 31,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Покинтелица А.",
+                "minute": 37,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Нестеров Я.",
+                "minute": 41,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Козлов М.",
+                "minute": 53,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Козлов М.",
+                "minute": 57,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Гусев А.",
+                "minute": 67,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              }
+            ],
+            "cards": [
+              {
+                "team": "home",
+                "player": "Мазунов В.",
+                "minute": 55,
+                "kind": "yellow"
+              },
+              {
+                "team": "away",
+                "player": "Кичев М.",
+                "minute": 66,
+                "kind": "yellow"
+              }
+            ],
+            "subs": [
+              {
+                "team": "home",
+                "minute": 36,
+                "off": "Карташов А.",
+                "on": "Гусев А."
+              },
+              {
+                "team": "home",
+                "minute": 36,
+                "off": "Щедров И.",
+                "on": "Соломатин А."
+              },
+              {
+                "team": "home",
+                "minute": 46,
+                "off": "Галенко К.",
+                "on": "Козлов М."
+              },
+              {
+                "team": "home",
+                "minute": 46,
+                "off": "Гроза Н.",
+                "on": "Богданов Д."
+              },
+              {
+                "team": "home",
+                "minute": 46,
+                "off": "Зиявитдинов Т.",
+                "on": "Троицкий И."
+              },
+              {
+                "team": "home",
+                "minute": 46,
+                "off": "Нестеров Я.",
+                "on": "Русецкий Н."
+              },
+              {
+                "team": "home",
+                "minute": 46,
+                "off": "Шехирев К.",
+                "on": "Зайнитдинов А."
+              },
+              {
+                "team": "away",
+                "minute": 47,
+                "off": "Тополя З.",
+                "on": "Зверьков Д."
+              },
+              {
+                "team": "away",
+                "minute": 51,
+                "off": "Меняйлов А.",
+                "on": "Раченко Е."
+              },
+              {
+                "team": "home",
+                "minute": 54,
+                "off": "Покинтелица А.",
+                "on": "Анисимов М."
+              },
+              {
+                "team": "away",
+                "minute": 54,
+                "off": "Морозов Я.",
+                "on": "Миклин А."
+              },
+              {
+                "team": "away",
+                "minute": 67,
+                "off": "Якуненков М.",
+                "on": "Солопан Я."
+              }
+            ]
+          }
         },
         {
           "id": 3843792,
@@ -3876,7 +17285,60 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "scoreAway": 1,
           "played": true,
           "techDefeat": false,
-          "venue": "Московский (Скороход)"
+          "venue": "Московский (Скороход)",
+          "protocol": {
+            "goals": [
+              {
+                "team": "away",
+                "player": "Ловков К.",
+                "minute": 50,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Басыров И.",
+                "minute": 59,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              }
+            ],
+            "cards": [],
+            "subs": [
+              {
+                "team": "away",
+                "minute": 41,
+                "off": "Евстафьев М.",
+                "on": "Иванов А."
+              },
+              {
+                "team": "away",
+                "minute": 51,
+                "off": "Морозов П.",
+                "on": "Верхозин А."
+              },
+              {
+                "team": "home",
+                "minute": 54,
+                "off": "Жаботинский Д.",
+                "on": "Тепляков Л."
+              },
+              {
+                "team": "home",
+                "minute": 54,
+                "off": "Сорин В.",
+                "on": "Путров Я."
+              },
+              {
+                "team": "away",
+                "minute": 70,
+                "off": "Филатов Е.",
+                "on": "Дубоделов К."
+              }
+            ]
+          }
         },
         {
           "id": 3843793,
@@ -3891,7 +17353,71 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "scoreAway": 1,
           "played": true,
           "techDefeat": false,
-          "venue": "ЦФКСиЗ Василеостровского района"
+          "venue": "ЦФКСиЗ Василеостровского района",
+          "protocol": {
+            "goals": [
+              {
+                "team": "away",
+                "player": "Абдулазизов Г.",
+                "minute": 53,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              }
+            ],
+            "cards": [
+              {
+                "team": "away",
+                "player": "Абдулазизов Г.",
+                "minute": 32,
+                "kind": "yellow"
+              }
+            ],
+            "subs": [
+              {
+                "team": "away",
+                "minute": 36,
+                "off": "Герасимяк М.",
+                "on": "Антонов Т."
+              },
+              {
+                "team": "away",
+                "minute": 36,
+                "off": "Колесник И.",
+                "on": "Катрушенко А."
+              },
+              {
+                "team": "away",
+                "minute": 36,
+                "off": "Пухов А.",
+                "on": "Мельников Р."
+              },
+              {
+                "team": "home",
+                "minute": 41,
+                "off": "Панченко И.",
+                "on": "Дутко М."
+              },
+              {
+                "team": "home",
+                "minute": 52,
+                "off": "Ким М.",
+                "on": "Верещак Е."
+              },
+              {
+                "team": "home",
+                "minute": 60,
+                "off": "Ковалев А.",
+                "on": "Скапишев М."
+              },
+              {
+                "team": "away",
+                "minute": 65,
+                "off": "Денисов А.",
+                "on": "Костищин С."
+              }
+            ]
+          }
         },
         {
           "id": 3843796,
@@ -3906,7 +17432,79 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "scoreAway": 1,
           "played": true,
           "techDefeat": false,
-          "venue": "Химик"
+          "venue": "Химик",
+          "protocol": {
+            "goals": [
+              {
+                "team": "away",
+                "player": "Скиба А.",
+                "minute": 2,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Буйдоков А.",
+                "minute": 15,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              }
+            ],
+            "cards": [
+              {
+                "team": "home",
+                "player": "Пивник Р.",
+                "minute": 34,
+                "kind": "yellow"
+              },
+              {
+                "team": "home",
+                "player": "Гусев Д.",
+                "minute": 68,
+                "kind": "yellow"
+              }
+            ],
+            "subs": [
+              {
+                "team": "away",
+                "minute": 36,
+                "off": "Грачёв М.",
+                "on": "Тепляков Л."
+              },
+              {
+                "team": "away",
+                "minute": 36,
+                "off": "Жаботинский Д.",
+                "on": "Путров Я."
+              },
+              {
+                "team": "away",
+                "minute": 36,
+                "off": "Сорин В.",
+                "on": "Васянович М."
+              },
+              {
+                "team": "home",
+                "minute": 44,
+                "off": "Меняйлов А.",
+                "on": "Морозов Я."
+              },
+              {
+                "team": "home",
+                "minute": 52,
+                "off": "Якуненков М.",
+                "on": "Миклин А."
+              },
+              {
+                "team": "home",
+                "minute": 59,
+                "off": "Буйдоков А.",
+                "on": "Раченко Е."
+              }
+            ]
+          }
         },
         {
           "id": 3843798,
@@ -3922,7 +17520,79 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "played": true,
           "techDefeat": false,
           "venue": "Ижорец. Поле № 1",
-          "videoSlug": "JoItE4zTBJVtHvE6XOT845"
+          "videoSlug": "JoItE4zTBJVtHvE6XOT845",
+          "protocol": {
+            "goals": [
+              {
+                "team": "away",
+                "player": "Рыжков А.",
+                "minute": 23,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Кочеванский А.",
+                "minute": 31,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              }
+            ],
+            "cards": [
+              {
+                "team": "away",
+                "player": "Даткунас М.",
+                "minute": 56,
+                "kind": "yellow"
+              }
+            ],
+            "subs": [
+              {
+                "team": "away",
+                "minute": 36,
+                "off": "Бурба М.",
+                "on": "Подгайный К."
+              },
+              {
+                "team": "away",
+                "minute": 36,
+                "off": "Моисеев А.",
+                "on": "Шалонин М."
+              },
+              {
+                "team": "home",
+                "minute": 48,
+                "off": "Гриднев В.",
+                "on": "Ибрагимов В."
+              },
+              {
+                "team": "home",
+                "minute": 51,
+                "off": "Мацало К.",
+                "on": "Александров Л."
+              },
+              {
+                "team": "away",
+                "minute": 52,
+                "off": "Павлов Р.",
+                "on": "Исмаилов С."
+              },
+              {
+                "team": "away",
+                "minute": 62,
+                "off": "Волков В.",
+                "on": "Скородумов М."
+              },
+              {
+                "team": "home",
+                "minute": 66,
+                "off": "Еналиев Д.",
+                "on": "Масляков М."
+              }
+            ]
+          }
         },
         {
           "id": 3843795,
@@ -3937,7 +17607,82 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "scoreAway": 1,
           "played": true,
           "techDefeat": false,
-          "venue": "Балтика"
+          "venue": "Балтика",
+          "protocol": {
+            "goals": [
+              {
+                "team": "away",
+                "player": "Качанов А.",
+                "minute": 5,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              }
+            ],
+            "cards": [],
+            "subs": [
+              {
+                "team": "home",
+                "minute": 42,
+                "off": "Дубоделов К.",
+                "on": "Морозов П."
+              },
+              {
+                "team": "away",
+                "minute": 49,
+                "off": "Ковалев А.",
+                "on": "Панченко И."
+              },
+              {
+                "team": "away",
+                "minute": 52,
+                "off": "Скачков М.",
+                "on": "Дутко М."
+              },
+              {
+                "team": "away",
+                "minute": 54,
+                "off": "Шаров В.",
+                "on": "Ким М."
+              },
+              {
+                "team": "home",
+                "minute": 60,
+                "off": "Ан Н.",
+                "on": "Букин И."
+              },
+              {
+                "team": "home",
+                "minute": 60,
+                "off": "Горбатенко Н.",
+                "on": "Никифоров Е."
+              },
+              {
+                "team": "home",
+                "minute": 63,
+                "off": "Кавтарадзе Г.",
+                "on": "Большаков А."
+              },
+              {
+                "team": "home",
+                "minute": 63,
+                "off": "Кузьмин Д.",
+                "on": "Евтюков Н."
+              },
+              {
+                "team": "home",
+                "minute": 63,
+                "off": "Ловков К.",
+                "on": "Верхозин А."
+              },
+              {
+                "team": "home",
+                "minute": 63,
+                "off": "Шибанов Т.",
+                "on": "Иванов А."
+              }
+            ]
+          }
         },
         {
           "id": 3843797,
@@ -3952,7 +17697,91 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "scoreAway": 1,
           "played": true,
           "techDefeat": false,
-          "venue": "Московский (Скороход)"
+          "venue": "Московский (Скороход)",
+          "protocol": {
+            "goals": [
+              {
+                "team": "home",
+                "player": "Рубцов Д.",
+                "minute": 25,
+                "assist": null,
+                "kind": "penalty",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Зиявитдинов Т.",
+                "minute": 70,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              }
+            ],
+            "cards": [
+              {
+                "team": "away",
+                "player": "Галенко К.",
+                "minute": 20,
+                "kind": "yellow"
+              },
+              {
+                "team": "home",
+                "player": "Данилов А.",
+                "minute": 45,
+                "kind": "yellow"
+              },
+              {
+                "team": "away",
+                "player": "Карташов А.",
+                "minute": 70,
+                "kind": "red"
+              }
+            ],
+            "subs": [
+              {
+                "team": "away",
+                "minute": 27,
+                "off": "Галенко К.",
+                "on": "Богданов Д."
+              },
+              {
+                "team": "home",
+                "minute": 30,
+                "off": "Родин В.",
+                "on": "Легош Н."
+              },
+              {
+                "team": "home",
+                "minute": 36,
+                "off": "Кузнецов С.",
+                "on": "Заикин Д."
+              },
+              {
+                "team": "away",
+                "minute": 49,
+                "off": "Троицкий И.",
+                "on": "Щедров И."
+              },
+              {
+                "team": "home",
+                "minute": 52,
+                "off": "Поддубный М.",
+                "on": "Олейник Д."
+              },
+              {
+                "team": "away",
+                "minute": 56,
+                "off": "Гроза Н.",
+                "on": "Русецкий Н."
+              },
+              {
+                "team": "away",
+                "minute": 56,
+                "off": "Нестеров Я.",
+                "on": "Зиявитдинов Т."
+              }
+            ]
+          }
         },
         {
           "id": 3843794,
@@ -3968,7 +17797,91 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "played": true,
           "techDefeat": false,
           "venue": "СОШ 363",
-          "videoSlug": "C5mwuyes6mDOpIFsL3s1yp"
+          "videoSlug": "C5mwuyes6mDOpIFsL3s1yp",
+          "protocol": {
+            "goals": [
+              {
+                "team": "home",
+                "player": "Минеев М.",
+                "minute": 54,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Кравченко М.",
+                "minute": 70,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              }
+            ],
+            "cards": [
+              {
+                "team": "away",
+                "player": "Якубенко Ф.",
+                "minute": 53,
+                "kind": "yellow"
+              },
+              {
+                "team": "home",
+                "player": "Кравченко М.",
+                "minute": 70,
+                "kind": "yellow"
+              }
+            ],
+            "subs": [
+              {
+                "team": "away",
+                "minute": 36,
+                "off": "Булатов К.",
+                "on": "Дюндар Д."
+              },
+              {
+                "team": "home",
+                "minute": 42,
+                "off": "Катрушенко А.",
+                "on": "Мельников Р."
+              },
+              {
+                "team": "home",
+                "minute": 42,
+                "off": "Пухов А.",
+                "on": "Абдулазизов Г."
+              },
+              {
+                "team": "away",
+                "minute": 45,
+                "off": "Игамов А.",
+                "on": "Якубенко Ф."
+              },
+              {
+                "team": "away",
+                "minute": 50,
+                "off": "Андреев Т.",
+                "on": "Семехин Д."
+              },
+              {
+                "team": "away",
+                "minute": 51,
+                "off": "Травкин М.",
+                "on": "Горюнов Т."
+              },
+              {
+                "team": "away",
+                "minute": 55,
+                "off": "Шаймухаметов Р.",
+                "on": "Данилов М."
+              },
+              {
+                "team": "home",
+                "minute": 65,
+                "off": "Денисов А.",
+                "on": "Костищин С."
+              }
+            ]
+          }
         },
         {
           "id": 3843803,
@@ -3983,7 +17896,107 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "scoreAway": 1,
           "played": true,
           "techDefeat": false,
-          "venue": "СОШ № 303"
+          "venue": "СОШ № 303",
+          "protocol": {
+            "goals": [
+              {
+                "team": "home",
+                "player": "Федоров А.",
+                "minute": 2,
+                "assist": null,
+                "kind": "own_goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Черняков Д.",
+                "minute": 4,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Абдулазизов Г.",
+                "minute": 11,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Кравченко М.",
+                "minute": 42,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              }
+            ],
+            "cards": [
+              {
+                "team": "away",
+                "player": "Филатов Е.",
+                "minute": 65,
+                "kind": "yellow"
+              },
+              {
+                "team": "home",
+                "player": "Абдулазизов Г.",
+                "minute": 68,
+                "kind": "yellow"
+              }
+            ],
+            "subs": [
+              {
+                "team": "away",
+                "minute": 44,
+                "off": "Никифоров Е.",
+                "on": "Максименко Г."
+              },
+              {
+                "team": "home",
+                "minute": 44,
+                "off": "Пухов А.",
+                "on": "Катрушенко А."
+              },
+              {
+                "team": "home",
+                "minute": 47,
+                "off": "Мельников Р.",
+                "on": "Денисов А."
+              },
+              {
+                "team": "away",
+                "minute": 50,
+                "off": "Кузьмин Д.",
+                "on": "Евтюков Н."
+              },
+              {
+                "team": "away",
+                "minute": 50,
+                "off": "Морозов П.",
+                "on": "Верхозин А."
+              },
+              {
+                "team": "away",
+                "minute": 56,
+                "off": "Евстафьев М.",
+                "on": "Мепория И."
+              },
+              {
+                "team": "home",
+                "minute": 56,
+                "off": "Колесник И.",
+                "on": "Костищин С."
+              },
+              {
+                "team": "away",
+                "minute": 64,
+                "off": "Максименко Г.",
+                "on": "Дубоделов К."
+              }
+            ]
+          }
         },
         {
           "id": 3843799,
@@ -3998,7 +18011,117 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "scoreAway": 1,
           "played": true,
           "techDefeat": false,
-          "venue": "СШОР Кировского района"
+          "venue": "СШОР Кировского района",
+          "protocol": {
+            "goals": [
+              {
+                "team": "home",
+                "player": "Травкин М.",
+                "minute": 12,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Красноумов М.",
+                "minute": 34,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Можейко М.",
+                "minute": 37,
+                "assist": null,
+                "kind": "penalty",
+                "addedTime": false
+              }
+            ],
+            "cards": [
+              {
+                "team": "home",
+                "player": "Шаймухаметов Р.",
+                "minute": 24,
+                "kind": "yellow"
+              },
+              {
+                "team": "away",
+                "player": "Антонов М.",
+                "minute": 26,
+                "kind": "yellow"
+              },
+              {
+                "team": "home",
+                "player": "Салтыков И.",
+                "minute": 41,
+                "kind": "yellow"
+              },
+              {
+                "team": "home",
+                "player": "Васильев А.",
+                "minute": 67,
+                "kind": "yellow"
+              }
+            ],
+            "subs": [
+              {
+                "team": "away",
+                "minute": 19,
+                "off": "Моисеев А.",
+                "on": "Можейко М."
+              },
+              {
+                "team": "home",
+                "minute": 27,
+                "off": "Шаймухаметов Р.",
+                "on": "Парохин Р."
+              },
+              {
+                "team": "home",
+                "minute": 36,
+                "off": "Карпицкий М.",
+                "on": "Самойлов М."
+              },
+              {
+                "team": "away",
+                "minute": 36,
+                "off": "Эль-Хейба Р.",
+                "on": "Бурба М."
+              },
+              {
+                "team": "away",
+                "minute": 48,
+                "off": "Павлов Р.",
+                "on": "Суханов И."
+              },
+              {
+                "team": "away",
+                "minute": 48,
+                "off": "Селютин Г.",
+                "on": "Шалонин М."
+              },
+              {
+                "team": "home",
+                "minute": 50,
+                "off": "Травкин М.",
+                "on": "Алексеев К."
+              },
+              {
+                "team": "away",
+                "minute": 65,
+                "off": "Рыжков А.",
+                "on": "Григорьев Р."
+              },
+              {
+                "team": "away",
+                "minute": 65,
+                "off": "Бурба М.",
+                "on": "Куваев Н."
+              }
+            ]
+          }
         },
         {
           "id": 3843800,
@@ -4013,7 +18136,129 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "scoreAway": 3,
           "played": true,
           "techDefeat": false,
-          "venue": "Химик"
+          "venue": "Химик",
+          "protocol": {
+            "goals": [
+              {
+                "team": "home",
+                "player": "Покинтелица А.",
+                "minute": 13,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Туралиев Н.",
+                "minute": 38,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Григоренко Н.",
+                "minute": 41,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Амельченко М.",
+                "minute": 46,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Нестеров Я.",
+                "minute": 49,
+                "assist": null,
+                "kind": "penalty",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Покинтелица А.",
+                "minute": 51,
+                "assist": null,
+                "kind": "penalty",
+                "addedTime": false
+              }
+            ],
+            "cards": [
+              {
+                "team": "away",
+                "player": "Туралиев Н.",
+                "minute": 42,
+                "kind": "yellow_to_red"
+              },
+              {
+                "team": "home",
+                "player": "Кадыралиев Н.",
+                "minute": 54,
+                "kind": "yellow"
+              },
+              {
+                "team": "away",
+                "player": "Туралиев Н.",
+                "minute": 54,
+                "kind": "yellow_to_red"
+              },
+              {
+                "team": "home",
+                "player": "Гроза Н.",
+                "minute": 59,
+                "kind": "yellow"
+              },
+              {
+                "team": "home",
+                "player": "Щедров И.",
+                "minute": 69,
+                "kind": "yellow"
+              }
+            ],
+            "subs": [
+              {
+                "team": "away",
+                "minute": 16,
+                "off": "Ибрагимов В.",
+                "on": "Амельченко М."
+              },
+              {
+                "team": "away",
+                "minute": 36,
+                "off": "Самарин И.",
+                "on": "Мацало К."
+              },
+              {
+                "team": "home",
+                "minute": 42,
+                "off": "Русецкий Н.",
+                "on": "Кадыралиев Н."
+              },
+              {
+                "team": "home",
+                "minute": 47,
+                "off": "Соломатин А.",
+                "on": "Галенко К."
+              },
+              {
+                "team": "away",
+                "minute": 56,
+                "off": "Еналиев Д.",
+                "on": "Масляков М."
+              },
+              {
+                "team": "away",
+                "minute": 62,
+                "off": "Вихко М.",
+                "on": "Мокин А."
+              }
+            ]
+          }
         },
         {
           "id": 3843801,
@@ -4028,7 +18273,85 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "scoreAway": 1,
           "played": true,
           "techDefeat": false,
-          "venue": "Московский (Скороход)"
+          "venue": "Московский (Скороход)",
+          "protocol": {
+            "goals": [
+              {
+                "team": "away",
+                "player": "Рубцов Д.",
+                "minute": 57,
+                "assist": null,
+                "kind": "penalty",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Рыбин М.",
+                "minute": 70,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": true
+              }
+            ],
+            "cards": [
+              {
+                "team": "home",
+                "player": "Москвитин Ю.",
+                "minute": 46,
+                "kind": "yellow"
+              },
+              {
+                "team": "home",
+                "player": "Скиба А.",
+                "minute": 62,
+                "kind": "yellow"
+              }
+            ],
+            "subs": [
+              {
+                "team": "away",
+                "minute": 29,
+                "off": "Кузнецов С.",
+                "on": "Поддубный М."
+              },
+              {
+                "team": "home",
+                "minute": 36,
+                "off": "Жаботинский Д.",
+                "on": "Путров Я."
+              },
+              {
+                "team": "home",
+                "minute": 36,
+                "off": "Шайкин Е.",
+                "on": "Хоботов М."
+              },
+              {
+                "team": "away",
+                "minute": 41,
+                "off": "Легош Н.",
+                "on": "Заикин Д."
+              },
+              {
+                "team": "home",
+                "minute": 57,
+                "off": "Комаровский С.",
+                "on": "Тепляков Л."
+              },
+              {
+                "team": "home",
+                "minute": 61,
+                "off": "Васянович М.",
+                "on": "Сорин В."
+              },
+              {
+                "team": "away",
+                "minute": 70,
+                "off": "Поддубный М.",
+                "on": "Осокин А."
+              }
+            ]
+          }
         },
         {
           "id": 3843802,
@@ -4043,7 +18366,85 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "scoreAway": 1,
           "played": true,
           "techDefeat": false,
-          "venue": "ЦФКСиЗ Василеостровского района"
+          "venue": "ЦФКСиЗ Василеостровского района",
+          "protocol": {
+            "goals": [
+              {
+                "team": "away",
+                "player": "Пивник Р.",
+                "minute": 10,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Шаров В.",
+                "minute": 11,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              }
+            ],
+            "cards": [
+              {
+                "team": "away",
+                "player": "Гусев Д.",
+                "minute": 36,
+                "kind": "red"
+              },
+              {
+                "team": "home",
+                "player": "Горячилов М.",
+                "minute": 38,
+                "kind": "yellow"
+              }
+            ],
+            "subs": [
+              {
+                "team": "away",
+                "minute": 41,
+                "off": "Меняйлов А.",
+                "on": "Буйдоков А."
+              },
+              {
+                "team": "away",
+                "minute": 49,
+                "off": "Якуненков М.",
+                "on": "Голиков М."
+              },
+              {
+                "team": "home",
+                "minute": 53,
+                "off": "Панченко И.",
+                "on": "Скапишев М."
+              },
+              {
+                "team": "home",
+                "minute": 58,
+                "off": "Абдуллах Д.",
+                "on": "Задорин М."
+              },
+              {
+                "team": "home",
+                "minute": 58,
+                "off": "Горячилов М.",
+                "on": "Верещак Е."
+              },
+              {
+                "team": "away",
+                "minute": 61,
+                "off": "Морозов Я.",
+                "on": "Раченко Е."
+              },
+              {
+                "team": "away",
+                "minute": 68,
+                "off": "Притычкин М.",
+                "on": "Иванов М."
+              }
+            ]
+          }
         },
         {
           "id": 3843805,
@@ -4059,7 +18460,147 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "played": true,
           "techDefeat": false,
           "venue": "Химик",
-          "videoSlug": "44m6ly3FR0ABJcgDfLzzrf"
+          "videoSlug": "44m6ly3FR0ABJcgDfLzzrf",
+          "protocol": {
+            "goals": [
+              {
+                "team": "away",
+                "player": "Кравченко М.",
+                "minute": 10,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Пухов А.",
+                "minute": 18,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Кравченко М.",
+                "minute": 26,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Буйдоков А.",
+                "minute": 27,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Абдулазизов Г.",
+                "minute": 32,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Абдулазизов Г.",
+                "minute": 47,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Денисов А.",
+                "minute": 50,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Минеев М.",
+                "minute": 69,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Минеев М.",
+                "minute": 70,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              }
+            ],
+            "cards": [
+              {
+                "team": "home",
+                "player": "Кичев М.",
+                "minute": 5,
+                "kind": "yellow_to_red"
+              },
+              {
+                "team": "home",
+                "player": "Кичев М.",
+                "minute": 56,
+                "kind": "yellow_to_red"
+              }
+            ],
+            "subs": [
+              {
+                "team": "home",
+                "minute": 36,
+                "off": "Меняйлов А.",
+                "on": "Шушунов Д."
+              },
+              {
+                "team": "away",
+                "minute": 36,
+                "off": "Мельников Р.",
+                "on": "Катрушенко А."
+              },
+              {
+                "team": "away",
+                "minute": 45,
+                "off": "Пухов А.",
+                "on": "Денисов А."
+              },
+              {
+                "team": "home",
+                "minute": 52,
+                "off": "Тополя З.",
+                "on": "Зверьков Д."
+              },
+              {
+                "team": "away",
+                "minute": 55,
+                "off": "Кравченко М.",
+                "on": "Костищин С."
+              },
+              {
+                "team": "home",
+                "minute": 65,
+                "off": "Буйдоков А.",
+                "on": "Иванов М."
+              },
+              {
+                "team": "home",
+                "minute": 65,
+                "off": "Морозов Я.",
+                "on": "Раченко Е."
+              },
+              {
+                "team": "home",
+                "minute": 65,
+                "off": "Якуненков М.",
+                "on": "Солопан Я."
+              }
+            ]
+          }
         },
         {
           "id": 3843807,
@@ -4075,7 +18616,101 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "played": true,
           "techDefeat": false,
           "venue": "Ижорец. Поле № 2",
-          "videoSlug": "ZhqidFKYkbnFuOlGqXlXlE"
+          "videoSlug": "ZhqidFKYkbnFuOlGqXlXlE",
+          "protocol": {
+            "goals": [
+              {
+                "team": "away",
+                "player": "Комаровский С.",
+                "minute": 13,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Скиба А.",
+                "minute": 23,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Толоковой А.",
+                "minute": 35,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Рыбин М.",
+                "minute": 64,
+                "assist": null,
+                "kind": "penalty",
+                "addedTime": false
+              }
+            ],
+            "cards": [
+              {
+                "team": "away",
+                "player": "Москвитин Ю.",
+                "minute": 18,
+                "kind": "yellow"
+              }
+            ],
+            "subs": [
+              {
+                "team": "home",
+                "minute": 25,
+                "off": "Александров Л.",
+                "on": "Самарин И."
+              },
+              {
+                "team": "home",
+                "minute": 36,
+                "off": "Ипполитов М.",
+                "on": "Амельченко М."
+              },
+              {
+                "team": "away",
+                "minute": 36,
+                "off": "Грачёв М.",
+                "on": "Тепляков Л."
+              },
+              {
+                "team": "home",
+                "minute": 45,
+                "off": "Самарин И.",
+                "on": "Масляков М."
+              },
+              {
+                "team": "home",
+                "minute": 51,
+                "off": "Еналиев Д.",
+                "on": "Ибрагимов В."
+              },
+              {
+                "team": "away",
+                "minute": 61,
+                "off": "Басыров И.",
+                "on": "Сорин В."
+              },
+              {
+                "team": "away",
+                "minute": 61,
+                "off": "Скиба А.",
+                "on": "Васянович М."
+              },
+              {
+                "team": "home",
+                "minute": 67,
+                "off": "Гриднев В.",
+                "on": "Катечкин Н."
+              }
+            ]
+          }
         },
         {
           "id": 3843804,
@@ -4090,7 +18725,165 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "scoreAway": 5,
           "played": true,
           "techDefeat": false,
-          "venue": "Балтика"
+          "venue": "Балтика",
+          "protocol": {
+            "goals": [
+              {
+                "team": "away",
+                "player": "Васильев А.",
+                "minute": 6,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Ан Н.",
+                "minute": 21,
+                "assist": null,
+                "kind": "own_goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Красноумов М.",
+                "minute": 25,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Самойлов М.",
+                "minute": 38,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Шибанов Т.",
+                "minute": 43,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Самойлов М.",
+                "minute": 51,
+                "assist": null,
+                "kind": "penalty",
+                "addedTime": false
+              }
+            ],
+            "cards": [
+              {
+                "team": "away",
+                "player": "Дюндар Д.",
+                "minute": 15,
+                "kind": "yellow"
+              },
+              {
+                "team": "home",
+                "player": "Ловков К.",
+                "minute": 40,
+                "kind": "yellow"
+              },
+              {
+                "team": "away",
+                "player": "Красноумов М.",
+                "minute": 55,
+                "kind": "yellow"
+              },
+              {
+                "team": "away",
+                "player": "Данилов М.",
+                "minute": 63,
+                "kind": "yellow"
+              }
+            ],
+            "subs": [
+              {
+                "team": "home",
+                "minute": 36,
+                "off": "Кузьмин Д.",
+                "on": "Евтюков Н."
+              },
+              {
+                "team": "away",
+                "minute": 36,
+                "off": "Дюндар Д.",
+                "on": "Лебедев И."
+              },
+              {
+                "team": "away",
+                "minute": 38,
+                "off": "Травкин М.",
+                "on": "Шаймухаметов Р."
+              },
+              {
+                "team": "away",
+                "minute": 41,
+                "off": "Андреев Т.",
+                "on": "Семехин Д."
+              },
+              {
+                "team": "away",
+                "minute": 42,
+                "off": "Якубенко Ф.",
+                "on": "Карпицкий М."
+              },
+              {
+                "team": "home",
+                "minute": 44,
+                "off": "Ан Н.",
+                "on": "Никифоров Е."
+              },
+              {
+                "team": "home",
+                "minute": 44,
+                "off": "Евстафьев М.",
+                "on": "Верхозин А."
+              },
+              {
+                "team": "home",
+                "minute": 44,
+                "off": "Морозов П.",
+                "on": "Максименко Г."
+              },
+              {
+                "team": "away",
+                "minute": 51,
+                "off": "Васильев А.",
+                "on": "Данилов М."
+              },
+              {
+                "team": "away",
+                "minute": 53,
+                "off": "Игамов А.",
+                "on": "Горюнов Т."
+              },
+              {
+                "team": "away",
+                "minute": 53,
+                "off": "Лоскутов Д.",
+                "on": "Парохин Р."
+              },
+              {
+                "team": "away",
+                "minute": 53,
+                "off": "Самойлов М.",
+                "on": "Алексеев К."
+              },
+              {
+                "team": "away",
+                "minute": 54,
+                "off": "Салтыков И.",
+                "on": "Алсуфьев С."
+              }
+            ]
+          }
         },
         {
           "id": 3843806,
@@ -4105,7 +18898,86 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "scoreAway": 1,
           "played": true,
           "techDefeat": false,
-          "venue": "Московский (Скороход)"
+          "venue": "Московский (Скороход)",
+          "protocol": {
+            "goals": [
+              {
+                "team": "home",
+                "player": "Олейник Д.",
+                "minute": 20,
+                "assist": null,
+                "kind": "own_goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Рубцов Д.",
+                "minute": 25,
+                "assist": null,
+                "kind": "penalty",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Рубцов Д.",
+                "minute": 35,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              }
+            ],
+            "cards": [],
+            "subs": [
+              {
+                "team": "home",
+                "minute": 41,
+                "off": "Заикин Д.",
+                "on": "Легош Н."
+              },
+              {
+                "team": "home",
+                "minute": 41,
+                "off": "Олейник Д.",
+                "on": "Родин В."
+              },
+              {
+                "team": "away",
+                "minute": 41,
+                "off": "Горячилов М.",
+                "on": "Дутко М."
+              },
+              {
+                "team": "away",
+                "minute": 41,
+                "off": "Ковалев А.",
+                "on": "Панченко И."
+              },
+              {
+                "team": "away",
+                "minute": 51,
+                "off": "Ким М.",
+                "on": "Верещак Е."
+              },
+              {
+                "team": "away",
+                "minute": 51,
+                "off": "Кривов Д.",
+                "on": "Задорин М."
+              },
+              {
+                "team": "home",
+                "minute": 54,
+                "off": "Поддубный М.",
+                "on": "Кузнецов С."
+              },
+              {
+                "team": "home",
+                "minute": 69,
+                "off": "Гусев Д.",
+                "on": "Осокин А."
+              }
+            ]
+          }
         },
         {
           "id": 3843808,
@@ -4120,7 +18992,143 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "scoreAway": 3,
           "played": true,
           "techDefeat": false,
-          "venue": "СОШ 363"
+          "venue": "СОШ 363",
+          "protocol": {
+            "goals": [
+              {
+                "team": "away",
+                "player": "Нестеров Я.",
+                "minute": 14,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Покинтелица А.",
+                "minute": 15,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Нестеров Я.",
+                "minute": 29,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Можейко М.",
+                "minute": 30,
+                "assist": null,
+                "kind": "penalty",
+                "addedTime": false
+              }
+            ],
+            "cards": [
+              {
+                "team": "away",
+                "player": "Соломатин А.",
+                "minute": 30,
+                "kind": "yellow"
+              },
+              {
+                "team": "away",
+                "player": "Мазунов В.",
+                "minute": 44,
+                "kind": "yellow"
+              }
+            ],
+            "subs": [
+              {
+                "team": "home",
+                "minute": 36,
+                "off": "Селютин Г.",
+                "on": "Рыжков А."
+              },
+              {
+                "team": "home",
+                "minute": 36,
+                "off": "Эль-Хейба Р.",
+                "on": "Бурба М."
+              },
+              {
+                "team": "away",
+                "minute": 51,
+                "off": "Гроза Н.",
+                "on": "Русецкий Н."
+              },
+              {
+                "team": "away",
+                "minute": 51,
+                "off": "Щедров И.",
+                "on": "Кадыралиев Н."
+              },
+              {
+                "team": "home",
+                "minute": 52,
+                "off": "Рыжков А.",
+                "on": "Моисеев А."
+              },
+              {
+                "team": "home",
+                "minute": 56,
+                "off": "Волков В.",
+                "on": "Исмаилов С."
+              },
+              {
+                "team": "away",
+                "minute": 60,
+                "off": "Мазунов В.",
+                "on": "Галенко К."
+              },
+              {
+                "team": "away",
+                "minute": 61,
+                "off": "Зиявитдинов Т.",
+                "on": "Козлов М."
+              },
+              {
+                "team": "away",
+                "minute": 61,
+                "off": "Троицкий И.",
+                "on": "Богданов Д."
+              },
+              {
+                "team": "home",
+                "minute": 61,
+                "off": "Павлов Р.",
+                "on": "Шалонин М."
+              },
+              {
+                "team": "home",
+                "minute": 61,
+                "off": "Подгайный К.",
+                "on": "Куваев Н."
+              },
+              {
+                "team": "home",
+                "minute": 67,
+                "off": "Антонов М.",
+                "on": "Григорьев Р."
+              },
+              {
+                "team": "away",
+                "minute": 68,
+                "off": "Нестеров Я.",
+                "on": "Зайнитдинов А."
+              },
+              {
+                "team": "away",
+                "minute": 70,
+                "off": "Гусев А.",
+                "on": "Анисимов М."
+              }
+            ]
+          }
         },
         {
           "id": 3843812,
@@ -4136,7 +19144,121 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "played": true,
           "techDefeat": false,
           "venue": "СОШ № 303",
-          "videoSlug": "I2iw4ivgfNCh9lIZRqfsEk"
+          "videoSlug": "I2iw4ivgfNCh9lIZRqfsEk",
+          "protocol": {
+            "goals": [
+              {
+                "team": "home",
+                "player": "Кравченко М.",
+                "minute": 9,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Черняков Д.",
+                "minute": 32,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Абдулазизов Г.",
+                "minute": 38,
+                "assist": null,
+                "kind": "penalty",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Абдулазизов Г.",
+                "minute": 45,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Рубцов Д.",
+                "minute": 66,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              }
+            ],
+            "cards": [
+              {
+                "team": "home",
+                "player": "Абдулазизов Г.",
+                "minute": 51,
+                "kind": "yellow"
+              },
+              {
+                "team": "home",
+                "player": "Мельников Р.",
+                "minute": 65,
+                "kind": "yellow"
+              },
+              {
+                "team": "away",
+                "player": "Осокин А.",
+                "minute": 70,
+                "kind": "yellow"
+              }
+            ],
+            "subs": [
+              {
+                "team": "away",
+                "minute": 31,
+                "off": "Кузнецов С.",
+                "on": "Заикин Д."
+              },
+              {
+                "team": "away",
+                "minute": 36,
+                "off": "Олейник Д.",
+                "on": "Родин В."
+              },
+              {
+                "team": "away",
+                "minute": 36,
+                "off": "Поддубный М.",
+                "on": "Легош Н."
+              },
+              {
+                "team": "home",
+                "minute": 53,
+                "off": "Кравченко М.",
+                "on": "Денисов А."
+              },
+              {
+                "team": "home",
+                "minute": 57,
+                "off": "Абдулазизов Г.",
+                "on": "Катрушенко А."
+              },
+              {
+                "team": "home",
+                "minute": 60,
+                "off": "Антонов Т.",
+                "on": "Герасимяк М."
+              },
+              {
+                "team": "home",
+                "minute": 60,
+                "off": "Пухов А.",
+                "on": "Костищин С."
+              },
+              {
+                "team": "away",
+                "minute": 68,
+                "off": "Гусев Д.",
+                "on": "Осокин А."
+              }
+            ]
+          }
         },
         {
           "id": 3843809,
@@ -4151,7 +19273,121 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "scoreAway": 0,
           "played": true,
           "techDefeat": false,
-          "venue": "СШОР Кировского района"
+          "venue": "СШОР Кировского района",
+          "protocol": {
+            "goals": [
+              {
+                "team": "home",
+                "player": "Красноумов М.",
+                "minute": 35,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Самойлов М.",
+                "minute": 42,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              }
+            ],
+            "cards": [
+              {
+                "team": "home",
+                "player": "Алсуфьев С.",
+                "minute": 46,
+                "kind": "yellow"
+              },
+              {
+                "team": "home",
+                "player": "Красноумов М.",
+                "minute": 54,
+                "kind": "yellow"
+              },
+              {
+                "team": "away",
+                "player": "Щедров И.",
+                "minute": 68,
+                "kind": "yellow"
+              },
+              {
+                "team": "away",
+                "player": "Гроза Н.",
+                "minute": 70,
+                "kind": "yellow"
+              }
+            ],
+            "subs": [
+              {
+                "team": "away",
+                "minute": 36,
+                "off": "Зиявитдинов Т.",
+                "on": "Покинтелица А."
+              },
+              {
+                "team": "away",
+                "minute": 36,
+                "off": "Русецкий Н.",
+                "on": "Гусев А."
+              },
+              {
+                "team": "away",
+                "minute": 36,
+                "off": "Троицкий И.",
+                "on": "Богданов Д."
+              },
+              {
+                "team": "away",
+                "minute": 44,
+                "off": "Кадыралиев Н.",
+                "on": "Гроза Н."
+              },
+              {
+                "team": "home",
+                "minute": 48,
+                "off": "Алсуфьев С.",
+                "on": "Якубенко Ф."
+              },
+              {
+                "team": "home",
+                "minute": 53,
+                "off": "Васильев А.",
+                "on": "Шаймухаметов Р."
+              },
+              {
+                "team": "away",
+                "minute": 56,
+                "off": "Соломатин А.",
+                "on": "Галенко К."
+              },
+              {
+                "team": "home",
+                "minute": 59,
+                "off": "Лебедев И.",
+                "on": "Дюндар Д."
+              },
+              {
+                "team": "away",
+                "minute": 66,
+                "off": "Щедров И.",
+                "on": "Козлов М."
+              },
+              {
+                "team": "home",
+                "minute": 66,
+                "off": "Красноумов М.",
+                "on": "Травкин М."
+              },
+              {
+                "team": "home",
+                "minute": 69,
+                "off": "Чмеленко Д.",
+                "on": "Данилов М."
+              }
+            ]
+          }
         },
         {
           "id": 3843811,
@@ -4167,7 +19403,66 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "played": true,
           "techDefeat": false,
           "venue": "ЦФКСиЗ Василеостровского района",
-          "videoSlug": "xfuvXpxrWAekogXd0oTiWV"
+          "videoSlug": "xfuvXpxrWAekogXd0oTiWV",
+          "protocol": {
+            "goals": [
+              {
+                "team": "away",
+                "player": "Амельченко М.",
+                "minute": 55,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Амельченко М.",
+                "minute": 63,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              }
+            ],
+            "cards": [],
+            "subs": [
+              {
+                "team": "away",
+                "minute": 45,
+                "off": "Еналиев Д.",
+                "on": "Гриднев В."
+              },
+              {
+                "team": "home",
+                "minute": 45,
+                "off": "Панченко И.",
+                "on": "Задорин М."
+              },
+              {
+                "team": "away",
+                "minute": 56,
+                "off": "Вихко М.",
+                "on": "Масляков М."
+              },
+              {
+                "team": "home",
+                "minute": 60,
+                "off": "Ким М.",
+                "on": "Верещак Е."
+              },
+              {
+                "team": "away",
+                "minute": 70,
+                "off": "Александров Л.",
+                "on": "Самарин И."
+              },
+              {
+                "team": "away",
+                "minute": 70,
+                "off": "Туралиев Н.",
+                "on": "Ипполитов М."
+              }
+            ]
+          }
         },
         {
           "id": 3843813,
@@ -4182,7 +19477,50 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "scoreAway": 0,
           "played": true,
           "techDefeat": false,
-          "venue": "Балтика"
+          "venue": "Балтика",
+          "protocol": {
+            "goals": [],
+            "cards": [
+              {
+                "team": "away",
+                "player": "Якуненков М.",
+                "minute": 60,
+                "kind": "yellow"
+              }
+            ],
+            "subs": [
+              {
+                "team": "away",
+                "minute": 15,
+                "off": "Меняйлов А.",
+                "on": "Раченко Е."
+              },
+              {
+                "team": "home",
+                "minute": 19,
+                "off": "Горбатенко Н.",
+                "on": "Шибанов Т."
+              },
+              {
+                "team": "home",
+                "minute": 41,
+                "off": "Евстафьев М.",
+                "on": "Максименко Г."
+              },
+              {
+                "team": "home",
+                "minute": 56,
+                "off": "Морозов П.",
+                "on": "Верхозин А."
+              },
+              {
+                "team": "home",
+                "minute": 61,
+                "off": "Орлов И.",
+                "on": "Иванов А."
+              }
+            ]
+          }
         },
         {
           "id": 3843810,
@@ -4198,7 +19536,133 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "played": true,
           "techDefeat": false,
           "venue": "Московский (Скороход)",
-          "videoSlug": "9fsOUjd25o1ro2qAumcC0z"
+          "videoSlug": "9fsOUjd25o1ro2qAumcC0z",
+          "protocol": {
+            "goals": [
+              {
+                "team": "home",
+                "player": "Басыров И.",
+                "minute": 11,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Рыбин М.",
+                "minute": 15,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Можейко М.",
+                "minute": 19,
+                "assist": null,
+                "kind": "penalty",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Скиба А.",
+                "minute": 39,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Рыбин М.",
+                "minute": 56,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              }
+            ],
+            "cards": [
+              {
+                "team": "home",
+                "player": "Думин А.",
+                "minute": 19,
+                "kind": "yellow"
+              },
+              {
+                "team": "home",
+                "player": "Комаровский С.",
+                "minute": 50,
+                "kind": "yellow"
+              },
+              {
+                "team": "away",
+                "player": "Моисеев А.",
+                "minute": 60,
+                "kind": "yellow"
+              }
+            ],
+            "subs": [
+              {
+                "team": "away",
+                "minute": 36,
+                "off": "Эль-Хейба Р.",
+                "on": "Бурба М."
+              },
+              {
+                "team": "home",
+                "minute": 36,
+                "off": "Грачёв М.",
+                "on": "Сорин В."
+              },
+              {
+                "team": "home",
+                "minute": 36,
+                "off": "Думин А.",
+                "on": "Тепляков Л."
+              },
+              {
+                "team": "away",
+                "minute": 45,
+                "off": "Рыжков А.",
+                "on": "Моисеев А."
+              },
+              {
+                "team": "away",
+                "minute": 50,
+                "off": "Можейко М.",
+                "on": "Исмаилов С."
+              },
+              {
+                "team": "away",
+                "minute": 56,
+                "off": "Антонов М.",
+                "on": "Куваев Н."
+              },
+              {
+                "team": "away",
+                "minute": 56,
+                "off": "Волков В.",
+                "on": "Шалонин М."
+              },
+              {
+                "team": "home",
+                "minute": 58,
+                "off": "Скиба А.",
+                "on": "Васянович М."
+              },
+              {
+                "team": "away",
+                "minute": 62,
+                "off": "Селютин Г.",
+                "on": "Григорьев Р."
+              },
+              {
+                "team": "away",
+                "minute": 62,
+                "off": "Ситников Т.",
+                "on": "Подгайный К."
+              }
+            ]
+          }
         },
         {
           "id": 3843814,
@@ -4213,7 +19677,89 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "scoreAway": 2,
           "played": true,
           "techDefeat": false,
-          "venue": "Балтика"
+          "venue": "Балтика",
+          "protocol": {
+            "goals": [
+              {
+                "team": "home",
+                "player": "Анашкин А.",
+                "minute": 28,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Анашкин А.",
+                "minute": 30,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Самойлов М.",
+                "minute": 65,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Красноумов М.",
+                "minute": 68,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              }
+            ],
+            "cards": [
+              {
+                "team": "home",
+                "player": "Кичев М.",
+                "minute": 20,
+                "kind": "yellow"
+              }
+            ],
+            "subs": [
+              {
+                "team": "away",
+                "minute": 22,
+                "off": "Алсуфьев С.",
+                "on": "Карпицкий М."
+              },
+              {
+                "team": "away",
+                "minute": 36,
+                "off": "Травкин М.",
+                "on": "Шаймухаметов Р."
+              },
+              {
+                "team": "away",
+                "minute": 36,
+                "off": "Якубенко Ф.",
+                "on": "Дюндар Д."
+              },
+              {
+                "team": "home",
+                "minute": 55,
+                "off": "Морозов Я.",
+                "on": "Раченко Е."
+              },
+              {
+                "team": "home",
+                "minute": 55,
+                "off": "Якуненков М.",
+                "on": "Степанов Р."
+              },
+              {
+                "team": "home",
+                "minute": 60,
+                "off": "Буйдоков А.",
+                "on": "Иванов М."
+              }
+            ]
+          }
         },
         {
           "id": 3843815,
@@ -4228,7 +19774,72 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "scoreAway": 1,
           "played": true,
           "techDefeat": false,
-          "venue": "Московский (Скороход)"
+          "venue": "Московский (Скороход)",
+          "protocol": {
+            "goals": [
+              {
+                "team": "home",
+                "player": "Синицын К.",
+                "minute": 27,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Горбатенко Н.",
+                "minute": 33,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              }
+            ],
+            "cards": [],
+            "subs": [
+              {
+                "team": "home",
+                "minute": 36,
+                "off": "Фролов Р.",
+                "on": "Легош Н."
+              },
+              {
+                "team": "away",
+                "minute": 41,
+                "off": "Евстафьев М.",
+                "on": "Мепория И."
+              },
+              {
+                "team": "away",
+                "minute": 46,
+                "off": "Никифоров Е.",
+                "on": "Максименко Г."
+              },
+              {
+                "team": "home",
+                "minute": 46,
+                "off": "Олейник Д.",
+                "on": "Заикин Д."
+              },
+              {
+                "team": "home",
+                "minute": 46,
+                "off": "Поддубный М.",
+                "on": "Родин В."
+              },
+              {
+                "team": "away",
+                "minute": 61,
+                "off": "Кавтарадзе Г.",
+                "on": "Аникеев Д."
+              },
+              {
+                "team": "away",
+                "minute": 70,
+                "off": "Аникеев Д.",
+                "on": "Верхозин А."
+              }
+            ]
+          }
         },
         {
           "id": 3843818,
@@ -4243,7 +19854,103 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "scoreAway": 2,
           "played": true,
           "techDefeat": false,
-          "venue": "ЦФК Красногвардейского района"
+          "venue": "ЦФК Красногвардейского района",
+          "protocol": {
+            "goals": [
+              {
+                "team": "away",
+                "player": "Москвитин Ю.",
+                "minute": 26,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Сорин В.",
+                "minute": 66,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              }
+            ],
+            "cards": [
+              {
+                "team": "away",
+                "player": "Жаботинский Д.",
+                "minute": 21,
+                "kind": "yellow"
+              },
+              {
+                "team": "home",
+                "player": "Щедров И.",
+                "minute": 56,
+                "kind": "yellow"
+              },
+              {
+                "team": "home",
+                "player": "Троицкий И.",
+                "minute": 60,
+                "kind": "yellow"
+              }
+            ],
+            "subs": [
+              {
+                "team": "away",
+                "minute": 36,
+                "off": "Думин А.",
+                "on": "Тепляков Л."
+              },
+              {
+                "team": "home",
+                "minute": 36,
+                "off": "Русецкий Н.",
+                "on": "Кадыралиев Н."
+              },
+              {
+                "team": "home",
+                "minute": 36,
+                "off": "Соломатин А.",
+                "on": "Богданов Д."
+              },
+              {
+                "team": "away",
+                "minute": 54,
+                "off": "Грачёв М.",
+                "on": "Сорин В."
+              },
+              {
+                "team": "home",
+                "minute": 58,
+                "off": "Гусев А.",
+                "on": "Кириллов И."
+              },
+              {
+                "team": "home",
+                "minute": 58,
+                "off": "Щедров И.",
+                "on": "Зиявитдинов Т."
+              },
+              {
+                "team": "home",
+                "minute": 64,
+                "off": "Гроза Н.",
+                "on": "Галенко К."
+              },
+              {
+                "team": "home",
+                "minute": 64,
+                "off": "Карташов А.",
+                "on": "Якимов А."
+              },
+              {
+                "team": "home",
+                "minute": 64,
+                "off": "Троицкий И.",
+                "on": "Козлов М."
+              }
+            ]
+          }
         },
         {
           "id": 3843816,
@@ -4259,7 +19966,93 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "played": true,
           "techDefeat": false,
           "venue": "Спартак",
-          "videoSlug": "rezol7d8QvqRoVeQ0GMYDr"
+          "videoSlug": "rezol7d8QvqRoVeQ0GMYDr",
+          "protocol": {
+            "goals": [
+              {
+                "team": "away",
+                "player": "Пухов А.",
+                "minute": 36,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Григоренко Н.",
+                "minute": 49,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Кравченко М.",
+                "minute": 65,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              }
+            ],
+            "cards": [
+              {
+                "team": "away",
+                "player": "Мельников Р.",
+                "minute": 7,
+                "kind": "yellow"
+              }
+            ],
+            "subs": [
+              {
+                "team": "away",
+                "minute": 30,
+                "off": "Колесник И.",
+                "on": "Денисов А."
+              },
+              {
+                "team": "away",
+                "minute": 36,
+                "off": "Антонов Т.",
+                "on": "Герасимяк М."
+              },
+              {
+                "team": "away",
+                "minute": 41,
+                "off": "Черняков Д.",
+                "on": "Катрушенко А."
+              },
+              {
+                "team": "home",
+                "minute": 44,
+                "off": "Еналиев Д.",
+                "on": "Гриднев В."
+              },
+              {
+                "team": "home",
+                "minute": 44,
+                "off": "Мацало К.",
+                "on": "Самарин И."
+              },
+              {
+                "team": "home",
+                "minute": 56,
+                "off": "Ибрагимов В.",
+                "on": "Вихко М."
+              },
+              {
+                "team": "away",
+                "minute": 60,
+                "off": "Марков М.",
+                "on": "Костищин С."
+              },
+              {
+                "team": "home",
+                "minute": 65,
+                "off": "Александров Л.",
+                "on": "Масляков М."
+              }
+            ]
+          }
         },
         {
           "id": 3843817,
@@ -4274,7 +20067,100 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "scoreAway": 4,
           "played": true,
           "techDefeat": false,
-          "venue": "СОШ 363"
+          "venue": "СОШ 363",
+          "protocol": {
+            "goals": [
+              {
+                "team": "away",
+                "player": "Шаров В.",
+                "minute": 16,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Гаврилов А.",
+                "minute": 29,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Верещак Е.",
+                "minute": 64,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Скапишев М.",
+                "minute": 68,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              }
+            ],
+            "cards": [],
+            "subs": [
+              {
+                "team": "home",
+                "minute": 36,
+                "off": "Бурба М.",
+                "on": "Шалонин М."
+              },
+              {
+                "team": "home",
+                "minute": 36,
+                "off": "Селютин Г.",
+                "on": "Исмаилов С."
+              },
+              {
+                "team": "away",
+                "minute": 42,
+                "off": "Панченко И.",
+                "on": "Верещак Е."
+              },
+              {
+                "team": "away",
+                "minute": 48,
+                "off": "Ким М.",
+                "on": "Задорин М."
+              },
+              {
+                "team": "home",
+                "minute": 59,
+                "off": "Подгайный К.",
+                "on": "Моисеев А."
+              },
+              {
+                "team": "home",
+                "minute": 59,
+                "off": "Исмаилов С.",
+                "on": "Суханов И."
+              },
+              {
+                "team": "away",
+                "minute": 61,
+                "off": "Скачков М.",
+                "on": "Скапишев М."
+              },
+              {
+                "team": "home",
+                "minute": 64,
+                "off": "Рыжков А.",
+                "on": "Григорьев Р."
+              },
+              {
+                "team": "home",
+                "minute": 67,
+                "off": "Эль-Хейба Р.",
+                "on": "Куваев Н."
+              }
+            ]
+          }
         },
         {
           "id": 3843821,
@@ -4290,7 +20176,105 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "played": true,
           "techDefeat": false,
           "venue": "СОШ № 303",
-          "videoSlug": "5g3GNudPDHqxcG6uPquLtP"
+          "videoSlug": "5g3GNudPDHqxcG6uPquLtP",
+          "protocol": {
+            "goals": [
+              {
+                "team": "away",
+                "player": "Федоров А.",
+                "minute": 8,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Моисеев А.",
+                "minute": 12,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Пухов А.",
+                "minute": 33,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Марков М.",
+                "minute": 49,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Катрушенко А.",
+                "minute": 52,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Костищин С.",
+                "minute": 67,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              }
+            ],
+            "cards": [
+              {
+                "team": "away",
+                "player": "Мельников Р.",
+                "minute": 44,
+                "kind": "yellow"
+              }
+            ],
+            "subs": [
+              {
+                "team": "away",
+                "minute": 36,
+                "off": "Черняков Д.",
+                "on": "Минеев М."
+              },
+              {
+                "team": "home",
+                "minute": 46,
+                "off": "Исмаилов С.",
+                "on": "Рыжков А."
+              },
+              {
+                "team": "away",
+                "minute": 46,
+                "off": "Кравченко М.",
+                "on": "Костищин С."
+              },
+              {
+                "team": "home",
+                "minute": 53,
+                "off": "Моисеев А.",
+                "on": "Осиков К."
+              },
+              {
+                "team": "home",
+                "minute": 62,
+                "off": "Бурба М.",
+                "on": "Скородумов М."
+              },
+              {
+                "team": "home",
+                "minute": 66,
+                "off": "Осиков К.",
+                "on": "Григорьев Р."
+              }
+            ]
+          }
         },
         {
           "id": 3843819,
@@ -4306,7 +20290,141 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "played": true,
           "techDefeat": false,
           "venue": "СШОР Кировского района",
-          "videoSlug": "ahE91LLrKb2rm5onZaFKWp"
+          "videoSlug": "ahE91LLrKb2rm5onZaFKWp",
+          "protocol": {
+            "goals": [
+              {
+                "team": "home",
+                "player": "Красноумов М.",
+                "minute": 12,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Комаровский С.",
+                "minute": 19,
+                "assist": null,
+                "kind": "penalty",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Красноумов М.",
+                "minute": 32,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Чмеленко Д.",
+                "minute": 39,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Рыбин М.",
+                "minute": 43,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Чмеленко Д.",
+                "minute": 59,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              }
+            ],
+            "cards": [
+              {
+                "team": "home",
+                "player": "Парохин Р.",
+                "minute": 31,
+                "kind": "yellow"
+              }
+            ],
+            "subs": [
+              {
+                "team": "away",
+                "minute": 36,
+                "off": "Грачёв М.",
+                "on": "Сорин В."
+              },
+              {
+                "team": "home",
+                "minute": 36,
+                "off": "Алсуфьев С.",
+                "on": "Карпицкий М."
+              },
+              {
+                "team": "home",
+                "minute": 36,
+                "off": "Лебедев И.",
+                "on": "Дюндар Д."
+              },
+              {
+                "team": "home",
+                "minute": 39,
+                "off": "Парохин Р.",
+                "on": "Салтыков И."
+              },
+              {
+                "team": "away",
+                "minute": 44,
+                "off": "Путров Я.",
+                "on": "Тепляков Л."
+              },
+              {
+                "team": "away",
+                "minute": 55,
+                "off": "Думин А.",
+                "on": "Шарипов И."
+              },
+              {
+                "team": "home",
+                "minute": 55,
+                "off": "Самойлов М.",
+                "on": "Шаймухаметов Р."
+              },
+              {
+                "team": "home",
+                "minute": 60,
+                "off": "Васильев А.",
+                "on": "Травкин М."
+              },
+              {
+                "team": "home",
+                "minute": 65,
+                "off": "Красноумов М.",
+                "on": "Маслак Б."
+              },
+              {
+                "team": "home",
+                "minute": 69,
+                "off": "Андреев Т.",
+                "on": "Семехин Д."
+              },
+              {
+                "team": "home",
+                "minute": 69,
+                "off": "Чмеленко Д.",
+                "on": "Алексеев К."
+              },
+              {
+                "team": "home",
+                "minute": 70,
+                "off": "Игамов А.",
+                "on": "Данилов М."
+              }
+            ]
+          }
         },
         {
           "id": 3843820,
@@ -4322,7 +20440,90 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "played": true,
           "techDefeat": false,
           "venue": "ЦФК Красногвардейского района",
-          "videoSlug": "a5WH0KBD35OLaBObChPWP3"
+          "videoSlug": "a5WH0KBD35OLaBObChPWP3",
+          "protocol": {
+            "goals": [
+              {
+                "team": "home",
+                "player": "Покинтелица А.",
+                "minute": 22,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Гусев А.",
+                "minute": 49,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              }
+            ],
+            "cards": [],
+            "subs": [
+              {
+                "team": "home",
+                "minute": 36,
+                "off": "Зиявитдинов Т.",
+                "on": "Гусев А."
+              },
+              {
+                "team": "home",
+                "minute": 36,
+                "off": "Кириллов И.",
+                "on": "Русецкий Н."
+              },
+              {
+                "team": "home",
+                "minute": 36,
+                "off": "Троицкий И.",
+                "on": "Рябокучма В."
+              },
+              {
+                "team": "away",
+                "minute": 50,
+                "off": "Панченко И.",
+                "on": "Скапишев М."
+              },
+              {
+                "team": "home",
+                "minute": 52,
+                "off": "Гроза Н.",
+                "on": "Щедров И."
+              },
+              {
+                "team": "away",
+                "minute": 55,
+                "off": "Задорин М.",
+                "on": "Хачеян А."
+              },
+              {
+                "team": "home",
+                "minute": 60,
+                "off": "Галенко К.",
+                "on": "Козлов М."
+              },
+              {
+                "team": "home",
+                "minute": 60,
+                "off": "Кадыралиев Н.",
+                "on": "Соломатин А."
+              },
+              {
+                "team": "home",
+                "minute": 67,
+                "off": "Покинтелица А.",
+                "on": "Якимов А."
+              },
+              {
+                "team": "home",
+                "minute": 68,
+                "off": "Карташов А.",
+                "on": "Анисимов М."
+              }
+            ]
+          }
         },
         {
           "id": 3843823,
@@ -4337,7 +20538,89 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "scoreAway": 0,
           "played": true,
           "techDefeat": false,
-          "venue": "Московский (Скороход)"
+          "venue": "Московский (Скороход)",
+          "protocol": {
+            "goals": [
+              {
+                "team": "home",
+                "player": "Рубцов Д.",
+                "minute": 60,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": true
+              }
+            ],
+            "cards": [
+              {
+                "team": "home",
+                "player": "Корнев И.",
+                "minute": 49,
+                "kind": "yellow"
+              },
+              {
+                "team": "away",
+                "player": "Шашков М.",
+                "minute": 55,
+                "kind": "yellow"
+              },
+              {
+                "team": "home",
+                "player": "Рубцов Д.",
+                "minute": 60,
+                "kind": "yellow"
+              },
+              {
+                "team": "home",
+                "player": "Легош Н.",
+                "minute": 60,
+                "kind": "red"
+              }
+            ],
+            "subs": [
+              {
+                "team": "home",
+                "minute": 32,
+                "off": "Кузнецов С.",
+                "on": "Легош Н."
+              },
+              {
+                "team": "home",
+                "minute": 47,
+                "off": "Поддубный М.",
+                "on": "Заикин Д."
+              },
+              {
+                "team": "home",
+                "minute": 47,
+                "off": "Фролов Р.",
+                "on": "Родин В."
+              },
+              {
+                "team": "home",
+                "minute": 47,
+                "off": "Данилов А.",
+                "on": "Олейник Д."
+              },
+              {
+                "team": "away",
+                "minute": 48,
+                "off": "Морозов Я.",
+                "on": "Раченко Е."
+              },
+              {
+                "team": "away",
+                "minute": 54,
+                "off": "Степанов Р.",
+                "on": "Иванов М."
+              },
+              {
+                "team": "away",
+                "minute": 68,
+                "off": "Шашков М.",
+                "on": "Солопан Я."
+              }
+            ]
+          }
         },
         {
           "id": 3843822,
@@ -4353,7 +20636,113 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "played": true,
           "techDefeat": false,
           "venue": "Спартак",
-          "videoSlug": "0kHSYQvogwV2Kcd8Kh8xyf"
+          "videoSlug": "0kHSYQvogwV2Kcd8Kh8xyf",
+          "protocol": {
+            "goals": [
+              {
+                "team": "home",
+                "player": "Еналиев Д.",
+                "minute": 30,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Амельченко М.",
+                "minute": 48,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Гриднев В.",
+                "minute": 57,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Амельченко М.",
+                "minute": 69,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              }
+            ],
+            "cards": [
+              {
+                "team": "away",
+                "player": "Кавтарадзе Г.",
+                "minute": 42,
+                "kind": "yellow"
+              }
+            ],
+            "subs": [
+              {
+                "team": "home",
+                "minute": 36,
+                "off": "Вихко М.",
+                "on": "Гриднев В."
+              },
+              {
+                "team": "away",
+                "minute": 36,
+                "off": "Верхозин А.",
+                "on": "Аникеев Д."
+              },
+              {
+                "team": "away",
+                "minute": 36,
+                "off": "Евтюков Н.",
+                "on": "Кузьмин Д."
+              },
+              {
+                "team": "away",
+                "minute": 45,
+                "off": "Кавтарадзе Г.",
+                "on": "Морозов П."
+              },
+              {
+                "team": "away",
+                "minute": 48,
+                "off": "Горбатенко Н.",
+                "on": "Максименко Г."
+              },
+              {
+                "team": "away",
+                "minute": 48,
+                "off": "Филатов Е.",
+                "on": "Мепория И."
+              },
+              {
+                "team": "home",
+                "minute": 61,
+                "off": "Еналиев Д.",
+                "on": "Масляков М."
+              },
+              {
+                "team": "home",
+                "minute": 67,
+                "off": "Туралиев Н.",
+                "on": "Ипполитов М."
+              },
+              {
+                "team": "home",
+                "minute": 70,
+                "off": "Александров Л.",
+                "on": "Беляев К."
+              },
+              {
+                "team": "home",
+                "minute": 70,
+                "off": "Самарин И.",
+                "on": "Голынский Д."
+              }
+            ]
+          }
         },
         {
           "id": 3843824,
@@ -4368,7 +20757,59 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "scoreAway": 1,
           "played": true,
           "techDefeat": false,
-          "venue": "Московский (Скороход)"
+          "venue": "Московский (Скороход)",
+          "protocol": {
+            "goals": [
+              {
+                "team": "away",
+                "player": "Травкин М.",
+                "minute": 0,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              }
+            ],
+            "cards": [
+              {
+                "team": "away",
+                "player": "Самойлов М.",
+                "minute": 55,
+                "kind": "yellow"
+              }
+            ],
+            "subs": [
+              {
+                "team": "home",
+                "minute": 36,
+                "off": "Олейник Д.",
+                "on": "Родин В."
+              },
+              {
+                "team": "home",
+                "minute": 36,
+                "off": "Швецов Д.",
+                "on": "Заикин Д."
+              },
+              {
+                "team": "away",
+                "minute": 36,
+                "off": "Шаймухаметов Р.",
+                "on": "Травкин М."
+              },
+              {
+                "team": "home",
+                "minute": 56,
+                "off": "Поддубный М.",
+                "on": "Осокин А."
+              },
+              {
+                "team": "away",
+                "minute": 70,
+                "off": "Самойлов М.",
+                "on": "Алексеев К."
+              }
+            ]
+          }
         },
         {
           "id": 3843826,
@@ -4383,7 +20824,123 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "scoreAway": 0,
           "played": true,
           "techDefeat": false,
-          "venue": "Балтика"
+          "venue": "Балтика",
+          "protocol": {
+            "goals": [
+              {
+                "team": "home",
+                "player": "Ловков К.",
+                "minute": 16,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Филатов Е.",
+                "minute": 28,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Ловков К.",
+                "minute": 51,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              }
+            ],
+            "cards": [
+              {
+                "team": "home",
+                "player": "Шибанов Т.",
+                "minute": 35,
+                "kind": "yellow"
+              },
+              {
+                "team": "away",
+                "player": "Можейко М.",
+                "minute": 35,
+                "kind": "yellow"
+              },
+              {
+                "team": "away",
+                "player": "Рыжков А.",
+                "minute": 53,
+                "kind": "yellow"
+              },
+              {
+                "team": "away",
+                "player": "Антонов М.",
+                "minute": 55,
+                "kind": "yellow"
+              }
+            ],
+            "subs": [
+              {
+                "team": "home",
+                "minute": 17,
+                "off": "Орлов И.",
+                "on": "Аникеев Д."
+              },
+              {
+                "team": "home",
+                "minute": 41,
+                "off": "Верхозин А.",
+                "on": "Мепория И."
+              },
+              {
+                "team": "away",
+                "minute": 43,
+                "off": "Исмаилов С.",
+                "on": "Рыжков А."
+              },
+              {
+                "team": "away",
+                "minute": 43,
+                "off": "Селютин Г.",
+                "on": "Моисеев А."
+              },
+              {
+                "team": "home",
+                "minute": 45,
+                "off": "Шибанов Т.",
+                "on": "Никифоров Е."
+              },
+              {
+                "team": "away",
+                "minute": 50,
+                "off": "Бурба М.",
+                "on": "Шалонин М."
+              },
+              {
+                "team": "home",
+                "minute": 55,
+                "off": "Морозов П.",
+                "on": "Букин И."
+              },
+              {
+                "team": "away",
+                "minute": 57,
+                "off": "Антонов М.",
+                "on": "Григорьев Р."
+              },
+              {
+                "team": "home",
+                "minute": 60,
+                "off": "Горбатенко Н.",
+                "on": "Большаков А."
+              },
+              {
+                "team": "away",
+                "minute": 60,
+                "off": "Павлов Р.",
+                "on": "Скородумов М."
+              }
+            ]
+          }
         },
         {
           "id": 3843828,
@@ -4398,7 +20955,65 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "scoreAway": 4,
           "played": true,
           "techDefeat": false,
-          "venue": "ЦФКСиЗ Василеостровского района"
+          "venue": "ЦФКСиЗ Василеостровского района",
+          "protocol": {
+            "goals": [
+              {
+                "team": "away",
+                "player": "Скиба А.",
+                "minute": 30,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Рыбин М.",
+                "minute": 45,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Рыбин М.",
+                "minute": 65,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Рыбин М.",
+                "minute": 70,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": true
+              }
+            ],
+            "cards": [
+              {
+                "team": "away",
+                "player": "Москвитин Ю.",
+                "minute": 32,
+                "kind": "yellow"
+              }
+            ],
+            "subs": [
+              {
+                "team": "home",
+                "minute": 46,
+                "off": "Скапишев М.",
+                "on": "Хачеян А."
+              },
+              {
+                "team": "away",
+                "minute": 58,
+                "off": "Комаровский С.",
+                "on": "Шарипов И."
+              }
+            ]
+          }
         },
         {
           "id": 3843827,
@@ -4408,12 +21023,116 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "away": "Пороховчанин-Тосно",
           "homeLogo": "https://img.nagradion.ru/images/bf300x500/shields/U3Rb6ng7.png",
           "awayLogo": "https://img.nagradion.ru/images/bf300x500/shields/Tjl7bLcz.png",
-          "score": null,
-          "scoreHome": null,
-          "scoreAway": null,
-          "played": false,
+          "score": "3:1",
+          "scoreHome": 3,
+          "scoreAway": 1,
+          "played": true,
           "techDefeat": false,
-          "venue": "СОШ 363"
+          "venue": "СОШ 363",
+          "protocol": {
+            "goals": [
+              {
+                "team": "home",
+                "player": "Пухов А.",
+                "minute": 4,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Минеев М.",
+                "minute": 49,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Катрушенко А.",
+                "minute": 70,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              }
+            ],
+            "cards": [
+              {
+                "team": "home",
+                "player": "Черняков Д.",
+                "minute": 11,
+                "kind": "yellow"
+              },
+              {
+                "team": "away",
+                "player": "Щедров И.",
+                "minute": 34,
+                "kind": "red"
+              }
+            ],
+            "subs": [
+              {
+                "team": "away",
+                "minute": 36,
+                "off": "Кадыралиев Н.",
+                "on": "Русецкий Н."
+              },
+              {
+                "team": "home",
+                "minute": 40,
+                "off": "Черняков Д.",
+                "on": "Колесник И."
+              },
+              {
+                "team": "home",
+                "minute": 49,
+                "off": "Пухов А.",
+                "on": "Катрушенко А."
+              },
+              {
+                "team": "away",
+                "minute": 50,
+                "off": "Кириллов И.",
+                "on": "Якимов А."
+              },
+              {
+                "team": "away",
+                "minute": 50,
+                "off": "Соломатин А.",
+                "on": "Троицкий И."
+              },
+              {
+                "team": "away",
+                "minute": 53,
+                "off": "Покинтелица А.",
+                "on": "Анисимов М."
+              },
+              {
+                "team": "home",
+                "minute": 55,
+                "off": "Абдулазизов Г.",
+                "on": "Костищин С."
+              },
+              {
+                "team": "away",
+                "minute": 62,
+                "off": "Гусев А.",
+                "on": "Галенко К."
+              },
+              {
+                "team": "away",
+                "minute": 68,
+                "off": "Рябокучма В.",
+                "on": "Богданов Д."
+              },
+              {
+                "team": "away",
+                "minute": 70,
+                "off": "Першин И.",
+                "on": "Козлов М."
+              }
+            ]
+          }
         },
         {
           "id": 3843825,
@@ -4437,14 +21156,14 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "teamId": 420704,
           "team": "СШОР Лидер",
           "logo": "https://img.nagradion.ru/images/bf300x500/shields/U3Rb6ng7.png",
-          "games": 10,
-          "wins": 9,
+          "games": 11,
+          "wins": 10,
           "draws": 1,
           "losses": 0,
-          "scored": 34,
-          "missed": 8,
-          "diff": 26,
-          "points": 28
+          "scored": 37,
+          "missed": 9,
+          "diff": 28,
+          "points": 31
         },
         {
           "position": 2,
@@ -4493,13 +21212,13 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "teamId": 420701,
           "team": "Пороховчанин-Тосно",
           "logo": "https://img.nagradion.ru/images/bf300x500/shields/Tjl7bLcz.png",
-          "games": 10,
+          "games": 11,
           "wins": 5,
           "draws": 3,
-          "losses": 2,
-          "scored": 23,
-          "missed": 14,
-          "diff": 9,
+          "losses": 3,
+          "scored": 24,
+          "missed": 17,
+          "diff": 7,
           "points": 18
         },
         {
@@ -5118,7 +21837,55 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "scoreAway": 0,
           "played": true,
           "techDefeat": false,
-          "venue": "Балтика"
+          "venue": "Балтика",
+          "protocol": {
+            "goals": [],
+            "cards": [],
+            "subs": [
+              {
+                "team": "home",
+                "minute": 31,
+                "off": "Фокин М.",
+                "on": "Лукинский В."
+              },
+              {
+                "team": "away",
+                "minute": 44,
+                "off": "Лагойда М.",
+                "on": "Белавенцев Н."
+              },
+              {
+                "team": "home",
+                "minute": 44,
+                "off": "Альтшулер М.",
+                "on": "Гусев А."
+              },
+              {
+                "team": "away",
+                "minute": 49,
+                "off": "Зиёев И.",
+                "on": "Зюрин Т."
+              },
+              {
+                "team": "home",
+                "minute": 51,
+                "off": "Жарких Д.",
+                "on": "Игнат А."
+              },
+              {
+                "team": "home",
+                "minute": 51,
+                "off": "Логвин М.",
+                "on": "Ларчиков Д."
+              },
+              {
+                "team": "home",
+                "minute": 55,
+                "off": "Левашов М.",
+                "on": "Музуралиев Д."
+              }
+            ]
+          }
         },
         {
           "id": 3843506,
@@ -5134,7 +21901,182 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "played": true,
           "techDefeat": false,
           "venue": "СОШ № 303",
-          "videoSlug": "GHlYV0gWtQC6ZFq7if8aL9"
+          "videoSlug": "GHlYV0gWtQC6ZFq7if8aL9",
+          "protocol": {
+            "goals": [
+              {
+                "team": "home",
+                "player": "Рыбаков С.",
+                "minute": 5,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Рыбаков С.",
+                "minute": 9,
+                "assist": null,
+                "kind": "penalty",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Ордин М.",
+                "minute": 22,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Бирулин Р.",
+                "minute": 25,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Назима А.",
+                "minute": 27,
+                "assist": null,
+                "kind": "penalty",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Чернов Г.",
+                "minute": 28,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Мавлянов А.",
+                "minute": 31,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Яковлев П.",
+                "minute": 42,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Яковлев П.",
+                "minute": 58,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              }
+            ],
+            "cards": [],
+            "subs": [
+              {
+                "team": "away",
+                "minute": 31,
+                "off": "Даянов Р.",
+                "on": "Михайлов Е."
+              },
+              {
+                "team": "away",
+                "minute": 31,
+                "off": "Подковенко Т.",
+                "on": "Романов Ф."
+              },
+              {
+                "team": "home",
+                "minute": 31,
+                "off": "Бирулин Р.",
+                "on": "Яковлев П."
+              },
+              {
+                "team": "home",
+                "minute": 31,
+                "off": "Брайцев Д.",
+                "on": "Ермаков М."
+              },
+              {
+                "team": "home",
+                "minute": 31,
+                "off": "Козлов А.",
+                "on": "Мавлянов А."
+              },
+              {
+                "team": "home",
+                "minute": 31,
+                "off": "Костелов И.",
+                "on": "Дмитриев В."
+              },
+              {
+                "team": "home",
+                "minute": 31,
+                "off": "Лебедев А.",
+                "on": "Власов М."
+              },
+              {
+                "team": "home",
+                "minute": 31,
+                "off": "Назима А.",
+                "on": "Терентьев А."
+              },
+              {
+                "team": "home",
+                "minute": 31,
+                "off": "Ордин М.",
+                "on": "Максимов И."
+              },
+              {
+                "team": "home",
+                "minute": 31,
+                "off": "Рыбаков С.",
+                "on": "Михайлов М."
+              },
+              {
+                "team": "home",
+                "minute": 31,
+                "off": "Шкуратов Д.",
+                "on": "Чайка А."
+              },
+              {
+                "team": "away",
+                "minute": 46,
+                "off": "Лапин П.",
+                "on": "Иванов И."
+              },
+              {
+                "team": "away",
+                "minute": 46,
+                "off": "Лихобаба И.",
+                "on": "Филякин И."
+              },
+              {
+                "team": "away",
+                "minute": 51,
+                "off": "Вишневский М.",
+                "on": "Кузьминых Г."
+              },
+              {
+                "team": "away",
+                "minute": 59,
+                "off": "Гусейнов А.",
+                "on": "Беляков Г."
+              },
+              {
+                "team": "away",
+                "minute": 59,
+                "off": "Манукин Р.",
+                "on": "Лукаткин М."
+              }
+            ]
+          }
         },
         {
           "id": 3843504,
@@ -5149,7 +22091,121 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "scoreAway": 0,
           "played": true,
           "techDefeat": false,
-          "venue": "Московский (Скороход)"
+          "venue": "Московский (Скороход)",
+          "protocol": {
+            "goals": [
+              {
+                "team": "home",
+                "player": "Колпачников М.",
+                "minute": 4,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Саркисян Г.",
+                "minute": 47,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              }
+            ],
+            "cards": [
+              {
+                "team": "away",
+                "player": "Мукаиршоев М.",
+                "minute": 27,
+                "kind": "yellow"
+              }
+            ],
+            "subs": [
+              {
+                "team": "home",
+                "minute": 30,
+                "off": "Колпачников М.",
+                "on": "Федченко Н."
+              },
+              {
+                "team": "away",
+                "minute": 31,
+                "off": "Григоренко Д.",
+                "on": "Алексеев Г."
+              },
+              {
+                "team": "home",
+                "minute": 46,
+                "off": "Загряжский А.",
+                "on": "Петраков А."
+              },
+              {
+                "team": "away",
+                "minute": 48,
+                "off": "Михальцевич Т.",
+                "on": "Фабричнов А."
+              },
+              {
+                "team": "away",
+                "minute": 50,
+                "off": "Денисенко Д.",
+                "on": "Саламатин Д."
+              },
+              {
+                "team": "away",
+                "minute": 50,
+                "off": "Степанюк М.",
+                "on": "Равшанов С."
+              },
+              {
+                "team": "home",
+                "minute": 54,
+                "off": "Кулебякин М.",
+                "on": "Габов Е."
+              },
+              {
+                "team": "away",
+                "minute": 55,
+                "off": "Курбанов М.",
+                "on": "Пантелеев Л."
+              },
+              {
+                "team": "away",
+                "minute": 55,
+                "off": "Мукаиршоев М.",
+                "on": "Тоноян Т."
+              },
+              {
+                "team": "away",
+                "minute": 58,
+                "off": "Бардашов В.",
+                "on": "Булат М."
+              },
+              {
+                "team": "away",
+                "minute": 58,
+                "off": "Семенов И.",
+                "on": "Комчаков Г."
+              },
+              {
+                "team": "away",
+                "minute": 58,
+                "off": "Семенченко И.",
+                "on": "Егоров Д."
+              },
+              {
+                "team": "home",
+                "minute": 58,
+                "off": "Меркель И.",
+                "on": "Кемеров Т."
+              },
+              {
+                "team": "home",
+                "minute": 59,
+                "off": "Веселов В.",
+                "on": "Федотов Н."
+              }
+            ]
+          }
         },
         {
           "id": 3843505,
@@ -5165,7 +22221,112 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "played": true,
           "techDefeat": false,
           "venue": "ЦФКСиЗ Василеостровского района",
-          "videoSlug": "bc63QX9wI65l25yKkD4hrr"
+          "videoSlug": "bc63QX9wI65l25yKkD4hrr",
+          "protocol": {
+            "goals": [
+              {
+                "team": "home",
+                "player": "Арнаут С.",
+                "minute": 21,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Арнаут С.",
+                "minute": 32,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Арнаут С.",
+                "minute": 34,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Григорьев А.",
+                "minute": 54,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              }
+            ],
+            "cards": [],
+            "subs": [
+              {
+                "team": "away",
+                "minute": 31,
+                "off": "Громов М.",
+                "on": "Воробьёв И."
+              },
+              {
+                "team": "away",
+                "minute": 35,
+                "off": "Медер Г.",
+                "on": "Фахертдинов Д."
+              },
+              {
+                "team": "away",
+                "minute": 35,
+                "off": "Сычёв Е.",
+                "on": "Григорьев А."
+              },
+              {
+                "team": "away",
+                "minute": 37,
+                "off": "Волков Б.",
+                "on": "Потульный А."
+              },
+              {
+                "team": "away",
+                "minute": 39,
+                "off": "Куцырев Е.",
+                "on": "Сидоров Д."
+              },
+              {
+                "team": "home",
+                "minute": 39,
+                "off": "Грициненко Н.",
+                "on": "Ашлапов Д."
+              },
+              {
+                "team": "home",
+                "minute": 39,
+                "off": "Ланда Г.",
+                "on": "Рылин Ф."
+              },
+              {
+                "team": "home",
+                "minute": 41,
+                "off": "Бабенко Р.",
+                "on": "Васильев М."
+              },
+              {
+                "team": "away",
+                "minute": 46,
+                "off": "Большаков Д.",
+                "on": "Григорьев И."
+              },
+              {
+                "team": "away",
+                "minute": 48,
+                "off": "Любимов Д.",
+                "on": "Печников А."
+              },
+              {
+                "team": "away",
+                "minute": 48,
+                "off": "Низамов Т.",
+                "on": "Костичкин М."
+              }
+            ]
+          }
         },
         {
           "id": 3843507,
@@ -5180,7 +22341,80 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "scoreAway": 0,
           "played": true,
           "techDefeat": false,
-          "venue": "Балтика"
+          "venue": "Балтика",
+          "protocol": {
+            "goals": [
+              {
+                "team": "home",
+                "player": "Солонов Т.",
+                "minute": 4,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Соцкий Ф.",
+                "minute": 29,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Куликовский Д.",
+                "minute": 44,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              }
+            ],
+            "cards": [],
+            "subs": [
+              {
+                "team": "away",
+                "minute": 31,
+                "off": "Аверьянов Р.",
+                "on": "Маслей Д."
+              },
+              {
+                "team": "away",
+                "minute": 34,
+                "off": "Шаститко Я.",
+                "on": "Лебедев С."
+              },
+              {
+                "team": "away",
+                "minute": 47,
+                "off": "Игнатьев М.",
+                "on": "Аверьянов Д."
+              },
+              {
+                "team": "home",
+                "minute": 49,
+                "off": "Чепиков В.",
+                "on": "Нургалиев С."
+              },
+              {
+                "team": "home",
+                "minute": 51,
+                "off": "Солонов Т.",
+                "on": "Кухарчук А."
+              },
+              {
+                "team": "home",
+                "minute": 51,
+                "off": "Соцкий Ф.",
+                "on": "Поздняков Е."
+              },
+              {
+                "team": "home",
+                "minute": 56,
+                "off": "Котлуков М.",
+                "on": "Кирюхин Ф."
+              }
+            ]
+          }
         },
         {
           "id": 3843510,
@@ -5196,7 +22430,101 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "played": true,
           "techDefeat": false,
           "venue": "Ижорец. Поле № 1",
-          "videoSlug": "fYCxXqZB3goamqYzIlZCJG"
+          "videoSlug": "fYCxXqZB3goamqYzIlZCJG",
+          "protocol": {
+            "goals": [
+              {
+                "team": "home",
+                "player": "Василенко А.",
+                "minute": 3,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Колесников А.",
+                "minute": 5,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Андреев А.",
+                "minute": 28,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Моисеев Я.",
+                "minute": 45,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              }
+            ],
+            "cards": [
+              {
+                "team": "away",
+                "player": "Марейчев М.",
+                "minute": 59,
+                "kind": "yellow"
+              }
+            ],
+            "subs": [
+              {
+                "team": "home",
+                "minute": 31,
+                "off": "Аверьянов Д.",
+                "on": "Ангелов И."
+              },
+              {
+                "team": "home",
+                "minute": 31,
+                "off": "Игнатьев М.",
+                "on": "Аверьянов Р."
+              },
+              {
+                "team": "home",
+                "minute": 31,
+                "off": "Лосев И.",
+                "on": "Гарист А."
+              },
+              {
+                "team": "away",
+                "minute": 38,
+                "off": "Гусев А.",
+                "on": "Лукинский В."
+              },
+              {
+                "team": "away",
+                "minute": 39,
+                "off": "Альтшулер М.",
+                "on": "Фокин М."
+              },
+              {
+                "team": "away",
+                "minute": 39,
+                "off": "Жарких Д.",
+                "on": "Музуралиев Д."
+              },
+              {
+                "team": "away",
+                "minute": 48,
+                "off": "Логвин М.",
+                "on": "Ларчиков Д."
+              },
+              {
+                "team": "away",
+                "minute": 52,
+                "off": "Колесников А.",
+                "on": "Игнат А."
+              }
+            ]
+          }
         },
         {
           "id": 3843511,
@@ -5211,7 +22539,12 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "scoreAway": 3,
           "played": true,
           "techDefeat": true,
-          "venue": "СОШ 363"
+          "venue": "СОШ 363",
+          "protocol": {
+            "goals": [],
+            "cards": [],
+            "subs": []
+          }
         },
         {
           "id": 3843509,
@@ -5227,7 +22560,127 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "played": true,
           "techDefeat": false,
           "venue": "СШОР Кировского района",
-          "videoSlug": "yAB9i8r122ksXNY4QO3wdg"
+          "videoSlug": "yAB9i8r122ksXNY4QO3wdg",
+          "protocol": {
+            "goals": [
+              {
+                "team": "home",
+                "player": "Курбанов М.",
+                "minute": 30,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Курбанов М.",
+                "minute": 35,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              }
+            ],
+            "cards": [
+              {
+                "team": "home",
+                "player": "Низамиев Т.",
+                "minute": 0,
+                "kind": "yellow_to_red"
+              },
+              {
+                "team": "away",
+                "player": "Рейнталь И.",
+                "minute": 40,
+                "kind": "yellow"
+              },
+              {
+                "team": "home",
+                "player": "Мукаиршоев М.",
+                "minute": 57,
+                "kind": "yellow"
+              },
+              {
+                "team": "home",
+                "player": "Низамиев Т.",
+                "minute": 60,
+                "kind": "yellow_to_red"
+              }
+            ],
+            "subs": [
+              {
+                "team": "home",
+                "minute": 31,
+                "off": "Фабричнов А.",
+                "on": "Михальцевич Т."
+              },
+              {
+                "team": "away",
+                "minute": 44,
+                "off": "Лагойда М.",
+                "on": "Ботов В."
+              },
+              {
+                "team": "away",
+                "minute": 48,
+                "off": "Орлов А.",
+                "on": "Белавенцев Н."
+              },
+              {
+                "team": "home",
+                "minute": 48,
+                "off": "Бардашов В.",
+                "on": "Тоноян Т."
+              },
+              {
+                "team": "home",
+                "minute": 48,
+                "off": "Курбанов М.",
+                "on": "Комчаков Г."
+              },
+              {
+                "team": "home",
+                "minute": 48,
+                "off": "Алексеев Г.",
+                "on": "Григоренко Д."
+              },
+              {
+                "team": "away",
+                "minute": 53,
+                "off": "Мерзляков М.",
+                "on": "Тищенко К."
+              },
+              {
+                "team": "away",
+                "minute": 53,
+                "off": "Рейнталь И.",
+                "on": "Язьков М."
+              },
+              {
+                "team": "home",
+                "minute": 55,
+                "off": "Бигин Д.",
+                "on": "Равшанов С."
+              },
+              {
+                "team": "home",
+                "minute": 55,
+                "off": "Денисенко Д.",
+                "on": "Егоров Д."
+              },
+              {
+                "team": "home",
+                "minute": 55,
+                "off": "Семенов И.",
+                "on": "Саламатин Д."
+              },
+              {
+                "team": "home",
+                "minute": 55,
+                "off": "Семенченко И.",
+                "on": "Булат М."
+              }
+            ]
+          }
         },
         {
           "id": 3843512,
@@ -5243,7 +22696,165 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "played": true,
           "techDefeat": false,
           "venue": "Химик",
-          "videoSlug": "T15uxc1r6hT4zz68FIn96V"
+          "videoSlug": "T15uxc1r6hT4zz68FIn96V",
+          "protocol": {
+            "goals": [
+              {
+                "team": "home",
+                "player": "Богомолов А.",
+                "minute": 4,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Медер Г.",
+                "minute": 10,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Чернов Г.",
+                "minute": 19,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Большаков Д.",
+                "minute": 32,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Лебедев А.",
+                "minute": 48,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Рыбаков С.",
+                "minute": 56,
+                "assist": null,
+                "kind": "penalty",
+                "addedTime": false
+              }
+            ],
+            "cards": [
+              {
+                "team": "home",
+                "player": "Потульный А.",
+                "minute": 57,
+                "kind": "yellow"
+              }
+            ],
+            "subs": [
+              {
+                "team": "home",
+                "minute": 31,
+                "off": "Богомолов А.",
+                "on": "Воробьёв И."
+              },
+              {
+                "team": "home",
+                "minute": 31,
+                "off": "Егоров Д.",
+                "on": "Гатало С."
+              },
+              {
+                "team": "home",
+                "minute": 31,
+                "off": "Кухновец Д.",
+                "on": "Потульный А."
+              },
+              {
+                "team": "away",
+                "minute": 31,
+                "off": "Костелов И.",
+                "on": "Дмитриев В."
+              },
+              {
+                "team": "away",
+                "minute": 31,
+                "off": "Максимов И.",
+                "on": "Саидов А."
+              },
+              {
+                "team": "away",
+                "minute": 33,
+                "off": "Шкуратов Д.",
+                "on": "Анисимов Д."
+              },
+              {
+                "team": "away",
+                "minute": 39,
+                "off": "Брайцев Д.",
+                "on": "Лебедев А."
+              },
+              {
+                "team": "away",
+                "minute": 39,
+                "off": "Назима А.",
+                "on": "Яковлев П."
+              },
+              {
+                "team": "home",
+                "minute": 44,
+                "off": "Медер Г.",
+                "on": "Фахертдинов Д."
+              },
+              {
+                "team": "away",
+                "minute": 45,
+                "off": "Бирулин Р.",
+                "on": "Чайка А."
+              },
+              {
+                "team": "away",
+                "minute": 45,
+                "off": "Козлов А.",
+                "on": "Михайлов М."
+              },
+              {
+                "team": "away",
+                "minute": 45,
+                "off": "Ордин М.",
+                "on": "Терентьев А."
+              },
+              {
+                "team": "home",
+                "minute": 48,
+                "off": "Сычёв Е.",
+                "on": "Сидоров Д."
+              },
+              {
+                "team": "home",
+                "minute": 52,
+                "off": "Воробьёв И.",
+                "on": "Громов М."
+              },
+              {
+                "team": "home",
+                "minute": 54,
+                "off": "Фахертдинов Д.",
+                "on": "Григорьев А."
+              },
+              {
+                "team": "home",
+                "minute": 58,
+                "off": "Потульный А.",
+                "on": "Григорьев И."
+              }
+            ]
+          }
         },
         {
           "id": 3843513,
@@ -5259,7 +22870,102 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "played": true,
           "techDefeat": false,
           "venue": "Московский (Скороход)",
-          "videoSlug": "IhlKKnh9cQHO2FpyyfUA1K"
+          "videoSlug": "IhlKKnh9cQHO2FpyyfUA1K",
+          "protocol": {
+            "goals": [
+              {
+                "team": "home",
+                "player": "Викулов А.",
+                "minute": 3,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Румянцев М.",
+                "minute": 6,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Меркель И.",
+                "minute": 21,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Моисеенко В.",
+                "minute": 23,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Викулов А.",
+                "minute": 44,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              }
+            ],
+            "cards": [],
+            "subs": [
+              {
+                "team": "home",
+                "minute": 43,
+                "off": "Носков А.",
+                "on": "Габов Е."
+              },
+              {
+                "team": "home",
+                "minute": 44,
+                "off": "Петраков А.",
+                "on": "Коган Л."
+              },
+              {
+                "team": "away",
+                "minute": 48,
+                "off": "Грициненко Н.",
+                "on": "Салтыков М."
+              },
+              {
+                "team": "away",
+                "minute": 48,
+                "off": "Ланда Г.",
+                "on": "Рылин Ф."
+              },
+              {
+                "team": "away",
+                "minute": 51,
+                "off": "Бабенко Р.",
+                "on": "Васильев М."
+              },
+              {
+                "team": "away",
+                "minute": 52,
+                "off": "Силецкий М.",
+                "on": "Ашлапов Д."
+              },
+              {
+                "team": "home",
+                "minute": 52,
+                "off": "Веселов В.",
+                "on": "Федотов Н."
+              },
+              {
+                "team": "home",
+                "minute": 52,
+                "off": "Загряжский А.",
+                "on": "Кемеров Т."
+              }
+            ]
+          }
         },
         {
           "id": 3843514,
@@ -5275,7 +22981,78 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "played": true,
           "techDefeat": false,
           "venue": "ЦФКСиЗ Василеостровского района",
-          "videoSlug": "gw7gm6JaLG6md3wmZaZho6"
+          "videoSlug": "gw7gm6JaLG6md3wmZaZho6",
+          "protocol": {
+            "goals": [
+              {
+                "team": "home",
+                "player": "Румянцев М.",
+                "minute": 4,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Семенченко И.",
+                "minute": 35,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              }
+            ],
+            "cards": [],
+            "subs": [
+              {
+                "team": "home",
+                "minute": 38,
+                "off": "Рылин Ф.",
+                "on": "Ланда Г."
+              },
+              {
+                "team": "away",
+                "minute": 48,
+                "off": "Алексеев Г.",
+                "on": "Григоренко Д."
+              },
+              {
+                "team": "away",
+                "minute": 48,
+                "off": "Бардашов В.",
+                "on": "Тальдрик К."
+              },
+              {
+                "team": "home",
+                "minute": 53,
+                "off": "Мамлеев Т.",
+                "on": "Ашлапов Д."
+              },
+              {
+                "team": "away",
+                "minute": 54,
+                "off": "Курбанов М.",
+                "on": "Равшанов С."
+              },
+              {
+                "team": "away",
+                "minute": 57,
+                "off": "Фабричнов А.",
+                "on": "Егоров Д."
+              },
+              {
+                "team": "away",
+                "minute": 60,
+                "off": "Мукаиршоев М.",
+                "on": "Комчаков Г."
+              },
+              {
+                "team": "away",
+                "minute": 60,
+                "off": "Семенченко И.",
+                "on": "Тоноян Т."
+              }
+            ]
+          }
         },
         {
           "id": 3843517,
@@ -5290,7 +23067,77 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "scoreAway": 1,
           "played": true,
           "techDefeat": false,
-          "venue": "Балтика"
+          "venue": "Балтика",
+          "protocol": {
+            "goals": [
+              {
+                "team": "away",
+                "player": "Михайлов Е.",
+                "minute": 4,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              }
+            ],
+            "cards": [
+              {
+                "team": "away",
+                "player": "Манукин Р.",
+                "minute": 60,
+                "kind": "yellow"
+              }
+            ],
+            "subs": [
+              {
+                "team": "away",
+                "minute": 31,
+                "off": "Гусейнов А.",
+                "on": "Даянов Р."
+              },
+              {
+                "team": "away",
+                "minute": 31,
+                "off": "Иванов И.",
+                "on": "Подковенко Т."
+              },
+              {
+                "team": "away",
+                "minute": 31,
+                "off": "Михайлов Е.",
+                "on": "Филякин И."
+              },
+              {
+                "team": "home",
+                "minute": 31,
+                "off": "Левашов М.",
+                "on": "Логвин М."
+              },
+              {
+                "team": "home",
+                "minute": 50,
+                "off": "Журавлев Д.",
+                "on": "Ларчиков Д."
+              },
+              {
+                "team": "away",
+                "minute": 53,
+                "off": "Романов Ф.",
+                "on": "Тимощенко И."
+              },
+              {
+                "team": "home",
+                "minute": 53,
+                "off": "Лукинский В.",
+                "on": "Музуралиев Д."
+              },
+              {
+                "team": "away",
+                "minute": 59,
+                "off": "Даянов Р.",
+                "on": "Устинин Ф."
+              }
+            ]
+          }
         },
         {
           "id": 3843515,
@@ -5305,7 +23152,111 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "scoreAway": 2,
           "played": true,
           "techDefeat": false,
-          "venue": "СОШ № 303"
+          "venue": "СОШ № 303",
+          "protocol": {
+            "goals": [
+              {
+                "team": "home",
+                "player": "Максимов И.",
+                "minute": 10,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Викулов А.",
+                "minute": 11,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Моисеенко В.",
+                "minute": 58,
+                "assist": null,
+                "kind": "penalty",
+                "addedTime": false
+              }
+            ],
+            "cards": [
+              {
+                "team": "away",
+                "player": "Викулов А.",
+                "minute": 48,
+                "kind": "yellow"
+              }
+            ],
+            "subs": [
+              {
+                "team": "home",
+                "minute": 17,
+                "off": "Костелов И.",
+                "on": "Яковлев П."
+              },
+              {
+                "team": "home",
+                "minute": 31,
+                "off": "Бирулин Р.",
+                "on": "Терентьев А."
+              },
+              {
+                "team": "away",
+                "minute": 31,
+                "off": "Федотов Н.",
+                "on": "Загряжский А."
+              },
+              {
+                "team": "home",
+                "minute": 36,
+                "off": "Шкуратов Д.",
+                "on": "Брайцев Д."
+              },
+              {
+                "team": "away",
+                "minute": 45,
+                "off": "Меркель И.",
+                "on": "Федченко Н."
+              },
+              {
+                "team": "home",
+                "minute": 49,
+                "off": "Анисимов Д.",
+                "on": "Чайка А."
+              },
+              {
+                "team": "home",
+                "minute": 49,
+                "off": "Козлов А.",
+                "on": "Ермаков М."
+              },
+              {
+                "team": "home",
+                "minute": 49,
+                "off": "Максимов И.",
+                "on": "Мавлянов А."
+              },
+              {
+                "team": "home",
+                "minute": 49,
+                "off": "Назима А.",
+                "on": "Михайлов М."
+              },
+              {
+                "team": "away",
+                "minute": 55,
+                "off": "Гулиев Э.",
+                "on": "Габов Е."
+              },
+              {
+                "team": "away",
+                "minute": 57,
+                "off": "Кулебякин М.",
+                "on": "Кемеров Т."
+              }
+            ]
+          }
         },
         {
           "id": 3843516,
@@ -5320,7 +23271,71 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "scoreAway": 0,
           "played": true,
           "techDefeat": false,
-          "venue": "Балтика"
+          "venue": "Балтика",
+          "protocol": {
+            "goals": [
+              {
+                "team": "home",
+                "player": "Леонтьев А.",
+                "minute": 25,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              }
+            ],
+            "cards": [
+              {
+                "team": "home",
+                "player": "Барашко М.",
+                "minute": 60,
+                "kind": "yellow"
+              }
+            ],
+            "subs": [
+              {
+                "team": "away",
+                "minute": 31,
+                "off": "Кухновец Д.",
+                "on": "Потульный А."
+              },
+              {
+                "team": "away",
+                "minute": 39,
+                "off": "Куцырев Е.",
+                "on": "Громов М."
+              },
+              {
+                "team": "away",
+                "minute": 39,
+                "off": "Медер Г.",
+                "on": "Воробьёв И."
+              },
+              {
+                "team": "away",
+                "minute": 45,
+                "off": "Богомолов А.",
+                "on": "Волков Б."
+              },
+              {
+                "team": "away",
+                "minute": 45,
+                "off": "Любимов Д.",
+                "on": "Фахертдинов Д."
+              },
+              {
+                "team": "away",
+                "minute": 45,
+                "off": "Сычёв Е.",
+                "on": "Сидоров Д."
+              },
+              {
+                "team": "home",
+                "minute": 48,
+                "off": "Солонов Т.",
+                "on": "Кухарчук А."
+              }
+            ]
+          }
         },
         {
           "id": 3843518,
@@ -5335,7 +23350,68 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "scoreAway": 0,
           "played": true,
           "techDefeat": false,
-          "venue": "Московский (Скороход)"
+          "venue": "Московский (Скороход)",
+          "protocol": {
+            "goals": [],
+            "cards": [
+              {
+                "team": "home",
+                "player": "Перов Я.",
+                "minute": 40,
+                "kind": "yellow"
+              },
+              {
+                "team": "away",
+                "player": "Каргапольцев А.",
+                "minute": 46,
+                "kind": "yellow"
+              }
+            ],
+            "subs": [
+              {
+                "team": "away",
+                "minute": 28,
+                "off": "Лосев И.",
+                "on": "Гарист А."
+              },
+              {
+                "team": "home",
+                "minute": 31,
+                "off": "Орлов А.",
+                "on": "Петров Д."
+              },
+              {
+                "team": "away",
+                "minute": 31,
+                "off": "Аверьянов Д.",
+                "on": "Ангелов И."
+              },
+              {
+                "team": "away",
+                "minute": 31,
+                "off": "Бушуев А.",
+                "on": "Дмитриев А."
+              },
+              {
+                "team": "away",
+                "minute": 31,
+                "off": "Шаститко Я.",
+                "on": "Маслей Д."
+              },
+              {
+                "team": "home",
+                "minute": 47,
+                "off": "Лагойда М.",
+                "on": "Маликов Н."
+              },
+              {
+                "team": "home",
+                "minute": 52,
+                "off": "Петров Д.",
+                "on": "Рейнталь И."
+              }
+            ]
+          }
         },
         {
           "id": 3843520,
@@ -5350,7 +23426,52 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "scoreAway": 1,
           "played": true,
           "techDefeat": false,
-          "venue": "СОШ № 303"
+          "venue": "СОШ № 303",
+          "protocol": {
+            "goals": [
+              {
+                "team": "away",
+                "player": "Жданов М.",
+                "minute": 13,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              }
+            ],
+            "cards": [],
+            "subs": [
+              {
+                "team": "away",
+                "minute": 45,
+                "off": "Язьков М.",
+                "on": "Тищенко К."
+              },
+              {
+                "team": "home",
+                "minute": 45,
+                "off": "Иванов И.",
+                "on": "Гурьянов Д."
+              },
+              {
+                "team": "away",
+                "minute": 54,
+                "off": "Орлов А.",
+                "on": "Белавенцев Н."
+              },
+              {
+                "team": "home",
+                "minute": 54,
+                "off": "Беляков Г.",
+                "on": "Чураков А."
+              },
+              {
+                "team": "away",
+                "minute": 57,
+                "off": "Огурцов К.",
+                "on": "Широков А."
+              }
+            ]
+          }
         },
         {
           "id": 3843519,
@@ -5366,7 +23487,96 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "played": true,
           "techDefeat": false,
           "venue": "СШОР Кировского района",
-          "videoSlug": "JgEXhbFUAF3eIabe9zlpbx"
+          "videoSlug": "JgEXhbFUAF3eIabe9zlpbx",
+          "protocol": {
+            "goals": [
+              {
+                "team": "home",
+                "player": "Михальцевич Т.",
+                "minute": 6,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Мукаиршоев М.",
+                "minute": 49,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              }
+            ],
+            "cards": [],
+            "subs": [
+              {
+                "team": "away",
+                "minute": 31,
+                "off": "Аверьянов Р.",
+                "on": "Маслей Д."
+              },
+              {
+                "team": "away",
+                "minute": 31,
+                "off": "Ангелов И.",
+                "on": "Ясинский М."
+              },
+              {
+                "team": "away",
+                "minute": 31,
+                "off": "Игнатьев М.",
+                "on": "Шаститко Я."
+              },
+              {
+                "team": "away",
+                "minute": 48,
+                "off": "Шаститко Я.",
+                "on": "Лебедев С."
+              },
+              {
+                "team": "home",
+                "minute": 50,
+                "off": "Михальцевич Т.",
+                "on": "Фабричнов А."
+              },
+              {
+                "team": "home",
+                "minute": 54,
+                "off": "Алексеев Г.",
+                "on": "Григоренко Д."
+              },
+              {
+                "team": "away",
+                "minute": 54,
+                "off": "Дмитриев А.",
+                "on": "Аверьянов Д."
+              },
+              {
+                "team": "home",
+                "minute": 56,
+                "off": "Бардашов В.",
+                "on": "Комчаков Г."
+              },
+              {
+                "team": "home",
+                "minute": 56,
+                "off": "Бигин Д.",
+                "on": "Тоноян Т."
+              },
+              {
+                "team": "home",
+                "minute": 58,
+                "off": "Курбанов М.",
+                "on": "Булат М."
+              },
+              {
+                "team": "home",
+                "minute": 58,
+                "off": "Мукаиршоев М.",
+                "on": "Равшанов С."
+              }
+            ]
+          }
         },
         {
           "id": 3843521,
@@ -5381,7 +23591,110 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "scoreAway": 1,
           "played": true,
           "techDefeat": false,
-          "venue": "Химик"
+          "venue": "Химик",
+          "protocol": {
+            "goals": [
+              {
+                "team": "away",
+                "player": "Колесников А.",
+                "minute": 19,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Богомолов А.",
+                "minute": 22,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Громов М.",
+                "minute": 60,
+                "assist": null,
+                "kind": "penalty",
+                "addedTime": true
+              }
+            ],
+            "cards": [],
+            "subs": [
+              {
+                "team": "home",
+                "minute": 31,
+                "off": "Куцырев Е.",
+                "on": "Медер Г."
+              },
+              {
+                "team": "home",
+                "minute": 31,
+                "off": "Сычёв Е.",
+                "on": "Сидоров Д."
+              },
+              {
+                "team": "away",
+                "minute": 31,
+                "off": "Киселев И.",
+                "on": "Гусев А."
+              },
+              {
+                "team": "home",
+                "minute": 37,
+                "off": "Воробьёв И.",
+                "on": "Кухновец Д."
+              },
+              {
+                "team": "home",
+                "minute": 38,
+                "off": "Большаков Д.",
+                "on": "Григорьев А."
+              },
+              {
+                "team": "home",
+                "minute": 38,
+                "off": "Низамов Т.",
+                "on": "Волков Б."
+              },
+              {
+                "team": "home",
+                "minute": 38,
+                "off": "Потульный А.",
+                "on": "Громов М."
+              },
+              {
+                "team": "home",
+                "minute": 44,
+                "off": "Гатало С.",
+                "on": "Фахертдинов Д."
+              },
+              {
+                "team": "away",
+                "minute": 44,
+                "off": "Лукинский В.",
+                "on": "Музуралиев Д."
+              },
+              {
+                "team": "away",
+                "minute": 47,
+                "off": "Левашов М.",
+                "on": "Фокин М."
+              },
+              {
+                "team": "home",
+                "minute": 51,
+                "off": "Богомолов А.",
+                "on": "Григорьев И."
+              },
+              {
+                "team": "away",
+                "minute": 55,
+                "off": "Логвин М.",
+                "on": "Ларчиков Д."
+              }
+            ]
+          }
         },
         {
           "id": 3843522,
@@ -5396,7 +23709,90 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "scoreAway": 2,
           "played": true,
           "techDefeat": false,
-          "venue": "Московский (Скороход)"
+          "venue": "Московский (Скороход)",
+          "protocol": {
+            "goals": [
+              {
+                "team": "home",
+                "player": "Моисеенко В.",
+                "minute": 20,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Викулов А.",
+                "minute": 36,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Викулов А.",
+                "minute": 39,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Ткаченко Б.",
+                "minute": 41,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Куликовский Д.",
+                "minute": 52,
+                "assist": null,
+                "kind": "penalty",
+                "addedTime": false
+              }
+            ],
+            "cards": [],
+            "subs": [
+              {
+                "team": "home",
+                "minute": 36,
+                "off": "Федченко Н.",
+                "on": "Петраков А."
+              },
+              {
+                "team": "home",
+                "minute": 39,
+                "off": "Гулиев Э.",
+                "on": "Шипилин А."
+              },
+              {
+                "team": "away",
+                "minute": 43,
+                "off": "Котлуков М.",
+                "on": "Кухарчук А."
+              },
+              {
+                "team": "away",
+                "minute": 43,
+                "off": "Соцкий Ф.",
+                "on": "Поздняков Е."
+              },
+              {
+                "team": "home",
+                "minute": 47,
+                "off": "Коган Л.",
+                "on": "Веселов В."
+              },
+              {
+                "team": "home",
+                "minute": 59,
+                "off": "Загряжский А.",
+                "on": "Габов Е."
+              }
+            ]
+          }
         },
         {
           "id": 3843523,
@@ -5411,7 +23807,135 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "scoreAway": 3,
           "played": true,
           "techDefeat": false,
-          "venue": "ЦФКСиЗ Василеостровского района"
+          "venue": "ЦФКСиЗ Василеостровского района",
+          "protocol": {
+            "goals": [
+              {
+                "team": "away",
+                "player": "Саидов А.",
+                "minute": 11,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Чернов Г.",
+                "minute": 21,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Бирулин Р.",
+                "minute": 60,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              }
+            ],
+            "cards": [
+              {
+                "team": "home",
+                "player": "Румянцев М.",
+                "minute": 30,
+                "kind": "yellow"
+              },
+              {
+                "team": "home",
+                "player": "Арнаут С.",
+                "minute": 58,
+                "kind": "yellow"
+              }
+            ],
+            "subs": [
+              {
+                "team": "away",
+                "minute": 31,
+                "off": "Максимов И.",
+                "on": "Бирулин Р."
+              },
+              {
+                "team": "home",
+                "minute": 41,
+                "off": "Ланда Г.",
+                "on": "Рылин Ф."
+              },
+              {
+                "team": "home",
+                "minute": 41,
+                "off": "Чужков Г.",
+                "on": "Салтыков М."
+              },
+              {
+                "team": "away",
+                "minute": 43,
+                "off": "Козлов А.",
+                "on": "Дмитриев В."
+              },
+              {
+                "team": "away",
+                "minute": 43,
+                "off": "Назима А.",
+                "on": "Яковлев П."
+              },
+              {
+                "team": "away",
+                "minute": 43,
+                "off": "Ордин М.",
+                "on": "Лебедев А."
+              },
+              {
+                "team": "away",
+                "minute": 43,
+                "off": "Шкуратов Д.",
+                "on": "Брайцев Д."
+              },
+              {
+                "team": "home",
+                "minute": 46,
+                "off": "Грициненко Н.",
+                "on": "Мамлеев Т."
+              },
+              {
+                "team": "home",
+                "minute": 46,
+                "off": "Румянцев М.",
+                "on": "Ашлапов Д."
+              },
+              {
+                "team": "home",
+                "minute": 48,
+                "off": "Бабенко Р.",
+                "on": "Васильев М."
+              },
+              {
+                "team": "away",
+                "minute": 49,
+                "off": "Костелов И.",
+                "on": "Власов М."
+              },
+              {
+                "team": "away",
+                "minute": 49,
+                "off": "Рыбаков С.",
+                "on": "Михайлов М."
+              },
+              {
+                "team": "away",
+                "minute": 49,
+                "off": "Саидов А.",
+                "on": "Терентьев А."
+              },
+              {
+                "team": "away",
+                "minute": 49,
+                "off": "Чернов Г.",
+                "on": "Мавлянов А."
+              }
+            ]
+          }
         },
         {
           "id": 3843528,
@@ -5427,7 +23951,130 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "played": true,
           "techDefeat": false,
           "venue": "Ижорец. Поле № 1",
-          "videoSlug": "4LAuLSVI2t21H8TFa0Vbyx"
+          "videoSlug": "4LAuLSVI2t21H8TFa0Vbyx",
+          "protocol": {
+            "goals": [
+              {
+                "team": "home",
+                "player": "Василенко А.",
+                "minute": 11,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Маслей Д.",
+                "minute": 13,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Василенко А.",
+                "minute": 35,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Савичев А.",
+                "minute": 47,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Шаститко Я.",
+                "minute": 48,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Филякин И.",
+                "minute": 51,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Игнатьев М.",
+                "minute": 60,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              }
+            ],
+            "cards": [],
+            "subs": [
+              {
+                "team": "away",
+                "minute": 31,
+                "off": "Иванов И.",
+                "on": "Тимощенко И."
+              },
+              {
+                "team": "away",
+                "minute": 31,
+                "off": "Романов Ф.",
+                "on": "Устинин Ф."
+              },
+              {
+                "team": "home",
+                "minute": 31,
+                "off": "Дмитриев А.",
+                "on": "Ясинский М."
+              },
+              {
+                "team": "home",
+                "minute": 31,
+                "off": "Маслей Д.",
+                "on": "Игнатьев М."
+              },
+              {
+                "team": "away",
+                "minute": 45,
+                "off": "Дегтерев Л.",
+                "on": "Гурьянов Д."
+              },
+              {
+                "team": "home",
+                "minute": 47,
+                "off": "Аверьянов Д.",
+                "on": "Шаститко Я."
+              },
+              {
+                "team": "home",
+                "minute": 47,
+                "off": "Аверьянов Р.",
+                "on": "Лебедев С."
+              },
+              {
+                "team": "home",
+                "minute": 47,
+                "off": "Василенко А.",
+                "on": "Ангелов И."
+              },
+              {
+                "team": "home",
+                "minute": 47,
+                "off": "Лосев И.",
+                "on": "Гарист А."
+              },
+              {
+                "team": "away",
+                "minute": 51,
+                "off": "Гусейнов А.",
+                "on": "Чураков А."
+              }
+            ]
+          }
         },
         {
           "id": 3843526,
@@ -5443,7 +24090,98 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "played": true,
           "techDefeat": false,
           "venue": "Балтика",
-          "videoSlug": "P2dJCVV90jp8OKA3G8lZa3"
+          "videoSlug": "P2dJCVV90jp8OKA3G8lZa3",
+          "protocol": {
+            "goals": [
+              {
+                "team": "away",
+                "player": "Викулов А.",
+                "minute": 9,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Андреев А.",
+                "minute": 15,
+                "assist": null,
+                "kind": "own_goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Моисеенко В.",
+                "minute": 44,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              }
+            ],
+            "cards": [],
+            "subs": [
+              {
+                "team": "home",
+                "minute": 16,
+                "off": "Ларчиков Д.",
+                "on": "Жарких Д."
+              },
+              {
+                "team": "home",
+                "minute": 31,
+                "off": "Гусев А.",
+                "on": "Фокин М."
+              },
+              {
+                "team": "away",
+                "minute": 37,
+                "off": "Коган Л.",
+                "on": "Веселов В."
+              },
+              {
+                "team": "home",
+                "minute": 42,
+                "off": "Игнат А.",
+                "on": "Лукинский В."
+              },
+              {
+                "team": "home",
+                "minute": 44,
+                "off": "Левашов М.",
+                "on": "Логвин М."
+              },
+              {
+                "team": "away",
+                "minute": 46,
+                "off": "Гулиев Э.",
+                "on": "Шипилин А."
+              },
+              {
+                "team": "away",
+                "minute": 46,
+                "off": "Федченко Н.",
+                "on": "Габов Е."
+              },
+              {
+                "team": "away",
+                "minute": 50,
+                "off": "Кулебякин М.",
+                "on": "Петраков А."
+              },
+              {
+                "team": "home",
+                "minute": 50,
+                "off": "Журавлев Д.",
+                "on": "Гадиев С."
+              },
+              {
+                "team": "away",
+                "minute": 57,
+                "off": "Меркель И.",
+                "on": "Колпачников М."
+              }
+            ]
+          }
         },
         {
           "id": 3843525,
@@ -5458,7 +24196,40 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "scoreAway": 0,
           "played": true,
           "techDefeat": false,
-          "venue": "Балтика"
+          "venue": "Балтика",
+          "protocol": {
+            "goals": [
+              {
+                "team": "home",
+                "player": "Куликовский Д.",
+                "minute": 58,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              }
+            ],
+            "cards": [],
+            "subs": [
+              {
+                "team": "home",
+                "minute": 31,
+                "off": "Котлуков М.",
+                "on": "Кухарчук А."
+              },
+              {
+                "team": "away",
+                "minute": 36,
+                "off": "Грициненко Н.",
+                "on": "Ашлапов Д."
+              },
+              {
+                "team": "away",
+                "minute": 55,
+                "off": "Румянцев М.",
+                "on": "Мамлеев Т."
+              }
+            ]
+          }
         },
         {
           "id": 3843527,
@@ -5473,7 +24244,136 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "scoreAway": 4,
           "played": true,
           "techDefeat": false,
-          "venue": "Московский (Скороход)"
+          "venue": "Московский (Скороход)",
+          "protocol": {
+            "goals": [
+              {
+                "team": "away",
+                "player": "Большаков Д.",
+                "minute": 22,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Богомолов А.",
+                "minute": 23,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Богомолов А.",
+                "minute": 34,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Медер Г.",
+                "minute": 46,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              }
+            ],
+            "cards": [],
+            "subs": [
+              {
+                "team": "away",
+                "minute": 31,
+                "off": "Воробьёв И.",
+                "on": "Медер Г."
+              },
+              {
+                "team": "away",
+                "minute": 31,
+                "off": "Гатало С.",
+                "on": "Кухновец Д."
+              },
+              {
+                "team": "away",
+                "minute": 31,
+                "off": "Сычёв Е.",
+                "on": "Сидоров Д."
+              },
+              {
+                "team": "home",
+                "minute": 31,
+                "off": "Орлов А.",
+                "on": "Белавенцев Н."
+              },
+              {
+                "team": "home",
+                "minute": 31,
+                "off": "Рейнталь И.",
+                "on": "Еникеев Т."
+              },
+              {
+                "team": "away",
+                "minute": 39,
+                "off": "Богомолов А.",
+                "on": "Громов М."
+              },
+              {
+                "team": "home",
+                "minute": 43,
+                "off": "Курбатов М.",
+                "on": "Вильде А."
+              },
+              {
+                "team": "away",
+                "minute": 46,
+                "off": "Большаков Д.",
+                "on": "Григорьев А."
+              },
+              {
+                "team": "away",
+                "minute": 46,
+                "off": "Любимов Д.",
+                "on": "Волков Б."
+              },
+              {
+                "team": "home",
+                "minute": 48,
+                "off": "Лагойда М.",
+                "on": "Петров Д."
+              },
+              {
+                "team": "home",
+                "minute": 48,
+                "off": "Перов Я.",
+                "on": "Тищенко К."
+              },
+              {
+                "team": "home",
+                "minute": 48,
+                "off": "Язьков М.",
+                "on": "Зюрин Т."
+              },
+              {
+                "team": "away",
+                "minute": 53,
+                "off": "Куцырев Е.",
+                "on": "Фахертдинов Д."
+              },
+              {
+                "team": "away",
+                "minute": 53,
+                "off": "Потульный А.",
+                "on": "Григорьев И."
+              },
+              {
+                "team": "home",
+                "minute": 56,
+                "off": "Титов А.",
+                "on": "Маликов Н."
+              }
+            ]
+          }
         },
         {
           "id": 3843524,
@@ -5489,7 +24389,149 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "played": true,
           "techDefeat": false,
           "venue": "СОШ 363",
-          "videoSlug": "MIZu7J3sWakQBMKvydQsBt"
+          "videoSlug": "MIZu7J3sWakQBMKvydQsBt",
+          "protocol": {
+            "goals": [
+              {
+                "team": "home",
+                "player": "Анисимов Д.",
+                "minute": 4,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Бирулин Р.",
+                "minute": 12,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Бигин Д.",
+                "minute": 51,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Мукаиршоев М.",
+                "minute": 58,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              }
+            ],
+            "cards": [
+              {
+                "team": "home",
+                "player": "Чернов Г.",
+                "minute": 36,
+                "kind": "yellow"
+              },
+              {
+                "team": "home",
+                "player": "Назима А.",
+                "minute": 40,
+                "kind": "yellow"
+              }
+            ],
+            "subs": [
+              {
+                "team": "home",
+                "minute": 31,
+                "off": "Бирулин Р.",
+                "on": "Яковлев П."
+              },
+              {
+                "team": "away",
+                "minute": 31,
+                "off": "Алексеев Г.",
+                "on": "Григоренко Д."
+              },
+              {
+                "team": "home",
+                "minute": 42,
+                "off": "Анисимов Д.",
+                "on": "Брайцев Д."
+              },
+              {
+                "team": "home",
+                "minute": 42,
+                "off": "Козлов А.",
+                "on": "Дмитриев В."
+              },
+              {
+                "team": "home",
+                "minute": 42,
+                "off": "Костелов И.",
+                "on": "Ермаков М."
+              },
+              {
+                "team": "home",
+                "minute": 42,
+                "off": "Назима А.",
+                "on": "Лебедев А."
+              },
+              {
+                "team": "home",
+                "minute": 42,
+                "off": "Ордин М.",
+                "on": "Мавлянов А."
+              },
+              {
+                "team": "home",
+                "minute": 42,
+                "off": "Рыбаков С.",
+                "on": "Максимов И."
+              },
+              {
+                "team": "home",
+                "minute": 42,
+                "off": "Чернов Г.",
+                "on": "Терентьев А."
+              },
+              {
+                "team": "home",
+                "minute": 42,
+                "off": "Шкуратов Д.",
+                "on": "Чайка А."
+              },
+              {
+                "team": "away",
+                "minute": 48,
+                "off": "Михальцевич Т.",
+                "on": "Тоноян Т."
+              },
+              {
+                "team": "away",
+                "minute": 48,
+                "off": "Фабричнов А.",
+                "on": "Тальдрик К."
+              },
+              {
+                "team": "away",
+                "minute": 53,
+                "off": "Денисенко Д.",
+                "on": "Булат М."
+              },
+              {
+                "team": "away",
+                "minute": 53,
+                "off": "Курбанов М.",
+                "on": "Саламатин Д."
+              },
+              {
+                "team": "away",
+                "minute": 53,
+                "off": "Степанюк М.",
+                "on": "Комчаков Г."
+              }
+            ]
+          }
         },
         {
           "id": 3843533,
@@ -5504,7 +24546,112 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "scoreAway": 1,
           "played": true,
           "techDefeat": false,
-          "venue": "СОШ № 303"
+          "venue": "СОШ № 303",
+          "protocol": {
+            "goals": [
+              {
+                "team": "away",
+                "player": "Куликовский Д.",
+                "minute": 8,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Саидов А.",
+                "minute": 39,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Бирулин Р.",
+                "minute": 52,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Саидов А.",
+                "minute": 58,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              }
+            ],
+            "cards": [],
+            "subs": [
+              {
+                "team": "away",
+                "minute": 39,
+                "off": "Ткаченко Б.",
+                "on": "Сатосов А."
+              },
+              {
+                "team": "home",
+                "minute": 42,
+                "off": "Назима А.",
+                "on": "Терентьев А."
+              },
+              {
+                "team": "home",
+                "minute": 42,
+                "off": "Шкуратов Д.",
+                "on": "Максимов И."
+              },
+              {
+                "team": "home",
+                "minute": 46,
+                "off": "Ордин М.",
+                "on": "Яковлев П."
+              },
+              {
+                "team": "home",
+                "minute": 56,
+                "off": "Чернов Г.",
+                "on": "Лебедев А."
+              },
+              {
+                "team": "away",
+                "minute": 58,
+                "off": "Боровик П.",
+                "on": "Поздняков Е."
+              },
+              {
+                "team": "home",
+                "minute": 59,
+                "off": "Анисимов Д.",
+                "on": "Чайка А."
+              },
+              {
+                "team": "home",
+                "minute": 59,
+                "off": "Бирулин Р.",
+                "on": "Брайцев Д."
+              },
+              {
+                "team": "home",
+                "minute": 59,
+                "off": "Дмитриев В.",
+                "on": "Козлов А."
+              },
+              {
+                "team": "home",
+                "minute": 59,
+                "off": "Костелов И.",
+                "on": "Ермаков М."
+              },
+              {
+                "team": "home",
+                "minute": 59,
+                "off": "Саидов А.",
+                "on": "Мавлянов А."
+              }
+            ]
+          }
         },
         {
           "id": 3843529,
@@ -5519,7 +24666,166 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "scoreAway": 0,
           "played": true,
           "techDefeat": false,
-          "venue": "СШОР Кировского района"
+          "venue": "СШОР Кировского района",
+          "protocol": {
+            "goals": [
+              {
+                "team": "home",
+                "player": "Михальцевич Т.",
+                "minute": 8,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Курбанов М.",
+                "minute": 21,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Мукаиршоев М.",
+                "minute": 28,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Мукаиршоев М.",
+                "minute": 37,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Курбанов М.",
+                "minute": 39,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Тоноян Т.",
+                "minute": 45,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Тоноян Т.",
+                "minute": 50,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Булат М.",
+                "minute": 52,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Семенченко И.",
+                "minute": 54,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Тоноян Т.",
+                "minute": 60,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              }
+            ],
+            "cards": [],
+            "subs": [
+              {
+                "team": "away",
+                "minute": 18,
+                "off": "Шелуха И.",
+                "on": "Кузьминых Г."
+              },
+              {
+                "team": "away",
+                "minute": 31,
+                "off": "Даянов Р.",
+                "on": "Иванов И."
+              },
+              {
+                "team": "away",
+                "minute": 31,
+                "off": "Романов Ф.",
+                "on": "Михайлов Е."
+              },
+              {
+                "team": "home",
+                "minute": 31,
+                "off": "Григоренко Д.",
+                "on": "Алексеев Г."
+              },
+              {
+                "team": "away",
+                "minute": 40,
+                "off": "Климов А.",
+                "on": "Устинин Ф."
+              },
+              {
+                "team": "away",
+                "minute": 40,
+                "off": "Манукин Р.",
+                "on": "Лукаткин М."
+              },
+              {
+                "team": "home",
+                "minute": 42,
+                "off": "Денисенко Д.",
+                "on": "Булат М."
+              },
+              {
+                "team": "home",
+                "minute": 42,
+                "off": "Михальцевич Т.",
+                "on": "Тоноян Т."
+              },
+              {
+                "team": "home",
+                "minute": 42,
+                "off": "Фабричнов А.",
+                "on": "Тальдрик К."
+              },
+              {
+                "team": "away",
+                "minute": 48,
+                "off": "Лихобаба И.",
+                "on": "Тимощенко И."
+              },
+              {
+                "team": "home",
+                "minute": 48,
+                "off": "Курбанов М.",
+                "on": "Киселев М."
+              },
+              {
+                "team": "home",
+                "minute": 48,
+                "off": "Степанюк М.",
+                "on": "Комчаков Г."
+              }
+            ]
+          }
         },
         {
           "id": 3843530,
@@ -5534,7 +24840,165 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "scoreAway": 0,
           "played": true,
           "techDefeat": false,
-          "venue": "Химик"
+          "venue": "Химик",
+          "protocol": {
+            "goals": [
+              {
+                "team": "home",
+                "player": "Воробьёв И.",
+                "minute": 1,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Богомолов А.",
+                "minute": 18,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Медер Г.",
+                "minute": 27,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Большаков Д.",
+                "minute": 40,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Кухновец Д.",
+                "minute": 47,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Сидоров Д.",
+                "minute": 51,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              }
+            ],
+            "cards": [
+              {
+                "team": "home",
+                "player": "Фахертдинов Д.",
+                "minute": 52,
+                "kind": "yellow"
+              },
+              {
+                "team": "home",
+                "player": "Куцырев Е.",
+                "minute": 56,
+                "kind": "yellow"
+              }
+            ],
+            "subs": [
+              {
+                "team": "away",
+                "minute": 28,
+                "off": "Игнатьев М.",
+                "on": "Маслей Д."
+              },
+              {
+                "team": "home",
+                "minute": 31,
+                "off": "Богомолов А.",
+                "on": "Громов М."
+              },
+              {
+                "team": "home",
+                "minute": 31,
+                "off": "Сычёв Е.",
+                "on": "Фахертдинов Д."
+              },
+              {
+                "team": "away",
+                "minute": 31,
+                "off": "Аверьянов Д.",
+                "on": "Лебедев С."
+              },
+              {
+                "team": "away",
+                "minute": 31,
+                "off": "Бушуев А.",
+                "on": "Дмитриев А."
+              },
+              {
+                "team": "away",
+                "minute": 31,
+                "off": "Лосев И.",
+                "on": "Гарист А."
+              },
+              {
+                "team": "away",
+                "minute": 31,
+                "off": "Шаститко Я.",
+                "on": "Аверьянов Р."
+              },
+              {
+                "team": "home",
+                "minute": 35,
+                "off": "Воробьёв И.",
+                "on": "Куцырев Е."
+              },
+              {
+                "team": "home",
+                "minute": 37,
+                "off": "Потульный А.",
+                "on": "Кухновец Д."
+              },
+              {
+                "team": "away",
+                "minute": 40,
+                "off": "Дмитриев А.",
+                "on": "Ангелов И."
+              },
+              {
+                "team": "home",
+                "minute": 41,
+                "off": "Медер Г.",
+                "on": "Григорьев А."
+              },
+              {
+                "team": "home",
+                "minute": 45,
+                "off": "Большаков Д.",
+                "on": "Сидоров Д."
+              },
+              {
+                "team": "home",
+                "minute": 45,
+                "off": "Гатало С.",
+                "on": "Григорьев И."
+              },
+              {
+                "team": "home",
+                "minute": 48,
+                "off": "Волков Б.",
+                "on": "Костичкин М."
+              },
+              {
+                "team": "home",
+                "minute": 48,
+                "off": "Никитин И.",
+                "on": "Громов Н."
+              }
+            ]
+          }
         },
         {
           "id": 3843531,
@@ -5549,7 +25013,125 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "scoreAway": 0,
           "played": true,
           "techDefeat": false,
-          "venue": "Московский (Скороход)"
+          "venue": "Московский (Скороход)",
+          "protocol": {
+            "goals": [
+              {
+                "team": "home",
+                "player": "Викулов А.",
+                "minute": 32,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Саркисян Г.",
+                "minute": 39,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Моисеенко В.",
+                "minute": 42,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Викулов А.",
+                "minute": 47,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              }
+            ],
+            "cards": [
+              {
+                "team": "away",
+                "player": "Жданов М.",
+                "minute": 35,
+                "kind": "yellow"
+              }
+            ],
+            "subs": [
+              {
+                "team": "home",
+                "minute": 31,
+                "off": "Федченко Н.",
+                "on": "Веселов В."
+              },
+              {
+                "team": "home",
+                "minute": 41,
+                "off": "Петраков А.",
+                "on": "Колпачников М."
+              },
+              {
+                "team": "away",
+                "minute": 46,
+                "off": "Орлов А.",
+                "on": "Белавенцев Н."
+              },
+              {
+                "team": "home",
+                "minute": 46,
+                "off": "Гулиев Э.",
+                "on": "Шипилин А."
+              },
+              {
+                "team": "home",
+                "minute": 46,
+                "off": "Саркисян Г.",
+                "on": "Коган Л."
+              },
+              {
+                "team": "away",
+                "minute": 49,
+                "off": "Лагойда М.",
+                "on": "Вильде А."
+              },
+              {
+                "team": "away",
+                "minute": 53,
+                "off": "Зиёев И.",
+                "on": "Зюрин Т."
+              },
+              {
+                "team": "away",
+                "minute": 53,
+                "off": "Рейнталь И.",
+                "on": "Петров Д."
+              },
+              {
+                "team": "away",
+                "minute": 53,
+                "off": "Язьков М.",
+                "on": "Тищенко К."
+              },
+              {
+                "team": "home",
+                "minute": 53,
+                "off": "Кулебякин М.",
+                "on": "Габов Е."
+              },
+              {
+                "team": "away",
+                "minute": 57,
+                "off": "Еникеев Т.",
+                "on": "Ботов В."
+              },
+              {
+                "team": "away",
+                "minute": 57,
+                "off": "Курбатов М.",
+                "on": "Огурцов К."
+              }
+            ]
+          }
         },
         {
           "id": 3843532,
@@ -5564,7 +25146,79 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "scoreAway": 0,
           "played": true,
           "techDefeat": false,
-          "venue": "ЦФКСиЗ Василеостровского района"
+          "venue": "ЦФКСиЗ Василеостровского района",
+          "protocol": {
+            "goals": [
+              {
+                "team": "home",
+                "player": "Силецкий М.",
+                "minute": 9,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Арнаут С.",
+                "minute": 60,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": true
+              }
+            ],
+            "cards": [
+              {
+                "team": "home",
+                "player": "Самсонов С.",
+                "minute": 46,
+                "kind": "yellow"
+              }
+            ],
+            "subs": [
+              {
+                "team": "away",
+                "minute": 31,
+                "off": "Марейчев М.",
+                "on": "Лукинский В."
+              },
+              {
+                "team": "away",
+                "minute": 31,
+                "off": "Музуралиев Д.",
+                "on": "Жарких Д."
+              },
+              {
+                "team": "home",
+                "minute": 38,
+                "off": "Грициненко Н.",
+                "on": "Ашлапов Д."
+              },
+              {
+                "team": "away",
+                "minute": 43,
+                "off": "Левашов М.",
+                "on": "Гусев А."
+              },
+              {
+                "team": "home",
+                "minute": 46,
+                "off": "Ланда Г.",
+                "on": "Качанов Р."
+              },
+              {
+                "team": "home",
+                "minute": 46,
+                "off": "Румянцев М.",
+                "on": "Мамлеев Т."
+              },
+              {
+                "team": "away",
+                "minute": 46,
+                "off": "Игнат А.",
+                "on": "Фокин М."
+              }
+            ]
+          }
         },
         {
           "id": 3843535,
@@ -5579,7 +25233,140 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "scoreAway": 6,
           "played": true,
           "techDefeat": false,
-          "venue": "Химик"
+          "venue": "Химик",
+          "protocol": {
+            "goals": [
+              {
+                "team": "away",
+                "player": "Ордин М.",
+                "minute": 9,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Назима А.",
+                "minute": 15,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Ордин М.",
+                "minute": 19,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Саидов А.",
+                "minute": 26,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Терентьев А.",
+                "minute": 26,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Ордин М.",
+                "minute": 29,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              }
+            ],
+            "cards": [],
+            "subs": [
+              {
+                "team": "home",
+                "minute": 31,
+                "off": "Гусев А.",
+                "on": "Лукинский В."
+              },
+              {
+                "team": "away",
+                "minute": 40,
+                "off": "Козлов А.",
+                "on": "Анисимов Д."
+              },
+              {
+                "team": "away",
+                "minute": 40,
+                "off": "Назима А.",
+                "on": "Лебедев А."
+              },
+              {
+                "team": "away",
+                "minute": 40,
+                "off": "Чернов Г.",
+                "on": "Яковлев П."
+              },
+              {
+                "team": "away",
+                "minute": 40,
+                "off": "Шкуратов Д.",
+                "on": "Дмитриев В."
+              },
+              {
+                "team": "away",
+                "minute": 45,
+                "off": "Бирулин Р.",
+                "on": "Брайцев Д."
+              },
+              {
+                "team": "away",
+                "minute": 45,
+                "off": "Костелов И.",
+                "on": "Терентьев А."
+              },
+              {
+                "team": "away",
+                "minute": 45,
+                "off": "Максимов И.",
+                "on": "Мавлянов А."
+              },
+              {
+                "team": "away",
+                "minute": 45,
+                "off": "Ордин М.",
+                "on": "Ермаков М."
+              },
+              {
+                "team": "away",
+                "minute": 45,
+                "off": "Саидов А.",
+                "on": "Михайлов М."
+              },
+              {
+                "team": "home",
+                "minute": 48,
+                "off": "Игнат А.",
+                "on": "Левашов М."
+              },
+              {
+                "team": "home",
+                "minute": 48,
+                "off": "Музуралиев Д.",
+                "on": "Гадиев С."
+              },
+              {
+                "team": "home",
+                "minute": 50,
+                "off": "Логвин М.",
+                "on": "Ларчиков Д."
+              }
+            ]
+          }
         },
         {
           "id": 3843537,
@@ -5594,7 +25381,136 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "scoreAway": 9,
           "played": true,
           "techDefeat": false,
-          "venue": "Ижорец. Поле № 2"
+          "venue": "Ижорец. Поле № 2",
+          "protocol": {
+            "goals": [
+              {
+                "team": "away",
+                "player": "Моисеенко В.",
+                "minute": 9,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Моисеенко В.",
+                "minute": 14,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Викулов А.",
+                "minute": 16,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Меркель И.",
+                "minute": 22,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Моисеенко В.",
+                "minute": 32,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Моисеенко В.",
+                "minute": 41,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Моисеенко В.",
+                "minute": 43,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Моисеенко В.",
+                "minute": 48,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Богданов П.",
+                "minute": 53,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Викулов А.",
+                "minute": 57,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              }
+            ],
+            "cards": [],
+            "subs": [
+              {
+                "team": "home",
+                "minute": 16,
+                "off": "Лавров А.",
+                "on": "Ангелов И."
+              },
+              {
+                "team": "away",
+                "minute": 31,
+                "off": "Коган Л.",
+                "on": "Веселов В."
+              },
+              {
+                "team": "away",
+                "minute": 31,
+                "off": "Петраков А.",
+                "on": "Колпачников М."
+              },
+              {
+                "team": "home",
+                "minute": 31,
+                "off": "Игнатьев М.",
+                "on": "Маслей Д."
+              },
+              {
+                "team": "home",
+                "minute": 36,
+                "off": "Лосев И.",
+                "on": "Гарист А."
+              },
+              {
+                "team": "away",
+                "minute": 41,
+                "off": "Меркель И.",
+                "on": "Федченко Н."
+              },
+              {
+                "team": "home",
+                "minute": 46,
+                "off": "Василенко А.",
+                "on": "Лебедев С."
+              }
+            ]
+          }
         },
         {
           "id": 3843534,
@@ -5609,7 +25525,92 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "scoreAway": 3,
           "played": true,
           "techDefeat": false,
-          "venue": "Балтика"
+          "venue": "Балтика",
+          "protocol": {
+            "goals": [
+              {
+                "team": "away",
+                "player": "Мукаиршоев М.",
+                "minute": 7,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Михальцевич Т.",
+                "minute": 18,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Денисенко Д.",
+                "minute": 40,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              }
+            ],
+            "cards": [],
+            "subs": [
+              {
+                "team": "home",
+                "minute": 31,
+                "off": "Куликовский Д.",
+                "on": "Кухарчук А."
+              },
+              {
+                "team": "home",
+                "minute": 37,
+                "off": "Нургалиев С.",
+                "on": "Боровик П."
+              },
+              {
+                "team": "home",
+                "minute": 38,
+                "off": "Соцкий Ф.",
+                "on": "Поздняков Е."
+              },
+              {
+                "team": "home",
+                "minute": 53,
+                "off": "Солонов Т.",
+                "on": "Кирюхин Ф."
+              },
+              {
+                "team": "away",
+                "minute": 56,
+                "off": "Фабричнов А.",
+                "on": "Тальдрик К."
+              },
+              {
+                "team": "away",
+                "minute": 58,
+                "off": "Курбанов М.",
+                "on": "Равшанов С."
+              },
+              {
+                "team": "away",
+                "minute": 59,
+                "off": "Семенченко И.",
+                "on": "Тоноян Т."
+              },
+              {
+                "team": "away",
+                "minute": 60,
+                "off": "Григоренко Д.",
+                "on": "Алексеев Г."
+              },
+              {
+                "team": "away",
+                "minute": 60,
+                "off": "Михальцевич Т.",
+                "on": "Булат М."
+              }
+            ]
+          }
         },
         {
           "id": 3843536,
@@ -5624,7 +25625,117 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "scoreAway": 3,
           "played": true,
           "techDefeat": false,
-          "venue": "Московский (Скороход)"
+          "venue": "Московский (Скороход)",
+          "protocol": {
+            "goals": [
+              {
+                "team": "away",
+                "player": "Арнаут С.",
+                "minute": 27,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Румянцев М.",
+                "minute": 36,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Самсонов С.",
+                "minute": 53,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              }
+            ],
+            "cards": [
+              {
+                "team": "home",
+                "player": "Жданов М.",
+                "minute": 60,
+                "kind": "yellow"
+              }
+            ],
+            "subs": [
+              {
+                "team": "home",
+                "minute": 31,
+                "off": "Зюрин Т.",
+                "on": "Еникеев Т."
+              },
+              {
+                "team": "home",
+                "minute": 31,
+                "off": "Петров Д.",
+                "on": "Тищенко К."
+              },
+              {
+                "team": "away",
+                "minute": 40,
+                "off": "Грициненко Н.",
+                "on": "Мамлеев Т."
+              },
+              {
+                "team": "home",
+                "minute": 40,
+                "off": "Лагойда М.",
+                "on": "Вильде А."
+              },
+              {
+                "team": "away",
+                "minute": 45,
+                "off": "Бабенко Р.",
+                "on": "Васильев М."
+              },
+              {
+                "team": "away",
+                "minute": 45,
+                "off": "Ланда Г.",
+                "on": "Ашлапов Д."
+              },
+              {
+                "team": "away",
+                "minute": 45,
+                "off": "Румянцев М.",
+                "on": "Качанов Р."
+              },
+              {
+                "team": "away",
+                "minute": 51,
+                "off": "Силецкий М.",
+                "on": "Луговой М."
+              },
+              {
+                "team": "home",
+                "minute": 53,
+                "off": "Курбатов М.",
+                "on": "Маликов Н."
+              },
+              {
+                "team": "home",
+                "minute": 53,
+                "off": "Титов А.",
+                "on": "Белавенцев Н."
+              },
+              {
+                "team": "home",
+                "minute": 53,
+                "off": "Язьков М.",
+                "on": "Ботов В."
+              },
+              {
+                "team": "home",
+                "minute": 55,
+                "off": "Орлов А.",
+                "on": "Рейнталь И."
+              }
+            ]
+          }
         },
         {
           "id": 3843538,
@@ -5639,7 +25750,158 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "scoreAway": 6,
           "played": true,
           "techDefeat": false,
-          "venue": "СОШ 363"
+          "venue": "СОШ 363",
+          "protocol": {
+            "goals": [
+              {
+                "team": "away",
+                "player": "Сычёв Е.",
+                "minute": 21,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Медер Г.",
+                "minute": 24,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Воробьёв И.",
+                "minute": 29,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Кухновец Д.",
+                "minute": 47,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Громов М.",
+                "minute": 52,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Фахертдинов Д.",
+                "minute": 59,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              }
+            ],
+            "cards": [],
+            "subs": [
+              {
+                "team": "away",
+                "minute": 31,
+                "off": "Гаченков А.",
+                "on": "Егоров Д."
+              },
+              {
+                "team": "away",
+                "minute": 31,
+                "off": "Куцырев Е.",
+                "on": "Фахертдинов Д."
+              },
+              {
+                "team": "away",
+                "minute": 31,
+                "off": "Потульный А.",
+                "on": "Кухновец Д."
+              },
+              {
+                "team": "home",
+                "minute": 31,
+                "off": "Вишневский М.",
+                "on": "Кузьминых Г."
+              },
+              {
+                "team": "home",
+                "minute": 31,
+                "off": "Даянов Р.",
+                "on": "Лукаткин М."
+              },
+              {
+                "team": "home",
+                "minute": 31,
+                "off": "Лихобаба И.",
+                "on": "Шелуха И."
+              },
+              {
+                "team": "home",
+                "minute": 31,
+                "off": "Подковенко Т.",
+                "on": "Иванов И."
+              },
+              {
+                "team": "away",
+                "minute": 38,
+                "off": "Волков Б.",
+                "on": "Низамов Т."
+              },
+              {
+                "team": "away",
+                "minute": 38,
+                "off": "Медер Г.",
+                "on": "Громов М."
+              },
+              {
+                "team": "away",
+                "minute": 38,
+                "off": "Сычёв Е.",
+                "on": "Григорьев А."
+              },
+              {
+                "team": "away",
+                "minute": 39,
+                "off": "Большаков Д.",
+                "on": "Сидоров Д."
+              },
+              {
+                "team": "away",
+                "minute": 41,
+                "off": "Воробьёв И.",
+                "on": "Григорьев И."
+              },
+              {
+                "team": "home",
+                "minute": 46,
+                "off": "Романов Ф.",
+                "on": "Устинин Ф."
+              },
+              {
+                "team": "home",
+                "minute": 50,
+                "off": "Гусейнов А.",
+                "on": "Тимощенко И."
+              },
+              {
+                "team": "home",
+                "minute": 50,
+                "off": "Климов А.",
+                "on": "Чураков А."
+              },
+              {
+                "team": "away",
+                "minute": 52,
+                "off": "Колобов В.",
+                "on": "Громов Н."
+              }
+            ]
+          }
         },
         {
           "id": 3843542,
@@ -5655,7 +25917,167 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "played": true,
           "techDefeat": false,
           "venue": "СОШ № 303",
-          "videoSlug": "dO6HL45AD7o2mWJxiuZ4fj"
+          "videoSlug": "dO6HL45AD7o2mWJxiuZ4fj",
+          "protocol": {
+            "goals": [
+              {
+                "team": "home",
+                "player": "Ордин М.",
+                "minute": 6,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Ордин М.",
+                "minute": 25,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Яковлев П.",
+                "minute": 30,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Терентьев А.",
+                "minute": 48,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              }
+            ],
+            "cards": [
+              {
+                "team": "home",
+                "player": "Рыбаков С.",
+                "minute": 11,
+                "kind": "yellow"
+              },
+              {
+                "team": "home",
+                "player": "Яковлев П.",
+                "minute": 36,
+                "kind": "yellow"
+              },
+              {
+                "team": "away",
+                "player": "Рейнталь И.",
+                "minute": 40,
+                "kind": "yellow"
+              }
+            ],
+            "subs": [
+              {
+                "team": "home",
+                "minute": 37,
+                "off": "Костелов И.",
+                "on": "Дмитриев В."
+              },
+              {
+                "team": "home",
+                "minute": 37,
+                "off": "Максимов И.",
+                "on": "Анисимов Д."
+              },
+              {
+                "team": "home",
+                "minute": 37,
+                "off": "Яковлев П.",
+                "on": "Назима А."
+              },
+              {
+                "team": "home",
+                "minute": 42,
+                "off": "Ордин М.",
+                "on": "Терентьев А."
+              },
+              {
+                "team": "home",
+                "minute": 42,
+                "off": "Чернов Г.",
+                "on": "Брайцев Д."
+              },
+              {
+                "team": "away",
+                "minute": 43,
+                "off": "Курбатов М.",
+                "on": "Зюрин Т."
+              },
+              {
+                "team": "away",
+                "minute": 43,
+                "off": "Язьков М.",
+                "on": "Петров Д."
+              },
+              {
+                "team": "away",
+                "minute": 45,
+                "off": "Зиёев И.",
+                "on": "Орлов А."
+              },
+              {
+                "team": "away",
+                "minute": 45,
+                "off": "Лагойда М.",
+                "on": "Мерзляков М."
+              },
+              {
+                "team": "home",
+                "minute": 47,
+                "off": "Козлов А.",
+                "on": "Михайлов М."
+              },
+              {
+                "team": "home",
+                "minute": 47,
+                "off": "Шкуратов Д.",
+                "on": "Чайка А."
+              },
+              {
+                "team": "away",
+                "minute": 49,
+                "off": "Жданов М.",
+                "on": "Маликов Н."
+              },
+              {
+                "team": "home",
+                "minute": 49,
+                "off": "Бирулин Р.",
+                "on": "Мавлянов А."
+              },
+              {
+                "team": "home",
+                "minute": 49,
+                "off": "Рыбаков С.",
+                "on": "Ермаков М."
+              },
+              {
+                "team": "away",
+                "minute": 59,
+                "off": "Еникеев Т.",
+                "on": "Ботов В."
+              },
+              {
+                "team": "away",
+                "minute": 59,
+                "off": "Рейнталь И.",
+                "on": "Тищенко К."
+              },
+              {
+                "team": "away",
+                "minute": 60,
+                "off": "Вильде А.",
+                "on": "Белавенцев Н."
+              }
+            ]
+          }
         },
         {
           "id": 3843539,
@@ -5670,7 +26092,114 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "scoreAway": 2,
           "played": true,
           "techDefeat": false,
-          "venue": "СШОР Кировского района"
+          "venue": "СШОР Кировского района",
+          "protocol": {
+            "goals": [
+              {
+                "team": "away",
+                "player": "Егоров Д.",
+                "minute": 25,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Григорьев И.",
+                "minute": 47,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              }
+            ],
+            "cards": [],
+            "subs": [
+              {
+                "team": "away",
+                "minute": 31,
+                "off": "Громов М.",
+                "on": "Богомолов А."
+              },
+              {
+                "team": "away",
+                "minute": 36,
+                "off": "Куцырев Е.",
+                "on": "Фахертдинов Д."
+              },
+              {
+                "team": "away",
+                "minute": 36,
+                "off": "Потульный А.",
+                "on": "Кухновец Д."
+              },
+              {
+                "team": "away",
+                "minute": 40,
+                "off": "Любимов Д.",
+                "on": "Григорьев А."
+              },
+              {
+                "team": "away",
+                "minute": 40,
+                "off": "Сычёв Е.",
+                "on": "Низамов Т."
+              },
+              {
+                "team": "home",
+                "minute": 43,
+                "off": "Бардашов В.",
+                "on": "Тальдрик К."
+              },
+              {
+                "team": "home",
+                "minute": 43,
+                "off": "Семенов И.",
+                "on": "Тоноян Т."
+              },
+              {
+                "team": "away",
+                "minute": 46,
+                "off": "Большаков Д.",
+                "on": "Сидоров Д."
+              },
+              {
+                "team": "away",
+                "minute": 46,
+                "off": "Медер Г.",
+                "on": "Григорьев И."
+              },
+              {
+                "team": "home",
+                "minute": 52,
+                "off": "Курбанов М.",
+                "on": "Равшанов С."
+              },
+              {
+                "team": "home",
+                "minute": 52,
+                "off": "Фабричнов А.",
+                "on": "Саламатин Д."
+              },
+              {
+                "team": "home",
+                "minute": 54,
+                "off": "Бигин Д.",
+                "on": "Комчаков Г."
+              },
+              {
+                "team": "home",
+                "minute": 54,
+                "off": "Григоренко Д.",
+                "on": "Алексеев Г."
+              },
+              {
+                "team": "home",
+                "minute": 54,
+                "off": "Мукаиршоев М.",
+                "on": "Булат М."
+              }
+            ]
+          }
         },
         {
           "id": 3843541,
@@ -5686,7 +26215,107 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "played": true,
           "techDefeat": false,
           "venue": "ЦФКСиЗ Василеостровского района",
-          "videoSlug": "i1BmLBbUT33c1aCCCHKX7K"
+          "videoSlug": "i1BmLBbUT33c1aCCCHKX7K",
+          "protocol": {
+            "goals": [
+              {
+                "team": "home",
+                "player": "Самсонов С.",
+                "minute": 2,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Румянцев М.",
+                "minute": 13,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Грициненко Н.",
+                "minute": 27,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Румянцев М.",
+                "minute": 29,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Мамлеев Т.",
+                "minute": 37,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Игнатьев М.",
+                "minute": 40,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Василенко А.",
+                "minute": 67,
+                "assist": null,
+                "kind": "penalty",
+                "addedTime": false
+              }
+            ],
+            "cards": [
+              {
+                "team": "away",
+                "player": "Савичев А.",
+                "minute": 53,
+                "kind": "yellow"
+              }
+            ],
+            "subs": [
+              {
+                "team": "home",
+                "minute": 31,
+                "off": "Ашлапов Д.",
+                "on": "Мамлеев Т."
+              },
+              {
+                "team": "home",
+                "minute": 31,
+                "off": "Бабенко Р.",
+                "on": "Васильев М."
+              },
+              {
+                "team": "away",
+                "minute": 31,
+                "off": "Аверьянов Р.",
+                "on": "Игнатьев М."
+              },
+              {
+                "team": "home",
+                "minute": 40,
+                "off": "Грициненко Н.",
+                "on": "Пекшин Н."
+              },
+              {
+                "team": "away",
+                "minute": 45,
+                "off": "Ясинский М.",
+                "on": "Михайленко Е."
+              }
+            ]
+          }
         },
         {
           "id": 3843543,
@@ -5701,7 +26330,99 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "scoreAway": 0,
           "played": true,
           "techDefeat": false,
-          "venue": "Балтика"
+          "venue": "Балтика",
+          "protocol": {
+            "goals": [
+              {
+                "team": "home",
+                "player": "Леонтьев А.",
+                "minute": 29,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Кухарчук А.",
+                "minute": 53,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Котлуков М.",
+                "minute": 59,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              }
+            ],
+            "cards": [
+              {
+                "team": "away",
+                "player": "Колесников А.",
+                "minute": 45,
+                "kind": "yellow"
+              },
+              {
+                "team": "away",
+                "player": "Ларчиков Д.",
+                "minute": 51,
+                "kind": "yellow"
+              }
+            ],
+            "subs": [
+              {
+                "team": "home",
+                "minute": 31,
+                "off": "Соцкий Ф.",
+                "on": "Кухарчук А."
+              },
+              {
+                "team": "away",
+                "minute": 31,
+                "off": "Жарких Д.",
+                "on": "Лукинский В."
+              },
+              {
+                "team": "away",
+                "minute": 40,
+                "off": "Игнат А.",
+                "on": "Альтшулер М."
+              },
+              {
+                "team": "away",
+                "minute": 44,
+                "off": "Гусев А.",
+                "on": "Ларчиков Д."
+              },
+              {
+                "team": "away",
+                "minute": 52,
+                "off": "Ларчиков Д.",
+                "on": "Петров А."
+              },
+              {
+                "team": "home",
+                "minute": 56,
+                "off": "Ткаченко Б.",
+                "on": "Поздняков Е."
+              },
+              {
+                "team": "home",
+                "minute": 59,
+                "off": "Игнатьев К.",
+                "on": "Сатосов Р."
+              },
+              {
+                "team": "home",
+                "minute": 59,
+                "off": "Нургалиев С.",
+                "on": "Артюшин К."
+              }
+            ]
+          }
         },
         {
           "id": 3843540,
@@ -5717,7 +26438,140 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "played": true,
           "techDefeat": false,
           "venue": "Московский (Скороход)",
-          "videoSlug": "WIo8oK5O7SWpiNw9x2QZug"
+          "videoSlug": "WIo8oK5O7SWpiNw9x2QZug",
+          "protocol": {
+            "goals": [
+              {
+                "team": "home",
+                "player": "Викулов А.",
+                "minute": 18,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Моисеенко В.",
+                "minute": 36,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Загряжский А.",
+                "minute": 38,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Викулов А.",
+                "minute": 54,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Моисеенко В.",
+                "minute": 57,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Викулов А.",
+                "minute": 59,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              }
+            ],
+            "cards": [],
+            "subs": [
+              {
+                "team": "away",
+                "minute": 31,
+                "off": "Даянов Р.",
+                "on": "Иванов И."
+              },
+              {
+                "team": "away",
+                "minute": 31,
+                "off": "Романов Ф.",
+                "on": "Михайлов Е."
+              },
+              {
+                "team": "home",
+                "minute": 31,
+                "off": "Веселов В.",
+                "on": "Петраков А."
+              },
+              {
+                "team": "home",
+                "minute": 31,
+                "off": "Шипилин А.",
+                "on": "Гулиев Э."
+              },
+              {
+                "team": "home",
+                "minute": 36,
+                "off": "Коган Л.",
+                "on": "Саркисян Г."
+              },
+              {
+                "team": "away",
+                "minute": 39,
+                "off": "Вишневский М.",
+                "on": "Гурьянов Д."
+              },
+              {
+                "team": "away",
+                "minute": 39,
+                "off": "Климов А.",
+                "on": "Кузьминых Г."
+              },
+              {
+                "team": "away",
+                "minute": 39,
+                "off": "Подковенко Т.",
+                "on": "Устинин Ф."
+              },
+              {
+                "team": "home",
+                "minute": 42,
+                "off": "Колпачников М.",
+                "on": "Федченко Н."
+              },
+              {
+                "team": "away",
+                "minute": 50,
+                "off": "Лихобаба И.",
+                "on": "Тимощенко И."
+              },
+              {
+                "team": "away",
+                "minute": 50,
+                "off": "Шелуха И.",
+                "on": "Чураков А."
+              },
+              {
+                "team": "home",
+                "minute": 50,
+                "off": "Кулебякин М.",
+                "on": "Габов Е."
+              },
+              {
+                "team": "home",
+                "minute": 50,
+                "off": "Носков А.",
+                "on": "Коваль Е."
+              }
+            ]
+          }
         },
         {
           "id": 3843544,
@@ -5732,7 +26586,81 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "scoreAway": 2,
           "played": true,
           "techDefeat": false,
-          "venue": "Балтика"
+          "venue": "Балтика",
+          "protocol": {
+            "goals": [
+              {
+                "team": "home",
+                "player": "Логвин М.",
+                "minute": 19,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Семенченко И.",
+                "minute": 26,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Саламатин Д.",
+                "minute": 60,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": true
+              }
+            ],
+            "cards": [
+              {
+                "team": "home",
+                "player": "Марейчев М.",
+                "minute": 57,
+                "kind": "yellow"
+              }
+            ],
+            "subs": [
+              {
+                "team": "home",
+                "minute": 31,
+                "off": "Левашов М.",
+                "on": "Альтшулер М."
+              },
+              {
+                "team": "away",
+                "minute": 50,
+                "off": "Фабричнов А.",
+                "on": "Саламатин Д."
+              },
+              {
+                "team": "home",
+                "minute": 50,
+                "off": "Игнат А.",
+                "on": "Ларчиков Д."
+              },
+              {
+                "team": "away",
+                "minute": 56,
+                "off": "Бардашов В.",
+                "on": "Киселев М."
+              },
+              {
+                "team": "home",
+                "minute": 56,
+                "off": "Гусев А.",
+                "on": "Петров А."
+              },
+              {
+                "team": "away",
+                "minute": 60,
+                "off": "Тоноян Т.",
+                "on": "Комчаков Г."
+              }
+            ]
+          }
         },
         {
           "id": 3843545,
@@ -5747,7 +26675,89 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "scoreAway": 4,
           "played": true,
           "techDefeat": false,
-          "venue": "Московский (Скороход)"
+          "venue": "Московский (Скороход)",
+          "protocol": {
+            "goals": [
+              {
+                "team": "away",
+                "player": "Нургалиев С.",
+                "minute": 3,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Нургалиев С.",
+                "minute": 22,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Соцкий Ф.",
+                "minute": 29,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Нургалиев С.",
+                "minute": 56,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              }
+            ],
+            "cards": [
+              {
+                "team": "home",
+                "player": "Рейнталь И.",
+                "minute": 23,
+                "kind": "yellow"
+              }
+            ],
+            "subs": [
+              {
+                "team": "away",
+                "minute": 31,
+                "off": "Котлуков М.",
+                "on": "Кухарчук А."
+              },
+              {
+                "team": "home",
+                "minute": 31,
+                "off": "Рейнталь И.",
+                "on": "Петров Д."
+              },
+              {
+                "team": "home",
+                "minute": 44,
+                "off": "Широков А.",
+                "on": "Зиёев И."
+              },
+              {
+                "team": "away",
+                "minute": 46,
+                "off": "Ткаченко Б.",
+                "on": "Поздняков Е."
+              },
+              {
+                "team": "home",
+                "minute": 55,
+                "off": "Вильде А.",
+                "on": "Ботов В."
+              },
+              {
+                "team": "away",
+                "minute": 57,
+                "off": "Игнатьев К.",
+                "on": "Сатосов Р."
+              }
+            ]
+          }
         },
         {
           "id": 3843548,
@@ -5762,7 +26772,155 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "scoreAway": 4,
           "played": true,
           "techDefeat": false,
-          "venue": "ЦФК Красногвардейского района"
+          "venue": "ЦФК Красногвардейского района",
+          "protocol": {
+            "goals": [
+              {
+                "team": "away",
+                "player": "Моисеенко В.",
+                "minute": 2,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Куцырев Е.",
+                "minute": 11,
+                "assist": null,
+                "kind": "penalty",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Моисеенко В.",
+                "minute": 21,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Воробьёв И.",
+                "minute": 24,
+                "assist": null,
+                "kind": "penalty",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Большаков Д.",
+                "minute": 25,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Носков А.",
+                "minute": 32,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Моисеенко В.",
+                "minute": 45,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              }
+            ],
+            "cards": [
+              {
+                "team": "home",
+                "player": "Никитин И.",
+                "minute": 0,
+                "kind": "red"
+              },
+              {
+                "team": "home",
+                "player": "Егоров Д.",
+                "minute": 58,
+                "kind": "yellow_to_red"
+              },
+              {
+                "team": "home",
+                "player": "Егоров Д.",
+                "minute": 59,
+                "kind": "yellow_to_red"
+              }
+            ],
+            "subs": [
+              {
+                "team": "home",
+                "minute": 31,
+                "off": "Сычёв Е.",
+                "on": "Фахертдинов Д."
+              },
+              {
+                "team": "away",
+                "minute": 31,
+                "off": "Гулиев Э.",
+                "on": "Шипилин А."
+              },
+              {
+                "team": "home",
+                "minute": 34,
+                "off": "Куцырев Е.",
+                "on": "Богомолов А."
+              },
+              {
+                "team": "home",
+                "minute": 37,
+                "off": "Волков Б.",
+                "on": "Низамов Т."
+              },
+              {
+                "team": "home",
+                "minute": 42,
+                "off": "Потульный А.",
+                "on": "Кухновец Д."
+              },
+              {
+                "team": "home",
+                "minute": 48,
+                "off": "Медер Г.",
+                "on": "Громов М."
+              },
+              {
+                "team": "away",
+                "minute": 48,
+                "off": "Коган Л.",
+                "on": "Веселов В."
+              },
+              {
+                "team": "away",
+                "minute": 48,
+                "off": "Колпачников М.",
+                "on": "Коваль Е."
+              },
+              {
+                "team": "home",
+                "minute": 49,
+                "off": "Большаков Д.",
+                "on": "Григорьев А."
+              },
+              {
+                "team": "away",
+                "minute": 52,
+                "off": "Загряжский А.",
+                "on": "Федченко Н."
+              },
+              {
+                "team": "away",
+                "minute": 52,
+                "off": "Кулебякин М.",
+                "on": "Петраков А."
+              }
+            ]
+          }
         },
         {
           "id": 3843546,
@@ -5778,7 +26936,186 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "played": true,
           "techDefeat": false,
           "venue": "Спартак",
-          "videoSlug": "VbgjfFdweDXZ74L75p29Tu"
+          "videoSlug": "VbgjfFdweDXZ74L75p29Tu",
+          "protocol": {
+            "goals": [
+              {
+                "team": "away",
+                "player": "Бирулин Р.",
+                "minute": 1,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Бирулин Р.",
+                "minute": 11,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Назима А.",
+                "minute": 21,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Назима А.",
+                "minute": 27,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Назима А.",
+                "minute": 30,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Ордин М.",
+                "minute": 30,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": true
+              },
+              {
+                "team": "away",
+                "player": "Терентьев А.",
+                "minute": 37,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Терентьев А.",
+                "minute": 41,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Мавлянов А.",
+                "minute": 43,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Чайка А.",
+                "minute": 58,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Терентьев А.",
+                "minute": 60,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": true
+              }
+            ],
+            "cards": [],
+            "subs": [
+              {
+                "team": "away",
+                "minute": 31,
+                "off": "Максимов И.",
+                "on": "Брайцев Д."
+              },
+              {
+                "team": "away",
+                "minute": 31,
+                "off": "Саидов А.",
+                "on": "Анисимов Д."
+              },
+              {
+                "team": "away",
+                "minute": 31,
+                "off": "Чернов Г.",
+                "on": "Яковлев П."
+              },
+              {
+                "team": "home",
+                "minute": 31,
+                "off": "Аверьянов Д.",
+                "on": "Ангелов И."
+              },
+              {
+                "team": "home",
+                "minute": 31,
+                "off": "Игнатьев М.",
+                "on": "Маслей Д."
+              },
+              {
+                "team": "home",
+                "minute": 31,
+                "off": "Лавров А.",
+                "on": "Дмитриев А."
+              },
+              {
+                "team": "home",
+                "minute": 31,
+                "off": "Моисеев Я.",
+                "on": "Шаститко Я."
+              },
+              {
+                "team": "away",
+                "minute": 34,
+                "off": "Бирулин Р.",
+                "on": "Терентьев А."
+              },
+              {
+                "team": "away",
+                "minute": 34,
+                "off": "Козлов А.",
+                "on": "Дмитриев В."
+              },
+              {
+                "team": "away",
+                "minute": 34,
+                "off": "Назима А.",
+                "on": "Мавлянов А."
+              },
+              {
+                "team": "away",
+                "minute": 38,
+                "off": "Костелов И.",
+                "on": "Ермаков М."
+              },
+              {
+                "team": "away",
+                "minute": 38,
+                "off": "Ордин М.",
+                "on": "Михайлов М."
+              },
+              {
+                "team": "away",
+                "minute": 38,
+                "off": "Шкуратов Д.",
+                "on": "Чайка А."
+              },
+              {
+                "team": "home",
+                "minute": 42,
+                "off": "Лосев И.",
+                "on": "Гарист А."
+              }
+            ]
+          }
         },
         {
           "id": 3843547,
@@ -5793,7 +27130,133 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "scoreAway": 5,
           "played": true,
           "techDefeat": false,
-          "venue": "СОШ 363"
+          "venue": "СОШ 363",
+          "protocol": {
+            "goals": [
+              {
+                "team": "away",
+                "player": "Силецкий М.",
+                "minute": 10,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Распереза А.",
+                "minute": 16,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Румянцев М.",
+                "minute": 26,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Румянцев М.",
+                "minute": 40,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Шенер М.",
+                "minute": 56,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              }
+            ],
+            "cards": [
+              {
+                "team": "home",
+                "player": "Лукаткин М.",
+                "minute": 56,
+                "kind": "yellow"
+              }
+            ],
+            "subs": [
+              {
+                "team": "home",
+                "minute": 17,
+                "off": "Климов А.",
+                "on": "Лукаткин М."
+              },
+              {
+                "team": "away",
+                "minute": 30,
+                "off": "Бабенко Р.",
+                "on": "Васильев М."
+              },
+              {
+                "team": "home",
+                "minute": 30,
+                "off": "Беляков Г.",
+                "on": "Гурьянов Д."
+              },
+              {
+                "team": "away",
+                "minute": 38,
+                "off": "Мамлеев Т.",
+                "on": "Ашлапов Д."
+              },
+              {
+                "team": "away",
+                "minute": 40,
+                "off": "Чужков Г.",
+                "on": "Рылин Ф."
+              },
+              {
+                "team": "home",
+                "minute": 40,
+                "off": "Подковенко Т.",
+                "on": "Тимощенко И."
+              },
+              {
+                "team": "home",
+                "minute": 40,
+                "off": "Романов Ф.",
+                "on": "Даянов Р."
+              },
+              {
+                "team": "away",
+                "minute": 45,
+                "off": "Бандиков М.",
+                "on": "Луговой М."
+              },
+              {
+                "team": "away",
+                "minute": 45,
+                "off": "Ланда Г.",
+                "on": "Иванов Р."
+              },
+              {
+                "team": "home",
+                "minute": 47,
+                "off": "Вишневский М.",
+                "on": "Иванов И."
+              },
+              {
+                "team": "home",
+                "minute": 47,
+                "off": "Манукин Р.",
+                "on": "Устинин Ф."
+              },
+              {
+                "team": "home",
+                "minute": 47,
+                "off": "Шелуха И.",
+                "on": "Кузьминых Г."
+              }
+            ]
+          }
         },
         {
           "id": 3843551,
@@ -5809,7 +27272,168 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "played": true,
           "techDefeat": false,
           "venue": "СОШ № 303",
-          "videoSlug": "rCzhXDDWtkY1MF3RFgCyUN"
+          "videoSlug": "rCzhXDDWtkY1MF3RFgCyUN",
+          "protocol": {
+            "goals": [
+              {
+                "team": "away",
+                "player": "Назима А.",
+                "minute": 2,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Бирулин Р.",
+                "minute": 15,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Бирулин Р.",
+                "minute": 19,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Терентьев А.",
+                "minute": 34,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Саидов А.",
+                "minute": 38,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Саидов А.",
+                "minute": 53,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Саидов А.",
+                "minute": 55,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Назима А.",
+                "minute": 57,
+                "assist": null,
+                "kind": "penalty",
+                "addedTime": false
+              }
+            ],
+            "cards": [],
+            "subs": [
+              {
+                "team": "home",
+                "minute": 19,
+                "off": "Беляков Г.",
+                "on": "Климов А."
+              },
+              {
+                "team": "away",
+                "minute": 31,
+                "off": "Бирулин Р.",
+                "on": "Анисимов Д."
+              },
+              {
+                "team": "away",
+                "minute": 31,
+                "off": "Дмитриев В.",
+                "on": "Власов М."
+              },
+              {
+                "team": "away",
+                "minute": 31,
+                "off": "Ермаков М.",
+                "on": "Козлов А."
+              },
+              {
+                "team": "away",
+                "minute": 31,
+                "off": "Лебедев А.",
+                "on": "Костелов И."
+              },
+              {
+                "team": "away",
+                "minute": 31,
+                "off": "Мавлянов А.",
+                "on": "Саидов А."
+              },
+              {
+                "team": "away",
+                "minute": 31,
+                "off": "Максимов И.",
+                "on": "Терентьев А."
+              },
+              {
+                "team": "away",
+                "minute": 31,
+                "off": "Михайлов М.",
+                "on": "Шкуратов Д."
+              },
+              {
+                "team": "away",
+                "minute": 31,
+                "off": "Ордин М.",
+                "on": "Яковлев П."
+              },
+              {
+                "team": "home",
+                "minute": 39,
+                "off": "Иванов И.",
+                "on": "Даянов Р."
+              },
+              {
+                "team": "away",
+                "minute": 39,
+                "off": "Брайцев Д.",
+                "on": "Чернов Г."
+              },
+              {
+                "team": "home",
+                "minute": 50,
+                "off": "Лихобаба И.",
+                "on": "Устинин Ф."
+              },
+              {
+                "team": "home",
+                "minute": 50,
+                "off": "Лукаткин М.",
+                "on": "Кузьминых Г."
+              },
+              {
+                "team": "home",
+                "minute": 50,
+                "off": "Шелуха И.",
+                "on": "Тимощенко И."
+              },
+              {
+                "team": "home",
+                "minute": 58,
+                "off": "Манукин Р.",
+                "on": "Гурьянов Д."
+              }
+            ]
+          }
         },
         {
           "id": 3843549,
@@ -5825,7 +27449,91 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "played": true,
           "techDefeat": false,
           "venue": "СШОР Кировского района",
-          "videoSlug": "BZRdTqgrR7gkBpnhvYtpnJ"
+          "videoSlug": "BZRdTqgrR7gkBpnhvYtpnJ",
+          "protocol": {
+            "goals": [
+              {
+                "team": "away",
+                "player": "Меркель И.",
+                "minute": 33,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Меркель И.",
+                "minute": 37,
+                "assist": null,
+                "kind": "penalty",
+                "addedTime": false
+              }
+            ],
+            "cards": [
+              {
+                "team": "away",
+                "player": "Вагин Д.",
+                "minute": 41,
+                "kind": "yellow"
+              }
+            ],
+            "subs": [
+              {
+                "team": "away",
+                "minute": 31,
+                "off": "Веселов В.",
+                "on": "Меркель И."
+              },
+              {
+                "team": "away",
+                "minute": 31,
+                "off": "Гулиев Э.",
+                "on": "Шипилин А."
+              },
+              {
+                "team": "away",
+                "minute": 42,
+                "off": "Петраков А.",
+                "on": "Коваль Е."
+              },
+              {
+                "team": "home",
+                "minute": 46,
+                "off": "Бардашов В.",
+                "on": "Тоноян Т."
+              },
+              {
+                "team": "home",
+                "minute": 46,
+                "off": "Фабричнов А.",
+                "on": "Саламатин Д."
+              },
+              {
+                "team": "away",
+                "minute": 53,
+                "off": "Загряжский А.",
+                "on": "Габов Е."
+              },
+              {
+                "team": "away",
+                "minute": 53,
+                "off": "Кулебякин М.",
+                "on": "Федченко Н."
+              },
+              {
+                "team": "home",
+                "minute": 53,
+                "off": "Григоренко Д.",
+                "on": "Алексеев Г."
+              },
+              {
+                "team": "home",
+                "minute": 53,
+                "off": "Денисенко Д.",
+                "on": "Комчаков Г."
+              }
+            ]
+          }
         },
         {
           "id": 3843550,
@@ -5841,7 +27549,90 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "played": true,
           "techDefeat": false,
           "venue": "ЦФК Красногвардейского района",
-          "videoSlug": "H6tlQrvLkbVq5p5wEIrs1f"
+          "videoSlug": "H6tlQrvLkbVq5p5wEIrs1f",
+          "protocol": {
+            "goals": [
+              {
+                "team": "home",
+                "player": "Богомолов А.",
+                "minute": 8,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Богомолов А.",
+                "minute": 25,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              }
+            ],
+            "cards": [],
+            "subs": [
+              {
+                "team": "home",
+                "minute": 26,
+                "off": "Богомолов А.",
+                "on": "Григорьев И."
+              },
+              {
+                "team": "home",
+                "minute": 36,
+                "off": "Сычёв Е.",
+                "on": "Фахертдинов Д."
+              },
+              {
+                "team": "away",
+                "minute": 36,
+                "off": "Силецкий М.",
+                "on": "Мамлеев Т."
+              },
+              {
+                "team": "home",
+                "minute": 39,
+                "off": "Потульный А.",
+                "on": "Кухновец Д."
+              },
+              {
+                "team": "home",
+                "minute": 44,
+                "off": "Воробьёв И.",
+                "on": "Куцырев Е."
+              },
+              {
+                "team": "away",
+                "minute": 44,
+                "off": "Ланда Г.",
+                "on": "Качанов Р."
+              },
+              {
+                "team": "away",
+                "minute": 44,
+                "off": "Чужков Г.",
+                "on": "Ашлапов Д."
+              },
+              {
+                "team": "home",
+                "minute": 50,
+                "off": "Большаков Д.",
+                "on": "Сидоров Д."
+              },
+              {
+                "team": "home",
+                "minute": 53,
+                "off": "Григорьев И.",
+                "on": "Громов М."
+              },
+              {
+                "team": "home",
+                "minute": 59,
+                "off": "Медер Г.",
+                "on": "Григорьев А."
+              }
+            ]
+          }
         },
         {
           "id": 3843553,
@@ -5856,7 +27647,95 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "scoreAway": 3,
           "played": true,
           "techDefeat": false,
-          "venue": "Московский (Скороход)"
+          "venue": "Московский (Скороход)",
+          "protocol": {
+            "goals": [
+              {
+                "team": "home",
+                "player": "Зюрин Т.",
+                "minute": 27,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Альтшулер М.",
+                "minute": 28,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Альтшулер М.",
+                "minute": 35,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Лукинский В.",
+                "minute": 60,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": true
+              }
+            ],
+            "cards": [
+              {
+                "team": "home",
+                "player": "Рейнталь И.",
+                "minute": 25,
+                "kind": "yellow"
+              }
+            ],
+            "subs": [
+              {
+                "team": "away",
+                "minute": 30,
+                "off": "Ларчиков Д.",
+                "on": "Киселев И."
+              },
+              {
+                "team": "away",
+                "minute": 35,
+                "off": "Гусев А.",
+                "on": "Лукинский В."
+              },
+              {
+                "team": "home",
+                "minute": 42,
+                "off": "Орлов А.",
+                "on": "Мерзляков М."
+              },
+              {
+                "team": "away",
+                "minute": 42,
+                "off": "Игнат А.",
+                "on": "Левашов М."
+              },
+              {
+                "team": "home",
+                "minute": 49,
+                "off": "Зюрин Т.",
+                "on": "Вильде А."
+              },
+              {
+                "team": "away",
+                "minute": 55,
+                "off": "Альтшулер М.",
+                "on": "Гадиев С."
+              },
+              {
+                "team": "home",
+                "minute": 57,
+                "off": "Рейнталь И.",
+                "on": "Язьков М."
+              }
+            ]
+          }
         },
         {
           "id": 3843552,
@@ -5872,7 +27751,149 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "played": true,
           "techDefeat": false,
           "venue": "Спартак",
-          "videoSlug": "eMf4WCFr0CSqgN2ZjJQpwL"
+          "videoSlug": "eMf4WCFr0CSqgN2ZjJQpwL",
+          "protocol": {
+            "goals": [
+              {
+                "team": "away",
+                "player": "Котлуков М.",
+                "minute": 2,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Солонов Т.",
+                "minute": 5,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Леонтьев А.",
+                "minute": 14,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Соцкий Ф.",
+                "minute": 30,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Куликовский Д.",
+                "minute": 52,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Куликовский Д.",
+                "minute": 53,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Куликовский Д.",
+                "minute": 58,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              }
+            ],
+            "cards": [
+              {
+                "team": "home",
+                "player": "Аверьянов Д.",
+                "minute": 32,
+                "kind": "yellow"
+              }
+            ],
+            "subs": [
+              {
+                "team": "away",
+                "minute": 31,
+                "off": "Поздняков Е.",
+                "on": "Ткаченко Б."
+              },
+              {
+                "team": "home",
+                "minute": 40,
+                "off": "Аверьянов Р.",
+                "on": "Ясинский М."
+              },
+              {
+                "team": "home",
+                "minute": 40,
+                "off": "Дмитриев А.",
+                "on": "Лебедев С."
+              },
+              {
+                "team": "home",
+                "minute": 40,
+                "off": "Лавров А.",
+                "on": "Михайленко Е."
+              },
+              {
+                "team": "away",
+                "minute": 42,
+                "off": "Боровик П.",
+                "on": "Чепиков В."
+              },
+              {
+                "team": "away",
+                "minute": 42,
+                "off": "Котлуков М.",
+                "on": "Куликовский Д."
+              },
+              {
+                "team": "away",
+                "minute": 42,
+                "off": "Соцкий Ф.",
+                "on": "Кухарчук А."
+              },
+              {
+                "team": "home",
+                "minute": 44,
+                "off": "Игнатьев М.",
+                "on": "Ангелов И."
+              },
+              {
+                "team": "home",
+                "minute": 44,
+                "off": "Лосев И.",
+                "on": "Гарист А."
+              },
+              {
+                "team": "away",
+                "minute": 51,
+                "off": "Игнатьев К.",
+                "on": "Савченко Д."
+              },
+              {
+                "team": "away",
+                "minute": 51,
+                "off": "Нургалиев С.",
+                "on": "Артюшин К."
+              },
+              {
+                "team": "away",
+                "minute": 51,
+                "off": "Солонов Т.",
+                "on": "Сатосов Р."
+              }
+            ]
+          }
         },
         {
           "id": 3843555,
@@ -5887,7 +27908,66 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "scoreAway": 2,
           "played": true,
           "techDefeat": false,
-          "venue": "Балтика"
+          "venue": "Балтика",
+          "protocol": {
+            "goals": [
+              {
+                "team": "home",
+                "player": "Лукинский В.",
+                "minute": 6,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Василенко А.",
+                "minute": 13,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Журавлев Д.",
+                "minute": 22,
+                "assist": null,
+                "kind": "own_goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Андреев А.",
+                "minute": 24,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Лукинский В.",
+                "minute": 55,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              }
+            ],
+            "cards": [],
+            "subs": [
+              {
+                "team": "home",
+                "minute": 56,
+                "off": "Логвин М.",
+                "on": "Гадиев С."
+              },
+              {
+                "team": "home",
+                "minute": 58,
+                "off": "Альтшулер М.",
+                "on": "Ларчиков Д."
+              }
+            ]
+          }
         },
         {
           "id": 3843554,
@@ -5902,7 +27982,99 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "scoreAway": 2,
           "played": true,
           "techDefeat": false,
-          "venue": "Московский (Скороход)"
+          "venue": "Московский (Скороход)",
+          "protocol": {
+            "goals": [
+              {
+                "team": "away",
+                "player": "Фабричнов А.",
+                "minute": 9,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Бардашов В.",
+                "minute": 22,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Титов А.",
+                "minute": 24,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              }
+            ],
+            "cards": [
+              {
+                "team": "away",
+                "player": "Пантелеев Л.",
+                "minute": 35,
+                "kind": "yellow"
+              }
+            ],
+            "subs": [
+              {
+                "team": "home",
+                "minute": 31,
+                "off": "Зюрин Т.",
+                "on": "Зиёев И."
+              },
+              {
+                "team": "away",
+                "minute": 31,
+                "off": "Саламатин Д.",
+                "on": "Курбанов М."
+              },
+              {
+                "team": "away",
+                "minute": 42,
+                "off": "Тоноян Т.",
+                "on": "Комчаков Г."
+              },
+              {
+                "team": "home",
+                "minute": 44,
+                "off": "Тищенко К.",
+                "on": "Лагойда М."
+              },
+              {
+                "team": "away",
+                "minute": 47,
+                "off": "Фабричнов А.",
+                "on": "Киселев М."
+              },
+              {
+                "team": "away",
+                "minute": 52,
+                "off": "Пантелеев Л.",
+                "on": "Егоров Д."
+              },
+              {
+                "team": "home",
+                "minute": 54,
+                "off": "Еникеев Т.",
+                "on": "Вильде А."
+              },
+              {
+                "team": "away",
+                "minute": 57,
+                "off": "Бардашов В.",
+                "on": "Тальдрик К."
+              },
+              {
+                "team": "home",
+                "minute": 58,
+                "off": "Титов А.",
+                "on": "Ботов В."
+              }
+            ]
+          }
         },
         {
           "id": 3843556,
@@ -5917,7 +28089,129 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "scoreAway": 0,
           "played": true,
           "techDefeat": false,
-          "venue": "Балтика"
+          "venue": "Балтика",
+          "protocol": {
+            "goals": [
+              {
+                "team": "home",
+                "player": "Соцкий Ф.",
+                "minute": 12,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Нургалиев С.",
+                "minute": 25,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Котлуков М.",
+                "minute": 34,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Куликовский Д.",
+                "minute": 41,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Трофимов М.",
+                "minute": 47,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Куликовский Д.",
+                "minute": 48,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              }
+            ],
+            "cards": [
+              {
+                "team": "home",
+                "player": "Куликовский Д.",
+                "minute": 54,
+                "kind": "yellow"
+              }
+            ],
+            "subs": [
+              {
+                "team": "home",
+                "minute": 31,
+                "off": "Кухарчук А.",
+                "on": "Котлуков М."
+              },
+              {
+                "team": "home",
+                "minute": 31,
+                "off": "Поздняков Е.",
+                "on": "Ткаченко Б."
+              },
+              {
+                "team": "home",
+                "minute": 31,
+                "off": "Соцкий Ф.",
+                "on": "Куликовский Д."
+              },
+              {
+                "team": "away",
+                "minute": 31,
+                "off": "Иванов И.",
+                "on": "Тимощенко И."
+              },
+              {
+                "team": "away",
+                "minute": 31,
+                "off": "Романов Ф.",
+                "on": "Даянов Р."
+              },
+              {
+                "team": "away",
+                "minute": 42,
+                "off": "Климов А.",
+                "on": "Гурьянов Д."
+              },
+              {
+                "team": "away",
+                "minute": 45,
+                "off": "Лукаткин М.",
+                "on": "Кузьминых Г."
+              },
+              {
+                "team": "home",
+                "minute": 46,
+                "off": "Игнатьев К.",
+                "on": "Сатосов Р."
+              },
+              {
+                "team": "home",
+                "minute": 46,
+                "off": "Нургалиев С.",
+                "on": "Артюшин К."
+              },
+              {
+                "team": "home",
+                "minute": 51,
+                "off": "Солонов Т.",
+                "on": "Кирюхин Ф."
+              }
+            ]
+          }
         },
         {
           "id": 3843558,
@@ -5932,7 +28226,105 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "scoreAway": 4,
           "played": true,
           "techDefeat": false,
-          "venue": "ЦФКСиЗ Василеостровского района"
+          "venue": "ЦФКСиЗ Василеостровского района",
+          "protocol": {
+            "goals": [
+              {
+                "team": "away",
+                "player": "Моисеенко В.",
+                "minute": 6,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Викулов А.",
+                "minute": 29,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Моисеенко В.",
+                "minute": 41,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Арнаут С.",
+                "minute": 52,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "home",
+                "player": "Бандиков М.",
+                "minute": 60,
+                "assist": null,
+                "kind": "penalty",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Габов Е.",
+                "minute": 60,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": true
+              }
+            ],
+            "cards": [
+              {
+                "team": "away",
+                "player": "Вагин Д.",
+                "minute": 55,
+                "kind": "yellow"
+              },
+              {
+                "team": "away",
+                "player": "Веселов В.",
+                "minute": 59,
+                "kind": "yellow"
+              }
+            ],
+            "subs": [
+              {
+                "team": "away",
+                "minute": 31,
+                "off": "Гулиев Э.",
+                "on": "Шипилин А."
+              },
+              {
+                "team": "away",
+                "minute": 37,
+                "off": "Петраков А.",
+                "on": "Веселов В."
+              },
+              {
+                "team": "home",
+                "minute": 43,
+                "off": "Грициненко Н.",
+                "on": "Рылин Ф."
+              },
+              {
+                "team": "home",
+                "minute": 43,
+                "off": "Ланда Г.",
+                "on": "Качанов Р."
+              },
+              {
+                "team": "away",
+                "minute": 54,
+                "off": "Меркель И.",
+                "on": "Габов Е."
+              }
+            ]
+          }
         },
         {
           "id": 3843557,
@@ -5942,12 +28334,96 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "away": "Пороховчанин-Тосно",
           "homeLogo": "https://img.nagradion.ru/images/bf300x500/shields/UVBeqZVS.png",
           "awayLogo": "https://img.nagradion.ru/images/bf300x500/shields/L3sPtgrA.png",
-          "score": null,
-          "scoreHome": null,
-          "scoreAway": null,
-          "played": false,
+          "score": "0:2",
+          "scoreHome": 0,
+          "scoreAway": 2,
+          "played": true,
           "techDefeat": false,
-          "venue": "СОШ 363"
+          "venue": "СОШ 363",
+          "protocol": {
+            "goals": [
+              {
+                "team": "away",
+                "player": "Воробьёв И.",
+                "minute": 12,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              },
+              {
+                "team": "away",
+                "player": "Григорьев И.",
+                "minute": 55,
+                "assist": null,
+                "kind": "goal",
+                "addedTime": false
+              }
+            ],
+            "cards": [
+              {
+                "team": "home",
+                "player": "Яковлев П.",
+                "minute": 43,
+                "kind": "yellow"
+              },
+              {
+                "team": "home",
+                "player": "Козлов А.",
+                "minute": 54,
+                "kind": "yellow"
+              }
+            ],
+            "subs": [
+              {
+                "team": "away",
+                "minute": 31,
+                "off": "Потульный А.",
+                "on": "Кухновец Д."
+              },
+              {
+                "team": "home",
+                "minute": 31,
+                "off": "Назима А.",
+                "on": "Анисимов Д."
+              },
+              {
+                "team": "home",
+                "minute": 34,
+                "off": "Бирулин Р.",
+                "on": "Лебедев А."
+              },
+              {
+                "team": "home",
+                "minute": 34,
+                "off": "Костелов И.",
+                "on": "Дмитриев В."
+              },
+              {
+                "team": "home",
+                "minute": 40,
+                "off": "Максимов И.",
+                "on": "Яковлев П."
+              },
+              {
+                "team": "away",
+                "minute": 45,
+                "off": "Медер Г.",
+                "on": "Григорьев И."
+              },
+              {
+                "team": "home",
+                "minute": 45,
+                "off": "Шкуратов Д.",
+                "on": "Чайка А."
+              },
+              {
+                "team": "away",
+                "minute": 60,
+                "off": "Воробьёв И.",
+                "on": "Громов М."
+              }
+            ]
+          }
         }
       ],
       "table": [
@@ -5984,17 +28460,31 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "teamId": 420682,
           "team": "СШОР Лидер",
           "logo": "https://img.nagradion.ru/images/bf300x500/shields/UVBeqZVS.png",
-          "games": 10,
+          "games": 11,
           "wins": 7,
           "draws": 2,
-          "losses": 1,
+          "losses": 2,
           "scored": 50,
-          "missed": 8,
-          "diff": 42,
+          "missed": 10,
+          "diff": 40,
           "points": 23
         },
         {
           "position": 4,
+          "teamId": 420684,
+          "team": "Пороховчанин-Тосно",
+          "logo": "https://img.nagradion.ru/images/bf300x500/shields/L3sPtgrA.png",
+          "games": 11,
+          "wins": 7,
+          "draws": 1,
+          "losses": 3,
+          "scored": 31,
+          "missed": 12,
+          "diff": 19,
+          "points": 22
+        },
+        {
+          "position": 5,
           "teamId": 420687,
           "team": "СШОР Кировского района",
           "logo": "https://img.nagradion.ru/images/bf300x500/shields/c9EfaHUh.png",
@@ -6006,20 +28496,6 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
           "missed": 11,
           "diff": 13,
           "points": 20
-        },
-        {
-          "position": 5,
-          "teamId": 420684,
-          "team": "Пороховчанин-Тосно",
-          "logo": "https://img.nagradion.ru/images/bf300x500/shields/L3sPtgrA.png",
-          "games": 10,
-          "wins": 6,
-          "draws": 1,
-          "losses": 3,
-          "scored": 29,
-          "missed": 12,
-          "diff": 17,
-          "points": 19
         },
         {
           "position": 6,
@@ -6131,92 +28607,11 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
       },
       {
         "rank": 2,
-        "name": "СШОР Кировского района",
-        "logo": "https://img.nagradion.ru/images/bf300x500/shields/c9EfaHUh.png",
-        "posSum": 17,
-        "participated": 4,
-        "points": 73,
-        "diff": 22,
-        "breakdown": {
-          "2010": {
-            "pos": 8,
-            "total": 10
-          },
-          "2011": {
-            "pos": 2,
-            "total": 10
-          },
-          "2012": {
-            "pos": 3,
-            "total": 10
-          },
-          "2013": {
-            "pos": 4,
-            "total": 10
-          }
-        }
-      },
-      {
-        "rank": 3,
         "name": "СШОР №2 Невского района",
         "logo": "https://img.nagradion.ru/images/bf300x500/shields/SGWDygWN.png",
-        "posSum": 18,
+        "posSum": 17,
         "participated": 4,
-        "points": 65,
-        "diff": 22,
-        "breakdown": {
-          "2010": {
-            "pos": 7,
-            "total": 10
-          },
-          "2011": {
-            "pos": 1,
-            "total": 10
-          },
-          "2012": {
-            "pos": 2,
-            "total": 10
-          },
-          "2013": {
-            "pos": 8,
-            "total": 10
-          }
-        }
-      },
-      {
-        "rank": 4,
-        "name": "СШОР Лидер",
-        "logo": "https://img.nagradion.ru/images/bf300x500/shields/UVBeqZVS.png",
-        "posSum": 19,
-        "participated": 4,
-        "points": 74,
-        "diff": 45,
-        "breakdown": {
-          "2010": {
-            "pos": 9,
-            "total": 10
-          },
-          "2011": {
-            "pos": 6,
-            "total": 10
-          },
-          "2012": {
-            "pos": 1,
-            "total": 10
-          },
-          "2013": {
-            "pos": 3,
-            "total": 10
-          }
-        }
-      },
-      {
-        "rank": 5,
-        "name": "Пороховчанин-Тосно",
-        "logo": "https://img.nagradion.ru/images/bf300x500/shields/L3sPtgrA.png",
-        "posSum": 21,
-        "participated": 4,
-        "points": 62,
+        "points": 71,
         "diff": 27,
         "breakdown": {
           "2010": {
@@ -6224,11 +28619,65 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
             "total": 10
           },
           "2011": {
-            "pos": 5,
+            "pos": 1,
             "total": 10
           },
           "2012": {
-            "pos": 5,
+            "pos": 2,
+            "total": 10
+          },
+          "2013": {
+            "pos": 8,
+            "total": 10
+          }
+        }
+      },
+      {
+        "rank": 3,
+        "name": "СШ Выборжанин",
+        "logo": "https://img.nagradion.ru/images/bf300x500/shields/B8Kpzmkz.png",
+        "posSum": 17,
+        "participated": 4,
+        "points": 71,
+        "diff": 14,
+        "breakdown": {
+          "2010": {
+            "pos": 2,
+            "total": 10
+          },
+          "2011": {
+            "pos": 6,
+            "total": 10
+          },
+          "2012": {
+            "pos": 7,
+            "total": 10
+          },
+          "2013": {
+            "pos": 2,
+            "total": 10
+          }
+        }
+      },
+      {
+        "rank": 4,
+        "name": "СШОР Кировского района",
+        "logo": "https://img.nagradion.ru/images/bf300x500/shields/c9EfaHUh.png",
+        "posSum": 18,
+        "participated": 4,
+        "points": 73,
+        "diff": 17,
+        "breakdown": {
+          "2010": {
+            "pos": 8,
+            "total": 10
+          },
+          "2011": {
+            "pos": 2,
+            "total": 10
+          },
+          "2012": {
+            "pos": 3,
             "total": 10
           },
           "2013": {
@@ -6238,28 +28687,55 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
         }
       },
       {
-        "rank": 6,
-        "name": "СШ Выборжанин",
-        "logo": "https://img.nagradion.ru/images/bf300x500/shields/B8Kpzmkz.png",
-        "posSum": 21,
+        "rank": 5,
+        "name": "СШОР Лидер",
+        "logo": "https://img.nagradion.ru/images/bf300x500/shields/UVBeqZVS.png",
+        "posSum": 20,
         "participated": 4,
-        "points": 65,
-        "diff": 10,
+        "points": 77,
+        "diff": 45,
         "breakdown": {
           "2010": {
-            "pos": 3,
-            "total": 10
-          },
-          "2011": {
             "pos": 9,
             "total": 10
           },
-          "2012": {
+          "2011": {
             "pos": 7,
             "total": 10
           },
+          "2012": {
+            "pos": 1,
+            "total": 10
+          },
           "2013": {
-            "pos": 2,
+            "pos": 3,
+            "total": 10
+          }
+        }
+      },
+      {
+        "rank": 6,
+        "name": "Пороховчанин-Тосно",
+        "logo": "https://img.nagradion.ru/images/bf300x500/shields/L3sPtgrA.png",
+        "posSum": 21,
+        "participated": 4,
+        "points": 65,
+        "diff": 27,
+        "breakdown": {
+          "2010": {
+            "pos": 7,
+            "total": 10
+          },
+          "2011": {
+            "pos": 5,
+            "total": 10
+          },
+          "2012": {
+            "pos": 5,
+            "total": 10
+          },
+          "2013": {
+            "pos": 4,
             "total": 10
           }
         }
@@ -6295,17 +28771,17 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
         "rank": 8,
         "name": "Самсон",
         "logo": "https://img.nagradion.ru/images/bf300x500/shields/QKFWEpeG.png",
-        "posSum": 24,
+        "posSum": 26,
         "participated": 4,
         "points": 50,
         "diff": -34,
         "breakdown": {
           "2010": {
-            "pos": 2,
+            "pos": 3,
             "total": 10
           },
           "2011": {
-            "pos": 7,
+            "pos": 8,
             "total": 10
           },
           "2012": {
@@ -6325,7 +28801,7 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
         "posSum": 30,
         "participated": 4,
         "points": 34,
-        "diff": -75,
+        "diff": -79,
         "breakdown": {
           "2010": {
             "pos": 1,
@@ -6349,7 +28825,7 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
         "rank": 10,
         "name": "СШ Экран",
         "logo": "https://img.nagradion.ru/images/bf300x500/shields/bF02QaO7.png",
-        "posSum": 35,
+        "posSum": 36,
         "participated": 4,
         "points": 30,
         "diff": -65,
@@ -6359,7 +28835,7 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
             "total": 10
           },
           "2011": {
-            "pos": 8,
+            "pos": 9,
             "total": 10
           },
           "2012": {
@@ -6379,566 +28855,566 @@ export const SECOND_LEAGUE: SecondLeagueSnapshot = {
       "status": "ordinary",
       "name": "СШОР Лидер 2013 - Лидер Купчино 2013",
       "parts": [
-        "https://cdn.bigbro.ai/video/7936.mp4?Expires=1783255725&Signature=YLG-bIoosX05KsXxojcwX0K1wH2loGwltwm2I1pUlDSxJ~tx4sPrisSjMF1zeC1g9B5XcaBQiNrtTcsXUjXsQna564b4CuorY0nwKLeJq1uSJBcIJNCIQhopeo1LobNpGE4KxfXn3XWh~aS0zl9FiEchqtJaWTvei6NlfCjYsJ1HXBjv2DDRyuKg5-uBFqzyIaJBa0ZorBpXwkTXEra21pnR8hM4CE9IfcUzN~PXG-dr2FF~aOmQb4uhLuqkZL-S7pEAfsA73kE2p4kzfQi-0Qwz~rMlWiyCUMs-AUPCc3t8r2hWRTD1DOs18Ns94B3VkzxOIZvMCgiteXArHQbKgw__&Key-Pair-Id=KNF40URY8QQID",
-        "https://cdn.bigbro.ai/video/7935.mp4?Expires=1783255725&Signature=KznTLsNLvWfCISK8t11rQ8Sph8WbJVJUDmKM~PFlHJnLbe3lm139Wt8mj-80oS6Kwo4zCyqH2nlQF10V1I4QADFZFdQxjzMUI3bWxzPNR-9~idxM~htwg-FqgqKcZ9qOCimTEg6jETS3wBfD8cKVAVE41VNI5OdqrKWHJeVkYIAqqa98ZTt1hpXxNKZR835CScZNdp~r4OuJtj23kLldH6lgk5mjTuHaZpghb35j2CwFjDiEmYau2-yk2JnTPkstQE7gryY6~1wAFN61S7OWkIvqe9IwyjBZ-8VhWWjoAVXtJMfSGmuBqT5gy~wioZQoOkuNTRWJi~W1ZrnBF8iGow__&Key-Pair-Id=KNF40URY8QQID"
+        "https://cdn.bigbro.ai/video/7936.mp4?Expires=1783267670&Signature=uUsUbbjN4XYcj6usPjkCdAh2nnD~JttgxFpuJknbJ4NDV2hF2~C2DHNtyzGUkOUNRDdlI3T2psc4d4Dt2uAWghTqxmWuIBS7NfdasYYlSO75WKqXjJ-xPrdXuLGdYgtoqCXPOSEt2rXkWtsSzHNYXcE9StRPOwkb9MTLH6XGTiQkZ4h9KuysgR-Ha6Hj~z68fAFhq~PTPV5ofUSkaEeB2HpkelbT4tfvjqQdybvs7J958TTxr1HRgPhVpt70lE86cR6rJ2jJ4n-~Yqs~oqINkrr98xUdeA6mZ~Uo6J3m50v9fEghyUqu715MJs29fTNEDGx2dBHgvOYY7bCqyFAI3A__&Key-Pair-Id=KNF40URY8QQID",
+        "https://cdn.bigbro.ai/video/7935.mp4?Expires=1783267670&Signature=qW9wYkx8jzUJyADIVvUbnmIcMfkLlbyzauobBhtVrQsFcPAuong2mq1p7vUaD8hTmvQzYux6nf~b~oanaHs19gk0b6fe4GQuCrqP7u4QYC9bPxc~JJn17fzLDAS1Ty0nnPJ0IDPlbu8XbzUXLiGMOIKTemU4K0VAuc0xTZawURH-lF552aUH-Mvh2QM89VRT8oZsSeojjd6hL7Fr2vxdlI3XJVr4mZKRFH--ItL9NYONUMrtfu0OZz6oAOZ1L18DpDtbV~Mxz-0mwrQatF6Zt6MLMEkLNNOZtN42UoZwe3JbpUTFm2nGq0NUuTdtKne8Uh3YYbyk4TMY-h3L-DeCRA__&Key-Pair-Id=KNF40URY8QQID"
       ]
     },
     "bc63QX9wI65l25yKkD4hrr": {
       "status": "ordinary",
       "name": "Легирус 2013 - Пороховчанин 2013",
       "parts": [
-        "https://cdn.bigbro.ai/video/7943.mp4?Expires=1783255726&Signature=g1XdQ7FqSDnIGkY~1i16~louWuaqIQqlQ8kxYOCosFrbtTcMxvkx6AwFgc8FFGDdSr6YM8dfOgC7f2dYeZtcbfV-TrGYVzh8EYd-SvEu2ThPHVJVRmgLfh5-G0nvAVrGKvH~2prJYywYoqVMFFL0V4BIW5gFEQUfuRgePgOxEPSVTR5bjTbLo2xNbqB83bAOf~Wm2n66LZSb~OUTjMfeOcB4m4sw0HW-j~gvWm1jxTl7qa8m-GuWlshCFE8P6Aja~llcmZ8vmrROjM9aX-Ubu8yGmo2HhHx8PUE0kBmBL8vdaMpkVN5nyU2IcV3EJ6B3C0r1puNh9Du4Tf5yYyFStw__&Key-Pair-Id=KNF40URY8QQID"
+        "https://cdn.bigbro.ai/video/7943.mp4?Expires=1783267670&Signature=zBL1fhDeUj5wdzzL8yQwqqK~OlfPZ4DWd5O-fBzBjxDiqpBOtYxOzNiUz97N1GqytlNqcLu3duO6dZd0qcU4B0~PXqBjcSYRzmv~tjbyUsl-HqneEukTL3KhNwA9XA41WbeXiHmt~4rIf59PnM4o7F3ZIGU8Z8Gc~ckKPNubK70tLBFDBYKeXEa~95zfVe4lpojRJq-R9BPVpy1Vx~rvglzELxxumM9qLMZQPJvGqzsHraLy~eUeB5xP7YLCjSVu9Dm6SN0o78pO6Jcoffn2tcBRgrR5~n0P~9WTQiMFXFD~gJ0p-6bwtsRVduIjqqLFfhjphdcM-CRrYhzsZjWPXA__&Key-Pair-Id=KNF40URY8QQID"
       ]
     },
     "fYCxXqZB3goamqYzIlZCJG": {
       "status": "ready",
       "name": "Самсон 2013 - Экран 2013",
       "parts": [
-        "https://storage.yandexcloud.net/prod--storage/video/8241.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T124846Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=637431f23b1a68b81cff4238fe1389822b45f48d3093bbffa03e635a3ef8a674",
-        "https://storage.yandexcloud.net/prod--storage/video/8242.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T124846Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=c3a9e5593e9eaff597e09ae3f9501aeade0b5122463836748f60d488901841e5"
+        "https://storage.yandexcloud.net/prod--storage/video/8241.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T160751Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=4450b134477b9f838e3ef745e0b46846523dad351fb90a18d8e1ceff39b3084d",
+        "https://storage.yandexcloud.net/prod--storage/video/8242.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T160751Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=d81c9eefb5b61bc3a22ed629808257993dbe5ec8bb68b76dbb6ef5c98ada547b"
       ]
     },
     "yAB9i8r122ksXNY4QO3wdg": {
       "status": "ready",
       "name": "СШОР Кировского р-на 2012 - СШОР НЕвского р-на",
       "parts": [
-        "https://storage.yandexcloud.net/prod--storage/video/8235.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T124846Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=0ec6c24da70cf8093005c6bbc07767175a4c2dfbff651be3bea54f99f109e974",
-        "https://storage.yandexcloud.net/prod--storage/video/8236.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T124846Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=e39b78720449fac50a59fca823ad34b9d2026baf9730645c25bc3ca423eb85f1"
+        "https://storage.yandexcloud.net/prod--storage/video/8235.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T160751Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=22809188d146d599933f5841b1d91d1f0ceb2c32bb324702da218f54b0b82791",
+        "https://storage.yandexcloud.net/prod--storage/video/8236.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T160751Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=9e4732d3bbe92529777e71da72db0a4450b28ed5cf7d1a4bcc2fb9a7908892ad"
       ]
     },
     "T15uxc1r6hT4zz68FIn96V": {
       "status": "ready",
       "name": "Пороховчанин 2013 - СШОР Лидер 2013",
       "parts": [
-        "https://storage.yandexcloud.net/prod--storage/video/8225.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T124847Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=1c55de43196102f34ba7e59fa61ff1b4c2d08c6ca772669222a9cd4e7e2d7d0b",
-        "https://storage.yandexcloud.net/prod--storage/video/8226.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T124847Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=074e79c749109f89399a708a712638624198df65730a2c6722e01011e407189a"
+        "https://storage.yandexcloud.net/prod--storage/video/8225.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T160752Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=24d726ebaa05d1df5cb3e65670828772461dcc9be0928efde3fca8ae03089007",
+        "https://storage.yandexcloud.net/prod--storage/video/8226.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T160752Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=33c71b8fee18f9a7ff56284a8002e12bf2e5bed211faea6978939335df143642"
       ]
     },
     "IhlKKnh9cQHO2FpyyfUA1K": {
       "status": "ordinary",
       "name": "Динамо-Центр 2013 - Легирус 2013",
       "parts": [
-        "https://storage.yandexcloud.net/prod--storage/video/8223.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T124847Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=f36e90d70adee1bcf66d279072e674dd5ac11c7702d1729aa85378ad56042268",
-        "https://storage.yandexcloud.net/prod--storage/video/8224.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T124847Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=be492d7b18293a67953ee0572e0aed927c792b3b9efbf2a23f72ee1242609bbe"
+        "https://storage.yandexcloud.net/prod--storage/video/8223.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T160752Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=2d5430f6bf3259dc606376ac2161c0163218408f24fed8c31db7fef5b685a481",
+        "https://storage.yandexcloud.net/prod--storage/video/8224.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T160752Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=65cb33e0e357aa541027f4eb5e646e158c329b3fdae86e762afce7da6a59ddae"
       ]
     },
     "gw7gm6JaLG6md3wmZaZho6": {
       "status": "ordinary",
       "name": "Легирус 2013-2014 СШОР Кировского р-на 2013-2014",
       "parts": [
-        "https://storage.yandexcloud.net/prod--storage/video/8138.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T124847Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=690cbb6b963b4eab067f89f02d604b544dc5ee1f9c3602b63e70185e33ab7614",
-        "https://storage.yandexcloud.net/prod--storage/video/8139.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T124847Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=5747a2f85b09b927913ab2b67e3b9aa9e6d891bb1e37ccb1cb0a526dac2d203e"
+        "https://storage.yandexcloud.net/prod--storage/video/8138.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T160753Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=06e67af4a4d9c67177ae04195050adbd9f1fb95fa90982cf2a8fb0c9778140ea",
+        "https://storage.yandexcloud.net/prod--storage/video/8139.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T160753Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=e02b9c995f3df04081715ca5418e0ac02fc3be25a3c4c123638cca583817eace"
       ]
     },
     "JgEXhbFUAF3eIabe9zlpbx": {
       "status": "ready",
       "name": "СШОР Кировского р-на 2013-2014 Самсон 2013-2014",
       "parts": [
-        "https://storage.yandexcloud.net/prod--storage/video/8583.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T124847Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=2cf5b398174d5fffc23c7a67ff7ff6b9124228ca4f1745bf6a37b887f50b5a09",
-        "https://storage.yandexcloud.net/prod--storage/video/8584.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T124847Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=813313ca114c849bbadb8a7d5ae3acca0a29bf1ef99f16f0482fea203c2ca4db"
+        "https://storage.yandexcloud.net/prod--storage/video/8583.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T160753Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=a55f439bcac78ffaf1d8cb7a443f13de41db863475fd406102557f19fbcb47c0",
+        "https://storage.yandexcloud.net/prod--storage/video/8584.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T160753Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=9485b5faff468003e1e189b3b8840301057056720da0ec430ce0e7e82b84215c"
       ]
     },
     "4LAuLSVI2t21H8TFa0Vbyx": {
       "status": "binding",
       "name": "Самсон 2013-2014 Лидер Купчино 2013-2014",
       "parts": [
-        "https://storage.yandexcloud.net/prod--storage/video/8869.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T124848Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=1e46d3b5c7bc927aa405be4dad1e90f35988b14a8e99d9e7377949e2fbb5d9d5",
-        "https://storage.yandexcloud.net/prod--storage/video/8870.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T124848Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=70922aaeafe96270afbc2206d90d64d13de3beaa6d79d409899ee9cdc81c5fb5"
+        "https://storage.yandexcloud.net/prod--storage/video/8869.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T160754Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=9ad2f628f9f951b5a0b4f345942b9a96b30526afd09524c586ce1ea82d8c9b06",
+        "https://storage.yandexcloud.net/prod--storage/video/8870.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T160754Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=07ddb47b1b0a6745a13c3839e00772632681e85939a38692fee797f0fa626ab2"
       ]
     },
     "P2dJCVV90jp8OKA3G8lZa3": {
       "status": "binding",
       "name": "Экран 2013-2014 Динамо Центр 2013-2014",
       "parts": [
-        "https://storage.yandexcloud.net/prod--storage/video/8877.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T124848Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=5cab998f7a9e070a97087309a6efa1894d1e16dd47ee22301966cd43141ed561",
-        "https://storage.yandexcloud.net/prod--storage/video/8878.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T124848Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=c42e2166c3378118a09f994d5040c78d211986932a3e436021cbe439d1a1ce7e"
+        "https://storage.yandexcloud.net/prod--storage/video/8877.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T160754Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=327d3ee6ddfd2e95a3ad6e329b52f439e70886a094fcea27da354bbc4521e624",
+        "https://storage.yandexcloud.net/prod--storage/video/8878.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T160754Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=cb124772427d3e859a808142d6853b849b5eb80fc34b3d9e989e14114acdb4f1"
       ]
     },
     "MIZu7J3sWakQBMKvydQsBt": {
       "status": "binding",
       "name": "СШОР Лидер 2013-2014 СШОР Кировского р-на 2013-2014",
       "parts": [
-        "https://storage.yandexcloud.net/prod--storage/video/8890.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T124848Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=abc58e9e362f6c3399609ab2cbda1d916b0b22e7a1828544c1209bc19803ad3c",
-        "https://storage.yandexcloud.net/prod--storage/video/8891.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T124848Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=cf4d6dac7fa7ad4e50ec55829572c084ed05c5a45c8d423aba57135a7bc3f0b4"
+        "https://storage.yandexcloud.net/prod--storage/video/8890.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T160755Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=15d285b97cd4029defce7c55e3ca51c407ea07a51235e646c6b69f6df765e07b",
+        "https://storage.yandexcloud.net/prod--storage/video/8891.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T160755Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=65d59fa34939fcf8f0b9ff0e68d541845c6c5a9a674e840711a9c2d9a13e4fc9"
       ]
     },
     "dO6HL45AD7o2mWJxiuZ4fj": {
       "status": "binding",
       "name": "СШОР Лидер 2013-2014 СШОР Невского 2013-2014",
       "parts": [
-        "https://storage.yandexcloud.net/prod--storage/video/8898.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T124849Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=e93adc0b8cd2ab9a417045997222dd42491bba56826c6dc0f13406fd77730859",
-        "https://storage.yandexcloud.net/prod--storage/video/8899.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T124849Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=31479bb55d0433999db36cc9e8c4ea3837fc73699d4c627e2a4abbc3e294ffb5"
+        "https://storage.yandexcloud.net/prod--storage/video/8898.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T160755Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=55614afccbcccbf5c8a7b3aac71c80893f244a4f45c39264b87339aecb4c1dab",
+        "https://storage.yandexcloud.net/prod--storage/video/8899.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T160755Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=4f04b18bb0b2b15faac41d212fc509cdc823b1a35e0f5824b9fccddb1182e935"
       ]
     },
     "i1BmLBbUT33c1aCCCHKX7K": {
       "status": "ordinary",
       "name": "Легирус 2013-2014 Самсон 2013-2014",
       "parts": [
-        "https://storage.yandexcloud.net/prod--storage/video/8864.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T124849Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=52be3884a2956a4be4e7b0570c212d0976f98278be341d102f0d5bdca14933d2",
-        "https://storage.yandexcloud.net/prod--storage/video/8863.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T124849Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=a6675ca0ab49c887b22310c54876605c7097757e888758048468f11c7fa35d17"
+        "https://storage.yandexcloud.net/prod--storage/video/8864.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T160756Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=60515626a2153695ac3f2a1261b0574456af9412ff2a5ce36ef703c60a3a89a4",
+        "https://storage.yandexcloud.net/prod--storage/video/8863.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T160756Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=820bddc6542d45c48a87cb6b868c543420448be20e36c070ed6434921e2740d5"
       ]
     },
     "WIo8oK5O7SWpiNw9x2QZug": {
       "status": "ordinary",
       "name": "Динамо Центр 2013-2014 Лидер Купчино 2013-2014",
       "parts": [
-        "https://storage.yandexcloud.net/prod--storage/video/8855.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T124849Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=879f15e176788f821c7376402740f1e021d344343d47d155c5ee9238c1af1074",
-        "https://storage.yandexcloud.net/prod--storage/video/8854.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T124849Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=5bc833eff7043ded1108bf1bc92e3503639561d368b23176e17e0468085c3b9a"
+        "https://storage.yandexcloud.net/prod--storage/video/8855.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T160757Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=954ca74097b53a0d7e549788797b80cdc3b42d31e0a5e4464c646ff2b02bfdb3",
+        "https://storage.yandexcloud.net/prod--storage/video/8854.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T160757Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=a1cfdeb4c27517ec9ccbfd9e507695afad64a083877888fcdae364618a6c16ce"
       ]
     },
     "VbgjfFdweDXZ74L75p29Tu": {
       "status": "binding",
       "name": "Самсон 2013-2014 СШОР Лидер 2013-2014",
       "parts": [
-        "https://storage.yandexcloud.net/prod--storage/video/9017.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T124849Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=ca6889563f66c77dfc1ba00f82c5e59c94baa274934bcd0cc37f81f6d6e93cce",
-        "https://storage.yandexcloud.net/prod--storage/video/9018.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T124849Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=52de3ddc22c6ae97ff047685b770f4daa42d232988d2c1fc6c90199883ffabd0"
+        "https://storage.yandexcloud.net/prod--storage/video/9017.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T160757Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=134233b4e4123e3847f4fda03269517dbbf4b7f24a63876c138d503978c8abf2",
+        "https://storage.yandexcloud.net/prod--storage/video/9018.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T160757Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=e5e810ab01722f721bdbadd43b1fcd52765049158396d09a2c565d3f09272403"
       ]
     },
     "rCzhXDDWtkY1MF3RFgCyUN": {
       "status": "binding",
       "name": "Лидер Купчино 2013-2014 СШОР Лидер 2013-2014",
       "parts": [
-        "https://storage.yandexcloud.net/prod--storage/video/9154.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T124850Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=4ca50b216a22314988eb42e0356fd665cb103cdae41ab54f3cbbe5a55933ead6",
-        "https://storage.yandexcloud.net/prod--storage/video/9153.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T124850Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=fc4b7ad43f9e9ec5e776cf500075ebe19c07e7fa0a70e8867f569d0f2b0d10e1"
+        "https://storage.yandexcloud.net/prod--storage/video/9154.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T160758Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=4cff98a58026292b41872bbc404f164520b9b28bea000a7b9324a5ac94a25649",
+        "https://storage.yandexcloud.net/prod--storage/video/9153.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T160758Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=e08bb76ed38044792222d80df7a3a33ab8e68ecf036ca4ba4c577b53288216c2"
       ]
     },
     "BZRdTqgrR7gkBpnhvYtpnJ": {
       "status": "binding",
       "name": "СШОР Кировского р-на 2013-2014 Динамо Центр 2013-2014",
       "parts": [
-        "https://storage.yandexcloud.net/prod--storage/video/9123.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T124850Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=95de13938910c20b4a309f3de4b106511dd339cb604a336336d8d7a913406e66",
-        "https://storage.yandexcloud.net/prod--storage/video/9124.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T124850Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=14b479f48b6721b030f9b3b6230d6e0b7729145946fc190cd84897bd229333eb"
+        "https://storage.yandexcloud.net/prod--storage/video/9123.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T160758Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=dd183d76975df07e348848f1260e9348fa65d38142effd8c38f95b01a5ce43cb",
+        "https://storage.yandexcloud.net/prod--storage/video/9124.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T160758Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=be9289b3c700ccd4043d387539d484af7b3958be9cbcc31ed8b6ddab9208722b"
       ]
     },
     "H6tlQrvLkbVq5p5wEIrs1f": {
       "status": "ordinary",
       "name": "Пороховчанин 2013-2014 Легирус 2013-2014",
       "parts": [
-        "https://storage.yandexcloud.net/prod--storage/video/9122.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T124850Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=26003814fc736e342ff7d7f6796220488bfc3751385df140093520d5a364a8c4",
-        "https://storage.yandexcloud.net/prod--storage/video/9121.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T124850Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=cd53e5e22b1b379c305b4fb498d8e0669e5ba1f86511e9ab2c271faa09708c4e"
+        "https://storage.yandexcloud.net/prod--storage/video/9122.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T160759Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=2656a7f53890f928624a1406f039c06e4dd993b6a2a3c22c984945e7e750f713",
+        "https://storage.yandexcloud.net/prod--storage/video/9121.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T160759Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=2ea826aa0f52eadb263c1dccd420eeb8d1aae3250e3a94b182c8f63041cc3d76"
       ]
     },
     "eMf4WCFr0CSqgN2ZjJQpwL": {
       "status": "binding",
       "name": "Самсон 2013-2014 Выборжанин 2013-2014",
       "parts": [
-        "https://storage.yandexcloud.net/prod--storage/video/9127.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T124850Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=faef8673c27cd5a091a079a441f1d2b79dc0c5ca5bd57fcd2430f2389d80bb25",
-        "https://storage.yandexcloud.net/prod--storage/video/9128.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T124850Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=40007343c03c8d6ecf720dad67a736cb1ea4362e45e247f3a40c47810c5feb59"
+        "https://storage.yandexcloud.net/prod--storage/video/9127.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T160800Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=a9aa95f9ff05814b27bc3baa8cd4dcce8ab28857c1f7157a57f74f0a8e658af8",
+        "https://storage.yandexcloud.net/prod--storage/video/9128.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T160800Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=511b813a617e4207520b2dd028cb25d191b2ba977154e1a6b35bd276253131ae"
       ]
     },
     "6oI4wX1wqGgnRb2nlfsay8": {
       "status": "ordinary",
       "name": "СШОР Лидер 2012 - Лидер Купчино 2012",
       "parts": [
-        "https://cdn.bigbro.ai/video/7937.mp4?Expires=1783255731&Signature=kNfYiTwSgFiPo8lS0BsMfefWmpSntkPrrR~HZm5EHUhbuY0kKyT05Lbzq9JfXXW1vCsMk0MCTkAfS8eFH2JM4EarABZOq-w6K0BMcOMzQ8uSrZ6Hp5owATZLk0vOW-QE-nKI0zzDOj3AxaXzds~vBlKNPDGgudX8xosMJ3Uj1U1t6Qij-z9PzVrWBZYkTJCLuTajs1NoEu1AQy5gkIgDv~7VjtnrrGfwO3lmEaeRBCoEuJqLj~nFzg1xLQ8iAh~DGpNlFehUIYhzNF3B8gY9YRl1KkMBH4s1KduOwfCCLhP-vzcEjI9xF4ECvCNo5ZbHS3qAaXGUtFuyBY14t2pPvQ__&Key-Pair-Id=KNF40URY8QQID",
-        "https://cdn.bigbro.ai/video/7938.mp4?Expires=1783255731&Signature=IhmsakNM14SRK5IRzsIiIxM7vPvJG4BSIMELhi~IY7kWXUNU9Q9C8zDxI34shr-bBWff-CbVJDeX0MsyVsHELf3ZLmSJDbTbRwelPa~ej0DuMJ4ceQKZZM-2~8b33-L0BmDzq0wdr6GeNyXgiv6rnA9AezFtxsBSHUG84sD7RWGW13mqpCm1zFTak~ZvBaAeD08ZQ05K93dOI~NrfYnp7X~YxhyLNHTR3XM7lO7ep77ZvADS8Q0pkw5Qjck2QpuwdSel~iPMKVBW1LMHEvz2ehEZmh17JOuIVMXEhSPkw8vk9XOs2dNaITAlUnm3PXpNGbDoNtq9HKQK9mm7FbY5EA__&Key-Pair-Id=KNF40URY8QQID"
+        "https://cdn.bigbro.ai/video/7937.mp4?Expires=1783267680&Signature=oEoJNFf9WyoBDYS6xYjtDlT5ig2FoOIhXtQXBwHWMymoOiAdnyTJ9gzyUbNoqUsO~X1LSgDAY4CmdIXR-mR-Ox~Rxc0wlJuM~SCWZPJz33sRL~GGtsSCdNGzqkZHZMMeBcQVyb21HRZXd6elGktSe~3A4XaXYiYfctwIMkZSXiDidJxFqCGlYC5I91GU6RyzCTNPA4oDey3EoxSzmPZqQLrPfEmTZvS7hkBHA-otTjZNphG1v97~ZV668L6MKk3gRNKJw5vccrPvRqTa3a86Jdj~WJwoTuSqm4~2RLvvdR05ycIm4NI-o-DDUF8WTXyxXeJdkb1vIzDJ2PJuEdjNkg__&Key-Pair-Id=KNF40URY8QQID",
+        "https://cdn.bigbro.ai/video/7938.mp4?Expires=1783267680&Signature=oJN0zYj-j2i-rOuGFv5q5n0v~-oWWWiKKeIyL0wof5KabLAR5-8Gl9VvTMpvOEU-N~rN47nA2W9B2Ltv~79hnGAmyHcvEABk~BCxEylhmfeIH01X8IWXVGYDoShFBN8lePaHNid0ojEOOthxpUPAtPy4u-R3U9VYcSrrGeapximp-iJ~t0ZHnuRP2zkHIaabC4v-Y-IczKkRiDtNXf6wbwvk2SA8iqy6NgvzOrWyIVJOI3nMJTs8G8GXNHJfWHvcmHcf~r-X0GfNaKM5dW5r9vtInMO~USApzEkyU1NPRZ0LEFsFcvmpvRe5Af70wK9Wq02gSoAwmBHsr5oCnzOeDw__&Key-Pair-Id=KNF40URY8QQID"
       ]
     },
     "HTMRK1fdqc6FuIoyCbENhv": {
       "status": "ordinary",
       "name": "Легирус 2012 - Пороховчанин 2012",
       "parts": [
-        "https://cdn.bigbro.ai/video/7947.mp4?Expires=1783255731&Signature=As6Wa1c-4anSFOUGdEyt9E3IPJRudJC~fo5HJP4HLOJcBu~wClCNghi3-YmRTF-ke8YKFJAc-iE8ASKiUAkclMOt6euN7YRZtQKM6hOcbc1HovA88htHS6dB0gfWEi1CMRLt~73wTXERxsoj9nZWHv5LAiIvUXmmZCVkQ3r6NmzuXERSW9wx9lFMb2N-6W79xEWnorwD57DH39itc4gfR1h4iAaw2q6zv1bd5e1KJHYGSRKaEBbjutjQ9hFOaYYjsevKHYjTn9T460zhtKbM2ES8nLajPQtehZ7~A2JMlg-0W0uDdbigHFVC25slNoEhwDwdG7D0sPxKEc5o87P82A__&Key-Pair-Id=KNF40URY8QQID",
-        "https://cdn.bigbro.ai/video/7948.mp4?Expires=1783255731&Signature=wJYA1yb0GgsmB6UuW3tdfgjO~hnWjcwuHr8d8q-2p-WuQRjWKEX3YQvGhOZ2g40tkzIIBzQz2xsw40BKpO76NBKq640KVWX2vKoY0tvYszm5BAILzYNwBiA9jPcjJVa~YKf-2LGqFRjwOg9e6nfI5u0hUgJrx3dw-FyxUtx432xkYKoTaOZRq50iNs1-EXGpDgNkCLN8fCjDyhhpEVKdsJWHiuk2hLebjuEJKQr-nWWZtZgqgPZCKL43xg72uFKOz6vR-91lq7sXqFOA53gd4x3wHDL37VTl1as~nsGVaTUUfiZu8dsvNuD7U5OntXp6d1Gb-ulNtdYxhEAOzko09g__&Key-Pair-Id=KNF40URY8QQID"
+        "https://cdn.bigbro.ai/video/7947.mp4?Expires=1783267681&Signature=SJFG3abw3qmMyI9upvgLM9NyToivQFFw3O~6ZLhsR4g4qea9eWSxl3IHMCqi5eoopBrBZ2lGE6SaVucosS0uFf1ecxz17Rkavpxn35s6WXuhR2jTKu2OfnTEHJO9gFmN-Rz~AmQ4eDSurMYagjsM6j95QJxIBUlTUa-2MBNu-GkuDaAdpAix8n2WLVn~iOUTXOyFZhHfgFAvl4MmL5vBqLyJg09fTx0svOHpCxLW7y40l6cLhSKvwxZYDl9Vh5acKu-SXjHMBU8rb3Sb~Q8C-eLvdWAiyXk3HlhljvO1N-Hc39E-5vhzO0CT0ll9rqRCCFDFfhGTilYMOMojBfIPgA__&Key-Pair-Id=KNF40URY8QQID",
+        "https://cdn.bigbro.ai/video/7948.mp4?Expires=1783267681&Signature=kyO1mg9Njir48P4o988nARieUjkLhTquhdAcgvc1fEAutvVic9AjHyaY24QokOwxhFFH44WViJUPkUzcll9rB4cYklCpjyHU~9xuyFooU1laFcZaIbXwL9gx5Z6RCgRhv7xy6501K2CufS~yWAGBwKsNme3RbwPqQsxsX4KfB-uF4xd1F2zaVFMckHo4Yiut8fMKIqIsVUkorKlOb-LMk51~M5gclZEoY0EoQTOPrpagJn4o1Z9FmSCbgMkCpumfRzl43ohPc1HLDD9JWguLzQawqKzx-xqHanQ~BNP5hh2ZBtW6-VryP1b-XGNeM5OvlrB8VwyUFQch0RQMscMCcA__&Key-Pair-Id=KNF40URY8QQID"
       ]
     },
     "YVDwTqCE4bPKw2xNz111Yz": {
       "status": "ready",
       "name": "Самсон 2012 - Экран 2012",
       "parts": [
-        "https://storage.yandexcloud.net/prod--storage/video/8243.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T124851Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=ac689b2f44bd2fb0e6be161bb3a8c12b29a56e1a0c00103b8f27c6933a379327",
-        "https://storage.yandexcloud.net/prod--storage/video/8244.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T124851Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=a96fc7f21db1fb4b65f1f3efd4bdacb6ffb954e120021aa69b22e690ef6aa653"
+        "https://storage.yandexcloud.net/prod--storage/video/8243.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T160801Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=0e86f63c55b2ad4237b7563ebad37af6dd5b75487ed0c3c9194a7a38828924a6",
+        "https://storage.yandexcloud.net/prod--storage/video/8244.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T160801Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=48ef207b2740dd90c6b295e59b41cdb14f4322d1bf4ff8eed6c28cdf4563cd53"
       ]
     },
     "m6zyMWsK1m2iE0llH7tGkk": {
       "status": "ordinary",
       "name": "Лидер Купчино 2012 Выборжанин 2012",
       "parts": [
-        "https://storage.yandexcloud.net/prod--storage/video/8075.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T124852Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=17c201e645d61f89d1f7c6e4adcdff86d3ec25dc1244d53ffd6957b29c4c38dc",
-        "https://storage.yandexcloud.net/prod--storage/video/8076.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T124852Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=b3784ef13ecd27f40a8a04a457fdba0d9636fe13772dda3565de142ddff118f9"
+        "https://storage.yandexcloud.net/prod--storage/video/8075.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T160802Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=f74a57e6b7d89fe8251b55cb9785a323fe63bde8f0f3cbdd66c582773ce78b25",
+        "https://storage.yandexcloud.net/prod--storage/video/8076.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T160802Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=567151891fd96364aeb23666391b5e7eae0b92d58ff69a45057e54f78823f7b0"
       ]
     },
     "SoBjilZHt1GLDDPaMVwROV": {
       "status": "ordinary",
       "name": "Пороховчанин 2012 - СШОР Лидер 2012",
       "parts": [
-        "https://storage.yandexcloud.net/prod--storage/video/8564.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T124852Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=2e16c7336979e452bdafae3cc8b921ef4f6c0686f152fc69fbdf71f825698d17",
-        "https://storage.yandexcloud.net/prod--storage/video/8563.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T124852Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=102e9b442ad183dd3d8a0cec267299adc814d55530f3d13c5152378bccd6ac90"
+        "https://storage.yandexcloud.net/prod--storage/video/8564.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T160803Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=bab6e427cd4d3bd47cb24de76df6b3a963c573b1f9ddd31c1df8a604b9274027",
+        "https://storage.yandexcloud.net/prod--storage/video/8563.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T160803Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=3fd35eb166f4c916217cd8094827f2ac32a5fe1d75b45ad123dc9554f104929f"
       ]
     },
     "sLL6W2DncK4SkBgvs7Phdz": {
       "status": "ordinary",
       "name": "Динамо-Центр 2012 - Легирус 2012",
       "parts": [
-        "https://storage.yandexcloud.net/prod--storage/video/8571.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T124852Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=f5ce24337d00c2755aad1a259d0f942b2eed5f7334b2512fd8cbe93f5707d2a0",
-        "https://storage.yandexcloud.net/prod--storage/video/8221.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T124852Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=ffa35033464484d27ca7fc4f3c8daa4838934c4138c27d3c02f5889ea2b0c351"
+        "https://storage.yandexcloud.net/prod--storage/video/8571.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T160803Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=a3065ac149f472adb47a0bc8bcd78ea81fc86e2a03efcf93af880db814fbf206",
+        "https://storage.yandexcloud.net/prod--storage/video/8221.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T160803Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=aa6bd4555633cd90e9dbaecba318135ad4d0c19852a0390cbe0ab6daa160ad49"
       ]
     },
     "JoItE4zTBJVtHvE6XOT845": {
       "status": "binding",
       "name": "Самсон 2012-2013 Лидер Купчино 2012-2013",
       "parts": [
-        "https://storage.yandexcloud.net/prod--storage/video/8871.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T124852Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=3f045e9cb9bf85eb6e12a3afd1c180914e5625a6e0b83fd5ecf877219858ee91",
-        "https://storage.yandexcloud.net/prod--storage/video/8872.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T124852Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=5669486439dfba00840d93612d9153f95a8dc00c3794369530e6dcca36df15f1"
+        "https://storage.yandexcloud.net/prod--storage/video/8871.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T160804Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=6e7aa29e4fa770767135d88e8f764a7fc6bd84e95096d1d3e89bcfe90b7ff727",
+        "https://storage.yandexcloud.net/prod--storage/video/8872.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T160804Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=ec5ab12caee5350f0c29ed1b9fd9b61d3b819d1b0f80c8e02dbe032bd1275939"
       ]
     },
     "C5mwuyes6mDOpIFsL3s1yp": {
       "status": "binding",
       "name": "СШОР Лидер 2012-2013 СШОР Кировского р-на 2012-2013",
       "parts": [
-        "https://storage.yandexcloud.net/prod--storage/video/8892.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T124853Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=8b03ea1e8ff76e761ab891562da5db5976a5ed043d4ca903a16aa9d7279872c6",
-        "https://storage.yandexcloud.net/prod--storage/video/8893.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T124853Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=6d34af994b4791dc923ad756b212d9b58895d9d66e33c6a4960f60e2250f874f"
+        "https://storage.yandexcloud.net/prod--storage/video/8892.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T160804Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=5976ca6c9fac6de2809253f7bd04dd5e486ff0cbd6f22e9f75f3383785cad05f",
+        "https://storage.yandexcloud.net/prod--storage/video/8893.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T160804Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=ace057f263e99a82a207a90ece44d4ec6631021af6a48e417f7a65c63a5d624a"
       ]
     },
     "44m6ly3FR0ABJcgDfLzzrf": {
       "status": "ordinary",
       "name": "Экран 2012-2013 СШОР Лидер 2012-2013",
       "parts": [
-        "https://storage.yandexcloud.net/prod--storage/video/8776.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T124854Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=463370382ef82b590022c78ae54831a27a435cfcb93d946e18de1ffdbf332d7b",
-        "https://storage.yandexcloud.net/prod--storage/video/8775.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T124854Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=11aa1d8a63bfe16a13ab1e7ed182795843a3cc64ad9a2c84e4c3da1789040133"
+        "https://storage.yandexcloud.net/prod--storage/video/8776.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T160805Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=fa5b6ec69c6ebe4d9f62335602c8ab1d7def9b89622405ead72a730f27ca18eb",
+        "https://storage.yandexcloud.net/prod--storage/video/8775.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T160805Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=09589b260bb0a08160bbdaf3410090e4116e0aa9818a6878437fb2b23a57fd9a"
       ]
     },
     "ZhqidFKYkbnFuOlGqXlXlE": {
       "status": "binding",
       "name": "Самсон 2012-2013 Динамо Центр 2012-2013",
       "parts": [
-        "https://storage.yandexcloud.net/prod--storage/video/8808.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T124854Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=81052659cbbe59c033529bca91cdcbea05d649061c6e41f15c9b75d628286cb9",
-        "https://storage.yandexcloud.net/prod--storage/video/8809.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T124854Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=9979be4464577b568a761bb804b66406737f92eb3e8cc82bd60fdfe018f0dd0a"
+        "https://storage.yandexcloud.net/prod--storage/video/8808.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T160805Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=6acc0e32453c192136d4bcc4e2757593dff379eba7b0ea82feb022b94a0d7b1e",
+        "https://storage.yandexcloud.net/prod--storage/video/8809.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T160805Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=011214a46aaee56db9e1e4f0fb7c11785699f0311ff0d7a14c982c235af37f92"
       ]
     },
     "I2iw4ivgfNCh9lIZRqfsEk": {
       "status": "binding",
       "name": "СШОР Лидер 2012-2013 СШОР Невского  2012-2013",
       "parts": [
-        "https://storage.yandexcloud.net/prod--storage/video/8900.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T124854Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=2f7bcb66005f64478ed0d3995fd1ba80338d1dd984249dd964f77fad8c20c9ca",
-        "https://storage.yandexcloud.net/prod--storage/video/8901.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T124854Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=c30b74a553281304211a730e69596559ef40cb05aa6c9bbc631d0bb4a9d38464"
+        "https://storage.yandexcloud.net/prod--storage/video/8900.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T160806Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=a53454f582d2d0536f23dbae1bfdaa2ef1dce405c2b355dd5e87604726ec9d49",
+        "https://storage.yandexcloud.net/prod--storage/video/8901.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T160806Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=580ccb92a197e51e0aa4682f11ab5b2204c9350c2e665ec650ae494e2cf994ef"
       ]
     },
     "xfuvXpxrWAekogXd0oTiWV": {
       "status": "ordinary",
       "name": "Легирус 2012-2013 Самсон 2012-2013",
       "parts": [
-        "https://storage.yandexcloud.net/prod--storage/video/8865.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T124855Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=d6a1ec5f00a805baeb443cc1076da19752e7315352279206d7b886ecde20150d",
-        "https://storage.yandexcloud.net/prod--storage/video/8866.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T124855Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=94a453910906ae34593c8c17d2e00fb1a836103f036e6229cb1164facf941ecd"
+        "https://storage.yandexcloud.net/prod--storage/video/8865.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T160807Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=6e5a48ef7e8190e964f023e8a78ce02b95829426a932b7b2372fe0741fab5a2e",
+        "https://storage.yandexcloud.net/prod--storage/video/8866.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T160807Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=bafffe15ff494ca22d56c0d6ac2565669c66d69987026076bda256e1f2a517ff"
       ]
     },
     "9fsOUjd25o1ro2qAumcC0z": {
       "status": "binding",
       "name": "Динамо Центр 2012-2013 Лидер Купчино 2012-2013",
       "parts": [
-        "https://storage.yandexcloud.net/prod--storage/video/8921.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T124855Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=76bdceb25812c6bcb039173c02f16984bf7f7886be835fd7c252bc6e760431e7",
-        "https://storage.yandexcloud.net/prod--storage/video/8922.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T124855Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=2701cadc33af1f960135a9a1e6e52ff8c61b5ea97a1fbe7447f61929d453888c"
+        "https://storage.yandexcloud.net/prod--storage/video/8921.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T160808Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=93a145ed63f19c429f2835a8ffc99514d5813af2ebc56d3d51002d561e83e75c",
+        "https://storage.yandexcloud.net/prod--storage/video/8922.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T160808Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=a1dc14a4392cdabf5ee32ab73fcb383969201b0908532aeedba420394bf9db04"
       ]
     },
     "rezol7d8QvqRoVeQ0GMYDr": {
       "status": "binding",
       "name": "Самсон 2012-2013 СШОР Лидер 2012-2013",
       "parts": [
-        "https://storage.yandexcloud.net/prod--storage/video/9019.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T124855Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=dfd8c4d4ad44b29ffeb6a273f594e64d9d9f1b44476b4541950b19f59f402f3a",
-        "https://storage.yandexcloud.net/prod--storage/video/9020.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T124855Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=b5e1417140951a353e6f1b7101eb22adf745f3fb493a91c8253f04af7db6b632"
+        "https://storage.yandexcloud.net/prod--storage/video/9019.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T160808Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=2891fc9c5a6e4f41e7cc772dff931e183db45b830737534b3222f770fa85d708",
+        "https://storage.yandexcloud.net/prod--storage/video/9020.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T160808Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=3370627311b07ab18885e89cd937ffc47754e3da2fc010323ae8f750c96d7d25"
       ]
     },
     "5g3GNudPDHqxcG6uPquLtP": {
       "status": "binding",
       "name": "Лидер Купчино 2012-2013 СШОР Лидер 2012-2013",
       "parts": [
-        "https://storage.yandexcloud.net/prod--storage/video/9148.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T124856Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=b544f1b04e331fbcecc235db33e490a0b8e35d619ba7d8602510cbd837040bb8",
-        "https://storage.yandexcloud.net/prod--storage/video/9147.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T124856Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=4824a09403d45ba6c19413ee5cb6b1d1bd4b859998a76873b169d7e1b2850e3a"
+        "https://storage.yandexcloud.net/prod--storage/video/9148.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T160809Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=37c0395dd118015aee2a357ebb5a6757c3d42983673ffd3fa37b7b727e8ba2ab",
+        "https://storage.yandexcloud.net/prod--storage/video/9147.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T160809Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=d2f8ab6494c2e1cb7faa93218d00c8f5210c55905ccbe834020181e32169f13e"
       ]
     },
     "ahE91LLrKb2rm5onZaFKWp": {
       "status": "binding",
       "name": "СШОР Кировского р-на 2012-2013 Динамо Центр 2012-2013",
       "parts": [
-        "https://storage.yandexcloud.net/prod--storage/video/9125.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T124856Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=17f5d819a20d33fc3bef86290fb10fec11d327836f23b52b63dfd0ee700e341e",
-        "https://storage.yandexcloud.net/prod--storage/video/9126.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T124856Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=e15babb7a1168df9fb190d0ec2fd10222e6286258536755967f9578316bbebc7"
+        "https://storage.yandexcloud.net/prod--storage/video/9125.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T160809Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=53fe9d20c6fd525efb4cd7a6f6fadd30bc23e03eed33f8ab9334f3366e70e975",
+        "https://storage.yandexcloud.net/prod--storage/video/9126.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T160809Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=c3b9f7ee3065644595d69e64bc3f86b9440b73b49d3f7f5afb2de7c855267f8a"
       ]
     },
     "a5WH0KBD35OLaBObChPWP3": {
       "status": "ready",
       "name": "Пороховчанин  2012-2013 Легирус 2012-2013",
       "parts": [
-        "https://storage.yandexcloud.net/prod--storage/video/9131.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T124856Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=1e561ef8f7cb7f12a3b5c2b2dbf78d0f7fb542b538018f2f6359057f77779aee",
-        "https://storage.yandexcloud.net/prod--storage/video/9132.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T124856Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=ac15dbc72d57975dbbf10d2d8b5b72c8473926483ea69ed5a8ede3a0be11d0a1"
+        "https://storage.yandexcloud.net/prod--storage/video/9131.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T160810Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=e7af3955c545f01acd60e1176d108bc9c000022f2168441ca63df71931805aad",
+        "https://storage.yandexcloud.net/prod--storage/video/9132.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T160810Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=e7602269d01e237d1a18b90fafcfce349eee680071266eb69cbc8f78613ad15b"
       ]
     },
     "0kHSYQvogwV2Kcd8Kh8xyf": {
       "status": "binding",
       "name": "Самсон 2012-2013 Выборжанин 2012-2013",
       "parts": [
-        "https://storage.yandexcloud.net/prod--storage/video/9129.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T124856Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=96a255fef603e067b65a571f44890a0d83f86448e3d541034544eb31952665f9",
-        "https://storage.yandexcloud.net/prod--storage/video/9130.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T124856Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=f421babba6bb1d3fbf230dbff040faeac1261b480332ce5cfc68920901583877"
+        "https://storage.yandexcloud.net/prod--storage/video/9129.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T160810Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=b64c2c0a1bf863dd93e79d61f27a6f903743f4163ea859266c40e73341d371e5",
+        "https://storage.yandexcloud.net/prod--storage/video/9130.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T160810Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=a25bb84f7a2befca8790c689679a9b61a7afd7ab61276ecaf06831b32fe3e6a1"
       ]
     },
     "k4DxCtdjob4yiKvpVFi6oB": {
       "status": "ordinary",
       "name": "СШОР Лидер 2011 - Лидер Купчино 2011",
       "parts": [
-        "https://cdn.bigbro.ai/video/7939.mp4?Expires=1783255737&Signature=S~45RTyI3zLLh-XTX9zm~TXxP1BZAvcilVD8KiVHFNiZARvWs-SZjVGAZtP2chshohcz7lXOgWDAaq~L1lIgX2zieIMKWaNPn8VJYH0zNCeJ6vCF0rDKmFXSnI1o0HG4xX8rE9NWDa3q7gHAd-NtSbMdqyPOy5EXtCrL~HHjWDuBArzKqQn8aceqPjO5u0B~RiKjpw7X9fjqAFb4~UoP8BXey1Q8nvpK~HMbXV6I~LQmSYW8W1fON9hOrPnlJZAz3JtzpEpfg6QsGijVEg1TWv0d1dVzdY6S~EtQiwnsySwiSkfi~wFp4SndxSGaK~yUBp5TURDC8o-VPCGmhtPTSw__&Key-Pair-Id=KNF40URY8QQID",
-        "https://cdn.bigbro.ai/video/7940.mp4?Expires=1783255737&Signature=uZM6if-9soCctO6BgJJivjvKeX1E-SlQSLrFB91rKvAzo-Pggnue18FX-6NBrRskGlRmjUaWKrMEPM1uxal05Yfa478uOsmlOWpwQIoIjgsOIy-RMBI2SQjvw5QXnqjkRlmYidfAjStS7LVxEngg6QWKZccwij9CRDsmaxGifZgOavbV1FX01m5YOEcyAwJD8z2FNyvfzyGZAlZ79AQ37aAk1NE5ycXkFcVAb~MdcfQO~t0d77Os3I2msbDLuaYrimZvo9QVp53cxn7smmamEO-iP2vgTfIPaqR4F~Qat9KJ6MpOKeypcyck7QBzrAjfAuket9WcAh2AkA2pzubwsQ__&Key-Pair-Id=KNF40URY8QQID"
+        "https://cdn.bigbro.ai/video/7939.mp4?Expires=1783267691&Signature=ZQ1JJ9lpSjYiIJeD1dtdtKq50tFDCdN6NmRjUurZXZDl2Ycv-9Xb5TdiLodqazMJag6V4FTVhHF~sMuiUK4TWPBmi7u8kr8rzfgqDhDIOzxhuWQKl40MVyiqUyn38bJ2qd9O1YMQAAloShTERT9vBL7zwanaLzlYLYbmKOT4lJct7URxtiPFm~c8J6yBebYhQ1vMYBFOj3D61-e17XttNXc2YS70NF9or1cHlVVLWI041y0hTIJSto-vJTxT5JnPHgd1NxtGCrNWFc-aEu6V7Tnwd6q-8jWrKc4XN11jXBIki8loTHncnHeRAKQiHo9Ck2sUUxUE2alzpRNTYEeYBQ__&Key-Pair-Id=KNF40URY8QQID",
+        "https://cdn.bigbro.ai/video/7940.mp4?Expires=1783267691&Signature=lYZSdUv0UvURKADZKG4m2s0MpxvSue3WOnuQVVQY3wkZ2B3VpkPu4uHuNtleDSBHekncgmLnDR3EPcjyLVRWNEBzZG8~Y~kXsr17eM9JCLDqQv74aGx-OikLQhkIWEtzNu2AayI3i-RyH9palt9fJrKk8DOJ3xGpJ2VKWzynD-x15-r8nSLncANtZ33jOYhA0euE-Ptg54-cb9iAbMITbXSyDxl5rTj6vYW6OPBcLjkZM6XvmX2jbCgrjhcTqPcDW4cL-Taj~cDFUhFpJV6G69EnS3C41aB6k1uOkCyR9aCRCd8E~Jx5o-ZIs90M9HvrxR5LopsxJ181l1WEKb6Lmg__&Key-Pair-Id=KNF40URY8QQID"
       ]
     },
     "kouIZrKDhsvQcEWNcQjdds": {
       "status": "ordinary",
       "name": "Легирус 2011 Пороховчанин 2011",
       "parts": [
-        "https://storage.yandexcloud.net/prod--storage/video/7955.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T124857Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=2301b31c9c4a13b14a70bd93c5998fb4d03dcee7f563896c1d507f13c87e061d",
-        "https://storage.yandexcloud.net/prod--storage/video/7956.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T124857Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=bce9848f4488d1b08db9c78120171bc7b75267e04084aefa6bbe269e79924c34"
+        "https://storage.yandexcloud.net/prod--storage/video/7955.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T160811Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=c88cdfaa97c85a6c0674a284b5c65c44b2ea191101b32564ae58ff2f954bc632",
+        "https://storage.yandexcloud.net/prod--storage/video/7956.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T160811Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=a065b2ce209ccc31ac3af92c39563c7498e4910cddf21ee5925add5798ec4928"
       ]
     },
     "HiibRbLQIZA2yu44AU0yQK": {
       "status": "ready",
       "name": "Самсон 2011 - Экран 2011",
       "parts": [
-        "https://storage.yandexcloud.net/prod--storage/video/8245.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T124857Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=11006e0b87fdf37ad135db7781b6c5e0b288cc3570d7a85a846793e8919e0796",
-        "https://storage.yandexcloud.net/prod--storage/video/8246.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T124857Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=43abe25ad387bd849dc0e0886b87fca2a8b17fdc6a194cb7954c21fdaa083906"
+        "https://storage.yandexcloud.net/prod--storage/video/8245.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T160812Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=fcfcf5f9b2af08fc943fc5b5b715c5e5fcd6c011931f11f2a0e518dc8f9ee952",
+        "https://storage.yandexcloud.net/prod--storage/video/8246.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T160812Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=8076369eee08521465d9391012cc1c538324b6d371f01da8ebd2bcb614db053f"
       ]
     },
     "da4SzrFT9e3bfCIb3h8U4D": {
       "status": "ordinary",
       "name": "Лидер Купчино 2011 Выборжанин 2011",
       "parts": [
-        "https://storage.yandexcloud.net/prod--storage/video/8077.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T124857Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=76d98dfd6ce39aa93e2e43670cfb52ffe159817bf90752d9d2eb8c699c90c682",
-        "https://storage.yandexcloud.net/prod--storage/video/8078.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T124857Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=1a631f013571af232dd41b9713d8b088c516a35c310fc95b3011771215fcee11"
+        "https://storage.yandexcloud.net/prod--storage/video/8077.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T160812Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=b9d3e019551320ffb19a75027eebdd93606cfd2886dcb8e40afab9010915ef54",
+        "https://storage.yandexcloud.net/prod--storage/video/8078.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T160812Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=9a0431c9fc6a4e86578c854cead6cc08a987e035816dca2cca6bb14f5b7c5e13"
       ]
     },
     "Led751wxepWedcz2NPJ9xK": {
       "status": "ready",
       "name": "Пороховчанин 2011 - СШОР Лидер 2011",
       "parts": [
-        "https://storage.yandexcloud.net/prod--storage/video/8229.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T124858Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=a9d24b91b26b109a22e28afe28c04a58c2aa3782a59ae89d39dad8b3c887503d",
-        "https://storage.yandexcloud.net/prod--storage/video/8230.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T124858Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=624ebb6d0e21b546f6be1b9f78cf185e4832a3245717ed2da3207d04315eaa4b"
+        "https://storage.yandexcloud.net/prod--storage/video/8229.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T160813Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=b36a4057531b836f1e8ee6ad4f092c510e9d2bccdb797679f609f6bc45e5f06d",
+        "https://storage.yandexcloud.net/prod--storage/video/8230.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T160813Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=6ab437cf5edf0ea76fd80039b594d3bb5705f054eecc1fd1343c92b081dd463c"
       ]
     },
     "GXpus88IsbRB3vyiKZw0eV": {
       "status": "ordinary",
       "name": "Динамо-Центр 2011 Легирус 2011",
       "parts": [
-        "https://storage.yandexcloud.net/prod--storage/video/8219.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T124858Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=590edea80a3b29d0d6765f91a5bdd7b8a4d064dd21f2072c4066b2210710d091",
-        "https://storage.yandexcloud.net/prod--storage/video/8220.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T124858Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=c68038618ae1f1648026e305402b59942b43bfa7df6099e74e44eaf7f3cd1be2"
+        "https://storage.yandexcloud.net/prod--storage/video/8219.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T160813Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=142992052e77d0c11cf6351a3fd2a3d472ee7580f6a044a925bc37a0a323adc5",
+        "https://storage.yandexcloud.net/prod--storage/video/8220.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T160813Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=de74b6565271ebd19e50c7d35533fb6a48b98a7c70bbbf9d950ef6bd77f0d038"
       ]
     },
     "LiMwa0vijMnCHfLYOyndZ8": {
       "status": "ready",
       "name": "Выборжанин 2011 - Пороховчанин 2011",
       "parts": [
-        "https://storage.yandexcloud.net/prod--storage/video/8577.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T124858Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=c35abbbc96c9791963a7eccd87873a0f8f8c9ced3986508c6a6556ceb9d8d315",
-        "https://storage.yandexcloud.net/prod--storage/video/8578.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T124858Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=d3e7772bc1e484acb0493d905a0e06ab45e713aebcced9bdf3f05edb0c1edb50"
+        "https://storage.yandexcloud.net/prod--storage/video/8577.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T160814Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=06d096f196822c2c1be3e03aa2bef03a05f90e174cc4d063d1f0958f7724a253",
+        "https://storage.yandexcloud.net/prod--storage/video/8578.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T160814Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=f7c5e6ba46fc17dcd57acbbce501de39bd08bfd121caa10fd12f75d049ec7be1"
       ]
     },
     "Mv9erX85CoP6ueATRpA4l6": {
       "status": "binding",
       "name": "Самсон 2011-2012 Лидер Купчино 2011-2012",
       "parts": [
-        "https://storage.yandexcloud.net/prod--storage/video/8873.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T124859Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=1c79192943cc382f494d264788b2bde9bf2c04cf39a5100ebb64fbdde7f98147",
-        "https://storage.yandexcloud.net/prod--storage/video/8874.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T124859Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=81575e6d1fb39a5a8f2b8511fe001f8fa495067fd42aa216b0e9be0cfd7c6c1e"
+        "https://storage.yandexcloud.net/prod--storage/video/8873.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T160814Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=399c8fbe9844aa3c0eb1dc96fc95a6f0c97ad7f4e61d0180982a82e94d1b3833",
+        "https://storage.yandexcloud.net/prod--storage/video/8874.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T160814Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=e9100ac723fdb5b3fcf09412a55298c15f1e3b0015719e1ab470a4be33fbeb76"
       ]
     },
     "XDzhLTcwvCLEyekNpMnv0n": {
       "status": "binding",
       "name": "СШОР Лидер 2011-2012 СШОР Кировского р-на 2011-2012",
       "parts": [
-        "https://storage.yandexcloud.net/prod--storage/video/8894.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T124859Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=079d13d5e6f9051e8fc0c92adcadb2076ab7ccacd12d66ccc0cf092919d52e7c",
-        "https://storage.yandexcloud.net/prod--storage/video/8895.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T124859Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=49e51f77d45c3c685fc2618c899f44ee11ae24545bf6cd1675058de48a2a2e3e"
+        "https://storage.yandexcloud.net/prod--storage/video/8894.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T160815Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=1c84a879b5e4ae8feea339e80a0dfe43cf6413e49b003c3dde1656c3f3ad54f7",
+        "https://storage.yandexcloud.net/prod--storage/video/8895.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T160815Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=a59ccb2c2ca6c0279b0ace5be3d620b8a8f99c34bc5ea636f293e09cb1de9eef"
       ]
     },
     "OWHchQrK4omsL6rTcwCN1T": {
       "status": "binding",
       "name": "Самсон 2011-2012 Динамо Центр 2011-2012",
       "parts": [
-        "https://storage.yandexcloud.net/prod--storage/video/8810.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T124859Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=bae1096528647cd518d1d40dbf7003d4cc77ff2d6ae0080cc3e1496254b13ffc",
-        "https://storage.yandexcloud.net/prod--storage/video/8811.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T124859Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=bf099f557a03f059b0b5d58842888b86b434ab97dd3ec07092b08963da397843"
+        "https://storage.yandexcloud.net/prod--storage/video/8810.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T160815Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=b1adf17154f4aa45ce7a69c0943e766b3d3e12af865adf86956d2ef78c0f6c2b",
+        "https://storage.yandexcloud.net/prod--storage/video/8811.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T160815Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=363a6737c543c878d9ff7880eabf39051ad4e59570e0c4066c6e2f95a4114f91"
       ]
     },
     "Wg9NZmvSkI53DxjBZcsM0U": {
       "status": "binding",
       "name": "СШОР Лидер 2011-2012 СШОР Невского  2011-2012",
       "parts": [
-        "https://storage.yandexcloud.net/prod--storage/video/8902.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T124859Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=64069024979193628486d1892efcade89e993c76f41457ce00a1f3cf9b20f267",
-        "https://storage.yandexcloud.net/prod--storage/video/8903.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T124859Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=bd671223f7a20e4dd7a3cc3d1c5960476c100f8f48480d165db69610bbe03ba8"
+        "https://storage.yandexcloud.net/prod--storage/video/8902.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T160816Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=d28494772271875808b3b6374c43d3cee061df7f376d685a0b1ccf13170f674e",
+        "https://storage.yandexcloud.net/prod--storage/video/8903.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T160816Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=5adbbc3a4682364f50d53bcf891238a22c28a75c0ebc7529f3ebf7c4e30dcb61"
       ]
     },
     "cTXvszKYLzVZED0ANVj2Yh": {
       "status": "binding",
       "name": "Динамо Центр 2011-2012 Лидер Купчино 2011-2012",
       "parts": [
-        "https://storage.yandexcloud.net/prod--storage/video/8923.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T124900Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=f1dd7d70a6b5e0362caa60d60b5f8113c0a4cba7b881b325282f182d2f789068",
-        "https://storage.yandexcloud.net/prod--storage/video/8924.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T124900Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=dcffe27abd62db737f2f9d1183553fc902f550bff452618f5c833c2ec7657d16"
+        "https://storage.yandexcloud.net/prod--storage/video/8923.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T160816Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=98c0db907e136e5511edce6afc10f30f92d2c15e24b0459bad30138387e96330",
+        "https://storage.yandexcloud.net/prod--storage/video/8924.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T160816Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=41a73f56b18aadc45daafae7b82e2482b828885110a367f8a5c67727befb6361"
       ]
     },
     "Q4t3ut7TTGXLOBhjgZqbRj": {
       "status": "binding",
       "name": "Самсон 2011-2012 СШОР Лидер 2011-2012",
       "parts": [
-        "https://storage.yandexcloud.net/prod--storage/video/9025.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T124900Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=5eeeb433833ad477153e1caf0bdab0b0ce3bad1eb0b6758958b2a47adf25d2c7",
-        "https://storage.yandexcloud.net/prod--storage/video/9026.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T124900Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=b33f1d6f9746799a2e3cf656215cffe9494ec035b6418acc242a441d35016fbf"
+        "https://storage.yandexcloud.net/prod--storage/video/9025.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T160817Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=09869c985de637f20d69cb8492169f58142e9396b451f5ee732fb664cd77c58c",
+        "https://storage.yandexcloud.net/prod--storage/video/9026.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T160817Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=ea23df08783b20fd32eddbdb2ce7118a5fc774948d2ff9fd59753665c18c68d5"
       ]
     },
     "yi2SRYjJ7mJy8LFyN9ns5Z": {
       "status": "binding",
       "name": "Лидер Купчино 2011-2012 СШОР Лидер 2011-2012",
       "parts": [
-        "https://storage.yandexcloud.net/prod--storage/video/9157.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T124900Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=33229231f1d326e9b647ea4fbe90e7667dd50c8e784a563dca85a2c16cf55b5c",
-        "https://storage.yandexcloud.net/prod--storage/video/9158.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T124900Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=c07b0e1697b9ef1686d37d1645e7e083b25ae05fbb29be4f1ed921165f7a4141"
+        "https://storage.yandexcloud.net/prod--storage/video/9157.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T160817Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=4fdbbcf3a4033302e1cb9c7c4224cdbd4c53527f92f7ff8dd6e35207ffee9954",
+        "https://storage.yandexcloud.net/prod--storage/video/9158.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T160817Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=abde0f22a7f8f9c5a6f48a99f6431040df6a9d90a4a57d1fe199efd8bcb2c996"
       ]
     },
     "2lrrTNvgoQkuuR0XYV3Vk6": {
       "status": "binding",
       "name": "СШОР Кировского р-на 2011-2012 Динамо Центр 2011-2012",
       "parts": [
-        "https://storage.yandexcloud.net/prod--storage/video/9143.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T124901Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=5a750f5f9a10f442d345b3b03ff6acf015308f50dd32982007d38ce0e3a78f4d",
-        "https://storage.yandexcloud.net/prod--storage/video/9144.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T124901Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=9d90f65b737b0309da6cc3dd811e6186fb7506cc60392d62abd3ca68ad05fa90"
+        "https://storage.yandexcloud.net/prod--storage/video/9143.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T160818Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=b216df7421185b6d0b734366432433af84585524acfc8d70c9ca868db15009f2",
+        "https://storage.yandexcloud.net/prod--storage/video/9144.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T160818Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=cbe5b6db13652ee5ac2e17c23486327d585ae389921cfa35e5922ad9ee495c0d"
       ]
     },
     "MzJXcPFU8x3mNjc9ipqTXi": {
       "status": "ready",
       "name": "Пороховчанин 2011-2012 Легирус 2011-2012",
       "parts": [
-        "https://storage.yandexcloud.net/prod--storage/video/9133.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T124901Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=34c98207a257a7a473eb7ff6ae6b7d141c16f56fae10b3b43e517ee56484d780",
-        "https://storage.yandexcloud.net/prod--storage/video/9134.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T124901Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=0a8e29b42473c565365256a47561035b1b8290fa2fda2bc83cb6e507d12c5997"
+        "https://storage.yandexcloud.net/prod--storage/video/9133.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T160818Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=d3da7200333d43fb530c423362be30cb8ff1b4a1985f3ea5b81d64375fb3ef2f",
+        "https://storage.yandexcloud.net/prod--storage/video/9134.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T160818Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=67316cab91f8e46a60e1db7f433f858e13aed2d4b284e49230e58fe12d55189d"
       ]
     },
     "1kVXfDq7g8mSh60xuWqv39": {
       "status": "binding",
       "name": "Самсон 2011-2012 Выборжанин 2011-2012",
       "parts": [
-        "https://storage.yandexcloud.net/prod--storage/video/9137.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T124901Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=cf8a4085421d2493a6e9caf077cb76cc27c2c150a379eec2721c7cd2a5ce5ff1",
-        "https://storage.yandexcloud.net/prod--storage/video/9138.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T124901Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=16685c07cc46dc885b327131c09da19f1eb1a9113cca7bca30d8df01af852690"
+        "https://storage.yandexcloud.net/prod--storage/video/9137.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T160819Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=efb88512949b43ab5a560086412ff23b90aaba1f0f028ede3debcda465eb9688",
+        "https://storage.yandexcloud.net/prod--storage/video/9138.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T160819Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=527822e75b75e67ccbd223ac4fb273ad8599e6dd6dbd4a91c88ea7c954ed66a0"
       ]
     },
     "v9vUSyOxJCtQKQMKBRj0Lj": {
       "status": "ordinary",
       "name": "СШОР Лидер 2010 Лидер Купчино 2010",
       "parts": [
-        "https://cdn.bigbro.ai/video/7941.mp4?Expires=1783255742&Signature=fpuzNICGOlq5IXUlKl7AA~wNG~IwgaeyHCyRZkBzayx~Z0M5JBH5qTUn9HGiV3xwzqppkodJX2nxHW1bjiRtfhuc48v5N1nA6zr3TcqpOBHNyeIkR50vp~tvg-8FA0kDQn2F0NL5z8jdmpe4jObKZtCYvLQwTt5hG1UvDd8-JF3x32IxjFr3d72235~LPAudNMHWE-PNVqE~j~Xv6-SkwgvD3UdUPucK70EzTpdm1mZkqUbUbfu0FskwIZfb6s6-imhkHpu2TDqjmbVbpcLSvaq0H~67dozZntUzGFnnnv3XyTOGEXpJk-cKFOomQB1HlORSloR2NVUFuV6OhGp9Pw__&Key-Pair-Id=KNF40URY8QQID",
-        "https://cdn.bigbro.ai/video/7942.mp4?Expires=1783255742&Signature=i-IFyCU97UvbYvV6oxNhva1VgW3xUNupIFEcRInkzN2TSCo9RH2xuDM4OWKoPBIQlKcNYmSqtLZymtqsOdIpnq3JIvX7pdhMwaTbe~v9yNh-XlEaAtqlia1YSYSEpiao~g44Fl6vxDY8z4pZCi12Eq9aiGGnaASyQD0MEAjv~So5CD28nvps2JLQJPEa7-WknsAJuR6SPcfxxCvTZTW3dYL4PWR-e7vWrnHdsIpItZmKBgOZj3udfyritJmcy7U2Jw6u1fwxlMFobHgvDtXcxJDj8qCMtoxehhTy5DaHEykJyZoYdt8mVR0CpVDM-X8JRtV-OVkiyK~NZqCISqDD1g__&Key-Pair-Id=KNF40URY8QQID"
+        "https://cdn.bigbro.ai/video/7941.mp4?Expires=1783267699&Signature=d1qBS62vh~PW63d-sQaQdX~zeg6cM6z0dYm9QZ86pV0yd~GJZ1XYWhizB8Wm98c2-PRvJt0Iwvabnu7q~EqxLoA3wdPyv4jzFO-qhDwfSKARB5anc3OkbhWgXBauk6Q0wTQaH95nuJPMO~OADdYnfb9Mp07S53fcwWLYOvuBM1WIjciRc71DQNNKwZTX4a6DNWJP6-KbQKxGhvczzCoLUGlhAz6OSyH~50iSwvNEO18JJn39Z~~RN36CxG3NDsIKzLylKAlEAN3lNiKzJ9EgW8VaIYjPK~9u4t2sID-yeMFElUqFK2jpGGqAhIdz0MVHNkfOCm~pr~8niUIBFyiwiQ__&Key-Pair-Id=KNF40URY8QQID",
+        "https://cdn.bigbro.ai/video/7942.mp4?Expires=1783267699&Signature=WnBMA5EondTHb3mSz6XbMk1vHHWORUnEfgSWXhzjHdKML9Thp1Lq6rAPKzscGjttCAORGDaUyCUygD10EMPk2bBpY3XuN7gvpdJ4D0-bqmf6J6kIlkqRGiSTiYLsrbZpqJ-6mU-ctuAZvwXmoOJaO7x-8PwSgmhrDFxK7czRyVZiO~WuaClnIvLrWYhjOy4HpGK6DJwyqCT6He91Ts0AR5Xxf4G3KrYfQRcaYJ0F8KTeWaB6e7mEDXhwyTDq3nE52oOYURCQF-wT8LMmLYJUYMQlDabDg2UlbScmO~QFSesDbLZsZhtZa536CNOucOs2kP-4KqaXkeXHB1KePMjeJA__&Key-Pair-Id=KNF40URY8QQID"
       ]
     },
     "9yLurWW2bSRW7RJz8RlWUx": {
       "status": "ordinary",
       "name": "Легирус 2010 Пороховчанин 2010",
       "parts": [
-        "https://storage.yandexcloud.net/prod--storage/video/7951.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T124902Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=ca0cdc8166a2e60c077a361a24e31519bb689ba209fe1471ceaabbcdacc1bb4a",
-        "https://storage.yandexcloud.net/prod--storage/video/7952.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T124902Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=6db918525405ade2ca5ea35970bcead93c2b8b8c1971320f28dc679cf9b311ba"
+        "https://storage.yandexcloud.net/prod--storage/video/7951.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T160820Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=a1c1308638c882c87300726a4188cb62011dfd1abceec7640733b88671f87ac8",
+        "https://storage.yandexcloud.net/prod--storage/video/7952.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T160820Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=7c34193feb3a4f0a5279ea8e7829d4aaedc189430078598e8cba43d4921a537e"
       ]
     },
     "36wT6nfbA6sgRmpJBFXp1S": {
       "status": "ready",
       "name": "Самсон 2010 - Экран 2010",
       "parts": [
-        "https://storage.yandexcloud.net/prod--storage/video/8247.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T124902Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=a89caaa025028798cfd12f96df2709c3fb64cf4aa545532b38ea5133c5ce484d",
-        "https://storage.yandexcloud.net/prod--storage/video/8248.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T124902Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=e5a000f1ba9e700f55a39fdb4eab116f2e0014c5bf09754b894b9d5435aec238"
+        "https://storage.yandexcloud.net/prod--storage/video/8247.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T160820Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=b7ae11efc39546698705902f5da25423b5fe78d055beb21a6af18f1aab7b50e5",
+        "https://storage.yandexcloud.net/prod--storage/video/8248.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T160820Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=52e6378a17e9e7562e46dd4e1686bcb759b8397a21595b008fa199bd604e7921"
       ]
     },
     "PGb9iCZHmusAp8ZFe0xtQM": {
       "status": "ordinary",
       "name": "Лидер Купчино 2010 Выборжанин 2010",
       "parts": [
-        "https://storage.yandexcloud.net/prod--storage/video/8080.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T124903Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=bde2f4abcc9fb705c0ef8644affe44bf64f761efb61b32d4aa0c50bcbd03dfb0",
-        "https://storage.yandexcloud.net/prod--storage/video/8079.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T124903Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=57f2f27c161875d0e327e3733461180ff7ce39b9ad611881b8bb9045616f8375"
+        "https://storage.yandexcloud.net/prod--storage/video/8080.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T160821Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=a365398346c993f5c2ded801115cacc91e226f5ea3bebb4a4d38710685110355",
+        "https://storage.yandexcloud.net/prod--storage/video/8079.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T160821Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=e8a4a473448166ddb2ab33bb71a2867909a98a973961f33a2707b0a9fe1fa4a0"
       ]
     },
     "1afst6D7cVDVl0tj0mD9eb": {
       "status": "ready",
       "name": "Пороховчанин 2010 - СШОР Лидер 2010",
       "parts": [
-        "https://storage.yandexcloud.net/prod--storage/video/8232.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T124903Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=a409e90f8fd073c8092465aa995de84bbd178eefc28bd2204ac16a97aca0602a",
-        "https://storage.yandexcloud.net/prod--storage/video/8231.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T124903Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=02f062193b05fe88146c791ee89231c7a800b1df122a362c6970e434a3c69db8"
+        "https://storage.yandexcloud.net/prod--storage/video/8232.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T160821Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=b72394f5c4d61fa82217c240444da9a14cd2dcc7381641aa483c61fedaf9f736",
+        "https://storage.yandexcloud.net/prod--storage/video/8231.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T160821Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=ba32ca6babb041a825fba930589b87d0a0a41a82b8e2b2b717fc527e36fa04ef"
       ]
     },
     "vC9t1CtZmAfOWA22cIUXc0": {
       "status": "binding",
       "name": "Экран 2010-2011 Динамо Центр 2010-2011",
       "parts": [
-        "https://storage.yandexcloud.net/prod--storage/video/8879.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T124903Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=e0a4f6b6d4f8ea54c33ae318c9dc2cafd6a29f2d3c5b557701099c254335c6dd",
-        "https://storage.yandexcloud.net/prod--storage/video/8880.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T124903Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=31672c32c874350d9ae20057c24f1d1e814cfad488556b4a3ecff65d05bdedff"
+        "https://storage.yandexcloud.net/prod--storage/video/8879.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T160822Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=e8a4fef710dcc7dc34126807f8b095f0918eba39461c52a25226fb6c592cc884",
+        "https://storage.yandexcloud.net/prod--storage/video/8880.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T160822Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=953faaeec087bb57c4d0baa966803a751e4ce827db3edb0874941448f0c2020d"
       ]
     },
     "EffKaN9QQ5vbMhUX2DHL80": {
       "status": "binding",
       "name": "Самсон 2010-2011 Лидер Купчино 2010-2011",
       "parts": [
-        "https://storage.yandexcloud.net/prod--storage/video/8875.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T124904Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=16bda6bd3c40fb56ad0a6cfa567448aac90e92f5ec80dbb33d0318c18af7056e",
-        "https://storage.yandexcloud.net/prod--storage/video/8876.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T124904Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=af200af74a58bee03c0732290011d7bac5d789b62190b000ea40762d28b9e947"
+        "https://storage.yandexcloud.net/prod--storage/video/8875.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T160822Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=29d7045a9107d020f73986909f2236beff2ffc08c9a09b05b79908507bebac91",
+        "https://storage.yandexcloud.net/prod--storage/video/8876.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T160822Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=a9cd4775b9e83d9d53cea1e793ef15390467c36c25ad63b5d95fea722e077f7c"
       ]
     },
     "GEujvGMyrUUHXrmXHxzdCu": {
       "status": "binding",
       "name": "СШОР Лидер 2010-2011 СШОР Кировского р-на 2010-2011",
       "parts": [
-        "https://storage.yandexcloud.net/prod--storage/video/8896.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T124904Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=e91d8cbc11e6177577feb589b6833144cb0222f11ebf82671ecdf1b6b2a93646",
-        "https://storage.yandexcloud.net/prod--storage/video/8897.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T124904Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=468b40433659f74c287268e26aff4b916948360ecd56d311bde265e912eaf0f7"
+        "https://storage.yandexcloud.net/prod--storage/video/8896.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T160823Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=9e2bb11137c2f50a73068a5c59344d8bae14c7cc1b82c7ca05937d9b157d711c",
+        "https://storage.yandexcloud.net/prod--storage/video/8897.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T160823Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=eef9905bc2bcf7d0f02ec0c089ce0b9cf85375d7c04080c5c6b151d4094a5fac"
       ]
     },
     "hllpoHUVs2klHNLD9eClc4": {
       "status": "binding",
       "name": "Самсон 2010-2011 Динамо Центр 2010-2011",
       "parts": [
-        "https://storage.yandexcloud.net/prod--storage/video/8814.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T124904Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=2363733469bf3a1205fc74c54d5882f22c534688a10a9e1cbdb94a6c0a3a646c",
-        "https://storage.yandexcloud.net/prod--storage/video/8815.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T124904Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=0b48c61d5ebc1b86ddf8a153754f50acc83f5e7089b9f081d7d0de436f7d87ce"
+        "https://storage.yandexcloud.net/prod--storage/video/8814.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T160823Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=0e986410ffec3e0801ff33eeae70ba47775f53b882a3e0cd1794d06b5a13f246",
+        "https://storage.yandexcloud.net/prod--storage/video/8815.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T160823Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=79cb8f8726a39ee1fd2aeda6f0b3d0eb4a6187364036f41a3f4ad43740330eb7"
       ]
     },
     "81E5Sd4xlIyoMTmKTGc1nU": {
       "status": "binding",
       "name": "СШОР Лидер 2010-2011 СШОР Невского  2010-2011",
       "parts": [
-        "https://storage.yandexcloud.net/prod--storage/video/8904.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T124905Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=50d85256c90fe0e2510f3590d6018c2672a091527de05f0f1cf4a05ec5dc53e8"
+        "https://storage.yandexcloud.net/prod--storage/video/8904.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T160824Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=3e5afbb3eb6e14665e060caef57b0232b1692371e3dcab836bd00d4f77fd61ee"
       ]
     },
     "VrTI39iKYurkaXIINs2LCI": {
       "status": "ordinary",
       "name": "Легирус 2010-2011 Самсон 2010-2011",
       "parts": [
-        "https://storage.yandexcloud.net/prod--storage/video/8849.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T124905Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=ab06a63cd7e7dfc826487f203483469cced8b53afd1e061133cb213ac5fd1880",
-        "https://storage.yandexcloud.net/prod--storage/video/8850.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T124905Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=a1f46dd9b41dd2c22a86f72a9a506387bb4bc363ea9ccc343f99790e0c078fa0"
+        "https://storage.yandexcloud.net/prod--storage/video/8849.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T160824Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=32d3e72b5c9fa6de419ed33069c42bd5872acf053fdd59bbaafd240b81d6eeca",
+        "https://storage.yandexcloud.net/prod--storage/video/8850.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T160824Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=88554c0fbf7dbac3a42a9161f05b982f4ca62ef975e6391d8c20ce8ccb401941"
       ]
     },
     "0VFaBudWkC1MDXvHxU1vsB": {
       "status": "binding",
       "name": "Динамо Центр 2010-2011 Лидер Купчино 2010-2011",
       "parts": [
-        "https://storage.yandexcloud.net/prod--storage/video/8925.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T124905Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=93ac3de642ad50553569faacb01ee24198ddce1b8943238245129fb215f1c080",
-        "https://storage.yandexcloud.net/prod--storage/video/8926.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T124905Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=e8b105d90ccf29d43768893b9005a2a210e7ea0d51e765da8e926a2060deb9ef"
+        "https://storage.yandexcloud.net/prod--storage/video/8925.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T160825Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=c6f2359c2c09a1442ca593a5fca91bf06edd0154b45b3c8067938b42d114c60b",
+        "https://storage.yandexcloud.net/prod--storage/video/8926.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T160825Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=6d0336221dd327c57244f6516d2dac79663a3e3594ee0d7de80d284ab18154e3"
       ]
     },
     "A4CpzlZBLy8M6hPmKItvaj": {
       "status": "binding",
       "name": "Самсон 2010-2011 СШОР Лидер 2010-2011",
       "parts": [
-        "https://storage.yandexcloud.net/prod--storage/video/9027.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T124905Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=4edab92f0d6c997a23e12bb9ccbb40c770e926155d248a2516d8906fc31a8ccd",
-        "https://storage.yandexcloud.net/prod--storage/video/9028.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T124905Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=2d372fe71fca82e29485120e0bfce0cf7d4c0105c8de092fa6985f6e811ea772"
+        "https://storage.yandexcloud.net/prod--storage/video/9027.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T160825Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=e574ae837c1d5efd907914df620b861a5c4a3f772bb1b9c8a100bb2bc96463f3",
+        "https://storage.yandexcloud.net/prod--storage/video/9028.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T160825Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=10885d40bf7a74b4de61a528919ddd4df04030f0170180af87868838014b99a1"
       ]
     },
     "Jyw7R11ZPLEcbbTBh7rRD9": {
       "status": "binding",
       "name": "Лидер Купчино 2010-2011 СШОР Лидер 2010-2011",
       "parts": [
-        "https://storage.yandexcloud.net/prod--storage/video/9150.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T124906Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=038cf87ae8a2e7b7fabc97d8f0548d15cfcf78160d72f94b83366ed32b2ab97f",
-        "https://storage.yandexcloud.net/prod--storage/video/9149.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T124906Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=47cac65713980456551c90cd95fb64ccdba14be313b4f66fa6b627268e0e472d"
+        "https://storage.yandexcloud.net/prod--storage/video/9150.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T160826Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=f678fd19f4e52879533fc2eb833aade0472df2f64bd7e3b39d236df87594720b",
+        "https://storage.yandexcloud.net/prod--storage/video/9149.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T160826Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=7bd0161d7ab37a1ac05d56ca7f7e2e515e01ce09c655c53dfefd254e2d063144"
       ]
     },
     "fkJHb5TH94CkSuNt2mFN1Y": {
       "status": "binding",
       "name": "СШОР Кировского р-на 2010-2011 Динамо Центр 2010-2011",
       "parts": [
-        "https://storage.yandexcloud.net/prod--storage/video/9145.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T124906Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=e64e7630a360a2a7b2cbe74a2e8f1b83561ece216fb8d887a8ae1e4f0951a84d",
-        "https://storage.yandexcloud.net/prod--storage/video/9146.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T124906Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=8d708489d445c5a6e9e142ca82f48c62dad1aecdb73d62f03ce0ba22908d957a"
+        "https://storage.yandexcloud.net/prod--storage/video/9145.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T160826Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=c30088885b3299279be6e8432b2bbbf0ffe1b603653dcb78747efe555dbe9728",
+        "https://storage.yandexcloud.net/prod--storage/video/9146.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T160826Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=6d8c1a8b2e86d117d3fa4cdb3cbeea9fc1c0050b588d8bdc6c78c62fd655aad6"
       ]
     },
     "C3jzOuSHE9PEkaVgBxpqaI": {
       "status": "ordinary",
       "name": "Пороховчанин  2010-2011 Легирус 2010-2011",
       "parts": [
-        "https://storage.yandexcloud.net/prod--storage/video/9142.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T124906Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=f1eeb6673d96691b321013319e7984a91880f9338bbb38afb97f86d13cc6d345",
-        "https://storage.yandexcloud.net/prod--storage/video/9141.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T124906Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=00d721d2849f95e684b38696d2500eb3bc96b540fe2c8a391ff5954c2bf88300"
+        "https://storage.yandexcloud.net/prod--storage/video/9142.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T160827Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=5fea710d18b6faf3e4b890374b9d8275f385701382d06e65c3801bbf3ae43aee",
+        "https://storage.yandexcloud.net/prod--storage/video/9141.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T160827Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=f9df85dbd2481fc3bbb4e1b2fb892c4749ef831864c963ba126d878a66a6c7f7"
       ]
     },
     "EFyEuMqEfFzQh3txzVEFFQ": {
       "status": "binding",
       "name": "Самсон 2010-2011 Выборжанин 2010-2011",
       "parts": [
-        "https://storage.yandexcloud.net/prod--storage/video/9139.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T124907Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=f805b627f3aba105fef671b95dd8f5cf54e06a13cdea0834369b1b0990566448",
-        "https://storage.yandexcloud.net/prod--storage/video/9140.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T124907Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=01de84dbc41fa8e5b49cb666c39501fbeac03aa29d4dda3d4e1e8e005b3c81af"
+        "https://storage.yandexcloud.net/prod--storage/video/9139.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T160827Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=e07ed56d0d759b8d5511376f3d9f3187adaf55cf903ee7ca9167a2af9230150f",
+        "https://storage.yandexcloud.net/prod--storage/video/9140.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEZ76SljRLj89v_7OXZCDf%2F20260628%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20260628T160827Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=dc1b47e1039438f2c97f8deebaaa6769e28df7870254e9392a329dc0c7d347d5"
       ]
     }
   }
