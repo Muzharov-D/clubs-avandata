@@ -35,6 +35,7 @@ const TABS: Array<{ to: string; end?: boolean; label: string }> = [
   { to: '/federation/talent-loss', label: 'Кого теряет регион' },
   { to: '/federation/talent', label: 'Таланты' },
   { to: '/federation/clubs', label: 'Клубы' },
+  { to: '/federation/second-league', label: 'Вторая лига' },
 ];
 
 export function FederationLayout() {
@@ -45,7 +46,7 @@ export function FederationLayout() {
   // (перепись, перекос по когортам и минуты — региональные/по-квартальные, без годового
   // среза в данных) → фильтр-бар на них НЕ показываем, чтобы не было мёртвых контролов.
   // Срезы по году/лиге — на drill-down экранах «Таланты» и «Клубы».
-  const noFilters = /\/federation\/?$/.test(pathname) || pathname.includes('/talent-loss');
+  const noFilters = /\/federation\/?$/.test(pathname) || pathname.includes('/talent-loss') || pathname.includes('/second-league');
   function handleLogout() {
     logout();
     toast.info('Вы вышли из кабинета');

@@ -10,6 +10,9 @@ import {
   warmRegionMatchProtocols, regionClubProfile, federationHealth, getLastFedHealth,
   federationRegionBestXi, federationTalentProduction,
 } from './avandataSource.js';
+import {
+  isSecondLeagueConfigured, slYears, secondLeagueAge, secondLeagueClubRanking, secondLeagueMatchVideo,
+} from './secondLeague.js';
 import { snapshotMeta, captureSnapshotIfDue } from './snapshots.js';
 import { latestRegionCensus } from './regionCensus.js';
 import { latestRegionMinutes } from './regionMinutes.js';
@@ -244,6 +247,38 @@ export async function federationRoutes(app: FastifyInstance) {
   /** GET /federation/av/loss-map — «Карта потерь»: game-time% по кварталам рождения (снимок
    *  FFSPB, обновляется `npm run sync:lossmap`). Статика — отдаём мгновенно, без живого FFSPB. */
   app.get('/av/loss-map', async () => LOSS_MAP);
+
+  // ── Вторая лига (детско-юношеская, ФФСПб): календарь + таблица + зачёт + видео ──
+  const slOff = (reply: import('fastify').FastifyReply): boolean => {
+    if (isSecondLeagueConfigured()) return false;
+    reply.code(503);
+    return true;
+  };
+  /** GET /federation/av/second-league/years — годы рождения (возрасты До14–До17). */
+  app.get('/av/second-league/years', async (_req, reply) => {
+    if (slOff(reply)) return { error: 'FFSPB_API_KEY не задан', code: 'FFSPB_OFF' };
+    return { years: slYears() };
+  });
+  /** GET /federation/av/second-league/age?year= — таблица + календарь возраста (с видео). */
+  app.get('/av/second-league/age', async (req, reply) => {
+    if (slOff(reply)) return { error: 'FFSPB_API_KEY не задан', code: 'FFSPB_OFF' };
+    const year = yearOf(req) ?? slYears()[0] ?? 2013;
+    const data = await secondLeagueAge(year);
+    if (!data) { reply.code(404); return { error: 'возраст не найден', code: 'AGE_NOT_FOUND' }; }
+    return data;
+  });
+  /** GET /federation/av/second-league/club-ranking — клубный зачёт «сумма мест». */
+  app.get('/av/second-league/club-ranking', async (_req, reply) => {
+    if (slOff(reply)) return { error: 'FFSPB_API_KEY не задан', code: 'FFSPB_OFF' };
+    return await secondLeagueClubRanking();
+  });
+  /** GET /federation/av/second-league/match-video?slug= — прямые видео-файлы матча (Big Bro). */
+  app.get('/av/second-league/match-video', async (req, reply) => {
+    if (slOff(reply)) return { error: 'FFSPB_API_KEY не задан', code: 'FFSPB_OFF' };
+    const slug = String((req.query as { slug?: string }).slug ?? '');
+    if (!slug) { reply.code(400); return { error: 'нет slug', code: 'NO_SLUG' }; }
+    return await secondLeagueMatchVideo(slug);
+  });
 
   /** GET /federation/av/players/:id — профиль игрока + «пицца» из событий. */
   app.get('/av/players/:id', async (req, reply) => {

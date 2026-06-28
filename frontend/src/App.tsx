@@ -56,6 +56,7 @@ const FederationOverview = lazy(() => import('./routes/federation/OverviewView')
 const FederationTalentLoss = lazy(() => import('./routes/federation/TalentLossView').then((m) => ({ default: m.FederationTalentLoss })));
 const FederationTalent = lazy(() => import('./routes/federation/TalentView').then((m) => ({ default: m.FederationTalent })));
 const FederationClubs = lazy(() => import('./routes/federation/ClubsView').then((m) => ({ default: m.FederationClubs })));
+const FederationSecondLeague = lazy(() => import('./routes/federation/SecondLeagueView').then((m) => ({ default: m.SecondLeague })));
 // Глубокий маршрут профиля игрока — достижим, но вне главного нав.
 const FederationAvPlayerProfile = lazy(() => import('./routes/federation/AvPlayerProfile').then((m) => ({ default: m.FederationAvPlayerProfile })));
 
@@ -200,6 +201,7 @@ export function App() {
                     <Route path="talent-loss" element={<FederationTalentLoss />} />
                     <Route path="talent" element={<FederationTalent />} />
                     <Route path="clubs" element={<FederationClubs />} />
+                    <Route path="second-league" element={<FederationSecondLeague />} />
                     {/* «Управление лигами» свёрнуто блоком внизу «Клубы» — старая ссылка не 404 */}
                     <Route path="leagues" element={<Navigate to="/federation/clubs" replace />} />
 
