@@ -52,12 +52,18 @@ if ('serviceWorker' in navigator) {
         // sw.js (с новой стратегией кэша) подхватывался сразу, а не «когда-нибудь».
         reg.update().catch(() => {});
         // Когда новый SW активировался и взял контроль — мягко перезагружаем
-        // страницу один раз, чтобы пользователь увидел свежую версию без ручного
-        // hard-reload. Однократно (флаг), чтобы не зациклить.
-        let reloaded = false;
+        // страницу, чтобы пользователь увидел свежую версию без ручного hard-reload.
+        // ЗАЩИТА ОТ ПЕТЛИ: флаг `reloaded` жил только в одной загрузке и сбрасывался
+        // при каждом reload → если SW активируется на КАЖДОЙ загрузке (skipWaiting+
+        // clients.claim), страница перезагружалась бесконечно (раз в секунду). Теперь
+        // троттлим по времени через sessionStorage: не чаще раза в 10 сек. Это рвёт
+        // петлю (повторный controllerchange в окне 10с игнорируется), сохраняя
+        // одноразовое авто-обновление при настоящем деплое.
         navigator.serviceWorker.addEventListener('controllerchange', () => {
-          if (reloaded) return;
-          reloaded = true;
+          let last = 0;
+          try { last = Number(sessionStorage.getItem('sw-reloaded-at') || 0); } catch { /* приватный режим */ }
+          if (Date.now() - last < 10_000) return;
+          try { sessionStorage.setItem('sw-reloaded-at', String(Date.now())); } catch { /* ignore */ }
           window.location.reload();
         });
       })
