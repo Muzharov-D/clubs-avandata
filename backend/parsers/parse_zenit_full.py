@@ -185,6 +185,41 @@ def rule_from_header(header_row):
     return None
 
 
+# Порядок страниц рейтингов в экспорте SportVisor стабилен (All → Fitness →
+# Attack → Defence). Нужен для структурного фоллбэка, когда И русские, И английские
+# заголовки нечитаемы (битый шрифт кириллицы: вся страница в ).
+RADAR_SEQ = [
+    'performance index all', 'performance index fitness',
+    'performance index attack', 'performance index defence',
+]
+
+
+def looks_like_rating_table(table):
+    """Страница рейтингов даже без читаемых заголовков: у каждой игровой строки
+    хвостовые ячейки — это Performance Index (float 0.0–10.0), без компаундов
+    («3 | 10», «1233%4») и без больших чисел (дистанции/счётчики). Это отличает
+    рейтинговые страницы от детальных стат-страниц при битом шрифте."""
+    rows = [r for r in (table[1:] if table else []) if is_player_row(r)]
+    if len(rows) < 3:
+        return False
+    seen = 0
+    for r in rows:
+        for cell in r[3:]:
+            s = str(cell or '').strip()
+            if s == '':
+                continue
+            if '|' in s or '%' in s:
+                return False
+            try:
+                v = float(s.replace(',', '.'))
+            except ValueError:
+                return False
+            if v < 0 or v > 10:
+                return False
+            seen += 1
+    return seen >= 3
+
+
 def is_player_row(row):
     """Строка таблицы — это игрок? col0=«NN Имя», col2≈минуты (или пусто)."""
     if not row or len(row) < 4:
@@ -280,6 +315,7 @@ def parse(pdf_path):
 
     with pdfplumber.open(pdf_path) as pdf:
         last_rule, last_ncols = None, 0
+        radar_idx = 0  # сколько страниц рейтингов опознано структурно (битый шрифт)
         for page in pdf.pages:
             text = page.extract_text() or ''
             first_line = text.splitlines()[0] if text else ''
@@ -300,6 +336,13 @@ def parse(pdf_path):
             # колонок таблицы (стабилен в любой локали).
             if not rule and data_table:
                 rule = rule_from_header(data_table[0])
+            # Битый шрифт кириллицы: и подзаголовок, и англ-заголовки нечитаемы.
+            # Опознаём 4 страницы рейтингов структурно (хвост = float 0–10),
+            # в каноническом порядке All/Fitness/Attack/Defence. Радар — единственное,
+            # что есть только в PDF; детальную стату дольёт чистый CSV по номерам.
+            if not rule and data_table and radar_idx < len(RADAR_SEQ) and looks_like_rating_table(data_table):
+                rule = _rule(RADAR_SEQ[radar_idx])
+                radar_idx += 1
 
             if not rule:
                 # safety-net продолжения категории (большой состав на 2+ страницах):
