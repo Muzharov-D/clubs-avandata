@@ -9,13 +9,14 @@
 import {
   isAvandataConfigured, getSeasons, getTeamsList, getTourStatistics, getPlayersByRole, getMatches,
   getFfspbStatistics, getFfspbStatisticsByTournament, getClubRatingsOverview, getClubRatingsByTournament,
+  getClubList,
   getPlayerDetail, getPlayerEvents, getEventTypes, getAllPlayerSummaries, getMatchDetail, authedGet,
   type AvSeason, type AvStatTeam, type AvRatingTeam, type AvEventType,
 } from '../services/avandataApi.js';
 import { getMatch as ffspbGetMatch, isFfspbConfigured } from '../services/ffspbApi.js';
 import { logger } from '../shared/logger.js';
 import { env } from '../env.js';
-import { normTeam } from './teamName.js';
+import { normTeam, buildClubIndex, resolveTeam, type ClubIndex } from './teamName.js';
 import { DIVISION_ALIASES, matchesDivision } from './division.js';
 import { dedupPlayers } from './playerDedup.js';
 import { snapshotMeta, latestSnapshotsForCohort, type SnapPayload } from './snapshots.js';
@@ -285,6 +286,18 @@ export async function listTournaments(seasonId: number): Promise<TournamentRef[]
   }
   auditDivisions(seasonId, out);
   return out;
+}
+
+/** Реестр карточек клубов сезона (getClubList по всем дивизионам) → индекс по normTeam.
+ *  Карточка клуба несёт ВЕРНОЕ написание и герб; реестр Наградиона (getTeamsList/рейтинги)
+ *  роняет дефис и logoUrl. resolveTeam() сшивает команду с карточкой по точному ключу. */
+async function clubIndex(seasonId: number): Promise<ClubIndex> {
+  return cached(`clubindex:${seasonId}`, TTL, async () => {
+    const refs = await listTournaments(seasonId);
+    const divIds = [...new Set(refs.map((r) => r.divisionId))];
+    const lists = await pmap(divIds, 6, (d) => getClubList(seasonId, d).catch(() => []));
+    return buildClubIndex(lists.flat().map((c) => ({ title: c.title, logo: c.logoUrl ?? null })));
+  });
 }
 
 /** Года, временно скрытые из фильтра/когорт (мало разбора — позже отдельно). */
@@ -574,11 +587,15 @@ export async function regionStandings(seasonId: number, year?: number): Promise<
     }
     const tid = year != null ? await tournamentIdForYear(seasonId, year) : undefined;
     const teams = tid ? await getFfspbStatisticsByTournament(seasonId, tid) : await getFfspbStatistics(seasonId);
-    const groups = groupByDivision(teams.map((t: AvStatTeam) => ({
-      id: t.id, name: t.name, logo: t.logo ?? null, division: t.division?.name ?? 'Лига',
-      played: t.stats.matchesPlayed, won: t.stats.matchesWon, drawn: t.stats.draw, lost: t.stats.defeat,
-      goalDiff: t.stats.differenceGoals, points: t.stats.points,
-    })), (r) => r.points);
+    const idx = await clubIndex(seasonId);
+    const groups = groupByDivision(teams.map((t: AvStatTeam) => {
+      const rc = resolveTeam(idx, t.name, t.logo ?? null);
+      return {
+        id: t.id, name: rc.name, logo: rc.logo, division: t.division?.name ?? 'Лига',
+        played: t.stats.matchesPlayed, won: t.stats.matchesWon, drawn: t.stats.draw, lost: t.stats.defeat,
+        goalDiff: t.stats.differenceGoals, points: t.stats.points,
+      };
+    }), (r) => r.points);
     // year задан, но официальный путь не сработал → данные с зеркала, честно помечаем degraded.
     // year отсутствует («Все») → зеркало-сводка это штатный источник агрегата, не деградация.
     return { groups, source: 'mirror', degraded: year != null, asOf };
@@ -602,9 +619,11 @@ export async function regionClubRatings(seasonId: number, year?: number): Promis
   return cached(`clubratings:${seasonId}:${year ?? 0}`, TTL, async () => {
     const tid = year != null ? await tournamentIdForYear(seasonId, year) : undefined;
     const teams = tid ? await getClubRatingsByTournament(seasonId, tid) : await getClubRatingsOverview(seasonId);
-    const rows: ClubRatingRow[] = teams.map((t: AvRatingTeam) => ({
-      id: t.id, name: t.name, logo: t.logo ?? null, division: t.division?.name ?? 'Лига', rating: t.points,
-    })).sort((a, b) => b.rating - a.rating);
+    const idx = await clubIndex(seasonId);
+    const rows: ClubRatingRow[] = teams.map((t: AvRatingTeam) => {
+      const rc = resolveTeam(idx, t.name, t.logo ?? null);
+      return { id: t.id, name: rc.name, logo: rc.logo, division: t.division?.name ?? 'Лига', rating: t.points };
+    }).sort((a, b) => b.rating - a.rating);
     // Склейка ВАРИАНТОВ имени одного клуба по normTeam (год/«ФК»/программа/город — шум; СШ/СШОР
     // НЕ схлопываем — это РАЗНЫЕ школы): рейтинги суммируем (сумма рейтингов игроков), представитель
     // строки — сильнейший вариант. Единый дедуп для ВСЕХ списков клубов (рейтинг клубов, сила лиг,
@@ -710,6 +729,7 @@ export async function regionPlayers(seasonId: number, year?: number, division?: 
     // сумму+счётчик по всем турам, а не берём первый/пиковый матч. mp — число
     // оценённых матчей (на скольких турах игрок попал в рейтинг по роли).
     const acc = new Map<number, { p: RegionPlayer; sum: number; n: number; roles: Map<string, number> }>();
+    const idx = await clubIndex(seasonId);
     const jobs: Array<{ t: number; d: number; tour: number }> = [];
     for (const ref of refs) for (let tour = 1; tour <= Math.max(1, ref.lastPlayedTour); tour++) jobs.push({ t: ref.tournamentId, d: ref.divisionId, tour });
     await pmap(jobs, 6, async (job) => {
@@ -718,9 +738,10 @@ export async function regionPlayers(seasonId: number, year?: number, division?: 
         if (p.id == null) continue;
         let e = acc.get(p.id);
         if (!e) {
+          const rc = resolveTeam(idx, p.team?.title, p.team?.logoUrl ?? null);
           e = { p: { id: p.id, name: p.title ?? '—', birthYear: p.dateOfBirth ?? null,
-            position: p.playerMatchRole?.title ?? null, club: p.team?.title ?? null,
-            clubLogo: p.team?.logoUrl ?? null, photo: p.avatarUrl ?? null, rating: null, mp: 0 }, sum: 0, n: 0, roles: new Map() };
+            position: p.playerMatchRole?.title ?? null, club: rc.name || null,
+            clubLogo: rc.logo, photo: p.avatarUrl ?? null, rating: null, mp: 0 }, sum: 0, n: 0, roles: new Map() };
           acc.set(p.id, e);
         }
         const role = p.playerMatchRole?.title;
@@ -847,6 +868,7 @@ export async function regionResults(seasonId: number, year?: number, division?: 
     let refs = await listTournaments(seasonId);
     if (year != null) refs = refs.filter((r) => r.ageFrom === year);
     if (division) refs = refs.filter((r) => matchesDivision(r.divisionTitle, division));
+    const idx = await clubIndex(seasonId);
     // Рейтинги команд по возрасту (per tournamentId) — значимость на УРОВНЕ КОМАНДЫ, не клуба.
     const tids = [...new Set(refs.map((r) => r.tournamentId))];
     const ratingsByTid = new Map<number, AvRatingTeam[]>();
@@ -870,8 +892,8 @@ export async function regionResults(seasonId: number, year?: number, division?: 
           const H = look(m.ownTeam), A = look(m.guestTeam);
           return {
             id: m.id, age: ref.category, division: ref.divisionTitle, date: m.dateTime, divTeams,
-            home: { name: m.ownTeam.title, logo: m.ownTeam.logoUrl ?? null, score: m.ownTeam.score ?? null, rating: H?.rating ?? null, rank: H?.rank ?? null },
-            away: { name: m.guestTeam.title, logo: m.guestTeam.logoUrl ?? null, score: m.guestTeam.score ?? null, rating: A?.rating ?? null, rank: A?.rank ?? null },
+            home: { ...resolveTeam(idx, m.ownTeam.title, m.ownTeam.logoUrl ?? null), score: m.ownTeam.score ?? null, rating: H?.rating ?? null, rank: H?.rank ?? null },
+            away: { ...resolveTeam(idx, m.guestTeam.title, m.guestTeam.logoUrl ?? null), score: m.guestTeam.score ?? null, rating: A?.rating ?? null, rank: A?.rank ?? null },
           };
         });
       } catch { return []; }

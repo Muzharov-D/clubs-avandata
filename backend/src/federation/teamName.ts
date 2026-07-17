@@ -25,3 +25,47 @@ export const normTeam = (s: string): string => s.toLowerCase()
   .replace(/[-–—]/g, ' ')
   .replace(/(^|\s)(спб|санкт петербург)(?=\s|$)/g, ' ')  // город-квалификатор (ФФСПб даёт, АванДата нет)
   .replace(/\s+/g, ' ').trim();
+
+/**
+ * Стыковка КОМАНДА-в-турнире → КАРТОЧКА КЛУБА.
+ *
+ * Корень проблемы не «опечатка», а битая запись в реестре Наградиона: getTeamsList
+ * отдаёт «Алмаз Антей 2011» БЕЗ дефиса И с logoUrl=NULL; getClubList (карточка клуба
+ * AvanData) содержит верное «Алмаз-Антей» и рабочий герб. Поэтому не правим написание
+ * словарём, а СШИВАЕМ команду с её карточкой по ключу `normTeam` (дефис≡пробел, без года
+ * и скобок) и берём написание+герб из карточки. Тот же механизм чинит и «Кировец
+ * Восхождение» → «Кировец-Восхождение», и любой будущий клуб — без правки кода.
+ *
+ * ТОЛЬКО точное совпадение ключа. Частичное (подстрока) опасно: «зенит» ⊂ «сшор зенит»,
+ * а это РАЗНЫЕ клубы (normTeam их специально различает). Поэтому «Московская
+ * застава-Кристалл» (карточка — более широкий ярлык «СШОР №1 Московская застава -
+ * Кристалл», точного совпадения нет) НЕ переписываем — оставляем имя из фида.
+ *
+ * ИНВАРИАНТ: normTeam(resolveTeam(...).name) === normTeam(rawName) — карточка совпала по
+ * ключу, значит подстановка НЕ двигает ключ сшивки (иначе клуб бы задвоился, баг 2012).
+ */
+export interface ClubCard { title: string; logo: string | null }
+export type ClubIndex = Map<string, ClubCard>;
+
+/** Индекс карточек клубов по ключу `normTeam`. При коллизии предпочитаем карточку с гербом. */
+export function buildClubIndex(cards: Iterable<ClubCard>): ClubIndex {
+  const idx: ClubIndex = new Map();
+  for (const c of cards) {
+    const k = normTeam(c.title);
+    if (!k) continue;
+    const cur = idx.get(k);
+    if (!cur || (!cur.logo && c.logo)) idx.set(k, { title: c.title, logo: c.logo ?? null });
+  }
+  return idx;
+}
+
+export interface ResolvedTeam { name: string; logo: string | null }
+
+/** Команда турнира → {имя, герб} из карточки клуба при точном совпадении ключа; иначе как в фиде.
+ *  Свой герб приоритетнее карточного (карточный — резерв, когда реестр отдал logoUrl=NULL). */
+export function resolveTeam(idx: ClubIndex, rawName: string | null | undefined, rawLogo?: string | null): ResolvedTeam {
+  const name = String(rawName ?? '');
+  const card = idx.get(normTeam(name));
+  if (card) return { name: card.title, logo: rawLogo ?? card.logo };
+  return { name, logo: rawLogo ?? null };
+}
