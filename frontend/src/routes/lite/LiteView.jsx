@@ -1,31 +1,36 @@
-// Lite — упрощённый экран тренера.
+// Lite — упрощённый разбор игрока для тренера.
 //
-// Задача: тренер за один взгляд видит профиль игрока по своей позиции — 6 осей,
-// из них 3 главных подсвечены. Всё лишнее убрано. Кто хочет глубже — жмёт
-// «Подробный разбор» и уходит в полный профиль (28 осей по `stats`).
+// Шесть осей по амплуа, три главных подсвечены, остальные приглушены как
+// контекст. Кто хочет глубже — уходит в полный профиль (28 осей по `stats`).
 //
 // Данные: /data/players/season — сезонный радар (среднее по матчам). Пер-матчевую
 // пиццу сознательно НЕ берём: на одном матче выборка = шум.
+//
+// Команда берётся из общего TeamContext (переключатель уже есть в шапке) —
+// свой селектор здесь не заводим, чтобы не было двух источников правды.
 
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { fetchTeams, fetchPlayersSeason } from '../../services/api';
+import { fetchPlayersSeason } from '../../services/api';
+import { useTeam } from '../../contexts/TeamContext';
 import PizzaChart from '../../components/PizzaChart';
 import {
-  LINE_ORDER, LINE_SETS, LINE_PLURAL, AXIS_LABEL,
+  LINE_ORDER, LINE_SETS, LINE_PLURAL,
   lineOfPlayer, liteSlices, verdictOf,
 } from './liteMetrics';
 import './lite.css';
 
 const num = (v, d = 1) => (Number.isFinite(Number(v)) ? Number(v).toFixed(d) : '—');
+const initials = (name) => (name || '?').split(' ').filter(Boolean).slice(0, 2).map((p) => p[0]).join('').toUpperCase();
 
-/** Карточка игрока в списке состава. */
+/** Строка игрока в списке состава. */
 function SquadRow({ player, active, onPick }) {
   return (
     <button
       type="button"
       className={`lite-row${active ? ' lite-row--active' : ''}`}
       onClick={() => onPick(player)}
+      aria-pressed={active}
     >
       <span className="lite-row__num">{player.number ?? '—'}</span>
       <span className="lite-row__main">
@@ -37,16 +42,19 @@ function SquadRow({ player, active, onPick }) {
   );
 }
 
-/** Профиль игрока: пицца + словесный вывод + три фокусных показателя. */
-function PlayerCard({ player, peers, onCompare, compareLabel }) {
+/** Профиль игрока: пицца + три главных показателя + словесный вывод. */
+function PlayerCard({ player, peers, onCompare, compareLabel, compareDisabled }) {
   const { slices, line, poolSize } = useMemo(() => liteSlices(player, peers), [player, peers]);
   const verdict = useMemo(() => verdictOf(slices), [slices]);
 
   if (!line) {
     return (
-      <div className="lite-card lite-card--empty">
+      <div className="lite-card">
         <div className="lite-card__name">{player.fullName}</div>
-        <p className="lite-note">Позиция игрока не определена — профиль по амплуа не строится.</p>
+        <p className="lite-note">
+          У игрока не определено амплуа — профиль по позиции не строится.
+          Позиция берётся из отчёта по матчам.
+        </p>
       </div>
     );
   }
@@ -57,11 +65,18 @@ function PlayerCard({ player, peers, onCompare, compareLabel }) {
   return (
     <div className="lite-card">
       <div className="lite-card__head">
-        <div>
-          <div className="lite-card__name">{player.fullName}</div>
-          <div className="lite-card__meta">
-            {LINE_SETS[line].label} · {player.positionDetail || player.position} ·
-            {' '}матчей {player.matches} · в среднем {player.minutesPerMatch} мин
+        <div className="lite-who">
+          <span className="lite-ava">
+            {player.photoUrl
+              ? <img src={player.photoUrl} alt="" />
+              : <span className="lite-ava__ini">{initials(player.fullName)}</span>}
+          </span>
+          <div>
+            <div className="lite-card__name">{player.fullName}</div>
+            <div className="lite-card__meta">
+              {player.positionDetail || player.position} · матчей {player.matches} ·
+              {' '}в среднем {player.minutesPerMatch} мин
+            </div>
           </div>
         </div>
         <div className="lite-card__ov">
@@ -94,13 +109,15 @@ function PlayerCard({ player, peers, onCompare, compareLabel }) {
       {verdict && <p className="lite-verdict">{verdict.text}</p>}
 
       <p className="lite-note">
-        Длина сектора — место среди {LINE_PLURAL[line]} команды, число на секторе — сам показатель
-        по десятибалльной шкале. Ярко выделены три главных для амплуа, остальные три — для контекста.
-        {poolSize < 8 && ` Сравнение идёт всего с ${poolSize} игроками — на малой группе доли приблизительны.`}
+        Длина сектора — место среди {LINE_PLURAL[line]} команды, число на секторе — сам
+        показатель по десятибалльной шкале. Ярко выделены три главных для амплуа.
+        {poolSize < 8 && ` Сравнение идёт всего с ${poolSize} игроками — доли приблизительны.`}
       </p>
 
       <div className="lite-actions">
-        <button type="button" className="lite-btn" onClick={onCompare}>{compareLabel}</button>
+        <button type="button" className="lite-btn" onClick={onCompare} disabled={compareDisabled}>
+          {compareLabel}
+        </button>
         <Link className="lite-btn lite-btn--ghost" to={`/players/${encodeURIComponent(player.id)}`}>
           Подробный разбор
         </Link>
@@ -110,101 +127,92 @@ function PlayerCard({ player, peers, onCompare, compareLabel }) {
 }
 
 export default function LiteView() {
-  const [teams, setTeams] = useState([]);
-  const [teamId, setTeamId] = useState('');
+  const { selectedTeamId, selectedTeam } = useTeam();
   const [players, setPlayers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState('');
-  const [picked, setPicked] = useState(null);
-  const [rival, setRival] = useState(null);
+  const [pickedId, setPickedId] = useState(null);
+  const [rivalId, setRivalId] = useState(null);
   const [choosingRival, setChoosingRival] = useState(false);
 
   useEffect(() => {
+    if (!selectedTeamId) return;
     let alive = true;
-    fetchTeams()
-      .then((d) => {
-        if (!alive) return;
-        const list = d?.teams ?? d ?? [];
-        setTeams(list);
-        if (list.length && !teamId) setTeamId(list[0].id ?? list[0].teamId ?? '');
-      })
-      .catch((e) => alive && setErr(String(e?.message ?? e)));
-    return () => { alive = false; };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  useEffect(() => {
-    if (!teamId) return;
-    let alive = true;
-    setLoading(true); setErr(''); setPicked(null); setRival(null);
-    fetchPlayersSeason(teamId)
+    setLoading(true); setErr(''); setPickedId(null); setRivalId(null); setChoosingRival(false);
+    fetchPlayersSeason(selectedTeamId)
       .then((d) => { if (alive) { setPlayers(d?.players ?? []); setLoading(false); } })
       .catch((e) => { if (alive) { setErr(String(e?.message ?? e)); setLoading(false); } });
     return () => { alive = false; };
-  }, [teamId]);
+  }, [selectedTeamId]);
 
-  // Состав по линиям — группа берётся с бэкенда (единый источник позиции).
+  // Состав по линиям. Группа берётся с бэкенда — единый источник позиции.
   const byLine = useMemo(() => {
     const acc = { GK: [], DEF: [], MID: [], FWD: [], NONE: [] };
-    for (const p of players) {
-      const l = lineOfPlayer(p);
-      acc[l ?? 'NONE'].push(p);
-    }
-    for (const k of Object.keys(acc)) {
-      acc[k].sort((a, b) => (b.avgOverall ?? 0) - (a.avgOverall ?? 0));
-    }
+    for (const p of players) acc[lineOfPlayer(p) ?? 'NONE'].push(p);
+    for (const k of Object.keys(acc)) acc[k].sort((a, b) => (b.avgOverall ?? 0) - (a.avgOverall ?? 0));
     return acc;
   }, [players]);
+
+  // Экран никогда не должен встречать тренера пустой панелью: как только состав
+  // загружен — открываем сильнейшего игрока.
+  const ordered = useMemo(
+    () => LINE_ORDER.flatMap((l) => byLine[l]).concat(byLine.NONE),
+    [byLine],
+  );
+  useEffect(() => {
+    if (!pickedId && ordered.length) {
+      const best = [...ordered].sort((a, b) => (b.avgOverall ?? 0) - (a.avgOverall ?? 0))[0];
+      setPickedId(best?.id ?? null);
+    }
+  }, [ordered, pickedId]);
+
+  const picked = ordered.find((p) => p.id === pickedId) ?? null;
+  const rival = ordered.find((p) => p.id === rivalId) ?? null;
 
   const peersOf = (p) => {
     const l = lineOfPlayer(p);
     return l ? players.filter((x) => lineOfPlayer(x) === l) : [];
   };
 
-  const onPick = (p) => {
-    if (choosingRival && picked && p.id !== picked.id) {
-      if (lineOfPlayer(p) !== lineOfPlayer(picked)) return; // сравниваем только внутри амплуа
-      setRival(p); setChoosingRival(false);
-      return;
-    }
-    setPicked(p); setRival(null); setChoosingRival(false);
-  };
-
   const rivalCandidates = picked
     ? players.filter((x) => x.id !== picked.id && lineOfPlayer(x) === lineOfPlayer(picked))
     : [];
+
+  const onPick = (p) => {
+    if (choosingRival && picked && p.id !== picked.id) {
+      if (lineOfPlayer(p) !== lineOfPlayer(picked)) return; // сравниваем только внутри амплуа
+      setRivalId(p.id); setChoosingRival(false);
+      return;
+    }
+    setPickedId(p.id); setRivalId(null); setChoosingRival(false);
+  };
 
   return (
     <div className="lite">
       <header className="lite-head">
         <div>
           <h1 className="lite-title">Разбор игрока</h1>
-          <p className="lite-sub">Шесть показателей по амплуа. Три главных — выделены.</p>
+          <p className="lite-sub">
+            Шесть показателей по амплуа, три главных выделены
+            {selectedTeam?.name ? ` · ${selectedTeam.name}` : ''}
+          </p>
         </div>
-        {teams.length > 1 && (
-          <select
-            className="lite-select"
-            value={teamId}
-            onChange={(e) => setTeamId(e.target.value)}
-            aria-label="Команда"
-          >
-            {teams.map((t) => (
-              <option key={t.id ?? t.teamId} value={t.id ?? t.teamId}>
-                {t.name ?? t.title ?? t.ageGroup ?? t.id}
-              </option>
-            ))}
-          </select>
-        )}
       </header>
 
-      {err && <p className="lite-error">Не удалось загрузить данные: {err}</p>}
+      {err && <p className="lite-error">Не удалось загрузить состав: {err}</p>}
       {loading && <p className="lite-note">Загружаем состав…</p>}
 
-      {!loading && !err && (
+      {!loading && !err && !players.length && (
+        <div className="lite-empty">
+          <p>У этой команды пока нет разобранных матчей — профили появятся после первого разбора.</p>
+        </div>
+      )}
+
+      {!loading && !err && players.length > 0 && (
         <div className="lite-grid">
           <aside className="lite-squad">
             {choosingRival && (
-              <p className="lite-hint">Выберите второго игрока того же амплуа для сравнения</p>
+              <p className="lite-hint">Выберите второго {LINE_PLURAL[lineOfPlayer(picked)] ? 'игрока того же амплуа' : 'игрока'}</p>
             )}
             {LINE_ORDER.map((l) => (
               byLine[l].length > 0 && (
@@ -229,24 +237,22 @@ export default function LiteView() {
                 ))}
               </section>
             )}
-            {!players.length && <p className="lite-note">В этой команде пока нет разобранных матчей.</p>}
           </aside>
 
           <main className="lite-stage">
-            {!picked && (
-              <div className="lite-placeholder">
-                <p>Выберите игрока слева — покажем его профиль по позиции.</p>
-              </div>
-            )}
-
             {picked && (
               <div className={`lite-compare${rival ? ' lite-compare--two' : ''}`}>
                 <PlayerCard
                   player={picked}
                   peers={peersOf(picked)}
-                  compareLabel={rival ? 'Убрать сравнение' : 'Сравнить с игроком'}
+                  compareDisabled={!rival && rivalCandidates.length === 0}
+                  compareLabel={
+                    rival ? 'Убрать сравнение'
+                      : rivalCandidates.length ? 'Сравнить с игроком'
+                        : 'Сравнивать не с кем'
+                  }
                   onCompare={() => {
-                    if (rival) { setRival(null); return; }
+                    if (rival) { setRivalId(null); return; }
                     if (rivalCandidates.length) setChoosingRival(true);
                   }}
                 />
@@ -255,16 +261,10 @@ export default function LiteView() {
                     player={rival}
                     peers={peersOf(rival)}
                     compareLabel="Убрать"
-                    onCompare={() => setRival(null)}
+                    onCompare={() => setRivalId(null)}
                   />
                 )}
               </div>
-            )}
-
-            {picked && !rival && rivalCandidates.length === 0 && (
-              <p className="lite-note">
-                Сравнивать не с кем: в команде нет другого игрока этого амплуа с разобранными матчами.
-              </p>
             )}
           </main>
         </div>

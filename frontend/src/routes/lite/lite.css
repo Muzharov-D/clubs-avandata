@@ -1,110 +1,107 @@
-/* Lite — упрощённый экран тренера. Десктоп и телефон равнозначны.
+/* Lite — упрощённый разбор игрока. Десктоп и телефон равнозначны.
    Цвета только через токены (контракт CLAUDE.md). */
 
-.lite { padding: 20px 22px 40px; max-width: 1400px; margin: 0 auto; }
+.lite { padding: 22px 24px 40px; max-width: 1500px; margin: 0 auto; }
 
-.lite-head {
-  display: flex; align-items: flex-end; justify-content: space-between;
-  gap: 16px; flex-wrap: wrap; margin-bottom: 20px;
-}
-.lite-title { font-size: 26px; font-weight: 800; letter-spacing: -0.02em; margin: 0; color: var(--text); }
-.lite-sub { margin: 4px 0 0; font-size: 14px; color: var(--text-muted); }
-
-.lite-select {
-  background: var(--bg-surface-2); color: var(--text);
-  border: 1px solid var(--border); border-radius: var(--radius-sm);
-  padding: 10px 14px; font-size: 15px; min-height: 44px;
-}
+.lite-head { margin-bottom: 18px; }
+.lite-title { font-size: 28px; font-weight: 800; letter-spacing: -0.02em; margin: 0; color: var(--text); }
+.lite-sub { margin: 5px 0 0; font-size: 14px; color: var(--text-muted); }
 
 .lite-error { color: var(--danger); font-size: 14px; }
 .lite-note { color: var(--text-muted); font-size: 13px; line-height: 1.5; margin: 10px 0 0; }
 .lite-hint {
   color: var(--text); font-size: 13px; background: var(--bg-surface-3);
-  border: 1px solid var(--border-strong); border-radius: var(--radius-sm);
+  border: 1px solid var(--brand-primary); border-radius: var(--radius-sm);
   padding: 10px 12px; margin: 0 0 12px;
 }
+.lite-empty {
+  background: var(--surface-card); border: 1px dashed var(--border-strong);
+  border-radius: var(--radius-lg); padding: 48px 24px; text-align: center; color: var(--text-muted);
+}
 
-/* ── раскладка: состав слева, сцена справа ── */
-.lite-grid { display: grid; grid-template-columns: 320px 1fr; gap: 22px; align-items: start; }
+/* ── раскладка: состав слева, профиль справа ── */
+.lite-grid { display: grid; grid-template-columns: 330px 1fr; gap: 22px; align-items: start; }
 
 .lite-squad {
-  background: var(--bg-surface); border: 1px solid var(--border);
-  border-radius: var(--radius); padding: 14px; position: sticky; top: 12px;
-  max-height: calc(100vh - 40px); overflow-y: auto;
+  background: var(--surface-card); border: 1px solid var(--border);
+  border-radius: var(--radius-lg); padding: 14px; position: sticky; top: 12px;
+  box-shadow: var(--shadow-sm);
 }
-.lite-line { margin-bottom: 16px; }
+.lite-line { margin-bottom: 14px; }
 .lite-line:last-child { margin-bottom: 0; }
 .lite-line__t {
-  font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em;
-  color: var(--text-faint); margin: 0 0 8px;
+  font-size: 11.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.09em;
+  color: var(--text-faint); margin: 0 0 6px; padding-left: 4px;
 }
 
 .lite-row {
   display: flex; align-items: center; gap: 12px; width: 100%;
   background: transparent; border: 1px solid transparent;
-  border-radius: var(--radius-sm); padding: 10px 12px; min-height: 52px;
-  cursor: pointer; text-align: left; color: var(--text); transition: background .15s, border-color .15s;
+  border-radius: var(--radius-sm); padding: 10px 12px; min-height: 54px;
+  cursor: pointer; text-align: left; color: var(--text);
+  transition: background .15s, border-color .15s;
 }
-.lite-row:hover { background: var(--bg-surface-2); }
+.lite-row:hover { background: var(--surface-soft); }
 .lite-row:focus-visible { outline: 2px solid var(--brand-primary); outline-offset: 2px; }
-.lite-row--active { background: var(--bg-surface-3); border-color: var(--brand-primary); }
-.lite-row__num {
-  min-width: 28px; text-align: center; font-weight: 700; font-size: 14px;
-  color: var(--text-faint);
-}
+.lite-row--active { background: var(--bg-surface-3); border-color: var(--accent-cyan); }
+.lite-row__num { min-width: 26px; text-align: center; font-weight: 700; font-size: 14px; color: var(--text-faint); }
 .lite-row__main { flex: 1; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
-.lite-row__name {
-  font-size: 15px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-}
-.lite-row__pos { font-size: 12px; color: var(--text-muted); }
-.lite-row__ov { font-size: 17px; font-weight: 800; color: var(--brand-accent); }
+.lite-row__name { font-size: 15px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.lite-row__pos { font-size: 12px; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.lite-row__ov { font-size: 18px; font-weight: 800; color: var(--brand-accent); }
 
-/* ── сцена ── */
+/* ── профиль ── */
 .lite-stage { min-width: 0; }
-.lite-placeholder {
-  background: var(--bg-surface); border: 1px dashed var(--border-strong);
-  border-radius: var(--radius); padding: 60px 20px; text-align: center; color: var(--text-muted);
-}
-
 .lite-compare { display: grid; grid-template-columns: 1fr; gap: 20px; }
 .lite-compare--two { grid-template-columns: 1fr 1fr; }
 
 .lite-card {
-  background: var(--bg-surface); border: 1px solid var(--border);
-  border-radius: var(--radius); padding: 18px 18px 20px; min-width: 0;
+  background: var(--surface-card); border: 1px solid var(--border);
+  border-radius: var(--radius-lg); padding: 20px 20px 22px; min-width: 0;
+  box-shadow: var(--shadow-sm);
 }
-.lite-card--empty { text-align: center; }
 .lite-card__head {
-  display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; margin-bottom: 8px;
+  display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; margin-bottom: 6px;
 }
-.lite-card__name { font-size: 20px; font-weight: 800; letter-spacing: -0.01em; }
+.lite-who { display: flex; align-items: center; gap: 13px; min-width: 0; }
+.lite-ava { width: 52px; height: 52px; flex: none; display: block; }
+.lite-ava img {
+  width: 52px; height: 52px; border-radius: 50%; object-fit: cover;
+  border: 2px solid var(--border-strong); background: var(--bg-surface-2);
+}
+.lite-ava__ini {
+  width: 52px; height: 52px; border-radius: 50%; display: grid; place-items: center;
+  background: var(--bg-surface-2); border: 2px solid var(--border-strong);
+  font-weight: 800; font-size: 17px; color: var(--accent-cyan);
+}
+.lite-card__name { font-size: 21px; font-weight: 800; letter-spacing: -0.01em; line-height: 1.15; }
 .lite-card__meta { font-size: 12.5px; color: var(--text-muted); margin-top: 3px; line-height: 1.45; }
 .lite-card__ov { text-align: right; flex: none; }
-.lite-card__ov b { display: block; font-size: 30px; font-weight: 800; color: var(--brand-accent); line-height: 1; }
+.lite-card__ov b { display: block; font-size: 32px; font-weight: 800; color: var(--brand-accent); line-height: 1; }
 .lite-card__ov span { font-size: 11px; color: var(--text-faint); text-transform: uppercase; letter-spacing: 0.06em; }
 
-/* Пиццу держим компактной: карточка целиком должна помещаться на ноутбуке
-   без длинного скролла — это главный смысл Lite. */
-.lite-card__pizza { margin: 4px -6px 4px; }
+/* Пиццу держим компактной: карточка должна помещаться на ноутбуке без
+   длинного скролла — это главный смысл Lite. */
+.lite-card__pizza { margin: 2px -6px 4px; }
 .lite-card__pizza .pizza-chart__svg { max-width: 500px; margin: 0 auto; display: block; }
 /* Подписи заданы в единицах viewBox (620). Пицца ужата до 500px, поэтому базовый
    кегль 11 давал на экране ~9px. Задаём с запасом, чтобы выходило ~11px. */
 .lite-card__pizza .pizza-axis-label { font-size: 14px; }
 .lite-card__pizza .pizza-label { font-size: 15px; }
 
-/* три фокусных показателя крупно — то, что тренер забирает с собой */
-.lite-focus { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 6px; }
+/* три главных показателя крупно — то, что тренер забирает с собой */
+.lite-focus { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 4px; }
 .lite-focus__item {
-  background: var(--bg-surface-2); border: 1px solid var(--border);
+  background: var(--surface-soft); border: 1px solid var(--border);
   border-radius: var(--radius-sm); padding: 12px 10px; text-align: center;
 }
-.lite-focus__val { display: block; font-size: 24px; font-weight: 800; color: var(--text); line-height: 1.1; }
+.lite-focus__val { display: block; font-size: 25px; font-weight: 800; color: var(--text); line-height: 1.1; }
 .lite-focus__ax { display: block; font-size: 12.5px; font-weight: 600; margin-top: 3px; }
 .lite-focus__pct { display: block; font-size: 11px; color: var(--text-muted); margin-top: 3px; }
 
 .lite-verdict {
   margin: 14px 0 0; font-size: 15px; line-height: 1.5; color: var(--text);
-  background: var(--surface-soft); border-left: 3px solid var(--brand-primary);
+  background: var(--surface-soft); border-left: 3px solid var(--accent-cyan);
   border-radius: var(--radius-xs); padding: 11px 13px;
 }
 
@@ -115,27 +112,29 @@
   border-radius: var(--radius-sm); cursor: pointer; text-align: center; text-decoration: none;
   display: inline-flex; align-items: center; justify-content: center; transition: background .15s;
 }
-.lite-btn:hover { background: var(--brand-primary-hover); }
+.lite-btn:hover:not(:disabled) { background: var(--brand-primary-hover); }
 .lite-btn:focus-visible { outline: 2px solid var(--text); outline-offset: 2px; }
+.lite-btn:disabled { opacity: .45; cursor: default; }
 .lite-btn--ghost { background: transparent; color: var(--text); border-color: var(--border-strong); }
-.lite-btn--ghost:hover { background: var(--bg-surface-2); }
+.lite-btn--ghost:hover { background: var(--surface-soft); }
 
 /* ── узкий десктоп и планшет: складываем в одну колонку РАНО ──
-   Иначе боковая колонка 320px сжимает пиццу до ~380px и подписи становятся
+   Иначе боковая колонка сжимает пиццу до ~380px и подписи становятся
    нечитаемыми (кегль задан в единицах viewBox и уезжает вместе с масштабом). */
 @media (max-width: 1150px) {
   .lite-grid { grid-template-columns: 1fr; }
-  .lite-squad { position: static; max-height: none; }
+  .lite-squad { position: static; }
   .lite-compare--two { grid-template-columns: 1fr; }
 }
 
-/* ── телефон: состав сверху лентой, карточка ниже ── */
+/* ── телефон ── */
 @media (max-width: 780px) {
   .lite { padding: 14px 14px 32px; }
-  .lite-title { font-size: 21px; }
-  .lite-grid { grid-template-columns: 1fr; gap: 16px; }
-  .lite-squad { position: static; max-height: none; padding: 12px; }
-  .lite-card__pizza { margin: 4px -10px 8px; }
+  .lite-title { font-size: 22px; }
+  .lite-grid { gap: 16px; }
+  .lite-squad { padding: 12px; }
+  .lite-card { padding: 16px 14px 18px; }
+  .lite-card__pizza { margin: 2px -10px 4px; }
   /* На телефоне пицца ужимается до ~330px — кегль поднимаем ещё сильнее,
      чтобы на экране снова получилось ~11px. */
   .lite-card__pizza .pizza-chart__svg { max-width: 100%; }
@@ -143,7 +142,7 @@
   .lite-card__pizza .pizza-label { font-size: 22px; }
   .lite-focus { grid-template-columns: 1fr; }
   .lite-focus__item { display: flex; align-items: baseline; gap: 10px; text-align: left; }
-  .lite-focus__val { font-size: 20px; }
+  .lite-focus__val { font-size: 21px; }
   .lite-focus__ax { flex: 1; margin-top: 0; }
   .lite-focus__pct { margin-top: 0; }
   .lite-actions { flex-direction: column; }
