@@ -67,6 +67,7 @@ function wrapAxisLabel(text) {
  *                   value: 0-100,            // длина слайса (percentile)
  *                   group: 'attack'|'defence'|'fitness',
  *                   displayValue?: string,    // что отрисовать на слайсе (если нет — округлённый value)
+ *                   muted?: boolean,          // контекстная ось: приглушена, чтобы фокусные читались первыми
  *                 }>
  *   centerLabel   string  — лейбл центра, дефолт 'ЛЕГИРУС'
  *   size          number  — размер SVG по viewBox (дефолт 640). На фронте SVG растягивается по контейнеру.
@@ -78,6 +79,7 @@ export default function PizzaChart({
   slices = [],
   centerLabel = '',
   size = 640,
+  showLegend = true,
 }) {
   if (!Array.isArray(slices) || slices.length === 0) {
     return <div className="pizza-empty">Нет данных для расчёта percentile</div>;
@@ -112,7 +114,11 @@ export default function PizzaChart({
     const labelText = s.displayValue != null ? s.displayValue : String(Math.round(value));
 
     return (
-      <g key={i} className="pizza-slice" style={{ ['--i']: i, transformOrigin: `${cx}px ${cy}px` }}>
+      <g
+        key={i}
+        className={`pizza-slice${s.muted ? ' pizza-slice--muted' : ''}`}
+        style={{ ['--i']: i, transformOrigin: `${cx}px ${cy}px` }}
+      >
         <path d={trackPath} fill={conf.track} stroke="rgba(7,7,28,0.6)" strokeWidth="0.5" />
         <path
           className="pizza-slice__fill"
@@ -120,7 +126,7 @@ export default function PizzaChart({
           fill={`url(#pz-grad-${s.group})`}
           stroke="rgba(7,7,28,0.85)"
           strokeWidth="1"
-          filter="url(#pz-glow)"
+          filter={s.muted ? undefined : 'url(#pz-glow)'}
         >
           <title>{`${s.axis}: ${labelText} (percentile ${Math.round(value)})`}</title>
         </path>
@@ -214,7 +220,7 @@ export default function PizzaChart({
           </text>
         )}
       </svg>
-      <div className="pizza-chart__legend">
+      <div className="pizza-chart__legend" hidden={!showLegend}>
         {['attack', 'defence', 'fitness']
           // Показываем в легенде только группы, которые реально есть в слайсах —
           // иначе на free «Фитнес» висел бы без единой оси (метрика платная).

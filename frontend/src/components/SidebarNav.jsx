@@ -22,6 +22,10 @@ export default function SidebarNav() {
       ? { id: 'hub', label: 'Обзор клуба', path: '/club-hub', icon: '🏛️' }
       : null,
     { id: 'club',      label: isHeadCoach ? 'Команда' : 'Клуб', path: '/club', icon: '🏆' },
+    // Lite — упрощённый разбор игрока по амплуа (6 осей, 3 главных).
+    isCoach
+      ? { id: 'lite', label: 'Разбор игрока', path: '/lite', icon: '🎯' }
+      : null,
     isCoach
       ? { id: 'analytics', label: 'Аналитика', path: '/analytics', icon: '◉' }
       : null,
@@ -48,6 +52,7 @@ export default function SidebarNav() {
     if (item.id === 'hub')       return pathname.startsWith('/club-hub');
     if (item.id === 'director')  return pathname.startsWith('/director');
     if (item.id === 'club')      return pathname === '/club' || pathname === '/';
+    if (item.id === 'lite')      return pathname.startsWith('/lite');
     if (item.id === 'analytics') return pathname.startsWith('/analytics');
     if (item.id === 'matches')   return pathname.startsWith('/matches');
     if (item.id === 'calendar')  return pathname.startsWith('/calendar');

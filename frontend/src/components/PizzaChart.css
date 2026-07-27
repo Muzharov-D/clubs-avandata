@@ -103,3 +103,8 @@
   .pizza-chart__meta { font-size: 10px; }
   .pizza-chart__legend { font-size: 10px; gap: 10px; }
 }
+
+/* Контекстные оси Lite-пиццы: приглушены, чтобы три фокусных читались первыми. */
+.pizza-slice--muted .pizza-slice__fill { opacity: 0.34; }
+.pizza-slice--muted .pizza-label { opacity: 0.55; }
+.pizza-slice--muted .pizza-axis-label { opacity: 0.5; }

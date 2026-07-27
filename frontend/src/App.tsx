@@ -27,6 +27,7 @@ import PlayersRating from './pages/PlayersRating';
 import PlayerDetail from './pages/PlayerDetail';
 // @ts-ignore — legacy .jsx
 import PlayerCompare from './pages/PlayerCompare';
+import LiteView from './routes/lite/LiteView';
 // @ts-ignore — legacy .jsx
 import LoadControl from './pages/LoadControl';
 import CalendarPage from './pages/CalendarPage';
@@ -226,6 +227,8 @@ export function App() {
                     <Route path="/director" element={<Navigate to="/club-hub" replace />} />
                     <Route path="/club" element={<ClubDashboard />} />
                     <Route path="/club-hub" element={<HeadCoachOnly><ClubHub /></HeadCoachOnly>} />
+                    {/* Lite — упрощённый разбор игрока: 6 осей по амплуа, 3 главных выделены. */}
+                    <Route path="/lite" element={<CoachOnly><LiteView /></CoachOnly>} />
                     <Route path="/analytics" element={<CoachOnly><ClubOverview /></CoachOnly>} />
                     <Route path="/analytics/team" element={<CoachOnly><ComparisonView /></CoachOnly>} />
                     <Route path="/matches" element={<MatchesDashboard />} />
