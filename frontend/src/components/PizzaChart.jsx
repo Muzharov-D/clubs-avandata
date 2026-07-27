@@ -220,7 +220,8 @@ export default function PizzaChart({
           </text>
         )}
       </svg>
-      <div className="pizza-chart__legend" hidden={!showLegend}>
+      {showLegend && (
+      <div className="pizza-chart__legend">
         {['attack', 'defence', 'fitness']
           // Показываем в легенде только группы, которые реально есть в слайсах —
           // иначе на free «Фитнес» висел бы без единой оси (метрика платная).
@@ -229,6 +230,7 @@ export default function PizzaChart({
             <span key={g}><span className="pizza-chart__dot" style={{ background: GROUP_COLORS[g].fill }} />{GROUP_COLORS[g].label}</span>
           ))}
       </div>
+      )}
     </div>
   );
 }
