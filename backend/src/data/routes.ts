@@ -8,6 +8,7 @@ import { adaptPlayerForLegirus } from './legirusAdapter.js';
 import { computeDataQuality } from './dataQuality.js';
 import { statField, statFieldTotal } from '../shared/statValue.js';
 import { posFullFromCode, posDetailFromCode, posGroupFromCode } from '../shared/positions.js';
+import { ourResult } from '../shared/matchResult.js';
 import { resolveOurExtId, markOurStandingsRow } from './ourTeam.js';
 import { applyFixtureDates, type DatedMatchRow } from './matchDate.js';
 import { linkFfspbFixture } from '../upload/ffspbMatchLink.js';
@@ -660,18 +661,8 @@ export async function dataRoutes(app: FastifyInstance) {
   });
 
   // ─── Phase 2: тренды и сезонные агрегаты ──────────────────────────────
-  // Результат матча с НАШЕЙ стороны (ориентация по team_id, не по имени).
-  function ourResult(m: AnyRow): { result: 'W' | 'D' | 'L' | null; us: number | null; them: number | null; opponent: string } {
-    const sh = m.score_home as number | null;
-    const sa = m.score_away as number | null;
-    const ourHome = m.home_team_id === m.team_id;
-    const ourAway = m.away_team_id === m.team_id;
-    const opponent = String((ourHome ? m.away_team_name : ourAway ? m.home_team_name : m.away_team_name) ?? 'Соперник');
-    if (sh == null || sa == null || (!ourHome && !ourAway)) return { result: null, us: null, them: null, opponent };
-    const us = ourHome ? sh : sa;
-    const them = ourHome ? sa : sh;
-    return { result: us > them ? 'W' : us < them ? 'L' : 'D', us, them, opponent };
-  }
+  // Результат матча с НАШЕЙ стороны — общий модуль `shared/matchResult.ts`
+  // (кабинету Lite он тоже нужен, копия дала бы второй расходящийся счёт).
 
   // Тренд одного игрока по матчам сезона (rating/минуты/голы по матчам).
   app.get<{ Params: { playerId: string } }>('/player/:playerId/trend', async (req) => {

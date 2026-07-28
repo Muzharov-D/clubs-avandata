@@ -6,6 +6,8 @@ import { withTenant } from '../../db/tenantContext.js';
 import { UnauthorizedError, BadRequestError, NotFoundError } from '../../shared/errors.js';
 import { callupWriteScope } from '../../auth/scope.js';
 import { posGroupFromCode, posDetailFromCode, posFullFromCode, type PosGroup } from '../../shared/positions.js';
+import { ourResult } from '../../shared/matchResult.js';
+import { applyFixtureDates, type DatedMatchRow } from '../../data/matchDate.js';
 import { statAt } from './base36.js';
 import {
   AXES, LINE_SETS, axesOfLine, defaultSharedMetrics, sanitizeMetrics, percentileOf, perMatch,
@@ -289,6 +291,86 @@ export async function liteRoutes(app: FastifyInstance) {
       return { age, players };
     });
   });
+
+  // ── GET /lite/player/:age/:playerId/matches — динамика по матчам ──
+  // Тренер хочет видеть не только сезонный профиль, но и как игрок шёл от матча
+  // к матчу. Сезонную пиццу этим НЕ подменяем: на одном матче выборка — шум,
+  // профиль должен оставаться устойчивым. Здесь только ряд чисел по матчам.
+  app.get<{ Params: { age: string; playerId: string } }>(
+    '/lite/player/:age/:playerId/matches',
+    async (req) => {
+      const slug = tenantOf(req);
+      const { age, playerId } = req.params;
+      assertCoach(req, slug, age);
+
+      return withTenant(slug, async (_tx, conn) => {
+        const teamId = `${slug}-${age}`;
+        const { rows } = await conn.query<AnyRow>(
+          `SELECT m.id AS match_id, m.match_date, m.team_id,
+                  m.home_team_id, m.away_team_id, m.home_team_name, m.away_team_name,
+                  m.score_home, m.score_away,
+                  mp.minutes, mp.ratings, mp.stats
+             FROM match_players mp
+             JOIN matches m ON m.id = mp.match_id AND m.tenant_id = $1
+            WHERE mp.tenant_id = $1 AND mp.player_id = $2 AND m.team_id = $3
+            ORDER BY m.match_date ASC NULLS LAST`,
+          [slug, playerId, teamId],
+        );
+
+        // Дата — ИСТИНА из календаря ФФСПб: сырой `matches.match_date` пуст или
+        // неверен (RU-парсер SportVisor дату не отдаёт), и без этой правки
+        // «динамика по матчам» шла бы в произвольном порядке.
+        const dated: DatedMatchRow[] = rows.map((m) => ({
+          teamId: (m.team_id as string) ?? null,
+          homeTeamId: (m.home_team_id as string) ?? null,
+          awayTeamId: (m.away_team_id as string) ?? null,
+          home: (m.home_team_name as string) ?? null,
+          away: (m.away_team_name as string) ?? null,
+          scoreHome: m.score_home as number | null,
+          scoreAway: m.score_away as number | null,
+          date: m.match_date as string | null,
+        }));
+        await applyFixtureDates(conn, slug, dated);
+
+        const squad = await seasonSquad(conn, slug, teamId);
+        const me = squad.find((p) => p.id === playerId) ?? null;
+        const line = me?.line ?? null;
+        const keys = line ? axesOfLine(line) : [];
+
+        const matches = rows.map((m, i) => {
+          const res = ourResult(m);
+          const rt = (m.ratings as Record<string, unknown>) ?? {};
+          return {
+            matchId: String(m.match_id),
+            date: dated[i]?.date ?? (m.match_date as string | null),
+            opponent: res.opponent,
+            result: res.result,
+            score: res.us != null ? `${res.us}:${res.them}` : null,
+            minutes: Number(m.minutes ?? 0),
+            overall: Number(rt.overall ?? 0) || null,
+            values: Object.fromEntries(
+              keys.map((k) => [k, statAt(m.stats, k, AXES[k]?.mode)]),
+            ) as Record<string, number>,
+          };
+        }).sort((a, b) => String(a.date ?? '').localeCompare(String(b.date ?? '')));
+
+        return {
+          playerId,
+          line,
+          // Сезонное среднее за матч — база сравнения: «выше/ниже своего обычного».
+          axes: keys.map((key) => ({
+            key,
+            label: AXES[key]?.label ?? key,
+            hint: AXES[key]?.hint ?? '',
+            group: AXES[key]?.group ?? 'attack',
+            focus: line ? LINE_SETS[line].focus.includes(key) : false,
+            average: me ? perMatch(me.totals[key] ?? 0, me.matches) : 0,
+          })),
+          matches,
+        };
+      });
+    },
+  );
 
   // ── GET /lite/share/:age/:playerId — что открыто игроку + состояние доступа ──
   app.get<{ Params: { age: string; playerId: string } }>(

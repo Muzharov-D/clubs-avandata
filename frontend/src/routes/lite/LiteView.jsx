@@ -19,6 +19,7 @@ import {
 import { useTeam } from '../../contexts/TeamContext';
 import PizzaChart from '../../components/PizzaChart';
 import ShareSheet from './ShareSheet';
+import MatchStrip from './MatchStrip';
 import { useAuth } from '../../contexts/AuthContext';
 import {
   LINE_ORDER, LINE_LABEL, LINE_PLURAL, toPizzaSlices, verdictOf,
@@ -259,6 +260,7 @@ function PlayerCard({ player, onCompare, compareLabel, compareDisabled, age, lit
         )}
       </div>
 
+      {age && <MatchStrip age={age} player={player} />}
       {age && <FeedbackBlock age={age} player={player} />}
       {age && <ShareStrip age={age} player={player} epoch={shareEpoch} onOpen={() => onShare(player)} />}
     </div>

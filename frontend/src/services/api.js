@@ -433,6 +433,9 @@ export const answerPlayerFeedback = (id, text) =>
 // Состав с готовыми профилями: оси, средние за матч и перцентили считает сервер,
 // те же числа уходят игроку. Свой счёт во фронте не заводим.
 export const fetchLiteSquad = (age) => fetchJson(`/lite/squad/${encodeURIComponent(age)}`);
+// Динамика игрока по матчам: ряд значений по турам + сезонное среднее как база.
+export const fetchPlayerMatches = (age, playerId) =>
+  fetchJson(`/lite/player/${encodeURIComponent(age)}/${encodeURIComponent(playerId)}/matches`);
 
 // ── Видимость показателей и вход игрока (модуль lite, 0021) ──
 // Что игрок увидит — решает сервер: `/lite/me` отдаёт только открытые оси.
