@@ -14,6 +14,7 @@ import { Link } from 'react-router-dom';
 import { fetchPlayersSeason, fetchPlayerFeedback, savePlayerFeedback } from '../../services/api';
 import { useTeam } from '../../contexts/TeamContext';
 import PizzaChart from '../../components/PizzaChart';
+import ShareBlock from './ShareBlock';
 import {
   LINE_ORDER, LINE_SETS, LINE_PLURAL,
   lineOfPlayer, liteSlices, verdictOf,
@@ -209,6 +210,7 @@ function PlayerCard({ player, peers, onCompare, compareLabel, compareDisabled, a
         </Link>
       </div>
 
+      {age && <ShareBlock age={age} player={player} />}
       {age && <FeedbackBlock age={age} player={player} />}
     </div>
   );

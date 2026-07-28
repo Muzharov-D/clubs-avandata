@@ -13,6 +13,7 @@ import { dataRoutes } from './data/routes.js';
 import { trainingsRoutes } from './trainings/routes.js';
 import { callupsRoutes } from './callups/routes.js';
 import { feedbackRoutes } from './modules/feedback/routes.js';
+import { liteRoutes } from './modules/lite/routes.js';
 import { dashboardRoutes } from './dashboard/routes.js';
 import { federationRoutes } from './federation/routes.js';
 import { videoRoutes } from './modules/video/routes.js';
@@ -73,6 +74,7 @@ async function buildServer() {
   await app.register(trainingsRoutes, { prefix: '/api/v1' });
   await app.register(callupsRoutes, { prefix: '/api/v1' });
   await app.register(feedbackRoutes, { prefix: '/api/v1' });
+  await app.register(liteRoutes, { prefix: '/api/v1' });
   await app.register(dashboardRoutes, { prefix: '/api/v1' });
   await app.register(federationRoutes, { prefix: '/api/v1/federation' });
   await app.register(videoRoutes, { prefix: '/api/v1' });

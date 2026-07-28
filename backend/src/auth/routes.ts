@@ -182,7 +182,9 @@ export async function authRoutes(app: FastifyInstance) {
         .set({ passwordHash, inviteTokenHash: null, inviteExpiresAt: null })
         .where(eq(users.id, user.id)),
     );
-    return { ok: true, email: user.email, tenantSlug: user.tenantId };
+    // username возвращаем вместе с email: игрока приглашает тренер ссылкой, без
+    // почты — и после установки пароля он должен узнать, чем входить.
+    return { ok: true, email: user.email, username: user.username, tenantSlug: user.tenantId };
   });
 
   /**

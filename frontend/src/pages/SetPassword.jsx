@@ -15,6 +15,9 @@ export default function SetPassword() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState(null);
   const [done, setDone] = useState(false);
+  // Игрока приглашает тренер ссылкой, без почты — логин он узнаёт только здесь.
+  // Поэтому при наличии username не уводим на вход по таймеру: сначала показать.
+  const [login, setLogin] = useState(null);
 
   async function submit(e) {
     e.preventDefault();
@@ -24,9 +27,11 @@ export default function SetPassword() {
     if (pwd !== pwd2) { setError('Пароли не совпадают.'); return; }
     setBusy(true);
     try {
-      await setPassword(token, pwd);
+      const r = await setPassword(token, pwd);
+      const name = r?.username || r?.email || null;
+      setLogin(name);
       setDone(true);
-      setTimeout(() => navigate('/login', { replace: true }), 1800);
+      if (!r?.username) setTimeout(() => navigate('/login', { replace: true }), 1800);
     } catch (err) {
       setError(err?.message || 'Не удалось установить пароль.');
     } finally {
@@ -43,9 +48,25 @@ export default function SetPassword() {
         <h1 className="login-title">Установка пароля</h1>
 
         {done ? (
-          <p role="status" style={{ color: 'var(--brand-success, #4ade80)', textAlign: 'center', margin: '16px 0' }}>
-            Пароль установлен. Перенаправляем на вход…
-          </p>
+          <div role="status" style={{ textAlign: 'center', margin: '16px 0' }}>
+            <p style={{ color: 'var(--brand-success, #4ade80)', margin: 0 }}>Пароль установлен.</p>
+            {login ? (
+              <>
+                <p style={{ margin: '12px 0 0', fontSize: 14 }}>
+                  Твой логин для входа:{' '}
+                  <b style={{ userSelect: 'all' }}>{login}</b>
+                </p>
+                <p style={{ margin: '6px 0 16px', fontSize: 13, opacity: .75 }}>
+                  Запиши его — он понадобится каждый раз вместе с паролем.
+                </p>
+                <button type="button" onClick={() => navigate('/login', { replace: true })}>
+                  Войти
+                </button>
+              </>
+            ) : (
+              <p style={{ margin: '8px 0 0' }}>Перенаправляем на вход…</p>
+            )}
+          </div>
         ) : (
           <form className="login-form" onSubmit={submit}>
             <label>Новый пароль</label>

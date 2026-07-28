@@ -7,6 +7,7 @@ import { UnauthorizedError, NotFoundError, BadRequestError } from '../shared/err
 import { adaptPlayerForLegirus } from './legirusAdapter.js';
 import { computeDataQuality } from './dataQuality.js';
 import { statField, statFieldTotal } from '../shared/statValue.js';
+import { posFullFromCode, posDetailFromCode, posGroupFromCode } from '../shared/positions.js';
 import { resolveOurExtId, markOurStandingsRow } from './ourTeam.js';
 import { applyFixtureDates, type DatedMatchRow } from './matchDate.js';
 import { linkFfspbFixture } from '../upload/ffspbMatchLink.js';
@@ -738,59 +739,9 @@ export async function dataRoutes(app: FastifyInstance) {
   // сравнения/контроля нагрузки (Phase 2), а также сезонного дашборда /club
   // (топ-5, профили, состав, средний рейтинг). Доступно всем участникам клуба —
   // те же рейтинги уже показываются на /club по последнему матчу.
-  // Код позиции SportVisor → читаемое слово-группа. Латинские (CB/CM/ST) и
-  // кириллические (ЦЗ/ПЦП/ЛН/ВР) — у кириллических значима последняя буква
-  // (Р→вратарь, З→защита, П→полузащита, Н→нападение). null — если не распознали.
-  function posFullFromCode(raw: string): string | null {
-    const c = String(raw || '').toUpperCase().replace(/[^A-ZА-ЯЁ]/g, '');
-    if (!c) return null;
-    if (c === 'GK' || c === 'ВР' || c.startsWith('ВРТ')) return 'Вратарь';
-    if (/^(ST|CF|SS|LW|RW)$/.test(c)) return 'Нападающий';
-    if (/^(CB|LB|RB|LWB|RWB|SW)$/.test(c)) return 'Защитник';
-    if (/^(CM|CDM|CAM|DM|AM|LM|RM)$/.test(c)) return 'Полузащитник';
-    const cyr = c.replace(/[^А-ЯЁ]/g, '');
-    // FFSPB 3-буквенные коды (значима ПЕРВАЯ буква): НАП/ЗАЩ/ПОЛ/ВРТ. Ставим ДО
-    // эвристики «по последней букве» — иначе НАП (last П) → полузащита, ЗАЩ
-    // (last Щ) → null. Должно совпадать с posGroup на /club (ClubDashboard).
-    if (cyr.startsWith('НАП')) return 'Нападающий';
-    if (cyr.startsWith('ЗАЩ')) return 'Защитник';
-    if (cyr.startsWith('ПОЛ')) return 'Полузащитник';
-    if (cyr) {
-      const last = cyr[cyr.length - 1];
-      if (last === 'Р') return 'Вратарь';
-      if (last === 'З') return 'Защитник';
-      if (last === 'П') return 'Полузащитник';
-      if (last === 'Н') return 'Нападающий';
-    }
-    return null;
-  }
-
-  // Детальная роль С ФЛАНГОМ (ПЦП → «Правый центральный полузащитник»). Для
-  // архетипов/подписи — фланг и линия важны, в отличие от слово-группы.
-  const POSITION_DETAIL: Record<string, string> = {
-    ВР: 'Вратарь',
-    ЦЗ: 'Центральный защитник', ЛЗ: 'Левый защитник', ПЗ: 'Правый защитник',
-    ЛКЗ: 'Левый крайний защитник', ПКЗ: 'Правый крайний защитник',
-    ЦОП: 'Центральный опорный полузащитник', ОПЗ: 'Опорный полузащитник',
-    ВОП: 'Выдвинутый опорный полузащитник',
-    ЛЦП: 'Левый центральный полузащитник', ПЦП: 'Правый центральный полузащитник',
-    ЦАП: 'Центральный атакующий полузащитник', ЛП: 'Левый полузащитник', ПП: 'Правый полузащитник',
-    ЦН: 'Центральный нападающий', ЛН: 'Левый нападающий', ПН: 'Правый нападающий',
-    ЛВ: 'Левый вингер', ПВ: 'Правый вингер',
-  };
-  function posDetailFromCode(raw: string): string | null {
-    const c = String(raw || '').toUpperCase().replace(/[^A-ZА-ЯЁ]/g, '');
-    return POSITION_DETAIL[c] || posFullFromCode(raw);
-  }
-  function posGroupFromCode(raw: string): 'GK' | 'DEF' | 'MID' | 'FWD' | null {
-    switch (posFullFromCode(raw)) {
-      case 'Вратарь': return 'GK';
-      case 'Защитник': return 'DEF';
-      case 'Полузащитник': return 'MID';
-      case 'Нападающий': return 'FWD';
-      default: return null;
-    }
-  }
+  // Разбор кода позиции (слово / детальная роль / линия) — общий модуль
+  // `shared/positions.ts`. Раньше жил здесь локально и был недоступен другим
+  // модулям; кабинету Lite он нужен, а копия породила бы ещё один `lineOf`.
 
   app.get<{ Querystring: { teamId?: string } }>('/players/season', async (req) => {
     const slug = tenantId(req);

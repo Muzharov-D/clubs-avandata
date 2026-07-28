@@ -6,7 +6,7 @@ import './SidebarNav.css';
 export default function SidebarNav() {
   const navigate = useNavigate();
   const { pathname } = useLocation();
-  const { user, isPlayer, isCoach, isHeadCoach, tenant } = useAuth();
+  const { isPlayer, isCoach, isHeadCoach, tenant } = useAuth();
   const { isVisible } = useDashboardLayout();
   // На free тариф — только аналитический core. Календарь / Тренировки / Нагрузка
   // — платные модули, в меню не показываем (и роуты закрыты, см. App.tsx).
@@ -16,7 +16,10 @@ export default function SidebarNav() {
   // в командных топах, MOTM и pivot-аналитике, по контракту он видит только себя).
   // Старший тренер (включая бывшего спортдиректора — роли слиты) видит весь клуб:
   // единый кабинет «Обзор клуба» + те же командные экраны.
-  const navItems = [
+  // Игрок видит ровно один раздел — свой кабинет. Командные экраны (состав,
+  // рейтинги, матчи) содержат данные других детей, а контракт Lite прямой:
+  // игроку видно только то, что открыл тренер.
+  const navItems = isPlayer ? [{ id: 'me', label: 'Мой разбор', path: '/me', icon: '👤' }] : [
     // Старший тренер: единый клубный кабинет над командными экранами.
     isHeadCoach
       ? { id: 'hub', label: 'Обзор клуба', path: '/club-hub', icon: '🏛️' }
@@ -36,11 +39,9 @@ export default function SidebarNav() {
     isCoach && isPaidPlan
       ? { id: 'trainings', label: 'Тренировки', path: '/trainings', icon: '🎯' }
       : null,
-    isPlayer && user?.playerId
-      ? { id: 'me', label: 'Мой профиль', path: `/players/${user.playerId}`, icon: '👤' }
-      : isCoach
-        ? { id: 'players', label: 'Игроки', path: '/players', icon: '👤' }
-        : null,
+    isCoach
+      ? { id: 'players', label: 'Игроки', path: '/players', icon: '👤' }
+      : null,
     isCoach && isPaidPlan
       ? { id: 'load', label: 'Нагрузка', path: '/load', icon: '🏃' }
       : null,

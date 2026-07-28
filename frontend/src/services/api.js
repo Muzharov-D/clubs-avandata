@@ -399,3 +399,19 @@ export const savePlayerFeedback = (age, playerId, text, extMatchId = null) =>
   });
 export const answerPlayerFeedback = (id, text) =>
   fetchJson(`/feedback/${encodeURIComponent(id)}/response`, { method: 'PATCH', body: { text } });
+
+// ── Кабинет Lite: видимость показателей и вход игрока (модуль lite, 0021) ──
+// Что игрок увидит — решает сервер: `/lite/me` отдаёт только открытые оси.
+export const fetchPlayerShare = (age, playerId) =>
+  fetchJson(`/lite/share/${encodeURIComponent(age)}/${encodeURIComponent(playerId)}`);
+export const savePlayerShare = (age, playerId, metrics, showOverall) =>
+  fetchJson(`/lite/share/${encodeURIComponent(age)}/${encodeURIComponent(playerId)}`, {
+    method: 'PUT', body: { metrics, showOverall },
+  });
+export const invitePlayer = (age, playerId) =>
+  fetchJson(`/lite/invite/${encodeURIComponent(age)}/${encodeURIComponent(playerId)}`, { method: 'POST' });
+
+// Кабинет игрока — свой профиль и разборы.
+export const fetchMyLite = () => fetchJson('/lite/me');
+export const answerMyFeedback = (id, text) =>
+  fetchJson(`/lite/me/response/${encodeURIComponent(id)}`, { method: 'PATCH', body: { text } });

@@ -1,5 +1,5 @@
 import { lazy, Suspense } from 'react';
-import { BrowserRouter, Routes, Route, Navigate, useParams } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 // Legacy Легирус-контексты и компоненты (.jsx, через allowJs)
@@ -28,6 +28,8 @@ import PlayerDetail from './pages/PlayerDetail';
 // @ts-ignore — legacy .jsx
 import PlayerCompare from './pages/PlayerCompare';
 import LiteView from './routes/lite/LiteView';
+// @ts-ignore — legacy .jsx
+import PlayerCabinet from './routes/lite/PlayerCabinet';
 // @ts-ignore — legacy .jsx
 import LoadControl from './pages/LoadControl';
 import CalendarPage from './pages/CalendarPage';
@@ -78,10 +80,9 @@ function RootRoute() {
   if (user.role === 'federation_admin') return <Navigate to="/federation" replace />;
   // Спортдиректор слит со старшим тренером (одна роль) → единый клубный кабинет.
   if (user.role === 'sporting_director') return <Navigate to="/club-hub" replace />;
-  // Игрок — сразу на свой профиль
-  if (user.role === 'player' && user.playerId) {
-    return <Navigate to={`/players/${user.playerId}`} replace />;
-  }
+  // Игрок — в свой кабинет Lite (что открыл тренер + разбор), а НЕ в полный
+  // профиль игрока: там 28 осей и командная фактура, это экран аналитика.
+  if (user.role === 'player') return <Navigate to="/me" replace />;
   // Старший тренер клуба приземляется в клубный обзор (кабинет), а не на
   // конкретную команду — у него работа сквозная по всем возрастам.
   if (user.role === 'head_coach') return <Navigate to="/club-hub" replace />;
@@ -90,13 +91,30 @@ function RootRoute() {
 
 function CoachOnly({ children }: { children: React.ReactNode }) {
   // Тренер (включая старшего, в т.ч. бывшего спортдиректора — роли слиты) видит
-  // аналитические экраны. Игрок — на свой профиль.
-  const { isCoach, isPlayer, user } = useAuth() as { isCoach: boolean; isPlayer: boolean; user: any };
+  // аналитические экраны. Игрок — в свой кабинет.
+  const { isCoach, isPlayer } = useAuth() as { isCoach: boolean; isPlayer: boolean };
   if (isCoach) return <>{children}</>;
-  if (isPlayer && user?.playerId) {
-    return <Navigate to={`/players/${user.playerId}`} replace />;
-  }
+  if (isPlayer) return <Navigate to="/me" replace />;
   return <Navigate to="/club" replace />;
+}
+
+/**
+ * Кабинет игрока. Игрок в системе видит ТОЛЬКО его: командные экраны (состав,
+ * рейтинги, матчи) содержат данные других детей, а контракт Lite — «игроку видно
+ * то, что открыл тренер». Поэтому любой другой клубный маршрут уводит сюда.
+ */
+function PlayerHome({ children }: { children: React.ReactNode }) {
+  const { isPlayer, loading } = useAuth() as { isPlayer: boolean; loading: boolean };
+  if (loading) return null;
+  if (!isPlayer) return <Navigate to="/club" replace />;
+  return <>{children}</>;
+}
+
+/** Любой клубный экран, кроме кабинета: игрока разворачиваем на /me. */
+function NotForPlayer({ children }: { children: React.ReactNode }) {
+  const { isPlayer } = useAuth() as { isPlayer: boolean };
+  if (isPlayer) return <Navigate to="/me" replace />;
+  return <>{children}</>;
 }
 
 // Клубный кабинет — только старшему тренеру; остальные тренеры → на свою команду.
@@ -107,11 +125,10 @@ function HeadCoachOnly({ children }: { children: React.ReactNode }) {
 }
 
 function OwnPlayerOnly({ children }: { children: React.ReactNode }) {
-  const { isPlayer, user } = useAuth() as { isPlayer: boolean; user: any };
-  const { playerId: routePlayerId } = useParams();
-  if (isPlayer && user?.playerId && routePlayerId !== user.playerId) {
-    return <Navigate to={`/players/${user.playerId}`} replace />;
-  }
+  // Полный профиль (28 осей, командная фактура) — тренерский экран. Игроку он
+  // не показывается даже про себя: его дом — /me.
+  const { isPlayer } = useAuth() as { isPlayer: boolean };
+  if (isPlayer) return <Navigate to="/me" replace />;
   return <>{children}</>;
 }
 
@@ -225,15 +242,17 @@ export function App() {
                   <Route element={<ProtectedRoute roles={[]}><MainLayout /></ProtectedRoute>}>
                     {/* Спортдиректор слит со старшим тренером — старый дом редиректит в единый кабинет. */}
                     <Route path="/director" element={<Navigate to="/club-hub" replace />} />
-                    <Route path="/club" element={<ClubDashboard />} />
+                    <Route path="/club" element={<NotForPlayer><ClubDashboard /></NotForPlayer>} />
                     <Route path="/club-hub" element={<HeadCoachOnly><ClubHub /></HeadCoachOnly>} />
                     {/* Lite — упрощённый разбор игрока: 6 осей по амплуа, 3 главных выделены. */}
                     <Route path="/lite" element={<CoachOnly><LiteView /></CoachOnly>} />
+                    {/* Кабинет игрока: только открытое тренером + разбор и ответ. */}
+                    <Route path="/me" element={<PlayerHome><PlayerCabinet /></PlayerHome>} />
                     <Route path="/analytics" element={<CoachOnly><ClubOverview /></CoachOnly>} />
                     <Route path="/analytics/team" element={<CoachOnly><ComparisonView /></CoachOnly>} />
-                    <Route path="/matches" element={<MatchesDashboard />} />
-                    <Route path="/matches/:matchId" element={<MatchDetail />} />
-                    <Route path="/calendar" element={<PaidOnly><CalendarPage /></PaidOnly>} />
+                    <Route path="/matches" element={<NotForPlayer><MatchesDashboard /></NotForPlayer>} />
+                    <Route path="/matches/:matchId" element={<NotForPlayer><MatchDetail /></NotForPlayer>} />
+                    <Route path="/calendar" element={<PaidOnly><NotForPlayer><CalendarPage /></NotForPlayer></PaidOnly>} />
                     <Route path="/trainings" element={<PaidOnly><CoachOnly><TrainingsPage /></CoachOnly></PaidOnly>} />
                     <Route path="/players" element={<CoachOnly><PlayersLeaders /></CoachOnly>} />
                     <Route path="/players/rating" element={<CoachOnly><PlayersRating /></CoachOnly>} />
@@ -242,7 +261,8 @@ export function App() {
                     {/* PlayerDetail.jsx — 1:1 копия Легируса с pizza-chart, фото, бейджами */}
                     <Route path="/players/:playerId" element={<OwnPlayerOnly><PlayerDetail /></OwnPlayerOnly>} />
                     <Route path="/constructor" element={<CoachOnly><ConstructorPage /></CoachOnly>} />
-                    <Route path="*" element={<Navigate to="/club" replace />} />
+                    {/* Неизвестный путь: тренера — в клуб, игрока — в его кабинет. */}
+                    <Route path="*" element={<NotForPlayer><Navigate to="/club" replace /></NotForPlayer>} />
                   </Route>
                 </Routes>
                 </DashboardLayoutProvider>
