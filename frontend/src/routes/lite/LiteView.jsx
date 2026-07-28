@@ -64,7 +64,9 @@ function FeedbackBlock({ age, player }) {
     if (!age || !player?.id) return undefined;
     fetchPlayerFeedback(age, player.id)
       .then((d) => alive && setItems(d?.items ?? []))
-      .catch((e) => alive && setErr(String(e?.message ?? e)));
+      // Пустая история — не ошибка: показываем чистое поле, а не текст сбоя.
+      // Реальные сбои всплывут при отправке, там они и уместны.
+      .catch(() => alive && setItems([]));
     return () => { alive = false; };
   }, [age, player?.id]);
 
@@ -77,7 +79,10 @@ function FeedbackBlock({ age, player }) {
       const d = await fetchPlayerFeedback(age, player.id);
       setItems(d?.items ?? []); setText(''); setDone(true);
     } catch (e) {
-      setErr(String(e?.message ?? e));
+      const raw = String(e?.message ?? e);
+      setErr(/not found|404/i.test(raw)
+        ? 'Сервис разборов ещё не готов — попробуйте через минуту'
+        : `Не сохранилось: ${raw}`);
     } finally { setBusy(false); }
   };
 
