@@ -375,17 +375,22 @@
   margin-top: 12px; background: var(--surface-soft); border: 1px solid var(--accent-cyan);
   border-radius: var(--radius-sm); padding: 12px 13px;
 }
+/* Подписи матчей стоят НАД своими колонками чисел, а не по краям панели:
+   иначе левая подпись висит над названиями показателей и читается как заголовок
+   таблицы, а не как «этот матч». */
 .lm-diff__head {
-  display: flex; justify-content: space-between; gap: 12px; margin-bottom: 8px;
-  font-size: 12px; color: var(--text-muted);
+  display: grid; grid-template-columns: 1fr auto 56px auto; align-items: end;
+  gap: 8px; margin-bottom: 8px; font-size: 12px; color: var(--text-muted);
 }
+.lm-diff__head span { text-align: center; }
+.lm-diff__head span:first-child { text-align: left; }
 .lm-diff__row {
-  display: grid; grid-template-columns: 1fr 44px 56px 44px; align-items: center;
+  display: grid; grid-template-columns: 1fr auto 56px auto; align-items: center;
   gap: 8px; padding: 6px 0; border-top: 1px solid var(--border);
 }
 .lm-diff__row--focus .lm-diff__ax { color: var(--text); font-weight: 600; }
 .lm-diff__ax { font-size: 13px; color: var(--text-muted); min-width: 0; }
-.lm-diff__v { font-size: 14px; font-weight: 700; text-align: center; }
+.lm-diff__v { font-size: 14px; font-weight: 700; text-align: center; min-width: 46px; }
 .lm-diff__delta { font-size: 13px; font-weight: 700; text-align: center; color: var(--text-faint); }
 .lm-diff__delta.up { color: var(--brand-accent); }
 .lm-diff__delta.down { color: var(--danger); }

@@ -118,8 +118,10 @@ export default function MatchStrip({ age, player }) {
       {pair.length === 2 && (
         <div className="lm-diff">
           <div className="lm-diff__head">
-            <span>{fmtDay(pair[0].date)} · {pair[0].opponent}</span>
-            <span>{fmtDay(pair[1].date)} · {pair[1].opponent}</span>
+            <span>Показатель</span>
+            <span>{fmtDay(pair[0].date)}<br />{pair[0].opponent}</span>
+            <span>разница</span>
+            <span>{fmtDay(pair[1].date)}<br />{pair[1].opponent}</span>
           </div>
           {axes.map((a) => {
             const a0 = Number(pair[0].values?.[a.key] ?? 0);
