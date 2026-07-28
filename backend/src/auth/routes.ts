@@ -198,7 +198,12 @@ export async function authRoutes(app: FastifyInstance) {
    * Токен ищем по sha256 — в базе лежит только хэш.
    */
   app.post('/link-login', async (req, reply) => {
-    const { token } = linkLoginSchema.parse(req.body);
+    // safeParse, а не parse: ZodError глобальный обработчик превращает в 500
+    // «Internal server error». Ребёнку с обломанной ссылкой такое показывать
+    // нельзя — да и ответ на кривой токен должен совпадать с ответом на чужой.
+    const parsed = linkLoginSchema.safeParse(req.body);
+    if (!parsed.success) throw new UnauthorizedError('ссылка недействительна');
+    const { token } = parsed.data;
     const tokenHash = createHash('sha256').update(token).digest('hex');
 
     const rows = await withBypassRLS((tx) =>
