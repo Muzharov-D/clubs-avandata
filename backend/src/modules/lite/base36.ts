@@ -33,42 +33,42 @@ export const BASE36: Base36Row[] = [
   // ── Атака ────────────────────────────────────────────────────────────────
   { title: 'Автогол',                        category: 'attack',  sv: 'attack.ownGoal',           exact: true, inverse: true },
   { title: 'Сохранение мяча под прессингом', category: 'attack',  sv: 'attack.lostBall',          exact: false, inverse: true },
-  { title: 'Угловой удар',                   category: 'attack',  sv: 'attack.corner',            exact: true },
-  { title: 'Дриблинг +',                     category: 'attack',  sv: 'attack.dribble',           exact: true },
-  { title: 'Развитие голевого момента +',    category: 'attack',  sv: 'attack.secondAssist',      exact: false },
-  { title: 'Создание голевого момента +',    category: 'attack',  sv: 'attack.keyPass',           exact: true },
-  { title: 'Удар',                           category: 'attack',  sv: 'attack.shot',              exact: true },
+  { title: 'Угловой удар',                   category: 'attack',  sv: 'attack5.corner',           exact: true },
+  { title: 'Дриблинг +',                     category: 'attack',  sv: 'attack4.dribble',          exact: true },
+  { title: 'Развитие голевого момента +',    category: 'attack',  sv: 'attack1.secondAssist',     exact: false },
+  { title: 'Создание голевого момента +',    category: 'attack',  sv: 'attack1.keyPass',          exact: true },
+  { title: 'Удар',                           category: 'attack',  sv: 'attack4.shot',             exact: true },
   { title: 'Удар в створ',                   category: 'attack',  sv: null,                       exact: false },
-  { title: 'Оффсайд',                        category: 'attack',  sv: 'attack.offside',           exact: true, inverse: true },
+  { title: 'Оффсайд',                        category: 'attack',  sv: 'attack5.offside',          exact: true, inverse: true },
   { title: 'Передача +',                     category: 'attack',  sv: 'attack.passOnTarget',      exact: true },
-  { title: 'Прессинг',                       category: 'attack',  sv: 'defence.pressing',         exact: true },
+  { title: 'Прессинг',                       category: 'attack',  sv: 'defence2.pressing',        exact: true },
 
   // ── Оборона ──────────────────────────────────────────────────────────────
-  { title: 'Блок',                           category: 'defense', sv: 'defence.blockedShot',      exact: true },
-  { title: 'Контрпрессинг',                  category: 'defense', sv: 'defence.counterpressing',  exact: true },
-  { title: 'Дриблинг −',                     category: 'defense', sv: 'defence.dribbleAgainst',   exact: true, inverse: true },
-  { title: 'Создание голевого момента −',    category: 'defense', sv: 'attack.technicalMistake',  exact: false, inverse: true },
-  { title: 'Опека',                          category: 'defense', sv: 'defence.duel',             exact: false },
-  { title: 'Перехват',                       category: 'defense', sv: 'defence.interception',     exact: true },
+  { title: 'Блок',                           category: 'defense', sv: 'defence1.blockedShot',     exact: true },
+  { title: 'Контрпрессинг',                  category: 'defense', sv: 'defence2.counterpressing', exact: true },
+  { title: 'Дриблинг −',                     category: 'defense', sv: 'defence2.dribbleAgainst',  exact: true, inverse: true },
+  { title: 'Создание голевого момента −',    category: 'defense', sv: 'attack3.technicalMistake', exact: false, inverse: true },
+  { title: 'Опека',                          category: 'defense', sv: 'defence2.duel',            exact: false },
+  { title: 'Перехват',                       category: 'defense', sv: 'defence1.interception',    exact: true },
   { title: 'Пропущенный гол',                category: 'defense', sv: null,                       exact: false, inverse: true },
   { title: 'Передача −',                     category: 'defense', sv: null,                       exact: false, inverse: true },
-  { title: 'Развитие голевого момента −',    category: 'defense', sv: 'attack.loseOnOwnHalf',     exact: false, inverse: true },
-  { title: 'Сейв 20',                        category: 'defense', sv: 'defence.save',             exact: false },
-  { title: 'Сейв 50',                        category: 'defense', sv: 'defence.save',             exact: false },
-  { title: 'Сейв 90',                        category: 'defense', sv: 'defence.save',             exact: false },
-  { title: 'Сейв 150',                       category: 'defense', sv: 'defence.save',             exact: false },
-  { title: 'Отбор',                          category: 'defense', sv: 'defence.tackle',           exact: true },
-  { title: 'Вынос',                          category: 'defense', sv: 'defence.clearance',        exact: true },
-  { title: 'Потеря под прессингом',          category: 'defense', sv: 'attack.lostBall',          exact: true, inverse: true },
+  { title: 'Развитие голевого момента −',    category: 'defense', sv: 'attack4.loseOnOwnHalf',    exact: false, inverse: true },
+  { title: 'Сейв 20',                        category: 'defense', sv: 'defence3.save',            exact: false },
+  { title: 'Сейв 50',                        category: 'defense', sv: 'defence3.save',            exact: false },
+  { title: 'Сейв 90',                        category: 'defense', sv: 'defence3.save',            exact: false },
+  { title: 'Сейв 150',                       category: 'defense', sv: 'defence3.save',            exact: false },
+  { title: 'Отбор',                          category: 'defense', sv: 'defence1.tackle',          exact: true },
+  { title: 'Вынос',                          category: 'defense', sv: 'defence1.clearance',       exact: true },
+  { title: 'Потеря под прессингом',          category: 'defense', sv: 'attack4.lostBall',         exact: true, inverse: true },
 
   // ── Общие ────────────────────────────────────────────────────────────────
-  { title: 'Фол',                            category: 'general', sv: 'defence.fouls',            exact: true, inverse: true },
+  { title: 'Фол',                            category: 'general', sv: 'defence2.foul',            exact: true, inverse: true },
   { title: 'Ошибка вратаря',                 category: 'general', sv: null,                       exact: false, inverse: true },
-  { title: 'Грубая ошибка',                  category: 'general', sv: 'attack.technicalMistake',  exact: false, inverse: true },
+  { title: 'Грубая ошибка',                  category: 'general', sv: 'attack3.technicalMistake', exact: false, inverse: true },
   { title: 'Выход на поле',                  category: 'general', sv: 'fitness.minutes',          exact: false },
   { title: 'Позиционная ошибка',             category: 'general', sv: null,                       exact: false, inverse: true },
-  { title: 'Красная карточка',               category: 'general', sv: 'defence.redCards',         exact: true, inverse: true },
-  { title: 'Жёлтая карточка',                category: 'general', sv: 'defence.yellowCards',      exact: true, inverse: true },
+  { title: 'Красная карточка',               category: 'general', sv: 'defence2.redCard',         exact: true, inverse: true },
+  { title: 'Жёлтая карточка',                category: 'general', sv: 'defence2.yellowCard',      exact: true, inverse: true },
   { title: 'Замена',                         category: 'general', sv: null,                       exact: false },
   { title: 'Перестановка',                   category: 'general', sv: null,                       exact: false },
 ];
@@ -85,8 +85,8 @@ export const BASE36_SV_KEYS: ReadonlySet<string> = new Set(
   BASE36.filter((r) => r.sv).map((r) => r.sv as string),
 );
 
-/** Значение метрики игрока из `stats` по пути «секция.ключ». */
-export function statAt(stats: unknown, path: string): number {
+/** Одно значение из `stats` по пути «секция.ключ». */
+function readPath(stats: unknown, path: string): number {
   const [section, key] = path.split('.');
   if (!section || !key || !stats || typeof stats !== 'object') return 0;
   const sec = (stats as Record<string, unknown>)[section];
@@ -95,4 +95,27 @@ export function statAt(stats: unknown, path: string): number {
   // SportVisor хранит часть счётчиков объектом {value, ...} — берём value.
   const n = Number(raw && typeof raw === 'object' ? (raw as Record<string, unknown>).value : raw);
   return Number.isFinite(n) ? n : 0;
+}
+
+/**
+ * Значение метрики игрока с перебором путей-кандидатов.
+ *
+ * 🔴 ЗАЧЕМ ПЕРЕБОР. В `stats` один и тот же счётчик лежит в двух местах: плоская
+ * секция (`attack.shot`) и нумерованная (`attack4.shot`). Проверено на живых
+ * матчах Легируса: плоские заполнены ЧАСТИЧНО — удары, обводки, отборы,
+ * единоборства и выносы там нули, а реальные числа только в нумерованных
+ * (attack4.shot = 35 при attack.shot = 0). Поймано на проде: у нападающего
+ * «Удары 0» и «Обводки 0» за шесть матчей.
+ *
+ * Поэтому у каждой оси свой порядок кандидатов — сначала нумерованный путь
+ * (на нём стоит и остальной продукт, см. pizzaTemplates.js), потом плоский.
+ * Берём первое ненулевое: настоящий ноль так и остаётся нулём.
+ */
+export function statAt(stats: unknown, paths: string | readonly string[]): number {
+  const list = typeof paths === 'string' ? [paths] : paths;
+  for (const path of list) {
+    const v = readPath(stats, path);
+    if (v) return v;
+  }
+  return 0;
 }

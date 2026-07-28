@@ -49,25 +49,25 @@ test('у каждого амплуа ровно 6 осей, 3 из них гла
 });
 
 test('по умолчанию открыты три главных показателя амплуа', () => {
-  assert.deepEqual(defaultSharedMetrics('FWD'), ['attack.shot', 'attack.dribble', 'attack.keyPass']);
+  assert.deepEqual(defaultSharedMetrics('FWD'), ['attack4.shot', 'attack4.dribble', 'attack1.keyPass']);
   assert.deepEqual(defaultSharedMetrics(null), []);
 });
 
 test('sanitizeMetrics отсекает всё, чего тренер не мог видеть', () => {
   // Ось чужого амплуа: сейвы защитнику не показываются.
-  assert.deepEqual(sanitizeMetrics(['defence.tackle', 'defence.save'], 'DEF'), ['defence.tackle']);
+  assert.deepEqual(sanitizeMetrics(['defence1.tackle', 'defence3.save'], 'DEF'), ['defence1.tackle']);
   // Старые ключи радара из прежней настройки отсеиваются молча.
-  assert.deepEqual(sanitizeMetrics(['intensity', 'shooting', 'defence.duel'], 'DEF'), ['defence.duel']);
+  assert.deepEqual(sanitizeMetrics(['intensity', 'shooting', 'defence2.duel'], 'DEF'), ['defence2.duel']);
   // Мусор и не-строки игнорируются, дубли схлопываются, порядок сохраняется.
   assert.deepEqual(
-    sanitizeMetrics(['defence.duel', 'defence.duel', 42, null, 'нет-такой', 'defence.clearance'], 'DEF'),
-    ['defence.duel', 'defence.clearance'],
+    sanitizeMetrics(['defence2.duel', 'defence2.duel', 42, null, 'нет-такой', 'defence1.clearance'], 'DEF'),
+    ['defence2.duel', 'defence1.clearance'],
   );
-  assert.deepEqual(sanitizeMetrics(['defence.tackle'], null), []);
-  assert.deepEqual(sanitizeMetrics('defence.tackle', 'DEF'), []);
+  assert.deepEqual(sanitizeMetrics(['defence1.tackle'], null), []);
+  assert.deepEqual(sanitizeMetrics('defence1.tackle', 'DEF'), []);
 });
 
-test('statAt достаёт число по пути и не падает на мусоре', () => {
+test('statAt достаёт число, перебирая пути-кандидаты', () => {
   const stats = { attack: { shot: 4, keyPass: { value: 2 } }, defence: { tackle: 0 } };
   assert.equal(statAt(stats, 'attack.shot'), 4);
   assert.equal(statAt(stats, 'attack.keyPass'), 2);   // счётчик объектом {value}
@@ -76,6 +76,21 @@ test('statAt достаёт число по пути и не падает на �
   assert.equal(statAt(stats, 'нет.секции'), 0);
   assert.equal(statAt(null, 'attack.shot'), 0);
   assert.equal(statAt(stats, 'кривой-путь'), 0);
+
+  // Главное: плоская секция заполнена нулями, реальное число — в нумерованной.
+  // Ровно этот случай дал на проде «Удары 0» у нападающего за шесть матчей.
+  const real = { attack: { shot: 0, dribble: 0 }, attack4: { shot: 35, dribble: 63 } };
+  assert.equal(statAt(real, ['attack4.shot', 'attack.shot']), 35);
+  assert.equal(statAt(real, ['attack4.dribble', 'attack.dribble']), 63);
+  // Настоящий ноль остаётся нулём, а не проваливается в другой счётчик.
+  assert.equal(statAt({ attack4: { shot: 0 }, attack: { shot: 0 } }, ['attack4.shot', 'attack.shot']), 0);
+});
+
+test('у каждой оси прописаны пути в stats', () => {
+  for (const [key, def] of Object.entries(AXES)) {
+    assert.ok(def.paths.length >= 1, `${key}: нет путей`);
+    assert.equal(def.paths[0], key, `${key}: первым путём должен идти сам ключ оси`);
+  }
 });
 
 test('perMatch — среднее за матч, а не сумма за сезон', () => {

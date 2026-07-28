@@ -20,22 +20,27 @@ export interface AxisDef {
   group: 'attack' | 'defence';
   /** Короткое пояснение — что это за действие. Тренеру и особенно игроку. */
   hint: string;
+  /**
+   * Пути в `stats` по порядку: сначала нумерованная секция (там живут реальные
+   * числа), потом плоская как запасная. Почему перебор — см. `statAt` в base36.
+   */
+  paths: readonly string[];
 }
 
 /** Все оси, которые кабинет вообще умеет показывать. Ключ = путь в `stats`. */
 export const AXES: Record<string, AxisDef> = {
-  'attack.shot':         { label: 'Удары',             group: 'attack',  hint: 'попытки пробить по воротам' },
-  'attack.dribble':      { label: 'Обводки',           group: 'attack',  hint: 'удачные обыгрыши один в один' },
-  'attack.keyPass':      { label: 'Создание момента',  group: 'attack',  hint: 'передачи, после которых партнёр бьёт' },
-  'attack.passOnTarget': { label: 'Точные передачи',   group: 'attack',  hint: 'передачи, дошедшие до своего' },
-  'attack.corner':       { label: 'Угловые',           group: 'attack',  hint: 'подачи с углового' },
-  'defence.pressing':    { label: 'Прессинг',          group: 'defence', hint: 'давление на соперника с мячом' },
-  'defence.duel':        { label: 'Единоборства',      group: 'defence', hint: 'борьба за мяч один в один' },
-  'defence.tackle':      { label: 'Отборы',            group: 'defence', hint: 'мяч отобран у соперника' },
-  'defence.interception':{ label: 'Перехваты',         group: 'defence', hint: 'передача соперника прервана' },
-  'defence.clearance':   { label: 'Выносы',            group: 'defence', hint: 'мяч выбит из своей штрафной' },
-  'defence.blockedShot': { label: 'Блоки',             group: 'defence', hint: 'удар соперника заблокирован' },
-  'defence.save':        { label: 'Сейвы',             group: 'defence', hint: 'мяч отражён вратарём' },
+  'attack4.shot':          { label: 'Удары',            group: 'attack',  hint: 'попытки пробить по воротам',           paths: ['attack4.shot', 'attack.shot'] },
+  'attack4.dribble':       { label: 'Обводки',          group: 'attack',  hint: 'удачные обыгрыши один в один',         paths: ['attack4.dribble', 'attack.dribble'] },
+  'attack1.keyPass':       { label: 'Создание момента', group: 'attack',  hint: 'передачи, после которых партнёр бьёт', paths: ['attack1.keyPass', 'attack.keyPass'] },
+  'attack.passOnTarget':   { label: 'Точные передачи',  group: 'attack',  hint: 'передачи, дошедшие до своего',         paths: ['attack.passOnTarget'] },
+  'attack5.corner':        { label: 'Угловые',          group: 'attack',  hint: 'подачи с углового',                    paths: ['attack5.corner', 'attack.corner'] },
+  'defence2.pressing':     { label: 'Прессинг',         group: 'defence', hint: 'давление на соперника с мячом',        paths: ['defence2.pressing', 'defence.pressing'] },
+  'defence2.duel':         { label: 'Единоборства',     group: 'defence', hint: 'борьба за мяч один в один',            paths: ['defence2.duel', 'defence.duel'] },
+  'defence1.tackle':       { label: 'Отборы',           group: 'defence', hint: 'мяч отобран у соперника',              paths: ['defence1.tackle', 'defence.tackle'] },
+  'defence1.interception': { label: 'Перехваты',        group: 'defence', hint: 'передача соперника прервана',          paths: ['defence1.interception', 'defence.interception'] },
+  'defence1.clearance':    { label: 'Выносы',           group: 'defence', hint: 'мяч выбит из своей штрафной',          paths: ['defence1.clearance', 'defence.clearance'] },
+  'defence1.blockedShot':  { label: 'Блоки',            group: 'defence', hint: 'удар соперника заблокирован',          paths: ['defence1.blockedShot', 'defence.blockedShot'] },
+  'defence3.save':         { label: 'Сейвы',            group: 'defence', hint: 'мяч отражён вратарём',                 paths: ['defence3.save', 'defence.save'] },
 };
 
 /**
@@ -45,23 +50,23 @@ export const AXES: Record<string, AxisDef> = {
 export const LINE_SETS: Record<PosGroup, { label: string; focus: string[]; context: string[] }> = {
   GK: {
     label: 'Вратарь',
-    focus: ['defence.save', 'attack.passOnTarget', 'defence.clearance'],
-    context: ['defence.blockedShot', 'defence.interception', 'defence.duel'],
+    focus: ['defence3.save', 'attack.passOnTarget', 'defence1.clearance'],
+    context: ['defence1.blockedShot', 'defence1.interception', 'defence2.duel'],
   },
   DEF: {
     label: 'Защитник',
-    focus: ['defence.tackle', 'defence.interception', 'defence.duel'],
-    context: ['defence.clearance', 'defence.blockedShot', 'attack.passOnTarget'],
+    focus: ['defence1.tackle', 'defence1.interception', 'defence2.duel'],
+    context: ['defence1.clearance', 'defence1.blockedShot', 'attack.passOnTarget'],
   },
   MID: {
     label: 'Полузащитник',
-    focus: ['attack.passOnTarget', 'attack.keyPass', 'defence.pressing'],
-    context: ['defence.tackle', 'attack.dribble', 'defence.duel'],
+    focus: ['attack.passOnTarget', 'attack1.keyPass', 'defence2.pressing'],
+    context: ['defence1.tackle', 'attack4.dribble', 'defence2.duel'],
   },
   FWD: {
     label: 'Нападающий',
-    focus: ['attack.shot', 'attack.dribble', 'attack.keyPass'],
-    context: ['defence.pressing', 'defence.duel', 'attack.passOnTarget'],
+    focus: ['attack4.shot', 'attack4.dribble', 'attack1.keyPass'],
+    context: ['defence2.pressing', 'defence2.duel', 'attack.passOnTarget'],
   },
 };
 

@@ -112,7 +112,7 @@ async function seasonSquad(conn: PoolClient, slug: string, teamId: string): Prom
     if (ov > 0) { a.ratedMatches += 1; a.sumOverall += ov; }
 
     for (const key of AXIS_KEYS) {
-      a.p.totals[key] = (a.p.totals[key] ?? 0) + statAt(r.stats, key);
+      a.p.totals[key] = (a.p.totals[key] ?? 0) + statAt(r.stats, AXES[key]?.paths ?? key);
     }
   }
 
