@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { normPlayerName, dedupPlayers, type DedupablePlayer } from './playerDedup.js';
+import { normPlayerName, dedupPlayers, birthKey, type DedupablePlayer } from './playerDedup.js';
 
 const P = (id: number, name: string, birthYear: number | null, club: string, rating: number | null, mp: number): DedupablePlayer =>
   ({ id, name, birthYear, club, rating, mp });
@@ -38,4 +38,35 @@ test('игроки без рейтинга (mp=0) не ломают слияни
   assert.equal(out.length, 1);
   assert.equal(out[0]!.rating, 700, 'нулевой вклад не сдвигает рейтинг');
   assert.equal(out[0]!.mp, 4);
+});
+
+test('полная дата рождения — строгая часть ключа', () => {
+  // Один ребёнок, две регистрации: полная дата совпадает → сливаем.
+  const same = dedupPlayers([
+    { id: 1, name: 'Иван Петров', birthYear: 2011, birthDate: '2011-03-14', club: 'A', rating: 600, mp: 2 },
+    { id: 2, name: 'Петров Иван', birthYear: 2011, birthDate: '2011-03-14', club: 'Б', rating: 800, mp: 8 },
+  ]);
+  assert.equal(same.length, 1, 'одна дата → один человек');
+  assert.equal(same[0]!.mp, 10);
+
+  // Тёзки одного года, но разные дни рождения → это РАЗНЫЕ дети, не сливаем.
+  const twins = dedupPlayers([
+    { id: 1, name: 'Иван Петров', birthYear: 2011, birthDate: '2011-03-14', club: 'A', rating: 600, mp: 5 },
+    { id: 2, name: 'Иван Петров', birthYear: 2011, birthDate: '2011-09-02', club: 'Б', rating: 700, mp: 5 },
+  ]);
+  assert.equal(twins.length, 2, 'разные даты при одном ФИО и годе → разные люди');
+});
+
+test('без полной даты ключ падает до года (обратная совместимость)', () => {
+  const out = dedupPlayers([
+    { id: 1, name: 'Иван Петров', birthYear: 2011, birthDate: null, club: 'A', rating: 600, mp: 2 },
+    { id: 2, name: 'Иван Петров', birthYear: 2011, club: 'Б', rating: 800, mp: 8 },
+  ]);
+  assert.equal(out.length, 1, 'дат нет → работаем по году, как раньше');
+});
+
+test('birthKey: битая дата не считается полной', () => {
+  assert.equal(birthKey({ birthDate: '2011-03-14T00:00:00.000Z', birthYear: 2011 }), '2011-03-14');
+  assert.equal(birthKey({ birthDate: 'не дата', birthYear: 2011 }), '2011');
+  assert.equal(birthKey({ birthDate: null, birthYear: null }), '?');
 });

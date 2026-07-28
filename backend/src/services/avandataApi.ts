@@ -193,14 +193,22 @@ export async function getEventTypes(): Promise<AvEventType[]> {
   return d.data ?? [];
 }
 
-// ---- Реестр игроков с ПОЛНОЙ датой рождения (для RAE) ----
+// ---- Реестр игроков с ПОЛНОЙ датой рождения (для RAE и склейки профилей) ----
 export interface AvPlayerSummary { id: number; firstname: string; lastname: string; dateOfBirth: string | null }
-/** Все мастер-игроки региона с полной датой рождения (пагинация по 100). */
-export async function getAllPlayerSummaries(maxPages = 60): Promise<AvPlayerSummary[]> {
+/**
+ * Все игроки региона с полной датой рождения (пагинация по 100).
+ *
+ * ⚠️ ИСТОЧНИК — `/players`, а НЕ `/player-summaries`. Проверено 2026-07-27 на живом API:
+ * `/player-summaries` отдаёт лишь ПОДМНОЖЕСТВО (4628 из 7480) и при этом содержит 90 id,
+ * которых в `/players` нет. На нём перекос по дате рождения считался по 62% реестра.
+ * У `/players` дата рождения заполнена у всех записей; max(id)=7767 при 7480 записях
+ * (285 дыр от удалений) — арифметика сходится.
+ */
+export async function getAllPlayerSummaries(maxPages = 120): Promise<AvPlayerSummary[]> {
   const all: AvPlayerSummary[] = [];
   let totalPages = 1;
   for (let page = 1; page <= Math.min(maxPages, totalPages); page++) {
-    const d = await authedGet<{ data?: AvPlayerSummary[]; meta?: { totalPages?: number } }>(`/player-summaries?limit=100&page=${page}`);
+    const d = await authedGet<{ data?: AvPlayerSummary[]; meta?: { totalPages?: number } }>(`/players?limit=100&page=${page}`);
     all.push(...(d.data ?? []));
     totalPages = d.meta?.totalPages ?? 1;
   }

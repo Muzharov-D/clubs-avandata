@@ -737,11 +737,19 @@ export async function regionPlayers(seasonId: number, year?: number, division?: 
       return { ...p, position: pos, mp: n, rating: n > 0 ? Math.round(sum / n) : null };
     });
     // Дедуп: один человек с РАЗНЫМИ id AvanData (двойная регистрация/переход) иначе двоится
-    // в лидерборде и сборной. Сливаем по ФИО+г.р. (взвешенно по матчам); число слияний
-    // логируем — чтобы случай был ВИДИМ на реальных данных, а не молчалив.
-    const deduped = dedupPlayers(out);
-    if (deduped.length < out.length) {
-      logger.warn({ seasonId, year, division, removed: out.length - deduped.length }, `[federation] дедуп игроков: слито ${out.length - deduped.length} дублей (одинак. ФИО+г.р., разные id)`);
+    // в лидерборде и сборной. Ключ — ФИО + ПОЛНАЯ дата рождения; `by-role` отдаёт только год,
+    // поэтому дату добираем из реестра `/players` (тот же кэш `summaries`). Ключ по году
+    // сливал бы на ~120 записей больше — среди них разные дети-тёзки одного года.
+    const birth = await cached('birthdates', TTL, async () => {
+      const all = await getAllPlayerSummaries();
+      const m = new Map<number, string>();
+      for (const s of all) if (s.dateOfBirth) m.set(s.id, String(s.dateOfBirth).slice(0, 10));
+      return m;
+    });
+    const withDates = out.map((p) => ({ ...p, birthDate: birth.get(p.id) ?? null }));
+    const deduped = dedupPlayers(withDates);
+    if (deduped.length < withDates.length) {
+      logger.warn({ seasonId, year, division, removed: withDates.length - deduped.length }, `[federation] дедуп игроков: слито ${withDates.length - deduped.length} дублей (одинак. ФИО + дата рождения, разные id)`);
     }
     return deduped;
   });
