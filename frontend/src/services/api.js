@@ -389,3 +389,13 @@ export function toAssetUrl(p) {
   if (p.startsWith('/assets')) return API_BASE ? `${API_BASE}${p}` : p;
   return p;
 }
+
+// ── Обратная связь тренер ↔ игрок (модуль feedback, миграция 0020) ──
+export const fetchPlayerFeedback = (age, playerId) =>
+  fetchJson(`/feedback/player/${encodeURIComponent(age)}/${encodeURIComponent(playerId)}`);
+export const savePlayerFeedback = (age, playerId, text, extMatchId = null) =>
+  fetchJson(`/feedback/player/${encodeURIComponent(age)}/${encodeURIComponent(playerId)}`, {
+    method: 'PUT', body: { text, extMatchId },
+  });
+export const answerPlayerFeedback = (id, text) =>
+  fetchJson(`/feedback/${encodeURIComponent(id)}/response`, { method: 'PATCH', body: { text } });

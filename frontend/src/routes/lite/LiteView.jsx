@@ -11,7 +11,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { fetchPlayersSeason } from '../../services/api';
+import { fetchPlayersSeason, fetchPlayerFeedback, savePlayerFeedback } from '../../services/api';
 import { useTeam } from '../../contexts/TeamContext';
 import PizzaChart from '../../components/PizzaChart';
 import {
@@ -42,8 +42,89 @@ function SquadRow({ player, active, onPick }) {
   );
 }
 
+const fmtDate = (s) => {
+  const d = new Date(s);
+  return Number.isNaN(+d) ? '' : d.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long' });
+};
+
+/**
+ * Разбор для игрока: тренер пишет, игрок отвечает своим видением.
+ * Приватно — виден только тренеру и самому игроку.
+ */
+function FeedbackBlock({ age, player }) {
+  const [items, setItems] = useState(null);
+  const [text, setText] = useState('');
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState('');
+  const [done, setDone] = useState(false);
+
+  useEffect(() => {
+    let alive = true;
+    setItems(null); setText(''); setErr(''); setDone(false);
+    if (!age || !player?.id) return undefined;
+    fetchPlayerFeedback(age, player.id)
+      .then((d) => alive && setItems(d?.items ?? []))
+      .catch((e) => alive && setErr(String(e?.message ?? e)));
+    return () => { alive = false; };
+  }, [age, player?.id]);
+
+  const send = async () => {
+    const t = text.trim();
+    if (!t || busy) return;
+    setBusy(true); setErr(''); setDone(false);
+    try {
+      await savePlayerFeedback(age, player.id, t);
+      const d = await fetchPlayerFeedback(age, player.id);
+      setItems(d?.items ?? []); setText(''); setDone(true);
+    } catch (e) {
+      setErr(String(e?.message ?? e));
+    } finally { setBusy(false); }
+  };
+
+  return (
+    <section className="lite-fb">
+      <h3 className="lite-fb__t">Разбор для игрока</h3>
+      <p className="lite-fb__hint">
+        Видят только вы и сам игрок. Пишите про игру, а не про человека — и просите
+        игрока ответить своим видением: цикл работает, когда он думает сам.
+      </p>
+
+      <textarea
+        className="lite-fb__area"
+        rows={4}
+        maxLength={4000}
+        placeholder={`Что ${player.fullName.split(' ')[0] || 'игрок'} сделал хорошо и над чем работаем к следующему матчу`}
+        value={text}
+        onChange={(e) => { setText(e.target.value); setDone(false); }}
+      />
+      <div className="lite-fb__row">
+        <button type="button" className="lite-btn" onClick={send} disabled={busy || !text.trim()}>
+          {busy ? 'Сохраняем…' : 'Отправить игроку'}
+        </button>
+        {done && <span className="lite-fb__ok">Отправлено</span>}
+        {err && <span className="lite-fb__err">{err}</span>}
+      </div>
+
+      {items === null && !err && <p className="lite-note">Загружаем прошлые разборы…</p>}
+      {items?.length > 0 && (
+        <ul className="lite-fb__list">
+          {items.map((it) => (
+            <li key={it.id} className="lite-fb__item">
+              <div className="lite-fb__meta">{fmtDate(it.createdAt)}</div>
+              <p className="lite-fb__coach">{it.coachText}</p>
+              {it.playerText
+                ? <p className="lite-fb__answer"><b>Ответ игрока:</b> {it.playerText}</p>
+                : <p className="lite-fb__wait">Игрок ещё не ответил</p>}
+            </li>
+          ))}
+        </ul>
+      )}
+    </section>
+  );
+}
+
 /** Профиль игрока: пицца + три главных показателя + словесный вывод. */
-function PlayerCard({ player, peers, onCompare, compareLabel, compareDisabled }) {
+function PlayerCard({ player, peers, onCompare, compareLabel, compareDisabled, age }) {
   const { slices, line, poolSize } = useMemo(() => liteSlices(player, peers), [player, peers]);
   const verdict = useMemo(() => verdictOf(slices), [slices]);
 
@@ -122,12 +203,16 @@ function PlayerCard({ player, peers, onCompare, compareLabel, compareDisabled })
           Подробный разбор
         </Link>
       </div>
+
+      {age && <FeedbackBlock age={age} player={player} />}
     </div>
   );
 }
 
 export default function LiteView() {
   const { selectedTeamId, selectedTeam } = useTeam();
+  // teams.id = `{slug}-{age}` — возраст нужен роутам разбора (адресация как в callups).
+  const age = selectedTeam?.ageGroup ?? (selectedTeamId ? String(selectedTeamId).split('-').pop() : '');
   const [players, setPlayers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState('');
@@ -245,6 +330,7 @@ export default function LiteView() {
                 <PlayerCard
                   player={picked}
                   peers={peersOf(picked)}
+                  age={age}
                   compareDisabled={!rival && rivalCandidates.length === 0}
                   compareLabel={
                     rival ? 'Убрать сравнение'
@@ -260,6 +346,7 @@ export default function LiteView() {
                   <PlayerCard
                     player={rival}
                     peers={peersOf(rival)}
+                    age={age}
                     compareLabel="Убрать"
                     onCompare={() => setRivalId(null)}
                   />
