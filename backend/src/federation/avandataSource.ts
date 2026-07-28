@@ -17,7 +17,7 @@ import { logger } from '../shared/logger.js';
 import { env } from '../env.js';
 import { normTeam } from './teamName.js';
 import { DIVISION_ALIASES, matchesDivision } from './division.js';
-import { dedupPlayers } from './playerDedup.js';
+import { dedupPlayers, normPlayerName } from './playerDedup.js';
 import { snapshotMeta, latestSnapshotsForCohort, type SnapPayload } from './snapshots.js';
 
 // ─── Детали матча (для карточки матча по клику) ──────────────────────────────
@@ -1043,15 +1043,49 @@ export interface PlayerProfile {
   birthDate: string | null; birthYear: number | null; rating: number | null;
   matches: number; totalEvents: number; metrics: PlayerMetric[];
   recentMatches: PlayerMatch[];
+  /** Все регистрации этого ребёнка (он заводится заново при переходе между командами). */
+  registrations: number[];
 }
+
+/**
+ * Индекс «человек → все его регистрации». Ключ — ФИО + полная дата рождения
+ * (тот же, что у дедупа списков), поэтому профиль и рейтинг склеивают одинаково.
+ */
+async function humanIndex(): Promise<{ byKey: Map<string, number[]>; keyOf: Map<number, string> }> {
+  return cached('humanIndex', TTL, async () => {
+    const all = await getAllPlayerSummaries();
+    const byKey = new Map<string, number[]>();
+    const keyOf = new Map<number, string>();
+    for (const s of all) {
+      const date = s.dateOfBirth ? String(s.dateOfBirth).slice(0, 10) : '';
+      const key = `${normPlayerName(`${s.lastname ?? ''} ${s.firstname ?? ''}`)}|${date || '?'}`;
+      keyOf.set(s.id, key);
+      const arr = byKey.get(key);
+      if (arr) arr.push(s.id); else byKey.set(key, [s.id]);
+    }
+    return { byKey, keyOf };
+  });
+}
+
 export async function playerProfile(seasonId: number, playerId: number): Promise<PlayerProfile | null> {
-  const [players, detail, events, typesRaw] = await Promise.all([
+  // Один ребёнок = несколько записей AvanData (новая заводится при каждом переходе).
+  // Карточка по одному id показывала лишь часть истории: у Завьялова Дмитрия
+  // 4 регистрации и 94 события, а по id 5471 видно было 21. Собираем все.
+  const idx = await humanIndex();
+  const key = idx.keyOf.get(playerId);
+  const siblings = (key ? idx.byKey.get(key) : null) ?? [playerId];
+  const ids = siblings.includes(playerId) ? siblings : [playerId, ...siblings];
+
+  const [players, detail, eventsPerId, typesRaw] = await Promise.all([
     regionPlayers(seasonId),
     getPlayerDetail(playerId),
-    getPlayerEvents(playerId),
+    pmap(ids, 4, (pid) => getPlayerEvents(pid)),
     cached('eventTypes', TTL, getEventTypes),
   ]);
-  const id0 = players.find((p) => p.id === playerId);
+  const events = eventsPerId.flat();
+  // Представление берём у той регистрации, что попала в дедуплицированный список
+  // (там уже выбран вариант с бОльшим числом матчей), иначе — у запрошенной.
+  const id0 = players.find((p) => ids.includes(p.id)) ?? players.find((p) => p.id === playerId);
   const types = new Map((typesRaw as AvEventType[]).map((t) => [t.id, t]));
   const agg = new Map<string, { count: number; points: number }>();
   const matchIds = new Set<number>();
@@ -1101,6 +1135,7 @@ export async function playerProfile(seasonId: number, playerId: number): Promise
     birthYear: detail?.dateOfBirth ? new Date(detail.dateOfBirth).getUTCFullYear() : (id0?.birthYear ?? null),
     rating: id0?.rating ?? (events.length ? totalPoints : null),
     matches: matchIds.size, totalEvents: events.length, metrics, recentMatches,
+    registrations: ids,
   };
 }
 
