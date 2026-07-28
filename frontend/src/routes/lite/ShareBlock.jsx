@@ -18,14 +18,24 @@ const ACCESS_TEXT = {
   active: 'Игрок заходит в свой кабинет.',
 };
 
-/** Копирование без буфера обмена — на случай http/старого браузера. */
-async function copy(text) {
-  try {
-    await navigator.clipboard.writeText(text);
-    return true;
-  } catch {
-    return false;
-  }
+/**
+ * Копирование в буфер. НИКОГДА не ждать этот промис в основном потоке действия:
+ * если вкладка не в фокусе, Chrome держит `writeText` нерешённым до возврата
+ * фокуса — не отклоняет, а именно висит. Поймано живьём: кнопка приглашения
+ * навсегда застревала в «Готовим…», а код после неё не выполнялся вовсе.
+ * Поэтому здесь ещё и таймаут: обещание обязано завершиться.
+ */
+function copy(text) {
+  const write = (async () => {
+    try {
+      await navigator.clipboard.writeText(text);
+      return true;
+    } catch {
+      return false;
+    }
+  })();
+  const timeout = new Promise((resolve) => { setTimeout(() => resolve(false), 1500); });
+  return Promise.race([write, timeout]);
 }
 
 export default function ShareBlock({ age, player }) {
@@ -83,9 +93,13 @@ export default function ShareBlock({ age, player }) {
     try {
       const r = await invitePlayer(age, player.id);
       setInvite(r);
-      setCopied(await copy(r.setupUrl));
       // Статус доступа поменялся — перечитываем, чтобы подпись не врала.
-      fetchPlayerShare(age, player.id).then((d) => setData((p) => ({ ...(p ?? {}), access: d?.access })));
+      fetchPlayerShare(age, player.id)
+        .then((d) => setData((p) => ({ ...(p ?? {}), access: d?.access })))
+        .catch(() => { /* ссылка уже показана — статус подтянется на перезагрузке */ });
+      // Буфер обмена — последним и без ожидания: ссылка и так в поле ниже,
+      // а копирование не должно решать судьбу всего действия (см. copy()).
+      copy(r.setupUrl).then(setCopied);
     } catch (e) {
       setErr(`Не удалось выдать доступ: ${String(e?.message ?? e)}`);
     } finally { setInviting(false); }
