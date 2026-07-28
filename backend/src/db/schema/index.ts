@@ -21,3 +21,4 @@ export * from './federationSnapshots.js';
 export * from './regionCensus.js';
 export * from './regionMinutes.js';
 export * from './regionScorers.js';
+export * from './playerFeedback.js';
