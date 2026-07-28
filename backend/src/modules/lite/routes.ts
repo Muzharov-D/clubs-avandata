@@ -352,7 +352,16 @@ export async function liteRoutes(app: FastifyInstance) {
               keys.map((k) => [k, statAt(m.stats, k, AXES[k]?.mode)]),
             ) as Record<string, number>,
           };
-        }).sort((a, b) => String(a.date ?? '').localeCompare(String(b.date ?? '')));
+        });
+
+        // Сортируем по ВРЕМЕНИ, а не по строке: applyFixtureDates кладёт в `date`
+        // объект Date, и String(...) даёт «Mon May 11 2026…» — сортировка шла по
+        // названию дня недели, лента прыгала апрель→июнь→май. Поймано на проде.
+        const ts = (d: unknown): number => {
+          const n = d ? new Date(d as string).getTime() : Number.NaN;
+          return Number.isFinite(n) ? n : Number.POSITIVE_INFINITY; // без даты — в конец
+        };
+        matches.sort((a, b) => ts(a.date) - ts(b.date));
 
         return {
           playerId,
