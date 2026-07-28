@@ -195,11 +195,16 @@ async function shareOf(conn: PoolClient, slug: string, playerId: string, line: P
   if (!row) {
     return { metrics: defaultSharedMetrics(line), showOverall: false, isDefault: true };
   }
-  return {
-    metrics: sanitizeMetrics(row.metrics, line),
-    showOverall: Boolean(row.showOverall),
-    isDefault: false,
-  };
+  const stored = Array.isArray(row.metrics) ? row.metrics : [];
+  const metrics = sanitizeMetrics(stored, line);
+  // Набор был непустым, а после проверки не осталось ничего — значит все ключи
+  // устарели (так вышло при переезде осей с радара на события). Это не выбор
+  // тренера «не показывать ничего», а потерянная настройка: возвращаем умолчание,
+  // иначе игрок молча остался бы с пустым кабинетом.
+  if (stored.length > 0 && metrics.length === 0) {
+    return { metrics: defaultSharedMetrics(line), showOverall: Boolean(row.showOverall), isDefault: true };
+  }
+  return { metrics, showOverall: Boolean(row.showOverall), isDefault: false };
 }
 
 /** Состояние доступа игрока: ссылка выдана и заходил ли он по ней. */
