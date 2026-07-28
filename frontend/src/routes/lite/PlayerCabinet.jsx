@@ -11,6 +11,7 @@
 import { useEffect, useState } from 'react';
 import { fetchMyLite, answerMyFeedback } from '../../services/api';
 import { useDocumentTitle } from '../../hooks/useDocumentTitle';
+import { LINE_PLURAL } from './liteMetrics';
 import './playerCabinet.css';
 
 const initials = (name) => (name || '?').split(' ').filter(Boolean).slice(0, 2).map((p) => p[0]).join('').toUpperCase();
@@ -20,7 +21,7 @@ const fmtDate = (s) => {
   return Number.isNaN(+d) ? '' : d.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long' });
 };
 
-/** Один показатель: число по десятибалльной шкале + место среди своих. */
+/** Один показатель: сколько это в среднем за матч + место среди своих. */
 function MetricRow({ m, lineLabel, peersCount }) {
   const pct = Math.max(0, Math.min(100, Number(m.percentile) || 0));
   return (
@@ -123,7 +124,7 @@ export default function PlayerCabinet() {
   if (err) return <div className="pc"><p className="pc-err">Не удалось загрузить: {err}</p></div>;
   if (!data) return <div className="pc"><p className="pc-note">Загружаем…</p></div>;
 
-  const { player, metrics = [], feedback = [], lineLabel, peersCount, overall } = data;
+  const { player, metrics = [], feedback = [], line, peersCount, overall } = data;
   const unanswered = feedback.filter((f) => !f.playerText).length;
 
   return (
@@ -162,7 +163,14 @@ export default function PlayerCabinet() {
           <>
             <div className="pc-metrics">
               {metrics.map((m) => (
-                <MetricRow key={m.key} m={m} lineLabel={(lineLabel || 'игроков').toLowerCase()} peersCount={peersCount} />
+                <MetricRow
+                  key={m.key}
+                  m={m}
+                  /* Родительный падеж множественного: «у 90% нападающих», а не
+                     «у 90% нападающий» — подпись амплуа тут не годится. */
+                  lineLabel={LINE_PLURAL[line] ?? 'игроков команды'}
+                  peersCount={peersCount}
+                />
               ))}
             </div>
             <p className="pc-note">
