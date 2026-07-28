@@ -12,19 +12,24 @@
 // подпись на слайсе = сам индекс 0–10 (абсолют). Так «рейтинг остаётся абсолютом»,
 // а форма пиццы при этом сопоставима между игроками.
 
-/** Русские подписи осей радара. Без англицизмов (контракт CLAUDE.md). */
+/**
+ * Русские подписи осей радара. Без англицизмов (контракт CLAUDE.md).
+ *
+ * 🔴 ГРАНИЦА НАБОРА: только оси с опорой в БАЗОВЫХ 36 показателях АванДаты.
+ * «Интенсивности» и «Объёма бега» здесь нет и быть не должно — это трекинговая
+ * физика SportVisor, события такого типа среди 36 не существует.
+ * Канон и разбор соответствий — `backend/src/modules/lite/metrics.ts`.
+ */
 export const AXIS_LABEL = {
   goalkeeping: 'Игра в воротах',
   positioning: 'Выбор позиции',
   possession: 'Владение',
   forwardPlay: 'Игра вперёд',
   duels: 'Единоборства',
-  intensity: 'Интенсивность',
   tackling: 'Отбор',
   pressing: 'Прессинг',
   dribbling: 'Обводка',
   shooting: 'Удары',
-  distance: 'Объём бега',
   setPiece: 'Стандарты',
 };
 
@@ -34,7 +39,6 @@ const AXIS_GROUP = {
   possession: 'attack', setPiece: 'attack',
   tackling: 'defence', duels: 'defence', positioning: 'defence',
   pressing: 'defence', goalkeeping: 'defence',
-  intensity: 'fitness', distance: 'fitness',
 };
 
 /**
@@ -46,23 +50,24 @@ const AXIS_GROUP = {
 export const LINE_SETS = {
   GK: {
     label: 'Вратарь',
+    // Шестая ось — стандарты: у вратаря это работа на угловых, а не бег.
     focus: ['goalkeeping', 'positioning', 'possession'],
-    context: ['forwardPlay', 'duels', 'intensity'],
+    context: ['forwardPlay', 'duels', 'setPiece'],
   },
   DEF: {
     label: 'Защитник',
     focus: ['tackling', 'duels', 'positioning'],
-    context: ['possession', 'forwardPlay', 'intensity'],
+    context: ['possession', 'forwardPlay', 'pressing'],
   },
   MID: {
     label: 'Полузащитник',
     focus: ['possession', 'forwardPlay', 'pressing'],
-    context: ['duels', 'dribbling', 'intensity'],
+    context: ['duels', 'dribbling', 'tackling'],
   },
   FWD: {
     label: 'Нападающий',
     focus: ['shooting', 'dribbling', 'forwardPlay'],
-    context: ['pressing', 'duels', 'intensity'],
+    context: ['pressing', 'duels', 'possession'],
   },
 };
 

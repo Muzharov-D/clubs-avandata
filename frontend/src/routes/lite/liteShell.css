@@ -1,0 +1,52 @@
+/* Оболочка кабинета Lite. Цвета только через токены (контракт CLAUDE.md). */
+
+.ls { min-height: 100vh; background: var(--bg-page); color: var(--text); }
+
+/* Липкая тонкая шапка. Полупрозрачная с размытием: содержимое проезжает под
+   ней, а не упирается в глухую полосу. */
+.ls-top {
+  position: sticky; top: 0; z-index: 40;
+  display: flex; align-items: center; gap: 14px;
+  padding: 12px 24px; min-height: 60px;
+  background: color-mix(in srgb, var(--bg-page) 72%, transparent);
+  backdrop-filter: blur(18px) saturate(160%);
+  border-bottom: 1px solid var(--border);
+}
+.ls-top__club { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.ls-top__logo { width: 28px; height: 28px; object-fit: contain; flex: none; }
+.ls-top__name {
+  font-size: 15px; font-weight: 700; letter-spacing: -0.01em; color: var(--text);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+
+.ls-top__team {
+  font: inherit; font-size: 13.5px; font-weight: 600; color: var(--text);
+  background: var(--surface-soft); border: 1px solid var(--border);
+  border-radius: 999px; padding: 7px 13px; min-height: 38px; cursor: pointer;
+}
+.ls-top__team--static { cursor: default; color: var(--text-muted); }
+.ls-top__team:focus-visible { outline: 2px solid var(--brand-primary); outline-offset: 2px; }
+
+.ls-top__right { margin-left: auto; display: flex; align-items: center; gap: 12px; }
+.ls-top__user { font-size: 13px; color: var(--text-muted); white-space: nowrap; }
+.ls-top__out {
+  font: inherit; font-size: 13px; font-weight: 600; color: var(--text-muted);
+  background: transparent; border: 1px solid var(--border); border-radius: 999px;
+  padding: 7px 14px; min-height: 38px; cursor: pointer;
+  transition: color var(--dur-micro) var(--ease-standard),
+              border-color var(--dur-micro) var(--ease-standard);
+}
+.ls-top__out:hover { color: var(--text); border-color: var(--border-strong); }
+.ls-top__out:focus-visible { outline: 2px solid var(--brand-primary); outline-offset: 2px; }
+
+.ls-body { min-height: calc(100vh - 60px); }
+
+@media (max-width: 780px) {
+  .ls-top { padding: 10px 14px; gap: 10px; flex-wrap: wrap; min-height: 56px; }
+  .ls-top__user { display: none; }   /* имя тренера на телефоне только мешает */
+  .ls-top__right { margin-left: auto; }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .ls-top { background: var(--bg-page); backdrop-filter: none; }
+}

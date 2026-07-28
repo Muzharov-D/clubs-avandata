@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  axesOfLine, defaultSharedMetrics, sanitizeMetrics, percentileOf, LINE_SETS,
+  axesOfLine, defaultSharedMetrics, sanitizeMetrics, percentileOf, LINE_SETS, AXIS_LABEL,
 } from './metrics.js';
 
 /**
@@ -16,6 +16,25 @@ test('у каждого амплуа ровно 6 осей, 3 из них гла
     assert.equal(axes.length, 6, `${line}: осей должно быть 6`);
     assert.equal(new Set(axes).size, 6, `${line}: оси не должны повторяться`);
     assert.equal(LINE_SETS[line].focus.length, 3, `${line}: главных должно быть 3`);
+  }
+});
+
+test('в Lite не попадают оси без опоры в базовых 36', () => {
+  // Владелец поймал живьём: «Интенсивность» стояла шестой осью у всех амплуа,
+  // а такого показателя среди 36 нет — это трекинговая физика SportVisor.
+  // Тот же случай — «Объём бега». Тест держит границу набора.
+  const ЗАПРЕЩЕНО = ['intensity', 'distance'];
+  for (const key of ЗАПРЕЩЕНО) {
+    assert.equal(AXIS_LABEL[key], undefined, `${key} не должен иметь подписи`);
+    for (const line of ['GK', 'DEF', 'MID', 'FWD'] as const) {
+      assert.ok(!axesOfLine(line).includes(key), `${line}: ${key} не должен быть осью`);
+    }
+  }
+  // И наоборот: каждая ось амплуа обязана иметь человеческую подпись.
+  for (const line of ['GK', 'DEF', 'MID', 'FWD'] as const) {
+    for (const key of axesOfLine(line)) {
+      assert.ok(AXIS_LABEL[key], `${line}: у оси ${key} нет подписи`);
+    }
   }
 });
 

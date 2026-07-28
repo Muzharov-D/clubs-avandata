@@ -31,6 +31,8 @@ import LiteView from './routes/lite/LiteView';
 // @ts-ignore — legacy .jsx
 import PlayerCabinet from './routes/lite/PlayerCabinet';
 // @ts-ignore — legacy .jsx
+import LiteShell from './routes/lite/LiteShell';
+// @ts-ignore — legacy .jsx
 import LoadControl from './pages/LoadControl';
 import CalendarPage from './pages/CalendarPage';
 import TrainingsPage from './pages/TrainingsPage';
@@ -72,7 +74,7 @@ const queryClient = new QueryClient({
 // На `clubs.avandata.ru/` показываем Avandata-лендинг (бренд платформы).
 // Tenant-specific ClubLanding (Легирус и т.д.) — после login или на subdomain'e.
 function RootRoute() {
-  const { user, loading } = useAuth() as { user: any; loading: boolean };
+  const { user, tenant, loading } = useAuth() as { user: any; tenant: { plan?: string } | null; loading: boolean };
   if (loading) return <AvandataLanding />;  // не блокируем лендинг, пока auth решается
   if (!user) return <AvandataLanding />;
   // platform_admin → в админку; обычный пользователь → в свой кабинет
@@ -83,6 +85,9 @@ function RootRoute() {
   // Игрок — в свой кабинет Lite (что открыл тренер + разбор), а НЕ в полный
   // профиль игрока: там 28 осей и командная фактура, это экран аналитика.
   if (user.role === 'player') return <Navigate to="/me" replace />;
+  // Тариф «Лайт» — отдельный кабинет из одного экрана: тренер приземляется
+  // сразу на разбор, аналитических домов у него нет.
+  if (tenant?.plan === 'lite') return <Navigate to="/lite" replace />;
   // Старший тренер клуба приземляется в клубный обзор (кабинет), а не на
   // конкретную команду — у него работа сквозная по всем возрастам.
   if (user.role === 'head_coach') return <Navigate to="/club-hub" replace />;
@@ -114,6 +119,24 @@ function PlayerHome({ children }: { children: React.ReactNode }) {
 function NotForPlayer({ children }: { children: React.ReactNode }) {
   const { isPlayer } = useAuth() as { isPlayer: boolean };
   if (isPlayer) return <Navigate to="/me" replace />;
+  return <>{children}</>;
+}
+
+/**
+ * Оболочка клубной части. Тариф «Лайт» — ОТДЕЛЬНЫЙ кабинет: своя шапка без
+ * сайдбара и без аналитического хрома. Остальные тарифы живут в обычном
+ * кабинете. Один набор маршрутов, разные оболочки — чтобы адреса не разъезжались.
+ */
+function ClubShell() {
+  const { tenant } = useAuth() as { tenant: { plan?: string } | null };
+  return tenant?.plan === 'lite' ? <LiteShell /> : <MainLayout />;
+}
+
+/** Экран аналитического кабинета: на тарифе «Лайт» его нет — уводим на разбор. */
+function FullPlanOnly({ children }: { children: React.ReactNode }) {
+  const { tenant, isPlayer } = useAuth() as { tenant: { plan?: string } | null; isPlayer: boolean };
+  if (isPlayer) return <Navigate to="/me" replace />;
+  if (tenant?.plan === 'lite') return <Navigate to="/lite" replace />;
   return <>{children}</>;
 }
 
@@ -239,28 +262,28 @@ export function App() {
                   </Route>
 
                   {/* Авторизованный кабинет клуба */}
-                  <Route element={<ProtectedRoute roles={[]}><MainLayout /></ProtectedRoute>}>
+                  <Route element={<ProtectedRoute roles={[]}><ClubShell /></ProtectedRoute>}>
                     {/* Спортдиректор слит со старшим тренером — старый дом редиректит в единый кабинет. */}
                     <Route path="/director" element={<Navigate to="/club-hub" replace />} />
-                    <Route path="/club" element={<NotForPlayer><ClubDashboard /></NotForPlayer>} />
-                    <Route path="/club-hub" element={<HeadCoachOnly><ClubHub /></HeadCoachOnly>} />
+                    <Route path="/club" element={<FullPlanOnly><ClubDashboard /></FullPlanOnly>} />
+                    <Route path="/club-hub" element={<FullPlanOnly><HeadCoachOnly><ClubHub /></HeadCoachOnly></FullPlanOnly>} />
                     {/* Lite — упрощённый разбор игрока: 6 осей по амплуа, 3 главных выделены. */}
                     <Route path="/lite" element={<CoachOnly><LiteView /></CoachOnly>} />
                     {/* Кабинет игрока: только открытое тренером + разбор и ответ. */}
                     <Route path="/me" element={<PlayerHome><PlayerCabinet /></PlayerHome>} />
-                    <Route path="/analytics" element={<CoachOnly><ClubOverview /></CoachOnly>} />
-                    <Route path="/analytics/team" element={<CoachOnly><ComparisonView /></CoachOnly>} />
-                    <Route path="/matches" element={<NotForPlayer><MatchesDashboard /></NotForPlayer>} />
-                    <Route path="/matches/:matchId" element={<NotForPlayer><MatchDetail /></NotForPlayer>} />
+                    <Route path="/analytics" element={<FullPlanOnly><CoachOnly><ClubOverview /></CoachOnly></FullPlanOnly>} />
+                    <Route path="/analytics/team" element={<FullPlanOnly><CoachOnly><ComparisonView /></CoachOnly></FullPlanOnly>} />
+                    <Route path="/matches" element={<FullPlanOnly><MatchesDashboard /></FullPlanOnly>} />
+                    <Route path="/matches/:matchId" element={<FullPlanOnly><MatchDetail /></FullPlanOnly>} />
                     <Route path="/calendar" element={<PaidOnly><NotForPlayer><CalendarPage /></NotForPlayer></PaidOnly>} />
                     <Route path="/trainings" element={<PaidOnly><CoachOnly><TrainingsPage /></CoachOnly></PaidOnly>} />
-                    <Route path="/players" element={<CoachOnly><PlayersLeaders /></CoachOnly>} />
-                    <Route path="/players/rating" element={<CoachOnly><PlayersRating /></CoachOnly>} />
-                    <Route path="/players/compare" element={<CoachOnly><PlayerCompare /></CoachOnly>} />
+                    <Route path="/players" element={<FullPlanOnly><CoachOnly><PlayersLeaders /></CoachOnly></FullPlanOnly>} />
+                    <Route path="/players/rating" element={<FullPlanOnly><CoachOnly><PlayersRating /></CoachOnly></FullPlanOnly>} />
+                    <Route path="/players/compare" element={<FullPlanOnly><CoachOnly><PlayerCompare /></CoachOnly></FullPlanOnly>} />
                     <Route path="/load" element={<PaidOnly><CoachOnly><LoadControl /></CoachOnly></PaidOnly>} />
                     {/* PlayerDetail.jsx — 1:1 копия Легируса с pizza-chart, фото, бейджами */}
-                    <Route path="/players/:playerId" element={<OwnPlayerOnly><PlayerDetail /></OwnPlayerOnly>} />
-                    <Route path="/constructor" element={<CoachOnly><ConstructorPage /></CoachOnly>} />
+                    <Route path="/players/:playerId" element={<FullPlanOnly><OwnPlayerOnly><PlayerDetail /></OwnPlayerOnly></FullPlanOnly>} />
+                    <Route path="/constructor" element={<FullPlanOnly><CoachOnly><ConstructorPage /></CoachOnly></FullPlanOnly>} />
                     {/* Неизвестный путь: тренера — в клуб, игрока — в его кабинет. */}
                     <Route path="*" element={<NotForPlayer><Navigate to="/club" replace /></NotForPlayer>} />
                   </Route>

@@ -23,6 +23,10 @@ interface ProvisionResponse {
 
 type TeamPatch = { active?: boolean; name?: string; ageLabel?: string };
 
+/** Тарифы клуба. «Лайт» — отдельный кабинет спортшколы (см. ClubShell в App.tsx). */
+type TenantPlan = 'free' | 'lite' | 'paid';
+const PLAN_LABEL: Record<TenantPlan, string> = { free: 'Бесплатный', lite: 'Лайт', paid: 'Платный' };
+
 export function AdminTenantDetail() {
   const { slug = '' } = useParams();
   useDocumentTitle(`${slug} — команды`);
@@ -59,15 +63,16 @@ export function AdminTenantDetail() {
     },
   });
 
+  // Тариф: 'lite' — отдельный кабинет спортшколы (см. ClubShell в App.tsx).
   // Тариф клуба — из списка всех клубов (admin /tenants отдаёт plan). PATCH тенанта.
   const tenantsKey = ['admin', 'tenants'];
   const tenantQuery = useQuery({
     queryKey: tenantsKey,
     queryFn: () => api<{ tenants: Array<{ slug: string; plan?: string }> }>('/admin/tenants'),
   });
-  const plan = (tenantQuery.data?.tenants.find((t) => t.slug === slug)?.plan ?? 'free') as 'free' | 'paid';
+  const plan = (tenantQuery.data?.tenants.find((t) => t.slug === slug)?.plan ?? 'free') as TenantPlan;
   const planMut = useMutation({
-    mutationFn: (next: 'free' | 'paid') =>
+    mutationFn: (next: TenantPlan) =>
       api(`/admin/tenants/${slug}`, { method: 'PATCH', body: { plan: next } }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: tenantsKey });
@@ -108,6 +113,7 @@ export function AdminTenantDetail() {
           <div style={{ fontWeight: 600, fontSize: 14 }}>Тариф клуба</div>
           <div style={{ fontSize: 12, color: '#94a3b8' }}>
             На «Бесплатном» платные блоки (xG, физнагрузка, тепловые карты, профиль передач) скрыты у клуба.
+            «Лайт» — отдельный кабинет для спортшкол: только разбор игрока и связь с ним, аналитики нет.
           </div>
         </div>
         <div
@@ -115,7 +121,7 @@ export function AdminTenantDetail() {
           aria-label="Тариф клуба"
           style={{ display: 'inline-flex', gap: 2, padding: 3, background: 'rgba(255,255,255,0.04)', border: '1px solid var(--border)', borderRadius: 999 }}
         >
-          {(['free', 'paid'] as const).map((p) => (
+          {(['free', 'lite', 'paid'] as const).map((p) => (
             <button
               key={p}
               type="button"
@@ -130,7 +136,7 @@ export function AdminTenantDetail() {
                 color: plan === p ? (p === 'paid' ? '#04210f' : '#e2e8f0') : '#94a3b8',
               }}
             >
-              {p === 'free' ? 'Бесплатный' : 'Платный'}
+              {PLAN_LABEL[p]}
             </button>
           ))}
         </div>

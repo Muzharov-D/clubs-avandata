@@ -353,7 +353,9 @@ export async function adminRoutes(app: FastifyInstance) {
     status: z.enum(['active', 'suspended', 'archived']).optional(),
     brand: z.record(z.string(), z.unknown()).optional(),
     features: z.record(z.string(), z.unknown()).optional(),
-    plan: z.enum(['free', 'paid']).optional(),
+    // 'lite' — отдельный кабинет для СШ/СШОР: только разбор игрока и связь с ним,
+    // без аналитических экранов. Третий тариф рядом с бесплатным и платным.
+    plan: z.enum(['free', 'paid', 'lite']).optional(),
     dataProvider: z.enum(['ffspb', 'yfl', 'manual']).optional(),
     providerConfig: z.record(z.string(), z.unknown()).optional(),
   });

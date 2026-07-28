@@ -11,10 +11,13 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { fetchPlayersSeason, fetchPlayerFeedback, savePlayerFeedback } from '../../services/api';
+import {
+  fetchPlayersSeason, fetchPlayerFeedback, savePlayerFeedback, fetchPlayerShare,
+} from '../../services/api';
 import { useTeam } from '../../contexts/TeamContext';
 import PizzaChart from '../../components/PizzaChart';
-import ShareBlock from './ShareBlock';
+import ShareSheet from './ShareSheet';
+import { useAuth } from '../../contexts/AuthContext';
 import {
   LINE_ORDER, LINE_SETS, LINE_PLURAL,
   lineOfPlayer, liteSlices, verdictOf,
@@ -129,8 +132,46 @@ function FeedbackBlock({ age, player }) {
   );
 }
 
-/** Профиль игрока: пицца + три главных показателя + словесный вывод. */
-function PlayerCard({ player, peers, onCompare, compareLabel, compareDisabled, age }) {
+/**
+ * Тонкая строка состояния: что открыто игроку и есть ли у него вход.
+ * Сама настройка живёт в листе — в карточке ей не место, она открывается редко.
+ */
+function ShareStrip({ age, player, onOpen, epoch }) {
+  const [state, setState] = useState(null);
+
+  useEffect(() => {
+    let alive = true;
+    setState(null);
+    fetchPlayerShare(age, player.id)
+      .then((d) => alive && setState(d))
+      .catch(() => alive && setState({ metrics: [], axes: [], access: null }));
+    return () => { alive = false; };
+  }, [age, player.id, epoch]);
+
+  const labels = (state?.axes ?? [])
+    .filter((a) => (state?.metrics ?? []).includes(a.key))
+    .map((a) => a.label);
+  const access = state?.access?.status;
+
+  return (
+    <button type="button" className="lite-strip" onClick={onOpen}>
+      <span className="lite-strip__main">
+        <span className="lite-strip__t">Игрок видит</span>
+        <span className="lite-strip__v">
+          {state === null ? '…' : labels.length ? labels.join(' · ') : 'только ваш разбор'}
+          {state?.showOverall && ' · общий индекс'}
+        </span>
+      </span>
+      <span className={`lite-strip__acc lite-strip__acc--${access ?? 'none'}`}>
+        {access === 'active' ? 'вход есть' : access === 'invited' ? 'приглашён' : 'входа нет'}
+      </span>
+      <span className="lite-strip__go">Настроить</span>
+    </button>
+  );
+}
+
+/** Профиль игрока: вывод словами, пицца, три главных показателя. */
+function PlayerCard({ player, peers, onCompare, compareLabel, compareDisabled, age, lite, onShare, shareEpoch }) {
   const { slices, line, poolSize } = useMemo(() => liteSlices(player, peers), [player, peers]);
   const verdict = useMemo(() => verdictOf(slices), [slices]);
 
@@ -172,6 +213,10 @@ function PlayerCard({ player, peers, onCompare, compareLabel, compareDisabled, a
         </div>
       </div>
 
+      {/* Вывод словами — первым и крупно: это то, что тренер забирает с собой.
+          Числа ниже объясняют вывод, а не заменяют его (контракт CLAUDE.md). */}
+      {verdict && <p className="lite-verdict">{verdict.text}</p>}
+
       <div className="lite-card__pizza">
         <PizzaChart
           subjectName=""
@@ -193,8 +238,6 @@ function PlayerCard({ player, peers, onCompare, compareLabel, compareDisabled, a
         ))}
       </div>
 
-      {verdict && <p className="lite-verdict">{verdict.text}</p>}
-
       <p className="lite-note">
         Длина сектора — место среди {LINE_PLURAL[line]} команды, число на секторе — сам
         показатель по десятибалльной шкале. Ярко выделены три главных для амплуа.
@@ -202,22 +245,32 @@ function PlayerCard({ player, peers, onCompare, compareLabel, compareDisabled, a
       </p>
 
       <div className="lite-actions">
-        <button type="button" className="lite-btn" onClick={onCompare} disabled={compareDisabled}>
+        <button type="button" className="lite-btn lite-btn--ghost" onClick={onCompare} disabled={compareDisabled}>
           {compareLabel}
         </button>
-        <Link className="lite-btn lite-btn--ghost" to={`/players/${encodeURIComponent(player.id)}`}>
-          Подробный разбор
-        </Link>
+        {/* На тарифе Lite полного профиля в кабинете нет — ссылке некуда вести. */}
+        {!lite && (
+          <Link className="lite-btn lite-btn--ghost" to={`/players/${encodeURIComponent(player.id)}`}>
+            Подробный разбор
+          </Link>
+        )}
       </div>
 
-      {age && <ShareBlock age={age} player={player} />}
       {age && <FeedbackBlock age={age} player={player} />}
+      {age && <ShareStrip age={age} player={player} epoch={shareEpoch} onOpen={() => onShare(player)} />}
     </div>
   );
 }
 
 export default function LiteView() {
   const { selectedTeamId, selectedTeam } = useTeam();
+  const { tenant } = useAuth();
+  const lite = tenant?.plan === 'lite';
+  // Кого настраиваем в листе. null — лист закрыт (частый путь ничем не занят).
+  const [sharing, setSharing] = useState(null);
+  // Строку состояния перечитываем после закрытия листа — иначе она врала бы
+  // про «игрок видит», пока тренер не обновит страницу.
+  const [shareEpoch, setShareEpoch] = useState(0);
   // teams.id = `{slug}-{age}` — возраст нужен роутам разбора (адресация как в callups).
   const age = selectedTeam?.ageGroup ?? (selectedTeamId ? String(selectedTeamId).split('-').pop() : '');
   const [players, setPlayers] = useState([]);
@@ -338,6 +391,9 @@ export default function LiteView() {
                   player={picked}
                   peers={peersOf(picked)}
                   age={age}
+                  lite={lite}
+                  onShare={setSharing}
+                  shareEpoch={shareEpoch}
                   compareDisabled={!rival && rivalCandidates.length === 0}
                   compareLabel={
                     rival ? 'Убрать сравнение'
@@ -354,6 +410,9 @@ export default function LiteView() {
                     player={rival}
                     peers={peersOf(rival)}
                     age={age}
+                    lite={lite}
+                    onShare={setSharing}
+                    shareEpoch={shareEpoch}
                     compareLabel="Убрать"
                     onCompare={() => setRivalId(null)}
                   />
@@ -362,6 +421,15 @@ export default function LiteView() {
             )}
           </main>
         </div>
+      )}
+
+      {sharing && (
+        <ShareSheet
+          age={age}
+          player={sharing}
+          onClose={() => { setSharing(null); setShareEpoch((n) => n + 1); }}
+          onSaved={() => setShareEpoch((n) => n + 1)}
+        />
       )}
     </div>
   );
