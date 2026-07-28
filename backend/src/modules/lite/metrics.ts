@@ -1,46 +1,41 @@
 /**
- * Каталог показателей кабинета Lite — КАНОН (сервер решает, что видит игрок).
+ * Оси кабинета Lite — КАНОН (сервер решает, что и в каком виде видит тренер и игрок).
  *
- * Зеркало во фронте: `frontend/src/routes/lite/liteMetrics.js` (там же пицца и
- * словесный вывод для тренера). Ключи и наборы по амплуа обязаны совпадать —
- * при правке менять оба файла. Фильтрация видимости живёт ТОЛЬКО здесь: если бы
- * сервер отдавал всё, а прятал фронт, скрытые числа были бы видны в сети.
+ * Каждая ось — конкретный счётчик SportVisor, за которым стоит один из БАЗОВЫХ
+ * 36 показателей АванДаты (таблица соответствий — `base36.ts`). Раньше оси брались
+ * из `radar` — сводных индексов SportVisor («Интенсивность», «Объём бега»), которых
+ * среди 36 нет вовсе; владелец поймал именно это.
  *
- * Источник значений — `radar` из match_players (SportVisor), индекс 0–10,
- * усреднённый по матчам сезона.
+ * Значение оси — СРЕДНЕЕ ЗА МАТЧ, а не сумма за сезон. Сумма делает лидером того,
+ * кто просто чаще выходил, и разговор про игру превращается в разговор про минуты.
  */
 
 import type { PosGroup } from '../../shared/positions.js';
+import { BASE36_SV_KEYS } from './base36.js';
 
-/**
- * Русские подписи осей. Без англицизмов (контракт CLAUDE.md).
- *
- * 🔴 ГРАНИЦА НАБОРА: в Lite попадают только те оси, у которых есть опора в
- * БАЗОВЫХ 36 ПОКАЗАТЕЛЯХ АванДаты (живой каталог `/event-types`, ровно 36 штук).
- * Поэтому здесь НЕТ «Интенсивности» и «Объёма бега»: это трекинговая физика
- * SportVisor, события такого типа в 36 не существует. Владелец поймал именно
- * это — «интенсивность» стояла шестой осью у всех четырёх амплуа.
- *
- * Опора каждой оставшейся оси в 36:
- *   Отбор → «Отбор»; Прессинг → «Прессинг», «Контрпрессинг»;
- *   Обводка → «Дриблинг +/−»; Удары → «Удар», «Удар в створ»;
- *   Владение → «Сохранение мяча под прессингом», «Потеря под прессингом»;
- *   Единоборства → «Опека», «Отбор»; Выбор позиции → «Позиционная ошибка»;
- *   Игра вперёд → «Развитие/Создание голевого момента», «Передача +/−»;
- *   Игра в воротах → «Сейв 20/50/90/150», «Пропущенный гол», «Ошибка вратаря»;
- *   Стандарты → «Угловой удар».
- */
-export const AXIS_LABEL: Record<string, string> = {
-  goalkeeping: 'Игра в воротах',
-  positioning: 'Выбор позиции',
-  possession: 'Владение',
-  forwardPlay: 'Игра вперёд',
-  duels: 'Единоборства',
-  tackling: 'Отбор',
-  pressing: 'Прессинг',
-  dribbling: 'Обводка',
-  shooting: 'Удары',
-  setPiece: 'Стандарты',
+export interface AxisDef {
+  /** Подпись. Русская, без англицизмов (контракт CLAUDE.md). */
+  label: string;
+  /** Цветовая группа слайса пиццы. */
+  group: 'attack' | 'defence';
+  /** Короткое пояснение — что это за действие. Тренеру и особенно игроку. */
+  hint: string;
+}
+
+/** Все оси, которые кабинет вообще умеет показывать. Ключ = путь в `stats`. */
+export const AXES: Record<string, AxisDef> = {
+  'attack.shot':         { label: 'Удары',             group: 'attack',  hint: 'попытки пробить по воротам' },
+  'attack.dribble':      { label: 'Обводки',           group: 'attack',  hint: 'удачные обыгрыши один в один' },
+  'attack.keyPass':      { label: 'Создание момента',  group: 'attack',  hint: 'передачи, после которых партнёр бьёт' },
+  'attack.passOnTarget': { label: 'Точные передачи',   group: 'attack',  hint: 'передачи, дошедшие до своего' },
+  'attack.corner':       { label: 'Угловые',           group: 'attack',  hint: 'подачи с углового' },
+  'defence.pressing':    { label: 'Прессинг',          group: 'defence', hint: 'давление на соперника с мячом' },
+  'defence.duel':        { label: 'Единоборства',      group: 'defence', hint: 'борьба за мяч один в один' },
+  'defence.tackle':      { label: 'Отборы',            group: 'defence', hint: 'мяч отобран у соперника' },
+  'defence.interception':{ label: 'Перехваты',         group: 'defence', hint: 'передача соперника прервана' },
+  'defence.clearance':   { label: 'Выносы',            group: 'defence', hint: 'мяч выбит из своей штрафной' },
+  'defence.blockedShot': { label: 'Блоки',             group: 'defence', hint: 'удар соперника заблокирован' },
+  'defence.save':        { label: 'Сейвы',             group: 'defence', hint: 'мяч отражён вратарём' },
 };
 
 /**
@@ -50,24 +45,23 @@ export const AXIS_LABEL: Record<string, string> = {
 export const LINE_SETS: Record<PosGroup, { label: string; focus: string[]; context: string[] }> = {
   GK: {
     label: 'Вратарь',
-    // Шестая ось — стандарты: у вратаря это работа на угловых, а не бег.
-    focus: ['goalkeeping', 'positioning', 'possession'],
-    context: ['forwardPlay', 'duels', 'setPiece'],
+    focus: ['defence.save', 'attack.passOnTarget', 'defence.clearance'],
+    context: ['defence.blockedShot', 'defence.interception', 'defence.duel'],
   },
   DEF: {
     label: 'Защитник',
-    focus: ['tackling', 'duels', 'positioning'],
-    context: ['possession', 'forwardPlay', 'pressing'],
+    focus: ['defence.tackle', 'defence.interception', 'defence.duel'],
+    context: ['defence.clearance', 'defence.blockedShot', 'attack.passOnTarget'],
   },
   MID: {
     label: 'Полузащитник',
-    focus: ['possession', 'forwardPlay', 'pressing'],
-    context: ['duels', 'dribbling', 'tackling'],
+    focus: ['attack.passOnTarget', 'attack.keyPass', 'defence.pressing'],
+    context: ['defence.tackle', 'attack.dribble', 'defence.duel'],
   },
   FWD: {
     label: 'Нападающий',
-    focus: ['shooting', 'dribbling', 'forwardPlay'],
-    context: ['pressing', 'duels', 'possession'],
+    focus: ['attack.shot', 'attack.dribble', 'attack.keyPass'],
+    context: ['defence.pressing', 'defence.duel', 'attack.passOnTarget'],
   },
 };
 
@@ -88,7 +82,7 @@ export function defaultSharedMetrics(line: PosGroup | null): string[] {
 /**
  * Отсекаем всё, чего нет в шестёрке амплуа: тренер не может открыть ось, которую
  * сам на экране не видел, а битый ключ из старой настройки не должен ломать
- * кабинет игрока.
+ * кабинет игрока. Старые ключи радара (`intensity` и прочие) отсеются здесь же.
  */
 export function sanitizeMetrics(raw: unknown, line: PosGroup | null): string[] {
   if (!Array.isArray(raw) || !line) return [];
@@ -100,11 +94,14 @@ export function sanitizeMetrics(raw: unknown, line: PosGroup | null): string[] {
   return out;
 }
 
+/** Ось обязана стоять на одном из 36 — иначе она в кабинет не попадает. */
+export function axisIsFromBase36(key: string): boolean {
+  return BASE36_SV_KEYS.has(key);
+}
+
 /**
  * Перцентиль значения внутри пула сверстников (0–100). Доля тех, кто строго
  * слабее, плюс половина равных — устойчивее к «полке» одинаковых значений.
- * Повторяет `percentileOf` во фронте: обе стороны обязаны считать одинаково,
- * иначе тренер и игрок увидят разные доли по одному и тому же показателю.
  */
 export function percentileOf(value: number, pool: number[]): number {
   const vals = pool.filter((n) => Number.isFinite(n));
@@ -116,4 +113,10 @@ export function percentileOf(value: number, pool: number[]): number {
     else if (v === value) equal += 1;
   }
   return Math.round(((below + equal / 2) / vals.length) * 100);
+}
+
+/** Число «за матч» в подпись: 2.5 — с десятыми, 0 — нулём, не «0.0». */
+export function perMatch(total: number, matches: number): number {
+  if (!matches) return 0;
+  return Number((total / matches).toFixed(1));
 }

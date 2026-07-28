@@ -26,8 +26,14 @@ function MetricRow({ m, lineLabel, peersCount }) {
   return (
     <div className={`pc-metric${m.focus ? ' pc-metric--focus' : ''}`}>
       <div className="pc-metric__head">
-        <span className="pc-metric__name">{m.label}</span>
-        <span className="pc-metric__val">{m.value == null ? '—' : m.value.toFixed(1)}</span>
+        <span className="pc-metric__name">
+          {m.label}
+          {m.hint && <span className="pc-metric__hint">{m.hint}</span>}
+        </span>
+        <span className="pc-metric__val">
+          {m.value == null ? '—' : Number(m.value).toFixed(1)}
+          <span className="pc-metric__unit">за матч</span>
+        </span>
       </div>
       <div className="pc-metric__bar" role="presentation">
         <span className="pc-metric__fill" style={{ width: `${pct}%` }} />
@@ -160,7 +166,7 @@ export default function PlayerCabinet() {
               ))}
             </div>
             <p className="pc-note">
-              Оценка по десятибалльной шкале за сезон, полоса — место среди своих
+              Цифра — сколько это в среднем за матч, полоса — место среди своих
               на этой позиции. Тренер выбирает, какие показатели показать.
             </p>
           </>

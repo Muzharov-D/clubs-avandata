@@ -3,8 +3,10 @@
 // Шесть осей по амплуа, три главных подсвечены, остальные приглушены как
 // контекст. Кто хочет глубже — уходит в полный профиль (28 осей по `stats`).
 //
-// Данные: /data/players/season — сезонный радар (среднее по матчам). Пер-матчевую
-// пиццу сознательно НЕ берём: на одном матче выборка = шум.
+// Данные: `GET /lite/squad/:age`. Оси, значения (среднее за матч) и перцентили
+// считает СЕРВЕР — те же самые числа он отдаёт игроку в его кабинет. Своего
+// счёта здесь нет сознательно: два счёта одного и того же неизбежно разъезжаются.
+// Каждая ось стоит на одном из базовых 36 показателей (backend/modules/lite).
 //
 // Команда берётся из общего TeamContext (переключатель уже есть в шапке) —
 // свой селектор здесь не заводим, чтобы не было двух источников правды.
@@ -12,15 +14,14 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
-  fetchPlayersSeason, fetchPlayerFeedback, savePlayerFeedback, fetchPlayerShare,
+  fetchLiteSquad, fetchPlayerFeedback, savePlayerFeedback, fetchPlayerShare,
 } from '../../services/api';
 import { useTeam } from '../../contexts/TeamContext';
 import PizzaChart from '../../components/PizzaChart';
 import ShareSheet from './ShareSheet';
 import { useAuth } from '../../contexts/AuthContext';
 import {
-  LINE_ORDER, LINE_SETS, LINE_PLURAL,
-  lineOfPlayer, liteSlices, verdictOf,
+  LINE_ORDER, LINE_LABEL, LINE_PLURAL, toPizzaSlices, verdictOf,
 } from './liteMetrics';
 import './lite.css';
 
@@ -171,9 +172,12 @@ function ShareStrip({ age, player, onOpen, epoch }) {
 }
 
 /** Профиль игрока: вывод словами, пицца, три главных показателя. */
-function PlayerCard({ player, peers, onCompare, compareLabel, compareDisabled, age, lite, onShare, shareEpoch }) {
-  const { slices, line, poolSize } = useMemo(() => liteSlices(player, peers), [player, peers]);
-  const verdict = useMemo(() => verdictOf(slices), [slices]);
+function PlayerCard({ player, onCompare, compareLabel, compareDisabled, age, lite, onShare, shareEpoch }) {
+  // Слайсы считает сервер — тренер и игрок обязаны видеть одни и те же числа.
+  const slices = useMemo(() => toPizzaSlices(player.slices), [player.slices]);
+  const verdict = useMemo(() => verdictOf(player.slices), [player.slices]);
+  const line = player.line;
+  const poolSize = player.peersCount ?? 0;
 
   if (!line) {
     return (
@@ -187,8 +191,7 @@ function PlayerCard({ player, peers, onCompare, compareLabel, compareDisabled, a
     );
   }
 
-  const focusKeys = LINE_SETS[line].focus;
-  const focusSlices = slices.filter((s) => focusKeys.includes(s.key));
+  const focusSlices = slices.filter((s) => !s.muted);
 
   return (
     <div className="lite-card">
@@ -222,7 +225,7 @@ function PlayerCard({ player, peers, onCompare, compareLabel, compareDisabled, a
           subjectName=""
           slices={slices}
           vsLabel={LINE_PLURAL[line]}
-          centerLabel={LINE_SETS[line].label.toUpperCase()}
+          centerLabel={LINE_LABEL[line].toUpperCase()}
           size={620}
           showLegend={false}
         />
@@ -239,8 +242,8 @@ function PlayerCard({ player, peers, onCompare, compareLabel, compareDisabled, a
       </div>
 
       <p className="lite-note">
-        Длина сектора — место среди {LINE_PLURAL[line]} команды, число на секторе — сам
-        показатель по десятибалльной шкале. Ярко выделены три главных для амплуа.
+        Длина сектора — место среди {LINE_PLURAL[line]} команды, число на секторе —
+        сколько это в среднем за матч. Ярко выделены три главных для амплуа.
         {poolSize < 8 && ` Сравнение идёт всего с ${poolSize} игроками — доли приблизительны.`}
       </p>
 
@@ -281,19 +284,19 @@ export default function LiteView() {
   const [choosingRival, setChoosingRival] = useState(false);
 
   useEffect(() => {
-    if (!selectedTeamId) return;
+    if (!age) return undefined;
     let alive = true;
     setLoading(true); setErr(''); setPickedId(null); setRivalId(null); setChoosingRival(false);
-    fetchPlayersSeason(selectedTeamId)
+    fetchLiteSquad(age)
       .then((d) => { if (alive) { setPlayers(d?.players ?? []); setLoading(false); } })
       .catch((e) => { if (alive) { setErr(String(e?.message ?? e)); setLoading(false); } });
     return () => { alive = false; };
-  }, [selectedTeamId]);
+  }, [age]);
 
   // Состав по линиям. Группа берётся с бэкенда — единый источник позиции.
   const byLine = useMemo(() => {
     const acc = { GK: [], DEF: [], MID: [], FWD: [], NONE: [] };
-    for (const p of players) acc[lineOfPlayer(p) ?? 'NONE'].push(p);
+    for (const p of players) acc[p.line ?? 'NONE'].push(p);
     for (const k of Object.keys(acc)) acc[k].sort((a, b) => (b.avgOverall ?? 0) - (a.avgOverall ?? 0));
     return acc;
   }, [players]);
@@ -314,18 +317,13 @@ export default function LiteView() {
   const picked = ordered.find((p) => p.id === pickedId) ?? null;
   const rival = ordered.find((p) => p.id === rivalId) ?? null;
 
-  const peersOf = (p) => {
-    const l = lineOfPlayer(p);
-    return l ? players.filter((x) => lineOfPlayer(x) === l) : [];
-  };
-
   const rivalCandidates = picked
-    ? players.filter((x) => x.id !== picked.id && lineOfPlayer(x) === lineOfPlayer(picked))
+    ? players.filter((x) => x.id !== picked.id && x.line === picked.line)
     : [];
 
   const onPick = (p) => {
     if (choosingRival && picked && p.id !== picked.id) {
-      if (lineOfPlayer(p) !== lineOfPlayer(picked)) return; // сравниваем только внутри амплуа
+      if (p.line !== picked.line) return; // сравниваем только внутри амплуа
       setRivalId(p.id); setChoosingRival(false);
       return;
     }
@@ -357,12 +355,12 @@ export default function LiteView() {
         <div className="lite-grid">
           <aside className="lite-squad">
             {choosingRival && (
-              <p className="lite-hint">Выберите второго {LINE_PLURAL[lineOfPlayer(picked)] ? 'игрока того же амплуа' : 'игрока'}</p>
+              <p className="lite-hint">Выберите второго {'игрока того же амплуа'}</p>
             )}
             {LINE_ORDER.map((l) => (
               byLine[l].length > 0 && (
                 <section key={l} className="lite-line">
-                  <h2 className="lite-line__t">{LINE_SETS[l].label}</h2>
+                  <h2 className="lite-line__t">{LINE_LABEL[l]}</h2>
                   {byLine[l].map((p) => (
                     <SquadRow
                       key={p.id}
@@ -389,7 +387,6 @@ export default function LiteView() {
               <div className={`lite-compare${rival ? ' lite-compare--two' : ''}`}>
                 <PlayerCard
                   player={picked}
-                  peers={peersOf(picked)}
                   age={age}
                   lite={lite}
                   onShare={setSharing}
@@ -408,7 +405,6 @@ export default function LiteView() {
                 {rival && (
                   <PlayerCard
                     player={rival}
-                    peers={peersOf(rival)}
                     age={age}
                     lite={lite}
                     onShare={setSharing}

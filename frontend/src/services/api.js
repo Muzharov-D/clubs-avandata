@@ -400,7 +400,12 @@ export const savePlayerFeedback = (age, playerId, text, extMatchId = null) =>
 export const answerPlayerFeedback = (id, text) =>
   fetchJson(`/feedback/${encodeURIComponent(id)}/response`, { method: 'PATCH', body: { text } });
 
-// ── Кабинет Lite: видимость показателей и вход игрока (модуль lite, 0021) ──
+// ── Кабинет Lite ──
+// Состав с готовыми профилями: оси, средние за матч и перцентили считает сервер,
+// те же числа уходят игроку. Свой счёт во фронте не заводим.
+export const fetchLiteSquad = (age) => fetchJson(`/lite/squad/${encodeURIComponent(age)}`);
+
+// ── Видимость показателей и вход игрока (модуль lite, 0021) ──
 // Что игрок увидит — решает сервер: `/lite/me` отдаёт только открытые оси.
 export const fetchPlayerShare = (age, playerId) =>
   fetchJson(`/lite/share/${encodeURIComponent(age)}/${encodeURIComponent(playerId)}`);

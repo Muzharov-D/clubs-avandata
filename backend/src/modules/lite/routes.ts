@@ -5,25 +5,23 @@ import { authenticate } from '../../auth/middleware.js';
 import { withTenant } from '../../db/tenantContext.js';
 import { UnauthorizedError, BadRequestError, NotFoundError } from '../../shared/errors.js';
 import { callupWriteScope } from '../../auth/scope.js';
-import { posGroupFromCode, posDetailFromCode, type PosGroup } from '../../shared/positions.js';
+import { posGroupFromCode, posDetailFromCode, posFullFromCode, type PosGroup } from '../../shared/positions.js';
+import { statAt } from './base36.js';
 import {
-  AXIS_LABEL, LINE_SETS, axesOfLine, defaultSharedMetrics, sanitizeMetrics, percentileOf,
+  AXES, LINE_SETS, axesOfLine, defaultSharedMetrics, sanitizeMetrics, percentileOf, perMatch,
 } from './metrics.js';
 
 /**
- * Кабинет Lite: что тренер открывает игроку и что игрок в итоге видит.
+ * Кабинет Lite: состав и профили для тренера, кабинет для игрока, видимость
+ * показателей и выдача входа. Разбор текстом живёт в модуле `feedback`.
  *
- * Разбор (текст тренера ↔ ответ игрока) живёт в модуле `feedback`; здесь —
- * видимость показателей, доступ игрока в систему и сам экран игрока.
+ * ГЛАВНОЕ. Всё считается ЗДЕСЬ, на сервере, и тренер с игроком получают одни и
+ * те же готовые слайсы — просто игроку из них отдаётся только разрешённое. Иначе
+ * появляются два расходящихся счёта одного и того же, а скрытые числа всё равно
+ * видно в ответе.
  *
- * ГЛАВНОЕ ПРАВИЛО: фильтрация видимости происходит ЗДЕСЬ. `/lite/me` считает
- * профиль и выкидывает скрытые оси до ответа — фронт получает только открытое.
- * Прятать на клиенте было бы фикцией: значения читались бы прямо из ответа.
- *
- * Права:
- *  - настройка видимости и приглашение — тренер (правило из `callupWriteScope`,
- *    чтобы не заводить третий вариант скоупа);
- *  - `/lite/me` — только сам игрок, только про себя (playerId из JWT).
+ * Права: считать состав и настраивать видимость — тренер (правило берём из
+ * `callupWriteScope`); `/lite/me` — только сам игрок и только про себя.
  */
 
 type AnyRow = Record<string, unknown>;
@@ -31,33 +29,35 @@ type AnyRow = Record<string, unknown>;
 /** Сколько живёт ссылка-приглашение. Как у тренерского invite (0005). */
 const INVITE_TTL_MS = 7 * 24 * 60 * 60 * 1000;
 
-/** Сезонный профиль игрока команды — ровно то, что нужно кабинету Lite. */
-type SeasonPlayer = {
+const AXIS_KEYS = Object.keys(AXES);
+
+export interface LitePlayer {
   id: string;
   fullName: string;
   number: number | null;
   photoUrl: string | null;
+  position: string | null;
   positionDetail: string | null;
   line: PosGroup | null;
   matches: number;
   minutes: number;
   minutesPerMatch: number;
   avgOverall: number;
-  radar: Record<string, number>;
-};
+  /** Суммы по осям за сезон. В ответ наружу не идут — только средние за матч. */
+  totals: Record<string, number>;
+}
 
 /**
- * Сезонные средние по команде: радар (индекс 0–10) + линия по сумме минут.
+ * Состав команды за сезон: суммы по осям + линия по сумме минут.
  *
- * Считает то же и так же, как `/data/players/season`, но только нужные поля —
- * кабинету игрока не за чем тянуть 20 суммарных счётчиков. Позиция и линия
- * берутся из общего `shared/positions.ts`, чтобы амплуа у тренера и у игрока
- * совпадало.
+ * Позиция считается по СУММЕ МИНУТ за сезон, а не по последнему матчу: сырой
+ * `matches.match_date` в БД пуст/неверен, и мультипозиционный игрок получал
+ * случайное амплуа.
  */
-async function seasonPlayers(conn: PoolClient, slug: string, teamId: string): Promise<SeasonPlayer[]> {
+async function seasonSquad(conn: PoolClient, slug: string, teamId: string): Promise<LitePlayer[]> {
   const { rows } = await conn.query<AnyRow>(
     `SELECT mp.player_id, p.full_name AS "fullName", p.number, p.photo_url AS "photoUrl",
-            mp.position, mp.minutes, mp.ratings, mp.radar
+            mp.position, mp.minutes, mp.ratings, mp.stats
        FROM match_players mp
        JOIN matches m ON m.id = mp.match_id AND m.tenant_id = $1
        JOIN players  p ON p.id = mp.player_id
@@ -66,9 +66,9 @@ async function seasonPlayers(conn: PoolClient, slug: string, teamId: string): Pr
   );
 
   type Acc = {
-    base: Omit<SeasonPlayer, 'line' | 'minutesPerMatch' | 'avgOverall' | 'radar' | 'positionDetail'>;
-    sumOverall: number; ratedMatches: number;
-    radarAcc: Map<string, { sum: number; count: number }>;
+    p: LitePlayer;
+    sumOverall: number;
+    ratedMatches: number;
     posMin: Map<string, number>;
   };
   const byId = new Map<string, Acc>();
@@ -78,24 +78,29 @@ async function seasonPlayers(conn: PoolClient, slug: string, teamId: string): Pr
     let a = byId.get(id);
     if (!a) {
       a = {
-        base: {
+        p: {
           id,
           fullName: String(r.fullName ?? ''),
           number: (r.number as number | null) ?? null,
           photoUrl: (r.photoUrl as string | null) ?? null,
+          position: null,
+          positionDetail: null,
+          line: null,
           matches: 0,
           minutes: 0,
+          minutesPerMatch: 0,
+          avgOverall: 0,
+          totals: Object.fromEntries(AXIS_KEYS.map((k) => [k, 0])),
         },
-        sumOverall: 0, ratedMatches: 0,
-        radarAcc: new Map(), posMin: new Map(),
+        sumOverall: 0,
+        ratedMatches: 0,
+        posMin: new Map(),
       };
       byId.set(id, a);
     }
-    a.base.matches += 1;
-    a.base.minutes += Number(r.minutes ?? 0);
+    a.p.matches += 1;
+    a.p.minutes += Number(r.minutes ?? 0);
 
-    // Позиция — по СУММЕ МИНУТ за сезон (не «последний матч»: сырой match_date
-    // в БД пуст/неверен, и мультипозиционный игрок получал случайную роль).
     if (r.position != null && String(r.position).trim()) {
       const code = String(r.position).trim().toUpperCase();
       const w = Number(r.minutes) > 0 ? Number(r.minutes) : 1; // 0/нет минут → вес 1
@@ -106,30 +111,57 @@ async function seasonPlayers(conn: PoolClient, slug: string, teamId: string): Pr
     const ov = Number(rt.overall ?? 0);
     if (ov > 0) { a.ratedMatches += 1; a.sumOverall += ov; }
 
-    const radar = (r.radar as Record<string, unknown>) ?? {};
-    for (const [k, v] of Object.entries(radar)) {
-      const n = Number(typeof v === 'object' && v ? (v as AnyRow).value : v);
-      if (!Number.isFinite(n) || n <= 0) continue;
-      const acc = a.radarAcc.get(k) ?? { sum: 0, count: 0 };
-      acc.sum += n; acc.count += 1;
-      a.radarAcc.set(k, acc);
+    for (const key of AXIS_KEYS) {
+      a.p.totals[key] = (a.p.totals[key] ?? 0) + statAt(r.stats, key);
     }
   }
 
-  return [...byId.values()].map((a) => {
-    const dominant = [...a.posMin.entries()]
+  return [...byId.values()].map(({ p, sumOverall, ratedMatches, posMin }) => {
+    const dominant = [...posMin.entries()]
       .map(([code, mins]) => ({ code, group: posGroupFromCode(code), minutes: mins }))
-      .filter((p) => p.group)
+      .filter((x) => x.group)
       .sort((x, y) => y.minutes - x.minutes)[0] ?? null;
     return {
-      ...a.base,
+      ...p,
+      position: dominant ? posFullFromCode(dominant.code) : null,
       positionDetail: dominant ? posDetailFromCode(dominant.code) : null,
       line: (dominant?.group as PosGroup | undefined) ?? null,
-      minutesPerMatch: a.base.matches ? Math.round(a.base.minutes / a.base.matches) : 0,
-      avgOverall: a.ratedMatches ? Number((a.sumOverall / a.ratedMatches).toFixed(2)) : 0,
-      radar: Object.fromEntries(
-        [...a.radarAcc.entries()].map(([k, { sum, count }]) => [k, Number((sum / count).toFixed(2))]),
-      ),
+      minutesPerMatch: p.matches ? Math.round(p.minutes / p.matches) : 0,
+      avgOverall: ratedMatches ? Number((sumOverall / ratedMatches).toFixed(2)) : 0,
+    };
+  });
+}
+
+export interface LiteSlice {
+  key: string;
+  label: string;
+  hint: string;
+  group: 'attack' | 'defence';
+  /** Среднее за матч — то, что подписано на слайсе. */
+  value: number;
+  /** Место среди своей линии в команде, 0–100 — длина слайса. */
+  percentile: number;
+  focus: boolean;
+}
+
+/**
+ * Слайсы игрока: значение — среднее за матч, длина — место среди своей линии.
+ * Пул считаем по той же линии: сравнивать вратаря с нападающим бессмысленно.
+ */
+function slicesOf(player: LitePlayer, peers: LitePlayer[], keys: string[]): LiteSlice[] {
+  const line = player.line;
+  return keys.map((key) => {
+    const def = AXES[key];
+    const value = perMatch(player.totals[key] ?? 0, player.matches);
+    const pool = peers.map((p) => perMatch(p.totals[key] ?? 0, p.matches));
+    return {
+      key,
+      label: def?.label ?? key,
+      hint: def?.hint ?? '',
+      group: def?.group ?? 'attack',
+      value,
+      percentile: percentileOf(value, pool),
+      focus: line ? LINE_SETS[line].focus.includes(key) : false,
     };
   });
 }
@@ -158,20 +190,19 @@ async function shareOf(conn: PoolClient, slug: string, playerId: string, line: P
   );
   const row = rows[0];
   if (!row) {
-    return { metrics: defaultSharedMetrics(line), showOverall: false, isDefault: true, updatedAt: null };
+    return { metrics: defaultSharedMetrics(line), showOverall: false, isDefault: true };
   }
   return {
     metrics: sanitizeMetrics(row.metrics, line),
     showOverall: Boolean(row.showOverall),
     isDefault: false,
-    updatedAt: (row.updatedAt as string | null) ?? null,
   };
 }
 
 /** Состояние доступа игрока: приглашён / вошёл / нет учётной записи. */
 async function accessOf(conn: PoolClient, slug: string, playerId: string) {
   const { rows } = await conn.query<AnyRow>(
-    `SELECT id, username, password_hash AS "passwordHash",
+    `SELECT username, password_hash AS "passwordHash",
             invite_expires_at AS "inviteExpiresAt", last_login AS "lastLogin"
        FROM users
       WHERE tenant_id = $1 AND role = 'player' AND player_id = $2
@@ -180,7 +211,7 @@ async function accessOf(conn: PoolClient, slug: string, playerId: string) {
     [slug, playerId],
   );
   const u = rows[0];
-  if (!u) return { status: 'none' as const, username: null, lastLogin: null, inviteExpiresAt: null };
+  if (!u) return { status: 'none' as const, username: null, lastLogin: null };
   const expires = u.inviteExpiresAt ? new Date(String(u.inviteExpiresAt)) : null;
   const status = u.passwordHash
     ? ('active' as const)
@@ -191,7 +222,6 @@ async function accessOf(conn: PoolClient, slug: string, playerId: string) {
     status,
     username: (u.username as string | null) ?? null,
     lastLogin: (u.lastLogin as string | null) ?? null,
-    inviteExpiresAt: (u.inviteExpiresAt as string | null) ?? null,
   };
 }
 
@@ -216,7 +246,6 @@ function loginFromName(fullName: string): string {
 export async function liteRoutes(app: FastifyInstance) {
   app.addHook('preHandler', authenticate);
 
-  /** Тренер ли это и вправе ли он трогать данный возраст. */
   function assertCoach(req: { user?: { role?: string; teamId?: string | null } }, slug: string, age: string) {
     if (callupWriteScope(req.user?.role, req.user?.teamId, slug, age) === 'deny') {
       throw new UnauthorizedError('нет доступа к этой команде');
@@ -229,6 +258,37 @@ export async function liteRoutes(app: FastifyInstance) {
     return slug;
   }
 
+  // ── GET /lite/squad/:age — состав с готовыми профилями (экран тренера) ──
+  // Всё считается здесь: тренер и игрок обязаны видеть одни и те же числа.
+  app.get<{ Params: { age: string } }>('/lite/squad/:age', async (req) => {
+    const slug = tenantOf(req);
+    const { age } = req.params;
+    assertCoach(req, slug, age);
+    return withTenant(slug, async (_tx, conn) => {
+      const squad = await seasonSquad(conn, slug, `${slug}-${age}`);
+      const players = squad.map((p) => {
+        const peers = p.line ? squad.filter((x) => x.line === p.line) : [];
+        return {
+          id: p.id,
+          fullName: p.fullName,
+          number: p.number,
+          photoUrl: p.photoUrl,
+          position: p.position,
+          positionDetail: p.positionDetail,
+          line: p.line,
+          lineLabel: p.line ? LINE_SETS[p.line].label : null,
+          matches: p.matches,
+          minutes: p.minutes,
+          minutesPerMatch: p.minutesPerMatch,
+          avgOverall: p.avgOverall,
+          peersCount: peers.length,
+          slices: p.line ? slicesOf(p, peers, axesOfLine(p.line)) : [],
+        };
+      });
+      return { age, players };
+    });
+  });
+
   // ── GET /lite/share/:age/:playerId — что открыто игроку + состояние доступа ──
   app.get<{ Params: { age: string; playerId: string } }>(
     '/lite/share/:age/:playerId',
@@ -237,20 +297,18 @@ export async function liteRoutes(app: FastifyInstance) {
       const { age, playerId } = req.params;
       assertCoach(req, slug, age);
       return withTenant(slug, async (_tx, conn) => {
-        const teamId = `${slug}-${age}`;
-        const squad = await seasonPlayers(conn, slug, teamId);
-        const me = squad.find((p) => p.id === playerId) ?? null;
-        const line = me?.line ?? null;
+        const squad = await seasonSquad(conn, slug, `${slug}-${age}`);
+        const line = squad.find((p) => p.id === playerId)?.line ?? null;
         const share = await shareOf(conn, slug, playerId, line);
         return {
           playerId,
           line,
           lineLabel: line ? LINE_SETS[line].label : null,
-          // Полный набор осей амплуа с подписями — тренеру для галочек.
           axes: line
             ? axesOfLine(line).map((key) => ({
               key,
-              label: AXIS_LABEL[key] ?? key,
+              label: AXES[key]?.label ?? key,
+              hint: AXES[key]?.hint ?? '',
               focus: LINE_SETS[line].focus.includes(key),
             }))
             : [],
@@ -278,7 +336,7 @@ export async function liteRoutes(app: FastifyInstance) {
         );
         if (!exists) throw new NotFoundError('игрок не найден в клубе');
 
-        const squad = await seasonPlayers(conn, slug, `${slug}-${age}`);
+        const squad = await seasonSquad(conn, slug, `${slug}-${age}`);
         const line = squad.find((p) => p.id === playerId)?.line ?? null;
         const metrics = sanitizeMetrics(req.body?.metrics, line);
         const showOverall = req.body?.showOverall === true;
@@ -297,8 +355,7 @@ export async function liteRoutes(app: FastifyInstance) {
   );
 
   // ── POST /lite/invite/:age/:playerId — тренер выдаёт игроку вход ──
-  // Возвращает одноразовую ссылку на установку пароля. Пароль сервер не
-  // придумывает и не показывает: его задаёт сам игрок по ссылке.
+  // Пароль сервер не придумывает и не показывает: его задаёт сам игрок по ссылке.
   app.post<{ Params: { age: string; playerId: string } }>(
     '/lite/invite/:age/:playerId',
     async (req) => {
@@ -329,7 +386,7 @@ export async function liteRoutes(app: FastifyInstance) {
         let username: string;
         if (existing) {
           // Повторное приглашение: логин не меняем (игрок мог его запомнить),
-          // пароль гасим — старая ссылка/пароль перестают работать.
+          // пароль гасим — старая ссылка и старый пароль перестают работать.
           username = String(existing.username);
           await conn.query(
             `UPDATE users SET invite_token_hash = $1, invite_expires_at = $2,
@@ -365,7 +422,7 @@ export async function liteRoutes(app: FastifyInstance) {
   );
 
   // ── GET /lite/me — кабинет игрока ──
-  // Только сам игрок и только про себя. Скрытые оси не попадают в ответ вообще.
+  // Только сам игрок и только про себя. Закрытые оси не попадают в ответ вообще.
   app.get('/lite/me', async (req) => {
     const slug = tenantOf(req);
     if (req.user?.role !== 'player' || !req.user?.playerId) {
@@ -374,7 +431,6 @@ export async function liteRoutes(app: FastifyInstance) {
     const playerId = req.user.playerId;
 
     return withTenant(slug, async (_tx, conn) => {
-      const teamId = await teamOfPlayer(conn, slug, playerId);
       const { rows: prow } = await conn.query<AnyRow>(
         'SELECT id, full_name AS "fullName", number, photo_url AS "photoUrl" FROM players WHERE tenant_id = $1 AND id = $2',
         [slug, playerId],
@@ -382,29 +438,12 @@ export async function liteRoutes(app: FastifyInstance) {
       const base = prow[0];
       if (!base) throw new NotFoundError('игрок не найден');
 
-      const age = teamId ? String(teamId).split('-').pop() ?? '' : '';
-      const squad = teamId ? await seasonPlayers(conn, slug, teamId) : [];
+      const teamId = await teamOfPlayer(conn, slug, playerId);
+      const squad = teamId ? await seasonSquad(conn, slug, teamId) : [];
       const me = squad.find((p) => p.id === playerId) ?? null;
       const line = me?.line ?? null;
       const share = await shareOf(conn, slug, playerId, line);
-
-      // Перцентиль — внутри своей линии в команде (сравнение со сверстниками
-      // на своей позиции; сравнивать вратаря с нападающим бессмысленно).
       const peers = line ? squad.filter((p) => p.line === line) : [];
-      const metrics = (line ? share.metrics : []).map((key) => {
-        const value = me?.radar?.[key];
-        const v = Number.isFinite(Number(value)) && Number(value) > 0 ? Number(value) : null;
-        const pool = peers
-          .map((p) => p.radar?.[key])
-          .filter((n): n is number => typeof n === 'number' && Number.isFinite(n) && n > 0);
-        return {
-          key,
-          label: AXIS_LABEL[key] ?? key,
-          value: v,
-          percentile: v == null ? 0 : percentileOf(v, pool),
-          focus: line ? LINE_SETS[line].focus.includes(key) : false,
-        };
-      });
 
       const { rows: feedback } = await conn.query<AnyRow>(
         `SELECT id, ext_match_id AS "extMatchId", coach_text AS "coachText",
@@ -427,12 +466,11 @@ export async function liteRoutes(app: FastifyInstance) {
           minutes: me?.minutes ?? 0,
           minutesPerMatch: me?.minutesPerMatch ?? 0,
         },
-        age,
         line,
         lineLabel: line ? LINE_SETS[line].label : null,
         peersCount: peers.length,
-        metrics,
-        // Общий индекс — только если тренер его открыл (по умолчанию скрыт).
+        // Только открытое тренером — фильтр здесь, до ответа.
+        metrics: me && line ? slicesOf(me, peers, share.metrics) : [],
         overall: share.showOverall ? (me?.avgOverall ?? null) : null,
         feedback,
       };
@@ -440,8 +478,6 @@ export async function liteRoutes(app: FastifyInstance) {
   });
 
   // ── PATCH /lite/me/response/:id — игрок отвечает на разбор ──
-  // Дублирует `PATCH /feedback/:id/response` по смыслу, но живёт в кабинете
-  // игрока: фронту игрока незачем знать про адресацию тренерского модуля.
   app.patch<{ Params: { id: string }; Body: { text?: string } }>(
     '/lite/me/response/:id',
     async (req) => {
