@@ -22,6 +22,17 @@ interface Profile {
   id: number; name: string; club: string | null; clubLogo: string | null; photo: string | null; position: string | null;
   birthDate: string | null; birthYear: number | null; rating: number | null;
   matches: number; totalEvents: number; metrics: Metric[]; recentMatches: PMatch[];
+  /** Все записи ребёнка: новая заводится при каждом переходе между командами. */
+  registrations?: number[];
+}
+
+/** Клубы, за которые игрок реально выходил, по порядку матчей (без повторов подряд). */
+function clubPath(matches: PMatch[]): string[] {
+  const seq = [...matches]
+    .sort((a, b) => String(a.date ?? '').localeCompare(String(b.date ?? '')))
+    .map((m) => (m.playerSide === 'home' ? m.home.name : m.playerSide === 'away' ? m.away.name : null))
+    .filter((n): n is string => !!n);
+  return seq.filter((n, i) => n !== seq[i - 1]);
 }
 
 const toMatchBase = (m: PMatch): MatchBase => ({ id: m.id, age: '', division: '', date: m.date ?? '', home: m.home, away: m.away });
@@ -87,6 +98,16 @@ function Body({ p }: { p: Profile }) {
             {p.position && <span className="av-chip av-chip--dim">{p.position}</span>}
             {p.birthYear && <span className="av-chip av-chip--dim">{p.birthYear} г.р.</span>}
           </div>
+          {/* Ребёнок заводится заново при каждом переходе — профиль собран из всех
+              его записей, иначе карточка показывала бы кусок истории. */}
+          {(p.registrations?.length ?? 0) > 1 && (
+            <p className="av-phead__merged">
+              Профиль собран из {p.registrations!.length} записей — ребёнок заводится заново при переходе между командами.
+              {clubPath(p.recentMatches).length > 1 && (
+                <> Играл за: {clubPath(p.recentMatches).join(' → ')}.</>
+              )}
+            </p>
+          )}
         </div>
         {p.rating != null && (
           <div style={{ textAlign: 'center', marginLeft: 'auto', flex: 'none' }}>

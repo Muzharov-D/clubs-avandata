@@ -609,6 +609,32 @@ export async function dataRoutes(app: FastifyInstance) {
     },
   );
 
+  // Комментарий тренера к матчу КАЛЕНДАРЯ (разбор для родителей).
+  // Фронт (`updateMatchCoachComment`) звал этот путь с самого начала, а роута не
+  // существовало: PATCH уходил в 404, форма показывала успех, текст молча терялся.
+  // Адресация — (возраст, внешний id матча), как в callups/trainings.
+  app.patch<{ Params: { age: string; extMatchId: string }; Body: { comment?: string } }>(
+    '/match/:age/:extMatchId/comment',
+    async (req) => {
+      const slug = tenantId(req);
+      const role = req.user?.role;
+      if (teamWriteScope(role, req.user?.teamId) === 'deny') {
+        throw new UnauthorizedError('нет прав на правку комментария к матчу');
+      }
+      const comment = typeof req.body?.comment === 'string' ? req.body.comment.slice(0, 4000) : null;
+      const { age, extMatchId } = req.params;
+      return withTenant(slug, async (_tx, conn) => {
+        const { rowCount } = await conn.query(
+          `UPDATE calendar SET coach_comment = $1
+            WHERE tenant_id = $2 AND age_group = $3 AND ext_match_id = $4`,
+          [comment, slug, age, extMatchId],
+        );
+        if (!rowCount) throw new NotFoundError('матч календаря не найден');
+        return { ok: true, coachComment: comment };
+      });
+    },
+  );
+
   app.delete<{ Params: { matchId: string } }>('/match/:matchId', async (req) => {
     const slug = tenantId(req);
     const role = req.user?.role;

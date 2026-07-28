@@ -437,3 +437,14 @@
   .fed-hero__sub { font-size: 14px; }
   .fed-divider__title { font-size: 19px; }
 }
+
+/* Профиль игрока: пометка о склейке записей.
+   Ребёнок заводится заново при переходе между командами — объясняем, почему
+   в карточке больше матчей, чем в любой отдельной записи. */
+.av-phead__merged {
+  margin: 8px 0 0;
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--text-secondary);
+  max-width: 70ch;
+}
