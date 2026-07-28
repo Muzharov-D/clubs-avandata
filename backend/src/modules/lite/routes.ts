@@ -26,8 +26,11 @@ import {
 
 type AnyRow = Record<string, unknown>;
 
-/** Сколько живёт ссылка-приглашение. Как у тренерского invite (0005). */
-const INVITE_TTL_MS = 7 * 24 * 60 * 60 * 1000;
+/**
+ * Личная ссылка игрока постоянна — срока жизни у неё нет. Ребёнок сохраняет её
+ * и открывает когда захочет; пароль он не придумывает вовсе (решение владельца).
+ * Отозвать = выдать новую: прежний хэш затирается и старая ссылка умирает.
+ */
 
 const AXIS_KEYS = Object.keys(AXES);
 
@@ -199,11 +202,10 @@ async function shareOf(conn: PoolClient, slug: string, playerId: string, line: P
   };
 }
 
-/** Состояние доступа игрока: приглашён / вошёл / нет учётной записи. */
+/** Состояние доступа игрока: ссылка выдана и заходил ли он по ней. */
 async function accessOf(conn: PoolClient, slug: string, playerId: string) {
   const { rows } = await conn.query<AnyRow>(
-    `SELECT username, password_hash AS "passwordHash",
-            invite_expires_at AS "inviteExpiresAt", last_login AS "lastLogin"
+    `SELECT link_token_hash AS "hasLink", link_issued_at AS "issuedAt", last_login AS "lastLogin"
        FROM users
       WHERE tenant_id = $1 AND role = 'player' AND player_id = $2
       ORDER BY created_at ASC
@@ -211,16 +213,10 @@ async function accessOf(conn: PoolClient, slug: string, playerId: string) {
     [slug, playerId],
   );
   const u = rows[0];
-  if (!u) return { status: 'none' as const, username: null, lastLogin: null };
-  const expires = u.inviteExpiresAt ? new Date(String(u.inviteExpiresAt)) : null;
-  const status = u.passwordHash
-    ? ('active' as const)
-    : expires && expires.getTime() > Date.now()
-      ? ('invited' as const)
-      : ('expired' as const);
+  if (!u || !u.hasLink) return { status: 'none' as const, issuedAt: null, lastLogin: null };
   return {
-    status,
-    username: (u.username as string | null) ?? null,
+    status: (u.lastLogin ? 'active' : 'issued') as 'active' | 'issued',
+    issuedAt: (u.issuedAt as string | null) ?? null,
     lastLogin: (u.lastLogin as string | null) ?? null,
   };
 }
@@ -354,8 +350,9 @@ export async function liteRoutes(app: FastifyInstance) {
     },
   );
 
-  // ── POST /lite/invite/:age/:playerId — тренер выдаёт игроку вход ──
-  // Пароль сервер не придумывает и не показывает: его задаёт сам игрок по ссылке.
+  // ── POST /lite/invite/:age/:playerId — личная ссылка игрока ──
+  // Пароля нет вовсе: ссылка и есть ключ. Повторный вызов выдаёт новую и гасит
+  // прежнюю — так тренер отзывает доступ, если ссылка ушла не туда.
   app.post<{ Params: { age: string; playerId: string } }>(
     '/lite/invite/:age/:playerId',
     async (req) => {
@@ -371,40 +368,34 @@ export async function liteRoutes(app: FastifyInstance) {
         const player = prow[0];
         if (!player) throw new NotFoundError('игрок не найден в клубе');
 
+        // 32 байта случайности: ссылка — единственный ключ, подобрать её нельзя.
         const token = randomBytes(32).toString('base64url');
         const tokenHash = createHash('sha256').update(token).digest('hex');
-        const expiresAt = new Date(Date.now() + INVITE_TTL_MS);
 
         const { rows: urow } = await conn.query<AnyRow>(
-          `SELECT id, username FROM users
+          `SELECT id FROM users
             WHERE tenant_id = $1 AND role = 'player' AND player_id = $2
             ORDER BY created_at ASC LIMIT 1`,
           [slug, playerId],
         );
         const existing = urow[0];
 
-        let username: string;
         if (existing) {
-          // Повторное приглашение: логин не меняем (игрок мог его запомнить),
-          // пароль гасим — старая ссылка и старый пароль перестают работать.
-          username = String(existing.username);
           await conn.query(
-            `UPDATE users SET invite_token_hash = $1, invite_expires_at = $2,
-                              password_hash = NULL, invited_by = $3
-              WHERE id = $4`,
-            [tokenHash, expiresAt, req.user?.sub ?? null, existing.id],
+            'UPDATE users SET link_token_hash = $1, link_issued_at = now() WHERE id = $2',
+            [tokenHash, existing.id],
           );
         } else {
-          // Логин глобально уникален: /auth/login без указания клуба ищет по всей
-          // платформе и на дубле отвечает «ambiguous». Суффикс это исключает.
-          username = `${loginFromName(String(player.fullName))}-${randomBytes(2).toString('hex')}`;
           const userId = `u-${slug}-pl-${randomBytes(4).toString('hex')}`;
+          // username оставляем: он не нужен для входа, но по нему человека видно
+          // в списке пользователей клуба. password_hash так и остаётся пустым.
+          const username = `${loginFromName(String(player.fullName))}-${randomBytes(2).toString('hex')}`;
           await conn.query(
             `INSERT INTO users (id, tenant_id, username, full_name, role, player_id,
-                                team_id, password_hash, invite_token_hash, invite_expires_at, invited_by)
-             VALUES ($1, $2, $3, $4, 'player', $5, $6, NULL, $7, $8, $9)`,
+                                team_id, password_hash, link_token_hash, link_issued_at, invited_by)
+             VALUES ($1, $2, $3, $4, 'player', $5, $6, NULL, $7, now(), $8)`,
             [userId, slug, username, String(player.fullName), playerId,
-              `${slug}-${age}`, tokenHash, expiresAt, req.user?.sub ?? null],
+              `${slug}-${age}`, tokenHash, req.user?.sub ?? null],
           );
         }
 
@@ -412,9 +403,7 @@ export async function liteRoutes(app: FastifyInstance) {
         const base = /^https?:\/\//.test(origin) ? origin : 'https://clubs.avandata.ru';
         return {
           ok: true,
-          username,
-          setupUrl: `${base}/set-password?token=${token}`,
-          expiresAt,
+          link: `${base}/p/${token}`,
           renewed: Boolean(existing),
         };
       });

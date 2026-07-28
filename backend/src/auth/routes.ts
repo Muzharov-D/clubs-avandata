@@ -34,6 +34,109 @@ const setPasswordSchema = z.object({
   password: z.string().min(8).max(200),
 });
 
+/** Вход игрока по личной ссылке: единственный аргумент — сам токен. */
+const linkLoginSchema = z.object({
+  token: z.string().min(20),
+});
+
+type SessionUser = {
+  id: string; email: string | null; fullName: string | null; role: string;
+  tenantId: string | null; teamId: string | null; playerId: string | null;
+  federationSlug: string | null;
+};
+
+/**
+ * Выдать сессию пользователю: access-JWT в ответ, refresh — в HttpOnly-cookie,
+ * плюс контекст клуба/федерации, который нужен фронту.
+ *
+ * ЕДИНЫЙ ИСТОЧНИК для обычного входа по паролю и входа игрока по личной ссылке:
+ * иначе у двух дверей незаметно разъезжаются срок жизни токена, права в JWT и
+ * набор полей в ответе.
+ */
+async function issueSession(
+  user: SessionUser,
+  req: { headers: Record<string, unknown>; ip: string },
+  reply: { setCookie: (n: string, v: string, o: Record<string, unknown>) => void },
+) {
+  const accessToken = signAccessToken({
+    sub: user.id,
+    tenantId: user.tenantId,
+    role: user.role as UserRole,
+    teamId: user.teamId,
+    playerId: user.playerId,
+    federationId: user.federationSlug,
+  });
+
+  const { token: refreshToken, tokenHash } = generateRefreshToken();
+  const expiresAt = new Date(Date.now() + env.REFRESH_TOKEN_TTL_DAYS * 86_400_000);
+  await db.insert(refreshTokens).values({
+    userId: user.id,
+    tokenHash,
+    expiresAt,
+    userAgent: (req.headers['user-agent'] as string | undefined) ?? null,
+    ip: req.ip,
+  });
+
+  reply.setCookie(REFRESH_COOKIE, refreshToken, {
+    httpOnly: true,
+    secure: env.COOKIE_SECURE,
+    sameSite: 'strict',
+    // domain НЕ задаём: cookie host-only привязывается к хосту, который видит
+    // браузер (clubs-avandata.vercel.app через Vercel-rewrite). Явный domain с
+    // Render-дефолтом 'localhost' браузер отвергал → refresh не работал → разлогин
+    // на каждой перезагрузке. Host-only корректен и для прода, и для localhost.
+    path: '/api/v1/auth',
+    maxAge: env.REFRESH_TOKEN_TTL_DAYS * 86_400,
+  });
+
+  let tenant: { slug: string; name: string; displayName: string; brand: unknown; plan: string } | null = null;
+  if (user.tenantId) {
+    const rows = await withBypassRLS((tx) =>
+      tx.select({
+        slug: tenants.slug,
+        name: tenants.name,
+        displayName: tenants.displayName,
+        brand: tenants.brand,
+        plan: tenants.plan,
+      }).from(tenants).where(eq(tenants.slug, user.tenantId!)).limit(1),
+    );
+    tenant = rows[0] ?? null;
+  }
+
+  let federation: { slug: string; name: string; region: string; brand: unknown } | null = null;
+  if (user.role === 'federation_admin' && user.federationSlug) {
+    const rows = await withBypassRLS((tx) =>
+      tx.select({
+        slug: federations.slug,
+        name: federations.name,
+        region: federations.region,
+        brand: federations.brand,
+      }).from(federations).where(eq(federations.slug, user.federationSlug!)).limit(1),
+    );
+    federation = rows[0] ?? null;
+  }
+
+  await withBypassRLS((tx) =>
+    tx.update(users).set({ lastLogin: new Date() }).where(eq(users.id, user.id)),
+  );
+
+  return {
+    accessToken,
+    tenant,
+    federation,
+    user: {
+      id: user.id,
+      email: user.email,
+      fullName: user.fullName,
+      role: user.role,
+      tenantId: user.tenantId,
+      federationId: user.federationSlug,
+      teamId: user.teamId,
+      playerId: user.playerId,
+    },
+  };
+}
+
 export async function authRoutes(app: FastifyInstance) {
   /**
    * POST /api/v1/auth/login
@@ -81,83 +184,35 @@ export async function authRoutes(app: FastifyInstance) {
     const ok = await argon2.verify(user.passwordHash, body.password);
     if (!ok) throw new UnauthorizedError('invalid credentials');
 
-    const accessToken = signAccessToken({
-      sub: user.id,
-      tenantId: user.tenantId,
-      role: user.role as UserRole,
-      teamId: user.teamId,
-      playerId: user.playerId,
-      federationId: user.federationSlug,
-    });
-
-    const { token: refreshToken, tokenHash } = generateRefreshToken();
-    const expiresAt = new Date(Date.now() + env.REFRESH_TOKEN_TTL_DAYS * 86_400_000);
-    await db.insert(refreshTokens).values({
-      userId: user.id,
-      tokenHash,
-      expiresAt,
-      userAgent: req.headers['user-agent'] ?? null,
-      ip: req.ip,
-    });
-
-    reply.setCookie(REFRESH_COOKIE, refreshToken, {
-      httpOnly: true,
-      secure: env.COOKIE_SECURE,
-      sameSite: 'strict',
-      // domain НЕ задаём: cookie host-only привязывается к хосту, который видит
-      // браузер (clubs-avandata.vercel.app через Vercel-rewrite). Явный domain с
-      // Render-дефолтом 'localhost' браузер отвергал → refresh не работал → разлогин
-      // на каждой перезагрузке. Host-only корректен и для прода, и для localhost.
-      path: '/api/v1/auth',
-      maxAge: env.REFRESH_TOKEN_TTL_DAYS * 86_400,
-    });
-
-    // Загружаем tenant info — фронт нуждается в displayName/brand для UI.
-    let tenant: { slug: string; name: string; displayName: string; brand: unknown; plan: string } | null = null;
-    if (user.tenantId) {
-      const tenantRows = await withBypassRLS((tx) =>
-        tx.select({
-          slug: tenants.slug,
-          name: tenants.name,
-          displayName: tenants.displayName,
-          brand: tenants.brand,
-          plan: tenants.plan,
-        }).from(tenants).where(eq(tenants.slug, user.tenantId!)).limit(1),
-      );
-      tenant = tenantRows[0] ?? null;
-    }
-
-    // Контекст федерации для federation_admin (region-scoped, read-only).
-    let federation: { slug: string; name: string; region: string; brand: unknown } | null = null;
-    if (user.role === 'federation_admin' && user.federationSlug) {
-      const fRows = await withBypassRLS((tx) =>
-        tx.select({
-          slug: federations.slug,
-          name: federations.name,
-          region: federations.region,
-          brand: federations.brand,
-        }).from(federations).where(eq(federations.slug, user.federationSlug!)).limit(1),
-      );
-      federation = fRows[0] ?? null;
-    }
-
-    return {
-      accessToken,
-      tenant,
-      federation,
-      user: {
-        id: user.id,
-        email: user.email,
-        fullName: user.fullName,
-        role: user.role,
-        tenantId: user.tenantId,
-        federationId: user.federationSlug,
-        teamId: user.teamId,
-        playerId: user.playerId,
-      },
-    };
+    return issueSession(user, req, reply);
   });
 
+  /**
+   * POST /api/v1/auth/link-login — вход игрока по личной ссылке, без пароля.
+   *
+   * Решение владельца: ребёнок не придумывает и не помнит пароль. Тренер даёт
+   * постоянную личную ссылку — она и есть ключ. Ссылка выдаётся только роли
+   * `player`: тренерский и админский вход остаются под паролем, потеря ссылки
+   * тренера открыла бы весь клуб.
+   *
+   * Токен ищем по sha256 — в базе лежит только хэш.
+   */
+  app.post('/link-login', async (req, reply) => {
+    const { token } = linkLoginSchema.parse(req.body);
+    const tokenHash = createHash('sha256').update(token).digest('hex');
+
+    const rows = await withBypassRLS((tx) =>
+      tx.select().from(users).where(eq(users.linkTokenHash, tokenHash)).limit(1),
+    );
+    const user = rows[0];
+    // Сообщение одинаковое для «нет такой ссылки» и «ссылка не игрока»:
+    // по разнице ответов чужую ссылку можно было бы прощупывать.
+    if (!user || user.role !== 'player') {
+      throw new UnauthorizedError('ссылка недействительна');
+    }
+
+    return issueSession(user, req, reply);
+  });
   /**
    * POST /api/v1/auth/set-password — установка пароля по invite-токену.
    * Закрывает приглашение: находит юзера по sha256(token), проверяет срок,

@@ -33,6 +33,8 @@ import PlayerCabinet from './routes/lite/PlayerCabinet';
 // @ts-ignore — legacy .jsx
 import LiteShell from './routes/lite/LiteShell';
 // @ts-ignore — legacy .jsx
+import LinkEntry from './routes/lite/LinkEntry';
+// @ts-ignore — legacy .jsx
 import LoadControl from './pages/LoadControl';
 import CalendarPage from './pages/CalendarPage';
 import TrainingsPage from './pages/TrainingsPage';
@@ -198,6 +200,8 @@ export function App() {
                   <Route path="/login" element={<Login />} />
                   <Route path="/set-password" element={<SetPassword />} />
                   <Route path="/privacy" element={<PrivacyPolicy />} />
+                  {/* Личная ссылка игрока: вход без пароля, дальше — его кабинет. */}
+                  <Route path="/p/:token" element={<LinkEntry />} />
                   <Route path="/" element={<RootRoute />} />
 
                   {/* Public родительский экран (без auth) */}

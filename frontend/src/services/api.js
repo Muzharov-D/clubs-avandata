@@ -149,6 +149,35 @@ export async function login(loginOrEmail, password, tenantSlug) {
   return { user: data.user, tenant: data.tenant ?? null, federation: data.federation ?? null };
 }
 
+/**
+ * Вход игрока по личной ссылке — без пароля. Тело и разбор ответа те же, что у
+ * `login`: сервер отдаёт одинаковую сессию обеим дверям.
+ */
+export async function loginByLink(token) {
+  let res;
+  try {
+    res = await fetchWithTimeout(`${PREFIX}/auth/link-login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ token }),
+    });
+  } catch (e) {
+    if (e.name === 'AbortError') throw new Error('Превышено время ожидания. Проверьте интернет.');
+    throw new Error('Не удалось связаться с сервером. Проверьте интернет.');
+  }
+  const text = await res.text().catch(() => '');
+  if (!res.ok) {
+    let msg = '';
+    try { msg = JSON.parse(text).error || ''; } catch (_) { /* not JSON */ }
+    throw new Error(msg || 'ссылка недействительна');
+  }
+  const data = JSON.parse(text);
+  setToken(data.accessToken);
+  try { localStorage.setItem(USER_KEY, JSON.stringify(data.user)); } catch (_) {}
+  return { user: data.user, tenant: data.tenant ?? null, federation: data.federation ?? null };
+}
+
 // Установка пароля по invite-ссылке (?token=...). Без авторизации.
 export async function setPassword(token, password) {
   let res;

@@ -164,7 +164,7 @@ function ShareStrip({ age, player, onOpen, epoch }) {
         </span>
       </span>
       <span className={`lite-strip__acc lite-strip__acc--${access ?? 'none'}`}>
-        {access === 'active' ? 'вход есть' : access === 'invited' ? 'приглашён' : 'входа нет'}
+        {access === 'active' ? 'заходит' : access === 'issued' ? 'ссылка выдана' : 'ссылки нет'}
       </span>
       <span className="lite-strip__go">Настроить</span>
     </button>

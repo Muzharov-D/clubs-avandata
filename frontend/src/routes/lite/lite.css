@@ -208,7 +208,7 @@
   border-radius: 999px; background: var(--surface-soft); color: var(--text-muted);
 }
 .lite-strip__acc--active { color: var(--brand-accent); }
-.lite-strip__acc--invited { color: var(--accent-cyan); }
+.lite-strip__acc--issued { color: var(--accent-cyan); }
 .lite-strip__go { flex: none; font-size: 13px; font-weight: 600; color: var(--accent-cyan); }
 
 /* ── Лист настройки: модальная задача со скримом ── */

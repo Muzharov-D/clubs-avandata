@@ -22,6 +22,13 @@ export const users = pgTable(
     invitedBy: text('invited_by'),
     inviteTokenHash: text('invite_token_hash'),
     inviteExpiresAt: timestamp('invite_expires_at', { withTimezone: true }),
+    /**
+     * Личная ссылка входа игрока (миграция 0022) — вход без пароля. В отличие от
+     * invite-токена она постоянная: ребёнок сохраняет её и открывает когда угодно.
+     * Храним только sha256; выдача новой ссылки гасит прежнюю.
+     */
+    linkTokenHash: text('link_token_hash'),
+    linkIssuedAt: timestamp('link_issued_at', { withTimezone: true }),
     lastLogin: timestamp('last_login', { withTimezone: true }),
     createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
   },

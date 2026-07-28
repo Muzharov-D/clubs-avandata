@@ -11,10 +11,9 @@ import { useEffect, useRef, useState } from 'react';
 import { fetchPlayerShare, savePlayerShare, invitePlayer } from '../../services/api';
 
 const ACCESS_TEXT = {
-  none: 'Входа пока нет — игрок не увидит ни показателей, ни разбора.',
-  invited: 'Приглашение отправлено, пароль ещё не задан.',
-  expired: 'Срок приглашения истёк — выдайте ссылку заново.',
-  active: 'Игрок заходит в свой кабинет.',
+  none: 'Ссылки пока нет — игрок не увидит ни показателей, ни разбора.',
+  issued: 'Ссылка выдана, игрок по ней ещё не заходил.',
+  active: 'Игрок заходит в свой кабинет по ссылке.',
 };
 
 /**
@@ -85,7 +84,7 @@ export default function ShareSheet({ age, player, onClose, onSaved }) {
       fetchPlayerShare(age, player.id)
         .then((d) => setData((p) => ({ ...(p ?? {}), access: d?.access })))
         .catch(() => { /* ссылка уже показана, статус подтянется позже */ });
-      copy(r.setupUrl).then(setCopied);   // без await: см. copy()
+      copy(r.link).then(setCopied);   // без await: см. copy()
     } catch (e) {
       setErr(`Не удалось выдать доступ: ${String(e?.message ?? e)}`);
     } finally { setInviting(false); }
@@ -151,22 +150,23 @@ export default function ShareSheet({ age, player, onClose, onSaved }) {
             <div className="sheet__access-t">Вход в кабинет</div>
             <p className="sheet__access-s">
               {access ? ACCESS_TEXT[access.status] : '—'}
-              {access?.username && <> Логин: <code>{access.username}</code>.</>}
+              {' '}Пароля у игрока нет: ссылка и есть ключ.
             </p>
             <button type="button" className="lite-btn lite-btn--ghost" onClick={doInvite} disabled={inviting}>
-              {inviting ? 'Готовим…' : access?.status === 'active' ? 'Сбросить пароль' : 'Пригласить игрока'}
+              {inviting ? 'Готовим…' : access?.status === 'none' ? 'Создать ссылку' : 'Обновить ссылку'}
             </button>
 
             {invite && (
               <div className="sheet__invite">
                 <p className="sheet__invite-t">
                   {copied ? 'Ссылка скопирована — отправьте её игроку.' : 'Скопируйте ссылку и отправьте её игроку.'}
-                  {' '}Действует 7 дней.
+                  {' '}Она постоянная: пусть сохранит и открывает когда захочет.
                 </p>
-                <input className="sheet__link" readOnly value={invite.setupUrl} onFocus={(e) => e.target.select()} />
+                <input className="sheet__link" readOnly value={invite.link} onFocus={(e) => e.target.select()} />
                 <p className="lite-note">
-                  Логин: <b>{invite.username}</b>. Пароль игрок придумает сам — вы его не увидите.
-                  {invite.renewed && ' Прежний пароль больше не работает.'}
+                  Открыл — сразу в своём кабинете, пароль не нужен. Ссылка личная,
+                  пересылать её дальше не стоит.
+                  {invite.renewed && ' Прежняя ссылка больше не работает.'}
                 </p>
               </div>
             )}

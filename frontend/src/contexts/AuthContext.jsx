@@ -1,5 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useState } from 'react';
-import { fetchMe, login as apiLogin, logout as apiLogout, getToken } from '../services/api';
+import { fetchMe, login as apiLogin, loginByLink as apiLoginByLink, logout as apiLogout, getToken } from '../services/api';
 import { applyTheme, resetTheme } from '../tenant/applyTheme';
 import { setClubHints, clearClubHints, setOurLogo, clearOurLogo } from '../utils/legirus';
 
@@ -114,6 +114,16 @@ export function AuthProvider({ children }) {
       (user?.role === 'player' && user.playerId === playerId),
     login: async (u, p) => {
       const { user: usr, tenant: t, federation: f } = await apiLogin(u, p);
+      setUser(usr);
+      setTenant(t ?? null);
+      saveTenant(t ?? null);
+      setFederation(f ?? null);
+      return usr;
+    },
+    // Вход игрока по личной ссылке — состояние ставим тем же путём, что и обычный
+    // вход: разница только в двери, дальше кабинет один и тот же.
+    loginByLink: async (token) => {
+      const { user: usr, tenant: t, federation: f } = await apiLoginByLink(token);
       setUser(usr);
       setTenant(t ?? null);
       saveTenant(t ?? null);
