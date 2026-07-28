@@ -42,7 +42,7 @@ export const BASE36: Base36Row[] = [
   { title: 'Удар',                           category: 'attack',  sv: 'attack.shot',             exact: true },
   { title: 'Удар в створ',                   category: 'attack',  sv: null,                       exact: false },
   { title: 'Оффсайд',                        category: 'attack',  sv: 'attack.offside',          exact: true, inverse: true },
-  { title: 'Передача +',                     category: 'attack',  sv: 'attack.passOnTarget',      exact: true },
+  { title: 'Передача +',                     category: 'attack',  sv: 'attack.pass',              exact: true },
   { title: 'Прессинг',                       category: 'attack',  sv: 'defence.pressing',        exact: true },
 
   // ── Оборона ──────────────────────────────────────────────────────────────

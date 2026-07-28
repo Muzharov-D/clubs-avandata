@@ -86,9 +86,14 @@ test('statAt разворачивает compound-объекты SportVisor', () 
 });
 
 test('попыточные оси считают попытки, остальные — удавшееся', () => {
+  // Удары и обводки — активность: тренеру важно, что игрок пробовал.
   assert.equal(AXES['attack.shot']?.mode, 'total');
   assert.equal(AXES['attack.dribble']?.mode, 'total');
+  // Вынос либо состоялся, либо нет — поле successful у него не заполняют.
+  assert.equal(AXES['defence.clearance']?.mode, 'total');
+  // Отбор и передача — только удавшиеся: отобрал, а не «пытался отобрать».
   assert.equal(AXES['defence.tackle']?.mode, undefined);
+  assert.equal(AXES['attack.pass']?.mode, undefined);
 });
 
 test('perMatch — среднее за матч, а не сумма за сезон', () => {
