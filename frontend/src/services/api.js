@@ -432,7 +432,8 @@ export const answerPlayerFeedback = (id, text) =>
 // ── Кабинет Lite ──
 // Состав с готовыми профилями: оси, средние за матч и перцентили считает сервер,
 // те же числа уходят игроку. Свой счёт во фронте не заводим.
-export const fetchLiteSquad = (age) => fetchJson(`/lite/squad/${encodeURIComponent(age)}`);
+export const fetchLiteSquad = (age, base = 'team') =>
+  fetchJson(`/lite/squad/${encodeURIComponent(age)}?base=${encodeURIComponent(base)}`);
 // Наборы показателей по амплуа: что настроил клуб + весь каталог для выбора.
 export const fetchLiteConfig = () => fetchJson('/lite/config');
 export const saveLineAxes = (line, axes, focus) =>

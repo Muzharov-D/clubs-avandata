@@ -61,14 +61,21 @@ export interface LitePlayer {
  * `matches.match_date` в БД пуст/неверен, и мультипозиционный игрок получал
  * случайное амплуа.
  */
-async function seasonSquad(conn: PoolClient, slug: string, teamId: string): Promise<LitePlayer[]> {
+async function seasonSquad(
+  conn: PoolClient,
+  slug: string,
+  teamId: string | null,
+): Promise<LitePlayer[]> {
+  // teamId = null — весь клуб: база сравнения «среди всех защитников клуба».
+  // Пул одной команды на амплуа это 4–6 человек, и доля среди них груба; по
+  // клубу выходит вчетверо больше, а игра там та же самая.
   const { rows } = await conn.query<AnyRow>(
     `SELECT mp.player_id, p.full_name AS "fullName", p.number, p.photo_url AS "photoUrl",
             mp.position, mp.minutes, mp.ratings, mp.stats
        FROM match_players mp
        JOIN matches m ON m.id = mp.match_id AND m.tenant_id = $1
        JOIN players  p ON p.id = mp.player_id
-      WHERE mp.tenant_id = $1 AND m.team_id = $2`,
+      WHERE mp.tenant_id = $1 AND ($2::text IS NULL OR m.team_id = $2)`,
     [slug, teamId],
   );
 
@@ -173,6 +180,14 @@ function slicesOf(player: LitePlayer, peers: LitePlayer[], keys: string[], focus
 }
 
 const LINES: PosGroup[] = ['GK', 'DEF', 'MID', 'FWD'];
+
+/**
+ * С кем сравниваем игрока. Лиги здесь нет сознательно: в базе клуба лежат
+ * только его собственные матчи — соперников загрузка отчётов не пишет вовсе,
+ * и «средний по лиге» из этих данных был бы выдумкой.
+ */
+export type CompareBase = 'team' | 'club';
+const BASE_LABEL: Record<CompareBase, string> = { team: 'команды', club: 'клуба' };
 
 /**
  * Наборы показателей по амплуа для клуба: что настроил тренер, а где не
@@ -369,15 +384,20 @@ export async function liteRoutes(app: FastifyInstance) {
 
   // ── GET /lite/squad/:age — состав с готовыми профилями (экран тренера) ──
   // Всё считается здесь: тренер и игрок обязаны видеть одни и те же числа.
-  app.get<{ Params: { age: string } }>('/lite/squad/:age', async (req) => {
+  app.get<{ Params: { age: string }; Querystring: { base?: string } }>('/lite/squad/:age', async (req) => {
     const slug = tenantOf(req);
     const { age } = req.params;
     assertCoach(req, slug, age);
+    // С кем сравнивать: со своей командой (по умолчанию) или со всем клубом.
+    const base: CompareBase = req.query?.base === 'club' ? 'club' : 'team';
     return withTenant(slug, async (_tx, conn) => {
       const squad = await seasonSquad(conn, slug, `${slug}-${age}`);
+      // База сравнения шире состава: значения игрока свои, а доля считается
+      // по выбранному кругу. Для «команды» это тот же список.
+      const pool = base === 'club' ? await seasonSquad(conn, slug, null) : squad;
       const cfg = await lineConfig(conn, slug);
       const players = squad.map((p) => {
-        const peers = p.line ? squad.filter((x) => x.line === p.line) : [];
+        const peers = p.line ? pool.filter((x) => x.line === p.line) : [];
         const set = p.line ? cfg[p.line] : null;
         return {
           id: p.id,
@@ -396,7 +416,7 @@ export async function liteRoutes(app: FastifyInstance) {
           slices: set ? slicesOf(p, peers, set.axes, set.focus) : [],
         };
       });
-      return { age, players };
+      return { age, base, baseLabel: BASE_LABEL[base], players };
     });
   });
 

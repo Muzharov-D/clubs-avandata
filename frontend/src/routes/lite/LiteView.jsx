@@ -174,7 +174,7 @@ function ShareStrip({ age, player, onOpen, epoch }) {
 }
 
 /** Профиль игрока: вывод словами, пицца, три главных показателя. */
-function PlayerCard({ player, onCompare, compareLabel, compareDisabled, age, lite, onShare, shareEpoch }) {
+function PlayerCard({ player, onCompare, compareLabel, compareDisabled, age, lite, onShare, shareEpoch, baseLabel }) {
   // Слайсы считает сервер — тренер и игрок обязаны видеть одни и те же числа.
   const slices = useMemo(() => toPizzaSlices(player.slices), [player.slices]);
   const verdict = useMemo(() => verdictOf(player.slices), [player.slices]);
@@ -238,14 +238,14 @@ function PlayerCard({ player, onCompare, compareLabel, compareDisabled, age, lit
           <div key={s.key} className="lite-focus__item">
             <span className="lite-focus__val">{s.displayValue}</span>
             <span className="lite-focus__ax">{s.axis}</span>
-            <span className="lite-focus__pct">выше {s.value}% {LINE_PLURAL[line]}</span>
+            <span className="lite-focus__pct">выше {s.value}% {LINE_PLURAL[line]} {baseLabel}</span>
           </div>
         ))}
       </div>
 
       <p className="lite-note">
-        Длина сектора — место среди {LINE_PLURAL[line]} команды, число на секторе —
-        сколько это в среднем за матч. Ярко выделены три главных для амплуа.
+        Длина сектора — место среди {LINE_PLURAL[line]} {baseLabel}, число на секторе —
+        сколько это в среднем за матч. Ярко выделены главные для амплуа.
         {poolSize < 8 && ` Сравнение идёт всего с ${poolSize} игроками — доли приблизительны.`}
       </p>
 
@@ -282,6 +282,10 @@ export default function LiteView() {
   // teams.id = `{slug}-{age}` — возраст нужен роутам разбора (адресация как в callups).
   const age = selectedTeam?.ageGroup ?? (selectedTeamId ? String(selectedTeamId).split('-').pop() : '');
   const [reloadEpoch, setReloadEpoch] = useState(0);
+  // С кем сравнивать: со своей командой или со всем клубом. Значения игрока от
+  // этого не меняются — меняется круг, по которому считается его место.
+  const [base, setBase] = useState('team');
+  const [baseLabel, setBaseLabel] = useState('команды');
   const [players, setPlayers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState('');
@@ -293,11 +297,16 @@ export default function LiteView() {
     if (!age) return undefined;
     let alive = true;
     setLoading(true); setErr(''); setPickedId(null); setRivalId(null); setChoosingRival(false);
-    fetchLiteSquad(age)
-      .then((d) => { if (alive) { setPlayers(d?.players ?? []); setLoading(false); } })
+    fetchLiteSquad(age, base)
+      .then((d) => {
+        if (!alive) return;
+        setPlayers(d?.players ?? []);
+        setBaseLabel(d?.baseLabel ?? 'команды');
+        setLoading(false);
+      })
       .catch((e) => { if (alive) { setErr(String(e?.message ?? e)); setLoading(false); } });
     return () => { alive = false; };
-  }, [age, reloadEpoch]);
+  }, [age, base, reloadEpoch]);
 
   // Состав по линиям. Группа берётся с бэкенда — единый источник позиции.
   const byLine = useMemo(() => {
@@ -346,9 +355,25 @@ export default function LiteView() {
             {selectedTeam?.name ? ` · ${selectedTeam.name}` : ''}
           </p>
         </div>
-        <button type="button" className="lite-head__cfg" onClick={() => setAxesOpen(true)}>
-          Показатели по амплуа
-        </button>
+        <div className="lite-head__tools">
+          <div className="lite-base" role="group" aria-label="С кем сравнивать">
+            <span className="lite-base__t">Сравнение с</span>
+            {[['team', 'командой'], ['club', 'клубом']].map(([v, label]) => (
+              <button
+                key={v}
+                type="button"
+                className={`lite-base__b${base === v ? ' lite-base__b--on' : ''}`}
+                aria-pressed={base === v}
+                onClick={() => setBase(v)}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+          <button type="button" className="lite-head__cfg" onClick={() => setAxesOpen(true)}>
+            Показатели по амплуа
+          </button>
+        </div>
       </header>
 
       {err && <p className="lite-error">Не удалось загрузить состав: {err}</p>}
@@ -400,6 +425,7 @@ export default function LiteView() {
                   lite={lite}
                   onShare={setSharing}
                   shareEpoch={shareEpoch}
+                  baseLabel={baseLabel}
                   compareDisabled={!rival && rivalCandidates.length === 0}
                   compareLabel={
                     rival ? 'Убрать сравнение'
@@ -418,6 +444,7 @@ export default function LiteView() {
                     lite={lite}
                     onShare={setSharing}
                     shareEpoch={shareEpoch}
+                    baseLabel={baseLabel}
                     compareLabel="Убрать"
                     onCompare={() => setRivalId(null)}
                   />
