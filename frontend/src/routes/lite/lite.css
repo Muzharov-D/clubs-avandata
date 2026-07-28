@@ -100,8 +100,13 @@
 .lite-card__pizza .pizza-axis-label { font-size: 14px; }
 .lite-card__pizza .pizza-label { font-size: 15px; }
 
-/* три главных показателя крупно — то, что тренер забирает с собой */
-.lite-focus { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 4px; }
+/* Главные показатели крупно — то, что тренер забирает с собой.
+   Их число задаёт клуб (до четырёх), поэтому сетка подстраивается: жёсткие три
+   колонки оставляли четвёртый показатель одиноко висеть во второй строке. */
+.lite-focus {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 10px; margin-top: 4px;
+}
 .lite-focus__item {
   background: var(--surface-soft); border: 1px solid var(--border);
   border-radius: var(--radius-sm); padding: 12px 10px; text-align: center;
