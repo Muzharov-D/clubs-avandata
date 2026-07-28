@@ -433,6 +433,13 @@ export const answerPlayerFeedback = (id, text) =>
 // Состав с готовыми профилями: оси, средние за матч и перцентили считает сервер,
 // те же числа уходят игроку. Свой счёт во фронте не заводим.
 export const fetchLiteSquad = (age) => fetchJson(`/lite/squad/${encodeURIComponent(age)}`);
+// Наборы показателей по амплуа: что настроил клуб + весь каталог для выбора.
+export const fetchLiteConfig = () => fetchJson('/lite/config');
+export const saveLineAxes = (line, axes, focus) =>
+  fetchJson(`/lite/config/${encodeURIComponent(line)}`, { method: 'PUT', body: { axes, focus } });
+export const resetLineAxes = (line) =>
+  fetchJson(`/lite/config/${encodeURIComponent(line)}`, { method: 'DELETE' });
+
 // Динамика игрока по матчам: ряд значений по турам + сезонное среднее как база.
 export const fetchPlayerMatches = (age, playerId) =>
   fetchJson(`/lite/player/${encodeURIComponent(age)}/${encodeURIComponent(playerId)}/matches`);

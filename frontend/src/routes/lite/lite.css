@@ -3,7 +3,18 @@
 
 .lite { padding: 22px 24px 40px; max-width: 1500px; margin: 0 auto; }
 
-.lite-head { margin-bottom: 18px; }
+.lite-head {
+  margin-bottom: 18px; display: flex; align-items: flex-start;
+  justify-content: space-between; gap: 16px; flex-wrap: wrap;
+}
+.lite-head__cfg {
+  flex: none; font: inherit; font-size: 13.5px; font-weight: 600; color: var(--text);
+  background: transparent; border: 1px solid var(--border-strong); border-radius: 999px;
+  padding: 9px 16px; min-height: 40px; cursor: pointer;
+  transition: background var(--dur-micro) var(--ease-standard);
+}
+.lite-head__cfg:hover { background: var(--surface-soft); }
+.lite-head__cfg:focus-visible { outline: 2px solid var(--brand-primary); outline-offset: 2px; }
 .lite-title { font-size: 28px; font-weight: 800; letter-spacing: -0.02em; margin: 0; color: var(--text); }
 .lite-sub { margin: 5px 0 0; font-size: 14px; color: var(--text-muted); }
 
@@ -397,4 +408,62 @@
 
 @media (max-width: 780px) {
   .lm-card { flex-basis: 152px; }
+}
+
+
+/* ── Лист «Показатели по амплуа» ── */
+.sheet--wide { width: min(680px, 100%); }
+
+.ax-tabs { display: flex; gap: 6px; padding: 0 22px 12px; flex-wrap: wrap; }
+.ax-tab {
+  font: inherit; font-size: 13.5px; font-weight: 600; color: var(--text-muted);
+  background: transparent; border: 1px solid var(--border); border-radius: 999px;
+  padding: 8px 14px; min-height: 38px; cursor: pointer; display: inline-flex;
+  align-items: center; gap: 6px;
+}
+.ax-tab:hover { color: var(--text); }
+.ax-tab--on { color: var(--text); border-color: var(--accent-cyan); background: var(--surface-soft); }
+.ax-tab:focus-visible { outline: 2px solid var(--brand-primary); outline-offset: 2px; }
+/* Точка = набор амплуа отличается от нашего умолчания. */
+.ax-tab__dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent-cyan); }
+
+.ax-group { margin-top: 14px; }
+.ax-group__t {
+  font-size: 11.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.09em;
+  color: var(--text-faint); margin: 0 0 8px;
+}
+.ax-list { display: flex; flex-direction: column; gap: 6px; }
+
+.ax-row {
+  display: flex; align-items: center; gap: 10px;
+  background: var(--surface-soft); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); padding: 9px 12px;
+  transition: border-color var(--dur-micro) var(--ease-standard);
+}
+.ax-row--on { border-color: var(--accent-cyan); background: var(--bg-surface-3); }
+.ax-row__pick { display: flex; align-items: center; gap: 10px; flex: 1; min-width: 0; cursor: pointer; }
+.ax-row__pick input { width: 19px; height: 19px; flex: none; accent-color: var(--brand-primary); cursor: pointer; }
+.ax-row__main { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.ax-row__label { font-size: 14.5px; font-weight: 600; color: var(--text); }
+.ax-row__inv {
+  font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;
+  color: var(--warning); margin-left: 8px;
+}
+.ax-row__hint { font-size: 11.5px; color: var(--text-faint); line-height: 1.35; }
+
+.ax-star {
+  flex: none; font: inherit; font-size: 11.5px; font-weight: 700; cursor: pointer;
+  color: var(--text-faint); background: transparent;
+  border: 1px solid var(--border); border-radius: 999px; padding: 6px 11px; min-height: 34px;
+}
+.ax-star--on { color: var(--accent-cyan); border-color: var(--accent-cyan); }
+.ax-star:disabled { opacity: .35; cursor: default; }
+.ax-star:focus-visible { outline: 2px solid var(--brand-primary); outline-offset: 2px; }
+
+.ax-foot__btns { display: flex; gap: 10px; flex: none; }
+
+@media (max-width: 780px) {
+  .ax-foot__btns { flex: 1 1 auto; }
+  .ax-foot__btns .lite-btn { flex: 1 1 auto; min-width: 0; }
+  .ax-row { flex-wrap: wrap; }
 }

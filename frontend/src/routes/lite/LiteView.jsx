@@ -20,6 +20,7 @@ import { useTeam } from '../../contexts/TeamContext';
 import PizzaChart from '../../components/PizzaChart';
 import ShareSheet from './ShareSheet';
 import MatchStrip from './MatchStrip';
+import AxesSheet from './AxesSheet';
 import { useAuth } from '../../contexts/AuthContext';
 import {
   LINE_ORDER, LINE_LABEL, LINE_PLURAL, toPizzaSlices, verdictOf,
@@ -269,15 +270,18 @@ function PlayerCard({ player, onCompare, compareLabel, compareDisabled, age, lit
 
 export default function LiteView() {
   const { selectedTeamId, selectedTeam } = useTeam();
-  const { tenant } = useAuth();
+  const { tenant, isHeadCoach } = useAuth();
   const lite = tenant?.plan === 'lite';
   // Кого настраиваем в листе. null — лист закрыт (частый путь ничем не занят).
   const [sharing, setSharing] = useState(null);
   // Строку состояния перечитываем после закрытия листа — иначе она врала бы
   // про «игрок видит», пока тренер не обновит страницу.
   const [shareEpoch, setShareEpoch] = useState(0);
+  // Настройка наборов по амплуа — методика клуба, живёт отдельным листом.
+  const [axesOpen, setAxesOpen] = useState(false);
   // teams.id = `{slug}-{age}` — возраст нужен роутам разбора (адресация как в callups).
   const age = selectedTeam?.ageGroup ?? (selectedTeamId ? String(selectedTeamId).split('-').pop() : '');
+  const [reloadEpoch, setReloadEpoch] = useState(0);
   const [players, setPlayers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState('');
@@ -293,7 +297,7 @@ export default function LiteView() {
       .then((d) => { if (alive) { setPlayers(d?.players ?? []); setLoading(false); } })
       .catch((e) => { if (alive) { setErr(String(e?.message ?? e)); setLoading(false); } });
     return () => { alive = false; };
-  }, [age]);
+  }, [age, reloadEpoch]);
 
   // Состав по линиям. Группа берётся с бэкенда — единый источник позиции.
   const byLine = useMemo(() => {
@@ -338,10 +342,13 @@ export default function LiteView() {
         <div>
           <h1 className="lite-title">Разбор игрока</h1>
           <p className="lite-sub">
-            Шесть показателей по амплуа, три главных выделены
+            Показатели по амплуа, главные выделены
             {selectedTeam?.name ? ` · ${selectedTeam.name}` : ''}
           </p>
         </div>
+        <button type="button" className="lite-head__cfg" onClick={() => setAxesOpen(true)}>
+          Показатели по амплуа
+        </button>
       </header>
 
       {err && <p className="lite-error">Не удалось загрузить состав: {err}</p>}
@@ -419,6 +426,15 @@ export default function LiteView() {
             )}
           </main>
         </div>
+      )}
+
+      {axesOpen && (
+        <AxesSheet
+          canEdit={isHeadCoach}
+          onClose={() => setAxesOpen(false)}
+          /* Набор сменился — состав пересчитываем: у пиццы другие оси. */
+          onSaved={() => setReloadEpoch((n) => n + 1)}
+        />
       )}
 
       {sharing && (

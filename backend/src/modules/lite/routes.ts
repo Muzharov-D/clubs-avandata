@@ -10,7 +10,9 @@ import { ourResult } from '../../shared/matchResult.js';
 import { applyFixtureDates, type DatedMatchRow } from '../../data/matchDate.js';
 import { statAt } from './base36.js';
 import {
-  AXES, LINE_SETS, axesOfLine, defaultSharedMetrics, sanitizeMetrics, percentileOf, perMatch,
+  AXES, LINE_SETS, MIN_AXES, MAX_AXES, MAX_FOCUS,
+  defaultLineSet, sanitizeLineSet, sanitizeMetrics,
+  percentileOf, perMatch, type LineSet,
 } from './metrics.js';
 
 /**
@@ -153,8 +155,7 @@ export interface LiteSlice {
  * Слайсы игрока: значение — среднее за матч, длина — место среди своей линии.
  * Пул считаем по той же линии: сравнивать вратаря с нападающим бессмысленно.
  */
-function slicesOf(player: LitePlayer, peers: LitePlayer[], keys: string[]): LiteSlice[] {
-  const line = player.line;
+function slicesOf(player: LitePlayer, peers: LitePlayer[], keys: string[], focus: string[]): LiteSlice[] {
   return keys.map((key) => {
     const def = AXES[key];
     const value = perMatch(player.totals[key] ?? 0, player.matches);
@@ -165,10 +166,34 @@ function slicesOf(player: LitePlayer, peers: LitePlayer[], keys: string[]): Lite
       hint: def?.hint ?? '',
       group: def?.group ?? 'attack',
       value,
-      percentile: percentileOf(value, pool),
-      focus: line ? LINE_SETS[line].focus.includes(key) : false,
+      percentile: percentileOf(value, pool, def?.inverse),
+      focus: focus.includes(key),
     };
   });
+}
+
+const LINES: PosGroup[] = ['GK', 'DEF', 'MID', 'FWD'];
+
+/**
+ * Наборы показателей по амплуа для клуба: что настроил тренер, а где не
+ * настраивал — умолчание. Читается почти в каждом ответе кабинета, поэтому
+ * запрос один и лёгкий.
+ */
+async function lineConfig(conn: PoolClient, slug: string): Promise<Record<PosGroup, LineSet>> {
+  const { rows } = await conn.query<AnyRow>(
+    'SELECT line, axes, focus FROM lite_line_metrics WHERE tenant_id = $1',
+    [slug],
+  );
+  const out = Object.fromEntries(LINES.map((l) => [l, defaultLineSet(l)])) as Record<PosGroup, LineSet>;
+  for (const r of rows) {
+    const line = String(r.line) as PosGroup;
+    if (!out[line]) continue;
+    // Настройку тоже проверяем каталогом: ось могла исчезнуть после правки кода,
+    // и тогда клуб остался бы с битым набором.
+    const set = sanitizeLineSet(r.axes, r.focus);
+    if (set) out[line] = set;
+  }
+  return out;
 }
 
 /** Команда, за которую игрок реально играет: та, где у него больше всего матчей. */
@@ -187,24 +212,25 @@ async function teamOfPlayer(conn: PoolClient, slug: string, playerId: string): P
 }
 
 /** Настройка видимости из БД или умолчание (три главных показателя амплуа). */
-async function shareOf(conn: PoolClient, slug: string, playerId: string, line: PosGroup | null) {
+async function shareOf(conn: PoolClient, slug: string, playerId: string, set: LineSet | null) {
   const { rows } = await conn.query<AnyRow>(
     `SELECT metrics, show_overall AS "showOverall", updated_at AS "updatedAt"
        FROM player_share WHERE tenant_id = $1 AND player_id = $2`,
     [slug, playerId],
   );
   const row = rows[0];
+  const fallback = set ? [...set.focus] : [];
   if (!row) {
-    return { metrics: defaultSharedMetrics(line), showOverall: false, isDefault: true };
+    return { metrics: fallback, showOverall: false, isDefault: true };
   }
   const stored = Array.isArray(row.metrics) ? row.metrics : [];
-  const metrics = sanitizeMetrics(stored, line);
+  const metrics = sanitizeMetrics(stored, set?.axes ?? []);
   // Набор был непустым, а после проверки не осталось ничего — значит все ключи
   // устарели (так вышло при переезде осей с радара на события). Это не выбор
   // тренера «не показывать ничего», а потерянная настройка: возвращаем умолчание,
   // иначе игрок молча остался бы с пустым кабинетом.
   if (stored.length > 0 && metrics.length === 0) {
-    return { metrics: defaultSharedMetrics(line), showOverall: Boolean(row.showOverall), isDefault: true };
+    return { metrics: fallback, showOverall: Boolean(row.showOverall), isDefault: true };
   }
   return { metrics, showOverall: Boolean(row.showOverall), isDefault: false };
 }
@@ -261,6 +287,86 @@ export async function liteRoutes(app: FastifyInstance) {
     return slug;
   }
 
+  // ── GET /lite/config — наборы показателей по амплуа ──
+  // Отдаём и настроенное, и полный каталог: тренеру нужен выбор, из чего собирать.
+  app.get('/lite/config', async (req) => {
+    const slug = tenantOf(req);
+    if (req.user?.role !== 'head_coach' && req.user?.role !== 'team_coach') {
+      throw new UnauthorizedError('нет доступа к настройке показателей');
+    }
+    return withTenant(slug, async (_tx, conn) => {
+      const cfg = await lineConfig(conn, slug);
+      return {
+        // Весь выбор, из которого собирается набор. Каждая ось стоит на одном
+        // из базовых 36 — это и есть граница, шире неё кабинет не пускает.
+        catalog: Object.entries(AXES).map(([key, def]) => ({
+          key,
+          label: def.label,
+          hint: def.hint,
+          group: def.group,
+          inverse: Boolean(def.inverse),
+        })),
+        limits: { minAxes: MIN_AXES, maxAxes: MAX_AXES, maxFocus: MAX_FOCUS },
+        lines: LINES.map((line) => ({
+          line,
+          label: LINE_SETS[line].label,
+          axes: cfg[line].axes,
+          focus: cfg[line].focus,
+          isDefault: JSON.stringify(cfg[line]) === JSON.stringify(defaultLineSet(line)),
+        })),
+      };
+    });
+  });
+
+  // ── PUT /lite/config/:line — тренер собирает свой набор ──
+  // Меняет СТАРШИЙ тренер: набор общий для клуба, это методика, а не настройка
+  // одной команды. Возврат к умолчанию — DELETE.
+  app.put<{ Params: { line: string }; Body: { axes?: unknown; focus?: unknown } }>(
+    '/lite/config/:line',
+    async (req) => {
+      const slug = tenantOf(req);
+      if (req.user?.role !== 'head_coach') {
+        throw new UnauthorizedError('менять набор показателей может старший тренер');
+      }
+      const line = String(req.params.line).toUpperCase() as PosGroup;
+      if (!LINES.includes(line)) throw new BadRequestError('неизвестное амплуа', 'BAD_LINE');
+
+      const set = sanitizeLineSet(req.body?.axes, req.body?.focus);
+      if (!set) {
+        throw new BadRequestError(
+          `нужно от ${MIN_AXES} до ${MAX_AXES} показателей, главных — не больше ${MAX_FOCUS}`,
+          'BAD_SET',
+        );
+      }
+
+      return withTenant(slug, async (_tx, conn) => {
+        await conn.query(
+          `INSERT INTO lite_line_metrics (tenant_id, line, axes, focus, updated_by)
+           VALUES ($1, $2, $3::jsonb, $4::jsonb, $5)
+           ON CONFLICT (tenant_id, line)
+           DO UPDATE SET axes = EXCLUDED.axes, focus = EXCLUDED.focus,
+                         updated_at = now(), updated_by = EXCLUDED.updated_by`,
+          [slug, line, JSON.stringify(set.axes), JSON.stringify(set.focus), req.user?.sub ?? null],
+        );
+        return { ok: true, line, ...set };
+      });
+    },
+  );
+
+  // ── DELETE /lite/config/:line — вернуть умолчание ──
+  app.delete<{ Params: { line: string } }>('/lite/config/:line', async (req) => {
+    const slug = tenantOf(req);
+    if (req.user?.role !== 'head_coach') {
+      throw new UnauthorizedError('менять набор показателей может старший тренер');
+    }
+    const line = String(req.params.line).toUpperCase() as PosGroup;
+    if (!LINES.includes(line)) throw new BadRequestError('неизвестное амплуа', 'BAD_LINE');
+    return withTenant(slug, async (_tx, conn) => {
+      await conn.query('DELETE FROM lite_line_metrics WHERE tenant_id = $1 AND line = $2', [slug, line]);
+      return { ok: true, line, ...defaultLineSet(line) };
+    });
+  });
+
   // ── GET /lite/squad/:age — состав с готовыми профилями (экран тренера) ──
   // Всё считается здесь: тренер и игрок обязаны видеть одни и те же числа.
   app.get<{ Params: { age: string } }>('/lite/squad/:age', async (req) => {
@@ -269,8 +375,10 @@ export async function liteRoutes(app: FastifyInstance) {
     assertCoach(req, slug, age);
     return withTenant(slug, async (_tx, conn) => {
       const squad = await seasonSquad(conn, slug, `${slug}-${age}`);
+      const cfg = await lineConfig(conn, slug);
       const players = squad.map((p) => {
         const peers = p.line ? squad.filter((x) => x.line === p.line) : [];
+        const set = p.line ? cfg[p.line] : null;
         return {
           id: p.id,
           fullName: p.fullName,
@@ -285,7 +393,7 @@ export async function liteRoutes(app: FastifyInstance) {
           minutesPerMatch: p.minutesPerMatch,
           avgOverall: p.avgOverall,
           peersCount: peers.length,
-          slices: p.line ? slicesOf(p, peers, axesOfLine(p.line)) : [],
+          slices: set ? slicesOf(p, peers, set.axes, set.focus) : [],
         };
       });
       return { age, players };
@@ -333,9 +441,10 @@ export async function liteRoutes(app: FastifyInstance) {
         await applyFixtureDates(conn, slug, dated);
 
         const squad = await seasonSquad(conn, slug, teamId);
+        const cfg = await lineConfig(conn, slug);
         const me = squad.find((p) => p.id === playerId) ?? null;
         const line = me?.line ?? null;
-        const keys = line ? axesOfLine(line) : [];
+        const keys = line ? cfg[line].axes : [];
 
         const matches = rows.map((m, i) => {
           const res = ourResult(m);
@@ -372,7 +481,7 @@ export async function liteRoutes(app: FastifyInstance) {
             label: AXES[key]?.label ?? key,
             hint: AXES[key]?.hint ?? '',
             group: AXES[key]?.group ?? 'attack',
-            focus: line ? LINE_SETS[line].focus.includes(key) : false,
+            focus: line ? cfg[line].focus.includes(key) : false,
             average: me ? perMatch(me.totals[key] ?? 0, me.matches) : 0,
           })),
           matches,
@@ -391,17 +500,19 @@ export async function liteRoutes(app: FastifyInstance) {
       return withTenant(slug, async (_tx, conn) => {
         const squad = await seasonSquad(conn, slug, `${slug}-${age}`);
         const line = squad.find((p) => p.id === playerId)?.line ?? null;
-        const share = await shareOf(conn, slug, playerId, line);
+        const cfg = await lineConfig(conn, slug);
+        const set = line ? cfg[line] : null;
+        const share = await shareOf(conn, slug, playerId, set);
         return {
           playerId,
           line,
           lineLabel: line ? LINE_SETS[line].label : null,
-          axes: line
-            ? axesOfLine(line).map((key) => ({
+          axes: set
+            ? set.axes.map((key) => ({
               key,
               label: AXES[key]?.label ?? key,
               hint: AXES[key]?.hint ?? '',
-              focus: LINE_SETS[line].focus.includes(key),
+              focus: set.focus.includes(key),
             }))
             : [],
           ...share,
@@ -430,7 +541,8 @@ export async function liteRoutes(app: FastifyInstance) {
 
         const squad = await seasonSquad(conn, slug, `${slug}-${age}`);
         const line = squad.find((p) => p.id === playerId)?.line ?? null;
-        const metrics = sanitizeMetrics(req.body?.metrics, line);
+        const cfg = await lineConfig(conn, slug);
+        const metrics = sanitizeMetrics(req.body?.metrics, line ? cfg[line].axes : []);
         const showOverall = req.body?.showOverall === true;
 
         await conn.query(
@@ -525,9 +637,11 @@ export async function liteRoutes(app: FastifyInstance) {
 
       const teamId = await teamOfPlayer(conn, slug, playerId);
       const squad = teamId ? await seasonSquad(conn, slug, teamId) : [];
+      const cfg = await lineConfig(conn, slug);
       const me = squad.find((p) => p.id === playerId) ?? null;
       const line = me?.line ?? null;
-      const share = await shareOf(conn, slug, playerId, line);
+      const set = line ? cfg[line] : null;
+      const share = await shareOf(conn, slug, playerId, set);
       const peers = line ? squad.filter((p) => p.line === line) : [];
 
       const { rows: feedback } = await conn.query<AnyRow>(
@@ -555,7 +669,7 @@ export async function liteRoutes(app: FastifyInstance) {
         lineLabel: line ? LINE_SETS[line].label : null,
         peersCount: peers.length,
         // Только открытое тренером — фильтр здесь, до ответа.
-        metrics: me && line ? slicesOf(me, peers, share.metrics) : [],
+        metrics: me && set ? slicesOf(me, peers, share.metrics, set.focus) : [],
         overall: share.showOverall ? (me?.avgOverall ?? null) : null,
         feedback,
       };

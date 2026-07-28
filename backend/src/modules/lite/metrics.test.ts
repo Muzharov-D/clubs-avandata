@@ -1,8 +1,8 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  AXES, LINE_SETS, axesOfLine, defaultSharedMetrics, sanitizeMetrics,
-  percentileOf, perMatch, axisIsFromBase36,
+  AXES, LINE_SETS, axesOfLine, defaultLineSet, sanitizeLineSet, sanitizeMetrics,
+  percentileOf, perMatch, axisIsFromBase36, MIN_AXES, MAX_AXES, MAX_FOCUS,
 } from './metrics.js';
 import { BASE36, BASE36_SV_KEYS, statAt } from './base36.js';
 
@@ -48,23 +48,57 @@ test('у каждого амплуа ровно 6 осей, 3 из них гла
   }
 });
 
-test('по умолчанию открыты три главных показателя амплуа', () => {
-  assert.deepEqual(defaultSharedMetrics('FWD'), ['attack.shot', 'attack.dribble', 'attack.keyPass']);
-  assert.deepEqual(defaultSharedMetrics(null), []);
+test('умолчание амплуа — шесть осей, три главных', () => {
+  const set = defaultLineSet('FWD');
+  assert.deepEqual(set.focus, ['attack.shot', 'attack.dribble', 'attack.keyPass']);
+  assert.equal(set.axes.length, 6);
 });
 
-test('sanitizeMetrics отсекает всё, чего тренер не мог видеть', () => {
-  // Ось чужого амплуа: сейвы защитнику не показываются.
-  assert.deepEqual(sanitizeMetrics(['defence.tackle', 'defence.save'], 'DEF'), ['defence.tackle']);
-  // Старые ключи радара из прежней настройки отсеиваются молча.
-  assert.deepEqual(sanitizeMetrics(['intensity', 'shooting', 'defence.duel'], 'DEF'), ['defence.duel']);
-  // Мусор и не-строки игнорируются, дубли схлопываются, порядок сохраняется.
+test('набор от тренера проверяется каталогом и границами', () => {
+  const базовый = ['attack.shot', 'defence.tackle', 'defence.duel', 'attack.pass'];
+
+  assert.deepEqual(sanitizeLineSet(базовый, ['attack.shot']), {
+    axes: базовый,
+    focus: ['attack.shot'],
+  });
+
+  // Главные не выбраны — берём первые три: пустой фокус оставил бы и пиццу без
+  // акцентов, и игрока без открытых по умолчанию показателей.
+  assert.deepEqual(sanitizeLineSet(базовый, [])?.focus,
+    ['attack.shot', 'defence.tackle', 'defence.duel']);
+
+  // Мусор и неизвестные ключи вылетают, дубли схлопываются.
   assert.deepEqual(
-    sanitizeMetrics(['defence.duel', 'defence.duel', 42, null, 'нет-такой', 'defence.clearance'], 'DEF'),
+    sanitizeLineSet(
+      ['attack.shot', 'attack.shot', 'intensity', 42, 'defence.tackle', 'defence.duel', 'attack.pass'],
+      null,
+    )?.axes,
+    базовый,
+  );
+
+  // Слишком мало и слишком много — отказ, а не тихая починка: тренер должен
+  // увидеть, что набор не принят.
+  assert.equal(sanitizeLineSet(['attack.shot', 'defence.tackle'], []), null);
+  assert.equal(sanitizeLineSet(Object.keys(AXES), []), null);
+  assert.equal(sanitizeLineSet('не массив', []), null);
+
+  // Главных больше предела — тоже отказ.
+  const пять = ['attack.shot', 'defence.tackle', 'defence.duel', 'attack.pass', 'defence.save'];
+  assert.equal(sanitizeLineSet(пять, пять), null);
+  assert.ok(MIN_AXES < MAX_AXES && MAX_FOCUS < MAX_AXES);
+});
+
+test('sanitizeMetrics отсекает всё, чего нет в наборе амплуа', () => {
+  const набор = ['defence.tackle', 'defence.duel', 'defence.clearance'];
+  assert.deepEqual(sanitizeMetrics(['defence.tackle', 'defence.save'], набор), ['defence.tackle']);
+  // Старые ключи радара из прежней настройки отсеиваются молча.
+  assert.deepEqual(sanitizeMetrics(['intensity', 'shooting', 'defence.duel'], набор), ['defence.duel']);
+  assert.deepEqual(
+    sanitizeMetrics(['defence.duel', 'defence.duel', 42, null, 'нет-такой', 'defence.clearance'], набор),
     ['defence.duel', 'defence.clearance'],
   );
-  assert.deepEqual(sanitizeMetrics(['defence.tackle'], null), []);
-  assert.deepEqual(sanitizeMetrics('defence.tackle', 'DEF'), []);
+  assert.deepEqual(sanitizeMetrics(['defence.tackle'], []), []);
+  assert.deepEqual(sanitizeMetrics('defence.tackle', набор), []);
 });
 
 test('statAt разворачивает compound-объекты SportVisor', () => {
@@ -102,6 +136,14 @@ test('perMatch — среднее за матч, а не сумма за сез�
   assert.equal(perMatch(5, 2), 2.5);
   assert.equal(perMatch(0, 6), 0);
   assert.equal(perMatch(7, 0), 0);   // матчей нет — не делим на ноль
+});
+
+test('у осей «меньше — лучше» шкала перевёрнута', () => {
+  // Фолов больше всех → слайс должен быть КОРОТКИМ, иначе длина читается
+  // наоборот и худший по дисциплине выглядит лучшим.
+  assert.equal(percentileOf(5, [1, 2, 3, 4]), 100);
+  assert.equal(percentileOf(5, [1, 2, 3, 4], true), 0);
+  assert.equal(percentileOf(1, [1, 2, 3, 4], true), 87);
 });
 
 test('percentileOf: доля слабее + половина равных', () => {
