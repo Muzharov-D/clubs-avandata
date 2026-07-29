@@ -153,9 +153,23 @@ export interface LiteSlice {
   group: 'attack' | 'defence';
   /** Среднее за матч — то, что подписано на слайсе. */
   value: number;
-  /** Место среди своей линии в команде, 0–100 — длина слайса. */
+  /**
+   * Среднее по кругу сравнения (своё амплуа в команде или в клубе) — опора,
+   * с которой тренер читает число игрока: «2.7 при среднем 1.8».
+   * Считаем по СВОЕМУ АМПЛУА, а не по всей команде: сравнивать сейвы вратаря
+   * со средним по полевым игрокам бессмысленно.
+   */
+  average: number;
+  /** Место среди своей линии, 0–100 — длина слайса. */
   percentile: number;
   focus: boolean;
+}
+
+/** Среднее по пулу; пустой пул — ноль, а не деление на ноль. */
+function meanOf(pool: number[]): number {
+  const vals = pool.filter((n) => Number.isFinite(n));
+  if (!vals.length) return 0;
+  return Number((vals.reduce((a, b) => a + b, 0) / vals.length).toFixed(1));
 }
 
 /**
@@ -173,6 +187,7 @@ function slicesOf(player: LitePlayer, peers: LitePlayer[], keys: string[], focus
       hint: def?.hint ?? '',
       group: def?.group ?? 'attack',
       value,
+      average: meanOf(pool),
       percentile: percentileOf(value, pool, def?.inverse),
       focus: focus.includes(key),
     };

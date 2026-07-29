@@ -41,7 +41,7 @@ function MetricRow({ m, lineLabel, peersCount }) {
       </div>
       {m.value != null && peersCount > 1 && (
         <div className="pc-metric__note">
-          Выше, чем у {pct}% {lineLabel} команды
+          В среднем у {lineLabel} команды — {Number(m.average ?? 0).toFixed(1)}
         </div>
       )}
     </div>
@@ -174,8 +174,9 @@ export default function PlayerCabinet() {
               ))}
             </div>
             <p className="pc-note">
-              Цифра — сколько это в среднем за матч, полоса — место среди своих
-              на этой позиции. Тренер выбирает, какие показатели показать.
+              Цифра — сколько это в среднем за матч, рядом — среднее у ребят твоего
+              амплуа в команде. Полоса показывает место среди них. Какие показатели
+              открыты, выбирает тренер.
             </p>
           </>
         ) : (

@@ -30,7 +30,8 @@ export function toPizzaSlices(slices) {
     group: s.group,
     value: s.percentile,
     displayValue: Number(s.value).toFixed(1),
-    raw: s.value,
+    raw: Number(s.value),
+    average: Number(s.average ?? 0),
     muted: !s.focus,
   }));
 }

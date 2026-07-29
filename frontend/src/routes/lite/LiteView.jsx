@@ -234,18 +234,34 @@ function PlayerCard({ player, onCompare, compareLabel, compareDisabled, age, lit
       </div>
 
       <div className="lite-focus">
-        {focusSlices.map((s) => (
-          <div key={s.key} className="lite-focus__item">
-            <span className="lite-focus__val">{s.displayValue}</span>
-            <span className="lite-focus__ax">{s.axis}</span>
-            <span className="lite-focus__pct">выше {s.value}% {LINE_PLURAL[line]} {baseLabel}</span>
-          </div>
-        ))}
+        {focusSlices.map((s) => {
+          // Опора — среднее по амплуа. Разницу показываем только заметную,
+          // иначе стрелка мигала бы на шуме округления.
+          const d = Number((s.raw - s.average).toFixed(1));
+          const знак = Math.abs(d) < 0.15 ? null : d > 0 ? 'up' : 'down';
+          return (
+            <div key={s.key} className="lite-focus__item">
+              <span className="lite-focus__val">
+                {s.displayValue}
+                {знак && (
+                  <i className={`lite-focus__d lite-focus__d--${знак}`}>
+                    {d > 0 ? `+${d}` : d}
+                  </i>
+                )}
+              </span>
+              <span className="lite-focus__ax">{s.axis}</span>
+              <span className="lite-focus__pct">
+                в среднем у {LINE_PLURAL[line]} {baseLabel} — {s.average.toFixed(1)}
+              </span>
+            </div>
+          );
+        })}
       </div>
 
       <p className="lite-note">
-        Длина сектора — место среди {LINE_PLURAL[line]} {baseLabel}, число на секторе —
-        сколько это в среднем за матч. Ярко выделены главные для амплуа.
+        Число на секторе — сколько это в среднем за матч, длина сектора — место
+        среди {LINE_PLURAL[line]} {baseLabel}. Под каждым главным показателем —
+        среднее по амплуа, с которым его и стоит читать.
         {poolSize < 8 && ` Сравнение идёт всего с ${poolSize} игроками — доли приблизительны.`}
       </p>
 
