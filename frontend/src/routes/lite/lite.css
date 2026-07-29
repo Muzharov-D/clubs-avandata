@@ -501,3 +501,25 @@
   .lite-head__tools { width: 100%; }
   .lite-head__cfg { flex: 1 1 auto; }
 }
+
+
+/* ── Вкладки периода: сезон или последний матч ──
+   Профиль по умолчанию сезонный — на одном матче выборка шумит. */
+.lite-tabs { display: flex; gap: 6px; margin: 12px 0 2px; flex-wrap: wrap; }
+.lite-tab {
+  font: inherit; font-size: 13.5px; font-weight: 600; color: var(--text-muted);
+  background: transparent; border: 1px solid var(--border); border-radius: 999px;
+  padding: 8px 15px; min-height: 38px; cursor: pointer;
+  display: inline-flex; align-items: baseline; gap: 7px;
+  transition: color var(--dur-micro) var(--ease-standard),
+              border-color var(--dur-micro) var(--ease-standard),
+              background var(--dur-micro) var(--ease-standard);
+}
+.lite-tab:hover:not(:disabled) { color: var(--text); }
+.lite-tab--on { color: var(--text); border-color: var(--accent-cyan); background: var(--surface-soft); }
+.lite-tab:disabled { opacity: .4; cursor: default; }
+.lite-tab:focus-visible { outline: 2px solid var(--brand-primary); outline-offset: 2px; }
+.lite-tab__sub {
+  font-size: 11.5px; font-weight: 500; color: var(--text-faint);
+  max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}

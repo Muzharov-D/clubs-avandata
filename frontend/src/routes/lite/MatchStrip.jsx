@@ -8,8 +8,7 @@
 // Стрелка у числа — не «хорошо/плохо», а «выше или ниже своего обычного».
 // Все оси кабинета устроены так, что больше значит лучше.
 
-import { useEffect, useState } from 'react';
-import { fetchPlayerMatches } from '../../services/api';
+import { useState } from 'react';
 
 const RESULT_LABEL = { W: 'В', D: 'Н', L: 'П' };
 
@@ -27,20 +26,8 @@ function delta(value, average) {
 
 const num = (v) => (Number.isFinite(Number(v)) ? Number(v).toFixed(1) : '—');
 
-export default function MatchStrip({ age, player }) {
-  const [data, setData] = useState(null);
-  const [err, setErr] = useState('');
+export default function MatchStrip({ data, err }) {
   const [picked, setPicked] = useState([]);
-
-  useEffect(() => {
-    let alive = true;
-    setData(null); setErr(''); setPicked([]);
-    if (!age || !player?.id) return undefined;
-    fetchPlayerMatches(age, player.id)
-      .then((d) => alive && setData(d))
-      .catch((e) => alive && setErr(String(e?.message ?? e)));
-    return () => { alive = false; };
-  }, [age, player?.id]);
 
   // Выбираем не больше двух: сравнение «матч с матчем», а не таблица на весь сезон.
   const toggle = (id) => {

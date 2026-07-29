@@ -71,49 +71,42 @@ export const AXES: Record<string, AxisDef> = {
 };
 
 /**
- * УМОЛЧАНИЕ по линиям — стартовая точка, а не догма: тренер собирает свои
- * наборы сам (таблица `lite_line_metrics`, миграция 0023). Здесь то, что клуб
- * видит, пока ничего не менял: 6 осей, из них 3 главных.
+ * БАЗОВЫЙ набор амплуа — ровно ТРИ показателя (решение владельца). Это то, с
+ * чего клуб начинает: три вещи, за которые на этой позиции отвечают в первую
+ * очередь. Всё остальное тренер добавляет сам в «Показателях по амплуа».
+ *
+ * Раньше по умолчанию шло шесть (три главных + три «для формы») — но набор по
+ * умолчанию не должен решать за тренера больше необходимого.
  */
-export const LINE_SETS: Record<PosGroup, { label: string; focus: string[]; context: string[] }> = {
-  GK: {
-    label: 'Вратарь',
-    focus: ['defence.save', 'attack.pass', 'defence.clearance'],
-    context: ['defence.blockedShot', 'defence.interception', 'defence.duel'],
-  },
-  DEF: {
-    label: 'Защитник',
-    focus: ['defence.tackle', 'defence.interception', 'defence.duel'],
-    context: ['defence.clearance', 'defence.blockedShot', 'attack.pass'],
-  },
-  MID: {
-    label: 'Полузащитник',
-    focus: ['attack.pass', 'attack.keyPass', 'defence.pressing'],
-    context: ['defence.tackle', 'attack.dribble', 'defence.duel'],
-  },
-  FWD: {
-    label: 'Нападающий',
-    focus: ['attack.shot', 'attack.dribble', 'attack.keyPass'],
-    context: ['defence.pressing', 'defence.duel', 'attack.pass'],
-  },
+export const LINE_SETS: Record<PosGroup, { label: string; base: string[] }> = {
+  GK:  { label: 'Вратарь',       base: ['defence.save', 'attack.pass', 'defence.clearance'] },
+  DEF: { label: 'Защитник',      base: ['defence.tackle', 'defence.interception', 'defence.duel'] },
+  MID: { label: 'Полузащитник',  base: ['attack.pass', 'attack.keyPass', 'defence.pressing'] },
+  FWD: { label: 'Нападающий',    base: ['attack.shot', 'attack.dribble', 'attack.keyPass'] },
 };
 
-/** Все шесть осей амплуа в порядке «сначала главные». */
+/** Базовые оси амплуа. */
 export function axesOfLine(line: PosGroup): string[] {
-  return [...LINE_SETS[line].focus, ...LINE_SETS[line].context];
+  return [...LINE_SETS[line].base];
 }
 
 /** Набор амплуа: все оси по порядку + какие из них главные. */
 export interface LineSet { axes: string[]; focus: string[] }
 
-/** Границы набора: меньше четырёх — не форма, больше восьми — снова каша. */
-export const MIN_AXES = 4;
+/**
+ * Границы набора. Нижняя — три: это базовый набор, с которого клуб стартует.
+ * Верхняя — восемь: дальше пицца снова превращается в кашу, ради которой Lite
+ * и затевался.
+ */
+export const MIN_AXES = 3;
 export const MAX_AXES = 8;
 export const MAX_FOCUS = 4;
 
 /** Умолчание для линии в виде набора. */
 export function defaultLineSet(line: PosGroup): LineSet {
-  return { axes: axesOfLine(line), focus: [...LINE_SETS[line].focus] };
+  // Все три базовых — главные: их и видно крупно, их и открываем игроку.
+  const base = axesOfLine(line);
+  return { axes: base, focus: [...base] };
 }
 
 /**

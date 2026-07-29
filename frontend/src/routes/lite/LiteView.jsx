@@ -15,6 +15,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
   fetchLiteSquad, fetchPlayerFeedback, savePlayerFeedback, fetchPlayerShare,
+  fetchPlayerMatches,
 } from '../../services/api';
 import { useTeam } from '../../contexts/TeamContext';
 import PizzaChart from '../../components/PizzaChart';
@@ -23,7 +24,7 @@ import MatchStrip from './MatchStrip';
 import AxesSheet from './AxesSheet';
 import { useAuth } from '../../contexts/AuthContext';
 import {
-  LINE_ORDER, LINE_LABEL, LINE_PLURAL, toPizzaSlices, verdictOf,
+  LINE_ORDER, LINE_LABEL, LINE_PLURAL, toPizzaSlices, toMatchSlices, verdictOf,
 } from './liteMetrics';
 import './lite.css';
 
@@ -175,9 +176,42 @@ function ShareStrip({ age, player, onOpen, epoch }) {
 
 /** Профиль игрока: вывод словами, пицца, три главных показателя. */
 function PlayerCard({ player, onCompare, compareLabel, compareDisabled, age, lite, onShare, shareEpoch, baseLabel }) {
-  // Слайсы считает сервер — тренер и игрок обязаны видеть одни и те же числа.
-  const slices = useMemo(() => toPizzaSlices(player.slices), [player.slices]);
-  const verdict = useMemo(() => verdictOf(player.slices), [player.slices]);
+  // Сезон или последний матч. Профиль по умолчанию сезонный: на одном матче
+  // выборка — шум, и форма прыгала бы от тура к туру.
+  const [tab, setTab] = useState('season');
+  // Матчи тянем ЗДЕСЬ и отдаём вниз: их же показывает лента «По матчам», а два
+  // запроса одного и того же неизбежно разъезжаются.
+  const [matchData, setMatchData] = useState(null);
+  const [matchErr, setMatchErr] = useState('');
+
+  useEffect(() => {
+    let alive = true;
+    setMatchData(null); setMatchErr(''); setTab('season');
+    if (!age || !player?.id) return undefined;
+    fetchPlayerMatches(age, player.id)
+      .then((d) => alive && setMatchData(d))
+      .catch((e) => alive && setMatchErr(String(e?.message ?? e)));
+    return () => { alive = false; };
+  }, [age, player?.id]);
+
+  const последний = useMemo(() => {
+    const ms = matchData?.matches ?? [];
+    // Последний СЫГРАННЫЙ: в календаре хвостом стоят будущие туры с нулями.
+    const сыгранные = ms.filter((m) => m.result != null || m.minutes > 0);
+    return сыгранные.length ? сыгранные[сыгранные.length - 1] : null;
+  }, [matchData]);
+
+  const слайсыСезон = useMemo(() => toPizzaSlices(player.slices), [player.slices]);
+  const слайсыМатч = useMemo(
+    () => toMatchSlices(matchData?.axes, последний),
+    [matchData, последний],
+  );
+  const матчВыбран = tab === 'match' && последний;
+  const slices = матчВыбран ? слайсыМатч : слайсыСезон;
+  const verdict = useMemo(
+    () => (матчВыбран ? null : verdictOf(player.slices)),
+    [матчВыбран, player.slices],
+  );
   const line = player.line;
   const poolSize = player.peersCount ?? 0;
 
@@ -218,9 +252,36 @@ function PlayerCard({ player, onCompare, compareLabel, compareDisabled, age, lit
         </div>
       </div>
 
+      <div className="lite-tabs" role="tablist" aria-label="Период">
+        <button
+          type="button" role="tab" aria-selected={tab === 'season'}
+          className={`lite-tab${tab === 'season' ? ' lite-tab--on' : ''}`}
+          onClick={() => setTab('season')}
+        >
+          За сезон
+        </button>
+        <button
+          type="button" role="tab" aria-selected={tab === 'match'}
+          className={`lite-tab${tab === 'match' ? ' lite-tab--on' : ''}`}
+          onClick={() => setTab('match')}
+          disabled={!последний}
+          title={последний ? '' : 'Сыгранных матчей пока нет'}
+        >
+          Последний матч
+          {последний && <span className="lite-tab__sub">{последний.opponent}</span>}
+        </button>
+      </div>
+
       {/* Вывод словами — первым и крупно: это то, что тренер забирает с собой.
           Числа ниже объясняют вывод, а не заменяют его (контракт CLAUDE.md). */}
       {verdict && <p className="lite-verdict">{verdict.text}</p>}
+      {матчВыбран && (
+        <p className="lite-verdict">
+          {последний.opponent}
+          {последний.score ? `, ${последний.score}` : ''} · {последний.minutes} мин на поле.
+          Числа — за этот матч, рядом — как обычно у игрока.
+        </p>
+      )}
 
       <div className="lite-card__pizza">
         <PizzaChart
@@ -251,7 +312,9 @@ function PlayerCard({ player, onCompare, compareLabel, compareDisabled, age, lit
               </span>
               <span className="lite-focus__ax">{s.axis}</span>
               <span className="lite-focus__pct">
-                в среднем у {LINE_PLURAL[line]} {baseLabel} — {s.average.toFixed(1)}
+                {матчВыбран
+                  ? `обычно у него — ${s.average.toFixed(1)}`
+                  : `в среднем у ${LINE_PLURAL[line]} ${baseLabel} — ${s.average.toFixed(1)}`}
               </span>
             </div>
           );
@@ -259,9 +322,9 @@ function PlayerCard({ player, onCompare, compareLabel, compareDisabled, age, lit
       </div>
 
       <p className="lite-note">
-        Число на секторе — сколько это в среднем за матч, длина сектора — место
-        среди {LINE_PLURAL[line]} {baseLabel}. Под каждым главным показателем —
-        среднее по амплуа, с которым его и стоит читать.
+        {матчВыбран
+          ? 'Число на секторе — сколько было в этом матче, длина сектора — сколько это относительно обычного для игрока: половина круга — его привычный уровень.'
+          : `Число на секторе — сколько это в среднем за матч, длина сектора — место среди ${LINE_PLURAL[line]} ${baseLabel}. Под каждым показателем — среднее по амплуа, с которым его и стоит читать.`}
         {poolSize < 8 && ` Сравнение идёт всего с ${poolSize} игроками — доли приблизительны.`}
       </p>
 
@@ -277,7 +340,7 @@ function PlayerCard({ player, onCompare, compareLabel, compareDisabled, age, lit
         )}
       </div>
 
-      {age && <MatchStrip age={age} player={player} />}
+      {age && <MatchStrip data={matchData} err={matchErr} />}
       {age && <FeedbackBlock age={age} player={player} />}
       {age && <ShareStrip age={age} player={player} epoch={shareEpoch} onOpen={() => onShare(player)} />}
     </div>

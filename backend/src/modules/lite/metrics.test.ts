@@ -35,12 +35,13 @@ test('трекинговой физики в осях нет — её нет с�
   }
 });
 
-test('у каждого амплуа ровно 6 осей, 3 из них главные, у всех есть подпись', () => {
+test('базовый набор амплуа — ровно три показателя с подписями', () => {
+  // Решение владельца: базовых три, больше добавляет сам тренер.
   for (const line of LINES) {
     const axes = axesOfLine(line);
-    assert.equal(axes.length, 6, `${line}: осей должно быть 6`);
-    assert.equal(new Set(axes).size, 6, `${line}: оси не должны повторяться`);
-    assert.equal(LINE_SETS[line].focus.length, 3, `${line}: главных должно быть 3`);
+    assert.equal(axes.length, 3, `${line}: базовых показателей должно быть 3`);
+    assert.equal(new Set(axes).size, 3, `${line}: показатели не должны повторяться`);
+    assert.equal(LINE_SETS[line].base.length, 3, `${line}: база — три`);
     for (const key of axes) {
       assert.ok(AXES[key]?.label, `${line}: у оси ${key} нет подписи`);
       assert.ok(AXES[key]?.hint, `${line}: у оси ${key} нет пояснения`);
@@ -48,10 +49,10 @@ test('у каждого амплуа ровно 6 осей, 3 из них гла
   }
 });
 
-test('умолчание амплуа — шесть осей, три главных', () => {
+test('умолчание амплуа — три показателя, все главные', () => {
   const set = defaultLineSet('FWD');
-  assert.deepEqual(set.focus, ['attack.shot', 'attack.dribble', 'attack.keyPass']);
-  assert.equal(set.axes.length, 6);
+  assert.deepEqual(set.axes, ['attack.shot', 'attack.dribble', 'attack.keyPass']);
+  assert.deepEqual(set.focus, set.axes);
 });
 
 test('набор от тренера проверяется каталогом и границами', () => {
@@ -78,7 +79,8 @@ test('набор от тренера проверяется каталогом �
 
   // Слишком мало и слишком много — отказ, а не тихая починка: тренер должен
   // увидеть, что набор не принят.
-  assert.equal(sanitizeLineSet(['attack.shot', 'defence.tackle'], []), null);
+  assert.equal(sanitizeLineSet(['attack.shot', 'defence.tackle'], []), null);   // два — мало
+  assert.ok(sanitizeLineSet(['attack.shot', 'defence.tackle', 'defence.duel'], []));  // три — база
   assert.equal(sanitizeLineSet(Object.keys(AXES), []), null);
   assert.equal(sanitizeLineSet('не массив', []), null);
 
