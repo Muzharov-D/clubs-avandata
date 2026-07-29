@@ -72,15 +72,30 @@ export function toMatchSlices(axes, match) {
 export function verdictOf(slices) {
   const rated = (slices ?? []).filter((s) => Number.isFinite(Number(s.value)));
   if (rated.length < 2) return null;
+
   const sorted = [...rated].sort((a, b) => b.percentile - a.percentile);
   const best = sorted[0];
   const worst = sorted[sorted.length - 1];
-  if (best.percentile - worst.percentile < 15) {
-    return { text: 'Ровный профиль без явных перепадов', strong: null, weak: null };
+
+  // Разброс есть — называем сильную сторону и точку роста.
+  if (best.percentile - worst.percentile >= 15) {
+    return {
+      text: `Сильнее всего — ${best.label.toLowerCase()}. Точка роста — ${worst.label.toLowerCase()}.`,
+      strong: best.key,
+      weak: worst.key,
+    };
   }
-  return {
-    text: `Сильнее всего — ${best.label.toLowerCase()}. Точка роста — ${worst.label.toLowerCase()}.`,
-    strong: best.key,
-    weak: worst.key,
-  };
+
+  // Профиль ровный — но «ровный» сам по себе тренеру ничего не говорит.
+  // Смотрим, где этот ровный уровень: выше среднего по амплуа или ниже.
+  // Порог 0.15 — тот же, что у стрелок: меньше это шум округления.
+  const выше = rated.filter((s) => Number(s.value) - Number(s.average ?? 0) > 0.15).length;
+  const ниже = rated.filter((s) => Number(s.average ?? 0) - Number(s.value) > 0.15).length;
+  if (выше === rated.length) {
+    return { text: 'Ровно и выше среднего по всем показателям', strong: null, weak: null };
+  }
+  if (ниже === rated.length) {
+    return { text: 'Ровно, но ниже среднего по всем показателям', strong: null, weak: null };
+  }
+  return { text: 'Ровный профиль без явных перепадов', strong: null, weak: null };
 }
