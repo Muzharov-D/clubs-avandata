@@ -25,9 +25,9 @@ export default function SidebarNav() {
       ? { id: 'hub', label: 'Обзор клуба', path: '/club-hub', icon: '🏛️' }
       : null,
     { id: 'club',      label: isHeadCoach ? 'Команда' : 'Клуб', path: '/club', icon: '🏆' },
-    // Lite — упрощённый разбор игрока по амплуа (6 осей, 3 главных).
+    // Lite — «Моя команда»: состав, профили по амплуа и связь с игроком.
     isCoach
-      ? { id: 'lite', label: 'Разбор игрока', path: '/lite', icon: '🎯' }
+      ? { id: 'lite', label: 'Моя команда', path: '/lite', icon: '🎯' }
       : null,
     isCoach
       ? { id: 'analytics', label: 'Аналитика', path: '/analytics', icon: '◉' }

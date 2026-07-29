@@ -447,9 +447,9 @@ export default function LiteView() {
     <div className="lite">
       <header className="lite-head">
         <div>
-          <h1 className="lite-title">Разбор игрока</h1>
+          <h1 className="lite-title">Моя команда</h1>
           <p className="lite-sub">
-            Показатели по амплуа, главные выделены
+            Состав и показатели по амплуа
             {selectedTeam?.name ? ` · ${selectedTeam.name}` : ''}
           </p>
         </div>
