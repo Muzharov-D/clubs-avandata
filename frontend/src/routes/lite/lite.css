@@ -523,3 +523,21 @@
   font-size: 11.5px; font-weight: 500; color: var(--text-faint);
   max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
+
+
+/* ── Мало показателей: карточки вместо пиццы ──
+   Три сектора не дают силуэта, а подписи на них наезжают друг на друга.
+   Полоса внутри карточки несёт то же, что несла длина сектора. */
+.lite-focus--wide { margin-top: 14px; }
+.lite-focus--wide .lite-focus__item { padding: 16px 14px; }
+.lite-focus--wide .lite-focus__val { font-size: 30px; }
+.lite-focus__bar {
+  display: block; height: 6px; margin: 9px 0 7px; border-radius: 999px;
+  background: var(--bg-surface-2); overflow: hidden;
+}
+.lite-focus__fill { display: block; height: 100%; border-radius: 999px; background: var(--accent-cyan); }
+
+@media (max-width: 780px) {
+  /* На телефоне карточка снова строкой, но полосе нужна своя ширина. */
+  .lite-focus--wide .lite-focus__item { display: block; text-align: left; }
+}

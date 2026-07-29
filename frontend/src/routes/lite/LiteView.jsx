@@ -228,6 +228,14 @@ function PlayerCard({ player, onCompare, compareLabel, compareDisabled, age, lit
   }
 
   const focusSlices = slices.filter((s) => !s.muted);
+  /**
+   * Три-четыре сектора — это не пицца, а почти сплошной круг: формы нет, а
+   * подписи жмутся друг к другу. Пока показателей мало, показываем их
+   * карточками с полосой; пицца возвращается сама, как только тренер добавит
+   * пятый показатель и у профиля появляется силуэт.
+   */
+  const мало = slices.length <= 4;
+  const карточки = мало ? slices : focusSlices;
 
   return (
     <div className="lite-card">
@@ -283,19 +291,21 @@ function PlayerCard({ player, onCompare, compareLabel, compareDisabled, age, lit
         </p>
       )}
 
-      <div className="lite-card__pizza">
-        <PizzaChart
-          subjectName=""
-          slices={slices}
-          vsLabel={LINE_PLURAL[line]}
-          centerLabel={LINE_LABEL[line].toUpperCase()}
-          size={620}
-          showLegend={false}
-        />
-      </div>
+      {!мало && (
+        <div className="lite-card__pizza">
+          <PizzaChart
+            subjectName=""
+            slices={slices}
+            vsLabel={LINE_PLURAL[line]}
+            centerLabel={LINE_LABEL[line].toUpperCase()}
+            size={620}
+            showLegend={false}
+          />
+        </div>
+      )}
 
-      <div className="lite-focus">
-        {focusSlices.map((s) => {
+      <div className={`lite-focus${мало ? ' lite-focus--wide' : ''}`}>
+        {карточки.map((s) => {
           // Опора — среднее по амплуа. Разницу показываем только заметную,
           // иначе стрелка мигала бы на шуме округления.
           const d = Number((s.raw - s.average).toFixed(1));
@@ -311,6 +321,14 @@ function PlayerCard({ player, onCompare, compareLabel, compareDisabled, age, lit
                 )}
               </span>
               <span className="lite-focus__ax">{s.axis}</span>
+              {мало && (
+                <span className="lite-focus__bar" role="presentation">
+                  <span
+                    className="lite-focus__fill"
+                    style={{ width: `${Math.max(0, Math.min(100, s.value))}%` }}
+                  />
+                </span>
+              )}
               <span className="lite-focus__pct">
                 {матчВыбран
                   ? `обычно у него — ${s.average.toFixed(1)}`
@@ -323,8 +341,9 @@ function PlayerCard({ player, onCompare, compareLabel, compareDisabled, age, lit
 
       <p className="lite-note">
         {матчВыбран
-          ? 'Число на секторе — сколько было в этом матче, длина сектора — сколько это относительно обычного для игрока: половина круга — его привычный уровень.'
-          : `Число на секторе — сколько это в среднем за матч, длина сектора — место среди ${LINE_PLURAL[line]} ${baseLabel}. Под каждым показателем — среднее по амплуа, с которым его и стоит читать.`}
+          ? `Числа — за этот матч, полоса${мало ? '' : ' и длина сектора'} — сколько это относительно обычного для игрока: половина — его привычный уровень.`
+          : `Числа — сколько это в среднем за матч, полоса${мало ? '' : ' и длина сектора'} — место среди ${LINE_PLURAL[line]} ${baseLabel}. Под каждым показателем — среднее по амплуа, с которым его и стоит читать.`}
+        {мало && ' Добавьте пятый показатель в «Показателях по амплуа» — и профиль снова станет пиццей.'}
         {poolSize < 8 && ` Сравнение идёт всего с ${poolSize} игроками — доли приблизительны.`}
       </p>
 
