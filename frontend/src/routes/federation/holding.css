@@ -127,6 +127,8 @@
   transition: background 0.15s;
 }
 .hold-match:hover { background: rgba(255,255,255,0.04); }
+.hold-match--plain { cursor: default; }
+.hold-match--plain:hover { background: none; }
 .hold-match__opp { font-size: 13px; }
 .hold-match__ha { font-size: 11px; color: var(--text-tertiary); }
 .hold-match__score { font-family: var(--font-display); font-weight: 700; font-size: 14px; font-variant-numeric: tabular-nums; }

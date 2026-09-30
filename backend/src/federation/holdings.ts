@@ -9,9 +9,10 @@
  * разные пространства id), поэтому конфиг хранит ключи имён, а не id.
  */
 import {
-  listTournaments, regionStandings, regionPlayers, clubName, cached, pmap, TTL,
+  listTournaments, regionStandings, regionPlayers, clubName, cached, pmap, TTL, resolveFfspbTournament,
   type RegionPlayer, type ClubStandRow, type TournamentRef,
 } from './avandataSource.js';
+import { tournamentMatches, tableFromMatches, findTeam, FfspbWarmingError, type FfMatch } from './ffspbLive.js';
 import { getClubRatingsByTournament, getMatches, type AvRatingTeam, type AvMatch } from '../services/avandataApi.js';
 import { normTeam } from './teamName.js';
 import { classifyDivision, type DivisionKey } from './division.js';
@@ -71,11 +72,17 @@ export const memberOf = (cfg: Pick<HoldingConfig, 'members'>, teamName: string |
 export type Outcome = 'w' | 'd' | 'l';
 export interface HoldingMatchSide { name: string; logo: string | null; score: number | null; isMember: boolean }
 export interface HoldingMatch {
+  /** Ключ строки: id матча AvanData, если есть, иначе id ФФСПб. */
   id: number; date: string; tour: number; age: string; division: string;
+  /** id матча в AvanData (есть разбор → открывается карточка матча), null — только протокол. */
+  avId: number | null;
+  /** id матча в ФФСПб (протокол), null — матч известен только из AvanData. */
+  ffId: number | null;
   home: HoldingMatchSide; away: HoldingMatchSide;
   /** Итог для команды холдинга; null — матч не сыгран. */
   outcome: Outcome | null;
   played: boolean;
+  technical: boolean;
 }
 export interface HoldingPlayer {
   id: number; name: string; birthYear: number | null; position: string | null;
@@ -92,7 +99,8 @@ export interface HoldingTeam {
   year: number; category: string; ageTitle: string;
   division: string; divisionKey: DivisionKey | null;
   standing: HoldingStanding | null;
-  standingsSource: 'ffspb' | 'mirror'; standingsDegraded: boolean;
+  /** ffspb-live — таблица посчитана из живых протоколов ФФСПб; ffspb — официальная таблица; mirror — зеркало AvanData. */
+  standingsSource: 'ffspb-live' | 'ffspb' | 'mirror'; standingsDegraded: boolean;
   table: HoldingTableRow[];
   rating: { value: number; rank: number; size: number } | null;
   squad: { players: number; rated: number; avgRating: number | null; inTop30: number };
@@ -172,8 +180,26 @@ const toMatch = (m: AvMatch, ref: TournamentRef, tour: number, cfg: HoldingConfi
   const played = m.status === 'ready' && (home.score ?? 0) + (away.score ?? 0) > 0;
   const us = home.isMember ? home : away, them = home.isMember ? away : home;
   return {
-    id: m.id, date: m.dateTime, tour, age: ref.category, division: ref.divisionTitle,
-    home, away, played, outcome: outcomeFor(us.score, them.score, played),
+    id: m.id, avId: m.id, ffId: ffIdOf(m), date: m.dateTime, tour, age: ref.category, division: ref.divisionTitle,
+    home, away, played, outcome: outcomeFor(us.score, them.score, played), technical: false,
+  };
+};
+
+/** id матча ФФСПб из ссылки AvanData (`ffspbMatchIdInfo.outter` = «/api/matches/3845578»). */
+export const ffIdOf = (m: Pick<AvMatch, 'ffspbMatchIdInfo'>): number | null => {
+  const s = m.ffspbMatchIdInfo?.outter;
+  const mm = typeof s === 'string' ? s.match(/(\d+)\s*$/) : null;
+  return mm ? Number(mm[1]) : null;
+};
+
+/** Матч из живого протокола ФФСПб; avId — если AvanData знает этот матч (есть разбор). */
+const toLiveMatch = (m: FfMatch, ref: TournamentRef, division: string, cfg: HoldingConfig, memberKey: string, avId: number | null): HoldingMatch => {
+  const side = (t: FfMatch['home'], score: number | null): HoldingMatchSide => ({ name: t.name, logo: t.logo, score, isMember: memberOf(cfg, t.name)?.key === memberKey });
+  const home = side(m.home, m.hs), away = side(m.away, m.as);
+  const us = home.isMember ? home : away, them = home.isMember ? away : home;
+  return {
+    id: avId ?? m.id, avId, ffId: m.id, date: m.date, tour: m.tour ?? 0, age: ref.category, division,
+    home, away, played: m.done, outcome: outcomeFor(us.score, them.score, m.done), technical: m.technical,
   };
 };
 
@@ -234,16 +260,50 @@ async function buildHoldingProfile(seasonId: number, cfg: HoldingConfig): Promis
       const tid = refs[0]?.tournamentId;
       if (tid == null) return;
 
-      const [standings, ratings, players] = await Promise.all([
-        regionStandings(seasonId, year),
+      const [ratings, players] = await Promise.all([
         getClubRatingsByTournament(seasonId, tid).catch((e: unknown) => { logger.warn({ err: String(e), year }, '[holding] рейтинг когорты недоступен'); return [] as AvRatingTeam[]; }),
         regionPlayers(seasonId, year),
       ]);
 
-      // Дивизион команды — по рейтингу AvanData (там division у каждой команды), запасной путь — таблица.
+      // Матчи AvanData по всем дивизионам когорты — для сшивки с протоколами (есть разбор → карточка)
+      // и как запасной источник результатов, если ФФСПб недоступен.
+      const avLists = await pmap(refs, 2, async (ref) => {
+        const tours = Array.from({ length: Math.max(1, ref.lastPlayedTour) + 2 }, (_, i) => i + 1);
+        const lists = await pmap(tours, 6, async (tour) => {
+          try {
+            const ms = await cached(`avmatches:${ref.tournamentId}:${ref.divisionId}:${tour}`, TTL, () => getMatches(ref.tournamentId, ref.divisionId, tour));
+            return ms.map((m) => ({ m, tour, ref }));
+          } catch { return []; }
+        });
+        return lists.flat();
+      });
+      const avMatches = avLists.flat();
+      const avByFf = new Map<number, number>();
+      for (const { m } of avMatches) { const ff = ffIdOf(m); if (ff != null) avByFf.set(ff, m.id); }
+
+      // Живые протоколы ФФСПб: актуальные результаты и таблицы дивизионов, посчитанные из них.
+      let live: { matches: FfMatch[]; stages: Map<number, string> } | null = null;
+      try {
+        const ageM = (refs[0]?.fullTitle ?? '').match(/до (\d+) лет/);
+        const t = await resolveFfspbTournament(year, ageM ? Number(ageM[1]) : null);
+        if (t && t.id != null) {
+          const stages = new Map(((t.stages ?? []) as Array<{ id?: number; name?: string }>).filter((x) => x.id != null).map((x) => [Number(x.id), String(x.name ?? 'Лига')]));
+          const matches = await tournamentMatches(Number(t.id));
+          if (matches.length) live = { matches, stages };
+        }
+      } catch (e) {
+        if (e instanceof FfspbWarmingError) logger.info({ year }, '[holding] протоколы ФФСПб ещё грузятся фоном → пока зеркало');
+        else logger.warn({ err: String(e), year }, '[holding] живые протоколы ФФСПб недоступны → зеркало');
+      }
+
+      // Официальная/зеркальная таблица — только если живых протоколов нет (медленный путь с ретраями).
+      const standings = live ? null : await regionStandings(seasonId, year, { skipOfficial: true });
+
+      // Дивизион команды: по рейтингу AvanData, по стадии ФФСПб, по таблице.
       const divisionByKey = new Map<string, string>();
       for (const t of ratings) if (t.division?.name) divisionByKey.set(normTeam(t.name), t.division.name);
-      for (const g of standings.groups) for (const r of g.rows) if (!divisionByKey.has(normTeam(r.name))) divisionByKey.set(normTeam(r.name), g.division);
+      if (live) for (const m of live.matches) { const d = live.stages.get(m.stageId ?? -1); if (d) { divisionByKey.set(normTeam(m.home.name), d); divisionByKey.set(normTeam(m.away.name), d); } }
+      if (standings) for (const g of standings.groups) for (const r of g.rows) if (!divisionByKey.has(normTeam(r.name))) divisionByKey.set(normTeam(r.name), g.division);
 
       // Топ-30 когорты по дивизиону — «таланты лиги» (та же методика, что talentConcentration).
       const top30ByDiv = new Map<DivisionKey | null, Set<number>>();
@@ -261,13 +321,13 @@ async function buildHoldingProfile(seasonId: number, cfg: HoldingConfig): Promis
       }
 
       for (const member of cfg.members) {
-        // Команда участника в этой когорте: ищем в рейтинге (есть у всех), иначе в таблице.
         const ratingRow = ratings.find((t) => normTeam(t.name) === member.key);
-        let standRow: ClubStandRow | undefined; let standGroup: (typeof standings.groups)[number] | undefined;
-        for (const g of standings.groups) { const r = g.rows.find((x) => normTeam(x.name) === member.key); if (r) { standRow = r; standGroup = g; break; } }
-        if (!ratingRow && !standRow) continue; // в этой когорте у школы команды нет
+        const liveTeam = live ? findTeam(live.matches, member.key) : null;
+        let standRow: ClubStandRow | undefined; let standGroup: { division: string; rows: ClubStandRow[] } | undefined;
+        if (standings) for (const g of standings.groups) { const r = g.rows.find((x) => normTeam(x.name) === member.key); if (r) { standRow = r; standGroup = g; break; } }
+        if (!ratingRow && !standRow && !liveTeam) continue; // в этой когорте у школы команды нет
 
-        const division = ratingRow?.division?.name ?? standGroup?.division ?? 'Лига';
+        const division = (liveTeam && live ? live.stages.get(liveTeam.stageId ?? -1) : undefined) ?? ratingRow?.division?.name ?? standGroup?.division ?? 'Лига';
         const divisionKey = classifyDivision(division);
         const ref = refs.find((r) => classifyDivision(r.divisionTitle) === divisionKey) ?? refs[0]!;
 
@@ -278,12 +338,25 @@ async function buildHoldingProfile(seasonId: number, cfg: HoldingConfig): Promis
           rating = { value: ratingRow.points, rank: pool.findIndex((t) => t.id === ratingRow.id) + 1, size: pool.length };
         }
 
-        // Место в турнирной таблице дивизиона (официальный порядок ФФСПб или зеркало).
+        // Таблица и место: из живых протоколов ФФСПб, иначе официальная/зеркало.
         let standing: HoldingStanding | null = null;
-        const table: HoldingTableRow[] = (standGroup?.rows ?? []).map((r) => ({ ...r, isMember: normTeam(r.name) === member.key }));
-        if (standRow && standGroup) {
-          const idx = standGroup.rows.indexOf(standRow);
-          standing = { place: idx + 1, size: standGroup.rows.length, played: standRow.played, won: standRow.won, drawn: standRow.drawn, lost: standRow.lost, goalDiff: standRow.goalDiff, points: standRow.points };
+        let table: HoldingTableRow[] = [];
+        let standingsSource: HoldingTeam['standingsSource'] = 'mirror';
+        let standingsDegraded = false;
+        if (liveTeam && live) {
+          const rows = tableFromMatches(live.matches, liveTeam.stageId);
+          table = rows.map((r) => ({ id: r.teamId, name: r.name, logo: r.logo, division, played: r.played, won: r.won, drawn: r.drawn, lost: r.lost, goalDiff: r.goalDiff, points: r.points, isMember: r.teamId === liveTeam.team.id }));
+          const idx = rows.findIndex((r) => r.teamId === liveTeam.team.id);
+          const r = rows[idx];
+          if (r) standing = { place: idx + 1, size: rows.length, played: r.played, won: r.won, drawn: r.drawn, lost: r.lost, goalDiff: r.goalDiff, points: r.points };
+          standingsSource = 'ffspb-live';
+        } else if (standings) {
+          table = (standGroup?.rows ?? []).map((r) => ({ ...r, isMember: normTeam(r.name) === member.key }));
+          if (standRow && standGroup) {
+            const idx = standGroup.rows.indexOf(standRow);
+            standing = { place: idx + 1, size: standGroup.rows.length, played: standRow.played, won: standRow.won, drawn: standRow.drawn, lost: standRow.lost, goalDiff: standRow.goalDiff, points: standRow.points };
+          }
+          standingsSource = standings.source; standingsDegraded = standings.degraded;
         }
 
         // Состав когорты: игроки этой школы с разобранных матчей.
@@ -297,28 +370,26 @@ async function buildHoldingProfile(seasonId: number, cfg: HoldingConfig): Promis
         };
         allPlayers.push(...mine);
 
-        // Матчи команды: все туры дивизиона (+2 вперёд — календарь), фильтр по участнику.
-        const tours = Array.from({ length: Math.max(1, ref.lastPlayedTour) + 2 }, (_, i) => i + 1);
-        const lists = await pmap(tours, 6, async (tour) => {
-          try { return (await getMatches(ref.tournamentId, ref.divisionId, tour)).map((m) => ({ m, tour })); } catch { return []; }
-        });
-        const matches = lists.flat()
-          .filter(({ m }) => memberOf(cfg, m.ownTeam.title)?.key === member.key || memberOf(cfg, m.guestTeam.title)?.key === member.key)
-          .map(({ m, tour }) => toMatch(m, ref, tour, cfg, member.key))
-          .sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : 0));
+        // Матчи команды: живые протоколы ФФСПб (счёт актуальный, avId — если есть разбор),
+        // иначе — матчи AvanData.
+        const matches: HoldingMatch[] = (liveTeam && live
+          ? live.matches.filter((m) => m.home.id === liveTeam.team.id || m.away.id === liveTeam.team.id)
+            .map((m) => toLiveMatch(m, ref, division, cfg, member.key, avByFf.get(m.id) ?? null))
+          : avMatches.filter(({ m }) => memberOf(cfg, m.ownTeam.title)?.key === member.key || memberOf(cfg, m.guestTeam.title)?.key === member.key)
+            .map(({ m, tour, ref: r }) => toMatch(m, r, tour, cfg, member.key))
+        ).sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : 0));
         const played = matches.filter((m) => m.played);
-        // «Следующий» — ближайший несыгранный не раньше вчера (в источнике встречаются старые
-        // незакрытые матчи со статусом assigned — это не календарь).
+        // «Следующий» — ближайший несыгранный не раньше вчера.
         const yesterday = new Date(Date.now() - 24 * 3600 * 1000).toISOString();
         const upcoming = matches.filter((m) => !m.played && m.date >= yesterday).sort((a, b) => (a.date < b.date ? -1 : 1));
 
         teams.push({
           key: `${member.key}:${year}`, clubKey: member.key, clubLabel: member.label,
-          name: ratingRow?.name ?? standRow?.name ?? `${member.label} ${year}`,
-          logo: ratingRow?.logo ?? standRow?.logo ?? null,
+          name: ratingRow?.name ?? standRow?.name ?? liveTeam?.team.name ?? `${member.label} ${year}`,
+          logo: ratingRow?.logo ?? standRow?.logo ?? liveTeam?.team.logo ?? null,
           year, category: ref.category, ageTitle: ageTitleOf(ref.fullTitle, ref.category),
           division, divisionKey,
-          standing, standingsSource: standings.source, standingsDegraded: standings.degraded, table,
+          standing, standingsSource, standingsDegraded, table,
           rating, squad, top: rated.slice(0, 3),
           form: formOf(played), last: played[0] ?? null, next: upcoming[0] ?? null, matches,
         });

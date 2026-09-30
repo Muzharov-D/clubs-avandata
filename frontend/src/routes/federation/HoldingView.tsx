@@ -16,14 +16,14 @@ type Outcome = 'w' | 'd' | 'l';
 interface Brand { primary: string; bright: string; soft: string; onPrimary: string }
 interface Member { key: string; label: string; logo: string | null; teams: number }
 interface Side { name: string; logo: string | null; score: number | null; isMember: boolean }
-interface HMatch { id: number; date: string; tour: number; age: string; division: string; home: Side; away: Side; outcome: Outcome | null; played: boolean }
+interface HMatch { id: number; avId: number | null; ffId: number | null; date: string; tour: number; age: string; division: string; home: Side; away: Side; outcome: Outcome | null; played: boolean; technical: boolean }
 interface HPlayer { id: number; name: string; birthYear: number | null; position: string | null; rating: number | null; mp: number; photo: string | null; team: string; clubKey: string; clubLabel: string; division: string }
 interface Standing { place: number; size: number; played: number; won: number; drawn: number; lost: number; goalDiff: number; points: number }
 interface TableRow { id: number; name: string; logo: string | null; played: number; won: number; drawn: number; lost: number; goalDiff: number; points: number; isMember: boolean }
 interface HTeam {
   key: string; clubKey: string; clubLabel: string; name: string; logo: string | null;
   year: number; category: string; ageTitle: string; division: string; divisionKey: string | null;
-  standing: Standing | null; standingsSource: 'ffspb' | 'mirror'; standingsDegraded: boolean; table: TableRow[];
+  standing: Standing | null; standingsSource: 'ffspb-live' | 'ffspb' | 'mirror'; standingsDegraded: boolean; table: TableRow[];
   rating: { value: number; rank: number; size: number } | null;
   squad: { players: number; rated: number; avgRating: number | null; inTop30: number };
   top: HPlayer[]; form: Outcome[]; last: HMatch | null; next: HMatch | null; matches: HMatch[];
@@ -44,7 +44,7 @@ const shortDiv = (d: string) => d.replace(/\s*лига\s*/i, ' лига').trim()
 /** Сторона холдинга и соперник в матче. */
 const sides = (m: HMatch) => (m.home.isMember ? { us: m.home, them: m.away, home: true } : { us: m.away, them: m.home, home: false });
 const toBase = (m: HMatch): MatchBase => ({
-  id: m.id, age: m.age, division: m.division, date: m.date,
+  id: m.avId ?? m.id, age: m.age, division: m.division, date: m.date,
   home: { name: m.home.name, logo: m.home.logo, score: m.home.score }, away: { name: m.away.name, logo: m.away.logo, score: m.away.score },
 });
 
@@ -87,6 +87,12 @@ export function FederationHolding() {
     '--hold-soft': data.brand.soft, '--hold-on': data.brand.onPrimary,
   } as CSSProperties;
   const degraded = data.teams.some((t) => t.standingsDegraded);
+  const live = data.teams.length > 0 && data.teams.every((t) => t.standingsSource === 'ffspb-live');
+  const sourceBadge = live
+    ? { cls: 'fed-badge--success', text: '● Таблицы и результаты — по протоколам ФФСПб', tip: 'Результаты и таблицы дивизионов посчитаны из официальных протоколов ФФСПб (обновление каждые 10 минут).' }
+    : degraded
+      ? { cls: 'fed-badge--warning', text: '⚠ Часть таблиц — зеркало AvanData', tip: 'Официальный API ФФСПб был недоступен — часть таблиц из зеркала AvanData, в нём бывают пропуски команд.' }
+      : { cls: 'fed-badge--success', text: '● Официальные таблицы ФФСПб', tip: 'Турнирные таблицы — из официального API ФФСПб.' };
   const byDiv = data.summary.byDivision.map((d) => `${d.teams} · ${shortDiv(d.division)}`).join(' · ');
 
   return (
@@ -104,9 +110,7 @@ export function FederationHolding() {
             {' · '}{data.years[data.years.length - 1]}–{data.years[0]} г.р. · Высшая и Первая лига
           </p>
           <div className="hold-hero__badges">
-            <span className={`fed-badge ${degraded ? 'fed-badge--warning' : 'fed-badge--success'}`} title={degraded ? 'Официальный API ФФСПб был недоступен — часть таблиц из зеркала AvanData, в нём бывают пропуски команд.' : 'Турнирные таблицы — из официального API ФФСПб.'}>
-              {degraded ? '⚠ Часть таблиц — зеркало AvanData' : '● Официальные таблицы ФФСПб'}
-            </span>
+            <span className={`fed-badge ${sourceBadge.cls}`} title={sourceBadge.tip}>{sourceBadge.text}</span>
             <span className="fed-badge">обновлено {fmtStamp(data.asOf)}</span>
           </div>
         </div>
@@ -333,6 +337,7 @@ function TeamDetail({ team, onMatch, onClose }: { team: HTeam; onMatch: (m: HMat
               </tbody>
             </table>
           )}
+          {team.standingsSource === 'ffspb-live' && <p className="fed-note" style={{ marginTop: 8 }}>Посчитано по протоколам ФФСПб: очки, личные встречи, разница мячей.</p>}
           {team.standingsDegraded && <p className="fed-note" style={{ marginTop: 8 }}>⚠ Зеркало AvanData — официальный API ФФСПб был недоступен, возможны пропуски команд.</p>}
         </div>
 
@@ -355,12 +360,13 @@ function TeamDetail({ team, onMatch, onClose }: { team: HTeam; onMatch: (m: HMat
           <div className="hold-matches">
             {(showAll ? played : played.slice(0, 8)).map((m) => {
               const { us, them, home } = sides(m);
+              const hasCard = m.avId != null;
               return (
-                <button type="button" key={m.id} className="hold-match" onClick={() => onMatch(m)} title="Открыть карточку матча">
+                <button type="button" key={m.id} className={`hold-match${hasCard ? '' : ' hold-match--plain'}`} onClick={hasCard ? () => onMatch(m) : undefined} disabled={!hasCard} title={hasCard ? 'Открыть карточку матча (разбор AvanData)' : 'Протокол ФФСПб — разбора матча пока нет'}>
                   <span className={`hold-form__dot hold-form__dot--${m.outcome ?? 'd'}`}>{m.outcome ? OUT[m.outcome] : '·'}</span>
                   <ClubShield name={them.name} logoUrl={them.logo} size={22} />
-                  <span className="hold-match__opp hold-ellipsis" title={them.name}>{them.name.replace(/\s*20\d{2}\s*$/, '')}</span>
-                  <span className="hold-match__ha">{home ? 'дома' : 'в гостях'}</span>
+                  <span className="hold-match__opp hold-ellipsis" title={them.name}>{them.name.replace(/\s*20\d{2}\s*$/, '')}{m.technical ? ' · техн.' : ''}</span>
+                  <span className="hold-match__ha">{home ? 'дома' : 'в гостях'}{hasCard ? ' · разбор' : ''}</span>
                   <span className="hold-match__score">{us.score ?? '–'}:{them.score ?? '–'}</span>
                   <span className="hold-match__date">{fmtDate(m.date)}</span>
                 </button>

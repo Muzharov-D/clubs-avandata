@@ -19,6 +19,7 @@ import { normTeam } from './teamName.js';
 import { DIVISION_ALIASES, matchesDivision } from './division.js';
 import { dedupPlayers, normPlayerName } from './playerDedup.js';
 import { snapshotMeta, latestSnapshotsForCohort, type SnapPayload } from './snapshots.js';
+import { ffspbSerialized } from './ffspbLive.js';
 
 // ─── Детали матча (для карточки матча по клику) ──────────────────────────────
 export interface MatchCard { player: string; minute: string }
@@ -416,6 +417,9 @@ class FfspbHttpError extends Error { constructor(public readonly status: number,
 // Транзиентные сбои прокси/ФФСПб (5xx/сеть/таймаут) РЕТРАИМ — иначе один блип молча роняет
 // целую стадию (баг: 2012 вернулась без «Высшей»), да ещё и кэшируется на TTL. 404 — финально.
 async function ffspbApiGet(path: string, attempts = 3): Promise<Record<string, unknown>> {
+  return ffspbSerialized(() => ffspbApiGetRaw(path, attempts));
+}
+async function ffspbApiGetRaw(path: string, attempts: number): Promise<Record<string, unknown>> {
   let lastErr: unknown;
   for (let i = 0; i < attempts; i++) {
     try {
@@ -557,12 +561,13 @@ export interface StandingsResult {
 // Меняется по турам (раз в неделю), поэтому слегка устаревший хороший точнее свежего сломанного.
 const lastGoodStandings = new Map<string, { result: StandingsResult; at: number }>();
 const GOOD_STANDINGS_TTL = 6 * 60 * 60 * 1000;
-export async function regionStandings(seasonId: number, year?: number): Promise<StandingsResult> {
+export async function regionStandings(seasonId: number, year?: number, opts: { skipOfficial?: boolean } = {}): Promise<StandingsResult> {
   const key = `${seasonId}:${year ?? 0}`;
-  const fresh: StandingsResult = await cached(`standings:${key}`, TTL, async () => {
+  const fresh: StandingsResult = await cached(`standings:${key}${opts.skipOfficial ? ':mirror' : ''}`, TTL, async () => {
     const asOf = new Date().toISOString();
     // Сначала ОФИЦИАЛ ФФСПб (через Vercel-прокси), при ошибке/неполноте — зеркало avandata.
-    if (year != null) {
+    // skipOfficial — вызывающий уже пробовал ФФСПб (холдинги): не тратить минуты на ретраи.
+    if (year != null && !opts.skipOfficial) {
       try {
         // До 3 попыток: стадия может отвалиться транзиентом (completeness вернёт null), ретрай ловит.
         for (let attempt = 0; attempt < 3; attempt++) {
@@ -1338,3 +1343,5 @@ async function computeTalentProduction(seasonId: number, year?: number): Promise
 // Кэш/параллельный map/TTL — общие для производных модулей (holdings.ts), чтобы они делили
 // один in-memory кэш с кабинетом, а не заводили свой.
 export { cached, pmap, TTL };
+// Резолв турнира ФФСПб по году рождения — нужен модулю холдингов для живых протоколов.
+export { resolveFfspbTournament };
