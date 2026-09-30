@@ -19,7 +19,7 @@ import { normTeam } from './teamName.js';
 import { DIVISION_ALIASES, matchesDivision } from './division.js';
 import { dedupPlayers, normPlayerName } from './playerDedup.js';
 import { snapshotMeta, latestSnapshotsForCohort, type SnapPayload } from './snapshots.js';
-import { ffspbSerialized } from './ffspbLive.js';
+import { ffspbSerializedFast } from './ffspbLive.js';
 
 // ─── Детали матча (для карточки матча по клику) ──────────────────────────────
 export interface MatchCard { player: string; minute: string }
@@ -417,7 +417,7 @@ class FfspbHttpError extends Error { constructor(public readonly status: number,
 // Транзиентные сбои прокси/ФФСПб (5xx/сеть/таймаут) РЕТРАИМ — иначе один блип молча роняет
 // целую стадию (баг: 2012 вернулась без «Высшей»), да ещё и кэшируется на TTL. 404 — финально.
 async function ffspbApiGet(path: string, attempts = 3): Promise<Record<string, unknown>> {
-  return ffspbSerialized(() => ffspbApiGetRaw(path, attempts));
+  return ffspbSerializedFast(() => ffspbApiGetRaw(path, attempts));
 }
 async function ffspbApiGetRaw(path: string, attempts: number): Promise<Record<string, unknown>> {
   let lastErr: unknown;

@@ -58,6 +58,15 @@ export function ffspbSerialized<T>(fn: () => Promise<T>): Promise<T> {
   return run;
 }
 const serialized = ffspbSerialized;
+// Отдельная «быстрая» очередь для лёгких запросов (турниры, таблицы): они не должны стоять
+// за догрузкой страниц матчей, где каждая страница может висеть минуты. Два параллельных
+// соединения ФФСПб переносит; «вешают» друг друга только пачки запросов.
+let fastQueue: Promise<unknown> = Promise.resolve();
+export function ffspbSerializedFast<T>(fn: () => Promise<T>): Promise<T> {
+  const run = fastQueue.then(fn, fn);
+  fastQueue = run.catch(() => undefined);
+  return run;
+}
 async function ffGet(path: string, attempts = WARM_ATTEMPTS): Promise<Record<string, unknown>> {
   return serialized(async () => {
     let lastErr: unknown;
