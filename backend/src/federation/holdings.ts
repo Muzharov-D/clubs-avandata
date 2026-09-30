@@ -291,7 +291,9 @@ async function buildHoldingProfile(seasonId: number, cfg: HoldingConfig): Promis
       let live: { matches: FfMatch[]; stages: Map<number, string> } | null = null;
       try {
         const ageM = (refs[0]?.fullTitle ?? '').match(/до (\d+) лет/);
-        const t = await resolveFfspbTournament(year, ageM ? Number(ageM[1]) : null);
+        // Резолв турнира ФФСПб идёт через общую очередь к ФФСПб, где могут висеть догрузки
+        // протоколов (минуты) — держим результат сутки, турниры за сезон не меняются.
+        const t = await cached(`ffspb-tournament:${year}`, 24 * 60 * 60 * 1000, () => resolveFfspbTournament(year, ageM ? Number(ageM[1]) : null));
         if (t && t.id != null) {
           const stages = new Map(((t.stages ?? []) as Array<{ id?: number; name?: string }>).filter((x) => x.id != null).map((x) => [Number(x.id), String(x.name ?? 'Лига')]));
           const matches = await tournamentMatches(Number(t.id));
