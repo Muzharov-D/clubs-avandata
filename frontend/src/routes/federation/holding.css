@@ -1,0 +1,168 @@
+/* ============================================================================
+   Страница холдинга (кабинет федерации). Фирменные цвета холдинга приходят с бэка
+   и попадают в переменные корня .hold (--hold-primary/--hold-bright/--hold-soft/
+   --hold-on) — компоненты ссылаются только на переменные, хекса здесь нет.
+   Всё остальное — токены кабинета федерации (federation.css).
+   ============================================================================ */
+
+.hold { --hold-primary: var(--accent-blue); --hold-bright: var(--accent-cyan); --hold-soft: var(--accent-soft); --hold-on: #fff; }
+.hold-ellipsis { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* ---- Шапка в цветах клуба ---- */
+.hold-hero {
+  position: relative; overflow: hidden;
+  display: flex; align-items: center; gap: 24px;
+  padding: 26px 28px; margin-bottom: 20px;
+  border-radius: var(--radius); border: 1px solid color-mix(in srgb, var(--hold-bright) 35%, var(--border));
+  background:
+    radial-gradient(90% 140% at 0% 0%, color-mix(in srgb, var(--hold-primary) 55%, transparent) 0%, transparent 60%),
+    radial-gradient(60% 120% at 100% 100%, color-mix(in srgb, var(--hold-bright) 22%, transparent) 0%, transparent 60%),
+    var(--glass);
+  box-shadow: 0 8px 28px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.06);
+}
+.hold-hero::after {
+  content: ''; position: absolute; left: 0; right: 0; top: 0; height: 3px;
+  background: linear-gradient(90deg, var(--hold-primary), var(--hold-bright), transparent);
+}
+.hold-hero__logos { display: flex; align-items: center; gap: 10px; flex: none; }
+.hold-hero__logos .av-shield, .hold-hero__logos img { border-radius: 50%; background: #fff; padding: 4px; box-shadow: 0 6px 20px rgba(0,0,0,0.35); }
+.hold-hero__text { min-width: 0; flex: 1; }
+.hold-hero__kicker { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--hold-bright); margin-bottom: 6px; }
+.hold-hero__title { font-family: var(--font-display); font-size: 34px; font-weight: 800; letter-spacing: -0.01em; line-height: 1.05; margin: 0 0 8px; }
+.hold-hero__sub { font-size: 15px; color: var(--text-secondary); margin: 0; }
+.hold-hero__sub b { color: var(--text); font-weight: 600; }
+.hold-hero__badges { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+.hold-hero__badges .fed-badge:not([class*="--"]) { background: rgba(255,255,255,0.05); color: var(--text-secondary); }
+
+/* ---- Крыша KPI ---- */
+.hold-kpi { margin-bottom: 8px; }
+.hold-metric { border-color: color-mix(in srgb, var(--hold-bright) 22%, var(--border)); }
+.hold-metric__value { font-size: 44px; }
+.hold-metric__value--accent { color: var(--hold-bright); }
+
+/* ---- Матрица «возраст × школа» ---- */
+.hold-matrix { display: grid; gap: 10px; align-items: stretch; }
+.hold-matrix__corner { }
+.hold-matrix__head {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 14px; border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--hold-primary) 35%, var(--glass));
+  border: 1px solid color-mix(in srgb, var(--hold-bright) 30%, var(--border));
+  font-weight: 700; font-size: 14px;
+}
+.hold-matrix__head .av-shield { background: #fff; }
+.hold-matrix__age { display: flex; flex-direction: column; justify-content: center; padding: 0 6px; }
+.hold-matrix__age-year { font-family: var(--font-display); font-size: 18px; font-weight: 800; letter-spacing: -0.01em; }
+.hold-matrix__age-title { font-size: 12px; color: var(--text-secondary); }
+
+.hold-cell {
+  display: flex; flex-direction: column; gap: 10px; min-width: 0; width: 100%; text-align: left;
+  padding: 14px 16px; border-radius: var(--radius-sm); cursor: pointer;
+  background: var(--glass); border: 1px solid var(--border); color: var(--text); font-family: inherit;
+  transition: border-color 0.2s var(--ease), background 0.2s var(--ease), transform 0.2s var(--ease);
+}
+.hold-cell:hover { background: var(--glass-hover); border-color: color-mix(in srgb, var(--hold-bright) 45%, var(--border)); transform: translateY(-1px); }
+.hold-cell--active { border-color: var(--hold-bright); background: color-mix(in srgb, var(--hold-primary) 28%, var(--glass)); box-shadow: 0 0 0 1px var(--hold-bright), 0 10px 30px rgba(0,0,0,0.35); }
+.hold-cell--empty { display: flex; align-items: center; justify-content: center; color: var(--text-tertiary); font-size: 13px; cursor: default; border-style: dashed; }
+.hold-cell--empty:hover { transform: none; background: var(--glass); border-color: var(--border); }
+.hold-cell__top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.hold-cell__pts { font-size: 12px; color: var(--text-secondary); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.hold-badge--top { background: color-mix(in srgb, var(--hold-bright) 22%, transparent); color: var(--hold-bright); }
+.hold-badge--first { background: rgba(255,255,255,0.06); color: var(--text-secondary); }
+.hold-cell__main { display: grid; grid-template-columns: auto 1fr; gap: 16px; align-items: end; }
+.hold-cell__place { display: flex; flex-direction: column; }
+.hold-cell__place-no { font-family: var(--font-display); font-size: 34px; font-weight: 800; line-height: 1; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
+.hold-cell__place-of { font-size: 11px; color: var(--text-secondary); margin-top: 4px; }
+.hold-cell__rating { display: flex; flex-direction: column; align-items: flex-end; text-align: right; min-width: 0; }
+.hold-cell__rating-val { font-family: var(--font-display); font-size: 20px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.hold-cell__rating-sub { font-size: 11px; color: var(--text-secondary); white-space: nowrap; }
+.hold-cell__foot { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding-top: 8px; border-top: 1px solid var(--border); }
+.hold-cell__last { font-size: 12px; color: var(--text-secondary); min-width: 0; font-variant-numeric: tabular-nums; }
+
+/* Форма: последние матчи П/Н/М */
+.hold-form { display: inline-flex; gap: 3px; flex: none; }
+.hold-form__dot { width: 20px; height: 20px; border-radius: 6px; display: inline-flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 800; color: #06121f; flex: none; }
+.hold-form__dot--w { background: var(--success); }
+.hold-form__dot--d { background: var(--text-tertiary); color: #fff; }
+.hold-form__dot--l { background: var(--danger); }
+
+/* ---- Разбор команды ---- */
+.hold-detail { margin-top: 20px; border-color: color-mix(in srgb, var(--hold-bright) 35%, var(--border)); }
+.hold-detail__head { display: flex; align-items: center; gap: 16px; padding-bottom: 16px; border-bottom: 1px solid var(--border); }
+.hold-detail__head .av-shield { background: #fff; }
+.hold-detail__title { font-family: var(--font-display); font-size: 24px; font-weight: 800; margin: 0 0 4px; letter-spacing: -0.01em; }
+.hold-detail__sub { font-size: 13px; color: var(--text-secondary); }
+.hold-detail__close { width: 32px; height: 32px; border-radius: 8px; font-size: 22px; line-height: 1; color: var(--text-secondary); background: rgba(255,255,255,0.05); border: 1px solid var(--border); cursor: pointer; flex: none; }
+.hold-detail__close:hover { color: var(--text); background: rgba(255,255,255,0.10); }
+.hold-detail__kpi { margin: 16px 0 20px; }
+.hold-stat { padding: 14px 16px; border-radius: var(--radius-sm); background: rgba(255,255,255,0.03); border: 1px solid var(--border); }
+.hold-stat--hero { background: color-mix(in srgb, var(--hold-primary) 30%, rgba(255,255,255,0.03)); border-color: color-mix(in srgb, var(--hold-bright) 35%, var(--border)); }
+.hold-stat__label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-secondary); font-weight: 700; }
+.hold-stat__value { font-family: var(--font-display); font-size: 30px; font-weight: 800; line-height: 1; margin: 8px 0 6px; font-variant-numeric: tabular-nums; }
+.hold-stat--hero .hold-stat__value { color: var(--hold-bright); }
+.hold-stat__value--accent { color: var(--hold-bright); }
+.hold-stat__sub { font-size: 12px; color: var(--text-secondary); line-height: 1.4; }
+
+.hold-detail__grid { display: grid; grid-template-columns: 1.3fr 1fr 1fr; gap: 20px; }
+.hold-block { min-width: 0; }
+.hold-block__title { font-size: 13px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-secondary); font-weight: 700; margin: 0 0 10px; }
+.hold-table { table-layout: auto; }
+.hold-table th, .hold-table td { padding: 8px 6px; font-size: 13px; white-space: nowrap; }
+/* Колонка названия забирает всю свободную ширину и режется многоточием — таблица не вылезает из своей колонки. */
+.hold-table .hold-table__name { width: 100%; max-width: 0; }
+.hold-table__me td { background: color-mix(in srgb, var(--hold-primary) 30%, transparent) !important; font-weight: 600; }
+.hold-table__me td:first-child { box-shadow: inset 3px 0 0 var(--hold-bright); }
+
+.hold-player { padding: 10px 8px; gap: 12px; }
+.hold-player--tight { padding: 7px 6px; gap: 10px; }
+.hold-player__rank { width: 22px; text-align: right; color: var(--text-secondary); }
+.hold-player__rating { font-family: var(--font-display); font-size: 18px; font-weight: 700; font-variant-numeric: tabular-nums; flex: none; }
+.hold-more { background: none; border: none; cursor: pointer; padding: 10px 6px 0; font-family: inherit; }
+
+.hold-next { display: flex; align-items: center; gap: 10px; padding: 8px 10px; margin-bottom: 8px; border-radius: 10px; background: rgba(255,255,255,0.03); border: 1px dashed var(--border); font-size: 13px; }
+.hold-matches { display: flex; flex-direction: column; gap: 2px; }
+.hold-match {
+  display: grid; grid-template-columns: 20px 22px 1fr auto auto auto; align-items: center; gap: 10px;
+  width: 100%; padding: 7px 6px; border-radius: 8px; background: none; border: none; color: var(--text); text-align: left; cursor: pointer; font-family: inherit;
+  transition: background 0.15s;
+}
+.hold-match:hover { background: rgba(255,255,255,0.04); }
+.hold-match--plain { cursor: default; }
+.hold-match--plain:hover { background: none; }
+.hold-match__opp { font-size: 13px; }
+.hold-match__ha { font-size: 11px; color: var(--text-tertiary); }
+.hold-match__score { font-family: var(--font-display); font-weight: 700; font-size: 14px; font-variant-numeric: tabular-nums; }
+.hold-match__date { font-size: 11.5px; color: var(--text-secondary); font-variant-numeric: tabular-nums; min-width: 44px; text-align: right; }
+
+/* ---- Лучшие игроки + сборная ---- */
+.hold-two { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.hold-pitch {
+  display: flex; flex-direction: column; gap: 14px; padding: 18px 12px;
+  border-radius: var(--radius-sm);
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--hold-primary) 30%, transparent), color-mix(in srgb, var(--hold-primary) 12%, transparent)),
+    repeating-linear-gradient(180deg, rgba(255,255,255,0.025) 0 36px, transparent 36px 72px);
+  border: 1px solid color-mix(in srgb, var(--hold-bright) 25%, var(--border));
+}
+.hold-pitch__line-title { font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-tertiary); font-weight: 700; text-align: center; margin-bottom: 8px; }
+.hold-pitch__players { display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; }
+.hold-xi { display: flex; flex-direction: column; align-items: center; width: 96px; text-decoration: none; color: var(--text); }
+.hold-xi__name { font-size: 12px; font-weight: 600; margin-top: 6px; max-width: 100%; }
+.hold-xi__meta { font-size: 10.5px; color: var(--text-secondary); max-width: 100%; }
+.hold-xi__rating { font-family: var(--font-display); font-size: 13px; font-weight: 700; font-variant-numeric: tabular-nums; }
+
+/* ---- Узкие экраны ---- */
+@media (max-width: 1100px) {
+  .hold-detail__grid { grid-template-columns: 1fr 1fr; }
+  .hold-detail__grid .hold-block:first-child { grid-column: 1 / -1; }
+  .hold-two { grid-template-columns: 1fr; }
+}
+@media (max-width: 860px) {
+  .hold-hero { flex-direction: column; align-items: flex-start; padding: 20px; }
+  .hold-hero__title { font-size: 26px; }
+  .hold-matrix { grid-template-columns: 1fr !important; }
+  .hold-matrix__corner, .hold-matrix__head { display: none; }
+  .hold-matrix__age { padding: 8px 4px 0; }
+  .hold-cell::before { content: attr(aria-label); display: none; }
+  .hold-detail__grid, .hold-two { grid-template-columns: 1fr; }
+}

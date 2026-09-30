@@ -21,6 +21,7 @@ import { closePool } from './db/client.js';
 import { runMigrations } from './db/migrate.js';
 import { startCrons, stopCrons } from './cron/runner.js';
 import { captureSnapshotIfDue } from './federation/snapshots.js';
+import { warmHoldings } from './federation/holdings.js';
 
 async function buildServer() {
   const app = Fastify({
@@ -122,6 +123,8 @@ async function start() {
     // Базовый снимок состояния когорт при старте (Фаза B «недельного радара») — гарантирует,
     // что история начнёт копиться даже при выключенном планировщике. Гард внутри пишет не чаще
     // ~раза в неделю, поэтому частые деплои не плодят дубли. Fire-and-forget — старт не блокируем.
+    // Прогрев профилей холдингов (тяжёлая сборка) — чтобы первый заход не ждал холодного старта.
+    setTimeout(() => { void warmHoldings(2); }, 15_000);
     void captureSnapshotIfDue(2)
       .then((r) => { if (r.captured) logger.info({ written: r.written }, 'startup: базовый federation snapshot записан'); })
       .catch((err) => logger.warn({ err: err instanceof Error ? err.message : String(err) }, 'startup snapshot seed failed'));

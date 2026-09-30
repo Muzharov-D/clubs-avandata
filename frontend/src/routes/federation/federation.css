@@ -11,6 +11,8 @@
    ============================================================================ */
 
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&display=swap');
+/* Компонентные av-* стили (карточки клуба/матча, профиль игрока) — см. шапку файла. */
+@import './avLegacy.css';
 /* Xolonium @font-face lives in styles/legirus-base.css (imported globally in
    main.tsx). Files are absent under public/fonts/Xolonium/ → the family is
    declared but graceful-falls back to Montserrat. --font-display below is the
@@ -125,6 +127,9 @@
   box-shadow: inset 3px 0 0 var(--accent);
 }
 .fed-tab--active:hover { color: var(--accent); background: var(--accent-soft); }
+/* Подгруппа сайдбара («Холдинги») и цветная точка бренда у пункта. */
+.fed-sidebar__group { margin: 14px 14px 4px; font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-tertiary); }
+.fed-tab__dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 8px; vertical-align: middle; box-shadow: 0 0 6px currentColor; }
 /* Подвал сайдбара — прижат вниз, отделён хайрлайном сверху. */
 .fed-sidebar__foot {
   margin-top: auto; padding-top: 14px;

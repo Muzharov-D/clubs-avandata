@@ -66,6 +66,8 @@ const FederationSecondLeague = lazy(() => import('./routes/federation/SecondLeag
 const LeagueVideoPublic = lazy(() => import('./routes/federation/LeagueVideoPublic').then((m) => ({ default: m.LeagueVideoPublic })));
 // Глубокий маршрут профиля игрока — достижим, но вне главного нав.
 const FederationAvPlayerProfile = lazy(() => import('./routes/federation/AvPlayerProfile').then((m) => ({ default: m.FederationAvPlayerProfile })));
+// Страница холдинга (группа школ одного бренда, напр. Динамо СПб) — достижима из сайдбара и карточки клуба.
+const FederationHolding = lazy(() => import('./routes/federation/HoldingView').then((m) => ({ default: m.FederationHolding })));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -247,6 +249,8 @@ export function App() {
 
                     {/* Глубокий профиль игрока — достижим, вне главного нав */}
                     <Route path="players/:id" element={<FederationAvPlayerProfile />} />
+                    {/* Холдинг — вертикаль школ одного бренда (все возрасты, обе лиги) */}
+                    <Route path="holdings/:slug" element={<FederationHolding />} />
 
                     {/* Редиректы старых путей на ближайший из 5 (закладки не 404) */}
                     <Route path="discoveries" element={<Navigate to="/federation" replace />} />
