@@ -30,6 +30,25 @@ function FreshnessBadge() {
   );
 }
 
+interface HoldingRef { slug: string; short: string; brand: { bright: string } }
+/** Пункты «Холдинги» в сайдбаре — из конфига бэка (появляются сами при добавлении холдинга). */
+function HoldingLinks() {
+  const { data } = useQuery({ queryKey: ['av', 'holdings'], queryFn: () => api<{ holdings: HoldingRef[] }>('/federation/av/holdings'), staleTime: 60 * 60_000 });
+  const list = data?.holdings ?? [];
+  if (list.length === 0) return null;
+  return (
+    <>
+      <div className="fed-sidebar__group">Холдинги</div>
+      {list.map((h) => (
+        <NavLink key={h.slug} to={`/federation/holdings/${h.slug}`} className={({ isActive }) => `fed-tab${isActive ? ' fed-tab--active' : ''}`}>
+          <span className="fed-tab__dot" style={{ background: h.brand.bright }} aria-hidden="true" />
+          {h.short}
+        </NavLink>
+      ))}
+    </>
+  );
+}
+
 const TABS: Array<{ to: string; end?: boolean; label: string }> = [
   { to: '/federation', end: true, label: 'Обзор' },
   { to: '/federation/talent-loss', label: 'Кого теряет регион' },
@@ -46,7 +65,7 @@ export function FederationLayout() {
   // (перепись, перекос по когортам и минуты — региональные/по-квартальные, без годового
   // среза в данных) → фильтр-бар на них НЕ показываем, чтобы не было мёртвых контролов.
   // Срезы по году/лиге — на drill-down экранах «Таланты» и «Клубы».
-  const noFilters = /\/federation\/?$/.test(pathname) || pathname.includes('/talent-loss') || pathname.includes('/second-league');
+  const noFilters = /\/federation\/?$/.test(pathname) || pathname.includes('/talent-loss') || pathname.includes('/second-league') || pathname.includes('/holdings/');
   function handleLogout() {
     logout();
     toast.info('Вы вышли из кабинета');
@@ -72,6 +91,7 @@ export function FederationLayout() {
                 {t.label}
               </NavLink>
             ))}
+            <HoldingLinks />
           </nav>
           <div className="fed-sidebar__foot">
             <FreshnessBadge />

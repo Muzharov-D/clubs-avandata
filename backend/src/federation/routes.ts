@@ -11,6 +11,7 @@ import {
   federationRegionBestXi, federationTalentProduction,
 } from './avandataSource.js';
 import { SECOND_LEAGUE } from './secondLeague.generated.js';
+import { HOLDINGS, findHolding, publicHolding, holdingProfileOrWarming } from './holdings.js';
 import { secondLeagueMatchVideo, isBigbroConfigured } from './secondLeague.js';
 import { snapshotMeta, captureSnapshotIfDue } from './snapshots.js';
 import { latestRegionCensus } from './regionCensus.js';
@@ -195,6 +196,23 @@ export async function federationRoutes(app: FastifyInstance) {
     const profile = await regionClubProfile(season, id);
     if (!profile) { reply.code(404); return { error: 'клуб не найден', code: 'CLUB_NOT_FOUND' }; }
     return profile;
+  });
+
+  // ---- Холдинги: группа школ одного бренда как единая вертикаль (Динамо СПб и т.д.) ----
+  /** GET /federation/av/holdings — список холдингов (навигация, ссылка из карточки клуба). */
+  app.get('/av/holdings', async () => ({ holdings: HOLDINGS.map(publicHolding) }));
+
+  /** GET /federation/av/holdings/:slug — профиль холдинга: команды по возрастам, таблицы,
+   *  рейтинги, составы, матчи, лучшие игроки и сборная. Все данные — из AvanData/ФФСПб, без срезов. */
+  app.get('/av/holdings/:slug', async (req, reply) => {
+    if (avOff(reply)) return { error: 'AVANDATA_API_KEY не задан', code: 'AVANDATA_OFF' };
+    const cfg = findHolding((req.params as { slug: string }).slug);
+    if (!cfg) { reply.code(404); return { error: 'холдинг не найден', code: 'HOLDING_NOT_FOUND' }; }
+    const season = Number((req.query as { season?: string }).season) || AV_SEASON;
+    // Холодная сборка может занять минуты → не держим запрос: 202 «идёт прогрев», фронт опрашивает.
+    const res = await holdingProfileOrWarming(season, cfg);
+    if ('warming' in res) { reply.code(202); return { status: 'warming', code: 'HOLDING_WARMING' }; }
+    return res.profile;
   });
 
   /** GET /federation/av/cohorts — матрица когорт региона (год рождения × сигналы). */

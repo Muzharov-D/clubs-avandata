@@ -5,6 +5,7 @@ import { api } from '../../api/client';
 import { ClubShield } from './ClubShield';
 import { PlayerAvatar } from './PlayerAvatar';
 import { ratingColor } from './ratings';
+import { normTeam } from './utils';
 import './federation.css';
 
 interface CPlayer { id: number; name: string; birthYear: number | null; position: string | null; rating: number | null; photo: string | null }
@@ -26,6 +27,9 @@ const OUT: Record<CMatch['outcome'], string> = { w: 'П', d: 'Н', l: 'М' };
 /** Карточка клуба по клику — рейтинг, команды, лучшие игроки, производство таланта, матчи. */
 export function ClubCard({ clubId, onClose }: { clubId: number; onClose: () => void }) {
   const { data, isLoading, error } = useQuery({ queryKey: ['av', 'club', clubId], queryFn: () => api<ClubProfile>(`/federation/av/clubs/${clubId}`) });
+  // Клуб входит в холдинг → ссылка на страницу вертикали (список холдингов — из конфига бэка).
+  const holdings = useQuery({ queryKey: ['av', 'holdings'], queryFn: () => api<{ holdings: Array<{ slug: string; name: string; members: Array<{ key: string }> }> }>('/federation/av/holdings'), staleTime: 60 * 60_000 });
+  const holding = data ? (holdings.data?.holdings ?? []).find((h) => h.members.some((m) => m.key === normTeam(data.name))) ?? null : null;
 
   useEffect(() => {
     const prev = document.body.style.overflow;
@@ -52,6 +56,11 @@ export function ClubCard({ clubId, onClose }: { clubId: number; onClose: () => v
               <div style={{ minWidth: 0 }}>
                 <h2 className="av-cc__name" id="av-cc-title" title={data.name}>{data.name}</h2>
                 <span className="av-chip av-chip--cyan">{data.division}</span>
+                {holding && (
+                  <Link to={`/federation/holdings/${holding.slug}`} className="fed-link" style={{ display: 'block', marginTop: 8, fontSize: 13 }} onClick={onClose}>
+                    Страница холдинга «{holding.name}» →
+                  </Link>
+                )}
               </div>
             </header>
 

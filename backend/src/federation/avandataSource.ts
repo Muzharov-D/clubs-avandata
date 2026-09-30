@@ -1334,3 +1334,7 @@ async function computeTalentProduction(seasonId: number, year?: number): Promise
     medianPpg: median(clubs.map((c) => c.ppg)),
   };
 }
+
+// Кэш/параллельный map/TTL — общие для производных модулей (holdings.ts), чтобы они делили
+// один in-memory кэш с кабинетом, а не заводили свой.
+export { cached, pmap, TTL };

@@ -8,6 +8,7 @@ import { syncTenantCalendarTournament } from '../services/calendarService.js';
 import { syncTenantEvents } from '../services/matchEventsService.js';
 import { federationHealth } from '../federation/avandataSource.js';
 import { captureSnapshotIfDue } from '../federation/snapshots.js';
+import { warmHoldings } from '../federation/holdings.js';
 import { env } from '../env.js';
 
 /**
@@ -196,6 +197,8 @@ const JOBS: CronJob[] = [
   { name: 'events',    intervalMs: 6 * 60 * 60_000, initialDelayMs: 12_000, run: tickEvents },
   { name: 'fedHealth',   intervalMs: 20 * 60_000, initialDelayMs: 20_000, run: tickFederationHealth },
   { name: 'fedSnapshot', intervalMs: 12 * 60 * 60_000, initialDelayMs: 30_000, run: tickFederationSnapshot },
+  // Профили холдингов держим тёплыми (TTL 10 мин): пересобираем чуть чаще, чем они протухают.
+  { name: 'holdingsWarm', intervalMs: 8 * 60_000, initialDelayMs: 60_000, run: () => warmHoldings(2) },
 ];
 
 export function startCrons() {
