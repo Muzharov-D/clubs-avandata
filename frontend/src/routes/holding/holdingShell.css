@@ -1,0 +1,112 @@
+/* ============================================================================
+   Кабинет холдинга — оболочка и элементы. Цвета клуба — через --hold-* (ставит
+   HoldingShell из бренда холдинга), остальное — токены federation.css.
+   ============================================================================ */
+
+.hs { display: flex; align-items: flex-start; min-height: 100vh; }
+.hs-side {
+  position: sticky; top: 0; z-index: 50; flex: 0 0 248px; width: 248px; height: 100vh;
+  display: flex; flex-direction: column; padding: 18px 12px 16px; overflow-y: auto;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--hold-primary) 45%, rgba(10,15,46,0.85)), rgba(10,15,46,0.85) 55%);
+  border-right: 1px solid color-mix(in srgb, var(--hold-bright) 25%, var(--border));
+  backdrop-filter: blur(24px);
+}
+.hs-brand { display: flex; align-items: center; gap: 12px; padding: 6px 8px 16px; text-decoration: none; color: var(--text); border-bottom: 1px solid rgba(255,255,255,0.10); margin-bottom: 12px; }
+.hs-brand__logos { display: flex; gap: 4px; flex: none; }
+.hs-brand__logos .av-shield { background: #fff; }
+.hs-brand__kicker { font-size: 10px; text-transform: uppercase; letter-spacing: 0.10em; color: var(--hold-bright); font-weight: 700; }
+.hs-brand__name { font-family: var(--font-display); font-size: 15px; font-weight: 800; line-height: 1.15; }
+.hs-nav { display: flex; flex-direction: column; gap: 3px; }
+.hs-group { margin-top: 6px; }
+.hs-team { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 8px; padding: 7px 12px; }
+.hs-team__year { font-family: var(--font-display); font-weight: 800; font-size: 14px; }
+.hs-team__meta { font-size: 11px; color: var(--text-tertiary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.hs-team__place { font-size: 11.5px; font-weight: 700; color: var(--text-secondary); font-variant-numeric: tabular-nums; }
+.fed-tab--active .hs-team__meta, .fed-tab--active .hs-team__place { color: inherit; opacity: 0.85; }
+.hs-foot { margin-top: auto; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.10); display: flex; flex-direction: column; gap: 2px; }
+.hs-main { flex: 1 1 auto; min-width: 0; padding: 24px 36px 56px; }
+
+/* ---- Таблица игроков с контекстом лиги ---- */
+.hc-table-wrap { overflow-x: auto; }
+.hc-table th, .hc-table td { padding: 9px 10px; font-size: 13px; white-space: nowrap; }
+.hc-table td:nth-child(2) { white-space: normal; min-width: 180px; }
+.hc-th--num, .hc-th--num .hc-th-btn { text-align: right; }
+.hc-th-btn { background: none; border: none; color: inherit; font: inherit; text-transform: inherit; letter-spacing: inherit; cursor: pointer; padding: 0; }
+.hc-th--active .hc-th-btn { color: var(--hold-bright); }
+.hc-player { display: inline-flex; align-items: center; gap: 8px; color: var(--text); text-decoration: none; font-weight: 600; }
+.hc-player:hover .hc-player__name { color: var(--hold-bright); }
+.hc-teamlink { color: var(--text-secondary); text-decoration: none; font-size: 12.5px; }
+.hc-teamlink:hover { color: var(--text); }
+.hc-pos { font-size: 12px; color: var(--text-secondary); }
+.hc-rating { font-family: var(--font-display); font-weight: 700; font-size: 15px; }
+.hc-muted { color: var(--text-tertiary); }
+.hc-small { font-size: 11px; }
+.hc-pct { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 11.5px; font-weight: 700; }
+.hc-pct--elite { background: rgba(47,224,176,0.16); color: var(--success); }
+.hc-pct--good { background: rgba(94,235,252,0.14); color: var(--accent-cyan); }
+.hc-pct--mid { background: rgba(255,255,255,0.06); color: var(--text-secondary); }
+.hc-pct--low { background: rgba(255,93,115,0.12); color: var(--danger); }
+.hc-delta { font-variant-numeric: tabular-nums; font-weight: 600; }
+.hc-delta--up { color: var(--success); }
+.hc-delta--down { color: var(--danger); }
+.hc-trend { font-variant-numeric: tabular-nums; font-size: 12.5px; }
+.hc-trend--up { color: var(--success); }
+.hc-trend--down { color: var(--danger); }
+.hc-trend--flat { color: var(--text-secondary); }
+.hc-flag { color: var(--warning); font-weight: 600; }
+.hc-tier { display: inline-block; padding: 2px 9px; border-radius: 999px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; }
+.hc-tier--ready { background: var(--success); color: #06121f; }
+.hc-tier--watch { background: rgba(255,184,77,0.18); color: var(--warning); }
+.hc-tier--rest { background: rgba(255,255,255,0.06); color: var(--text-secondary); }
+.hc-line { font-size: 12px; font-weight: 600; }
+.hc-line--gk { color: #f5c542; } .hc-line--def { color: #7aa2ff; } .hc-line--mid { color: #5EEBFC; } .hc-line--fwd { color: #ff7ab8; }
+.hc-kpi .fed-metric__value { font-size: 40px; }
+
+/* ---- Карточки решений на обзоре ---- */
+.hc-cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+.hc-card { display: flex; flex-direction: column; gap: 8px; text-decoration: none; color: var(--text); }
+.hc-card__head { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+.hc-card__title { font-size: 14px; font-weight: 700; }
+.hc-card__count { font-family: var(--font-display); font-size: 30px; font-weight: 800; line-height: 1; color: var(--hold-bright); }
+.hc-card__list { display: flex; flex-direction: column; gap: 4px; font-size: 12.5px; }
+.hc-card__row { display: flex; justify-content: space-between; gap: 8px; }
+.hc-card__row b { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.hc-card__more { font-size: 12px; color: var(--hold-bright); margin-top: auto; }
+.hc-card:hover { border-color: var(--hold-bright); }
+
+/* ---- Команды относительно лиги (обзор) ---- */
+.hc-teams-table td, .hc-teams-table th { padding: 9px 10px; font-size: 13px; }
+.hc-over { font-weight: 700; }
+.hc-over--up { color: var(--success); } .hc-over--down { color: var(--danger); }
+.hc-lines { display: flex; gap: 6px; flex-wrap: wrap; }
+.hc-linepill { font-size: 11px; padding: 2px 8px; border-radius: 999px; background: rgba(255,255,255,0.06); color: var(--text-secondary); }
+.hc-linepill--weak { background: rgba(255,93,115,0.14); color: var(--danger); }
+.hc-linepill--strong { background: rgba(47,224,176,0.14); color: var(--success); }
+
+/* ---- Страница команды: линии ---- */
+.hc-lines-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+.hc-linecard { padding: 12px 14px; border-radius: var(--radius-sm); background: rgba(255,255,255,0.03); border: 1px solid var(--border); }
+.hc-linecard--weak { border-color: rgba(255,93,115,0.5); }
+.hc-linecard--strong { border-color: rgba(47,224,176,0.5); }
+.hc-linecard__title { font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-secondary); font-weight: 700; }
+.hc-linecard__nums { display: flex; align-items: baseline; gap: 8px; margin-top: 6px; }
+.hc-linecard__team { font-family: var(--font-display); font-size: 24px; font-weight: 800; }
+.hc-linecard__div { font-size: 12px; color: var(--text-secondary); }
+.hc-linecard__verdict { font-size: 12px; margin-top: 4px; font-weight: 600; }
+
+/* ---- Профиль игрока: блок «в лиге» ---- */
+.hc-league { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin: 12px 0 20px; }
+
+/* ---- Фильтры ---- */
+.hc-filters { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-bottom: 14px; }
+
+@media (max-width: 1100px) { .hc-cards, .hc-league { grid-template-columns: repeat(2, 1fr); } .hc-lines-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 860px) {
+  .hs { flex-direction: column; }
+  .hs-side { position: static; width: auto; height: auto; flex: none; }
+  .hs-main { padding: 16px; }
+  .hc-cards, .hc-league, .hc-lines-grid { grid-template-columns: 1fr; }
+}
+
+/* Фильтры реестра — компактные, в ряд (глобальный .fed-select растягивается на всю ширину). */
+.hc-filters .fed-select, .hc-filters .fed-input { width: auto; flex: 0 1 auto; }

@@ -16,6 +16,7 @@ import { feedbackRoutes } from './modules/feedback/routes.js';
 import { liteRoutes } from './modules/lite/routes.js';
 import { dashboardRoutes } from './dashboard/routes.js';
 import { federationRoutes } from './federation/routes.js';
+import { holdingRoutes } from './holding/routes.js';
 import { videoRoutes } from './modules/video/routes.js';
 import { closePool } from './db/client.js';
 import { runMigrations } from './db/migrate.js';
@@ -78,6 +79,7 @@ async function buildServer() {
   await app.register(liteRoutes, { prefix: '/api/v1' });
   await app.register(dashboardRoutes, { prefix: '/api/v1' });
   await app.register(federationRoutes, { prefix: '/api/v1/federation' });
+  app.register(holdingRoutes, { prefix: '/api/v1/holding' });
   await app.register(videoRoutes, { prefix: '/api/v1' });
 
   return app;

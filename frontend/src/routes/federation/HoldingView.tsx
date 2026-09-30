@@ -12,15 +12,15 @@ import './federation.css';
 import './holding.css';
 
 // ─── Форма ответа /federation/av/holdings/:slug (зеркало backend/federation/holdings.ts) ───
-type Outcome = 'w' | 'd' | 'l';
-interface Brand { primary: string; bright: string; soft: string; onPrimary: string }
-interface Member { key: string; label: string; logo: string | null; teams: number }
-interface Side { name: string; logo: string | null; score: number | null; isMember: boolean }
-interface HMatch { id: number; avId: number | null; ffId: number | null; date: string; tour: number; age: string; division: string; home: Side; away: Side; outcome: Outcome | null; played: boolean; technical: boolean }
-interface HPlayer { id: number; name: string; birthYear: number | null; position: string | null; rating: number | null; mp: number; photo: string | null; team: string; clubKey: string; clubLabel: string; division: string }
-interface Standing { place: number; size: number; played: number; won: number; drawn: number; lost: number; goalDiff: number; points: number }
-interface TableRow { id: number; name: string; logo: string | null; played: number; won: number; drawn: number; lost: number; goalDiff: number; points: number; isMember: boolean }
-interface HTeam {
+export type Outcome = 'w' | 'd' | 'l';
+export interface Brand { primary: string; bright: string; soft: string; onPrimary: string }
+export interface Member { key: string; label: string; logo: string | null; teams: number }
+export interface Side { name: string; logo: string | null; score: number | null; isMember: boolean }
+export interface HMatch { id: number; avId: number | null; ffId: number | null; date: string; tour: number; age: string; division: string; home: Side; away: Side; outcome: Outcome | null; played: boolean; technical: boolean }
+export interface HPlayer { id: number; name: string; birthYear: number | null; position: string | null; rating: number | null; mp: number; photo: string | null; team: string; clubKey: string; clubLabel: string; division: string }
+export interface Standing { place: number; size: number; played: number; won: number; drawn: number; lost: number; goalDiff: number; points: number }
+export interface TableRow { id: number; name: string; logo: string | null; played: number; won: number; drawn: number; lost: number; goalDiff: number; points: number; isMember: boolean }
+export interface HTeam {
   key: string; clubKey: string; clubLabel: string; name: string; logo: string | null;
   year: number; category: string; ageTitle: string; division: string; divisionKey: string | null;
   standing: Standing | null; standingsSource: 'ffspb-live' | 'ffspb' | 'mirror'; standingsDegraded: boolean; table: TableRow[];
@@ -28,22 +28,22 @@ interface HTeam {
   squad: { players: number; rated: number; avgRating: number | null; inTop30: number };
   top: HPlayer[]; form: Outcome[]; last: HMatch | null; next: HMatch | null; matches: HMatch[];
 }
-interface HXi { line: 'GK' | 'DEF' | 'MID' | 'FWD'; players: HPlayer[] }
-interface HoldingProfile {
+export interface HXi { line: 'GK' | 'DEF' | 'MID' | 'FWD'; players: HPlayer[] }
+export interface HoldingProfile {
   slug: string; name: string; short: string; region: string; brand: Brand; season: number; asOf: string;
   members: Member[]; years: number[];
   summary: { teams: number; byDivision: Array<{ division: string; teams: number }>; avgPlace: number | null; sumRating: number; players: number; rated: number; inTop30: number; won: number; drawn: number; lost: number; goalsFor: number; goalsAgainst: number };
   teams: HTeam[]; topPlayers: HPlayer[]; xi: HXi[];
 }
 
-const OUT: Record<Outcome, string> = { w: 'П', d: 'Н', l: 'М' };
+export const OUT: Record<Outcome, string> = { w: 'П', d: 'Н', l: 'М' };
 const LINE_TITLE: Record<HXi['line'], string> = { GK: 'Вратарь', DEF: 'Защита', MID: 'Полузащита', FWD: 'Атака' };
 const plTeam = (n: number) => { const a = n % 100, b = n % 10; if (a >= 11 && a <= 14) return 'команд'; if (b === 1) return 'команда'; if (b >= 2 && b <= 4) return 'команды'; return 'команд'; };
 const plPlayer = (n: number) => { const a = n % 100, b = n % 10; if (a >= 11 && a <= 14) return 'игроков'; if (b === 1) return 'игрок'; if (b >= 2 && b <= 4) return 'игрока'; return 'игроков'; };
 const shortDiv = (d: string) => d.replace(/\s*лига\s*/i, ' лига').trim();
 /** Сторона холдинга и соперник в матче. */
-const sides = (m: HMatch) => (m.home.isMember ? { us: m.home, them: m.away, home: true } : { us: m.away, them: m.home, home: false });
-const toBase = (m: HMatch): MatchBase => ({
+export const sides = (m: HMatch) => (m.home.isMember ? { us: m.home, them: m.away, home: true } : { us: m.away, them: m.home, home: false });
+export const toBase = (m: HMatch): MatchBase => ({
   id: m.avId ?? m.id, age: m.age, division: m.division, date: m.date,
   home: { name: m.home.name, logo: m.home.logo, score: m.home.score }, away: { name: m.away.name, logo: m.away.logo, score: m.away.score },
 });
@@ -192,7 +192,7 @@ export function FederationHolding() {
   );
 }
 
-function HoldingSkeleton() {
+export function HoldingSkeleton() {
   return (
     <div className="hold">
       <div className="fed-skeleton" style={{ height: 120, marginBottom: 20 }} />
@@ -204,7 +204,7 @@ function HoldingSkeleton() {
 }
 
 /** Матрица «возраст × школа»: строка — год рождения, колонка — школа холдинга. */
-function Matrix({ data, selectedKey, onSelect }: { data: HoldingProfile; selectedKey: string | null; onSelect: (key: string) => void }) {
+export function Matrix({ data, selectedKey, onSelect }: { data: HoldingProfile; selectedKey: string | null; onSelect: (key: string) => void }) {
   const cols = data.members;
   const rows = data.years.map((year) => ({ year, teams: cols.map((m) => data.teams.find((t) => t.year === year && t.clubKey === m.key) ?? null) }));
   return (
@@ -262,7 +262,7 @@ function TeamCell({ team, active, onClick }: { team: HTeam; active: boolean; onC
   );
 }
 
-function Form({ form }: { form: Outcome[] }) {
+export function Form({ form }: { form: Outcome[] }) {
   if (form.length === 0) return <span className="fed-row__meta">матчей ещё нет</span>;
   return (
     <span className="hold-form" aria-label={`форма: ${form.map((o) => OUT[o]).join(' ')}`}>
@@ -430,7 +430,7 @@ function Squad({ team }: { team: HTeam }) {
 }
 
 /** Сборная холдинга — четыре линии на условном поле. */
-function Xi({ xi }: { xi: HXi[] }) {
+export function Xi({ xi }: { xi: HXi[] }) {
   const empty = xi.every((l) => l.players.length === 0);
   if (empty) return <div className="fed-note">Мало данных для сборной.</div>;
   return (

@@ -9,6 +9,7 @@ import { users, type UserRole } from '../db/schema/users.js';
 import { refreshTokens } from '../db/schema/refreshTokens.js';
 import { tenants } from '../db/schema/tenants.js';
 import { federations } from '../db/schema/federations.js';
+import { findHolding, publicHolding } from '../federation/holdings.js';
 import {
   signAccessToken,
   generateRefreshToken,
@@ -43,6 +44,7 @@ type SessionUser = {
   id: string; email: string | null; fullName: string | null; role: string;
   tenantId: string | null; teamId: string | null; playerId: string | null;
   federationSlug: string | null;
+  holdingSlug?: string | null;
 };
 
 /**
@@ -65,6 +67,7 @@ async function issueSession(
     teamId: user.teamId,
     playerId: user.playerId,
     federationId: user.federationSlug,
+    holdingId: user.holdingSlug ?? null,
   });
 
   const { token: refreshToken, tokenHash } = generateRefreshToken();
@@ -116,6 +119,10 @@ async function issueSession(
     federation = rows[0] ?? null;
   }
 
+  // Контекст холдинга для holding_admin — из конфига (не из БД).
+  const holdingCfg = user.role === 'holding_admin' && user.holdingSlug ? findHolding(user.holdingSlug) : undefined;
+  const holding = holdingCfg ? publicHolding(holdingCfg) : null;
+
   await withBypassRLS((tx) =>
     tx.update(users).set({ lastLogin: new Date() }).where(eq(users.id, user.id)),
   );
@@ -124,6 +131,7 @@ async function issueSession(
     accessToken,
     tenant,
     federation,
+    holding,
     user: {
       id: user.id,
       email: user.email,
@@ -131,6 +139,7 @@ async function issueSession(
       role: user.role,
       tenantId: user.tenantId,
       federationId: user.federationSlug,
+      holdingId: user.holdingSlug ?? null,
       teamId: user.teamId,
       playerId: user.playerId,
     },
@@ -401,13 +410,16 @@ export async function authRoutes(app: FastifyInstance) {
       federation = fRows[0] ?? null;
     }
 
+    const holdingCfg = u.role === 'holding_admin' && u.holdingSlug ? findHolding(u.holdingSlug) : undefined;
     return {
       tenant,
       federation,
+      holding: holdingCfg ? publicHolding(holdingCfg) : null,
       user: {
         id: u.id,
         tenantId: u.tenantId,
         federationId: u.federationSlug,
+        holdingId: u.holdingSlug ?? null,
         email: u.email,
         username: u.username,
         fullName: u.fullName,

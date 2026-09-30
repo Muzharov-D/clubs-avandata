@@ -12,6 +12,8 @@ export interface AccessTokenPayload {
   imp?: string | null;
   /** slug федерации для роли federation_admin (region-scoped, read-only доступ). */
   federationId?: string | null;
+  /** slug холдинга для роли holding_admin (кабинет /holding). */
+  holdingId?: string | null;
 }
 
 interface JwtPayload extends AccessTokenPayload {
@@ -81,6 +83,7 @@ export function verifyAccessToken(token: string): AccessTokenPayload {
     playerId: body.playerId,
     imp: body.imp ?? null,
     federationId: body.federationId ?? null,
+    holdingId: body.holdingId ?? null,
   };
 }
 

@@ -18,6 +18,8 @@ export const users = pgTable(
     // Привязка federation_admin к его федерации (region-scoped доступ). NULL для
     // всех остальных ролей. FK ставится в drizzle/0012_federation_admin_role.sql.
     federationSlug: text('federation_slug').references(() => federations.slug, { onDelete: 'set null' }),
+    // Привязка holding_admin к холдингу (конфиг в federation/holdings.ts, без FK). NULL у остальных.
+    holdingSlug: text('holding_slug'),
     emailVerifiedAt: timestamp('email_verified_at', { withTimezone: true }),
     invitedBy: text('invited_by'),
     inviteTokenHash: text('invite_token_hash'),
@@ -37,17 +39,17 @@ export const users = pgTable(
     unique('users_tenant_username_uq').on(t.tenantId, t.username),
     check(
       'users_role_chk',
-      sql`${t.role} IN ('platform_admin','head_coach','team_coach','player','federation_admin','sporting_director')`,
+      sql`${t.role} IN ('platform_admin','head_coach','team_coach','player','federation_admin','sporting_director','holding_admin')`,
     ),
     // Роли без клуба (platform_admin, federation_admin) обязаны иметь tenant_id
     // NULL; клубные роли — наоборот. federation_admin scoped в федерацию, не в клуб.
     check(
       'users_platform_admin_no_tenant',
-      sql`(${t.role} IN ('platform_admin','federation_admin')) = (${t.tenantId} IS NULL)`,
+      sql`(${t.role} IN ('platform_admin','federation_admin','holding_admin')) = (${t.tenantId} IS NULL)`,
     ),
   ],
 );
 
 export type User = typeof users.$inferSelect;
 export type UserInsert = typeof users.$inferInsert;
-export type UserRole = 'platform_admin' | 'head_coach' | 'team_coach' | 'player' | 'federation_admin' | 'sporting_director';
+export type UserRole = 'platform_admin' | 'head_coach' | 'team_coach' | 'player' | 'federation_admin' | 'sporting_director' | 'holding_admin';

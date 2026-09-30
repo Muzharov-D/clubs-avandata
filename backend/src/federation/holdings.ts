@@ -36,6 +36,10 @@ export interface HoldingConfig {
   members: HoldingMember[];
   /** Годы рождения, которые входят в вертикаль (U14–U18 сезона 2026 = 2013–2009). */
   years: number[];
+  /** С какого года рождения (и старше) игроков рекомендуют в молодёжную команду. */
+  youthFromYear: number;
+  /** Сколько мест в молодёжной команде реально закрыть за сезон — столько «готовых» показываем первыми. */
+  youthSlots: number;
 }
 
 export const HOLDINGS: HoldingConfig[] = [
@@ -51,15 +55,17 @@ export const HOLDINGS: HoldingConfig[] = [
       { key: normTeam('Царское Село-Динамо'), label: 'Царское Село-Динамо' },
     ],
     years: [2009, 2010, 2011, 2012, 2013],
+    youthFromYear: 2011,
+    youthSlots: 5,
   },
 ];
 
 export const findHolding = (slug: string): HoldingConfig | undefined => HOLDINGS.find((h) => h.slug === slug);
 
 /** Публичная часть конфига (без служебного) — для списка в навигации и карточки клуба. */
-export interface HoldingSummaryInfo { slug: string; name: string; short: string; brand: HoldingBrand; members: HoldingMember[]; years: number[] }
+export interface HoldingSummaryInfo { slug: string; name: string; short: string; region: string; brand: HoldingBrand; members: HoldingMember[]; years: number[]; youthFromYear: number }
 export const publicHolding = (h: HoldingConfig): HoldingSummaryInfo =>
-  ({ slug: h.slug, name: h.name, short: h.short, brand: h.brand, members: h.members, years: h.years });
+  ({ slug: h.slug, name: h.name, short: h.short, region: h.region, brand: h.brand, members: h.members, years: h.years, youthFromYear: h.youthFromYear });
 
 /** Участник холдинга по названию команды/клуба (в любом написании источников), либо null. */
 export const memberOf = (cfg: Pick<HoldingConfig, 'members'>, teamName: string | null | undefined): HoldingMember | null => {

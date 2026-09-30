@@ -26,6 +26,7 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [tenant, setTenant] = useState(storedTenant());
   const [federation, setFederation] = useState(null);
+  const [holding, setHolding] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -38,6 +39,7 @@ export function AuthProvider({ children }) {
           saveTenant(res.tenant);
         }
         if (res.federation !== undefined) setFederation(res.federation);
+        if (res.holding !== undefined) setHolding(res.holding);
       })
       .catch(() => setUser(null))
       .finally(() => setLoading(false));
@@ -55,6 +57,7 @@ export function AuthProvider({ children }) {
           saveTenant(res.tenant);
         }
         if (res.federation !== undefined) setFederation(res.federation);
+        if (res.holding !== undefined) setHolding(res.holding);
       })
       .catch(() => {});
   }, []);
@@ -101,6 +104,8 @@ export function AuthProvider({ children }) {
     user,
     tenant,
     federation,
+    holding,
+    isHoldingAdmin: user?.role === 'holding_admin',
     loading,
     refreshTenant,
     isAuthenticated: !!user,
@@ -113,24 +118,26 @@ export function AuthProvider({ children }) {
       (user ? COACH_ROLES.has(user.role) : false) ||
       (user?.role === 'player' && user.playerId === playerId),
     login: async (u, p) => {
-      const { user: usr, tenant: t, federation: f } = await apiLogin(u, p);
+      const { user: usr, tenant: t, federation: f, holding: h } = await apiLogin(u, p);
       setUser(usr);
       setTenant(t ?? null);
       saveTenant(t ?? null);
       setFederation(f ?? null);
+      setHolding(h ?? null);
       return usr;
     },
     // Вход игрока по личной ссылке — состояние ставим тем же путём, что и обычный
     // вход: разница только в двери, дальше кабинет один и тот же.
     loginByLink: async (token) => {
-      const { user: usr, tenant: t, federation: f } = await apiLoginByLink(token);
+      const { user: usr, tenant: t, federation: f, holding: h } = await apiLoginByLink(token);
       setUser(usr);
       setTenant(t ?? null);
       saveTenant(t ?? null);
       setFederation(f ?? null);
+      setHolding(h ?? null);
       return usr;
     },
-    logout: () => { apiLogout(); saveTenant(null); setUser(null); setTenant(null); setFederation(null); },
+    logout: () => { apiLogout(); saveTenant(null); setUser(null); setTenant(null); setFederation(null); setHolding(null); },
   };
   return <AuthCtx.Provider value={value}>{children}</AuthCtx.Provider>;
 }

@@ -41,27 +41,27 @@ const catColor = (c: string) => (c === 'attack' ? 'var(--av-cat-attack)' : c ===
 const catLabel = (c: string) => (c === 'attack' ? 'Атака' : c === 'defense' ? 'Оборона' : 'Развитие');
 
 /** Профиль игрока + перцентильная «пицца» на РЕАЛЬНЫХ событиях (37 метрик). */
-export function FederationAvPlayerProfile() {
+export function FederationAvPlayerProfile({ apiBase = '/federation/av', backTo = '/federation/players', backLabel = '← К игрокам' }: { apiBase?: string; backTo?: string; backLabel?: string } = {}) {
   const { id = '' } = useParams();
   const { data, isLoading, error } = useQuery({
-    queryKey: ['av', 'player', id],
-    queryFn: () => api<Profile>(`/federation/av/players/${encodeURIComponent(id)}`),
+    queryKey: [apiBase, 'player', id],
+    queryFn: () => api<Profile>(`${apiBase}/players/${encodeURIComponent(id)}`),
   });
 
   return (
     <>
-      <Link to="/federation/players" className="av-link av-rise" style={{ marginBottom: 4 }}>← К игрокам</Link>
+      <Link to={backTo} className="av-link av-rise" style={{ marginBottom: 4 }}>{backLabel}</Link>
       {isLoading && <div className="av-skeleton av-rise" style={{ height: 380 }} />}
       {error && <FedEmpty>Игрок не найден или вне региона.</FedEmpty>}
-      {data && <Body p={data} />}
+      {data && <Body p={data} apiBase={apiBase} />}
     </>
   );
 }
 
-function Body({ p }: { p: Profile }) {
+function Body({ p, apiBase }: { p: Profile; apiBase: string }) {
   const top = p.metrics.slice(0, 16);
   const metricMax = Math.max(...p.metrics.map((x) => x.count), 1);
-  const pool = useQuery({ queryKey: ['av', 'players', null], queryFn: () => api<{ players: PoolP[] }>('/federation/av/players') });
+  const pool = useQuery({ queryKey: [apiBase, 'players', null], queryFn: () => api<{ players: PoolP[] }>(`${apiBase}/players`) });
   // Перцентиль-герой: положение игрока в регионе по рейтингу + срезы по возрасту и амплуа.
   // Знаменатель (весь пул региона) есть только у федерации — это и есть её «ров».
   const rank = useMemo(() => {
