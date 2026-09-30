@@ -2,6 +2,7 @@ import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import { authenticate, authorize } from '../auth/middleware.js';
 import { HOLDINGS, findHolding, publicHolding, holdingProfileOrWarming, type HoldingConfig } from '../federation/holdings.js';
 import { holdingAnalytics } from '../federation/holdingAnalytics.js';
+import { playerMetricsVsLeague, teamMetricsVsLeague } from '../federation/holdingMetrics.js';
 import { isAvandataConfigured, playerProfile, regionPlayers } from '../federation/avandataSource.js';
 
 /**
@@ -61,7 +62,24 @@ export async function holdingRoutes(app: FastifyInstance) {
       const an = await holdingAnalytics(AV_SEASON, cfg, res.profile);
       league = an.players.find((p) => p.id === id || profile.registrations.includes(p.id)) ?? null;
     }
-    return { ...profile, league };
+    // 36 показателей против амплуа в лиге — по когорте года рождения; пока когорта считается — null.
+    const year = league?.birthYear ?? profile.birthYear ?? null;
+    // Не `metrics` — это поле уже занято списком событий профиля.
+    const vsLeague = year != null ? playerMetricsVsLeague(AV_SEASON, year, profile.registrations.length ? profile.registrations : [id]) : null;
+    return { ...profile, league, vsLeague, vsLeagueStatus: vsLeague ? 'ready' : 'warming' };
+  });
+
+  /** GET /holding/teams/:key/metrics — действия команды за матч против команд дивизиона. */
+  app.get('/teams/:key/metrics', async (req, reply) => {
+    if (avOff(reply)) return { error: 'AVANDATA_API_KEY не задан', code: 'AVANDATA_OFF' };
+    const cfg = cfgOf(req, reply); if (!cfg) return { error: 'холдинг не найден', code: 'HOLDING_NOT_FOUND' };
+    const key = decodeURIComponent((req.params as { key: string }).key);
+    const [clubKey, yearS] = key.split(':');
+    const year = Number(yearS);
+    if (!clubKey || !Number.isFinite(year)) { reply.code(400); return { error: 'неверный ключ команды', code: 'BAD_TEAM_KEY' }; }
+    const m = teamMetricsVsLeague(AV_SEASON, year, clubKey);
+    if (!m) { reply.code(202); return { status: 'warming', code: 'METRICS_WARMING' }; }
+    return m;
   });
 
   /** GET /holding/players?year= — пул игроков региона (для перцентилей в карточке игрока). */

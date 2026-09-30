@@ -157,3 +157,82 @@ export function SectionTitle({ children, sub, id }: { children: ReactNode; sub?:
 }
 
 export const matchesWord = plMatch;
+
+// ─── Показатели относительно лиги ─────────────────────────────────────────────
+import { CATEGORY_TITLE, type PlayerMetricRow, type TeamMetricRow } from './api';
+
+const fmtRate = (x: number | null) => (x == null ? '—' : x.toLocaleString('ru-RU', { maximumFractionDigits: 2 }));
+
+/** Таблица показателей игрока: за матч, среднее по амплуа в лиге, перцентиль полоской. */
+export function PlayerMetricsTable({ rows, peers }: { rows: PlayerMetricRow[]; peers?: number }) {
+  const cats = ['attack', 'pass', 'defense', 'general', 'other'].filter((c) => rows.some((r) => r.category === c));
+  if (rows.length === 0) return <div className="fed-note">Событий в разобранных матчах пока нет.</div>;
+  return (
+    <div className="hc-metrics">
+      {cats.map((c) => (
+        <div key={c} className="hc-metrics__cat">
+          <div className="hc-metrics__cat-title">{CATEGORY_TITLE[c] ?? c}</div>
+          <table className="fed-table hc-table hc-metrics__table">
+            <thead><tr><th>Показатель</th><th className="fed-table__num">За матч</th><th className="fed-table__num">Амплуа в лиге</th><th className="fed-table__num">Регион</th><th>Место среди амплуа</th></tr></thead>
+            <tbody>
+              {rows.filter((r) => r.category === c).map((r) => {
+                const neg = r.points < 0;
+                const good = r.pctileDiv != null && r.pctileDiv >= 70, bad = r.pctileDiv != null && r.pctileDiv <= 30;
+                return (
+                  <tr key={r.id}>
+                    <td><span title={`${r.count} за сезон · ${r.points > 0 ? '+' : ''}${r.points} очков за событие`}>{r.title}{neg ? <span className="hc-muted hc-small"> · чем меньше, тем лучше</span> : null}</span></td>
+                    <td className="fed-table__num" style={{ fontWeight: 700 }}>{fmtRate(r.perMatch)}</td>
+                    <td className="fed-table__num hc-muted">{fmtRate(r.lineAvgDiv)}</td>
+                    <td className="fed-table__num hc-muted">{fmtRate(r.lineAvgRegion)}</td>
+                    <td>
+                      {r.pctileDiv == null ? <span className="hc-muted hc-small">мало сверстников</span> : (
+                        <span className="hc-pbar" title={`лучше ${r.pctileDiv}% игроков своего амплуа в дивизионе (${r.peersDiv})`}>
+                          <span className={`hc-pbar__fill${good ? ' hc-pbar__fill--good' : bad ? ' hc-pbar__fill--bad' : ''}`} style={{ width: `${r.pctileDiv}%` }} />
+                          <span className="hc-pbar__label">{r.pctileDiv}%</span>
+                        </span>
+                      )}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      ))}
+      {peers != null && <p className="fed-note">Перцентиль — доля игроков того же амплуа в дивизионе, у которых показатель за матч ниже (для минусовых событий — выше). Считается по всем разобранным матчам когорты.</p>}
+    </div>
+  );
+}
+
+/** Таблица показателей команды: за матч, среднее по дивизиону, место среди команд. */
+export function TeamMetricsTable({ rows }: { rows: TeamMetricRow[] }) {
+  const cats = ['attack', 'pass', 'defense', 'general', 'other'].filter((c) => rows.some((r) => r.category === c));
+  if (rows.length === 0) return <div className="fed-note">Событий в разобранных матчах пока нет.</div>;
+  return (
+    <div className="hc-metrics">
+      {cats.map((c) => (
+        <div key={c} className="hc-metrics__cat">
+          <div className="hc-metrics__cat-title">{CATEGORY_TITLE[c] ?? c}</div>
+          <table className="fed-table hc-table hc-metrics__table">
+            <thead><tr><th>Показатель</th><th className="fed-table__num">За матч</th><th className="fed-table__num">Дивизион</th><th>Место</th></tr></thead>
+            <tbody>
+              {rows.filter((r) => r.category === c).map((r) => {
+                const rel = r.divAvg ? (r.perMatch - r.divAvg) / r.divAvg : null;
+                const neg = r.points < 0;
+                const good = rel != null && (neg ? rel <= -0.15 : rel >= 0.15), bad = rel != null && (neg ? rel >= 0.15 : rel <= -0.15);
+                return (
+                  <tr key={r.id}>
+                    <td>{r.title}{neg ? <span className="hc-muted hc-small"> · чем меньше, тем лучше</span> : null}</td>
+                    <td className="fed-table__num" style={{ fontWeight: 700, color: good ? 'var(--success)' : bad ? 'var(--danger)' : undefined }}>{fmtRate(r.perMatch)}</td>
+                    <td className="fed-table__num hc-muted">{fmtRate(r.divAvg)}</td>
+                    <td>{r.rankDiv != null ? <span className={`hc-pct ${r.rankDiv <= 2 ? 'hc-pct--elite' : r.rankDiv <= Math.ceil(r.sizeDiv / 2) ? 'hc-pct--good' : 'hc-pct--low'}`}>{r.rankDiv}-е из {r.sizeDiv}</span> : '—'}</td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      ))}
+    </div>
+  );
+}

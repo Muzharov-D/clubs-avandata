@@ -6,8 +6,8 @@ import { FedError } from '../federation/FedState';
 import { ratingColor } from '../federation/ratings';
 import { fmtDate } from '../federation/utils';
 import { Form, sides, toBase, OUT, type HMatch } from '../federation/HoldingView';
-import { useHoldingProfile, useHoldingAnalytics, useSlugQuery, num, pm, plMatch, plPlayer, shortClub, placeWord, type TeamLeague } from './api';
-import { PlayerTable, Kpi, SectionTitle } from './parts';
+import { useHoldingProfile, useHoldingAnalytics, useTeamMetrics, useSlugQuery, num, pm, plMatch, plPlayer, shortClub, placeWord, type TeamLeague } from './api';
+import { PlayerTable, Kpi, SectionTitle, TeamMetricsTable } from './parts';
 
 /**
  * Команда относительно лиги: место и рейтинг, средний класс против дивизиона, линии,
@@ -22,6 +22,7 @@ export function HoldingTeamPage() {
   const [match, setMatch] = useState<MatchBase | null>(null);
   const [showAll, setShowAll] = useState(false);
 
+  const tm = useTeamMetrics(teamKey);
   const team = profile.data?.teams.find((t) => t.key === teamKey);
   const league = an.data?.teams.find((t) => t.key === teamKey);
   const others = useMemo(() => (profile.data?.teams ?? []).filter((t) => t.key !== teamKey), [profile.data, teamKey]);
@@ -82,6 +83,12 @@ export function HoldingTeamPage() {
       <SectionTitle sub="Место — среди игроков своего года рождения с рейтингом (не меньше 2 разобранных матчей): в регионе и в своём дивизионе. «К амплуа лиги» — отклонение от среднего по амплуа в дивизионе. Тренд — последние матчи против сезона.">Состав относительно лиги</SectionTitle>
       <section className="fed-card">
         {league ? <PlayerTable players={league.squad} showTeam={false} emptyText="Нет игроков в разобранных матчах." /> : <div className="fed-skeleton" style={{ height: 300 }} />}
+      </section>
+
+      {/* Действия команды против дивизиона */}
+      <SectionTitle sub={tm.data ? `${tm.data.matches} разобранных матчей · за матч против команд дивизиона «${tm.data.division}».` : 'Собираем события всех команд когорты — несколько минут после запуска.'}>Действия команды относительно лиги</SectionTitle>
+      <section className="fed-card">
+        {tm.data ? <TeamMetricsTable rows={tm.data.rows} /> : <div className="fed-skeleton" style={{ height: 160 }} />}
       </section>
 
       <div className="hold-detail__grid" style={{ marginTop: 20, gridTemplateColumns: '1.2fr 1fr' }}>

@@ -86,3 +86,11 @@ export const shortClub = (label: string) => label.replace('Царское Сел
 export const shortPos = (pos: string | null) => (pos ?? '—').replace('Центральный ', 'Ц. ').replace('Левый ', 'Л. ').replace('Правый ', 'П. ');
 /** Место в турнирной таблице словами для сводки. */
 export const placeWord = (place: number | null, size: number | null) => (place == null ? '—' : `${place}-е${size ? ` из ${size}` : ''}`);
+
+// ─── Показатели (36 событий) относительно лиги ────────────────────────────────
+export interface PlayerMetricRow { id: string; title: string; short: string; category: string; points: number; count: number; perMatch: number; lineAvgDiv: number | null; lineAvgRegion: number | null; pctileDiv: number | null; peersDiv: number }
+export interface PlayerMetricsVsLeague { playerId: number; matches: number; line: Line | null; division: string; rows: PlayerMetricRow[]; asOf: string }
+export interface TeamMetricRow { id: string; title: string; short: string; category: string; points: number; perMatch: number; divAvg: number | null; rankDiv: number | null; sizeDiv: number }
+export interface TeamMetricsVsLeague { teamKey: string; matches: number; division: string; rows: TeamMetricRow[]; asOf: string }
+export const CATEGORY_TITLE: Record<string, string> = { attack: 'Атака', defense: 'Оборона', general: 'Дисциплина и ошибки', pass: 'Развитие', other: 'Прочее' };
+export const useTeamMetrics = (teamKey: string) => useWarmable<TeamMetricsVsLeague>('team-metrics', `/holding/teams/${encodeURIComponent(teamKey)}/metrics${useSlugQuery()}`);

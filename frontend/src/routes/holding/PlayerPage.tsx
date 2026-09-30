@@ -1,8 +1,10 @@
 import { useParams } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
+import { api } from '../../api/client';
 import { FederationAvPlayerProfile } from '../federation/AvPlayerProfile';
 import { ratingColor } from '../federation/ratings';
-import { useHoldingAnalytics, useSlugQuery, num, pm, shortClub, LINE_TITLE } from './api';
-import { PctBadge, TrendCell, Kpi } from './parts';
+import { useHoldingAnalytics, useSlugQuery, num, pm, shortClub, LINE_TITLE, type PlayerMetricsVsLeague } from './api';
+import { PctBadge, TrendCell, Kpi, PlayerMetricsTable, SectionTitle } from './parts';
 
 /**
  * Игрок в кабинете холдинга: сверху — его место относительно лиги и региона и что это
@@ -13,6 +15,15 @@ export function HoldingPlayerPage() {
   const an = useHoldingAnalytics();
   const q = useSlugQuery();
   const p = an.data?.players.find((x) => String(x.id) === id) ?? null;
+  // Тот же запрос, что делает профиль (общий ключ кэша) — отсюда берём показатели против лиги;
+  // пока когорта считается, переспрашиваем раз в 20 секунд.
+  const prof = useQuery({
+    queryKey: ['/holding', 'player', id],
+    queryFn: () => api<{ vsLeague: PlayerMetricsVsLeague | null; vsLeagueStatus: 'ready' | 'warming' }>(`/holding/players/${encodeURIComponent(id)}`),
+    refetchInterval: (q) => (q.state.data && q.state.data.vsLeagueStatus === 'warming' ? 20_000 : false),
+    refetchIntervalInBackground: true,
+  });
+  const metrics = prof.data?.vsLeague ?? null;
   const a = an.data;
   const flags: string[] = [];
   if (a && p) {
@@ -46,6 +57,12 @@ export function HoldingPlayerPage() {
           )}
         </section>
       )}
+      <SectionTitle sub={metrics ? `${metrics.matches} разобранных матчей · амплуа ${metrics.line ? LINE_TITLE[metrics.line] : '—'} · ${metrics.division}. Каждое действие за матч против игроков того же амплуа в дивизионе и регионе.` : 'Собираем события всех команд когорты — это занимает несколько минут после запуска.'}>
+        36 показателей относительно лиги
+      </SectionTitle>
+      <section className="fed-card" style={{ marginBottom: 20 }}>
+        {metrics ? <PlayerMetricsTable rows={metrics.rows} peers={1} /> : <div className="fed-skeleton" style={{ height: 160 }} />}
+      </section>
       <FederationAvPlayerProfile apiBase="/holding" backTo={`/holding/players${q}`} backLabel="← К игрокам холдинга" />
     </div>
   );
