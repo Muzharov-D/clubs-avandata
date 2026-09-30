@@ -307,6 +307,7 @@ export async function authRoutes(app: FastifyInstance) {
       teamId: user.teamId,
       playerId: user.playerId,
       federationId: user.federationSlug,
+      holdingId: user.holdingSlug ?? null,
     });
 
     reply.setCookie(REFRESH_COOKIE, newToken, {
