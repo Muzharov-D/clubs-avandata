@@ -34,6 +34,8 @@ export function groupOfPosition(position: string | null | undefined): PositionGr
 }
 export interface LeaguePlayer {
   id: number; name: string; photo: string | null; position: string | null; line: Line | null; group?: PositionGroup | null;
+  /** Все позиции, на которых выходил, с числом матчей (самая частая — первой). */
+  roles?: Array<{ title: string; n: number }>;
   birthYear: number; clubKey: string; clubLabel: string; teamKey: string; team: string;
   division: string; divisionKey: DivisionKey;
   rating: number | null; mp: number;
