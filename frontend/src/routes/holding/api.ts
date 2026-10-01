@@ -52,6 +52,8 @@ export interface HoldingAnalytics {
   promote: LeaguePlayer[]; olderAge: OlderAgeCandidate[]; selection: SelectionGroup[]; risk: LeaguePlayer[]; losing: LosingPlayer[];
   weakLines: LineIssue[]; strongLines: LineIssue[];
   players: LeaguePlayer[];
+  /** Все игроки региона каждого года по индексу (свои — с именем). */
+  swarm?: Array<{ year: number; points: Array<{ id: number; index: number; mine: boolean; name?: string; teamKey?: string }> }>;
 }
 type Warming = { status: 'warming' };
 

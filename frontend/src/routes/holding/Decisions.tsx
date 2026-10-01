@@ -1,16 +1,17 @@
-import { useEffect } from 'react';
+import { useEffect, type ReactNode } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { FedError } from '../federation/FedState';
-import { useHoldingAnalytics, num, pm, shortClub, shortPos, LINE_TITLE, type SelectionGroup, type HoldingAnalytics } from './api';
-import { PlayerTable, SectionTitle, PageHead } from './parts';
+import { useHoldingAnalytics, num, pm, shortClub, shortPos, LINE_TITLE, type SelectionGroup, type HoldingAnalytics, type LeaguePlayer } from './api';
+import { PlayerTable } from './parts';
 import { HdLoading } from './HoldingShell';
 import { useNavQuery, useScope, useScopeLabel, scopeAnalytics } from './scope';
 import { plural } from './Overview';
+import { PlayerCard, PctCompare, surname } from './cards';
 
 /**
- * Решения — списки, которые руководство закрывает действием: молодёжка, переходы между
- * школами, на возраст старше, селекция, кого теряем, зона риска, линии. У каждого
- * списка — правило одной фразой с порогами.
+ * Решения — списки, которые руководство закрывает действием, на карточках игроков:
+ * кольцо индекса, позиция, команда, ярлык решения. Правило — одной фразой под заголовком;
+ * полная таблица с сортировкой — под карточками.
  */
 export function HoldingDecisions() {
   const an = useHoldingAnalytics();
@@ -24,118 +25,141 @@ export function HoldingDecisions() {
     if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }, [hash, an.data]);
   if (an.error) return <FedError subject="Решения" />;
-  if (!an.data) return <HdLoading title="Считаем решения" text="Ставим каждого игрока в контекст его возраста по всему региону. Страница откроется сама." />;
+  if (!an.data) return <HdLoading title="Считаем решения" text="Ставим каждого игрока в контекст его возраста и позиции по всему региону." />;
   const a: HoldingAnalytics = scopeAnalytics(an.data, scope);
   const th = a.thresholds;
   const youthAll = [...a.youth.ready, ...a.youth.watch, ...a.youth.rest];
   const slots = a.youthSlots;
   const selN = new Set(a.selection.flatMap((g) => g.candidates.map((c) => c.id))).size;
 
-  const toc: Array<[string, string, number, 'up' | 'down' | 'warn' | '']> = [
+  const toc: Array<[string, string, number, 'up' | 'down' | 'warn' | 'brand']> = [
     ['youth', 'В молодёжку', a.youth.ready.length, 'up'],
     ['promote', 'ЦС → ФК Динамо', a.promote.length, 'up'],
-    ['older', 'На возраст старше', a.olderAge.length, 'up'],
-    ['selection', 'Селекция', selN, ''],
+    ['older', 'На возраст старше', a.olderAge.length, 'brand'],
+    ['selection', 'Селекция', selN, 'brand'],
     ['losing', 'Кого теряем', a.losing.length, 'down'],
     ['risk', 'Зона риска', a.risk.length, 'warn'],
-    ['lines', 'Линии', a.weakLines.length, 'warn'],
+    ['lines', 'Слабые линии', a.weakLines.length, 'warn'],
   ];
 
   return (
-    <div>
-      <PageHead kicker={<>Решения · <b>{label ?? 'весь холдинг'}</b></>} title="Кто готов подняться выше, кого упускаем, где теряем" lede="Каждый список собран по правилу относительно лиги и региона — правило написано под заголовком. Клик по игроку — его место в лиге, карточка для совета и решение." />
-
-      <nav className="hd-toc" aria-label="Списки">
-        {toc.map(([id, title, n, tone]) => (
-          <a key={id} href={`#${id}`} className="hd-toc__item"><span>{title}</span><b className={tone ? `hd-${tone}` : undefined}>{n}</b></a>
-        ))}
-      </nav>
-
-      <SectionTitle id="youth" right={`готовы ${a.youth.ready.length} · присмотреться ${a.youth.watch.length} · мест ${slots}`} sub={<>{a.youthFromYear} г.р. и старше. <b>Готов</b> — топ-{th.youthReadyPct}% своего возраста в регионе и от {th.minMatchesReady} разобранных матчей. <b>Присмотреться</b> — топ-{th.youthWatchPct}%. Первые {slots} — очередь на места.</>}>
-        В молодёжную команду
-      </SectionTitle>
-      <PlayerTable players={youthAll} showTier rank limit={Math.max(slots * 2, 10)} emptyText="Пока никто не проходит по порогам." extraTitle="Очередь" extra={(p) => { const i = youthAll.findIndex((x) => x.id === p.id); return i < slots ? <span className="hd-tag hd-tag--up">№{i + 1}</span> : null; }} />
-
-      <SectionTitle id="promote" right={`${a.promote.length} ${plural(a.promote.length, 'игрок', 'игрока', 'игроков')}`} sub={<>Игроки Царского Села (Первая лига) с рейтингом не ниже медианы Высшей лиги своего возраста — уже играют на уровне ФК Динамо. Медианы: {a.medians.map((m) => `${m.year} — ${m.top ?? '—'}`).join(', ')}.</>}>
-        Из Царского Села в ФК Динамо
-      </SectionTitle>
-      <PlayerTable players={a.promote} emptyText="Сейчас никто из Царского Села не дотягивает до медианы Высшей лиги своего возраста." />
-
-      <SectionTitle id="older" right={`${a.olderAge.length} ${plural(a.olderAge.length, 'игрок', 'игрока', 'игроков')}`} sub="Внутри своей школы: рейтинг не ниже медианы команды на год старше. Справа — каким по силе он был бы там.">
-        Готовы играть на возраст старше
-      </SectionTitle>
-      <PlayerTable players={a.olderAge} emptyText="Пока никто не проходит по медиане старшей команды." extraTitle="В старшей команде" extra={(p) => { const c = a.olderAge.find((x) => x.id === p.id); return c ? <span>{c.olderRank}-й из {c.olderSize} <span className="hd-muted">в {c.olderTeamName}</span></span> : null; }} />
-
-      <SectionTitle id="selection" right={`${selN} ${plural(selN, 'кандидат', 'кандидата', 'кандидатов')}`} sub="Игроки других школ того же года, которые играют в команде слабее нашей или лигой ниже, но сильнее нашей линии на 10% и больше (топ-35% региона). Без имён: где играет, амплуа, рейтинг, место. «Сравнить» — бок о бок с лучшим игроком нашей линии.">
-        Кого упускает селекция
-      </SectionTitle>
-      {a.selection.length === 0 ? <div className="hd-empty">Сейчас в более слабых командах нет игроков, которые усилили бы наши линии.</div> : (
-        <div className="hd-selgrid">
-          {a.selection.map((g) => <SelectionCard key={`${g.teamKey}:${g.line}`} g={g} q={q} bestId={a.teams.find((t) => t.key === g.teamKey)?.squad.filter((p) => p.line === g.line && p.rating != null).sort((x, y) => (y.rating as number) - (x.rating as number))[0]?.id ?? null} />)}
+    <div className="hd-brief">
+      <header className="hd-teamhero hd-brief__hero">
+        <div style={{ minWidth: 0, flex: 1 }}>
+          <div className="hd-kicker">Решения · <b>{label ?? 'весь холдинг'}</b></div>
+          <h1 className="hd-teamhero__title hd-brief__title">Кто готов подняться, кого упускаем, где теряем</h1>
+          <div className="hd-meta"><span>Каждый список — по правилу относительно своего возраста и позиции в регионе; правило — под заголовком.</span></div>
         </div>
+        <nav className="hd-dtoc" aria-label="Списки">
+          {toc.map(([id, title, n, tone]) => <a key={id} href={`#${id}`} className={`hd-dtoc__item hd-dtoc__item--${tone}`}><b>{n}</b><span>{title}</span></a>)}
+        </nav>
+      </header>
+
+      <Block id="youth" title="В молодёжную команду" tone="up" count={`готовы ${a.youth.ready.length} · присмотреться ${a.youth.watch.length} · мест ${slots}`}
+        rule={<>{a.youthFromYear} г.р. и старше. <b>Готов</b> — топ-{th.youthReadyPct}% своего возраста в регионе и от {th.minMatchesReady} разобранных матчей; <b>присмотреться</b> — топ-{th.youthWatchPct}%. Номер — очередь на {slots} мест.</>}
+        players={youthAll} q={q}
+        card={(p, i) => <PlayerCard key={p.id} p={p} q={q} rank={i + 1} tag={i < slots ? `№${i + 1} в очереди` : a.youth.ready.some((x) => x.id === p.id) ? 'готов' : a.youth.watch.some((x) => x.id === p.id) ? 'присмотреться' : 'резерв'} tagTone={i < slots ? 'up' : a.youth.watch.some((x) => x.id === p.id) ? 'warn' : undefined} />}
+        limit={Math.max(slots + 3, 8)} empty="Пока никто не проходит по порогам." />
+
+      <Block id="promote" title="Из Царского Села в ФК Динамо" tone="up" count={`${a.promote.length}`}
+        rule={<>Игроки Царского Села с рейтингом не ниже медианы Высшей лиги своего возраста. Медианы: {a.medians.map((m) => `${m.year} — ${m.top ?? '—'}`).join(', ')}.</>}
+        players={a.promote} q={q} card={(p) => <PlayerCard key={p.id} p={p} q={q} tag="уровень Высшей лиги" tagTone="brand" />} empty="Сейчас никто из Царского Села не дотягивает до медианы Высшей лиги." />
+
+      <Block id="older" title="Готовы играть на возраст старше" tone="brand" count={`${a.olderAge.length}`}
+        rule="Внутри своей школы: рейтинг не ниже медианы команды на год старше. На карточке — каким по силе он был бы там."
+        players={a.olderAge} q={q} card={(p) => { const c = a.olderAge.find((x) => x.id === p.id); return <PlayerCard key={p.id} p={p} q={q} tag={c ? `${c.olderRank}-й из ${c.olderSize} в ${c.olderTeamName.replace(/^ФК |Царское Село-/, '')}` : ''} tagTone="brand" />; }}
+        empty="Пока никто не проходит по медиане старшей команды." />
+
+      <section id="selection" className="card an hd-dblock" style={{ scrollMarginTop: 120 }}>
+        <div className="page-section-title">Кого упускает селекция <span className="an-model-tag">{selN} {plural(selN, 'кандидат', 'кандидата', 'кандидатов')}</span></div>
+        <p className="hd-dblock__rule">Игроки других школ того же года из более слабой команды или лиги ниже, которые сильнее нашей линии на 10%+ (топ-35% региона). Без имён. «Сравнить» — бок о бок с лучшим игроком нашей линии.</p>
+        {a.selection.length === 0 ? <div className="hd-empty">Сейчас в более слабых командах нет игроков сильнее наших линий.</div> : (
+          <div className="hd-selcards">
+            {a.selection.map((g) => <SelectionCard key={`${g.teamKey}:${g.line}`} g={g} q={q} best={a.teams.find((t) => t.key === g.teamKey)?.squad.filter((p) => p.line === g.line && p.rating != null).sort((x, y) => (y.rating as number) - (x.rating as number))[0] ?? null} />)}
+          </div>
+        )}
+      </section>
+
+      <Block id="losing" title="Кого теряем" tone="down" count={`${a.losing.length}`}
+        rule={<>Падение формы — последние 3 матча ниже своего сезона на 2+ балла из 10 (с учётом минут). Вне ротации — команда играла, а игрок 3 разобранных матча подряд не попадал в состав.</>}
+        players={a.losing} q={q} card={(p) => { const l = a.losing.find((x) => x.id === p.id); return <PlayerCard key={p.id} p={p} q={q} tag={l?.reason === 'trend' ? `форма ${p.formDelta != null ? pm(Math.round(p.formDelta * 10) / 10) : 'падает'}` : 'вне ротации'} tagTone="down" />; }}
+        empty="Никто не выпадает: форма ровная, ротация стабильная." />
+
+      <Block id="risk" title="Зона риска в ФК Динамо" tone="warn" count={`${a.risk.length}`}
+        rule={<>Игроки ФК Динамо (Высшая лига) с рейтингом ниже медианы Первой лиги своего возраста. Медианы: {a.medians.map((m) => `${m.year} — ${m.first ?? '—'}`).join(', ')}.</>}
+        players={a.risk} q={q} card={(p) => <PlayerCard key={p.id} p={p} q={q} tag={p.rankRegion != null ? `${p.rankRegion}-й из ${p.sizeRegion} в регионе` : 'ниже Первой лиги'} tagTone="warn" />}
+        empty="В ФК Динамо нет игроков ниже медианы Первой лиги." />
+
+      <section id="lines" className="card an hd-dblock" style={{ scrollMarginTop: 120 }}>
+        <div className="page-section-title">Линии против лиги</div>
+        <p className="hd-dblock__rule">Средний рейтинг линии команды против средней по своему дивизиону; заметно — от {Math.round(th.lineGapRel * 100)}%. Середина полосы — уровень лиги.</p>
+        <div className="hd-attn" style={{ gridTemplateColumns: '1fr 1fr' }}>
+          <LineBars title="Слабее лиги" rows={a.weakLines} q={q} tone="down" />
+          <LineBars title="Сильнее лиги" rows={a.strongLines} q={q} tone="up" />
+        </div>
+      </section>
+    </div>
+  );
+}
+
+function Block({ id, title, tone, count, rule, players, q, card, limit = 8, empty }: {
+  id: string; title: string; tone: 'up' | 'down' | 'warn' | 'brand'; count: string; rule: ReactNode;
+  players: LeaguePlayer[]; q: string; card: (p: LeaguePlayer, i: number) => ReactNode; limit?: number; empty: string;
+}) {
+  return (
+    <section id={id} className={`card an hd-dblock hd-dblock--${tone}`} style={{ scrollMarginTop: 120 }}>
+      <div className="page-section-title">{title} <span className="an-model-tag">{count}</span></div>
+      <p className="hd-dblock__rule">{rule}</p>
+      {players.length === 0 ? <div className="hd-empty">{empty}</div> : (
+        <>
+          <div className="hd-pcards">{players.slice(0, limit).map((p, i) => card(p, i))}</div>
+          {players.length > limit && (
+            <details className="hd-dblock__all">
+              <summary>Все {players.length} — таблицей с сортировкой</summary>
+              <PlayerTable players={players} rank emptyText={empty} />
+            </details>
+          )}
+        </>
       )}
-
-      <SectionTitle id="losing" right={`${a.losing.length}`} sub={<>Падение формы — последние матчи ниже своего сезона на {Math.round(-th.losingTrendRel * 100)}% и больше. Вне ротации — команда играла, а игрок 3 разобранных матча подряд не попадал в состав.</>}>
-        Кого теряем
-      </SectionTitle>
-      <PlayerTable players={a.losing} showTier emptyText="Никто не выпадает: форма ровная, ротация стабильная." />
-
-      <SectionTitle id="risk" right={`${a.risk.length}`} sub={<>Игроки ФК Динамо (Высшая лига) с рейтингом ниже медианы Первой лиги своего возраста. Медианы Первой лиги: {a.medians.map((m) => `${m.year} — ${m.first ?? '—'}`).join(', ')}.</>}>
-        Зона риска в ФК Динамо
-      </SectionTitle>
-      <PlayerTable players={a.risk} emptyText="В ФК Динамо нет игроков ниже медианы Первой лиги." />
-
-      <SectionTitle id="lines" sub={<>Средний рейтинг линии против средней по своему дивизиону; заметно — от {Math.round(th.lineGapRel * 100)}%. Слабая линия — где точечное усиление даст больше всего.</>}>
-        Слабые и сильные линии
-      </SectionTitle>
-      <div className="hd-cols" style={{ gridTemplateColumns: '1fr 1fr' }}>
-        <LineList title="Слабее лиги" rows={a.weakLines} q={q} tone="down" empty="Нет линий заметно слабее лиги." />
-        <LineList title="Сильнее лиги" rows={a.strongLines} q={q} tone="up" empty="Нет линий заметно сильнее лиги." />
-      </div>
-    </div>
-  );
-}
-
-function LineList({ title, rows, q, tone, empty }: { title: string; rows: HoldingAnalytics['weakLines']; q: string; tone: 'up' | 'down'; empty: string }) {
-  return (
-    <div className="hd-col">
-      <h3>{title} <span className={`hd-${tone}`}>{rows.length}</span></h3>
-      <ul className="hd-list">
-        {rows.map((l) => (
-          <li key={`${l.teamKey}${l.line}`}>
-            <Link to={`/holding/teams/${encodeURIComponent(l.teamKey)}${q}`}>{shortClub(l.clubLabel)} {l.year} · {l.title.toLowerCase()}</Link>
-            <span className={`hd-${tone} hd-rating`}>{pm(Math.round(l.gapRel * 100))}%</span>
-            <span className="hd-list__sub">{num(l.teamAvg)} против {num(l.divAvg)} в лиге</span>
-          </li>
-        ))}
-        {rows.length === 0 && <li className="hd-muted">{empty}</li>}
-      </ul>
-    </div>
-  );
-}
-
-function SelectionCard({ g, q, bestId }: { g: SelectionGroup; q: string; bestId: number | null }) {
-  return (
-    <section className="hd-block">
-      <div className="hd-selcard__head">
-        <h3 className="hd-selcard__title"><Link to={`/holding/teams/${encodeURIComponent(g.teamKey)}${q}`}>{shortClub(g.clubLabel)} {g.year}</Link> · {LINE_TITLE[g.line].toLowerCase()}</h3>
-        <span className="hd-muted hd-small">наша линия: средний {g.ourAvg != null ? num(g.ourAvg) : '—'}, лучший {g.ourBest != null ? num(g.ourBest) : '—'}</span>
-      </div>
-      <table className="hd-table hd-table--tight">
-        <thead><tr><th>Амплуа</th><th>Где играет</th><th className="num">Рейтинг</th><th>В регионе</th><th className="num">Матчей</th>{bestId != null && <th />}</tr></thead>
-        <tbody>
-          {g.candidates.map((c) => (
-            <tr key={c.id}>
-              <td>{shortPos(c.position)}</td>
-              <td>{c.club}<span className="hd-team__sub">{c.division}</span></td>
-              <td className="num hd-rating">{num(c.rating)}</td>
-              <td><span className={`hd-tag ${c.pctRegion <= 10 ? 'hd-tag--up' : c.pctRegion <= 25 ? 'hd-tag--brand' : ''}`}>топ {c.pctRegion}%</span></td>
-              <td className="num hd-muted">{c.mp}</td>
-              {bestId != null && <td className="num"><Link to={`/holding/compare?a=${bestId}&b=${c.id}${q ? '&' + q.slice(1) : ''}`} className="hd-link" title="Бок о бок с лучшим игроком нашей линии по всем показателям">сравнить</Link></td>}
-            </tr>
-          ))}
-        </tbody>
-      </table>
     </section>
+  );
+}
+
+function LineBars({ title, rows, q, tone }: { title: string; rows: HoldingAnalytics['weakLines']; q: string; tone: 'up' | 'down' }) {
+  return (
+    <div>
+      <div className="hd-attn__title">{title} <span className={`hd-${tone}`}>{rows.length}</span></div>
+      {rows.length === 0 && <div className="hd-empty">Нет.</div>}
+      {rows.map((l) => (
+        <Link key={`${l.teamKey}${l.line}`} to={`/holding/teams/${encodeURIComponent(l.teamKey)}${q}`} className="hd-lineline hd-lineline--link">
+          <span className="hd-lineline__t">{shortClub(l.clubLabel)} {l.year} · {l.title.toLowerCase()}</span>
+          <span className="hd-lineline__bar"><span style={{ width: `${Math.min(100, Math.max(4, 50 + l.gapRel * 100))}%`, background: tone === 'down' ? 'var(--rating-poor)' : 'var(--rating-excellent)' }} /></span>
+          <span className={`hd-lineline__v hd-${tone}`}>{pm(Math.round(l.gapRel * 100))}%</span>
+        </Link>
+      ))}
+    </div>
+  );
+}
+
+function SelectionCard({ g, q, best }: { g: SelectionGroup; q: string; best: LeaguePlayer | null }) {
+  const c0 = g.candidates[0]!;
+  return (
+    <div className="hd-selcard">
+      <div className="hd-selcard__head">
+        <Link to={`/holding/teams/${encodeURIComponent(g.teamKey)}${q}`} style={{ color: 'inherit', textDecoration: 'none' }}><b>{shortClub(g.clubLabel)} {g.year}</b></Link> · {LINE_TITLE[g.line].toLowerCase()}
+        <span className="hd-tag hd-tag--brand">{g.candidates.length} {plural(g.candidates.length, 'кандидат', 'кандидата', 'кандидатов')}</span>
+      </div>
+      <PctCompare ours={best?.pctRegion ?? null} theirs={c0.pctRegion} oursLabel={best ? `наш лучший · ${surname(best.name)}` : 'наш лучший'} theirsLabel="лучший кандидат" />
+      <div className="hd-selcard__list">
+        {g.candidates.map((c) => (
+          <div key={c.id} className="hd-selcard__row">
+            <span className="hd-selcard__who">{shortPos(c.position)}<span className="hd-muted"> · {c.club}</span></span>
+            <span className="hd-tag hd-tag--up">топ {c.pctRegion}%</span>
+            <span className="hd-muted hd-small">{num(c.rating)}</span>
+            {best && <Link to={`/holding/compare?a=${best.id}&b=${c.id}${q ? '&' + q.slice(1) : ''}`} className="hd-link hd-small">сравнить</Link>}
+          </div>
+        ))}
+      </div>
+    </div>
   );
 }
