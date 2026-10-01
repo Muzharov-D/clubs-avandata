@@ -173,7 +173,8 @@ export function HoldingPlayerPage() {
       {slices.length >= 3 && (
         <div className="card hd-player__pizza">
           <div className="page-section-title">Профиль по сезону <span className="an-model-tag">за матч ({s.matchLen}′) · против {peers}</span></div>
-          <PizzaChart subjectName={`${s.name} · сезон`} subjectMeta={`Цифры — за полный матч (${s.matchLen}′), длина слайса — место среди ${s.peers} ${peers}`} vsLabel={s.line ? PEERS[s.line] : ''} centerLabel="регион" slices={slices} />
+          <PizzaChart subjectName={`${s.name} · сезон`} subjectMeta={`Цифры — за полный матч (${s.matchLen}′), длина слайса — место среди ${s.peers} ${peers}`} vsLabel={s.line ? PEERS[s.line] : ''} centerLabel="регион" slices={slices} showLegend={false} />
+          <div className="hd-pizza-legend"><span><i style={{ background: '#22d3ee' }} />атака и созидание</span><span><i style={{ background: '#fbbf24' }} />владение</span><span><i style={{ background: '#818cf8' }} />оборона</span></div>
         </div>
       )}
 

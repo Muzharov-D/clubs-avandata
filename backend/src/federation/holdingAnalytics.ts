@@ -65,6 +65,8 @@ export interface TeamLeague {
   lines: LineCompare[];
   squad: LeaguePlayer[];
   inTop30: number; rated: number;
+  /** Все команды дивизиона: место в таблице и средний рейтинг состава — для рассеяния «сила × место». */
+  divMap: Array<{ name: string; place: number; strength: number | null; mine: boolean }>;
 }
 export interface YouthCandidate extends LeaguePlayer { tier: 'ready' | 'watch' | 'rest' }
 export interface LosingPlayer extends LeaguePlayer { reason: 'trend' | 'rotation' }
@@ -257,6 +259,7 @@ async function computeAnalytics(seasonId: number, cfg: HoldingConfig, profile: H
           ratingRank: t.rating?.rank ?? null, ratingSize: t.rating?.size ?? null,
           overperformance: t.standing && t.rating ? t.rating.rank - t.standing.place : null,
           lines, squad, inTop30: t.squad.inTop30, rated: squadRated.length,
+          divMap: t.table.map((row, i) => ({ name: row.name.replace(/\s*20\d{2}(-20\d{2})?\s*$/, ''), place: i + 1, strength: teamAvgByKey.get(normTeam(clubName(row.name)))?.avg ?? null, mine: row.isMember && normTeam(clubName(row.name)) === t.clubKey })),
         });
       }
     }

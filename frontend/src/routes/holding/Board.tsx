@@ -145,3 +145,20 @@ function TeamSlot({ players, q, showClub }: { players: LeaguePlayer[]; q: string
     </div>
   );
 }
+
+/** Состав одной команды на поле (страница команды): позиции по глубине, цвет — индекс. */
+export function TeamPitch({ players, q }: { players: LeaguePlayer[]; q: string }) {
+  const bySlot = new Map<SlotId, LeaguePlayer[]>();
+  for (const p of players) { const s = slotOf(p.position); if (s) (bySlot.get(s) ?? bySlot.set(s, []).get(s)!).push(p); }
+  const slots = (Object.keys(SLOTS) as SlotId[]).filter((s) => bySlot.has(s));
+  return (
+    <Pitch className="hd-board__pitch hd-teampitch">
+      {slots.map((slot) => (
+        <div key={slot} className="hd-slot" style={{ left: `${SLOTS[slot].x}%`, top: `${SLOTS[slot].y}%` }}>
+          <div className="hd-slot__title">{SLOTS[slot].title}</div>
+          <TeamSlot players={(bySlot.get(slot) ?? []).slice().sort(byIndex)} q={q} showClub={false} />
+        </div>
+      ))}
+    </Pitch>
+  );
+}
