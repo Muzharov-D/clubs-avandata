@@ -98,6 +98,11 @@ export interface HoldingAnalytics {
   strongLines: LineIssue[];
   /** Все игроки холдинга с рейтингом — единый реестр для поиска/сортировок. */
   players: LeaguePlayer[];
+  /**
+   * Распределение по индексу всех игроков региона каждого года (45+ минут): свои — с именем
+   * и командой, чужие — только значение. Для «роя» на брифинге.
+   */
+  swarm: Array<{ year: number; points: Array<{ id: number; index: number; mine: boolean; name?: string; teamKey?: string }> }>;
 }
 
 const avg = (xs: number[]): number | null => (xs.length ? Math.round(xs.reduce((a, b) => a + b, 0) / xs.length) : null);
@@ -269,7 +274,9 @@ async function computeAnalytics(seasonId: number, cfg: HoldingConfig, profile: H
           avgRating: teamAvg, divAvgRating: avg(divTeams.map(([, v]) => v.avg)), divRankByAvg: divRank >= 0 ? divRank + 1 : null, divTeams: divTeams.length,
           place: t.standing?.place ?? null, placeSize: t.standing?.size ?? null,
           ratingRank: t.rating?.rank ?? null, ratingSize: t.rating?.size ?? null,
-          overperformance: t.standing && t.rating ? t.rating.rank - t.standing.place : null,
+          // Одна мера «силы» по всему кабинету — средний рейтинг состава среди команд дивизиона
+          // (то, что показано на плитке и рассеянии); командный рейтинг AvanData — запасной.
+          overperformance: t.standing && divRank >= 0 ? divRank + 1 - t.standing.place : t.standing && t.rating ? t.rating.rank - t.standing.place : null,
           lines, squad, inTop30: t.squad.inTop30, rated: squadRated.length,
           divMap: t.table.map((row, i) => ({ name: row.name.replace(/\s*20\d{2}(-20\d{2})?\s*$/, ''), place: i + 1, strength: teamAvgByKey.get(normTeam(clubName(row.name)))?.avg ?? null, mine: row.isMember && normTeam(clubName(row.name)) === t.clubKey })),
         });
@@ -348,12 +355,21 @@ async function computeAnalytics(seasonId: number, cfg: HoldingConfig, profile: H
       }
     }
 
+    const mineById = new Map(allPlayers.map((p) => [p.id, p]));
+    const swarm: HoldingAnalytics['swarm'] = [...formsByYear.entries()].sort((x, y) => y[0] - x[0]).map(([year, forms]) => ({
+      year,
+      points: [...forms.entries()].filter(([, f]) => f.index != null).map(([id, f]) => {
+        const m = mineById.get(id);
+        return m ? { id, index: f.index as number, mine: true, name: m.name, teamKey: m.teamKey } : { id, index: f.index as number, mine: false };
+      }),
+    }));
     const result: HoldingAnalytics = {
       slug: cfg.slug, season: seasonId, asOf: new Date().toISOString(), toursBack,
       youthFromYear: cfg.youthFromYear, youthSlots: cfg.youthSlots,
       thresholds: { youthReadyPct: YOUTH_READY_PCT, youthWatchPct: YOUTH_WATCH_PCT, minMatchesReady: MIN_MATCHES_READY, minMatchesDecision: MIN_MATCHES_DECISION, losingTrendRel: LOSING_TREND_REL, lineGapRel: LINE_GAP_REL },
       teams: teamsOut, medians, youth, promote, olderAge, selection, risk, losing, weakLines, strongLines,
       players: allPlayers.filter((p) => p.rating != null).sort((a, b) => (b.rating as number) - (a.rating as number)),
+      swarm,
     };
     if (toursBack === 0) { lastAnalytics.set(`${cfg.slug}:${seasonId}`, result); void saveHoldingCache(cfg.slug, seasonId, 'analytics', result); }
     return result;

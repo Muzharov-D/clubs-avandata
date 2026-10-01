@@ -90,8 +90,8 @@ export interface SwarmPoint { id: number | string; value: number; mine?: boolean
  * Все игроки (или команды) региона точками по шкале; свои — крупные и подписаны.
  * Точки раскладываются в «рой», чтобы не налезать друг на друга.
  */
-export function Beeswarm({ points, min = 0, max = 10, height = 120, format = (v: number) => v.toFixed(1), axisLabel }: { points: SwarmPoint[]; min?: number; max?: number; height?: number; format?: (v: number) => string; axisLabel?: string }) {
-  const W = 1000, padX = 24, mid = height / 2 - 8, r = 5.5, rMine = 8;
+export function Beeswarm({ points, min = 0, max = 10, height = 120, format = (v: number) => v.toFixed(1), axisLabel, onPick }: { points: SwarmPoint[]; min?: number; max?: number; height?: number; format?: (v: number) => string; axisLabel?: string; onPick?: (id: number | string) => void }) {
+  const W = 1000, padX = 24, mid = (height - 12) / 2, r = 3.6, rMine = 7;
   const x = (v: number) => padX + ((Math.max(min, Math.min(max, v)) - min) / (max - min || 1)) * (W - padX * 2);
   // Рой: каждой точке — ближайшее свободное место по вертикали.
   const placed: Array<{ p: SwarmPoint; cx: number; cy: number; rr: number }> = [];
@@ -99,8 +99,9 @@ export function Beeswarm({ points, min = 0, max = 10, height = 120, format = (v:
     const rr = p.mine ? rMine : r;
     const cx = x(p.value);
     let cy = mid;
-    for (let k = 0; k < 40; k++) {
-      const off = (k % 2 ? 1 : -1) * Math.ceil(k / 2) * (r * 1.6);
+    for (let k = 0; k < 90; k++) {
+      const off = (k % 2 ? 1 : -1) * Math.ceil(k / 2) * (r * 1.45);
+      if (Math.abs(off) > mid - rr) continue;   // не выходить за полосу
       const ty = mid + off;
       if (placed.every((q) => Math.hypot(q.cx - cx, q.cy - ty) >= q.rr + rr + 1)) { cy = ty; break; }
     }
@@ -113,7 +114,7 @@ export function Beeswarm({ points, min = 0, max = 10, height = 120, format = (v:
       {ticks.map((t) => <g key={t}><line x1={x(t)} x2={x(t)} y1={height - 8} y2={height} className="viz-axis" /><text x={x(t)} y={height + 14} className="viz-tick" textAnchor="middle">{format(t)}</text></g>)}
       {placed.filter((d) => !d.p.mine).map((d) => <circle key={`o${d.p.id}`} cx={d.cx} cy={d.cy} r={d.rr} className="viz-swarm__other"><title>{d.p.label ?? format(d.p.value)}</title></circle>)}
       {placed.filter((d) => d.p.mine).map((d) => (
-        <g key={`m${d.p.id}`} className="viz-swarm__mine">
+        <g key={`m${d.p.id}`} className={`viz-swarm__mine${onPick ? ' viz-swarm__mine--link' : ''}`} onClick={onPick ? () => onPick(d.p.id) : undefined}>
           <circle cx={d.cx} cy={d.cy} r={d.rr} fill={indexColor(max === 10 ? d.p.value : null)}><title>{`${d.p.label ?? ''} · ${format(d.p.value)}`}</title></circle>
         </g>
       ))}

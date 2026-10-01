@@ -1,14 +1,16 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { FedError } from '../federation/FedState';
-import { useHoldingProfile, useHoldingAnalytics, useHoldingChanges, useCanNote, num, pm, shortClub, fmtDay, LINE_TITLE, LIST_SHORT, NOTE_KIND, type TeamLeague, type LeaguePlayer, type HoldingAnalytics, type HoldingChanges } from './api';
+import { useHoldingProfile, useHoldingAnalytics, useHoldingChanges, useCanNote, num, pm, shortClub, fmtDay, LINE_TITLE, LIST_SHORT, NOTE_KIND, type TeamLeague, type HoldingAnalytics, type HoldingChanges, type LeaguePlayer } from './api';
 import { useNotes } from './Notes';
 import { HdLoading } from './HoldingShell';
 import { useNavQuery, useScope, useScopeLabel, scopeAnalytics, scopeChanges, inScope } from './scope';
+import { PlayerCard, TeamTile, PctCompare, teamIndex, surname } from './cards';
+import { Beeswarm, IndexRing } from './viz';
 
 /**
- * Брифинг — первый экран руководства. Отвечает на три вопроса недели словами и цифрами:
- * где мы среди команд региона, кто готов подняться выше, кого упускает селекция.
- * Ниже — что изменилось, все команды против лиги, что требует внимания, напоминания.
+ * Брифинг — первый экран руководства, на визуальных блоках: плитки команд против лиги,
+ * карточки игроков с кольцом индекса, рой «игроки холдинга среди всех сверстников»,
+ * полосы селекции. Три вопроса недели: где мы, кто готов подняться, кого упускаем.
  */
 export function HoldingOverview() {
   const profile = useHoldingProfile();
@@ -21,120 +23,137 @@ export function HoldingOverview() {
   const p = profile.data, a = scopeAnalytics(an.data, scope);
   const live = p.teams.every((t) => t.standingsSource === 'ffspb-live');
   const teams = a.teams.slice().sort((x, y) => (x.clubKey === y.clubKey ? y.year - x.year : x.clubKey.localeCompare(y.clubKey, 'ru')));
+  const logoOf = new Map(p.teams.map((t) => [t.key, t.logo]));
   const under = teams.filter((t) => (t.overperformance ?? 0) < 0);
+  const idxs = teams.map(teamIndex).filter((v): v is number => v != null);
+  const holdIdx = idxs.length ? Math.round((idxs.reduce((x, y) => x + y, 0) / idxs.length) * 10) / 10 : null;
+  const upCount = a.youth.ready.length + a.promote.length;
 
   return (
-    <article>
-      <header>
-        <div className="hd-kicker">Брифинг · {new Date().toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' })} · <b>{label ?? 'весь холдинг'}</b></div>
-        <h1 className="hd-h1">{headline(a, under.length)}</h1>
-        <p className="hd-lede">{label ? `Срез «${label}»: ${teams.length} ${plural(teams.length, 'команда', 'команды', 'команд')}. Переключите срез сверху, чтобы вернуться ко всему холдингу.` : <>{p.members.map((m) => `${m.label} — ${m.teams} ${plural(m.teams, 'команда', 'команды', 'команд')}`).join(', ')}; {p.years[p.years.length - 1]}–{p.years[0]} годы рождения. Всё ниже — относительно всей лиги и региона, а не внутри команды.</>}</p>
-        <div className="hd-meta">
-          <span><i className={`hd-meta__dot${live ? '' : ' hd-meta__dot--warn'}`} />{live ? 'Таблицы и результаты — по протоколам ФФСПб' : 'Часть таблиц — зеркало AvanData, протоколы догружаются'}</span>
-          <span>Рейтинги — по разобранным матчам AvanData</span>
-          <span>Обновлено {new Date(p.asOf).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })}</span>
+    <div className="hd-brief">
+      {/* Шапка с главным выводом и тремя большими цифрами */}
+      <header className="hd-teamhero hd-brief__hero">
+        <div style={{ minWidth: 0, flex: 1 }}>
+          <div className="hd-kicker">Брифинг · {new Date().toLocaleDateString('ru-RU', { day: 'numeric', month: 'long' })} · <b>{label ?? 'весь холдинг'}</b></div>
+          <h1 className="hd-teamhero__title hd-brief__title">{headline(a, under.length)}</h1>
+          <div className="hd-meta">
+            <span><i className={`hd-meta__dot${live ? '' : ' hd-meta__dot--warn'}`} />{live ? 'Таблицы — по протоколам ФФСПб' : 'Часть таблиц — зеркало AvanData'}</span>
+            <span>Показатели — по разобранным матчам AvanData</span>
+            <span>Обновлено {new Date(p.asOf).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })}</span>
+          </div>
+        </div>
+        <div className="hd-teamhero__stats">
+          <div className="hd-bigstat"><span className="hd-bigstat__v hd-up">{upCount}</span><span className="hd-bigstat__l">готовы подняться</span><span className="hd-bigstat__s">{a.youth.ready.length} в молодёжку · {a.promote.length} в ФК Динамо</span></div>
+          <div className="hd-bigstat"><span className={`hd-bigstat__v ${under.length ? 'hd-down' : ''}`}>{under.length}<small>/{teams.length}</small></span><span className="hd-bigstat__l">недобирают очков</span><span className="hd-bigstat__s">ниже, чем позволяет состав</span></div>
+          <div className="hd-bigstat hd-bigstat--ring"><IndexRing value={holdIdx} size={86} stroke={7} /><span className="hd-bigstat__l">индекс составов</span></div>
         </div>
       </header>
 
-      <Answers a={a} teams={teams} q={q} />
+      {/* 01 Где мы */}
+      <section className="card an">
+        <div className="page-section-title"><span className="hd-qnum">01</span> Где мы среди команд региона <span className="an-model-tag">место в таблице против места по силе состава</span></div>
+        <div className="hd-tiles">{teams.map((t) => <TeamTile key={t.key} t={t} q={q} logo={logoOf.get(t.key)} />)}</div>
+        <div className="an-note">Полоса — шкала мест дивизиона: белая точка — место в таблице, голубая — место по силе состава. Красный отрезок — команда стоит ниже, чем позволяет состав; зелёный — выше.</div>
+      </section>
+
+      {/* 02 Кто готов подняться */}
+      <section className="card an">
+        <div className="page-section-title"><span className="hd-qnum">02</span> Кто готов подняться выше <Link to={`/holding/decisions${q}#youth`} className="hd-link" style={{ marginLeft: 'auto' }}>все решения →</Link></div>
+        <UpGrid a={a} q={q} />
+      </section>
+
+      {/* Рой: игроки холдинга среди всех сверстников */}
+      <Swarm a={a} />
+
+      {/* 03 Кого упускает селекция */}
+      <section className="card an">
+        <div className="page-section-title"><span className="hd-qnum">03</span> Кого упускает селекция <span className="an-model-tag">в более слабых командах — сильнее нашей линии</span><Link to={`/holding/decisions${q}#selection`} className="hd-link" style={{ marginLeft: 'auto' }}>кандидаты →</Link></div>
+        <Selection a={a} q={q} />
+      </section>
+
       <Week q={q} />
-      <TeamsTable teams={teams} q={q} />
       <Attention a={a} q={q} />
       <Reminders q={q} />
-    </article>
+    </div>
   );
 }
 
 // ─── Слова ────────────────────────────────────────────────────────────────────
 export const plural = (n: number, one: string, few: string, many: string) => { const a = Math.abs(n) % 100, b = a % 10; if (a >= 11 && a <= 14) return many; if (b === 1) return one; if (b >= 2 && b <= 4) return few; return many; };
 const teamTitle = (t: { clubLabel: string; year?: number; birthYear?: number }) => `${shortClub(t.clubLabel)} ${t.year ?? t.birthYear ?? ''}`;
-const lineShort: Record<string, string> = { GK: 'вратарь', DEF: 'защитник', MID: 'полузащитник', FWD: 'нападающий' };
 
 function headline(a: HoldingAnalytics, under: number): string {
   const ready = a.youth.ready.length, promote = a.promote.length;
   const parts: string[] = [];
-  if (ready) parts.push(`${ready} ${plural(ready, 'игрок готов', 'игрока готовы', 'игроков готовы')} в молодёжную команду`);
-  if (promote) parts.push(`${promote} — к переходу в ФК Динамо`);
-  if (under) parts.push(`${under} ${plural(under, 'команда недобирает', 'команды недобирают', 'команд недобирают')} очков при своём составе`);
+  if (ready) parts.push(`${ready} ${plural(ready, 'игрок готов', 'игрока готовы', 'игроков готовы')} в молодёжку`);
+  if (promote) parts.push(`${promote} — в ФК Динамо`);
+  if (under) parts.push(`${under} ${plural(under, 'команда недобирает', 'команды недобирают', 'команд недобирают')} при своём составе`);
   if (!parts.length) return 'Неделя без срочных решений';
   const s = parts.join(', ');
   return s.charAt(0).toUpperCase() + s.slice(1);
 }
 
-// ─── Три ответа ───────────────────────────────────────────────────────────────
-function Answers({ a, teams, q }: { a: HoldingAnalytics; teams: TeamLeague[]; q: string }) {
-  const placed = teams.filter((t) => t.place != null && t.placeSize);
-  const upper = placed.filter((t) => (t.place as number) <= Math.ceil((t.placeSize as number) / 2));
-  const best = placed.slice().sort((x, y) => (x.place as number) / (x.placeSize as number) - (y.place as number) / (y.placeSize as number))[0];
-  const gaps = teams.filter((t) => t.overperformance != null && t.overperformance !== 0).sort((x, y) => (x.overperformance as number) - (y.overperformance as number));
-  const under = gaps.filter((t) => (t.overperformance as number) < 0);
-
-  const up = [...a.youth.ready.map((p) => ({ p, tag: 'молодёжка' })), ...a.promote.map((p) => ({ p, tag: '→ ФК Динамо' }))];
+// ─── 02: карточки «готовы подняться» ──────────────────────────────────────────
+function UpGrid({ a, q }: { a: HoldingAnalytics; q: string }) {
   const seen = new Set<number>();
-  const upList = up.filter(({ p }) => !seen.has(p.id) && seen.add(p.id)).slice(0, 5);
-
-  const selIds = new Set(a.selection.flatMap((g) => g.candidates.map((c) => c.id)));
-  const groups = a.selection.slice().sort((x, y) => y.candidates.length - x.candidates.length || x.candidates[0]!.pctRegion - y.candidates[0]!.pctRegion);
-  const g0 = groups[0];
-
+  const rows: Array<{ p: LeaguePlayer; tag: string; tone: 'up' | 'brand' }> = [];
+  for (const p of a.youth.ready) if (!seen.has(p.id)) { seen.add(p.id); rows.push({ p, tag: 'в молодёжку', tone: 'up' }); }
+  for (const p of a.promote) if (!seen.has(p.id)) { seen.add(p.id); rows.push({ p, tag: '→ ФК Динамо', tone: 'brand' }); }
+  const older = a.olderAge.filter((p) => !seen.has(p.id)).sort((x, y) => (y.index ?? -1) - (x.index ?? -1)).slice(0, Math.max(0, 8 - rows.length));
+  if (!rows.length && !older.length) return <div className="hd-empty">Пока никто не проходит пороги.</div>;
   return (
-    <section className="hd-answers" aria-label="Три вопроса недели">
-      <div className="hd-answer">
-        <div className="hd-answer__n">01</div>
-        <h2 className="hd-answer__q">Где мы среди команд региона</h2>
-        <div className="hd-answer__big"><span className="hd-answer__num">{upper.length}<span className="hd-muted" style={{ fontSize: 30 }}>/{placed.length}</span></span><span className="hd-answer__unit">команд в верхней<br />половине таблицы</span></div>
-        <p className="hd-answer__text">
-          {best ? <>Выше всех — <b>{teamTitle(best)}</b>: {best.place}-е место из {best.placeSize}. </> : null}
-          {under.length ? <><b>{under.length}</b> {plural(under.length, 'команда стоит', 'команды стоят', 'команд стоят')} ниже, чем позволяет состав по рейтингу.</> : 'Все команды стоят не ниже, чем позволяет состав.'}
-        </p>
-        <ul className="hd-answer__list">
-          {gaps.slice(0, 2).concat(gaps.length > 2 ? gaps.slice(-1) : []).map((t) => (
-            <li key={t.key}>
-              <Link to={`/holding/teams/${encodeURIComponent(t.key)}${q}`}>{teamTitle(t)}</Link>
-              <span className={(t.overperformance as number) < 0 ? 'hd-down' : 'hd-up'}>{(t.overperformance as number) < 0 ? `по составу ${t.ratingRank}-е, в таблице ${t.place}-е` : `в таблице ${t.place}-е при ${t.ratingRank}-м составе`}</span>
-            </li>
-          ))}
-        </ul>
-        <div className="hd-answer__foot"><a href="#teams" className="hd-link">Все команды ↓</a></div>
-      </div>
+    <div className="hd-pcards">
+      {rows.slice(0, 8).map(({ p, tag, tone }) => <PlayerCard key={p.id} p={p} q={q} tag={tag} tagTone={tone} />)}
+      {older.map((p) => <PlayerCard key={p.id} p={p} q={q} tag={`возраст старше · ${p.olderRank}-й в ${p.olderTeamName.replace(/^ФК |Царское Село-/, '')}`} tagTone="brand" />)}
+    </div>
+  );
+}
 
-      <div className="hd-answer">
-        <div className="hd-answer__n">02</div>
-        <h2 className="hd-answer__q">Кто готов подняться выше</h2>
-        <div className="hd-answer__big"><span className="hd-answer__num">{a.youth.ready.length + a.promote.length}</span><span className="hd-answer__unit">готовы к уровню<br />выше</span></div>
-        <p className="hd-answer__text">
-          <b>{a.youth.ready.length}</b> — в молодёжную команду (мест {a.youthSlots}), <b>{a.promote.length}</b> — из Царского Села в ФК Динамо. Ещё <b>{a.olderAge.length}</b> тянут возраст старше в своей школе.
-        </p>
-        <ul className="hd-answer__list">
-          {upList.map(({ p, tag }) => (
-            <li key={p.id}>
-              <span style={{ minWidth: 0 }}><Link to={`/holding/players/${p.id}${q}`}>{p.name}</Link> <span className="hd-muted hd-small">{teamTitle(p)} · {p.line ? lineShort[p.line] : ''}</span></span>
-              <span className="hd-tag hd-tag--up">{tag}</span>
-            </li>
-          ))}
-          {upList.length === 0 && <li className="hd-muted">пока никто не проходит пороги</li>}
-        </ul>
-        <div className="hd-answer__foot"><Link to={`/holding/decisions${q}`} className="hd-link">Все решения →</Link></div>
+// ─── Рой региона ──────────────────────────────────────────────────────────────
+function Swarm({ a }: { a: HoldingAnalytics }) {
+  const navigate = useNavigate();
+  const q = useNavQuery();
+  const scope = useScope();
+  const rows = (a.swarm ?? []).filter((r) => !scope.year || r.year === scope.year);
+  if (!rows.length) return null;
+  return (
+    <section className="card an">
+      <div className="page-section-title">Игроки холдинга среди всех сверстников региона <span className="an-model-tag">индекс сезона · каждая точка — игрок с 45+ минутами</span></div>
+      <div className="hd-swarm">
+        {rows.map((r) => {
+          const mine = r.points.filter((x) => x.mine && (!scope.club || (x.teamKey ?? '').startsWith(`${scope.club}:`)));
+          const best = mine.slice().sort((x, y) => y.index - x.index).slice(0, 3);
+          return (
+            <div key={r.year} className="hd-swarm__row">
+              <div className="hd-swarm__label"><b>{r.year}</b><span>{mine.length} наших из {r.points.length}</span><span className="hd-swarm__best">{best.map((b) => `${surname(b.name ?? '')} ${b.index.toFixed(1)}`).join(' · ')}</span></div>
+              <Beeswarm points={r.points.map((x) => ({ id: x.id, value: x.index, mine: x.mine && mine.some((m) => m.id === x.id), label: x.name }))} height={124} onPick={(id) => navigate(`/holding/players/${id}${q}`)} />
+            </div>
+          );
+        })}
       </div>
-
-      <div className="hd-answer">
-        <div className="hd-answer__n">03</div>
-        <h2 className="hd-answer__q">Кого упускает селекция</h2>
-        <div className="hd-answer__big"><span className="hd-answer__num">{selIds.size}</span><span className="hd-answer__unit">игроков в более слабых<br />командах сильнее наших линий</span></div>
-        <p className="hd-answer__text">
-          {g0 ? <>Больше всего — для <b>{teamTitle(g0)}</b> ({LINE_TITLE[g0.line].toLowerCase()}): {g0.candidates.length} {plural(g0.candidates.length, 'кандидат', 'кандидата', 'кандидатов')}, лучший — топ-{g0.candidates[0]!.pctRegion}% региона.</> : 'Сейчас в более слабых командах нет игроков сильнее наших линий.'}
-        </p>
-        <ul className="hd-answer__list">
-          {groups.slice(0, 4).map((g) => (
-            <li key={`${g.teamKey}${g.line}`}>
-              <span><b>{teamTitle(g)}</b> <span className="hd-muted hd-small">· {LINE_TITLE[g.line].toLowerCase()}</span></span>
-              <span className="hd-small">{g.candidates.length} · лучший топ-{g.candidates[0]!.pctRegion}%</span>
-            </li>
-          ))}
-        </ul>
-        <div className="hd-answer__foot"><Link to={`/holding/decisions${q}#selection`} className="hd-link">Кандидаты без имён →</Link></div>
-      </div>
+      <div className="an-note">Серые точки — все игроки этого года рождения в регионе, цветные — игроки холдинга (цвет — индекс). Клик по цветной точке — профиль игрока. Индекс считается против своей группы позиций.</div>
     </section>
+  );
+}
+
+// ─── 03: селекция ─────────────────────────────────────────────────────────────
+function Selection({ a, q }: { a: HoldingAnalytics; q: string }) {
+  const groups = a.selection.slice().sort((x, y) => x.candidates[0]!.pctRegion - y.candidates[0]!.pctRegion).slice(0, 6);
+  if (!groups.length) return <div className="hd-empty">Сейчас в более слабых командах нет игроков сильнее наших линий.</div>;
+  return (
+    <div className="hd-selcards">
+      {groups.map((g) => {
+        const team = a.teams.find((t) => t.key === g.teamKey);
+        const ours = team?.squad.filter((p) => p.line === g.line && p.pctRegion != null).sort((x, y) => (x.pctRegion as number) - (y.pctRegion as number))[0];
+        const c = g.candidates[0]!;
+        return (
+          <Link key={`${g.teamKey}${g.line}`} to={`/holding/decisions${q}#selection`} className="hd-selcard">
+            <div className="hd-selcard__head"><b>{teamTitle(g)}</b> · {LINE_TITLE[g.line].toLowerCase()}<span className="hd-tag hd-tag--brand">{g.candidates.length} {plural(g.candidates.length, 'кандидат', 'кандидата', 'кандидатов')}</span></div>
+            <PctCompare ours={ours?.pctRegion ?? null} theirs={c.pctRegion} oursLabel={ours ? `наш лучший · ${surname(ours.name)}` : 'наш лучший'} theirsLabel={`кандидат · ${c.club}`} />
+          </Link>
+        );
+      })}
+    </div>
   );
 }
 
@@ -142,137 +161,63 @@ function Answers({ a, teams, q }: { a: HoldingAnalytics; teams: TeamLeague[]; q:
 function Week({ q }: { q: string }) {
   const ch = useHoldingChanges('week');
   const scope = useScope();
-  const c = ch.data;
+  const c = ch.data ? scopeChanges(ch.data, scope) : null;
   return (
-    <section className="hd-section">
-      <div className="hd-section__head">
-        <h2 className="hd-h2">Что изменилось</h2>
-        <span className="hd-section__note">{c ? `сравнение: ${c.base.label}` : 'сравниваем…'} · <Link to={`/holding/changes${q}`} className="hd-link">вся динамика →</Link></span>
-      </div>
-      {!c ? <div className="hd-shimmer" style={{ height: 96, marginTop: 12 }} /> : <WeekItems c={scopeChanges(c, scope)} q={q} />}
+    <section className="card an">
+      <div className="page-section-title">Что изменилось <span className="an-model-tag">{c ? c.base.label : 'сравниваем…'}</span><Link to={`/holding/changes${q}`} className="hd-link" style={{ marginLeft: 'auto' }}>вся динамика →</Link></div>
+      {!c ? <div className="hd-shimmer" style={{ height: 80 }} /> : <WeekChips c={c} q={q} />}
     </section>
   );
 }
 
-function WeekItems({ c, q }: { c: HoldingChanges; q: string }) {
-  const items: Array<{ mark: string; cls: string; body: React.ReactNode }> = [];
+function WeekChips({ c, q }: { c: HoldingChanges; q: string }) {
+  const chips: Array<{ id: number; name: string; text: string; tone: 'up' | 'down' | 'warn' }> = [];
   for (const l of c.lists) {
     const bad = l.key === 'losing' || l.key === 'risk';
-    if (l.entered.length) items.push({ mark: `+${l.entered.length}`, cls: bad ? 'hd-down' : 'hd-up', body: <><b>{LIST_SHORT[l.key]}</b>: {names(l.entered, q)}</> });
-    if (l.left.length) items.push({ mark: `−${l.left.length}`, cls: bad ? 'hd-up' : 'hd-muted', body: <>Вышли из «{LIST_SHORT[l.key].toLowerCase()}»: {names(l.left, q)}</> });
+    for (const p of l.entered) chips.push({ id: p.id, name: p.name, text: `вошёл: ${LIST_SHORT[l.key].toLowerCase()}`, tone: bad ? 'down' : 'up' });
   }
-  if (c.risers.length) items.push({ mark: '↑', cls: 'hd-up', body: <>Выросли среди сверстников: {names(c.risers, q)}</> });
-  if (c.fallers.length) items.push({ mark: '↓', cls: 'hd-down', body: <>Опустились среди сверстников: {names(c.fallers, q)}</> });
-  for (const l of c.lines.sagged.slice(0, 2)) items.push({ mark: '!', cls: 'hd-warn', body: <>Просела линия <b>{shortClub(l.clubLabel)} {l.year} · {l.title.toLowerCase()}</b>: {pct(l.gapBefore)} → {pct(l.gapNow)} к лиге</> });
-  if (!items.length) return <div className="hd-empty">За это время списки решений не изменились.</div>;
-  return <div className="hd-week">{items.slice(0, 8).map((it, i) => <div key={i} className="hd-week__item"><span className={`hd-week__mark ${it.cls}`}>{it.mark}</span><span>{it.body}</span></div>)}</div>;
-}
-const pct = (x: number | null) => (x == null ? '—' : `${pm(Math.round(x * 100))}%`);
-function names(ps: Array<{ id: number; name: string }>, q: string) {
-  const shown = ps.slice(0, 3);
-  return <>{shown.map((p, i) => <span key={p.id}>{i > 0 ? ', ' : ''}<Link to={`/holding/players/${p.id}${q}`} style={{ textDecoration: 'none', fontWeight: 600 }}>{p.name}</Link></span>)}{ps.length > 3 ? ` и ещё ${ps.length - 3}` : ''}</>;
-}
-
-// ─── Все команды против лиги ──────────────────────────────────────────────────
-function TeamsTable({ teams, q }: { teams: TeamLeague[]; q: string }) {
-  const navigate = useNavigate();
+  for (const p of c.risers) chips.push({ id: p.id, name: p.name, text: `↑ топ ${p.pctBefore}% → ${p.pctRegion}%`, tone: 'up' });
+  for (const p of c.fallers) chips.push({ id: p.id, name: p.name, text: `↓ топ ${p.pctBefore}% → ${p.pctRegion}%`, tone: 'down' });
+  if (!chips.length && !c.lines.sagged.length) return <div className="hd-empty">За это время списки решений не изменились.</div>;
   return (
-    <section className="hd-section" id="teams" style={{ scrollMarginTop: 80 }}>
-      <div className="hd-section__head">
-        <h2 className="hd-h2">Команды против лиги</h2>
-        <span className="hd-section__note">● место в таблице · ○ место по силе состава (рейтинг AvanData)</span>
-      </div>
-      <div className="hd-scroll">
-        <table className="hd-table">
-          <thead><tr><th>Команда</th><th className="num">Место</th><th className="hd-hide-sm">Таблица и состав</th><th>Итог</th><th className="num">Средний класс</th><th className="hd-hide-sm">Линии к лиге</th></tr></thead>
-          <tbody>
-            {teams.map((t) => <TeamRow key={t.key} t={t} onOpen={() => navigate(`/holding/teams/${encodeURIComponent(t.key)}${q}`)} />)}
-          </tbody>
-        </table>
-      </div>
-    </section>
-  );
-}
-
-function TeamRow({ t, onOpen }: { t: TeamLeague; onOpen: () => void }) {
-  const o = t.overperformance;
-  const size = t.placeSize ?? t.ratingSize ?? 0;
-  const x = (n: number | null) => (n == null || size <= 1 ? null : ((n - 1) / (size - 1)) * 100);
-  const xt = x(t.place), xr = x(t.ratingRank);
-  const lines = t.lines.filter((l) => l.verdict === 'weak' || l.verdict === 'strong');
-  return (
-    <tr className="hd-row-link" onClick={onOpen}>
-      <td>
-        <div className="hd-team">
-          <span className="hd-team__name">{teamTitle(t)}<span className="hd-team__sub">{t.ageTitle} · {t.division}</span></span>
-        </div>
-      </td>
-      <td className="num"><span className="hd-place">{t.place ?? '—'}<small>{t.placeSize ? `из ${t.placeSize}` : ''}</small></span></td>
-      <td className="hd-hide-sm">
-        {xt != null && xr != null ? (
-          <div className="hd-gap" title={`в таблице ${t.place}-е, по составу ${t.ratingRank}-е из ${size}`}>
-            <div className="hd-gap__track" />
-            <div className="hd-gap__span" style={{ left: `${Math.min(xt, xr)}%`, width: `${Math.abs(xt - xr)}%`, background: (o ?? 0) < 0 ? 'var(--down)' : 'var(--up)' }} />
-            <div className="hd-gap__dot hd-gap__dot--rating" style={{ left: `${xr}%` }} />
-            <div className="hd-gap__dot hd-gap__dot--table" style={{ left: `${xt}%` }} />
-          </div>
-        ) : <span className="hd-muted">—</span>}
-      </td>
-      <td>{o == null ? <span className="hd-muted">—</span> : o < 0 ? <span className="hd-tag hd-tag--down">недобирает {-o}</span> : o > 0 ? <span className="hd-tag hd-tag--up">выше состава на {o}</span> : <span className="hd-tag">по составу</span>}</td>
-      <td className="num"><span className="hd-rating">{t.avgRating != null ? num(t.avgRating) : '—'}</span><span className="hd-team__sub">{t.divAvgRating != null ? `лига ${num(t.divAvgRating)} · ${t.divRankByAvg}-е из ${t.divTeams}` : ''}</span></td>
-      <td className="hd-hide-sm">
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
-          {lines.length === 0 && <span className="hd-muted hd-small">на уровне лиги</span>}
-          {lines.map((l) => <span key={l.line} className={`hd-tag ${l.verdict === 'weak' ? 'hd-tag--down' : 'hd-tag--up'}`}>{l.title.toLowerCase()} {pm(Math.round((l.gapRel ?? 0) * 100))}%</span>)}
-        </div>
-      </td>
-    </tr>
+    <div className="hd-chips">
+      {chips.slice(0, 12).map((x, i) => <Link key={`${x.id}${i}`} to={`/holding/players/${x.id}${q}`} className={`hd-chip hd-chip--${x.tone}`}><b>{surname(x.name)}</b><span>{x.text}</span></Link>)}
+      {c.lines.sagged.slice(0, 3).map((l) => <span key={`${l.teamKey}${l.line}`} className="hd-chip hd-chip--warn"><b>{shortClub(l.clubLabel)} {l.year} · {l.title.toLowerCase()}</b><span>линия просела: {pm(Math.round((l.gapBefore ?? 0) * 100))}% → {pm(Math.round((l.gapNow ?? 0) * 100))}%</span></span>)}
+    </div>
   );
 }
 
 // ─── Требует внимания ─────────────────────────────────────────────────────────
 function Attention({ a, q }: { a: HoldingAnalytics; q: string }) {
-  const who = (p: LeaguePlayer) => `${teamTitle(p)} · ${p.line ? lineShort[p.line] : '—'}`;
   return (
-    <section className="hd-section">
-      <div className="hd-section__head"><h2 className="hd-h2">Требует внимания</h2><Link to={`/holding/decisions${q}#losing`} className="hd-link">подробно в решениях →</Link></div>
-      <div className="hd-cols">
-        <div className="hd-col">
-          <h3>Кого теряем <span className="hd-down">{a.losing.length}</span></h3>
-          <p>Падение формы или выпал из ротации</p>
-          <ul className="hd-list">
-            {a.losing.slice(0, 6).map((p) => (
-              <li key={p.id}><Link to={`/holding/players/${p.id}${q}`}>{p.name}</Link><span className="hd-rating">{p.rating != null ? num(p.rating) : '—'}</span><span className="hd-list__sub">{who(p)} · {p.reason === 'trend' ? `форма ${p.trend != null ? pm(p.trend) : ''} к сезону` : 'не играл последние туры'}</span></li>
-            ))}
-            {a.losing.length === 0 && <li className="hd-muted">никого</li>}
-          </ul>
+    <section className="card an">
+      <div className="page-section-title">Требует внимания <Link to={`/holding/decisions${q}#losing`} className="hd-link" style={{ marginLeft: 'auto' }}>подробно →</Link></div>
+      <div className="hd-attn">
+        <div>
+          <div className="hd-attn__title">Кого теряем <span className="hd-down">{a.losing.length}</span></div>
+          {a.losing.length === 0 ? <div className="hd-empty">Никого.</div> : <div className="hd-pcards hd-pcards--col">{a.losing.slice(0, 4).map((p) => <PlayerCard key={p.id} p={p} q={q} tag={p.reason === 'trend' ? `форма ${p.formDelta != null ? pm(Math.round(p.formDelta * 10) / 10) : ''}` : 'вне ротации'} tagTone="down" />)}</div>}
         </div>
-        <div className="hd-col">
-          <h3>Зона риска <span className="hd-warn">{a.risk.length}</span></h3>
-          <p>В ФК Динамо, но ниже медианы Первой лиги</p>
-          <ul className="hd-list">
-            {a.risk.slice(0, 6).map((p) => (
-              <li key={p.id}><Link to={`/holding/players/${p.id}${q}`}>{p.name}</Link><span className="hd-rating">{p.rating != null ? num(p.rating) : '—'}</span><span className="hd-list__sub">{who(p)} · {p.rankRegion != null ? `${p.rankRegion}-й из ${p.sizeRegion} в регионе` : ''}</span></li>
-            ))}
-            {a.risk.length === 0 && <li className="hd-muted">никого</li>}
-          </ul>
+        <div>
+          <div className="hd-attn__title">Зона риска в ФК Динамо <span className="hd-warn">{a.risk.length}</span></div>
+          {a.risk.length === 0 ? <div className="hd-empty">Никого.</div> : <div className="hd-pcards hd-pcards--col">{a.risk.slice(0, 4).map((p) => <PlayerCard key={p.id} p={p} q={q} tag="ниже медианы Первой лиги" tagTone="warn" />)}</div>}
         </div>
-        <div className="hd-col">
-          <h3>Слабые линии <span className="hd-warn">{a.weakLines.length}</span></h3>
-          <p>Средний рейтинг линии ниже лиги на 12%+</p>
-          <ul className="hd-list">
-            {a.weakLines.slice(0, 6).map((l) => (
-              <li key={`${l.teamKey}${l.line}`}><Link to={`/holding/teams/${encodeURIComponent(l.teamKey)}${q}`}>{teamTitle(l)} · {l.title.toLowerCase()}</Link><span className="hd-down hd-rating">{pm(Math.round(l.gapRel * 100))}%</span><span className="hd-list__sub">{num(l.teamAvg)} против {num(l.divAvg)} в лиге</span></li>
-            ))}
-            {a.weakLines.length === 0 && <li className="hd-muted">нет</li>}
-          </ul>
+        <div>
+          <div className="hd-attn__title">Слабые линии <span className="hd-warn">{a.weakLines.length}</span></div>
+          {a.weakLines.slice(0, 6).map((l) => (
+            <Link key={`${l.teamKey}${l.line}`} to={`/holding/teams/${encodeURIComponent(l.teamKey)}${q}`} className="hd-lineline hd-lineline--link">
+              <span className="hd-lineline__t">{teamTitle(l)} · {l.title.toLowerCase()}</span>
+              <span className="hd-lineline__bar"><span style={{ width: `${Math.max(4, 50 + l.gapRel * 100)}%`, background: 'var(--rating-poor)' }} /></span>
+              <span className="hd-lineline__v hd-down">{pm(Math.round(l.gapRel * 100))}%</span>
+            </Link>
+          ))}
+          {a.weakLines.length === 0 && <div className="hd-empty">Нет.</div>}
         </div>
       </div>
     </section>
   );
 }
 
-// ─── Напоминания ──────────────────────────────────────────────────────────────
+// ─── Решения в работе ─────────────────────────────────────────────────────────
 function Reminders({ q }: { q: string }) {
   const can = useCanNote();
   const notes = useNotes();
@@ -280,19 +225,20 @@ function Reminders({ q }: { q: string }) {
   if (!can) return null;
   const list = (notes.data?.notes ?? []).filter((n) => !n.closedAt && (!n.now || inScope(scope, { teamKey: n.now.teamKey }))).sort((x, y) => Number(y.due) - Number(x.due)).slice(0, 6);
   return (
-    <section className="hd-section">
-      <div className="hd-section__head"><h2 className="hd-h2">Решения в работе</h2><Link to={`/holding/journal${q}`} className="hd-link">журнал решений →</Link></div>
+    <section className="card an">
+      <div className="page-section-title">Решения в работе <Link to={`/holding/journal${q}`} className="hd-link" style={{ marginLeft: 'auto' }}>журнал →</Link></div>
       {list.length === 0 ? <div className="hd-empty">Решений пока нет. Откройте игрока и запишите решение — кабинет напомнит о нём в нужный день.</div> : (
-        <ul className="hd-list">
+        <div className="hd-chips">
           {list.map((n) => (
-            <li key={n.id}>
-              <span><Link to={`/holding/players/${n.playerId}${q}`}>{n.playerName}</Link> <span className="hd-tag hd-tag--brand" style={{ marginLeft: 6 }}>{NOTE_KIND[n.kind]}</span></span>
-              <span className={n.due ? 'hd-warn hd-small' : 'hd-muted hd-small'} style={{ fontWeight: n.due ? 700 : 400 }}>{n.remindOn ? (n.due ? `пора вернуться · ${fmtDay(n.remindOn)}` : `напомнить ${fmtDay(n.remindOn)}`) : 'без напоминания'}</span>
-              <span className="hd-list__sub">{n.text || '—'}{n.now?.rating != null && n.ratingAt != null ? ` · рейтинг ${num(n.ratingAt)} → ${num(n.now.rating)}` : ''}</span>
-            </li>
+            <Link key={n.id} to={`/holding/players/${n.playerId}${q}`} className={`hd-chip ${n.due ? 'hd-chip--warn' : 'hd-chip--brand'}`}>
+              <b>{surname(n.playerName)} · {NOTE_KIND[n.kind]}</b>
+              <span>{n.remindOn ? (n.due ? `пора вернуться · ${fmtDay(n.remindOn)}` : `напомнить ${fmtDay(n.remindOn)}`) : 'без напоминания'}{n.now?.rating != null && n.ratingAt != null ? ` · рейтинг ${num(n.ratingAt)} → ${num(n.now.rating)}` : ''}</span>
+            </Link>
           ))}
-        </ul>
+        </div>
       )}
     </section>
   );
 }
+
+export type { TeamLeague };
