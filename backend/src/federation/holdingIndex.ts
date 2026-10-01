@@ -38,7 +38,12 @@ export const leagueCoefOf = (year: number): number | null => tiersByYear.get(yea
  * Коэффициент Первой лиги относительно Высшей: разница средних Эло лиг (откалибрована по рейтингу AvanData
  * за матч), переведённая в очки тем же наклоном, что по данным связывает силу соперника с игрой.
  */
-export function leagueCoefFrom(eloGap: number): number { return clamp(1 / (1 - ATT_PER_100_ELO * (eloGap / 100)), LEAGUE_MIN, 1); }
+export function leagueCoefFrom(eloGap: number): number {
+  // Подбор разницы лиг не сработал (Эло возраста плохо совпало с рейтингом AvanData — так было у 2013):
+  // берём средний коэффициент остальных возрастов (решение руководства 01.10.2026).
+  if (eloGap < LEAGUE_GAP_MIN) return LEAGUE_COEF_FALLBACK;
+  return clamp(1 / (1 - ATT_PER_100_ELO * (eloGap / 100)), LEAGUE_MIN, 1);
+}
 export const tiersStamp = (year: number): string => { const t = tiersByYear.get(year); if (!t) return '0'; let h = 0; for (const ch of t.stamp) h = (h * 31 + ch.charCodeAt(0)) | 0; return String(h); };
 
 // ─── Эло команд по результатам ФФСПб ────────────────────────────────────────
@@ -94,6 +99,7 @@ const TEAM_MIN = 0.75, TEAM_MAX = 1.33;         // поправка на объ�
  *  Оборону не трогаем: там устойчивой связи с силой соперника нет. */
 const ATT_PER_100_ELO = -0.15, ATT_MIN = 0.8, ATT_MAX = 1.35;
 const LEAGUE_MIN = 0.6;                          // коэффициент лиги не ниже
+const LEAGUE_GAP_MIN = 50, LEAGUE_COEF_FALLBACK = 0.75;   // разница лиг меньше 50 Эло — подбор не сработал
 const CORRIDOR = 0.25, CORRIDOR_LAST = 10, CORRIDOR_MIN_MATCHES = 3;
 const CORRIDOR_MATCH_SHARE = 0.25;              // матч в расчёт среднего — от четверти полного времени
 export const POOL_MIN_MINUTES = 45;
