@@ -9,7 +9,7 @@
  * разные пространства id), поэтому конфиг хранит ключи имён, а не id.
  */
 import {
-  listTournaments, regionStandings, regionPlayers, clubName, cached, pmap, TTL, resolveFfspbTournament,
+  listTournaments, regionStandings, regionPlayers, clubName, cached, seedCache, pmap, TTL, resolveFfspbTournament,
   type RegionPlayer, type ClubStandRow, type TournamentRef,
 } from './avandataSource.js';
 import { tournamentMatches, tableFromMatches, findTeam, FfspbWarmingError, type FfMatch } from './ffspbLive.js';
@@ -17,6 +17,9 @@ import { getClubRatingsByTournament, getMatches, type AvRatingTeam, type AvMatch
 import { normTeam } from './teamName.js';
 import { classifyDivision, type DivisionKey } from './division.js';
 import { logger } from '../shared/logger.js';
+import { eq } from 'drizzle-orm';
+import { withBypassRLS } from '../db/tenantContext.js';
+import { holdingProfileCache } from '../db/schema/holding.js';
 
 // ─── Конфигурация ────────────────────────────────────────────────────────────
 export interface HoldingBrand {
@@ -224,13 +227,38 @@ export async function holdingProfile(seasonId: number, cfg: HoldingConfig): Prom
   let inflight = swrInflight.get(key);
   if (!inflight) {
     inflight = buildHoldingProfile(seasonId, cfg)
-      .then((val) => { swrLast.set(key, { at: Date.now(), val }); return val; })
+      .then((val) => { swrLast.set(key, { at: Date.now(), val }); void saveHoldingCache(cfg.slug, seasonId, 'profile', val); return val; })
       .finally(() => swrInflight.delete(key));
     swrInflight.set(key, inflight);
     inflight.catch((e: unknown) => logger.warn({ err: String(e), holding: cfg.slug }, '[holding] сборка профиля упала'));
   }
   if (last) return last.val;            // протухший — отдаём сразу, свежий доедет фоном
   return inflight;
+}
+
+// ─── Сохранённое состояние: брифинг сразу после деплоя ──────────────────────
+export async function saveHoldingCache(slug: string, season: number, kind: 'profile' | 'analytics', payload: unknown): Promise<void> {
+  try {
+    await withBypassRLS((tx) => tx.insert(holdingProfileCache).values({ holdingSlug: slug, season, kind, payload })
+      .onConflictDoUpdate({ target: [holdingProfileCache.holdingSlug, holdingProfileCache.season, holdingProfileCache.kind], set: { payload, builtAt: new Date() } }));
+  } catch (e) { logger.warn({ err: String(e), slug, kind }, '[holding] сохранённое состояние не записано'); }
+}
+/**
+ * Поднять последние профиль и аналитику из БД на старте: профиль — как протухший (отдаётся
+ * сразу, свежий собирается фоном), аналитика — под ключ этого профиля, чтобы не пересчитывать.
+ */
+export async function restoreHoldings(seasonId: number): Promise<void> {
+  try {
+    const rows = await withBypassRLS((tx) => tx.select().from(holdingProfileCache).where(eq(holdingProfileCache.season, seasonId)));
+    for (const cfg of HOLDINGS) {
+      const prof = rows.find((r) => r.holdingSlug === cfg.slug && r.kind === 'profile')?.payload as HoldingProfile | undefined;
+      const an = rows.find((r) => r.holdingSlug === cfg.slug && r.kind === 'analytics')?.payload as { asOf?: string } | undefined;
+      const key = `${cfg.slug}:${seasonId}`;
+      if (prof && !swrLast.has(key)) swrLast.set(key, { at: 0, val: prof });
+      if (prof && an) seedCache(`holding-analytics:${cfg.slug}:${seasonId}:${prof.asOf}:0`, an);
+    }
+    logger.info({ seasonId, rows: rows.length }, '[holding] сохранённое состояние поднято');
+  } catch (e) { logger.warn({ err: String(e) }, '[holding] сохранённое состояние недоступно'); }
 }
 
 /** Профиль, если он есть или соберётся за waitMs; иначе — «идёт прогрев», и фронт опрашивает

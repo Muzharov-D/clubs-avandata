@@ -11,6 +11,9 @@ import { holdingNotes, type HoldingNote, type HoldingNoteKind } from '../db/sche
 import { users } from '../db/schema/users.js';
 import { holdingChanges, holdingTimeline, captureHoldingSnapshotIfDue } from './snapshots.js';
 import { buildCard } from './card.js';
+import { playerSeason, type MatchContext } from '../federation/holdingSeason.js';
+import { normTeam } from '../federation/teamName.js';
+import type { HoldingProfile } from '../federation/holdings.js';
 
 /**
  * Кабинет холдинга (/holding) — руководство группы школ одного бренда.
@@ -90,6 +93,37 @@ export async function holdingRoutes(app: FastifyInstance) {
     }
     return null;
   };
+
+  /** Контекст матчей команд холдинга (дата, соперник, счёт, итог) по id матча AvanData. */
+  const matchCtx = (profile: HoldingProfile) => {
+    const m = new Map<number, MatchContext>();
+    for (const t of profile.teams) for (const x of t.matches) {
+      if (x.avId == null || !x.played) continue;
+      // Свои — сторона-участник холдинга; в дерби холдинга — сторона этой команды.
+      const home = x.home.isMember && !(x.away.isMember && normTeam(clubName(x.away.name)) === t.clubKey);
+      const us = home ? x.home : x.away, them = home ? x.away : x.home;
+      m.set(x.avId, { date: x.date, opponent: them.name.replace(/\s*20\d{2}\s*$/, ''), score: `${us.score ?? '–'}:${them.score ?? '–'}`, result: x.outcome ? (x.outcome.toUpperCase() as 'W' | 'D' | 'L') : null });
+    }
+    return (id: number) => m.get(id) ?? null;
+  };
+
+  /**
+   * GET /holding/players/:id/season — профиль как в Легирусе: ДНК, индекс 0–10, сильные стороны
+   * и зоны роста, пицца, динамика по матчам, форма, абзац-вывод — против сверстников региона.
+   */
+  app.get('/players/:id/season', async (req, reply) => {
+    const r = await ready(req, reply); if (!r) return notReady(reply);
+    const id = Number((req.params as { id: string }).id);
+    const prof = await Promise.race([playerProfile(AV_SEASON, id).catch(() => null), new Promise<null>((res) => setTimeout(() => res(null), 8_000))]);
+    const ids = prof?.registrations.length ? prof.registrations : [id];
+    const lp = r.an.teams.flatMap((t) => t.squad).find((p) => ids.includes(p.id));
+    const year = lp?.birthYear ?? prof?.birthYear ?? null;
+    if (year == null) { reply.code(404); return { error: 'игрок не найден', code: 'PLAYER_NOT_FOUND' }; }
+    const name = lp?.name ?? prof?.name ?? '';
+    const s = await playerSeason(AV_SEASON, year, ids, name, matchCtx(r.profile), lp?.position ?? prof?.position ?? null);
+    if (!s) { reply.code(202); return { status: 'warming', code: 'METRICS_WARMING' }; }
+    return { ...s, name, photo: prof?.photo ?? lp?.photo ?? null, birthDate: prof?.birthDate ?? null, position: lp?.position ?? prof?.position ?? null, club: lp?.clubLabel ?? prof?.club ?? null, teamKey: lp?.teamKey ?? null, division: lp?.division ?? null, league: lp ?? null };
+  });
 
   /** GET /holding/players/:id/card — карточка кандидата: вывод словами, факты, сильные/слабые стороны. */
   app.get('/players/:id/card', async (req, reply) => {

@@ -5,8 +5,8 @@ import { api } from '../../api/client';
 import { FedError } from '../federation/FedState';
 import { PlayerAvatar } from '../federation/PlayerAvatar';
 import { ratingColor } from '../federation/ratings';
-import { useHoldingAnalytics, useSlugQuery, num, pm, shortClub, shortPos, plMatch, CATEGORY_TITLE, LINE_TITLE, type CompareResponse, type CompareSide, type PlayerMetricRow } from './api';
-import { SectionTitle } from './parts';
+import { useHoldingAnalytics, useSlugQuery, num, pm, shortClub, shortPos, plMatch, CATEGORY_TITLE, CATEGORY_ORDER, LINE_TITLE, type CompareResponse, type CompareSide, type PlayerMetricRow } from './api';
+import { SectionTitle, MetricName } from './parts';
 
 /**
  * Сравнение двух игроков бок о бок по 36 показателям: наш и кандидат селекции (без имени)
@@ -100,22 +100,22 @@ function CompareBody({ r, q }: { r: CompareResponse; q: string }) {
     const byB = new Map(b.metrics.rows.map((x) => [x.id, x]));
     const ids = new Set([...a.metrics.rows.map((x) => x.id), ...b.metrics.rows.map((x) => x.id)]);
     const byA = new Map(a.metrics.rows.map((x) => [x.id, x]));
+    // Порядок — как отдаёт сервер (по значимости показателя), сначала строки первого игрока.
     return [...ids].map((id) => ({ id, ra: byA.get(id) ?? null, rb: byB.get(id) ?? null }))
       .map(({ id, ra, rb }) => {
         const base = (ra ?? rb) as PlayerMetricRow;
         const va = ra?.perMatch ?? 0, vb = rb?.perMatch ?? 0;
-        const neg = base.points < 0;
+        const neg = base.polarity < 0;
         const winner = Math.abs(va - vb) < 0.05 * Math.max(va, vb, 0.1) ? null : (neg ? va < vb : va > vb) ? 'a' : 'b';
-        return { id, title: base.title, category: base.category, points: base.points, neg, ra, rb, va, vb, winner };
-      })
-      .sort((x, y) => Math.abs(y.points) * Math.max(y.va, y.vb) - Math.abs(x.points) * Math.max(x.va, x.vb));
+        return { id, title: base.title, description: base.description, category: base.category, neg, ra, rb, va, vb, winner };
+      });
   }, [a.metrics, b.metrics]);
   const winsA = rows.filter((x) => x.winner === 'a'), winsB = rows.filter((x) => x.winner === 'b');
   // Где разница заметнее всего — по перцентилю внутри амплуа.
   const gap = (x: (typeof rows)[number]) => (x.ra?.pctileDiv ?? 0) - (x.rb?.pctileDiv ?? 0);
-  const topA = rows.filter((x) => x.winner === 'a' && x.points > 0).sort((x, y) => gap(y) - gap(x)).slice(0, 3).map((x) => x.title);
-  const topB = rows.filter((x) => x.winner === 'b' && x.points > 0).sort((x, y) => gap(x) - gap(y)).slice(0, 3).map((x) => x.title);
-  const cats = ['attack', 'pass', 'defense', 'general', 'other'].filter((c) => rows.some((x) => x.category === c));
+  const topA = rows.filter((x) => x.winner === 'a' && !x.neg).sort((x, y) => gap(y) - gap(x)).slice(0, 3).map((x) => x.title);
+  const topB = rows.filter((x) => x.winner === 'b' && !x.neg).sort((x, y) => gap(x) - gap(y)).slice(0, 3).map((x) => x.title);
+  const cats = CATEGORY_ORDER.filter((c) => rows.some((x) => x.category === c));
 
   return (
     <>
@@ -142,7 +142,7 @@ function CompareBody({ r, q }: { r: CompareResponse; q: string }) {
                 <tbody>
                   {rows.filter((x) => x.category === c).map((x) => (
                     <tr key={x.id}>
-                      <td>{x.title}{x.neg ? <span className="hc-muted hc-small"> · меньше — лучше</span> : null}</td>
+                      <td><MetricName title={x.title} description={x.description} negative={x.neg} /></td>
                       <td className={`fed-table__num ${x.winner === 'a' ? 'hc-win' : ''}`}>{fmt(x.va)}</td>
                       <td><Pbar p={x.ra?.pctileDiv ?? null} /></td>
                       <td className={`fed-table__num ${x.winner === 'b' ? 'hc-win' : ''}`}>{fmt(x.vb)}</td>

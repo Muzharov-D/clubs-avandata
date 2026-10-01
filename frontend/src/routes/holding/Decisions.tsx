@@ -1,18 +1,22 @@
 import { useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { FedError } from '../federation/FedState';
-import { ratingColor } from '../federation/ratings';
-import { useHoldingAnalytics, useSlugQuery, num, pm, shortClub, shortPos, plMatch, type SelectionGroup } from './api';
-import { PlayerTable, SectionTitle, Kpi } from './parts';
+import { useHoldingAnalytics, num, pm, shortClub, shortPos, LINE_TITLE, type SelectionGroup, type HoldingAnalytics } from './api';
+import { PlayerTable, SectionTitle, PageHead } from './parts';
+import { HdLoading } from './HoldingShell';
+import { useNavQuery, useScope, useScopeLabel, scopeAnalytics } from './scope';
+import { plural } from './Overview';
 
 /**
  * Решения — списки, которые руководство закрывает действием: молодёжка, переходы между
- * школами, на возраст старше, селекция, кого теряем, зона риска, линии.
- * Каждый список объясняет своё правило словами и цифрами порогов.
+ * школами, на возраст старше, селекция, кого теряем, зона риска, линии. У каждого
+ * списка — правило одной фразой с порогами.
  */
 export function HoldingDecisions() {
   const an = useHoldingAnalytics();
-  const q = useSlugQuery();
+  const q = useNavQuery();
+  const scope = useScope();
+  const label = useScopeLabel();
   const { hash } = useLocation();
   useEffect(() => {
     if (!hash || !an.data) return;
@@ -20,117 +24,114 @@ export function HoldingDecisions() {
     if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }, [hash, an.data]);
   if (an.error) return <FedError subject="Решения" />;
-  if (an.isLoading || !an.data) return <div><div className="fed-skeleton" style={{ height: 120, marginBottom: 20 }} /><div className="fed-skeleton" style={{ height: 400 }} /><p className="fed-note" style={{ marginTop: 12 }}>Считаем игроков относительно лиги по всем возрастам…</p></div>;
-  const a = an.data;
+  if (!an.data) return <HdLoading title="Считаем решения" text="Ставим каждого игрока в контекст его возраста по всему региону. Страница откроется сама." />;
+  const a: HoldingAnalytics = scopeAnalytics(an.data, scope);
   const th = a.thresholds;
   const youthAll = [...a.youth.ready, ...a.youth.watch, ...a.youth.rest];
   const slots = a.youthSlots;
+  const selN = new Set(a.selection.flatMap((g) => g.candidates.map((c) => c.id))).size;
+
+  const toc: Array<[string, string, number, 'up' | 'down' | 'warn' | '']> = [
+    ['youth', 'В молодёжку', a.youth.ready.length, 'up'],
+    ['promote', 'ЦС → ФК Динамо', a.promote.length, 'up'],
+    ['older', 'На возраст старше', a.olderAge.length, 'up'],
+    ['selection', 'Селекция', selN, ''],
+    ['losing', 'Кого теряем', a.losing.length, 'down'],
+    ['risk', 'Зона риска', a.risk.length, 'warn'],
+    ['lines', 'Линии', a.weakLines.length, 'warn'],
+  ];
 
   return (
     <div>
-      <div className="fed-hero" style={{ marginBottom: 16 }}>
-        <h1 className="fed-hero__title" style={{ fontSize: 30 }}>Решения</h1>
-        <p className="fed-hero__sub" style={{ fontSize: 14 }}>Кто готов подняться выше, кого упускаем, где теряем. Всё относительно лиги и региона, а не внутри команды.</p>
-      </div>
+      <PageHead kicker={<>Решения · <b>{label ?? 'весь холдинг'}</b></>} title="Кто готов подняться выше, кого упускаем, где теряем" lede="Каждый список собран по правилу относительно лиги и региона — правило написано под заголовком. Клик по игроку — его место в лиге, карточка для совета и решение." />
 
-      <div className="fed-grid fed-grid--4 hold-kpi">
-        <Kpi label="В молодёжную команду" value={a.youth.ready.length} sub={`готовы при ${slots} местах · ${a.youth.watch.length} присмотреться`} tone="good" />
-        <Kpi label="Царское Село → ФК Динамо" value={a.promote.length} sub="выше медианы Высшей лиги своего возраста" />
-        <Kpi label="На возраст старше" value={a.olderAge.length} sub="не ниже медианы старшей команды школы" />
-        <Kpi label="Кого теряем" value={a.losing.length} sub={`падение формы или выпали из ротации`} tone={a.losing.length ? 'bad' : undefined} />
-      </div>
+      <nav className="hd-toc" aria-label="Списки">
+        {toc.map(([id, title, n, tone]) => (
+          <a key={id} href={`#${id}`} className="hd-toc__item"><span>{title}</span><b className={tone ? `hd-${tone}` : undefined}>{n}</b></a>
+        ))}
+      </nav>
 
-      {/* Молодёжка */}
-      <SectionTitle id="youth" sub={<>Возраста {a.youthFromYear} г.р. и старше. «Готов» — топ-{th.youthReadyPct}% региона своего возраста и не меньше {th.minMatchesReady} разобранных матчей; «присмотреться» — топ-{th.youthWatchPct}%. Мест в молодёжной команде — {slots}: первые {slots} строк с запасом, дальше — резерв.</>}>
+      <SectionTitle id="youth" right={`готовы ${a.youth.ready.length} · присмотреться ${a.youth.watch.length} · мест ${slots}`} sub={<>{a.youthFromYear} г.р. и старше. <b>Готов</b> — топ-{th.youthReadyPct}% своего возраста в регионе и от {th.minMatchesReady} разобранных матчей. <b>Присмотреться</b> — топ-{th.youthWatchPct}%. Первые {slots} — очередь на места.</>}>
         В молодёжную команду
       </SectionTitle>
-      <section className="fed-card">
-        <PlayerTable players={youthAll} showTier limit={Math.max(slots * 2, 10)} emptyText="Пока никто не проходит по порогам." extra={(p) => (youthAll.indexOf(p as never) < slots ? <span className="hc-tier hc-tier--ready" title={`в первых ${slots}`}>№{youthAll.indexOf(p as never) + 1}</span> : null)} />
-      </section>
+      <PlayerTable players={youthAll} showTier rank limit={Math.max(slots * 2, 10)} emptyText="Пока никто не проходит по порогам." extraTitle="Очередь" extra={(p) => { const i = youthAll.findIndex((x) => x.id === p.id); return i < slots ? <span className="hd-tag hd-tag--up">№{i + 1}</span> : null; }} />
 
-      {/* ЦС → Динамо */}
-      <SectionTitle id="promote" sub={<>Игроки Царского Села (Первая лига), чей рейтинг не ниже медианы игроков Высшей лиги своего возраста — они уже играют на уровне основного «Динамо». Медианы по возрастам: {a.medians.map((m) => `${m.year}: ${m.top ?? '—'}`).join(' · ')}.</>}>
+      <SectionTitle id="promote" right={`${a.promote.length} ${plural(a.promote.length, 'игрок', 'игрока', 'игроков')}`} sub={<>Игроки Царского Села (Первая лига) с рейтингом не ниже медианы Высшей лиги своего возраста — уже играют на уровне ФК Динамо. Медианы: {a.medians.map((m) => `${m.year} — ${m.top ?? '—'}`).join(', ')}.</>}>
         Из Царского Села в ФК Динамо
       </SectionTitle>
-      <section className="fed-card"><PlayerTable players={a.promote} emptyText="Сейчас никто из Царского Села не дотягивает до медианы Высшей лиги своего возраста." /></section>
+      <PlayerTable players={a.promote} emptyText="Сейчас никто из Царского Села не дотягивает до медианы Высшей лиги своего возраста." />
 
-      {/* На возраст старше */}
-      <SectionTitle id="older" sub="Внутри своей школы: рейтинг не ниже медианы оценённых игроков команды на год старше. В скобках — каким по рейтингу он был бы там.">
+      <SectionTitle id="older" right={`${a.olderAge.length} ${plural(a.olderAge.length, 'игрок', 'игрока', 'игроков')}`} sub="Внутри своей школы: рейтинг не ниже медианы команды на год старше. Справа — каким по силе он был бы там.">
         Готовы играть на возраст старше
       </SectionTitle>
-      <section className="fed-card">
-        <PlayerTable players={a.olderAge} emptyText="Пока никто не проходит по медиане старшей команды." extra={(p) => { const c = a.olderAge.find((x) => x.id === p.id); return c ? <span className="hc-muted hc-small">в «{c.olderTeamName}» был бы {c.olderRank}-м из {c.olderSize} (медиана {num(c.olderMedian)})</span> : null; }} />
-      </section>
+      <PlayerTable players={a.olderAge} emptyText="Пока никто не проходит по медиане старшей команды." extraTitle="В старшей команде" extra={(p) => { const c = a.olderAge.find((x) => x.id === p.id); return c ? <span>{c.olderRank}-й из {c.olderSize} <span className="hd-muted">в {c.olderTeamName}</span></span> : null; }} />
 
-      {/* Селекция */}
-      <SectionTitle id="selection" sub={<>Игроки других школ того же возраста, которые играют в команде слабее нашей (или лигой ниже) и при этом сильнее нашей линии на 10% и больше, из топ-35% региона. Без имён: команда, амплуа, рейтинг, место. Имена — в базе разборов по запросу.</>}>
+      <SectionTitle id="selection" right={`${selN} ${plural(selN, 'кандидат', 'кандидата', 'кандидатов')}`} sub="Игроки других школ того же года, которые играют в команде слабее нашей или лигой ниже, но сильнее нашей линии на 10% и больше (топ-35% региона). Без имён: где играет, амплуа, рейтинг, место. «Сравнить» — бок о бок с лучшим игроком нашей линии.">
         Кого упускает селекция
       </SectionTitle>
-      {a.selection.length === 0 ? <div className="fed-note">Сейчас в более слабых командах нет игроков, которые усилили бы наши линии.</div> : (
-        <div className="fed-grid fed-grid--2">
+      {a.selection.length === 0 ? <div className="hd-empty">Сейчас в более слабых командах нет игроков, которые усилили бы наши линии.</div> : (
+        <div className="hd-selgrid">
           {a.selection.map((g) => <SelectionCard key={`${g.teamKey}:${g.line}`} g={g} q={q} bestId={a.teams.find((t) => t.key === g.teamKey)?.squad.filter((p) => p.line === g.line && p.rating != null).sort((x, y) => (y.rating as number) - (x.rating as number))[0]?.id ?? null} />)}
         </div>
       )}
 
-      {/* Кого теряем */}
-      <SectionTitle id="losing" sub={<>Падение формы — последние {3} оценённых матча ниже сезонного рейтинга на {Math.round(-th.losingTrendRel * 100)}% и больше (не меньше {th.minMatchesReady} матчей). Вне ротации — команда играла, а игрок не попадал в оценённые составы два тура и больше.</>}>
+      <SectionTitle id="losing" right={`${a.losing.length}`} sub={<>Падение формы — последние матчи ниже своего сезона на {Math.round(-th.losingTrendRel * 100)}% и больше. Вне ротации — команда играла, а игрок 3 разобранных матча подряд не попадал в состав.</>}>
         Кого теряем
       </SectionTitle>
-      <section className="fed-card"><PlayerTable players={a.losing} showTier emptyText="Никто не выпадает: форма ровная, ротация стабильная." /></section>
+      <PlayerTable players={a.losing} showTier emptyText="Никто не выпадает: форма ровная, ротация стабильная." />
 
-      {/* Зона риска */}
-      <SectionTitle id="risk" sub={<>Игроки ФК Динамо (Высшая лига), чей рейтинг ниже медианы игроков Первой лиги своего возраста — уровень ниже даже второй лиги. Медианы Первой лиги: {a.medians.map((m) => `${m.year}: ${m.first ?? '—'}`).join(' · ')}.</>}>
-        Зона риска в основном составе
+      <SectionTitle id="risk" right={`${a.risk.length}`} sub={<>Игроки ФК Динамо (Высшая лига) с рейтингом ниже медианы Первой лиги своего возраста. Медианы Первой лиги: {a.medians.map((m) => `${m.year} — ${m.first ?? '—'}`).join(', ')}.</>}>
+        Зона риска в ФК Динамо
       </SectionTitle>
-      <section className="fed-card"><PlayerTable players={a.risk} emptyText="В ФК Динамо нет игроков ниже медианы Первой лиги." /></section>
+      <PlayerTable players={a.risk} emptyText="В ФК Динамо нет игроков ниже медианы Первой лиги." />
 
-      {/* Линии */}
-      <SectionTitle id="lines" sub={<>Средний рейтинг линии команды против средней по её дивизиону; порог — {Math.round(th.lineGapRel * 100)}%. Слабые линии — где точечное усиление даст больше всего.</>}>
+      <SectionTitle id="lines" sub={<>Средний рейтинг линии против средней по своему дивизиону; заметно — от {Math.round(th.lineGapRel * 100)}%. Слабая линия — где точечное усиление даст больше всего.</>}>
         Слабые и сильные линии
       </SectionTitle>
-      <div className="fed-grid fed-grid--2">
-        <section className="fed-card">
-          <h3 className="fed-card__title">Слабее лиги</h3>
-          {a.weakLines.length === 0 ? <div className="fed-note">Нет линий заметно слабее лиги.</div> : a.weakLines.map((l, i) => (
-            <div key={i} className="fed-row" style={{ padding: '8px 4px' }}>
-              <Link to={`/holding/teams/${encodeURIComponent(l.teamKey)}${q}`} className="fed-row__name" style={{ textDecoration: 'none', color: 'var(--text)' }}>{shortClub(l.clubLabel)} {l.year} · {l.title}</Link>
-              <span className="hc-muted">{num(l.teamAvg)} против {num(l.divAvg)}</span>
-              <span className="hc-over hc-over--down">{pm(Math.round(l.gapRel * 100))}%</span>
-            </div>
-          ))}
-        </section>
-        <section className="fed-card">
-          <h3 className="fed-card__title">Сильнее лиги</h3>
-          {a.strongLines.length === 0 ? <div className="fed-note">Нет линий заметно сильнее лиги.</div> : a.strongLines.map((l, i) => (
-            <div key={i} className="fed-row" style={{ padding: '8px 4px' }}>
-              <Link to={`/holding/teams/${encodeURIComponent(l.teamKey)}${q}`} className="fed-row__name" style={{ textDecoration: 'none', color: 'var(--text)' }}>{shortClub(l.clubLabel)} {l.year} · {l.title}</Link>
-              <span className="hc-muted">{num(l.teamAvg)} против {num(l.divAvg)}</span>
-              <span className="hc-over hc-over--up">{pm(Math.round(l.gapRel * 100))}%</span>
-            </div>
-          ))}
-        </section>
+      <div className="hd-cols" style={{ gridTemplateColumns: '1fr 1fr' }}>
+        <LineList title="Слабее лиги" rows={a.weakLines} q={q} tone="down" empty="Нет линий заметно слабее лиги." />
+        <LineList title="Сильнее лиги" rows={a.strongLines} q={q} tone="up" empty="Нет линий заметно сильнее лиги." />
       </div>
+    </div>
+  );
+}
+
+function LineList({ title, rows, q, tone, empty }: { title: string; rows: HoldingAnalytics['weakLines']; q: string; tone: 'up' | 'down'; empty: string }) {
+  return (
+    <div className="hd-col">
+      <h3>{title} <span className={`hd-${tone}`}>{rows.length}</span></h3>
+      <ul className="hd-list">
+        {rows.map((l) => (
+          <li key={`${l.teamKey}${l.line}`}>
+            <Link to={`/holding/teams/${encodeURIComponent(l.teamKey)}${q}`}>{shortClub(l.clubLabel)} {l.year} · {l.title.toLowerCase()}</Link>
+            <span className={`hd-${tone} hd-rating`}>{pm(Math.round(l.gapRel * 100))}%</span>
+            <span className="hd-list__sub">{num(l.teamAvg)} против {num(l.divAvg)} в лиге</span>
+          </li>
+        ))}
+        {rows.length === 0 && <li className="hd-muted">{empty}</li>}
+      </ul>
     </div>
   );
 }
 
 function SelectionCard({ g, q, bestId }: { g: SelectionGroup; q: string; bestId: number | null }) {
   return (
-    <section className="fed-card">
-      <h3 className="fed-card__title"><Link to={`/holding/teams/${encodeURIComponent(g.teamKey)}${q}`} style={{ color: 'inherit', textDecoration: 'none' }}>{shortClub(g.clubLabel)} {g.year}</Link> · {g.title}</h3>
-      <p className="fed-card__sub">Наша линия: средний {g.ourAvg != null ? num(g.ourAvg) : '—'}, лучший {g.ourBest != null ? num(g.ourBest) : '—'} ({g.ourN} с рейтингом)</p>
-      <table className="fed-table hc-table">
-        <thead><tr><th>Кто</th><th>Где играет</th><th className="fed-table__num">Рейтинг</th><th>Место в регионе</th><th>Тренд</th><th className="fed-table__num">Матчей</th>{bestId != null && <th />}</tr></thead>
+    <section className="hd-block">
+      <div className="hd-selcard__head">
+        <h3 className="hd-selcard__title"><Link to={`/holding/teams/${encodeURIComponent(g.teamKey)}${q}`}>{shortClub(g.clubLabel)} {g.year}</Link> · {LINE_TITLE[g.line].toLowerCase()}</h3>
+        <span className="hd-muted hd-small">наша линия: средний {g.ourAvg != null ? num(g.ourAvg) : '—'}, лучший {g.ourBest != null ? num(g.ourBest) : '—'}</span>
+      </div>
+      <table className="hd-table hd-table--tight">
+        <thead><tr><th>Амплуа</th><th>Где играет</th><th className="num">Рейтинг</th><th>В регионе</th><th className="num">Матчей</th>{bestId != null && <th />}</tr></thead>
         <tbody>
-          {g.candidates.map((c, i) => (
-            <tr key={i}>
+          {g.candidates.map((c) => (
+            <tr key={c.id}>
               <td>{shortPos(c.position)}</td>
-              <td>{c.club} <span className="hc-muted">· {c.division.replace(/\s*лига\s*/i, ' лига')}</span></td>
-              <td className="fed-table__num hc-rating" style={{ color: ratingColor(c.rating) }}>{num(c.rating)}</td>
-              <td><span className={`hc-pct ${c.pctRegion <= 10 ? 'hc-pct--elite' : c.pctRegion <= 25 ? 'hc-pct--good' : 'hc-pct--mid'}`}>топ {c.pctRegion}%</span> <span className="hc-muted hc-small">{c.rankRegion}-й</span></td>
-              <td className={`hc-trend ${c.trend != null && c.trend / c.rating >= 0.08 ? 'hc-trend--up' : c.trend != null && c.trend / c.rating <= -0.08 ? 'hc-trend--down' : 'hc-trend--flat'}`}>{c.trend != null ? pm(c.trend) : '—'}</td>
-              <td className="fed-table__num hc-muted">{c.mp} {plMatch(c.mp)}</td>
-              {bestId != null && <td><Link to={`/holding/compare?a=${bestId}&b=${c.id}${q ? '&' + q.slice(1) : ''}`} className="fed-link hc-small" title="Бок о бок с лучшим игроком нашей линии по всем показателям">сравнить</Link></td>}
+              <td>{c.club}<span className="hd-team__sub">{c.division}</span></td>
+              <td className="num hd-rating">{num(c.rating)}</td>
+              <td><span className={`hd-tag ${c.pctRegion <= 10 ? 'hd-tag--up' : c.pctRegion <= 25 ? 'hd-tag--brand' : ''}`}>топ {c.pctRegion}%</span></td>
+              <td className="num hd-muted">{c.mp}</td>
+              {bestId != null && <td className="num"><Link to={`/holding/compare?a=${bestId}&b=${c.id}${q ? '&' + q.slice(1) : ''}`} className="hd-link" title="Бок о бок с лучшим игроком нашей линии по всем показателям">сравнить</Link></td>}
             </tr>
           ))}
         </tbody>

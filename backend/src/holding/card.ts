@@ -32,7 +32,7 @@ const quote = (xs: string[]) => xs.map((x) => `«${x}»`).join(xs.length === 2 ?
 /** Значимые для сравнения строки: событие за матч встречается хоть у кого-то, перцентиль посчитан. */
 function scored(rows: PlayerMetricRow[]): CardMetric[] {
   return rows.filter((r) => r.pctileDiv != null && (r.perMatch > 0 || (r.lineAvgDiv ?? 0) > 0.05))
-    .map((r) => ({ id: r.id, title: r.title, perMatch: r.perMatch, lineAvgDiv: r.lineAvgDiv, pctileDiv: r.pctileDiv as number, negative: r.points < 0 }));
+    .map((r) => ({ id: r.id, title: r.title, perMatch: r.perMatch, lineAvgDiv: r.lineAvgDiv, pctileDiv: r.pctileDiv as number, negative: r.polarity < 0 }));
 }
 
 export function buildCard(p: LeaguePlayer, a: HoldingAnalytics, raw: RegionPlayer | null, metrics: PlayerMetricsVsLeague | null): CandidateCard {
@@ -71,6 +71,7 @@ export function buildCard(p: LeaguePlayer, a: HoldingAnalytics, raw: RegionPlaye
   else { headline = 'На уровне своего возраста'; tone = 'neutral'; }
 
   const facts: CardFact[] = [];
+  if (p.index != null) facts.push({ text: `Индекс сезона ${p.index.toFixed(1)} из 10: лучше ${Math.round(p.indexPct ?? 0)}% сверстников своей позиции в регионе (за полный матч своего возраста, ${p.minutes ?? 0} минут на поле).`, tone: p.index >= 7.5 ? 'good' : p.index < 4 ? 'bad' : undefined });
   if (p.rankRegion != null) facts.push({ text: `Топ-${p.pctRegion}% региона: ${p.rankRegion}-й из ${p.sizeRegion} игроков ${p.birthYear} г.р. с рейтингом.`, tone: (p.pctRegion ?? 100) <= 25 ? 'good' : (p.pctRegion ?? 0) > 60 ? 'bad' : undefined });
   if (p.rankDiv != null) facts.push({ text: `${p.rankDiv}-й из ${p.sizeDiv} в своём дивизионе (${p.division}).` });
   if (p.deltaLine != null && p.lineAvgDiv != null) {
@@ -81,7 +82,11 @@ export function buildCard(p: LeaguePlayer, a: HoldingAnalytics, raw: RegionPlaye
     if (streak >= STABLE_STREAK) facts.push({ text: `Стабилен: ${streak} ${matchesW(streak)} подряд выше среднего по амплуа в лиге.`, tone: 'good' });
     else facts.push({ text: `Выше среднего по амплуа в ${aboveLine} из ${stability.rated} разобранных ${matchesW(stability.rated)}.`, tone: aboveLine / stability.rated >= 0.6 ? 'good' : aboveLine / stability.rated < 0.4 ? 'bad' : undefined });
   }
-  if (p.trend != null && p.rating) {
+  if (p.formDelta != null) {
+    if (p.formDelta >= 1) facts.push({ text: `Форма растёт: последние 3 матча на ${p.formDelta.toFixed(1)} из 10 выше своего сезона.`, tone: 'good' });
+    else if (p.formDelta <= -1) facts.push({ text: `Форма падает: последние 3 матча на ${(-p.formDelta).toFixed(1)} из 10 ниже своего сезона.`, tone: 'bad' });
+    else facts.push({ text: 'Форма ровная: последние матчи на уровне сезона.' });
+  } else if (p.trend != null && p.rating) {
     const rel = p.trend / p.rating;
     if (rel >= 0.08) facts.push({ text: `Форма растёт: последние матчи в среднем на ${n0(p.trend)} выше сезона.`, tone: 'good' });
     else if (rel <= -0.08) facts.push({ text: `Форма падает: последние матчи в среднем на ${n0(-p.trend)} ниже сезона.`, tone: 'bad' });
@@ -98,8 +103,8 @@ export function buildCard(p: LeaguePlayer, a: HoldingAnalytics, raw: RegionPlaye
   const parts: string[] = [];
   if (p.pctRegion != null) parts.push(`топ-${p.pctRegion}% региона`);
   if (streak >= STABLE_STREAK) parts.push(`стабилен ${streak} ${matchesW(streak)}`);
-  else if (p.trend != null && p.rating && p.trend / p.rating >= 0.08) parts.push('форма растёт');
-  else if (p.trend != null && p.rating && p.trend / p.rating <= -0.08) parts.push('форма падает');
+  else if (p.formDelta != null ? p.formDelta >= 1 : (p.trend != null && p.rating != null && p.trend / p.rating >= 0.08)) parts.push('форма растёт');
+  else if (p.formDelta != null ? p.formDelta <= -1 : (p.trend != null && p.rating != null && p.trend / p.rating <= -0.08)) parts.push('форма падает');
   if (strengths.length) parts.push(`сильнее амплуа лиги по ${quote(strengths.slice(0, 2).map((s) => s.title))}`);
   if (weaknesses.length && tone !== 'up') parts.push(`слабее по ${quote(weaknesses.slice(0, 1).map((s) => s.title))}`);
   const summary = `${headline}${parts.length ? ': ' + parts.join(', ') : ''}.`;
