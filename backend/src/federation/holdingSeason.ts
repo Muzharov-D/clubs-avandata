@@ -74,6 +74,25 @@ function pctOf(xs: number[], v: number, polarity: 1 | -1 = 1): number | null {
   return Math.max(0, Math.min(100, Math.round(((below + equal / 2) / xs.length) * 100)));
 }
 
+/**
+ * Шкала индекса (утверждена руководством 2026-10-01): лучший в пуле (возраст + группа позиций,
+ * весь регион) = 10.0, слабейший = 5.0, остальные — пропорционально оценке между ними.
+ * Оценка — сумма очков за полный матч своего возраста.
+ */
+const scaleIdx = (v: number, lo: number, hi: number): number => {
+  if (!(hi > lo)) return 7.5;
+  return Math.round((5 + 5 * Math.max(0, Math.min(1, (v - lo) / (hi - lo)))) * 10) / 10;
+};
+/** Границы пула: для сезона — минимум и максимум; для отдельных матчей — 2-й и 98-й перцентили
+ *  (один матч бывает выбросом), значения за границами прижимаются к 5.0 и 10.0. */
+const bounds = (xs: number[], robust = false): [number, number] => {
+  if (!xs.length) return [0, 0];
+  const s = xs.slice().sort((a, b) => a - b);
+  if (!robust) return [s[0]!, s[s.length - 1]!];
+  const q = (p: number) => s[Math.min(s.length - 1, Math.max(0, Math.round(p * (s.length - 1))))]!;
+  return [q(0.02), q(0.98)];
+};
+
 function buildTable(c: CohortMetrics): Table {
   const L = c.matchLen;
   const aggs = new Map<number, Agg>();
@@ -226,6 +245,7 @@ export async function playerSeason(season: number, year: number, ids: number[], 
   const pp = line ? t.pointsPool.get(line) ?? [] : [];
   const mine = minutes > 0 ? (points / minutes) * L : null;
   const indexPct = mine != null && inPool ? pctOf(pp, mine) : null;
+  const [lo, hi] = bounds(pp);
   const rank = mine != null && inPool ? pp.filter((x) => x > mine).length + 1 : null;
 
   const { archetype, roles } = dna(line, slices);
@@ -243,7 +263,7 @@ export async function playerSeason(season: number, year: number, ids: number[], 
 
   // Динамика: индекс матча 0–10 против распределения «за матч» по линии.
   const mp = line ? t.matchPool.get(line) : undefined;
-  const toIdx = (xs: number[] | undefined, v: number) => { const p = xs ? pctOf(xs, v) : null; return p == null ? null : Math.round(p) / 10; };
+  const toIdx = (xs: number[] | undefined, v: number) => { if (!xs || xs.length < 5) return null; const [a0, b0] = bounds(xs, true); return scaleIdx(v, a0, b0); };
   const series: SeasonMatch[] = perMatch.filter((m) => m.minutes >= L * SERIES_MIN_SHARE).map((m) => {
     const k = L / m.minutes;
     const cx = ctx(m.mid);
@@ -257,7 +277,7 @@ export async function playerSeason(season: number, year: number, ids: number[], 
   series.sort((a, b) => (a.date && b.date ? (a.date < b.date ? -1 : 1) : a.matchId - b.matchId));
 
   const goals = counts.get('goal') ?? 0;
-  const index = indexPct != null ? Math.round(indexPct) / 10 : null;
+  const index = mine != null && inPool && pp.length >= 5 ? scaleIdx(mine, lo, hi) : null;
   // Абзац-вывод, как «Профиль» в Легирусе.
   const parts: string[] = [];
   parts.push(`${name} — ${line ? GROUP_INFO[line].one : 'игрок'}, ${year} г.р. В сезоне — ${matches} ${plural(matches, 'разобранный матч', 'разобранных матча', 'разобранных матчей')} (${minutes} ${plural(minutes, 'минута', 'минуты', 'минут')} на поле)${goals ? `, ${goals} ${plural(goals, 'гол', 'гола', 'голов')}` : ''}.`);
@@ -268,11 +288,11 @@ export async function playerSeason(season: number, year: number, ids: number[], 
     if (rated.length >= 4) {
       const last3 = rated.slice(-3).reduce((s, x) => s + (x.overall as number), 0) / 3;
       const all = rated.reduce((s, x) => s + (x.overall as number), 0) / rated.length;
-      parts.push(last3 - all >= 0.7 ? 'В хорошей форме — последние матчи выше своего среднего.' : all - last3 >= 0.7 ? 'Последние матчи ниже своего среднего.' : 'Форма ровная — последние матчи на уровне сезона.');
+      parts.push(last3 - all >= 0.5 ? 'В хорошей форме — последние матчи выше своего среднего.' : all - last3 >= 0.5 ? 'Последние матчи ниже своего среднего.' : 'Форма ровная — последние матчи на уровне сезона.');
     }
     const last = series.filter((s) => s.date).slice(-1)[0];
     if (last?.date && last.opponent) parts.push(`Последний разобранный матч — ${fmtDate(last.date)} против «${last.opponent}» (${last.score ?? '—'})${last.result ? `, ${RESULT_WORD[last.result]}` : ''}.`);
-    if (index != null) parts.push(`Индекс сезона — ${index.toFixed(1)} из 10: лучше ${Math.round(indexPct as number)}% ${GROUP_INFO[line as PositionGroup].peers} своего возраста в регионе.`);
+    if (index != null) parts.push(`Индекс сезона — ${index.toFixed(1)} из 10 (10 — лучший среди ${GROUP_INFO[line as PositionGroup].peers} своего возраста в регионе); лучше ${Math.round(indexPct as number)}% из них.`);
   }
 
   return {
@@ -299,17 +319,20 @@ export async function cohortForms(season: number, year: number): Promise<{ asOf:
     for (const a of t.aggs.values()) {
       const pool = a.group ? t.pointsPool.get(a.group) ?? [] : [];
       const inPool = !!a.group && a.minutes >= MIN_POOL_MINUTES;
-      const pct = inPool ? pctOf(pool, (a.points / a.minutes) * L) : null;
+      const val = inPool ? (a.points / a.minutes) * L : null;
+      const pct = val != null ? pctOf(pool, val) : null;
+      const [plo, phi] = bounds(pool);
       const mp = a.group ? t.matchPool.get(a.group) : undefined;
       const pmMap = c.byMatch.get(a.pid) ?? new Map();
       const mins = c.minutes.get(a.pid) ?? new Map<number, number>();
       const rows = [...pmMap.entries()].map(([mid, pm]) => ({ mid, m: mins.get(mid) ?? 0, pm })).filter((x) => x.m > 0).sort((x, y) => x.mid - y.mid);
-      const series = rows.filter((x) => x.m >= L * SERIES_MIN_SHARE).map((x) => { const p = mp ? pctOf(mp.overall, (x.pm.points / x.m) * L) : null; return p == null ? null : p / 10; }).filter((x): x is number => x != null);
-      // Форма: последние 3 матча против всего сезона (шкала 0–10), от 5 оценённых матчей.
+      const [mlo, mhi] = mp ? bounds(mp.overall, true) : [0, 0];
+      const series = rows.filter((x) => x.m >= L * SERIES_MIN_SHARE && mp && mp.overall.length >= 5).map((x) => scaleIdx((x.pm.points / x.m) * L, mlo, mhi));
+      // Форма: последние 3 матча против всего сезона (шкала 5–10), от 5 оценённых матчей.
       const formDelta = series.length >= 5 ? Math.round((series.slice(-3).reduce((s, x) => s + x, 0) / 3 - series.reduce((s, x) => s + x, 0) / series.length) * 10) / 10 : null;
       const last3 = rows.slice(-3);
       const lastMinutesShare = last3.length ? Math.round((last3.reduce((s, x) => s + x.m, 0) / (last3.length * L)) * 100) / 100 : null;
-      forms.set(a.pid, { index: pct == null ? null : Math.round(pct) / 10, indexPct: pct, minutes: a.minutes, matches: a.matches, series, formDelta, lastMinutesShare });
+      forms.set(a.pid, { index: val != null && pool.length >= 5 ? scaleIdx(val, plo, phi) : null, indexPct: pct, minutes: a.minutes, matches: a.matches, series, formDelta, lastMinutesShare });
     }
     return { asOf: c.asOf, forms };
   });

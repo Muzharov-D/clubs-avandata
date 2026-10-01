@@ -23,7 +23,7 @@ export function PlayerCard({ p, q, tag, tagTone, sub, showTeam = true, rank }: {
         <span className="hd-pcard__name">{surname(p.name)}</span>
         <span className="hd-pcard__pos">{p.group ? GROUP_TITLE[p.group] : p.position ?? '—'}{showTeam ? ` · ${shortClub(p.clubLabel)} ${p.birthYear}` : ''}</span>
         <span className="hd-pcard__meta">
-          {sub ?? <>{p.minutes ?? 0} мин{f != null ? <> · <span className={f >= 1 ? 'hd-up' : f <= -1 ? 'hd-down' : ''}>{f >= 1 ? '↑' : f <= -1 ? '↓' : '→'} форма</span></> : null}</>}
+          {sub ?? <>{p.minutes ?? 0} мин{f != null ? <> · <span className={f >= 0.5 ? 'hd-up' : f <= -0.5 ? 'hd-down' : ''}>{f >= 0.5 ? '↑' : f <= -0.5 ? '↓' : '→'} форма</span></> : null}</>}
         </span>
         {tag && <span className={`hd-tag ${tagTone ? `hd-tag--${tagTone}` : ''} hd-pcard__tag`}>{tag}</span>}
       </span>
