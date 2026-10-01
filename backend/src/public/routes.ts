@@ -1,3 +1,4 @@
+import { getLogo, isAllowedLogo } from './logos.js';
 import type { FastifyInstance } from 'fastify';
 import { withTenant, withBypassRLS } from '../db/tenantContext.js';
 import { resolveOurExtId, markOurStandingsRow } from '../data/ourTeam.js';
@@ -54,6 +55,20 @@ function posWord(raw: string | null): string | null {
  *   GET /api/v1/public/tenant/:slug    — brand/name инфо клуба
  */
 export async function publicRoutes(app: FastifyInstance) {
+  /**
+   * GET /public/logo?u=<адрес> — логотип клуба из нашей базы (без входа: его грузит <img>).
+   * Только хранилища логотипов AvanData; ответ кэшируется браузером и CDN навсегда.
+   */
+  app.get('/logo', async (req, reply) => {
+    const u = String((req.query as { u?: string }).u ?? '');
+    if (!isAllowedLogo(u)) { reply.code(400); return { error: 'недопустимый адрес', code: 'BAD_LOGO_URL' }; }
+    const logo = await getLogo(u);
+    if (!logo) { reply.code(404); return { error: 'логотип недоступен', code: 'LOGO_NOT_FOUND' }; }
+    reply.header('Cache-Control', 'public, max-age=31536000, s-maxage=31536000, immutable');
+    reply.type(logo.type);
+    return reply.send(logo.bytes);
+  });
+
   // Stub для club-rank — legacy ClubPage его дёргает, чтобы не падал.
   app.get('/club-rank', async () => {
     return { ranks: [], updatedAt: null };

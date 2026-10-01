@@ -180,7 +180,16 @@ export async function holdingRoutes(app: FastifyInstance) {
     };
     const [a, b] = await Promise.all([side(q.a), side(q.b)]);
     if (!a || !b) { reply.code(404); return { error: 'игрок не найден', code: 'PLAYER_NOT_FOUND' }; }
-    return { a, b, status: a.metrics && b.metrics ? 'ready' : 'warming' };
+    // Сезонные профили (как в профиле игрока) — для «пиццы на пиццу» и встречных полосок.
+    const ctx = matchCtx(r.profile);
+    const seasonOf = async (x: NonNullable<typeof a>) => {
+      const sp = await playerSeason(AV_SEASON, x.birthYear, [x.id], x.anonymous ? 'Кандидат' : (x.name ?? ''), ctx, x.position);
+      if (!sp) return null;
+      const { text: _t, ...rest } = sp;
+      return rest;
+    };
+    const [sa, sb] = await Promise.all([seasonOf(a), seasonOf(b)]);
+    return { a: { ...a, season: sa }, b: { ...b, season: sb }, status: a.metrics && b.metrics && sa && sb ? 'ready' : 'warming' };
   });
 
   // ─── Заметки и решения руководства ───────────────────────────────────────

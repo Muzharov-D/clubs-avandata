@@ -254,6 +254,8 @@ async function cached<T>(key: string, ttlMs: number, fn: () => Promise<T>): Prom
 const TTL = 10 * 60 * 1000;
 /** Положить готовое значение в кэш (восстановление из БД на старте). at — когда посчитано. */
 export function seedCache(key: string, val: unknown, at = Date.now()): void { cache.set(key, { at, val }); }
+/** Есть ли свежее значение в кэше (без вычисления). */
+export function hasFreshCache(key: string, ttlMs: number): boolean { const h = cache.get(key); return !!h && Date.now() - h.at < ttlMs; }
 /** Параллельный map с ограничением одновременности (щадим API). */
 async function pmap<T, R>(items: T[], limit: number, fn: (x: T) => Promise<R>): Promise<R[]> {
   const out: R[] = new Array(items.length);

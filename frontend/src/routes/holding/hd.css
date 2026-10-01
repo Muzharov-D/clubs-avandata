@@ -353,3 +353,16 @@
 .hd .dna-card .hd-help { border-color: rgba(255,255,255,0.3); color: rgba(255,255,255,0.6); }
 @media (max-width: 900px) { .hd-player__grid { grid-template-columns: 1fr; } }
 .hd-index { font-family: var(--font-display); font-weight: 800; font-size: 16px; }
+
+/* ---- Сравнение (разметка Легируса + шапки игроков) ---- */
+.hd-cmp-heads { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.hd-cmp-head { display: flex !important; align-items: center; gap: 14px; }
+.hd-cmp-head--a { box-shadow: inset 3px 0 0 var(--brand-primary), var(--shadow) !important; }
+.hd-cmp-head--b { box-shadow: inset 3px 0 0 var(--rating-good), var(--shadow) !important; }
+.hd-cmp-head__name { font-family: var(--font-display); font-weight: 800; font-size: 18px; }
+.hd-cmp-head__dna { font-size: 13.5px; color: var(--text-muted-strong); margin: 4px 0 2px; }
+.hd-cmp-head__idx { display: flex; flex-direction: column; align-items: center; flex: none; }
+.hd-cmp-head__idx span { font-family: var(--font-display); font-weight: 800; font-size: 30px; line-height: 1; }
+.hd-cmp-head__idx small { font-size: 11px; color: var(--text-faint); text-transform: uppercase; letter-spacing: 0.06em; }
+.hd .player-compare .pc-row__label .hd-mname { justify-content: center; }
+@media (max-width: 760px) { .hd-cmp-heads { grid-template-columns: 1fr; } }

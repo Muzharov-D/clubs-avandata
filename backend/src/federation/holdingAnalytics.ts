@@ -10,7 +10,7 @@
  * кандидаты на повышение в Высшую лигу (внутри холдинга), зона риска, кого теряем,
  * слабые и сильные линии. Пороги — константы ниже, названы словами.
  */
-import { regionPlayers, clubName, cached, TTL, type RegionPlayer } from './avandataSource.js';
+import { regionPlayers, clubName, cached, hasFreshCache, TTL, type RegionPlayer } from './avandataSource.js';
 import { cohortForms, type PlayerForm } from './holdingSeason.js';
 import { getClubRatingsByTournament, type AvRatingTeam } from '../services/avandataApi.js';
 import { normTeam } from './teamName.js';
@@ -119,12 +119,35 @@ export function poolToursBack(pool: RegionPlayer[], toursBack: number): RegionPl
 }
 
 /** Аналитика по профилю холдинга (профиль уже собран — таблицы/дивизионы берём из него). */
+// Последняя посчитанная аналитика холдинга (в т.ч. поднятая из БД на старте): пока свежая
+// считается, отдаём её — кабинет не ждёт минуту после деплоя. Пересчёт — один на холдинг.
+const lastAnalytics = new Map<string, HoldingAnalytics>();
+const analyticsInflight = new Map<string, Promise<HoldingAnalytics>>();
+export function seedAnalytics(slug: string, seasonId: number, a: HoldingAnalytics): void { lastAnalytics.set(`${slug}:${seasonId}`, a); }
+
 export async function holdingAnalytics(seasonId: number, cfg: HoldingConfig, profile: HoldingProfile, toursBack = 0): Promise<HoldingAnalytics> {
   // Формы когорт (минуты, индекс) — в ключ кэша: аналитика пересчитается, когда они досчитаются.
   const formsByYear = new Map<number, Map<number, PlayerForm>>();
   if (toursBack === 0) for (const y of profile.years) { const f = await cohortForms(seasonId, y); if (f) formsByYear.set(y, f.forms); }
   const stamp = toursBack === 0 ? profile.years.map((y) => (formsByYear.has(y) ? 1 : 0)).join('') : '';
-  return cached(`holding-analytics:${cfg.slug}:${seasonId}:${profile.asOf}:${toursBack}${stamp ? ':' + stamp : ''}`, TTL, async () => {
+  const key = `holding-analytics:${cfg.slug}:${seasonId}:${profile.asOf}:${toursBack}${stamp ? ':' + stamp : ''}`;
+  if (toursBack === 0) {
+    const lastKey = `${cfg.slug}:${seasonId}`;
+    const stale = lastAnalytics.get(lastKey);
+    if (stale && !hasFreshCache(key, TTL)) {
+      if (!analyticsInflight.has(key)) {
+        const job = computeAnalytics(seasonId, cfg, profile, toursBack, formsByYear, key).finally(() => analyticsInflight.delete(key));
+        analyticsInflight.set(key, job);
+        job.catch(() => undefined);
+      }
+      return stale;
+    }
+  }
+  return computeAnalytics(seasonId, cfg, profile, toursBack, formsByYear, key);
+}
+
+async function computeAnalytics(seasonId: number, cfg: HoldingConfig, profile: HoldingProfile, toursBack: number, formsByYear: Map<number, Map<number, PlayerForm>>, key: string): Promise<HoldingAnalytics> {
+  return cached(key, TTL, async () => {
     const teamsOut: TeamLeague[] = [];
     const allPlayers: LeaguePlayer[] = [];
     const medians: HoldingAnalytics['medians'] = [];
@@ -317,7 +340,7 @@ export async function holdingAnalytics(seasonId: number, cfg: HoldingConfig, pro
       teams: teamsOut, medians, youth, promote, olderAge, selection, risk, losing, weakLines, strongLines,
       players: allPlayers.filter((p) => p.rating != null).sort((a, b) => (b.rating as number) - (a.rating as number)),
     };
-    if (toursBack === 0) void saveHoldingCache(cfg.slug, seasonId, 'analytics', result);
+    if (toursBack === 0) { lastAnalytics.set(`${cfg.slug}:${seasonId}`, result); void saveHoldingCache(cfg.slug, seasonId, 'analytics', result); }
     return result;
   });
 }

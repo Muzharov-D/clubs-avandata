@@ -9,7 +9,7 @@
  * разные пространства id), поэтому конфиг хранит ключи имён, а не id.
  */
 import {
-  listTournaments, regionStandings, regionPlayers, clubName, cached, seedCache, pmap, TTL, resolveFfspbTournament,
+  listTournaments, regionStandings, regionPlayers, clubName, cached, pmap, TTL, resolveFfspbTournament,
   type RegionPlayer, type ClubStandRow, type TournamentRef,
 } from './avandataSource.js';
 import { tournamentMatches, tableFromMatches, findTeam, FfspbWarmingError, type FfMatch } from './ffspbLive.js';
@@ -18,6 +18,8 @@ import { normTeam } from './teamName.js';
 import { classifyDivision, type DivisionKey } from './division.js';
 import { logger } from '../shared/logger.js';
 import { eq } from 'drizzle-orm';
+import { prefetchLogos } from '../public/logos.js';
+import { seedAnalytics, type HoldingAnalytics } from './holdingAnalytics.js';
 import { withBypassRLS } from '../db/tenantContext.js';
 import { holdingProfileCache } from '../db/schema/holding.js';
 
@@ -32,7 +34,7 @@ export interface HoldingBrand {
   /** Текст поверх primary. */
   onPrimary: string;
 }
-export interface HoldingMember { key: string; label: string }
+export interface HoldingMember { key: string; label: string; /** Логотип школы — в конфиге, чтобы шапка не ждала профиль. */ logo?: string | null }
 export interface HoldingConfig {
   slug: string; name: string; short: string; region: string;
   brand: HoldingBrand;
@@ -54,8 +56,8 @@ export const HOLDINGS: HoldingConfig[] = [
     // Синий взят из логотипа клуба (#004098); bright — тот же тон, читаемый на тёмном фоне.
     brand: { primary: '#004098', bright: '#5d95ff', soft: 'rgba(0, 64, 152, 0.30)', onPrimary: '#ffffff' },
     members: [
-      { key: normTeam('ФК Динамо'), label: 'ФК Динамо' },
-      { key: normTeam('Царское Село-Динамо'), label: 'Царское Село-Динамо' },
+      { key: normTeam('ФК Динамо'), label: 'ФК Динамо', logo: 'https://s3.twcstorage.ru/spa-new-prod/HUYoJ4Vd_1785147263866_iygwvjntx4g.png' },
+      { key: normTeam('Царское Село-Динамо'), label: 'Царское Село-Динамо', logo: 'https://s3.twcstorage.ru/spa-new-prod/SKyaiLxw_1785147990906_3x0vdtkfa3v.png' },
     ],
     years: [2009, 2010, 2011, 2012, 2013],
     youthFromYear: 2011,
@@ -227,7 +229,13 @@ export async function holdingProfile(seasonId: number, cfg: HoldingConfig): Prom
   let inflight = swrInflight.get(key);
   if (!inflight) {
     inflight = buildHoldingProfile(seasonId, cfg)
-      .then((val) => { swrLast.set(key, { at: Date.now(), val }); void saveHoldingCache(cfg.slug, seasonId, 'profile', val); return val; })
+      .then((val) => {
+        swrLast.set(key, { at: Date.now(), val });
+        void saveHoldingCache(cfg.slug, seasonId, 'profile', val);
+        // Логотипы всех команд профиля — заранее в нашу базу (фоном).
+        void prefetchLogos([...val.members.map((m) => m.logo), ...val.teams.flatMap((t) => [t.logo, ...t.table.map((r) => r.logo), ...t.matches.flatMap((m) => [m.home.logo, m.away.logo])])]);
+        return val;
+      })
       .finally(() => swrInflight.delete(key));
     swrInflight.set(key, inflight);
     inflight.catch((e: unknown) => logger.warn({ err: String(e), holding: cfg.slug }, '[holding] сборка профиля упала'));
@@ -255,7 +263,7 @@ export async function restoreHoldings(seasonId: number): Promise<void> {
       const an = rows.find((r) => r.holdingSlug === cfg.slug && r.kind === 'analytics')?.payload as { asOf?: string } | undefined;
       const key = `${cfg.slug}:${seasonId}`;
       if (prof && !swrLast.has(key)) swrLast.set(key, { at: 0, val: prof });
-      if (prof && an) seedCache(`holding-analytics:${cfg.slug}:${seasonId}:${prof.asOf}:0`, an);
+      if (an) seedAnalytics(cfg.slug, seasonId, an as HoldingAnalytics);
     }
     logger.info({ seasonId, rows: rows.length }, '[holding] сохранённое состояние поднято');
   } catch (e) { logger.warn({ err: String(e) }, '[holding] сохранённое состояние недоступно'); }
@@ -449,7 +457,7 @@ async function buildHoldingProfile(seasonId: number, cfg: HoldingConfig): Promis
     return {
       slug: cfg.slug, name: cfg.name, short: cfg.short, region: cfg.region, brand: cfg.brand,
       season: seasonId, asOf: new Date().toISOString(),
-      members: cfg.members.map((m) => ({ ...m, logo: teams.find((t) => t.clubKey === m.key && t.logo)?.logo ?? null, teams: teams.filter((t) => t.clubKey === m.key).length })),
+      members: cfg.members.map((m) => ({ ...m, logo: m.logo ?? teams.find((t) => t.clubKey === m.key && t.logo)?.logo ?? null, teams: teams.filter((t) => t.clubKey === m.key).length })),
       years,
       summary: {
         teams: teams.length,
