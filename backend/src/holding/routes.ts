@@ -3,7 +3,7 @@ import { authenticate, authorize } from '../auth/middleware.js';
 import { HOLDINGS, findHolding, publicHolding, holdingProfileOrWarming, type HoldingConfig } from '../federation/holdings.js';
 import { holdingAnalytics } from '../federation/holdingAnalytics.js';
 import { playerMetricsVsLeague, teamMetricsVsLeague } from '../federation/holdingMetrics.js';
-import { isAvandataConfigured, playerProfile, regionPlayers, clubName, type RegionPlayer } from '../federation/avandataSource.js';
+import { isAvandataConfigured, playerProfile, registrationsOf, regionPlayers, clubName, type RegionPlayer } from '../federation/avandataSource.js';
 import { lineOf } from '../federation/holdings.js';
 import { and, desc, eq, sql } from 'drizzle-orm';
 import { withBypassRLS } from '../db/tenantContext.js';
@@ -114,8 +114,9 @@ export async function holdingRoutes(app: FastifyInstance) {
   app.get('/players/:id/season', async (req, reply) => {
     const r = await ready(req, reply); if (!r) return notReady(reply);
     const id = Number((req.params as { id: string }).id);
-    const prof = await Promise.race([playerProfile(AV_SEASON, id).catch(() => null), new Promise<null>((res) => setTimeout(() => res(null), 8_000))]);
-    const ids = prof?.registrations.length ? prof.registrations : [id];
+    // Регистрации — лёгким поиском; полный профиль (фото, дата рождения) — только если уже в кэше.
+    const ids = await registrationsOf(id).catch(() => [id]);
+    const prof = await Promise.race([playerProfile(AV_SEASON, id).catch(() => null), new Promise<null>((res) => setTimeout(() => res(null), 300))]);
     const lp = r.an.teams.flatMap((t) => t.squad).find((p) => ids.includes(p.id));
     const year = lp?.birthYear ?? prof?.birthYear ?? null;
     if (year == null) { reply.code(404); return { error: 'игрок не найден', code: 'PLAYER_NOT_FOUND' }; }

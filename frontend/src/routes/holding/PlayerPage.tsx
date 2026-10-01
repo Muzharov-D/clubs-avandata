@@ -97,7 +97,7 @@ export function HoldingPlayerPage() {
       </div>
 
       {/* ДНК игрока — та же карточка, что в профиле Легируса */}
-      <div className="dna-card">
+      <div className="dna-card dna-card--hero">
         <div className="dna-card__glow" aria-hidden />
         <div className="dna-card__photo"><PlayerAvatar name={s.name} photoUrl={s.photo} size={120} /></div>
         <div className="dna-card__head">

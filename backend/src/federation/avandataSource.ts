@@ -1083,6 +1083,14 @@ async function humanIndex(): Promise<{ byKey: Map<string, number[]>; keyOf: Map<
   });
 }
 
+/** Все регистрации ребёнка (ФИО + дата рождения) — лёгкий поиск без загрузки событий. */
+export async function registrationsOf(playerId: number): Promise<number[]> {
+  const idx = await humanIndex();
+  const key = idx.keyOf.get(playerId);
+  const siblings = (key ? idx.byKey.get(key) : null) ?? [playerId];
+  return siblings.includes(playerId) ? siblings : [playerId, ...siblings];
+}
+
 export async function playerProfile(seasonId: number, playerId: number): Promise<PlayerProfile | null> {
   // Один ребёнок = несколько записей AvanData (новая заводится при каждом переходе).
   // Карточка по одному id показывала лишь часть истории: у Завьялова Дмитрия
