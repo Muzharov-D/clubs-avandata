@@ -49,14 +49,14 @@ export function HoldingChanges() {
             {c.lists.map((l) => <ListCard key={l.key} l={l} q={q} />)}
           </div>
 
-          <SectionTitle sub="Сдвиг места в регионе своего года рождения («топ N%»), а не голый рейтинг: рост относительно сверстников.">Кто вырос и кто упал</SectionTitle>
+          <SectionTitle sub="Сдвиг места среди сверстников своего года рождения в регионе («топ N%») — рост относительно ровесников.">Кто вырос и кто упал</SectionTitle>
           <div className="fed-grid fed-grid--2">
             <section className="fed-card"><h3 className="fed-card__title">Выросли</h3><MoverList players={c.risers} empty="Заметных подъёмов нет." /></section>
             <section className="fed-card"><h3 className="fed-card__title">Упали</h3><MoverList players={c.fallers} empty="Заметных падений нет." /></section>
           </div>
           {c.newRated.length > 0 && (
             <section className="fed-card" style={{ marginTop: 14 }}>
-              <h3 className="fed-card__title">Впервые получили рейтинг</h3>
+              <h3 className="fed-card__title">Впервые получили оценку</h3>
               <p className="fed-card__sub">Набрали 2 разобранных матча — теперь видны относительно лиги.</p>
               <MoverList players={c.newRated} empty="" fresh />
             </section>
@@ -68,19 +68,18 @@ export function HoldingChanges() {
             <section className="fed-card"><h3 className="fed-card__title">Выросли</h3><LineList rows={c.lines.improved} q={q} empty="Заметного роста линий нет." /></section>
           </div>
 
-          <SectionTitle sub="Средний рейтинг состава и его место среди команд дивизиона по составу.">Команды</SectionTitle>
+          <SectionTitle sub="Уровень игры состава (средняя оценка игроков за матч) и место команды в дивизионе по нему.">Команды</SectionTitle>
           <section className="fed-card" style={{ padding: 8 }}>
             <div className="hc-table-wrap">
               <table className="fed-table hc-table">
-                <thead><tr><th>Команда</th><th className="fed-table__num">Средний класс</th><th className="fed-table__num">Изменение</th><th>Место по составу</th>{c.base.kind === 'snapshot' && <th>Место в таблице</th>}</tr></thead>
+                <thead><tr><th>Команда</th><th className="fed-table__num">Уровень игры, изменение</th><th>Место по уровню игры</th>{c.base.kind === 'snapshot' && <th>Место в таблице</th>}</tr></thead>
                 <tbody>
                   {c.teams.slice().sort((x, y) => (y.year - x.year) || x.clubLabel.localeCompare(y.clubLabel, 'ru')).map((t) => {
-                    const d = t.avgNow != null && t.avgBefore != null ? t.avgNow - t.avgBefore : null;
+                    const d = t.avgNow != null && t.avgBefore != null && t.avgBefore > 0 ? Math.round(((t.avgNow - t.avgBefore) / t.avgBefore) * 100) : null;
                     return (
                       <tr key={t.key}>
                         <td><Link to={`/holding/teams/${encodeURIComponent(t.key)}${q}`} className="hc-teamlink" style={{ color: 'var(--text)', fontWeight: 600 }}>{shortClub(t.clubLabel)} {t.year}</Link> <span className="hc-muted hc-small">{t.division}</span></td>
-                        <td className="fed-table__num" style={{ color: ratingColor(t.avgNow) }}>{t.avgNow != null ? num(t.avgNow) : '—'}</td>
-                        <td className={`fed-table__num ${d != null && d > 0 ? 'hc-delta--up' : d != null && d < 0 ? 'hc-delta--down' : 'hc-muted'}`}>{d != null ? pm(d) : '—'}</td>
+                        <td className={`fed-table__num ${d != null && d > 0 ? 'hc-delta--up' : d != null && d < 0 ? 'hc-delta--down' : 'hc-muted'}`}>{d == null ? '—' : d === 0 ? 'без изменений' : `${pm(d)}%`}</td>
                         <td>{rankMove(t.divRankBefore, t.divRankNow, t.divTeams)}</td>
                         {c.base.kind === 'snapshot' && <td>{rankMove(t.placeBefore, t.placeNow, null)}</td>}
                       </tr>
@@ -143,7 +142,7 @@ function ListCard({ l, q }: { l: ListChange; q: string }) {
         <span className="hc-chg-count">{l.before} → <b>{l.now}</b>{d !== 0 && <span className={d > 0 ? (l.key === 'losing' || l.key === 'risk' ? 'hc-delta--down' : 'hc-delta--up') : (l.key === 'losing' || l.key === 'risk' ? 'hc-delta--up' : 'hc-delta--down')}> {d > 0 ? `+${d}` : d}</span>}</span>
       </div>
       {l.entered.length === 0 && l.left.length === 0 && <div className="hc-muted hc-small">без изменений</div>}
-      {l.entered.map((p) => <PlayerLine key={`in${p.id}`} p={p} right={<span className={`hc-chg-tag ${l.key === 'losing' || l.key === 'risk' ? 'hc-chg-tag--bad' : 'hc-chg-tag--in'}`}>вошёл{p.rating != null ? ` · ${num(p.rating)}` : ''}</span>} />)}
+      {l.entered.map((p) => <PlayerLine key={`in${p.id}`} p={p} right={<span className={`hc-chg-tag ${l.key === 'losing' || l.key === 'risk' ? 'hc-chg-tag--bad' : 'hc-chg-tag--in'}`}>вошёл{p.pctRegion != null ? ` · топ ${p.pctRegion}%` : ''}</span>} />)}
       {l.left.map((p) => <PlayerLine key={`out${p.id}`} p={p} right={<span className="hc-chg-tag hc-chg-tag--out" title={p.lists.length ? `сейчас: ${p.lists.map((k: ListKey) => LIST_SHORT[k]).join(', ')}` : 'сейчас ни в одном списке'}>вышел{p.lists.length ? ` → ${LIST_SHORT[p.lists[0]!].toLowerCase()}` : ''}</span>} />)}
     </section>
   );
@@ -155,8 +154,8 @@ function MoverList({ players, empty, fresh }: { players: DiffPlayer[]; empty: st
     <div>
       {players.map((p) => (
         <PlayerLine key={p.id} p={p} right={fresh
-          ? <span style={{ color: ratingColor(p.rating) }}>{p.rating != null ? num(p.rating) : '—'} · топ {p.pctRegion}%</span>
-          : <span className="hc-chg-move">топ {p.pctBefore}% → <b>топ {p.pctRegion}%</b><span className="hc-muted hc-small">{p.rankBefore}-й → {p.rankRegion}-й · рейтинг {p.ratingBefore != null ? num(p.ratingBefore) : '—'} → {p.rating != null ? num(p.rating) : '—'}</span></span>} />
+          ? <span>топ {p.pctRegion}% региона</span>
+          : <span className="hc-chg-move">топ {p.pctBefore}% → <b>топ {p.pctRegion}%</b><span className="hc-muted hc-small">{p.rankBefore}-й → {p.rankRegion}-й среди сверстников</span></span>} />
       ))}
     </div>
   );
@@ -171,7 +170,7 @@ function LineList({ rows, q, empty }: { rows: LineChange[]; q: string; empty: st
         <div key={`${l.teamKey}${l.line}`} className="hc-chg-row">
           <div className="hc-chg-row__who">
             <Link to={`/holding/teams/${encodeURIComponent(l.teamKey)}${q}`} className="hc-chg-row__name">{shortClub(l.clubLabel)} {l.year} · {l.title}</Link>
-            <span className="hc-muted hc-small">средний {l.teamAvgBefore != null ? num(l.teamAvgBefore) : '—'} → {l.teamAvgNow != null ? num(l.teamAvgNow) : '—'} · в лиге {l.divAvgNow != null ? num(l.divAvgNow) : '—'}</span>
+            <span className="hc-muted hc-small">против средней по своей лиге</span>
           </div>
           <span className="hc-chg-row__right">{pc(l.gapBefore)} → <b>{pc(l.gapNow)}</b> к лиге</span>
         </div>
@@ -190,7 +189,7 @@ function Timeline() {
   ];
   return (
     <>
-      <SectionTitle sub="Сколько игроков проходило в каждый список после каждого тура — восстановлено по разобранным матчам (рейтинг — среднее по матчам, поэтому прошлое считается точно).">По турам с начала сезона</SectionTitle>
+      <SectionTitle sub="Сколько игроков проходило в каждый список после каждого тура — восстановлено по разобранным матчам (оценка — среднее по матчам, поэтому прошлое считается точно).">По турам с начала сезона</SectionTitle>
       <section className="fed-card">
         {tl.isLoading || !pts.length ? <div className="fed-skeleton" style={{ height: 220 }} /> : <TimelineChart pts={pts} series={series} />}
       </section>

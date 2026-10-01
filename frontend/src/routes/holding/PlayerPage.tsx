@@ -18,6 +18,7 @@ import '../../components/analytics/analytics.css';
 import { useHoldingAnalytics, useSlugQuery, shortClub, num, LINE_TITLE, type LeaguePlayer, type PlayerMetricsVsLeague, type MetricGroup } from './api';
 import { PlayerMetricsTable, MetricName } from './parts';
 import { PlayerNotes } from './Notes';
+import { PlayerPositions } from './Positions';
 import { HdLoading } from './HoldingShell';
 import { useNavQuery } from './scope';
 
@@ -158,17 +159,19 @@ export function HoldingPlayerPage() {
           <p className="hd-player__text">{s.text}</p>
         </div>
         <div className="card an">
-          <div className="page-section-title">Место в регионе <span className="an-model-tag">рейтинг AvanData</span></div>
+          <div className="page-section-title">Место в регионе</div>
           {s.league ? (
             <div className="hd-player__facts">
-              <div><span>Рейтинг</span><b>{s.league.rating != null ? num(s.league.rating) : '—'}</b></div>
-              <div><span>В регионе</span><b>{s.league.rankRegion != null ? `${s.league.rankRegion}-й из ${s.league.sizeRegion}` : '—'}</b></div>
-              <div><span>В своей лиге</span><b>{s.league.rankDiv != null ? `${s.league.rankDiv}-й из ${s.league.sizeDiv}` : '—'}</b></div>
+              <div><span>Индекс сезона</span><b>{s.index != null ? `${s.index.toFixed(1)}${s.rank != null ? ` · ${s.rank}-й из ${s.peers}` : ''}` : '—'}</b><small className="hd-muted">среди {s.peersWord}</small></div>
+              <div><span>Среди всех сверстников</span><b>{s.league.rankRegion != null ? `${s.league.rankRegion}-й из ${s.league.sizeRegion}` : '—'}</b><small className="hd-muted">все позиции, {s.year} г.р.</small></div>
+              <div><span>В своей лиге</span><b>{s.league.rankDiv != null ? `${s.league.rankDiv}-й из ${s.league.sizeDiv}` : '—'}</b><small className="hd-muted">{s.league.division}</small></div>
               <div><span>Команда</span><b>{s.league.teamKey ? <Link to={`/holding/teams/${encodeURIComponent(s.league.teamKey)}${slugQ}`} className="hd-link">{shortClub(s.league.clubLabel)} {s.league.birthYear}</Link> : '—'}</b></div>
             </div>
           ) : <div className="hd-muted">Игрок не из холдинга.</div>}
         </div>
       </div>
+
+      {s.league && <PlayerPositions p={s.league} />}
 
       {slices.length >= 3 && (
         <div className="card hd-player__pizza">

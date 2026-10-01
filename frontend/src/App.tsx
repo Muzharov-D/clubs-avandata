@@ -192,9 +192,22 @@ function PlatformAdminOnly({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
+/** Заставка кабинета холдинга на время входа и загрузки кода — вместо пустого тёмного экрана. */
+function HoldingBoot() {
+  return (
+    <div role="status" aria-live="polite" style={{ minHeight: '100vh', background: 'var(--bg, #0a0e16)', display: 'flex', flexDirection: 'column' }}>
+      <div style={{ height: 56, background: 'var(--hold-primary, #1d3f91)' }} />
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 10, color: 'var(--text, #e8edf7)', fontFamily: 'var(--font, system-ui)' }}>
+        <div style={{ fontSize: 20, fontWeight: 700 }}>Открываем кабинет</div>
+        <div style={{ fontSize: 14, opacity: 0.6 }}>Загружаем данные холдинга…</div>
+      </div>
+    </div>
+  );
+}
+
 function HoldingOnly({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth() as { user: any; loading: boolean };
-  if (loading) return null;
+  if (loading) return <HoldingBoot />;
   if (!user) return <Navigate to="/login" replace />;
   if (user.role !== 'holding_admin' && user.role !== 'federation_admin') return <Navigate to="/club" replace />;
   return <>{children}</>;
@@ -256,7 +269,7 @@ export function App() {
                     path="/holding"
                     element={
                       <HoldingOnly>
-                        <Suspense fallback={null}><HoldingShell /></Suspense>
+                        <Suspense fallback={<HoldingBoot />}><HoldingShell /></Suspense>
                       </HoldingOnly>
                     }
                   >

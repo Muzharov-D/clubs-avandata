@@ -5,7 +5,7 @@
  */
 import { useMemo, useState, type ReactNode } from 'react';
 import { Link } from 'react-router-dom';
-import { LINE_TITLE, GROUP_TITLE, CATEGORY_TITLE, CATEGORY_ORDER, num, pm, shortClub, type LeaguePlayer, type Line, type PlayerMetricRow, type TeamMetricRow } from './api';
+import { LINE_TITLE, GROUP_TITLE, groupOf, CATEGORY_TITLE, CATEGORY_ORDER, num, pm, shortClub, type LeaguePlayer, type Line, type PlayerMetricRow, type TeamMetricRow } from './api';
 import { useNavQuery } from './scope';
 
 const lineWord: Record<Line, string> = { GK: 'вратарь', DEF: 'защитник', MID: 'полузащитник', FWD: 'нападающий' };
@@ -88,7 +88,7 @@ export function PlayerTable({ players, showTeam = true, showTier = false, extra,
   rank?: boolean;
 }) {
   const q = useNavQuery();
-  const [sort, setSort] = useState<SortKey | null>(rank ? null : 'rating');
+  const [sort, setSort] = useState<SortKey | null>(rank ? null : 'index');
   const [all, setAll] = useState(false);
   const sorted = useMemo(() => (sort ? players.slice().sort(sorters[sort]) : players), [players, sort]);
   const shown = limit && !all ? sorted.slice(0, limit) : sorted;
@@ -108,9 +108,7 @@ export function PlayerTable({ players, showTeam = true, showTier = false, extra,
               <Th k="name">Игрок</Th>
               {showTier && <th>Ярус</th>}
               <Th k="index" right>Индекс</Th>
-              <Th k="rating" right>Рейтинг</Th>
               <Th k="pct">В регионе</Th>
-              <Th k="delta" right>К амплуа</Th>
               <Th k="trend">Форма</Th>
               <Th k="mp" right>Матчей</Th>
               {extra && <th>{extraTitle ?? ''}</th>}
@@ -122,13 +120,11 @@ export function PlayerTable({ players, showTeam = true, showTier = false, extra,
                 <td className="num hd-muted">{i + 1}</td>
                 <td style={{ minWidth: 200 }}>
                   <Link to={`/holding/players/${p.id}${q}`} className="hd-pname">{p.name}</Link>
-                  <span className="hd-team__sub">{showTeam ? `${shortClub(p.clubLabel)} ${p.birthYear} · ` : ''}{p.group ? GROUP_TITLE[p.group].toLowerCase() : p.line ? lineWord[p.line] : p.position ?? '—'}</span>
+                  <span className="hd-team__sub">{showTeam ? `${shortClub(p.clubLabel)} ${p.birthYear} · ` : ''}{groupOf(p) ? GROUP_TITLE[groupOf(p)!].toLowerCase() : p.line ? lineWord[p.line] : p.position ?? '—'}</span>
                 </td>
                 {showTier && <td>{p.tier ? <TierBadge tier={p.tier} /> : p.reason ? <span className={`hd-tag ${p.reason === 'trend' ? 'hd-tag--down' : 'hd-tag--warn'}`}>{p.reason === 'trend' ? 'падение формы' : 'вне ротации'}</span> : null}</td>}
                 <td className="num"><IndexCell p={p} /></td>
-                <td className="num hd-muted">{p.rating != null ? num(p.rating) : '—'}</td>
                 <td style={{ whiteSpace: 'nowrap' }}><PctBadge p={p} /> <span className="hd-muted hd-small">{p.rankRegion != null ? `${p.rankRegion} из ${p.sizeRegion}` : ''}</span></td>
-                <td className="num"><DeltaCell p={p} /></td>
                 <td><TrendCell p={p} /></td>
                 <td className="num hd-muted">{p.mp}</td>
                 {extra && <td className="hd-small">{extra(p)}</td>}

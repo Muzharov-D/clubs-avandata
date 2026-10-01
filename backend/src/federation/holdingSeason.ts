@@ -43,13 +43,15 @@ export interface PlayerSeason {
 }
 export interface MatchContext { date: string; opponent: string; score: string; result: 'W' | 'D' | 'L' | null }
 
-interface Agg { pid: number; group: PositionGroup | null; minutes: number; matches: number; counts: Map<string, number>; points: number }
+interface Agg { pid: number; group: PositionGroup | null; minutes: number; matches: number; counts: Map<string, number>; points: number; defence: number }
 interface Table {
   aggs: Map<number, Agg>;
   /** Значения показателя по пулу группы позиций (для перцентиля). */
   pool: Map<string, number[]>;
   /** Индекс сезона: очки за полный матч по пулу группы позиций. */
   pointsPool: Map<PositionGroup, number[]>;
+  /** Очки за действия в обороне за полный матч — по пулу группы (кто сильнее в оборонительной фазе). */
+  defencePool: Map<PositionGroup, number[]>;
   /** Распределения «за матч» по группе позиций: общий, атака, оборона. */
   matchPool: Map<PositionGroup, { overall: number[]; attack: number[]; defence: number[] }>;
 }
@@ -100,11 +102,11 @@ function buildTable(c: CohortMetrics): Table {
   for (const [pid, pmMap] of c.byMatch) {
     const line = c.groupOfPlayer.get(pid) ?? null;
     const mins = c.minutes.get(pid) ?? new Map<number, number>();
-    const a: Agg = { pid, group: line, minutes: 0, matches: 0, counts: new Map(), points: 0 };
+    const a: Agg = { pid, group: line, minutes: 0, matches: 0, counts: new Map(), points: 0, defence: 0 };
     for (const [mid, pm] of pmMap) {
       const m = mins.get(mid) ?? 0;
       if (m <= 0) continue;
-      a.minutes += m; a.matches++; a.points += pm.points;
+      a.minutes += m; a.matches++; a.points += pm.points; a.defence += pm.defence;
       for (const [k, v] of pm.counts) a.counts.set(k, (a.counts.get(k) ?? 0) + v);
       if (line && m >= L * INDEX_MATCH_MIN_SHARE) {
         const mp = matchPool.get(line) ?? matchPool.set(line, { overall: [], attack: [], defence: [] }).get(line)!;
@@ -116,9 +118,11 @@ function buildTable(c: CohortMetrics): Table {
   }
   const pool = new Map<string, number[]>();
   const pointsPool = new Map<PositionGroup, number[]>();
+  const defencePool = new Map<PositionGroup, number[]>();
   for (const a of aggs.values()) {
     if (!a.group || a.minutes < MIN_POOL_MINUTES) continue;
     (pointsPool.get(a.group) ?? pointsPool.set(a.group, []).get(a.group)!).push((a.points / a.minutes) * L);
+    (defencePool.get(a.group) ?? defencePool.set(a.group, []).get(a.group)!).push((a.defence / a.minutes) * L);
     for (const m of metricsOf(a.group)) {
       const v = valueOf(m, a, L);
       if (v == null) continue;
@@ -126,7 +130,7 @@ function buildTable(c: CohortMetrics): Table {
       (pool.get(k) ?? pool.set(k, []).get(k)!).push(v);
     }
   }
-  return { aggs, pool, pointsPool, matchPool };
+  return { aggs, pool, pointsPool, defencePool, matchPool };
 }
 
 const tableOf = (season: number, c: CohortMetrics): Promise<Table> => cached(`holding-season-table:${season}:${c.year}:${c.asOf}`, 6 * 60 * 60 * 1000, async () => buildTable(c));
@@ -134,7 +138,7 @@ const tableOf = (season: number, c: CohortMetrics): Promise<Table> => cached(`ho
 // ─── ДНК: архетип по навыковым областям (как CIES-амплуа в Легирусе) ──────────
 type Areas = Record<'finishing' | 'creation' | 'takeon' | 'security' | 'ballwin' | 'defending', number | null>;
 const avgN = (...xs: Array<number | null | undefined>) => { const p = xs.filter((x): x is number => x != null); return p.length ? p.reduce((a, b) => a + b, 0) / p.length : null; };
-// Архетипы — по группе позиций (опорный выбирает из «опорных» ролей, а не из всей полузащиты).
+// Архетипы — по группе позиций (центральный защитник выбирает из ролей защитника и т. д.).
 const ARCHETYPES: Record<Exclude<PositionGroup, 'GK'>, Array<{ area: keyof Areas; name: string; tagline: string }>> = {
   CB: [
     { area: 'creation', name: 'Защитник-распасовщик', tagline: 'начинает атаки первым пасом' },
@@ -152,21 +156,13 @@ const ARCHETYPES: Record<Exclude<PositionGroup, 'GK'>, Array<{ area: keyof Areas
     { area: 'security', name: 'Крайний-связующий', tagline: 'держит мяч и не теряет' },
     { area: 'finishing', name: 'Подключающийся крайний', tagline: 'врывается в штрафную и бьёт' },
   ],
-  DM: [
+  CM: [
     { area: 'ballwin', name: 'Разрушитель', tagline: 'выгрызает мячи в центре' },
-    { area: 'creation', name: 'Опорный-распасовщик', tagline: 'начинает атаки из глубины' },
-    { area: 'defending', name: 'Страхующий опорный', tagline: 'закрывает зону перед защитой' },
-    { area: 'security', name: 'Связующий', tagline: 'держит мяч и не теряет его' },
-    { area: 'finishing', name: 'Подключающийся опорный', tagline: 'доходит до штрафной и бьёт' },
-    { area: 'takeon', name: 'Опорный с мячом', tagline: 'выносит мяч из-под прессинга ведением' },
-  ],
-  AM: [
+    { area: 'defending', name: 'Страхующий полузащитник', tagline: 'закрывает зону перед защитой' },
     { area: 'creation', name: 'Дирижёр', tagline: 'организует атаки команды' },
-    { area: 'finishing', name: 'Атакующий полузащитник', tagline: 'врывается в штрафную и бьёт' },
-    { area: 'takeon', name: 'Дриблёр', tagline: 'обыгрывает и тащит мяч вперёд' },
     { area: 'security', name: 'Связующий', tagline: 'держит мяч и не теряет его' },
-    { area: 'ballwin', name: 'Прессингующий полузащитник', tagline: 'отбирает мяч высоко' },
-    { area: 'defending', name: 'Полузащитник-трудяга', tagline: 'помогает в обороне' },
+    { area: 'finishing', name: 'Подключающийся полузащитник', tagline: 'врывается в штрафную и бьёт' },
+    { area: 'takeon', name: 'Полузащитник с мячом', tagline: 'проводит мяч через центр ведением' },
   ],
   W: [
     { area: 'takeon', name: 'Вингер', tagline: 'обыгрывает один в один' },
@@ -198,10 +194,10 @@ function dna(line: PositionGroup | null, slices: SeasonSlice[]): { archetype: { 
     finishing: avgN(p('goals'), p('shots')), creation: avgN(p('chances'), p('progPasses')), takeon: p('dribbles'),
     security: avgN(p('security'), p('accuracy')), ballwin: avgN(p('ballWin'), p('pressing')), defending: p('clearances'),
   };
-  const cat = ARCHETYPES[(line ?? 'AM') as Exclude<PositionGroup, 'GK'>];
+  const cat = ARCHETYPES[(line ?? 'CM') as Exclude<PositionGroup, 'GK'>];
   const ranked = cat.map((a) => ({ ...a, score: areas[a.area] })).filter((a) => a.score != null).sort((a, b) => (b.score as number) - (a.score as number));
   const top = ranked[0];
-  return { archetype: top ? { name: top.name, tagline: top.tagline } : { name: GROUP_INFO[line ?? 'AM'].title, tagline: 'мало данных для профиля' }, roles: ranked.slice(0, 4).map((r) => ({ name: r.name, score: Math.round(r.score as number) })) };
+  return { archetype: top ? { name: top.name, tagline: top.tagline } : { name: GROUP_INFO[line ?? 'CM'].title, tagline: 'мало данных для профиля' }, roles: ranked.slice(0, 4).map((r) => ({ name: r.name, score: Math.round(r.score as number) })) };
 }
 
 const plural = (n: number, one: string, few: string, many: string) => { const a = Math.abs(n) % 100, b = a % 10; if (a >= 11 && a <= 14) return many; if (b === 1) return one; if (b >= 2 && b <= 4) return few; return many; };
@@ -308,7 +304,7 @@ export async function playerSeason(season: number, year: number, ids: number[], 
  * что в профиле: за полный матч своего возраста, против своей позиции, с минутами).
  * null — когорта ещё считается.
  */
-export interface PlayerForm { index: number | null; indexPct: number | null; minutes: number; matches: number; series: number[]; formDelta: number | null; lastMinutesShare: number | null }
+export interface PlayerForm { index: number | null; indexPct: number | null; /** Перцентиль игры в обороне среди своей группы позиций. */ defPct: number | null; minutes: number; matches: number; series: number[]; formDelta: number | null; lastMinutesShare: number | null }
 export async function cohortForms(season: number, year: number): Promise<{ asOf: string; forms: Map<number, PlayerForm> } | null> {
   const c = cohortMetrics(season, year);
   if (!c) return null;
@@ -332,7 +328,8 @@ export async function cohortForms(season: number, year: number): Promise<{ asOf:
       const formDelta = series.length >= 5 ? Math.round((series.slice(-3).reduce((s, x) => s + x, 0) / 3 - series.reduce((s, x) => s + x, 0) / series.length) * 10) / 10 : null;
       const last3 = rows.slice(-3);
       const lastMinutesShare = last3.length ? Math.round((last3.reduce((s, x) => s + x.m, 0) / (last3.length * L)) * 100) / 100 : null;
-      forms.set(a.pid, { index: val != null && pool.length >= 5 ? scaleIdx(val, plo, phi) : null, indexPct: pct, minutes: a.minutes, matches: a.matches, series, formDelta, lastMinutesShare });
+      const defPct = inPool ? pctOf(t.defencePool.get(a.group as PositionGroup) ?? [], (a.defence / a.minutes) * L) : null;
+      forms.set(a.pid, { index: val != null && pool.length >= 5 ? scaleIdx(val, plo, phi) : null, indexPct: pct, defPct, minutes: a.minutes, matches: a.matches, series, formDelta, lastMinutesShare });
     }
     return { asOf: c.asOf, forms };
   });

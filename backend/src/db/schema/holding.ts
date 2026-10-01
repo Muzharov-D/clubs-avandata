@@ -70,3 +70,17 @@ export const holdingProfileCache = pgTable(
   },
   (t) => [primaryKey({ columns: [t.holdingSlug, t.season, t.kind] })],
 );
+
+/** Дополнительная позиция игрока, на которой его хочет видеть тренер (см. drizzle/0029). */
+export const holdingPlayerPositions = pgTable(
+  'holding_player_positions',
+  {
+    holdingSlug: text('holding_slug').notNull(),
+    playerId: integer('player_id').notNull(),
+    grp: text('grp').notNull(),
+    authorId: text('author_id').notNull(),
+    authorName: text('author_name'),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [primaryKey({ columns: [t.holdingSlug, t.playerId, t.grp] })],
+);

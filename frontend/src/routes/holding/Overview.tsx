@@ -44,16 +44,16 @@ export function HoldingOverview() {
         </div>
         <div className="hd-teamhero__stats">
           <div className="hd-bigstat"><span className="hd-bigstat__v hd-up">{upCount}</span><span className="hd-bigstat__l">готовы подняться</span><span className="hd-bigstat__s">{a.youth.ready.length} в молодёжку · {a.promote.length} в ФК Динамо</span></div>
-          <div className="hd-bigstat"><span className={`hd-bigstat__v ${under.length ? 'hd-down' : ''}`}>{under.length}<small>/{teams.length}</small></span><span className="hd-bigstat__l">недобирают очков</span><span className="hd-bigstat__s">ниже, чем позволяет состав</span></div>
+          <div className="hd-bigstat"><span className={`hd-bigstat__v ${under.length ? 'hd-warn' : ''}`}>{under.length}<small>/{teams.length}</small></span><span className="hd-bigstat__l">играют сильнее места</span><span className="hd-bigstat__s">в таблице ниже, чем позволяет игра</span></div>
           <div className="hd-bigstat hd-bigstat--ring"><IndexRing value={holdIdx} size={86} stroke={7} /><span className="hd-bigstat__l">индекс составов</span></div>
         </div>
       </header>
 
       {/* 01 Где мы */}
       <section className="card an">
-        <div className="page-section-title"><span className="hd-qnum">01</span> Где мы среди команд региона <span className="an-model-tag">место в таблице против места по силе состава</span></div>
+        <div className="page-section-title"><span className="hd-qnum">01</span> Где мы среди команд региона <span className="an-model-tag">место в таблице против уровня игры</span></div>
         <div className="hd-tiles">{teams.map((t) => <TeamTile key={t.key} t={t} q={q} logo={logoOf.get(t.key)} />)}</div>
-        <div className="an-note">Полоса — шкала мест дивизиона: белая точка — место в таблице, голубая — место по силе состава. Красный отрезок — команда стоит ниже, чем позволяет состав; зелёный — выше.</div>
+        <div className="an-note">«По уровню игры» — место команды в дивизионе по средней оценке игроков за матч. Полоса — шкала мест: белая точка — место в таблице, голубая — по уровню игры. Жёлтый отрезок — команда играет сильнее, чем стоит в таблице (очков меньше, чем позволяет игра); зелёный — в таблице выше уровня игры.</div>
       </section>
 
       {/* 02 Кто готов подняться */}
@@ -87,7 +87,7 @@ function headline(a: HoldingAnalytics, under: number): string {
   const parts: string[] = [];
   if (ready) parts.push(`${ready} ${plural(ready, 'игрок готов', 'игрока готовы', 'игроков готовы')} в молодёжку`);
   if (promote) parts.push(`${promote} — в ФК Динамо`);
-  if (under) parts.push(`${under} ${plural(under, 'команда недобирает', 'команды недобирают', 'команд недобирают')} при своём составе`);
+  if (under) parts.push(`${under} ${plural(under, 'команда играет', 'команды играют', 'команд играют')} сильнее своего места в таблице`);
   if (!parts.length) return 'Неделя без срочных решений';
   const s = parts.join(', ');
   return s.charAt(0).toUpperCase() + s.slice(1);
@@ -123,15 +123,22 @@ function Swarm({ a }: { a: HoldingAnalytics }) {
         {rows.map((r) => {
           const mine = r.points.filter((x) => x.mine && (!scope.club || (x.teamKey ?? '').startsWith(`${scope.club}:`)));
           const best = mine.slice().sort((x, y) => y.index - x.index).slice(0, 3);
+          const cs = (x: { teamKey?: string }) => (x.teamKey ?? '').startsWith('царское');
+          const nCs = mine.filter(cs).length, nD = mine.length - nCs;
           return (
             <div key={r.year} className="hd-swarm__row">
-              <div className="hd-swarm__label"><b>{r.year}</b><span>{mine.length} наших из {r.points.length}</span><span className="hd-swarm__best">{best.map((b) => `${surname(b.name ?? '')} ${b.index.toFixed(1)}`).join(' · ')}</span></div>
-              <Beeswarm points={r.points.map((x) => ({ id: x.id, value: x.index, mine: x.mine && mine.some((m) => m.id === x.id), label: x.name }))} height={124} onPick={(id) => navigate(`/holding/players/${id}${q}`)} />
+              <div className="hd-swarm__label">
+                <b>{r.year}</b>
+                <span>{mine.length} наших из {r.points.length}</span>
+                {!scope.club && <span className="hd-swarm__clubs"><span><i className="hd-dot" />ФК Динамо — {nD}</span><span><i className="hd-dot hd-dot--ring" />Царское Село — {nCs}</span></span>}
+                <span className="hd-swarm__best">{best.map((b) => `${surname(b.name ?? '')} ${b.index.toFixed(1)}`).join(' · ')}</span>
+              </div>
+              <Beeswarm points={r.points.map((x) => ({ id: x.id, value: x.index, mine: x.mine && mine.some((m) => m.id === x.id), ring: cs(x), label: x.name }))} height={124} onPick={(id) => navigate(`/holding/players/${id}${q}`)} />
             </div>
           );
         })}
       </div>
-      <div className="an-note">Серые точки — все игроки этого года рождения в регионе, цветные — игроки холдинга (цвет — индекс). Клик по цветной точке — профиль игрока. Индекс считается против своей группы позиций.</div>
+      <div className="an-note">Серые точки — все игроки этого года рождения в регионе; цветные — игроки холдинга: сплошные — ФК Динамо, кольца — Царское Село (цвет — индекс). Клик по цветной точке — профиль игрока. Индекс считается против своей группы позиций.</div>
     </section>
   );
 }
@@ -206,7 +213,7 @@ function Attention({ a, q }: { a: HoldingAnalytics; q: string }) {
           {a.weakLines.slice(0, 6).map((l) => (
             <Link key={`${l.teamKey}${l.line}`} to={`/holding/teams/${encodeURIComponent(l.teamKey)}${q}`} className="hd-lineline hd-lineline--link">
               <span className="hd-lineline__t">{teamTitle(l)} · {l.title.toLowerCase()}</span>
-              <span className="hd-lineline__bar"><span style={{ width: `${Math.max(4, 50 + l.gapRel * 100)}%`, background: 'var(--rating-poor)' }} /></span>
+              <span className="hd-lineline__bar" title="насколько линия слабее средней по своей лиге"><span style={{ width: `${Math.min(100, Math.max(6, -l.gapRel * 160))}%`, background: 'var(--rating-poor)' }} /></span>
               <span className="hd-lineline__v hd-down">{pm(Math.round(l.gapRel * 100))}%</span>
             </Link>
           ))}
@@ -232,7 +239,7 @@ function Reminders({ q }: { q: string }) {
           {list.map((n) => (
             <Link key={n.id} to={`/holding/players/${n.playerId}${q}`} className={`hd-chip ${n.due ? 'hd-chip--warn' : 'hd-chip--brand'}`}>
               <b>{surname(n.playerName)} · {NOTE_KIND[n.kind]}</b>
-              <span>{n.remindOn ? (n.due ? `пора вернуться · ${fmtDay(n.remindOn)}` : `напомнить ${fmtDay(n.remindOn)}`) : 'без напоминания'}{n.now?.rating != null && n.ratingAt != null ? ` · рейтинг ${num(n.ratingAt)} → ${num(n.now.rating)}` : ''}</span>
+              <span>{n.remindOn ? (n.due ? `пора вернуться · ${fmtDay(n.remindOn)}` : `напомнить ${fmtDay(n.remindOn)}`) : 'без напоминания'}{n.now?.rankRegion != null && n.rankAt != null ? ` · место ${n.rankAt}-е → ${n.now.rankRegion}-е` : ''}</span>
             </Link>
           ))}
         </div>
