@@ -22,6 +22,7 @@ import { prefetchLogos } from '../public/logos.js';
 import { seedAnalytics, type HoldingAnalytics } from './holdingAnalytics.js';
 import { withBypassRLS } from '../db/tenantContext.js';
 import { holdingProfileCache } from '../db/schema/holding.js';
+import { setLeagueMatches } from './holdingIndex.js';
 
 // ─── Конфигурация ────────────────────────────────────────────────────────────
 export interface HoldingBrand {
@@ -364,6 +365,11 @@ async function buildHoldingProfile(seasonId: number, cfg: HoldingConfig): Promis
           const stages = new Map(((t.stages ?? []) as Array<{ id?: number; name?: string }>).filter((x) => x.id != null).map((x) => [Number(x.id), String(x.name ?? 'Лига')]));
           const matches = await tournamentMatches(Number(t.id));
           if (matches.length) live = { matches, stages };
+          // Протоколы — в расчёт Эло команд для индекса игроков (сила соперника).
+          setLeagueMatches(year, matches.filter((m) => m.done && !m.technical && m.hs != null && m.as != null).map((m) => ({
+            home: normTeam(clubName(m.home.name)), away: normTeam(clubName(m.away.name)), hs: m.hs as number, as: m.as as number, date: m.date,
+            top: /высш/i.test(stages.get(m.stageId ?? -1) ?? ''),
+          })));
         }
       } catch (e) {
         if (e instanceof FfspbWarmingError) logger.info({ year }, '[holding] протоколы ФФСПб ещё грузятся фоном → пока зеркало');

@@ -10,7 +10,7 @@
  *  - индекс 0–10 = перцентиль суммы очков за полный матч среди этого пула / 10
  *    (рейтинг AvanData — сумма очков событий; методику в интерфейсе не показываем).
  */
-import { cached, TTL } from './avandataSource.js';
+import { cached, TTL, clubName } from './avandataSource.js';
 import { getEventTypes } from '../services/avandataApi.js';
 import { buildIndexModel, QUALIFY_MATCHES, tiersStamp, type IndexModel, type EventTypeInfo } from './holdingIndex.js';
 import { normTeam } from './teamName.js';
@@ -125,7 +125,7 @@ function buildTable(c: CohortMetrics, types: Map<string, EventTypeInfo>): Table 
       (pool.get(k) ?? pool.set(k, []).get(k)!).push(v);
     }
   }
-  return { aggs, pool, model: buildIndexModel(c, types, normTeam) };
+  return { aggs, pool, model: buildIndexModel(c, types, (n) => normTeam(clubName(n))) };
 }
 
 const tableOf = (season: number, c: CohortMetrics): Promise<Table> => cached(`holding-season-table:v2:${season}:${c.year}:${c.asOf}:${tiersStamp(c.year)}`, 6 * 60 * 60 * 1000, async () => {

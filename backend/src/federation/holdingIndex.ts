@@ -9,11 +9,11 @@
  *     игрок команды, которая владеет мячом, не получает преимущества только за счёт команды.
  *  3. Стабильность. Оценка матча ограничена коридором ±25% от среднего игрока за последние
  *     10 матчей (от 3 матчей) — один яркий матч не делает сезон.
- *  5. Соперник. Сила соперника — рейтинг AvanData команды за разобранный матч (сравним между лигами),
- *     четверти команд возраста в регионе. В сам индекс не входит: очки — это действия, и против
- *     сильного соперника у защитника их больше, а не меньше (проверено: поправка по данным выходит
- *     немонотонной). Вместо этого — отдельный стресс-тест «против сильнейших» (сильнейшая четверть
- *     региона, без коридора стабильности, от одного полного матча).
+ *  5. Соперник. Сила команды — Эло по результатам ФФСПб (разница лиг откалибрована по рейтингу AvanData
+ *     за разобранный матч). Атакующие действия против сильного соперника весят больше (по данным атака
+ *     против сильнейшей четверти падает ~на 16% у всех позиций), оборонительные — без поправки (устойчивой связи нет).
+ *     Отдельно — стресс-тест «против сильнейших»: верхняя четверть региона по Эло, без коридора,
+ *     от одного полного матча.
  *  4. Малая выборка. Пока на поле меньше двух полных матчей своего возраста — без оценки («б/о»):
  *     индекс не считается и в шкалу не входит (решение руководства).
  * Шкала прежняя: лучший в пуле (возраст + специализация, весь регион, 45+ минут) = 10.0, слабейший = 5.0.
@@ -22,19 +22,68 @@ import type { CohortMetrics } from './holdingMetrics.js';
 import type { PositionGroup } from './positionGroups.js';
 
 export interface EventTypeInfo { points: number; attack: boolean }
-/** Сила соперника — четверть команд возраста в регионе по рейтингу AvanData за разобранный матч: С1 — сильнейшие. */
+/** Сила соперника — четверть команд возраста в регионе по Эло: С1 — сильнейшие. */
 export type OppTier = 'С1' | 'С2' | 'С3' | 'С4';
-/** Уровни команд возраста по таблицам ФФСПб (ключ — нормализованное название команды). */
-const tiersByYear = new Map<number, { stamp: string; map: Map<string, OppTier> }>();
-export function setTeamTiers(year: number, map: Map<string, OppTier>): void {
-  const stamp = [...map].sort().map(([k, v]) => `${k}=${v}`).join(';');
-  if (tiersByYear.get(year)?.stamp !== stamp) tiersByYear.set(year, { stamp, map });
+/** Сила команд возраста: уровень (четверть региона) и Эло (ключ — нормализованное название команды). */
+const tiersByYear = new Map<number, { stamp: string; map: Map<string, OppTier>; elo: Map<string, number> }>();
+export function setTeamTiers(year: number, map: Map<string, OppTier>, elo: Map<string, number> = new Map()): void {
+  const stamp = [...map].sort().map(([k, v]) => `${k}=${v}:${Math.round(elo.get(k) ?? 0)}`).join(';');
+  if (tiersByYear.get(year)?.stamp !== stamp) tiersByYear.set(year, { stamp, map, elo });
 }
-export const tiersStamp = (year: number): string => { const t = tiersByYear.get(year); return t ? String(t.stamp.length) + ':' + t.map.size : '0'; };
+export const tiersStamp = (year: number): string => { const t = tiersByYear.get(year); if (!t) return '0'; let h = 0; for (const ch of t.stamp) h = (h * 31 + ch.charCodeAt(0)) | 0; return String(h); };
+
+// ─── Эло команд по результатам ФФСПб ────────────────────────────────────────
+/** Матч лиги для Эло: команды, счёт, дата, стадия (Высшая/Первая). */
+export interface LeagueMatch { home: string; away: string; hs: number; as: number; date: string; top: boolean }
+const leagueByYear = new Map<number, LeagueMatch[]>();
+/** Протоколы ФФСПб возраста (кладёт сборка профиля холдинга). */
+export function setLeagueMatches(year: number, matches: LeagueMatch[]): void { leagueByYear.set(year, matches); }
+export const leagueMatchesOf = (year: number): LeagueMatch[] => leagueByYear.get(year) ?? [];
+
+const ELO_K = 30;
+function runElo(ms: LeagueMatch[], delta: number): Map<string, number> {
+  const R = new Map<string, number>();
+  for (const m of ms) for (const k of [m.home, m.away]) if (!R.has(k)) R.set(k, 1500 + (m.top ? delta / 2 : -delta / 2));
+  for (const m of ms.slice().sort((a, b) => a.date.localeCompare(b.date))) {
+    const rh = R.get(m.home)!, ra = R.get(m.away)!;
+    const exp = 1 / (1 + 10 ** ((ra - rh) / 400));
+    const gd = m.hs - m.as;
+    const res = gd > 0 ? 1 : gd < 0 ? 0 : 0.5;
+    const g = gd === 0 ? 1 : Math.log(Math.abs(gd) + 1) * 1.2;   // крупная победа весит больше, но не линейно
+    const d = ELO_K * g * (res - exp);
+    R.set(m.home, rh + d); R.set(m.away, ra - d);
+  }
+  return R;
+}
+const spearman = (a: number[], b: number[]) => {
+  const rk = (x: number[]) => { const r = new Array<number>(x.length); x.map((v, i) => [v, i] as const).sort((p, q) => p[0] - q[0]).forEach(([, i], k) => { r[i] = k; }); return r; };
+  const ra = rk(a), rb = rk(b), n = a.length; if (n < 3) return -1;
+  return 1 - (6 * ra.reduce((s, v, i) => s + (v - rb[i]!) ** 2, 0)) / (n * (n * n - 1));
+};
+/**
+ * Эло команд возраста. Лиги между собой не играют, поэтому стартовая разница Высшей и Первой
+ * подбирается так, чтобы итог лучше всего совпал с рейтингом AvanData за разобранный матч
+ * (единственная мера, сравнимая между лигами).
+ */
+export function teamElo(ms: LeagueMatch[], perMatch: Map<string, number>): Map<string, number> {
+  if (!ms.length) return new Map();
+  let best = { d: 0, r: -2 };
+  for (let d = 0; d <= 600; d += 25) {
+    const R = runElo(ms, d); const ks = [...R.keys()].filter((k) => perMatch.has(k));
+    const r = spearman(ks.map((k) => R.get(k)!), ks.map((k) => perMatch.get(k)!));
+    if (r > best.r) best = { d, r };
+  }
+  return runElo(ms, best.d);
+}
 
 const COEF_MIN = 0.6, COEF_MAX = 1.5;          // коэффициент специализации
 const RARE_RATE = 0.02;                         // событие реже 0.02 за матч у всех — без коэффициента
 const TEAM_MIN = 0.75, TEAM_MAX = 1.33;         // поправка на объём действий команды
+/** Атака против сильного соперника: по данным всех возрастов атакующие действия против сильнейшей четверти
+ *  падают на ~16% от своего среднего, против слабейшей растут на ~12%. Коэффициент подобран так, чтобы
+ *  убрать перекос метода (28 → 10 п.п.), но оставить реальную разницу — её показывает стресс-тест.
+ *  Оборону не трогаем: там устойчивой связи с силой соперника нет. */
+const ATT_PER_100_ELO = -0.15, ATT_MIN = 0.8, ATT_MAX = 1.35;
 const CORRIDOR = 0.25, CORRIDOR_LAST = 10, CORRIDOR_MIN_MATCHES = 3;
 const CORRIDOR_MATCH_SHARE = 0.25;              // матч в расчёт среднего — от четверти полного времени
 export const POOL_MIN_MINUTES = 45;
@@ -68,11 +117,18 @@ export interface IndexModel {
 export function buildIndexModel(c: CohortMetrics, types: Map<string, EventTypeInfo>, normName: (s: string) => string): IndexModel {
   const L = c.matchLen;
   const tiers = tiersByYear.get(c.year)?.map;
+  const elo = tiersByYear.get(c.year)?.elo ?? new Map<string, number>();
+  const eloMean = elo.size ? [...elo.values()].reduce((a, b) => a + b, 0) / elo.size : 0;
   const tierOfTeam = (tid: number): OppTier | null => { const t = c.teams.get(tid); return t && tiers ? tiers.get(normName(t.name)) ?? null : null; };
+  const attF = (tid: number | null): number => {
+    const t = tid != null ? c.teams.get(tid) : undefined; const e = t ? elo.get(normName(t.name)) : undefined;
+    return e == null ? 1 : clamp(1 / (1 + ATT_PER_100_ELO * ((e - eloMean) / 100)), ATT_MIN, ATT_MAX);
+  };
   // Соперник в матче: другая команда, чьи игроки есть в этом матче.
   const teamsInMatch = new Map<number, Set<number>>();
   for (const mm of c.byMatch.values()) for (const [mid, x] of mm) (teamsInMatch.get(mid) ?? teamsInMatch.set(mid, new Set()).get(mid)!).add(x.teamId);
-  const oppOf = (mid: number, own: number): OppTier | null => { for (const t of teamsInMatch.get(mid) ?? []) if (t !== own) return tierOfTeam(t); return null; };
+  const oppTeam = (mid: number, own: number): number | null => { for (const t of teamsInMatch.get(mid) ?? []) if (t !== own) return t; return null; };
+  const oppOf = (mid: number, own: number): OppTier | null => { const t = oppTeam(mid, own); return t != null ? tierOfTeam(t) : null; };
   const groupOf = (pid: number) => c.groupOfPlayer.get(pid) ?? null;
 
   // 1. Частоты событий по специализациям (за полный матч) → коэффициенты.
@@ -114,9 +170,10 @@ export function buildIndexModel(c: CohortMetrics, types: Map<string, EventTypeIn
     for (const [mid, x] of mm) {
       const m = c.minutes.get(pid)?.get(mid) ?? 0;
       let pos = 0, neg = 0, attPos = 0, attNeg = 0, defPos = 0, defNeg = 0;
+      const af = attF(oppTeam(mid, x.teamId));
       for (const [k, v] of x.counts) {
         const info = types.get(k); if (!info?.points) continue;
-        const p = v * info.points * (k0?.get(k) ?? 1);
+        const p = v * info.points * (k0?.get(k) ?? 1) * (info.attack && info.points > 0 ? af : 1);
         if (p > 0) { pos += p; if (info.attack) attPos += p; else defPos += p; }
         else { neg += p; if (info.attack) attNeg += p; else defNeg += p; }
       }

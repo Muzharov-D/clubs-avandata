@@ -13,7 +13,7 @@
 import { regionPlayers, clubName, cached, hasFreshCache, TTL, type RegionPlayer } from './avandataSource.js';
 import { cohortForms, type PlayerForm } from './holdingSeason.js';
 import { positionGroup, type PositionGroup } from './positionGroups.js';
-import { setTeamTiers, type OppTier } from './holdingIndex.js';
+import { setTeamTiers, teamElo, leagueMatchesOf, type OppTier } from './holdingIndex.js';
 import { cohortMetrics } from './holdingMetrics.js';
 import { getClubRatingsByTournament, type AvRatingTeam } from '../services/avandataApi.js';
 import { normTeam } from './teamName.js';
@@ -146,22 +146,27 @@ const analyticsInflight = new Map<string, Promise<HoldingAnalytics>>();
 export function seedAnalytics(slug: string, seasonId: number, a: HoldingAnalytics): void { lastAnalytics.set(`${slug}:${seasonId}`, a); }
 
 /**
- * Сила соперника: рейтинг AvanData команды, делённый на число её разобранных матчей (средний за матч).
- * Единственная мера, сравнимая между Высшей и Первой лигой. Команды возраста делятся на четверти
- * региона: С1 — сильнейшая четверть … С4 — слабейшая.
+ * Сила соперника: Эло команд по результатам ФФСПб; стартовая разница лиг — по рейтингу AvanData за
+ * разобранный матч (единственная мера, сравнимая между Высшей и Первой лигой). Команды возраста
+ * делятся на четверти региона: С1 — сильнейшая четверть … С4 — слабейшая.
  */
 export async function registerTiers(seasonId: number, years: number[]): Promise<void> {
   for (const y of years) {
     const c = cohortMetrics(seasonId, y); if (!c) continue;
     const tid = await tournamentIdOfYear(seasonId, y); if (tid == null) continue;
     const ratings = await cached(`teamratings:${seasonId}:${tid}`, TTL, () => getClubRatingsByTournament(seasonId, tid)).catch(() => [] as AvRatingTeam[]);
-    const played = new Map([...c.teams.values()].map((t) => [normTeam(t.name), t.matches.size]));
-    const str = ratings.map((r) => ({ key: normTeam(r.name), per: (played.get(normTeam(r.name)) ?? 0) >= 3 ? r.points / (played.get(normTeam(r.name)) as number) : null }))
-      .filter((x): x is { key: string; per: number } => x.per != null).sort((a, b) => b.per - a.per);
+    const key = (n: string) => normTeam(clubName(n));
+    const played = new Map([...c.teams.values()].map((t) => [key(t.name), t.matches.size]));
+    const perMatch = new Map<string, number>();
+    for (const r of ratings) { const n = played.get(key(r.name)) ?? 0; if (n >= 3) perMatch.set(key(r.name), r.points / n); }
+    // Сила — Эло по результатам ФФСПб (разница лиг — по рейтингу за матч); без протоколов — сам рейтинг за матч.
+    const elo = teamElo(leagueMatchesOf(y), perMatch);
+    const strength = elo.size ? elo : perMatch;
+    const str = [...strength].sort((a, b) => b[1] - a[1]);
     const map = new Map<string, OppTier>();
     const Q: OppTier[] = ['С1', 'С2', 'С3', 'С4'];
-    str.forEach((x, i) => map.set(x.key, Q[Math.min(3, Math.floor((i * 4) / str.length))] as OppTier));
-    if (map.size) setTeamTiers(y, map);
+    str.forEach(([k], i) => map.set(k, Q[Math.min(3, Math.floor((i * 4) / str.length))] as OppTier));
+    if (map.size) setTeamTiers(y, map, elo);
   }
 }
 
