@@ -54,7 +54,7 @@ export function perfWord(o: number | null): { text: string; tone: 'up' | 'down' 
   return { text: o === 1 ? 'место чуть выше уровня игры' : o <= 3 ? 'место выше уровня игры' : 'место заметно выше уровня игры', tone: 'up' };
 }
 
-/** Средний индекс состава (игроки с 45+ минутами). */
+/** Средний индекс состава (игроки с оценкой — от двух полных матчей). */
 export const teamIndex = (t: TeamLeague): number | null => {
   // Только игроки с полноценной выборкой: предварительные индексы не тянут средний вверх или вниз.
   const xs = t.squad.filter((p) => p.index != null && (p.minutes ?? 0) >= 45 && !p.lowSample).map((p) => p.index as number);

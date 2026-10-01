@@ -682,6 +682,7 @@ a.hd-chip:hover { border-color: var(--border-strong); }
   .hd-teamhero__stats > .hd-bigstat { flex: 1 1 40%; min-width: 0; }
   .hd-teamhero__stats > .hd-bigstat--ring { flex-basis: 100%; flex-direction: row; justify-content: center; gap: 12px; }
 }
-/* Индекс по малой выборке (меньше двух полных матчей) — предварительный. */
-.viz-ring--low { opacity: 0.6; }
-.hd-index--low, .hd-slot__idx--low { opacity: 0.55; text-decoration: underline dotted; text-underline-offset: 3px; }
+/* Без оценки (б/о): на поле меньше двух полных матчей своего возраста. */
+.viz-ring--low { opacity: 0.7; }
+.viz-ring--low .viz-ring__num { color: var(--text-faint); font-weight: 700; }
+.hd-slot__idx--low { color: var(--text-faint) !important; font-size: 11px; }

@@ -110,6 +110,13 @@ export function HoldingPlayerPage() {
             <div className="dna-card__stats-inline">{s.matches} {plural(s.matches, 'матч', 'матча', 'матчей')} · {s.minutes} {plural(s.minutes, 'минута', 'минуты', 'минут')} на поле{s.goals ? ` · ${s.goals} ${plural(s.goals, 'гол', 'гола', 'голов')}` : ''}</div>
             {s.superline && <div className="dna-card__superline">{s.superline}</div>}
           </div>
+          {s.index == null && s.lowSample && (
+            <div className="dna-card__rating" title="Без оценки: на поле меньше двух полных матчей своего возраста">
+              <div className="dna-card__rating-ring"><div className="dna-card__rating-num">б/о</div></div>
+              <div className="dna-card__rating-lab">без оценки</div>
+              <div className="hd-player__ringsub">меньше двух полных матчей ({s.matchLen * 2} мин)</div>
+            </div>
+          )}
           {s.index != null && (
             <div className="dna-card__rating">
               <div className="dna-card__rating-ring">
@@ -122,7 +129,6 @@ export function HoldingPlayerPage() {
               </div>
               <div className="dna-card__rating-lab">индекс сезона</div>
               <div className="hd-player__ringsub">лучше {Math.round(s.indexPct ?? 0)}% {peersShort}{s.rank ? ` · ${s.rank}-й из ${s.peers}` : ''}</div>
-              {s.lowSample && <div className="hd-player__ringsub hd-warn">предварительно: на поле меньше двух полных матчей</div>}
             </div>
           )}
         </div>
@@ -149,7 +155,7 @@ export function HoldingPlayerPage() {
             <div className="dna-card__growth">{s.growth.map((g) => <span className="dna-growth-pill" key={g.key} title={g.description}>{g.name.toLowerCase()}<span className="dna-growth-pill__pct">{g.pct}</span></span>)}</div>
           </div>
         )}
-        {!s.inPool && <div className="dna-card__block hd-muted">Для сравнения со сверстниками нужно от 45 минут на поле — пока профиль строится только по фактам.</div>}
+        {!s.inPool && <div className="dna-card__block hd-muted">Без оценки (б/о): для сравнения со сверстниками нужно от двух полных матчей на поле — пока профиль строится только по фактам.</div>}
       </div>
 
       {flags.length > 0 && <div className="hd-player__flags">{flags.map((f) => <span key={f} className="hd-tag hd-tag--up">{f}</span>)}</div>}
@@ -204,7 +210,7 @@ export function HoldingPlayerPage() {
               </div>
             ))}
           </div>
-          <div className="an-note">Перцентиль за полный матч своего возраста ({s.matchLen}′) против {s.peers} {peers} с 45+ минутами. Зелёный — среди лучших, серый — в норме, янтарный и красный — отстаёт.</div>
+          <div className="an-note">Перцентиль за полный матч своего возраста ({s.matchLen}′) против {s.peers} {peers} с оценкой (от двух полных матчей). Зелёный — среди лучших, серый — в норме, янтарный и красный — отстаёт.</div>
         </div>
       )}
 

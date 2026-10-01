@@ -12,14 +12,15 @@
  */
 import { cached, TTL } from './avandataSource.js';
 import { getEventTypes } from '../services/avandataApi.js';
-import { buildIndexModel, type IndexModel, type EventTypeInfo } from './holdingIndex.js';
+import { buildIndexModel, QUALIFY_MATCHES, type IndexModel, type EventTypeInfo } from './holdingIndex.js';
 import { cohortMetrics, type CohortMetrics } from './holdingMetrics.js';
 import { OUTFIELD_PROFILE, GK_PROFILE, type ProfileMetric, type MetricGroup } from './metricsGlossary.js';
 import type { HoldingXi } from './holdings.js';
 import { GROUP_INFO, type PositionGroup } from './positionGroups.js';
 
 type Line = HoldingXi['line'];
-const MIN_POOL_MINUTES = 45;           // как MIN_RANK_MINUTES в Легирусе
+/** Сравнение со сверстниками — от двух полных матчей своего возраста; меньше — «б/о» (решение руководства). */
+const poolMinutes = (L: number) => L * QUALIFY_MATCHES;
 const MIN_RATIO_ATTEMPTS = 5;          // доля считается от 5 попыток
 const SERIES_MIN_SHARE = 0.25;         // в динамику — матчи от четверти полного времени
 const INDEX_MATCH_MIN_SHARE = 0.5;     // распределение «индекса матча» — по матчам от половины времени
@@ -113,7 +114,7 @@ function buildTable(c: CohortMetrics, types: Map<string, EventTypeInfo>): Table 
   }
   const pool = new Map<string, number[]>();
   for (const a of aggs.values()) {
-    if (!a.group || a.minutes < MIN_POOL_MINUTES) continue;
+    if (!a.group || a.minutes < poolMinutes(L)) continue;
     for (const m of metricsOf(a.group)) {
       const v = valueOf(m, a, L);
       if (v == null) continue;
@@ -224,7 +225,7 @@ export async function playerSeason(season: number, year: number, ids: number[], 
   minutes = Math.round(minutes);
   const lineOfPlayer = ids.map((id) => c.lineOfPlayer.get(id)).find((l) => l != null) ?? null;
   const line = ids.map((id) => c.groupOfPlayer.get(id)).find((g) => g != null) ?? null;   // группа позиции
-  const inPool = !!line && minutes >= MIN_POOL_MINUTES;
+  const inPool = !!line && minutes >= poolMinutes(L);
 
   const slices: SeasonSlice[] = metricsOf(line).map((m) => {
     const value = valueOf(m, { counts, minutes }, L);
@@ -272,7 +273,7 @@ export async function playerSeason(season: number, year: number, ids: number[], 
   // Абзац-вывод, как «Профиль» в Легирусе.
   const parts: string[] = [];
   parts.push(`${name} — ${line ? GROUP_INFO[line].one : 'игрок'}, ${year} г.р. В сезоне — ${matches} ${plural(matches, 'разобранный матч', 'разобранных матча', 'разобранных матчей')} (${minutes} ${plural(minutes, 'минута', 'минуты', 'минут')} на поле)${goals ? `, ${goals} ${plural(goals, 'гол', 'гола', 'голов')}` : ''}.`);
-  if (!inPool) parts.push(`Для сравнения со сверстниками нужно от ${MIN_POOL_MINUTES} минут на поле.`);
+  if (!inPool) parts.push(`Без оценки (б/о): для сравнения со сверстниками нужно от двух полных матчей на поле — ${poolMinutes(L)} минут.`);
   else {
     if (strengths.length) parts.push(`Среди ${peersWord} сильнее всего по: ${strengths.slice(0, 2).map((s) => `${s.name.toLowerCase()} (${s.pct}-й перцентиль)`).join(', ')}.`);
     const rated = series.filter((s) => s.overall != null);
@@ -284,7 +285,6 @@ export async function playerSeason(season: number, year: number, ids: number[], 
     const last = series.filter((s) => s.date).slice(-1)[0];
     if (last?.date && last.opponent) parts.push(`Последний разобранный матч — ${fmtDate(last.date)} против «${last.opponent}» (${last.score ?? '—'})${last.result ? `, ${RESULT_WORD[last.result]}` : ''}.`);
     if (index != null) parts.push(`Индекс сезона — ${index.toFixed(1)} из 10 (10 — лучший среди ${GROUP_INFO[line as PositionGroup].peers} своего возраста в регионе); лучше ${Math.round(indexPct as number)}% из них.`);
-    if (index != null && sv.lowSample) parts.push('Минут на поле пока меньше двух полных матчей — индекс предварительный.');
   }
 
   return {
@@ -310,7 +310,7 @@ export async function cohortForms(season: number, year: number): Promise<{ asOf:
     const forms = new Map<number, PlayerForm>();
     for (const a of t.aggs.values()) {
       const pool = a.group ? t.model.pool.get(a.group) ?? [] : [];
-      const inPool = !!a.group && a.minutes >= MIN_POOL_MINUTES;
+      const inPool = !!a.group && a.minutes >= poolMinutes(L);
       const sv = t.model.season(t.model.rowsOf(a.pid), a.group);
       const val = inPool ? sv.value : null;
       const pct = val != null ? pctOf(pool, val) : null;

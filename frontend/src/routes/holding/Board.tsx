@@ -150,7 +150,7 @@ export function HoldingBoard() {
                             </Link>
                           ) : <span className="hd-slot__name hd-slot__none">никого</span>}
                           <span className="hd-slot__altcell">{cell && <Mark x={cell} note={note} />}</span>
-                          <span className={`hd-slot__idx${best?.lowSample ? ' hd-slot__idx--low' : ''}`} style={{ color: indexColor(best?.index) }} title={best?.lowSample ? 'предварительно: на поле меньше двух полных матчей' : undefined}>{best?.index != null ? best.index.toFixed(1) : '—'}</span>
+                          <span className={`hd-slot__idx${best?.lowSample ? ' hd-slot__idx--low' : ''}`} style={{ color: indexColor(best?.index) }} title={best?.lowSample ? 'без оценки: на поле меньше двух полных матчей' : undefined}>{best?.index != null ? best.index.toFixed(1) : best?.lowSample ? 'б/о' : '—'}</span>
                         </div>
                       );
                     });

@@ -9,9 +9,8 @@
  *     игрок команды, которая владеет мячом, не получает преимущества только за счёт команды.
  *  3. Стабильность. Оценка матча ограничена коридором ±25% от среднего игрока за последние
  *     10 матчей (от 3 матчей) — один яркий матч не делает сезон.
- *  4. Малая выборка. Сезонная оценка подтягивается к середине своей специализации тем сильнее,
- *     чем меньше минут (у середины «вес» двух полных матчей); шкалу 5–10 задают игроки от двух
- *     полных матчей, у остальных индекс помечается «мало минут».
+ *  4. Малая выборка. Пока на поле меньше двух полных матчей своего возраста — без оценки («б/о»):
+ *     индекс не считается и в шкалу не входит (решение руководства).
  * Шкала прежняя: лучший в пуле (возраст + специализация, весь регион, 45+ минут) = 10.0, слабейший = 5.0.
  */
 import type { CohortMetrics } from './holdingMetrics.js';
@@ -25,14 +24,11 @@ const TEAM_MIN = 0.75, TEAM_MAX = 1.33;         // поправка на объ�
 const CORRIDOR = 0.25, CORRIDOR_LAST = 10, CORRIDOR_MIN_MATCHES = 3;
 const CORRIDOR_MATCH_SHARE = 0.25;              // матч в расчёт среднего — от четверти полного времени
 export const POOL_MIN_MINUTES = 45;
-/** Подтяжка малой выборки: у середины специализации «вес» двух полных матчей. */
-const SHRINK_MATCHES = 2;
-/** Шкалу 5–10 (кто 10.0, кто 5.0), перцентиль и место задают игроки с минутами от двух полных матчей;
- *  у остальных индекс считается по той же шкале, но помечается «мало минут». */
+/** Оценка — от двух полных матчей своего возраста на поле; меньше — «б/о» (без оценки). */
 export const QUALIFY_MATCHES = 2;
 
 const clamp = (v: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, v));
-const median = (xs: number[]) => { if (!xs.length) return 0; const s = xs.slice().sort((a, b) => a - b); const m = s.length >> 1; return s.length % 2 ? s[m]! : (s[m - 1]! + s[m]!) / 2; };
+export const median = (xs: number[]) => { if (!xs.length) return 0; const s = xs.slice().sort((a, b) => a - b); const m = s.length >> 1; return s.length % 2 ? s[m]! : (s[m - 1]! + s[m]!) / 2; };
 
 /** Игрок в матче после поправок: оценка всего / атака / оборона (очки за матч, не за 90′). */
 export interface MatchRow { mid: number; m: number; adj: number; att: number; def: number }
@@ -41,9 +37,9 @@ export interface SeasonValue { value: number | null; minutes: number; rows: Matc
 export interface IndexModel {
   L: number;
   rowsOf(pid: number): MatchRow[];
-  /** Сезон по строкам матчей (склейка регистраций): коридор, затем подтяжка к середине специализации. */
+  /** Сезон по строкам матчей (склейка регистраций): коридор; меньше двух полных матчей — без оценки. */
   season(rows: MatchRow[], group: PositionGroup | null): SeasonValue;
-  /** Сезонные оценки пула (после подтяжки, игроки от двух полных матчей) — для шкалы 5–10, перцентиля и места. */
+  /** Сезонные оценки пула (игроки от двух полных матчей) — для шкалы 5–10, перцентиля и места. */
   pool: Map<PositionGroup, number[]>;
   /** Оборона за полный матч по пулу — кто сильнее в оборонительной фазе. */
   defencePool: Map<PositionGroup, number[]>;
@@ -129,22 +125,15 @@ export function buildIndexModel(c: CohortMetrics, types: Map<string, EventTypeIn
     return { value, minutes, clipped };
   };
 
-  // 4. Подтяжка к середине специализации при малой выборке.
-  const priorPool = new Map<PositionGroup, number[]>();
+  // 4. Пул шкалы — только игроки от двух полных матчей.
   const firstPass = new Map<number, ReturnType<typeof corridor>>();
-  for (const pid of c.byMatch.keys()) {
-    const s = corridor(rowsOf(pid)); firstPass.set(pid, s);
-    const g = groupOf(pid);
-    if (g && s.value != null && s.minutes >= POOL_MIN_MINUTES) (priorPool.get(g) ?? priorPool.set(g, []).get(g)!).push(s.value);
-  }
-  const prior = new Map([...priorPool].map(([g, xs]) => [g, median(xs)]));
-  const shrink = (v: number | null, minutes: number, g: PositionGroup | null) => (v == null || !g || !prior.has(g) ? v : (v * minutes + (prior.get(g) as number) * L * SHRINK_MATCHES) / (minutes + L * SHRINK_MATCHES));
+  for (const pid of c.byMatch.keys()) firstPass.set(pid, corridor(rowsOf(pid)));
 
   const pool = new Map<PositionGroup, number[]>(), defencePool = new Map<PositionGroup, number[]>();
   const matchPool = new Map<PositionGroup, { overall: number[]; attack: number[]; defence: number[] }>();
   for (const [pid, s] of firstPass) {
     const g = groupOf(pid); if (!g || s.value == null || s.minutes < L * QUALIFY_MATCHES) continue;
-    (pool.get(g) ?? pool.set(g, []).get(g)!).push(shrink(s.value, s.minutes, g) as number);
+    (pool.get(g) ?? pool.set(g, []).get(g)!).push(s.value);
     const rows = rowsOf(pid);
     (defencePool.get(g) ?? defencePool.set(g, []).get(g)!).push((rows.reduce((x, r) => x + r.def, 0) / s.minutes) * L);
     const mp = matchPool.get(g) ?? matchPool.set(g, { overall: [], attack: [], defence: [] }).get(g)!;
@@ -155,7 +144,8 @@ export function buildIndexModel(c: CohortMetrics, types: Map<string, EventTypeIn
     L, rowsOf, pool, defencePool, matchPool,
     season(rows, group) {
       const s = corridor(rows);
-      return { value: shrink(s.value, s.minutes, group), minutes: s.minutes, rows, clipped: s.clipped, lowSample: s.minutes < L * QUALIFY_MATCHES };
+      const lowSample = s.minutes < L * QUALIFY_MATCHES;
+      return { value: lowSample ? null : s.value, minutes: s.minutes, rows, clipped: s.clipped, lowSample };
     },
   };
 }

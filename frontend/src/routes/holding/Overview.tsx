@@ -118,7 +118,7 @@ function Swarm({ a }: { a: HoldingAnalytics }) {
   if (!rows.length) return null;
   return (
     <section className="card an">
-      <div className="page-section-title">Игроки холдинга среди всех сверстников региона <span className="an-model-tag">индекс сезона · каждая точка — игрок с 45+ минутами</span></div>
+      <div className="page-section-title">Игроки холдинга среди всех сверстников региона <span className="an-model-tag">индекс сезона · каждая точка — игрок от двух полных матчей</span></div>
       <div className="hd-swarm">
         {rows.map((r) => {
           const mine = r.points.filter((x) => x.mine && (!scope.club || (x.teamKey ?? '').startsWith(`${scope.club}:`)));
