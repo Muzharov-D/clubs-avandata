@@ -1,4 +1,4 @@
-import { pgTable, bigserial, integer, jsonb, text, date, timestamp, index } from 'drizzle-orm/pg-core';
+import { pgTable, bigserial, integer, jsonb, text, date, timestamp, index, primaryKey } from 'drizzle-orm/pg-core';
 
 /**
  * Кабинет холдинга (см. drizzle/0026). Холдинги — в коде (federation/holdings.ts), ключ holding_slug.
@@ -45,3 +45,28 @@ export const holdingNotes = pgTable(
 
 export type HoldingNoteKind = 'youth' | 'promote' | 'older' | 'watch' | 'keep' | 'other';
 export type HoldingNote = typeof holdingNotes.$inferSelect;
+
+/** Последняя сборка показателей когорты (сериализованный CohortMetrics) — мгновенный старт. */
+export const holdingCohortCache = pgTable(
+  'holding_cohort_cache',
+  {
+    season: integer('season').notNull(),
+    birthYear: integer('birth_year').notNull(),
+    payload: jsonb('payload').notNull(),
+    builtAt: timestamp('built_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [primaryKey({ columns: [t.season, t.birthYear] })],
+);
+
+/** Последние профиль и аналитика холдинга (kind: profile | analytics) — брифинг сразу после деплоя. */
+export const holdingProfileCache = pgTable(
+  'holding_profile_cache',
+  {
+    holdingSlug: text('holding_slug').notNull(),
+    season: integer('season').notNull(),
+    kind: text('kind').notNull(),
+    payload: jsonb('payload').notNull(),
+    builtAt: timestamp('built_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [primaryKey({ columns: [t.holdingSlug, t.season, t.kind] })],
+);

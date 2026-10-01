@@ -10,11 +10,12 @@
  * кандидаты на повышение в Высшую лигу (внутри холдинга), зона риска, кого теряем,
  * слабые и сильные линии. Пороги — константы ниже, названы словами.
  */
-import { regionPlayers, clubName, cached, TTL, type RegionPlayer } from './avandataSource.js';
+import { regionPlayers, clubName, cached, hasFreshCache, TTL, type RegionPlayer } from './avandataSource.js';
+import { cohortForms, type PlayerForm } from './holdingSeason.js';
 import { getClubRatingsByTournament, type AvRatingTeam } from '../services/avandataApi.js';
 import { normTeam } from './teamName.js';
 import { classifyDivision, type DivisionKey } from './division.js';
-import { lineOf, holdingProfile, type HoldingConfig, type HoldingProfile, type HoldingTeam, type HoldingXi } from './holdings.js';
+import { lineOf, holdingProfile, saveHoldingCache, type HoldingConfig, type HoldingProfile, type HoldingTeam, type HoldingXi } from './holdings.js';
 
 type Line = HoldingXi['line'];
 const LINE_TITLE: Record<Line, string> = { GK: 'Вратари', DEF: 'Защита', MID: 'Полузащита', FWD: 'Атака' };
@@ -27,7 +28,8 @@ const YOUTH_READY_PCT = 10;       // топ-10% региона своего во
 const YOUTH_WATCH_PCT = 25;       // топ-25% — присмотреться
 const TREND_LAST_N = 4;           // тренд = средний рейтинг последних 4 матчей против предыдущих
 const TREND_MIN_MATCHES = 6;      // тренд считаем от 6 оценённых матчей (иначе шум одного матча)
-const LOSING_TREND_REL = -0.25;   // падение на четверть и больше → «теряем»
+const LOSING_TREND_REL = -0.25;   // падение на четверть и больше → «теряем» (запасное правило)
+const LOSING_FORM_DELTA = -2;     // честный счёт: последние 3 матча ниже сезона на 2+ из 10
 const ROTATION_GAP_TOURS = 3;     // пропустил 3+ разобранных матча команды подряд → выпал из ротации
 const LINE_GAP_REL = 0.12;        // линия слабее/сильнее лиги на 12%+
 
@@ -45,6 +47,12 @@ export interface LeaguePlayer {
   /** Тренд: среднее последних матчей минус сезонный рейтинг; last — сами последние оценки. */
   trend: number | null; last: number[];
   lastTour: number | null; teamLastTour: number | null; inRotation: boolean;
+  /**
+   * Честный счёт (как в профиле): индекс сезона 0–10 против своей позиции в регионе — за полный
+   * матч своего возраста с учётом минут; формa — последние 3 матча против сезона (шкала 0–10).
+   * null — показатели когорты ещё считаются.
+   */
+  index: number | null; indexPct: number | null; minutes: number | null; formDelta: number | null;
 }
 export interface LineCompare { line: Line; title: string; teamAvg: number | null; divAvg: number | null; n: number; gapRel: number | null; verdict: 'weak' | 'ok' | 'strong' | null }
 export interface TeamLeague {
@@ -111,8 +119,35 @@ export function poolToursBack(pool: RegionPlayer[], toursBack: number): RegionPl
 }
 
 /** Аналитика по профилю холдинга (профиль уже собран — таблицы/дивизионы берём из него). */
+// Последняя посчитанная аналитика холдинга (в т.ч. поднятая из БД на старте): пока свежая
+// считается, отдаём её — кабинет не ждёт минуту после деплоя. Пересчёт — один на холдинг.
+const lastAnalytics = new Map<string, HoldingAnalytics>();
+const analyticsInflight = new Map<string, Promise<HoldingAnalytics>>();
+export function seedAnalytics(slug: string, seasonId: number, a: HoldingAnalytics): void { lastAnalytics.set(`${slug}:${seasonId}`, a); }
+
 export async function holdingAnalytics(seasonId: number, cfg: HoldingConfig, profile: HoldingProfile, toursBack = 0): Promise<HoldingAnalytics> {
-  return cached(`holding-analytics:${cfg.slug}:${seasonId}:${profile.asOf}:${toursBack}`, TTL, async () => {
+  // Формы когорт (минуты, индекс) — в ключ кэша: аналитика пересчитается, когда они досчитаются.
+  const formsByYear = new Map<number, Map<number, PlayerForm>>();
+  if (toursBack === 0) for (const y of profile.years) { const f = await cohortForms(seasonId, y); if (f) formsByYear.set(y, f.forms); }
+  const stamp = toursBack === 0 ? profile.years.map((y) => (formsByYear.has(y) ? 1 : 0)).join('') : '';
+  const key = `holding-analytics:${cfg.slug}:${seasonId}:${profile.asOf}:${toursBack}${stamp ? ':' + stamp : ''}`;
+  if (toursBack === 0) {
+    const lastKey = `${cfg.slug}:${seasonId}`;
+    const stale = lastAnalytics.get(lastKey);
+    if (stale && !hasFreshCache(key, TTL)) {
+      if (!analyticsInflight.has(key)) {
+        const job = computeAnalytics(seasonId, cfg, profile, toursBack, formsByYear, key).finally(() => analyticsInflight.delete(key));
+        analyticsInflight.set(key, job);
+        job.catch(() => undefined);
+      }
+      return stale;
+    }
+  }
+  return computeAnalytics(seasonId, cfg, profile, toursBack, formsByYear, key);
+}
+
+async function computeAnalytics(seasonId: number, cfg: HoldingConfig, profile: HoldingProfile, toursBack: number, formsByYear: Map<number, Map<number, PlayerForm>>, key: string): Promise<HoldingAnalytics> {
+  return cached(key, TTL, async () => {
     const teamsOut: TeamLeague[] = [];
     const allPlayers: LeaguePlayer[] = [];
     const medians: HoldingAnalytics['medians'] = [];
@@ -187,6 +222,7 @@ export async function holdingAnalytics(seasonId: number, cfg: HoldingConfig, pro
           const lineAvgDiv = line ? avg(lineDiv.get(line) ?? []) : null;
           const lineAvgRegion = line ? avg(lineRegion.get(line) ?? []) : null;
           const rr = isRated ? rankRegion.get(p.id) ?? null : null;
+          const fm = formsByYear.get(year)?.get(p.id);
           return {
             id: p.id, name: p.name, photo: p.photo, position: p.position, line,
             birthYear: p.birthYear ?? year, clubKey: t.clubKey, clubLabel: t.clubLabel, teamKey: t.key, team: p.club ?? t.name,
@@ -197,6 +233,7 @@ export async function holdingAnalytics(seasonId: number, cfg: HoldingConfig, pro
             pctRegion: rr != null && ratedPool.length ? Math.max(1, Math.round((rr / ratedPool.length) * 100)) : null,
             lineAvgDiv, lineAvgRegion, deltaLine: isRated && lineAvgDiv != null ? (p.rating as number) - lineAvgDiv : null,
             trend, last: lastN, lastTour, teamLastTour, inRotation,
+            index: fm?.index ?? null, indexPct: fm?.indexPct ?? null, minutes: fm ? Math.round(fm.minutes) : null, formDelta: fm?.formDelta ?? null,
           };
         }).sort((a, b) => ((b.rating ?? -1) - (a.rating ?? -1)) || (b.mp - a.mp));
         allPlayers.push(...squad);
@@ -241,7 +278,10 @@ export async function holdingAnalytics(seasonId: number, cfg: HoldingConfig, pro
     const losing: LosingPlayer[] = [];
     for (const p of allPlayers) {
       if (p.rating == null || p.mp < MIN_MATCHES_DECISION) continue;
-      if (p.trend != null && p.trend / (p.rating as number) <= LOSING_TREND_REL) losing.push({ ...p, reason: 'trend' });
+      // Падение формы — по честному счёту (минуты, свой возраст, своя позиция), если он готов:
+      // последние 3 матча ниже своего сезона на 2+ балла из 10. Иначе — старое правило.
+      const fallen = p.formDelta != null ? p.formDelta <= LOSING_FORM_DELTA : (p.trend != null && p.trend / (p.rating as number) <= LOSING_TREND_REL);
+      if (fallen) losing.push({ ...p, reason: 'trend' });
       else if (!p.inRotation) losing.push({ ...p, reason: 'rotation' });
     }
     losing.sort((a, b) => (b.rating as number) - (a.rating as number));
@@ -293,13 +333,15 @@ export async function holdingAnalytics(seasonId: number, cfg: HoldingConfig, pro
       }
     }
 
-    return {
+    const result: HoldingAnalytics = {
       slug: cfg.slug, season: seasonId, asOf: new Date().toISOString(), toursBack,
       youthFromYear: cfg.youthFromYear, youthSlots: cfg.youthSlots,
       thresholds: { youthReadyPct: YOUTH_READY_PCT, youthWatchPct: YOUTH_WATCH_PCT, minMatchesReady: MIN_MATCHES_READY, minMatchesDecision: MIN_MATCHES_DECISION, losingTrendRel: LOSING_TREND_REL, lineGapRel: LINE_GAP_REL },
       teams: teamsOut, medians, youth, promote, olderAge, selection, risk, losing, weakLines, strongLines,
       players: allPlayers.filter((p) => p.rating != null).sort((a, b) => (b.rating as number) - (a.rating as number)),
     };
+    if (toursBack === 0) { lastAnalytics.set(`${cfg.slug}:${seasonId}`, result); void saveHoldingCache(cfg.slug, seasonId, 'analytics', result); }
+    return result;
   });
 }
 

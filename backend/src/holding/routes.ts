@@ -3,7 +3,7 @@ import { authenticate, authorize } from '../auth/middleware.js';
 import { HOLDINGS, findHolding, publicHolding, holdingProfileOrWarming, type HoldingConfig } from '../federation/holdings.js';
 import { holdingAnalytics } from '../federation/holdingAnalytics.js';
 import { playerMetricsVsLeague, teamMetricsVsLeague } from '../federation/holdingMetrics.js';
-import { isAvandataConfigured, playerProfile, regionPlayers, clubName, type RegionPlayer } from '../federation/avandataSource.js';
+import { isAvandataConfigured, playerProfile, registrationsOf, regionPlayers, clubName, type RegionPlayer } from '../federation/avandataSource.js';
 import { lineOf } from '../federation/holdings.js';
 import { and, desc, eq, sql } from 'drizzle-orm';
 import { withBypassRLS } from '../db/tenantContext.js';
@@ -11,6 +11,9 @@ import { holdingNotes, type HoldingNote, type HoldingNoteKind } from '../db/sche
 import { users } from '../db/schema/users.js';
 import { holdingChanges, holdingTimeline, captureHoldingSnapshotIfDue } from './snapshots.js';
 import { buildCard } from './card.js';
+import { playerSeason, type MatchContext } from '../federation/holdingSeason.js';
+import { normTeam } from '../federation/teamName.js';
+import type { HoldingProfile } from '../federation/holdings.js';
 
 /**
  * Кабинет холдинга (/holding) — руководство группы школ одного бренда.
@@ -91,6 +94,38 @@ export async function holdingRoutes(app: FastifyInstance) {
     return null;
   };
 
+  /** Контекст матчей команд холдинга (дата, соперник, счёт, итог) по id матча AvanData. */
+  const matchCtx = (profile: HoldingProfile) => {
+    const m = new Map<number, MatchContext>();
+    for (const t of profile.teams) for (const x of t.matches) {
+      if (x.avId == null || !x.played) continue;
+      // Свои — сторона-участник холдинга; в дерби холдинга — сторона этой команды.
+      const home = x.home.isMember && !(x.away.isMember && normTeam(clubName(x.away.name)) === t.clubKey);
+      const us = home ? x.home : x.away, them = home ? x.away : x.home;
+      m.set(x.avId, { date: x.date, opponent: them.name.replace(/\s*20\d{2}\s*$/, ''), score: `${us.score ?? '–'}:${them.score ?? '–'}`, result: x.outcome ? (x.outcome.toUpperCase() as 'W' | 'D' | 'L') : null });
+    }
+    return (id: number) => m.get(id) ?? null;
+  };
+
+  /**
+   * GET /holding/players/:id/season — профиль как в Легирусе: ДНК, индекс 0–10, сильные стороны
+   * и зоны роста, пицца, динамика по матчам, форма, абзац-вывод — против сверстников региона.
+   */
+  app.get('/players/:id/season', async (req, reply) => {
+    const r = await ready(req, reply); if (!r) return notReady(reply);
+    const id = Number((req.params as { id: string }).id);
+    // Регистрации — лёгким поиском; полный профиль (фото, дата рождения) — только если уже в кэше.
+    const ids = await registrationsOf(id).catch(() => [id]);
+    const prof = await Promise.race([playerProfile(AV_SEASON, id).catch(() => null), new Promise<null>((res) => setTimeout(() => res(null), 300))]);
+    const lp = r.an.teams.flatMap((t) => t.squad).find((p) => ids.includes(p.id));
+    const year = lp?.birthYear ?? prof?.birthYear ?? null;
+    if (year == null) { reply.code(404); return { error: 'игрок не найден', code: 'PLAYER_NOT_FOUND' }; }
+    const name = lp?.name ?? prof?.name ?? '';
+    const s = await playerSeason(AV_SEASON, year, ids, name, matchCtx(r.profile), lp?.position ?? prof?.position ?? null);
+    if (!s) { reply.code(202); return { status: 'warming', code: 'METRICS_WARMING' }; }
+    return { ...s, name, photo: prof?.photo ?? lp?.photo ?? null, birthDate: prof?.birthDate ?? null, position: lp?.position ?? prof?.position ?? null, club: lp?.clubLabel ?? prof?.club ?? null, teamKey: lp?.teamKey ?? null, division: lp?.division ?? null, league: lp ?? null };
+  });
+
   /** GET /holding/players/:id/card — карточка кандидата: вывод словами, факты, сильные/слабые стороны. */
   app.get('/players/:id/card', async (req, reply) => {
     const r = await ready(req, reply); if (!r) return notReady(reply);
@@ -146,7 +181,16 @@ export async function holdingRoutes(app: FastifyInstance) {
     };
     const [a, b] = await Promise.all([side(q.a), side(q.b)]);
     if (!a || !b) { reply.code(404); return { error: 'игрок не найден', code: 'PLAYER_NOT_FOUND' }; }
-    return { a, b, status: a.metrics && b.metrics ? 'ready' : 'warming' };
+    // Сезонные профили (как в профиле игрока) — для «пиццы на пиццу» и встречных полосок.
+    const ctx = matchCtx(r.profile);
+    const seasonOf = async (x: NonNullable<typeof a>) => {
+      const sp = await playerSeason(AV_SEASON, x.birthYear, [x.id], x.anonymous ? 'Кандидат' : (x.name ?? ''), ctx, x.position);
+      if (!sp) return null;
+      const { text: _t, ...rest } = sp;
+      return rest;
+    };
+    const [sa, sb] = await Promise.all([seasonOf(a), seasonOf(b)]);
+    return { a: { ...a, season: sa }, b: { ...b, season: sb }, status: a.metrics && b.metrics && sa && sb ? 'ready' : 'warming' };
   });
 
   // ─── Заметки и решения руководства ───────────────────────────────────────

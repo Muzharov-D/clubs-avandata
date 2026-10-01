@@ -37,8 +37,12 @@ function clubPath(matches: PMatch[]): string[] {
 
 const toMatchBase = (m: PMatch): MatchBase => ({ id: m.id, age: '', division: '', date: m.date ?? '', home: m.home, away: m.away });
 
-const catColor = (c: string) => (c === 'attack' ? 'var(--av-cat-attack)' : c === 'defense' ? 'var(--av-cat-defense)' : 'var(--av-cat-pass)');
-const catLabel = (c: string) => (c === 'attack' ? 'Атака' : c === 'defense' ? 'Оборона' : 'Развитие');
+// Группы — из глоссария показателей (бэкенд: federation/metricsGlossary.ts).
+const CAT_ATTACK = new Set(['finishing', 'creation']);
+const CAT_DEFENCE = new Set(['defence', 'goalkeeping']);
+const catColor = (c: string) => (CAT_ATTACK.has(c) ? 'var(--av-cat-attack)' : CAT_DEFENCE.has(c) ? 'var(--av-cat-defense)' : 'var(--av-cat-pass)');
+const CAT_LABEL: Record<string, string> = { finishing: 'Завершение', creation: 'Созидание', possession: 'Владение', defence: 'Оборона', errors: 'Ошибки', goalkeeping: 'Вратарь' };
+const catLabel = (c: string) => CAT_LABEL[c] ?? 'Прочее';
 
 /** Профиль игрока + перцентильная «пицца» на РЕАЛЬНЫХ событиях (37 метрик). */
 export function FederationAvPlayerProfile({ apiBase = '/federation/av', backTo = '/federation/players', backLabel = '← К игрокам' }: { apiBase?: string; backTo?: string; backLabel?: string } = {}) {

@@ -23,6 +23,8 @@ export interface LeaguePlayer {
   rankDiv: number | null; sizeDiv: number; rankRegion: number | null; sizeRegion: number; pctRegion: number | null;
   lineAvgDiv: number | null; lineAvgRegion: number | null; deltaLine: number | null;
   trend: number | null; last: number[]; lastTour: number | null; teamLastTour: number | null; inRotation: boolean;
+  /** Честный счёт: индекс 0–10 против своей позиции, минуты, форма (последние 3 матча к сезону, из 10). */
+  index: number | null; indexPct: number | null; minutes: number | null; formDelta: number | null;
 }
 export interface LineCompare { line: Line; title: string; teamAvg: number | null; divAvg: number | null; n: number; gapRel: number | null; verdict: 'weak' | 'ok' | 'strong' | null }
 export interface TeamLeague {
@@ -88,11 +90,14 @@ export const shortPos = (pos: string | null) => (pos ?? '—').replace('Цент
 export const placeWord = (place: number | null, size: number | null) => (place == null ? '—' : `${place}-е${size ? ` из ${size}` : ''}`);
 
 // ─── Показатели (36 событий) относительно лиги ────────────────────────────────
-export interface PlayerMetricRow { id: string; title: string; short: string; category: string; points: number; count: number; perMatch: number; lineAvgDiv: number | null; lineAvgRegion: number | null; pctileDiv: number | null; peersDiv: number }
+export type MetricGroup = 'finishing' | 'creation' | 'possession' | 'defence' | 'errors' | 'goalkeeping';
+export interface PlayerMetricRow { id: string; title: string; short: string; description: string; category: MetricGroup; polarity: 1 | -1; count: number; perMatch: number; lineAvgDiv: number | null; lineAvgRegion: number | null; pctileDiv: number | null; peersDiv: number }
 export interface PlayerMetricsVsLeague { playerId: number; matches: number; line: Line | null; division: string; rows: PlayerMetricRow[]; asOf: string }
-export interface TeamMetricRow { id: string; title: string; short: string; category: string; points: number; perMatch: number; divAvg: number | null; rankDiv: number | null; sizeDiv: number }
+export interface TeamMetricRow { id: string; title: string; short: string; description: string; category: MetricGroup; polarity: 1 | -1; perMatch: number; divAvg: number | null; rankDiv: number | null; sizeDiv: number }
 export interface TeamMetricsVsLeague { teamKey: string; matches: number; division: string; rows: TeamMetricRow[]; asOf: string }
-export const CATEGORY_TITLE: Record<string, string> = { attack: 'Атака', defense: 'Оборона', general: 'Дисциплина и ошибки', pass: 'Развитие', other: 'Прочее' };
+/** Группы показателей — те же, что в глоссарии бэкенда (federation/metricsGlossary.ts). */
+export const CATEGORY_TITLE: Record<string, string> = { finishing: 'Завершение', creation: 'Созидание', possession: 'Владение', defence: 'Оборона', errors: 'Ошибки', goalkeeping: 'Вратарь' };
+export const CATEGORY_ORDER = ['finishing', 'creation', 'possession', 'defence', 'goalkeeping', 'errors'];
 export const useTeamMetrics = (teamKey: string) => useWarmable<TeamMetricsVsLeague>('team-metrics', `/holding/teams/${encodeURIComponent(teamKey)}/metrics${useSlugQuery()}`);
 
 // ─── Динамика: что изменилось ─────────────────────────────────────────────────

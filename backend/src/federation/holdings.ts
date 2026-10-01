@@ -17,6 +17,11 @@ import { getClubRatingsByTournament, getMatches, type AvRatingTeam, type AvMatch
 import { normTeam } from './teamName.js';
 import { classifyDivision, type DivisionKey } from './division.js';
 import { logger } from '../shared/logger.js';
+import { eq } from 'drizzle-orm';
+import { prefetchLogos } from '../public/logos.js';
+import { seedAnalytics, type HoldingAnalytics } from './holdingAnalytics.js';
+import { withBypassRLS } from '../db/tenantContext.js';
+import { holdingProfileCache } from '../db/schema/holding.js';
 
 // ─── Конфигурация ────────────────────────────────────────────────────────────
 export interface HoldingBrand {
@@ -29,7 +34,7 @@ export interface HoldingBrand {
   /** Текст поверх primary. */
   onPrimary: string;
 }
-export interface HoldingMember { key: string; label: string }
+export interface HoldingMember { key: string; label: string; /** Логотип школы — в конфиге, чтобы шапка не ждала профиль. */ logo?: string | null }
 export interface HoldingConfig {
   slug: string; name: string; short: string; region: string;
   brand: HoldingBrand;
@@ -51,8 +56,8 @@ export const HOLDINGS: HoldingConfig[] = [
     // Синий взят из логотипа клуба (#004098); bright — тот же тон, читаемый на тёмном фоне.
     brand: { primary: '#004098', bright: '#5d95ff', soft: 'rgba(0, 64, 152, 0.30)', onPrimary: '#ffffff' },
     members: [
-      { key: normTeam('ФК Динамо'), label: 'ФК Динамо' },
-      { key: normTeam('Царское Село-Динамо'), label: 'Царское Село-Динамо' },
+      { key: normTeam('ФК Динамо'), label: 'ФК Динамо', logo: 'https://s3.twcstorage.ru/spa-new-prod/HUYoJ4Vd_1785147263866_iygwvjntx4g.png' },
+      { key: normTeam('Царское Село-Динамо'), label: 'Царское Село-Динамо', logo: 'https://s3.twcstorage.ru/spa-new-prod/SKyaiLxw_1785147990906_3x0vdtkfa3v.png' },
     ],
     years: [2009, 2010, 2011, 2012, 2013],
     youthFromYear: 2011,
@@ -224,13 +229,44 @@ export async function holdingProfile(seasonId: number, cfg: HoldingConfig): Prom
   let inflight = swrInflight.get(key);
   if (!inflight) {
     inflight = buildHoldingProfile(seasonId, cfg)
-      .then((val) => { swrLast.set(key, { at: Date.now(), val }); return val; })
+      .then((val) => {
+        swrLast.set(key, { at: Date.now(), val });
+        void saveHoldingCache(cfg.slug, seasonId, 'profile', val);
+        // Логотипы всех команд профиля — заранее в нашу базу (фоном).
+        void prefetchLogos([...val.members.map((m) => m.logo), ...val.teams.flatMap((t) => [t.logo, ...t.table.map((r) => r.logo), ...t.matches.flatMap((m) => [m.home.logo, m.away.logo])])]);
+        return val;
+      })
       .finally(() => swrInflight.delete(key));
     swrInflight.set(key, inflight);
     inflight.catch((e: unknown) => logger.warn({ err: String(e), holding: cfg.slug }, '[holding] сборка профиля упала'));
   }
   if (last) return last.val;            // протухший — отдаём сразу, свежий доедет фоном
   return inflight;
+}
+
+// ─── Сохранённое состояние: брифинг сразу после деплоя ──────────────────────
+export async function saveHoldingCache(slug: string, season: number, kind: 'profile' | 'analytics', payload: unknown): Promise<void> {
+  try {
+    await withBypassRLS((tx) => tx.insert(holdingProfileCache).values({ holdingSlug: slug, season, kind, payload })
+      .onConflictDoUpdate({ target: [holdingProfileCache.holdingSlug, holdingProfileCache.season, holdingProfileCache.kind], set: { payload, builtAt: new Date() } }));
+  } catch (e) { logger.warn({ err: String(e), slug, kind }, '[holding] сохранённое состояние не записано'); }
+}
+/**
+ * Поднять последние профиль и аналитику из БД на старте: профиль — как протухший (отдаётся
+ * сразу, свежий собирается фоном), аналитика — под ключ этого профиля, чтобы не пересчитывать.
+ */
+export async function restoreHoldings(seasonId: number): Promise<void> {
+  try {
+    const rows = await withBypassRLS((tx) => tx.select().from(holdingProfileCache).where(eq(holdingProfileCache.season, seasonId)));
+    for (const cfg of HOLDINGS) {
+      const prof = rows.find((r) => r.holdingSlug === cfg.slug && r.kind === 'profile')?.payload as HoldingProfile | undefined;
+      const an = rows.find((r) => r.holdingSlug === cfg.slug && r.kind === 'analytics')?.payload as { asOf?: string } | undefined;
+      const key = `${cfg.slug}:${seasonId}`;
+      if (prof && !swrLast.has(key)) swrLast.set(key, { at: 0, val: prof });
+      if (an) seedAnalytics(cfg.slug, seasonId, an as HoldingAnalytics);
+    }
+    logger.info({ seasonId, rows: rows.length }, '[holding] сохранённое состояние поднято');
+  } catch (e) { logger.warn({ err: String(e) }, '[holding] сохранённое состояние недоступно'); }
 }
 
 /** Профиль, если он есть или соберётся за waitMs; иначе — «идёт прогрев», и фронт опрашивает
@@ -421,7 +457,7 @@ async function buildHoldingProfile(seasonId: number, cfg: HoldingConfig): Promis
     return {
       slug: cfg.slug, name: cfg.name, short: cfg.short, region: cfg.region, brand: cfg.brand,
       season: seasonId, asOf: new Date().toISOString(),
-      members: cfg.members.map((m) => ({ ...m, logo: teams.find((t) => t.clubKey === m.key && t.logo)?.logo ?? null, teams: teams.filter((t) => t.clubKey === m.key).length })),
+      members: cfg.members.map((m) => ({ ...m, logo: m.logo ?? teams.find((t) => t.clubKey === m.key && t.logo)?.logo ?? null, teams: teams.filter((t) => t.clubKey === m.key).length })),
       years,
       summary: {
         teams: teams.length,

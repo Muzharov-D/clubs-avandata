@@ -22,8 +22,9 @@ import { closePool } from './db/client.js';
 import { runMigrations } from './db/migrate.js';
 import { startCrons, stopCrons } from './cron/runner.js';
 import { captureSnapshotIfDue } from './federation/snapshots.js';
-import { warmHoldings, HOLDINGS } from './federation/holdings.js';
-import { warmCohortMetrics } from './federation/holdingMetrics.js';
+import { warmHoldings, restoreHoldings, HOLDINGS } from './federation/holdings.js';
+import { warmCohortMetrics, restoreCohorts } from './federation/holdingMetrics.js';
+import { registrationsOf } from './federation/avandataSource.js';
 
 async function buildServer() {
   const app = Fastify({
@@ -129,6 +130,11 @@ async function start() {
     // Прогрев профилей холдингов (тяжёлая сборка) — чтобы первый заход не ждал холодного старта.
     setTimeout(() => { void warmHoldings(2); }, 15_000);
     // Показатели (события всех команд когорт) — тяжёлый прогрев, по одной когорте, старшие первыми.
+    // Последние сборки когорт — из БД сразу (кабинет не ждёт), свежие — фоном через 40 с.
+    void restoreCohorts(2);
+    void restoreHoldings(2);
+    // Реестр игроков региона (склейка регистраций) — прогреваем сразу, иначе первый профиль ждёт его ~минуту.
+    setTimeout(() => { void registrationsOf(0).catch(() => undefined); }, 5_000);
     setTimeout(() => warmCohortMetrics(2, [...new Set(HOLDINGS.flatMap((h) => h.years))].sort((a, b) => a - b)), 40_000);
     void captureSnapshotIfDue(2)
       .then((r) => { if (r.captured) logger.info({ written: r.written }, 'startup: базовый federation snapshot записан'); })

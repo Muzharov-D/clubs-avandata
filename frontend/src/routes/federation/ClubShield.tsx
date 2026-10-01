@@ -26,6 +26,11 @@ const initials = (s: string): string => {
 
 interface Props { name: string; logoUrl?: string | null; size?: number; }
 
+// Логотипы с хранилищ AvanData отдаём из нашей базы (backend/src/public/logos.ts):
+// без задержки внешнего сервера и с вечным кэшем браузера.
+const OWN_LOGO_HOSTS = /^https:\/\/(s3\.twcstorage\.ru|img\.nagradion\.ru)\//;
+const ownLogo = (url: string) => (OWN_LOGO_HOSTS.test(url) ? `/api/v1/public/logo?u=${encodeURIComponent(url)}` : url);
+
 export function ClubShield({ name, logoUrl, size = 32 }: Props) {
   // bad = лого битое ИЛИ широкий вордмарк: оба заменяем генеративным щитом, а не
   // показываем сломанную картинку / блёклое пятно на белом круге.
@@ -38,7 +43,7 @@ export function ClubShield({ name, logoUrl, size = 32 }: Props) {
   if (logoUrl && /^https?:\/\//.test(logoUrl) && !bad) {
     return (
       <img
-        src={logoUrl} alt={name} width={size} height={size} decoding="async" loading="lazy"
+        src={ownLogo(logoUrl)} alt={name} width={size} height={size} decoding="async" loading="lazy"
         className="av-shield" style={{ width: size, height: size }}
         onError={() => setBad(true)}
         // Широкий вордмарк (напр. «СШОР Зенит», 4281px) на белом круге сливается в

@@ -15,6 +15,7 @@ import {
 import { getMatch as ffspbGetMatch, isFfspbConfigured } from '../services/ffspbApi.js';
 import { logger } from '../shared/logger.js';
 import { env } from '../env.js';
+import { metricInfo } from './metricsGlossary.js';
 import { normTeam } from './teamName.js';
 import { DIVISION_ALIASES, matchesDivision } from './division.js';
 import { dedupPlayers, normPlayerName } from './playerDedup.js';
@@ -217,12 +218,13 @@ export async function regionMatchDetail(matchId: number): Promise<MatchDetail | 
           topEvents: (raw.bestMatchPlayer.topEvents ?? []).map((e) => ({ eventType: e.eventType ?? '', name: e.eventName ?? '', count: e.count ?? 0 })),
         }
       : null;
-    const stats: MatchStatRow[] = (raw.keyEvents ?? []).map((k) => ({
-      eventType: k.eventType ?? '', title: k.title ?? k.eventType ?? '',
-      home: k.ownTeam?.eventsCount ?? 0, away: k.guestTeam?.eventsCount ?? 0,
-    }));
+    // Названия — только из глоссария; технические и неизвестные события не показываем.
+    const stats: MatchStatRow[] = (raw.keyEvents ?? []).flatMap((k) => {
+      const g = metricInfo(k.eventType ?? '');
+      return g ? [{ eventType: k.eventType ?? '', title: g.name, home: k.ownTeam?.eventsCount ?? 0, away: k.guestTeam?.eventsCount ?? 0 }] : [];
+    });
     const leaders: MatchLeaderGroup[] = (raw.bestPlayersByEvents ?? []).map((g) => ({
-      eventType: g.eventType ?? '', title: titleByType.get(g.eventType ?? '') ?? g.eventType ?? '',
+      eventType: g.eventType ?? '', title: metricInfo(g.eventType ?? '')?.name ?? titleByType.get(g.eventType ?? '') ?? g.eventType ?? '',
       players: (g.players ?? []).map((p) => ({
         id: p.id ?? null, name: p.title ?? '—', team: p.team?.title ?? null,
         role: p.playerRoleName ?? null, photo: p.playerPhotoUrl ?? null, count: p.eventsCount ?? 0,
@@ -250,6 +252,10 @@ async function cached<T>(key: string, ttlMs: number, fn: () => Promise<T>): Prom
   return val;
 }
 const TTL = 10 * 60 * 1000;
+/** Положить готовое значение в кэш (восстановление из БД на старте). at — когда посчитано. */
+export function seedCache(key: string, val: unknown, at = Date.now()): void { cache.set(key, { at, val }); }
+/** Есть ли свежее значение в кэше (без вычисления). */
+export function hasFreshCache(key: string, ttlMs: number): boolean { const h = cache.get(key); return !!h && Date.now() - h.at < ttlMs; }
 /** Параллельный map с ограничением одновременности (щадим API). */
 async function pmap<T, R>(items: T[], limit: number, fn: (x: T) => Promise<R>): Promise<R[]> {
   const out: R[] = new Array(items.length);
@@ -1077,6 +1083,14 @@ async function humanIndex(): Promise<{ byKey: Map<string, number[]>; keyOf: Map<
   });
 }
 
+/** Все регистрации ребёнка (ФИО + дата рождения) — лёгкий поиск без загрузки событий. */
+export async function registrationsOf(playerId: number): Promise<number[]> {
+  const idx = await humanIndex();
+  const key = idx.keyOf.get(playerId);
+  const siblings = (key ? idx.byKey.get(key) : null) ?? [playerId];
+  return siblings.includes(playerId) ? siblings : [playerId, ...siblings];
+}
+
 export async function playerProfile(seasonId: number, playerId: number): Promise<PlayerProfile | null> {
   // Один ребёнок = несколько записей AvanData (новая заводится при каждом переходе).
   // Карточка по одному id показывала лишь часть истории: у Завьялова Дмитрия
@@ -1105,9 +1119,10 @@ export async function playerProfile(seasonId: number, playerId: number): Promise
     a.count += 1; a.points += e.points ?? 0;
     agg.set(e.eventTypeId, a);
   }
-  const metrics: PlayerMetric[] = [...agg.entries()].map(([tid, a]) => {
-    const t = types.get(tid);
-    return { id: tid, title: t?.title ?? tid, short: t?.shortTitle ?? tid, category: t?.eventTypeCategoryId ?? 'other', count: a.count, points: a.points };
+  const metrics: PlayerMetric[] = [...agg.entries()].flatMap(([tid, a]) => {
+    const g = metricInfo(tid);
+    void types;
+    return g ? [{ id: tid, title: g.name, short: g.short, category: g.group, count: a.count, points: a.points }] : [];
   }).sort((a, b) => b.count - a.count);
   const totalPoints = metrics.reduce((s, m) => s + m.points, 0);
   if (!id0 && !detail && events.length === 0) return null;
