@@ -33,7 +33,7 @@ export function DeltaCell({ p }: { p: LeaguePlayer }) {
 /** Индекс сезона 0–10 (как кольцо в профиле): цвет по шкале рейтинга. */
 export function IndexCell({ p }: { p: LeaguePlayer }) {
   if (p.index == null) return <span className="hd-muted" title="Мало минут для сравнения или показатели ещё считаются">—</span>;
-  const c = p.index >= 8 ? 'var(--rating-excellent)' : p.index >= 6 ? 'var(--rating-good)' : p.index >= 4 ? 'var(--rating-ok)' : p.index >= 2 ? 'var(--rating-weak)' : 'var(--rating-poor)';
+  const c = p.index >= 9 ? 'var(--rating-excellent)' : p.index >= 8 ? 'var(--rating-good)' : p.index >= 7 ? 'var(--rating-ok)' : p.index >= 6 ? 'var(--rating-weak)' : 'var(--rating-poor)';
   return <span className="hd-index" style={{ color: c }} title={`лучше ${Math.round(p.indexPct ?? 0)}% сверстников своей позиции · ${p.minutes ?? 0} мин`}>{p.index.toFixed(1)}</span>;
 }
 
@@ -41,8 +41,8 @@ export function IndexCell({ p }: { p: LeaguePlayer }) {
 export function TrendCell({ p }: { p: LeaguePlayer }) {
   if (p.formDelta != null) {
     const d = p.formDelta;
-    const cls = d >= 1 ? 'hd-up' : d <= -1 ? 'hd-down' : 'hd-muted';
-    return <span className={cls} style={{ fontWeight: 600, whiteSpace: 'nowrap' }} title="последние 3 матча против своего сезона, по шкале из 10">{d >= 1 ? '↑' : d <= -1 ? '↓' : '→'} {d > 0 ? '+' : ''}{d.toFixed(1)}{!p.inRotation && <span className="hd-warn" style={{ fontWeight: 500 }}> · вне ротации</span>}</span>;
+    const cls = d >= 0.5 ? 'hd-up' : d <= -0.5 ? 'hd-down' : 'hd-muted';
+    return <span className={cls} style={{ fontWeight: 600, whiteSpace: 'nowrap' }} title="последние 3 матча против своего сезона, по шкале 5–10">{d >= 0.5 ? '↑' : d <= -0.5 ? '↓' : '→'} {d > 0 ? '+' : ''}{d.toFixed(1)}{!p.inRotation && <span className="hd-warn" style={{ fontWeight: 500 }}> · вне ротации</span>}</span>;
   }
   if (p.trend == null || p.rating == null) return <span className="hd-muted">{!p.inRotation ? 'вне ротации' : '—'}</span>;
   const rel = p.trend / p.rating;

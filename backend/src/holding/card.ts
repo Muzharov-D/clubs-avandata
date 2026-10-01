@@ -71,7 +71,7 @@ export function buildCard(p: LeaguePlayer, a: HoldingAnalytics, raw: RegionPlaye
   else { headline = 'На уровне своего возраста'; tone = 'neutral'; }
 
   const facts: CardFact[] = [];
-  if (p.index != null) facts.push({ text: `Индекс сезона ${p.index.toFixed(1)} из 10: лучше ${Math.round(p.indexPct ?? 0)}% сверстников своей позиции в регионе (за полный матч своего возраста, ${p.minutes ?? 0} минут на поле).`, tone: p.index >= 7.5 ? 'good' : p.index < 4 ? 'bad' : undefined });
+  if (p.index != null) facts.push({ text: `Индекс сезона ${p.index.toFixed(1)} из 10 (10 — лучший сверстник своей позиции в регионе, 5 — слабейший); лучше ${Math.round(p.indexPct ?? 0)}% из них (за полный матч своего возраста, ${p.minutes ?? 0} минут на поле).`, tone: p.index >= 8.5 ? 'good' : p.index < 6.5 ? 'bad' : undefined });
   if (p.rankRegion != null) facts.push({ text: `Топ-${p.pctRegion}% региона: ${p.rankRegion}-й из ${p.sizeRegion} игроков ${p.birthYear} г.р. с рейтингом.`, tone: (p.pctRegion ?? 100) <= 25 ? 'good' : (p.pctRegion ?? 0) > 60 ? 'bad' : undefined });
   if (p.rankDiv != null) facts.push({ text: `${p.rankDiv}-й из ${p.sizeDiv} в своём дивизионе (${p.division}).` });
   if (p.deltaLine != null && p.lineAvgDiv != null) {
@@ -83,8 +83,8 @@ export function buildCard(p: LeaguePlayer, a: HoldingAnalytics, raw: RegionPlaye
     else facts.push({ text: `Выше среднего по амплуа в ${aboveLine} из ${stability.rated} разобранных ${matchesW(stability.rated)}.`, tone: aboveLine / stability.rated >= 0.6 ? 'good' : aboveLine / stability.rated < 0.4 ? 'bad' : undefined });
   }
   if (p.formDelta != null) {
-    if (p.formDelta >= 1) facts.push({ text: `Форма растёт: последние 3 матча на ${p.formDelta.toFixed(1)} из 10 выше своего сезона.`, tone: 'good' });
-    else if (p.formDelta <= -1) facts.push({ text: `Форма падает: последние 3 матча на ${(-p.formDelta).toFixed(1)} из 10 ниже своего сезона.`, tone: 'bad' });
+    if (p.formDelta >= 0.5) facts.push({ text: `Форма растёт: последние 3 матча на ${p.formDelta.toFixed(1)} выше своего сезона.`, tone: 'good' });
+    else if (p.formDelta <= -0.5) facts.push({ text: `Форма падает: последние 3 матча на ${(-p.formDelta).toFixed(1)} ниже своего сезона.`, tone: 'bad' });
     else facts.push({ text: 'Форма ровная: последние матчи на уровне сезона.' });
   } else if (p.trend != null && p.rating) {
     const rel = p.trend / p.rating;
@@ -103,8 +103,8 @@ export function buildCard(p: LeaguePlayer, a: HoldingAnalytics, raw: RegionPlaye
   const parts: string[] = [];
   if (p.pctRegion != null) parts.push(`топ-${p.pctRegion}% региона`);
   if (streak >= STABLE_STREAK) parts.push(`стабилен ${streak} ${matchesW(streak)}`);
-  else if (p.formDelta != null ? p.formDelta >= 1 : (p.trend != null && p.rating != null && p.trend / p.rating >= 0.08)) parts.push('форма растёт');
-  else if (p.formDelta != null ? p.formDelta <= -1 : (p.trend != null && p.rating != null && p.trend / p.rating <= -0.08)) parts.push('форма падает');
+  else if (p.formDelta != null ? p.formDelta >= 0.5 : (p.trend != null && p.rating != null && p.trend / p.rating >= 0.08)) parts.push('форма растёт');
+  else if (p.formDelta != null ? p.formDelta <= -0.5 : (p.trend != null && p.rating != null && p.trend / p.rating <= -0.08)) parts.push('форма падает');
   if (strengths.length) parts.push(`сильнее амплуа лиги по ${quote(strengths.slice(0, 2).map((s) => s.title))}`);
   if (weaknesses.length && tone !== 'up') parts.push(`слабее по ${quote(weaknesses.slice(0, 1).map((s) => s.title))}`);
   const summary = `${headline}${parts.length ? ': ' + parts.join(', ') : ''}.`;

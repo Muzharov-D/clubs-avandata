@@ -10,10 +10,11 @@ import ComparePizzaJs from '../../components/analytics/ComparePizza';
 import '../../components/analytics/ComparePizza.css';
 import '../../pages/PlayerCompare.css';
 import '../../components/analytics/analytics.css';
-import { useHoldingAnalytics, useSlugQuery, num, shortClub, shortPos, CATEGORY_TITLE, CATEGORY_ORDER, LINE_TITLE, type CompareResponse, type CompareSide, type PlayerMetricRow, type MetricGroup } from './api';
+import { useHoldingAnalytics, useSlugQuery, num, shortClub, shortPos, groupOfPosition, GROUP_TITLE, CATEGORY_TITLE, CATEGORY_ORDER, LINE_TITLE, type CompareResponse, type CompareSide, type PlayerMetricRow, type MetricGroup, type PositionGroup } from './api';
 import { MetricName, Pbar } from './parts';
 import { HdLoading } from './HoldingShell';
 import { useNavQuery } from './scope';
+import { IndexRing } from './viz';
 
 const ComparePizza = ComparePizzaJs as unknown as ComponentType<Record<string, unknown>>;
 
@@ -46,41 +47,57 @@ export function HoldingComparePage() {
     refetchIntervalInBackground: true,
   });
 
-  // Варианты: игроки холдинга по командам + кандидаты селекции без имён.
-  const options = useMemo(() => {
-    const d = an.data; if (!d) return null;
-    const teams = d.teams.slice().sort((x, y) => (y.year - x.year) || x.clubLabel.localeCompare(y.clubLabel, 'ru')).map((t) => ({
-      label: `${shortClub(t.clubLabel)} ${t.year}`,
-      players: t.squad.filter((p) => p.rating != null).map((p) => ({ id: p.id, label: `${p.name} · ${shortPos(p.position)}${p.index != null ? ` · ${p.index.toFixed(1)}` : ''}` })),
-    }));
+  // Кого можно выбрать: все игроки холдинга + кандидаты селекции (без имён).
+  const pool = useMemo<PickItem[]>(() => {
+    const d = an.data; if (!d) return [];
+    const own: PickItem[] = d.teams.flatMap((t) => t.squad.map((p) => ({
+      id: p.id, name: p.name, anonymous: false, club: t.clubKey, clubLabel: shortClub(t.clubLabel), year: p.birthYear,
+      group: p.group ?? groupOfPosition(p.position), position: p.position, index: p.index, pct: p.pctRegion, minutes: p.minutes,
+    })));
     const seen = new Set<number>();
-    const cands = d.selection.flatMap((g) => g.candidates.map((c) => ({ g, c }))).filter(({ c }) => !seen.has(c.id) && seen.add(c.id))
-      .map(({ g, c }) => ({ id: c.id, label: `${g.year} · ${shortPos(c.position)} · ${c.club} · топ ${c.pctRegion}%` }));
-    return { teams, cands };
+    const cands: PickItem[] = d.selection.flatMap((g) => g.candidates.map((c) => ({ g, c }))).filter(({ c }) => !seen.has(c.id) && seen.add(c.id))
+      .map(({ g, c }) => ({ id: c.id, name: null, anonymous: true, club: 'candidate', clubLabel: c.club, year: g.year, group: groupOfPosition(c.position), position: c.position, index: null, pct: c.pctRegion, minutes: null }));
+    return [...own, ...cands];
   }, [an.data]);
+  const byId = useMemo(() => new Map(pool.map((x) => [String(x.id), x])), [pool]);
+  const years = useMemo(() => [...new Set(pool.map((x) => x.year))].sort((x, y) => y - x), [pool]);
+  const [editing, setEditing] = useState<'a' | 'b' | null>(null);
+  const picking: 'a' | 'b' | null = editing ?? (!a ? 'a' : !b ? 'b' : null);
 
   const res = cmp.data && 'a' in cmp.data ? cmp.data : null;
   return (
     <div className="player-compare">
       <h1 className="player-compare__title">Сравнение игроков</h1>
 
-      <div className="card player-compare__pickers">
-        {(['a', 'b'] as const).map((k, i) => (
-          <Fragment key={k}>
-            {i === 1 && <div className="pc-vs">—</div>}
-            <label className="pc-picker">
-              <span>{k === 'a' ? 'Игрок A' : 'Игрок B'}</span>
-              <select className="fed-select" value={k === 'a' ? a : b} onChange={(e) => setSide(k, e.target.value)} disabled={!options}>
-                <option value="">{options ? 'выберите игрока…' : 'загружаем список…'}</option>
-                {options?.teams.map((t) => <optgroup key={t.label} label={t.label}>{t.players.map((p) => <option key={p.id} value={p.id}>{p.label}</option>)}</optgroup>)}
-                {options && options.cands.length > 0 && <optgroup label="Кандидаты селекции (без имён)">{options.cands.map((p) => <option key={p.id} value={p.id}>{p.label}</option>)}</optgroup>}
-              </select>
-            </label>
-          </Fragment>
-        ))}
+      {/* Выбранные игроки: карточка или «выбрать» */}
+      <div className="hd-cmp-slots">
+        {(['a', 'b'] as const).map((k, i) => {
+          const it = byId.get(k === 'a' ? a : b);
+          return (
+            <Fragment key={k}>
+              {i === 1 && <div className="pc-vs">—</div>}
+              <div className={`card hd-cmp-slot hd-cmp-slot--${k}${picking === k ? ' hd-cmp-slot--active' : ''}`}>
+                <span className="hd-cmp-slot__label">Игрок {k === 'a' ? 'А' : 'Б'}</span>
+                {it ? <PickRow it={it} /> : <span className="hd-muted">{an.data ? 'не выбран' : 'загружаем игроков…'}</span>}
+                <button type="button" className="hd-btn" onClick={() => setEditing(picking === k ? null : k)}>{picking === k ? 'Готово' : it ? 'Изменить' : 'Выбрать'}</button>
+              </div>
+            </Fragment>
+          );
+        })}
       </div>
 
-      {(!a || !b) && <div className="hd-empty">Выберите двух игроков. Из «Решений» сравнение открывается у кандидата селекции — с лучшим игроком нашей линии.</div>}
+      {picking && an.data && (
+        <PlayerPicker
+          key={picking}
+          pool={pool}
+          years={years}
+          exclude={picking === 'a' ? b : a}
+          // Для второго игрока — тот же год и позиция, что у первого: сравнивать сопоставимых.
+          initial={(() => { const other = byId.get(picking === 'a' ? b : a); return other ? { year: other.year, group: other.group } : {}; })()}
+          title={`Выберите игрока ${picking === 'a' ? 'А' : 'Б'}`}
+          onPick={(id) => { setSide(picking, String(id)); setEditing(null); }}
+        />
+      )}
       {a && b && a === b && <div className="hd-empty">Выбран один и тот же игрок.</div>}
       {cmp.error && <FedError subject="Сравнение" />}
       {a && b && a !== b && !res && !cmp.error && <HdLoading title="Сравниваем" text="Считаем профили обоих игроков против сверстников их позиции." />}
@@ -225,5 +242,55 @@ function AllMetrics({ r }: { r: { a: CompareSide; b: CompareSide } }) {
         </div>
       ))}
     </>
+  );
+}
+
+// ─── Выбор игрока: поиск и фильтры ────────────────────────────────────────────
+interface PickItem { id: number; name: string | null; anonymous: boolean; club: string; clubLabel: string; year: number; group: PositionGroup | null; position: string | null; index: number | null; pct: number | null; minutes: number | null }
+const GROUPS: PositionGroup[] = ['GK', 'CB', 'FB', 'DM', 'AM', 'W', 'ST'];
+
+function PickRow({ it }: { it: PickItem }) {
+  return (
+    <span className="hd-pick">
+      {it.anonymous ? <span className="hc-anon hd-pick__anon">?</span> : <IndexRing value={it.index} size={40} stroke={4} />}
+      <span className="hd-pick__body">
+        <span className="hd-pick__name">{it.anonymous ? `Кандидат · ${shortPos(it.position)}` : it.name}</span>
+        <span className="hd-pick__meta">{it.group ? GROUP_TITLE[it.group] : it.position ?? '—'} · {it.clubLabel} {it.year}{it.pct != null ? ` · топ ${it.pct}% региона` : ''}</span>
+      </span>
+    </span>
+  );
+}
+
+function PlayerPicker({ pool, years, exclude, initial, title, onPick }: {
+  pool: PickItem[]; years: number[]; exclude: string; initial: { year?: number; group?: PositionGroup | null }; title: string; onPick: (id: number) => void;
+}) {
+  const [text, setText] = useState('');
+  const [who, setWho] = useState<'all' | 'dinamo' | 'cs' | 'candidate'>('all');
+  const [year, setYear] = useState<number | null>(initial.year ?? null);
+  const [group, setGroup] = useState<PositionGroup | null>(initial.group ?? null);
+  const t = text.trim().toLowerCase();
+  const list = pool.filter((x) => String(x.id) !== exclude
+    && (who === 'all' || (who === 'candidate' ? x.anonymous : !x.anonymous && (who === 'cs' ? x.club.includes('царское') : !x.club.includes('царское'))))
+    && (!year || x.year === year) && (!group || x.group === group)
+    && (!t || (x.name ?? '').toLowerCase().includes(t) || x.clubLabel.toLowerCase().includes(t)))
+    .sort((p, q2) => (q2.index ?? (q2.pct != null ? 10 - q2.pct / 10 : -1)) - (p.index ?? (p.pct != null ? 10 - p.pct / 10 : -1)));
+  const chip = (on: boolean, label: string, onClick: () => void, key?: string) => <button key={key ?? label} type="button" className={`hd-fchip${on ? ' hd-fchip--on' : ''}`} onClick={onClick}>{label}</button>;
+  return (
+    <section className="card hd-picker">
+      <div className="hd-picker__head">
+        <b>{title}</b>
+        <input className="hd-picker__search" type="search" placeholder="Поиск: фамилия, имя или команда" value={text} onChange={(e) => setText(e.target.value)} autoFocus />
+      </div>
+      <div className="hd-picker__filters">
+        <div className="hd-picker__row"><span>Кто</span>{chip(who === 'all', 'Все', () => setWho('all'))}{chip(who === 'dinamo', 'ФК Динамо', () => setWho('dinamo'))}{chip(who === 'cs', 'Царское Село', () => setWho('cs'))}{chip(who === 'candidate', 'Кандидаты селекции', () => setWho('candidate'))}</div>
+        <div className="hd-picker__row"><span>Год</span>{chip(!year, 'Все', () => setYear(null))}{years.map((y) => chip(year === y, String(y), () => setYear(y), String(y)))}</div>
+        <div className="hd-picker__row"><span>Позиция</span>{chip(!group, 'Все', () => setGroup(null))}{GROUPS.map((g) => chip(group === g, GROUP_TITLE[g], () => setGroup(g), g))}</div>
+      </div>
+      <div className="hd-picker__count">Найдено: {list.length}{list.length > 30 ? ' · показаны 30 сильнейших — уточните поиск или фильтры' : ''}</div>
+      <div className="hd-picker__list">
+        {list.slice(0, 30).map((x) => <button key={x.id} type="button" className="hd-picker__item" onClick={() => onPick(x.id)}><PickRow it={x} /></button>)}
+        {list.length === 0 && <div className="hd-empty">Никого не нашли — снимите часть фильтров.</div>}
+      </div>
+    </section>
   );
 }

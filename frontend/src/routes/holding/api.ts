@@ -18,6 +18,20 @@ export const LINE_TITLE: Record<Line, string> = { GK: 'Вратарь', DEF: 'З
 export type PositionGroup = 'GK' | 'CB' | 'FB' | 'DM' | 'AM' | 'W' | 'ST';
 /** Группы позиций — как на бэкенде (federation/positionGroups.ts). */
 export const GROUP_TITLE: Record<PositionGroup, string> = { GK: 'Вратарь', CB: 'Центральный защитник', FB: 'Крайний защитник', DM: 'Опорный полузащитник', AM: 'Атакующий полузащитник', W: 'Крайний нападающий', ST: 'Центральный нападающий' };
+/** Позиция AvanData → группа (то же правило, что backend/src/federation/positionGroups.ts). */
+export function groupOfPosition(position: string | null | undefined): PositionGroup | null {
+  const p = (position ?? '').toLowerCase().trim();
+  if (!p) return null;
+  if (p.includes('вратар')) return 'GK';
+  if (p.includes('опорн')) return 'DM';
+  if (p.includes('атакующ')) return 'AM';
+  if (p.includes('полузащит')) return 'W';
+  if (p.includes('центральный нападающ')) return 'ST';
+  if (p.includes('нападающ') || p.includes('форвард')) return 'W';
+  if (p.includes('центральный защит')) return 'CB';
+  if (p.includes('защитник') || p.includes('фулбек')) return 'FB';
+  return null;
+}
 export interface LeaguePlayer {
   id: number; name: string; photo: string | null; position: string | null; line: Line | null; group?: PositionGroup | null;
   birthYear: number; clubKey: string; clubLabel: string; teamKey: string; team: string;

@@ -30,7 +30,7 @@ const YOUTH_WATCH_PCT = 25;       // топ-25% — присмотреться
 const TREND_LAST_N = 4;           // тренд = средний рейтинг последних 4 матчей против предыдущих
 const TREND_MIN_MATCHES = 6;      // тренд считаем от 6 оценённых матчей (иначе шум одного матча)
 const LOSING_TREND_REL = -0.25;   // падение на четверть и больше → «теряем» (запасное правило)
-const LOSING_FORM_DELTA = -2;     // честный счёт: последние 3 матча ниже сезона на 2+ из 10
+const LOSING_FORM_DELTA = -1;     // честный счёт: последние 3 матча ниже сезона на 1+ балл (шкала 5–10)
 const ROTATION_GAP_TOURS = 3;     // пропустил 3+ разобранных матча команды подряд → выпал из ротации
 const LINE_GAP_REL = 0.12;        // линия слабее/сильнее лиги на 12%+
 
@@ -301,7 +301,7 @@ async function computeAnalytics(seasonId: number, cfg: HoldingConfig, profile: H
     for (const p of allPlayers) {
       if (p.rating == null || p.mp < MIN_MATCHES_DECISION) continue;
       // Падение формы — по честному счёту (минуты, свой возраст, своя позиция), если он готов:
-      // последние 3 матча ниже своего сезона на 2+ балла из 10. Иначе — старое правило.
+      // последние 3 матча ниже своего сезона на 1+ балл (шкала 5–10). Иначе — старое правило.
       const fallen = p.formDelta != null ? p.formDelta <= LOSING_FORM_DELTA : (p.trend != null && p.trend / (p.rating as number) <= LOSING_TREND_REL);
       if (fallen) losing.push({ ...p, reason: 'trend' });
       else if (!p.inRotation) losing.push({ ...p, reason: 'rotation' });

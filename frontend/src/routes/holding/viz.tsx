@@ -7,10 +7,11 @@ import type { ReactNode } from 'react';
 // ─── Шкала индекса 0–10 ───────────────────────────────────────────────────────
 export const indexColor = (v: number | null | undefined): string => {
   if (v == null) return 'var(--rating-none)';
-  if (v >= 8) return 'var(--rating-excellent)';
-  if (v >= 6) return 'var(--rating-good)';
-  if (v >= 4) return 'var(--rating-ok)';
-  if (v >= 2) return 'var(--rating-weak)';
+  // Шкала 5–10: 10 — лучший сверстник своей позиции в регионе, 5 — слабейший.
+  if (v >= 9) return 'var(--rating-excellent)';
+  if (v >= 8) return 'var(--rating-good)';
+  if (v >= 7) return 'var(--rating-ok)';
+  if (v >= 6) return 'var(--rating-weak)';
   return 'var(--rating-poor)';
 };
 
@@ -90,7 +91,7 @@ export interface SwarmPoint { id: number | string; value: number; mine?: boolean
  * Все игроки (или команды) региона точками по шкале; свои — крупные и подписаны.
  * Точки раскладываются в «рой», чтобы не налезать друг на друга.
  */
-export function Beeswarm({ points, min = 0, max = 10, height = 120, format = (v: number) => v.toFixed(1), axisLabel, onPick }: { points: SwarmPoint[]; min?: number; max?: number; height?: number; format?: (v: number) => string; axisLabel?: string; onPick?: (id: number | string) => void }) {
+export function Beeswarm({ points, min = 5, max = 10, height = 120, format = (v: number) => v.toFixed(1), axisLabel, onPick }: { points: SwarmPoint[]; min?: number; max?: number; height?: number; format?: (v: number) => string; axisLabel?: string; onPick?: (id: number | string) => void }) {
   const W = 1000, padX = 24, mid = (height - 12) / 2, r = 3.6, rMine = 7;
   const x = (v: number) => padX + ((Math.max(min, Math.min(max, v)) - min) / (max - min || 1)) * (W - padX * 2);
   // Рой: каждой точке — ближайшее свободное место по вертикали.
@@ -115,7 +116,7 @@ export function Beeswarm({ points, min = 0, max = 10, height = 120, format = (v:
       {placed.filter((d) => !d.p.mine).map((d) => <circle key={`o${d.p.id}`} cx={d.cx} cy={d.cy} r={d.rr} className="viz-swarm__other"><title>{d.p.label ?? format(d.p.value)}</title></circle>)}
       {placed.filter((d) => d.p.mine).map((d) => (
         <g key={`m${d.p.id}`} className={`viz-swarm__mine${onPick ? ' viz-swarm__mine--link' : ''}`} onClick={onPick ? () => onPick(d.p.id) : undefined}>
-          <circle cx={d.cx} cy={d.cy} r={d.rr} fill={indexColor(max === 10 ? d.p.value : null)}><title>{`${d.p.label ?? ''} · ${format(d.p.value)}`}</title></circle>
+          <circle cx={d.cx} cy={d.cy} r={d.rr} fill={indexColor(d.p.value)}><title>{`${d.p.label ?? ''} · ${format(d.p.value)}`}</title></circle>
         </g>
       ))}
     </svg>

@@ -8,7 +8,7 @@ import { Pitch, SLOTS, slotOf, IndexRing, indexColor, type SlotId } from './viz'
 
 const surname = (name: string) => { const parts = name.trim().split(/\s+/); return parts.length > 1 ? `${parts[parts.length - 1]} ${parts[0]![0]}.` : name; };
 const clubTag = (label: string) => (label.includes('Царское') ? 'ЦС' : 'Д');
-const WEAK = 4;
+const WEAK = 6.5;   // шкала 5–10: ниже — слабое место
 const byIndex = (a: LeaguePlayer, b: LeaguePlayer) => (b.index ?? -1) - (a.index ?? -1) || (b.minutes ?? 0) - (a.minutes ?? 0);
 
 /**
@@ -51,7 +51,7 @@ export function HoldingBoard() {
     // Не хватает игроков на места основы или последний из основы слабый.
     const weakest = ofYear[SLOTS[slot].places - 1] ?? null;
     if (!weakest || (weakest.index != null && weakest.index < WEAK)) gaps.push({ slot, year: y, best: weakest });
-    else if (best.index != null && best.index >= 8) strong.push({ slot, year: y, best });
+    else if (best.index != null && best.index >= 9) strong.push({ slot, year: y, best });
   }
 
   return (
@@ -65,7 +65,7 @@ export function HoldingBoard() {
             : 'На каждой позиции — лучший игрок каждого года, от младших к старшим. Пустое или красное место — там, где за этим игроком никого нет.'}</p>
         </div>
         <div className="hd-board__legend">
-          {[[9, 'топ региона'], [7, 'сильный'], [5, 'середина'], [3, 'слабее'], [1, 'проблема']].map(([v, t]) => <span key={t as string}><i style={{ background: indexColor(v as number) }} />{t as string}</span>)}
+          {[[9.5, 'топ региона'], [8.5, 'сильный'], [7.5, 'середина'], [6.5, 'слабее'], [5.5, 'проблема']].map(([v, t]) => <span key={t as string}><i style={{ background: indexColor(v as number) }} />{t as string}</span>)}
         </div>
       </header>
 
@@ -109,7 +109,7 @@ export function HoldingBoard() {
       <div className="hd-board__cols">
         <section className="card an">
           <div className="page-section-title">Где тонко <span className="an-model-tag">{gaps.length}</span></div>
-          {gaps.length === 0 ? <div className="hd-muted">На всех позициях есть игрок с индексом от 4.</div> : (
+          {gaps.length === 0 ? <div className="hd-muted">На всех позициях есть игрок с индексом от 6.5.</div> : (
             <ul className="hd-list">
               {gaps.sort((x, y) => y.year - x.year).map((g) => (
                 <li key={`${g.slot}${g.year}`}>
@@ -121,7 +121,7 @@ export function HoldingBoard() {
           )}
         </section>
         <section className="card an">
-          <div className="page-section-title">Где сильно <span className="an-model-tag">индекс 8+</span></div>
+          <div className="page-section-title">Где сильно <span className="an-model-tag">индекс 9+</span></div>
           {strong.length === 0 ? <div className="hd-muted">Пока нет позиций с игроком уровня топа региона.</div> : (
             <ul className="hd-list">
               {strong.sort((x, y) => (y.best.index ?? 0) - (x.best.index ?? 0)).map((g) => (

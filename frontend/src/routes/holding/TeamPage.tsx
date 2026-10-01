@@ -188,7 +188,7 @@ function PlayerCard({ p, q }: { p: LeaguePlayer; q: string }) {
       <span className="hd-pcard__body">
         <span className="hd-pcard__name">{surname(p.name)}</span>
         <span className="hd-pcard__pos">{p.position ?? '—'}</span>
-        <span className="hd-pcard__meta">{p.minutes ?? 0} мин{f != null ? <> · <span className={f >= 1 ? 'hd-up' : f <= -1 ? 'hd-down' : ''}>{f >= 1 ? '↑' : f <= -1 ? '↓' : '→'} форма</span></> : null}{p.rating != null ? ` · ${num(p.rating)}` : ''}</span>
+        <span className="hd-pcard__meta">{p.minutes ?? 0} мин{f != null ? <> · <span className={f >= 0.5 ? 'hd-up' : f <= -0.5 ? 'hd-down' : ''}>{f >= 0.5 ? '↑' : f <= -0.5 ? '↓' : '→'} форма</span></> : null}{p.rating != null ? ` · ${num(p.rating)}` : ''}</span>
       </span>
     </Link>
   );
