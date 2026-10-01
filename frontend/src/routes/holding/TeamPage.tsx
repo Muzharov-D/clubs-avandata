@@ -184,7 +184,7 @@ function PlayerCard({ p, q }: { p: LeaguePlayer; q: string }) {
   const f = p.formDelta;
   return (
     <Link to={`/holding/players/${p.id}${q}`} className="hd-pcard" style={{ ['--pc' as string]: indexColor(p.index) }}>
-      <IndexRing value={p.index} size={52} stroke={5} />
+      <IndexRing value={p.index} size={52} stroke={5} low={p.lowSample} />
       <span className="hd-pcard__body">
         <span className="hd-pcard__name">{surname(p.name)}</span>
         <span className="hd-pcard__pos">{groupTitle(p)}</span>

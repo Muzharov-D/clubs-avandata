@@ -12,7 +12,8 @@ const surname = (name: string) => { const parts = name.trim().split(/\s+/); retu
 /** Школа — как в рое на брифинге: точка — ФК Динамо, кольцо — Царское Село. */
 const ClubDot = ({ label }: { label: string }) => <i className={`hd-dot hd-slot__club${label.includes('Царское') ? ' hd-dot--ring' : ''}`} title={label.includes('Царское') ? 'Царское Село' : 'ФК Динамо'} />;
 const WEAK = 6.5;   // шкала 5–10: ниже — слабое место
-const byIndex = (a: LeaguePlayer, b: LeaguePlayer) => (b.index ?? -1) - (a.index ?? -1) || (b.minutes ?? 0) - (a.minutes ?? 0);
+/** Сначала игроки с полноценной выборкой, затем по индексу: один яркий матч не ставит в основу. */
+const byIndex = (a: LeaguePlayer, b: LeaguePlayer) => Number(!!a.lowSample) - Number(!!b.lowSample) || (b.index ?? -1) - (a.index ?? -1) || (b.minutes ?? 0) - (a.minutes ?? 0);
 const SLOT_IDS = Object.keys(SLOTS) as SlotId[];
 const GROUP_IDS = Object.keys(GROUP_PLACES) as PositionGroup[];
 const active = (p: LeaguePlayer) => (p.minutes ?? 0) > 0 || p.mp > 0;
@@ -149,7 +150,7 @@ export function HoldingBoard() {
                             </Link>
                           ) : <span className="hd-slot__name hd-slot__none">никого</span>}
                           <span className="hd-slot__altcell">{cell && <Mark x={cell} note={note} />}</span>
-                          <span className="hd-slot__idx" style={{ color: indexColor(best?.index) }}>{best?.index != null ? best.index.toFixed(1) : '—'}</span>
+                          <span className={`hd-slot__idx${best?.lowSample ? ' hd-slot__idx--low' : ''}`} style={{ color: indexColor(best?.index) }} title={best?.lowSample ? 'предварительно: на поле меньше двух полных матчей' : undefined}>{best?.index != null ? best.index.toFixed(1) : '—'}</span>
                         </div>
                       );
                     });
@@ -208,7 +209,7 @@ function TeamSlot({ players, q, showClub, places = 1 }: { players: Placed[]; q: 
         const note = placedNote(x);
         return (
           <Link key={`${x.p.id}${x.group}`} to={`/holding/players/${x.p.id}${q}`} className={`hd-slot__player${i < places ? ' hd-slot__player--first' : ''}`} title={`${x.p.name}${note ? ` · ${note}` : ''} · ${x.p.minutes ?? 0} мин`}>
-            <IndexRing value={x.p.index} size={i < places ? 40 : 30} stroke={i < places ? 4 : 3} />
+            <IndexRing value={x.p.index} size={i < places ? 40 : 30} stroke={i < places ? 4 : 3} low={x.p.lowSample} />
             <span className="hd-slot__pname">{showClub && <ClubDot label={x.p.clubLabel} />}{surname(x.p.name)}</span>
             <Mark x={x} note={note} />
           </Link>

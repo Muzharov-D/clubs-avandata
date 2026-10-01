@@ -60,6 +60,8 @@ export interface LeaguePlayer {
   index: number | null; indexPct: number | null; minutes: number | null; formDelta: number | null;
   /** Перцентиль игры в обороне среди своей группы: на доске в опорную зону встаёт самый оборонительный центральный полузащитник. */
   defPct: number | null;
+  /** Минут меньше двух полных матчей: индекс предварительный. */
+  lowSample: boolean;
 }
 export interface LineCompare { line: Line; title: string; teamAvg: number | null; divAvg: number | null; n: number; gapRel: number | null; verdict: 'weak' | 'ok' | 'strong' | null }
 export interface TeamLeague {
@@ -257,7 +259,7 @@ async function computeAnalytics(seasonId: number, cfg: HoldingConfig, profile: H
             pctRegion: rr != null && ratedPool.length ? Math.max(1, Math.round((rr / ratedPool.length) * 100)) : null,
             lineAvgDiv, lineAvgRegion, deltaLine: isRated && lineAvgDiv != null ? (p.rating as number) - lineAvgDiv : null,
             trend, last: lastN, lastTour, teamLastTour, inRotation,
-            index: fm?.index ?? null, indexPct: fm?.indexPct ?? null, minutes: fm ? Math.round(fm.minutes) : null, formDelta: fm?.formDelta ?? null, defPct: fm?.defPct ?? null,
+            index: fm?.index ?? null, indexPct: fm?.indexPct ?? null, minutes: fm ? Math.round(fm.minutes) : null, formDelta: fm?.formDelta ?? null, defPct: fm?.defPct ?? null, lowSample: fm?.lowSample ?? false,
           };
         }).sort((a, b) => ((b.rating ?? -1) - (a.rating ?? -1)) || (b.mp - a.mp));
         allPlayers.push(...squad);

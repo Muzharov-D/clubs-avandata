@@ -682,3 +682,6 @@ a.hd-chip:hover { border-color: var(--border-strong); }
   .hd-teamhero__stats > .hd-bigstat { flex: 1 1 40%; min-width: 0; }
   .hd-teamhero__stats > .hd-bigstat--ring { flex-basis: 100%; flex-direction: row; justify-content: center; gap: 12px; }
 }
+/* Индекс по малой выборке (меньше двух полных матчей) — предварительный. */
+.viz-ring--low { opacity: 0.6; }
+.hd-index--low, .hd-slot__idx--low { opacity: 0.55; text-decoration: underline dotted; text-underline-offset: 3px; }

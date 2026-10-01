@@ -28,7 +28,7 @@ interface SeasonMatch { matchId: number; minutes: number; overall: number | null
 interface Season {
   playerId: number; name: string; photo: string | null; birthDate: string | null; position: string | null; club: string | null; teamKey: string | null; division: string | null;
   year: number; line: 'GK' | 'DEF' | 'MID' | 'FWD' | null; matchLen: number; group: string | null; groupTitle: string | null; peersWord: string; minutes: number; matches: number; goals: number;
-  index: number | null; indexPct: number | null; rank: number | null; peers: number; inPool: boolean;
+  index: number | null; indexPct: number | null; rank: number | null; peers: number; inPool: boolean; lowSample?: boolean;
   archetype: { name: string; tagline: string }; superline: string | null;
   strengths: Array<{ key: string; name: string; description: string; pct: number }>;
   growth: Array<{ key: string; name: string; description: string; pct: number }>;
@@ -122,6 +122,7 @@ export function HoldingPlayerPage() {
               </div>
               <div className="dna-card__rating-lab">индекс сезона</div>
               <div className="hd-player__ringsub">лучше {Math.round(s.indexPct ?? 0)}% {peersShort}{s.rank ? ` · ${s.rank}-й из ${s.peers}` : ''}</div>
+              {s.lowSample && <div className="hd-player__ringsub hd-warn">предварительно: на поле меньше двух полных матчей</div>}
             </div>
           )}
         </div>
