@@ -23,3 +23,4 @@ export * from './regionMinutes.js';
 export * from './regionScorers.js';
 export * from './playerFeedback.js';
 export * from './playerShare.js';
+export * from './holding.js';

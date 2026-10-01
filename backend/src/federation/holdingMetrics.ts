@@ -147,7 +147,9 @@ export function playerMetricsVsLeague(seasonId: number, year: number, playerIds:
     const divRates = peersDiv.map(([, p]) => perMatch(p.counts.get(t.id) ?? 0, p.matches.size));
     const regRates = peers.map(([, p]) => perMatch(p.counts.get(t.id) ?? 0, p.matches.size));
     const negative = t.points < 0; // «минусовые» события: меньше = лучше
-    const below = divRates.filter((r) => (negative ? r > mineRate : r < mineRate)).length;
+    // Равные значения делят место пополам: «0 блоков» среди амплуа, где почти у всех 0, —
+    // это середина, а не «хуже всех».
+    const below = divRates.filter((r) => (negative ? r > mineRate : r < mineRate)).length + divRates.filter((r) => r === mineRate).length / 2;
     return {
       id: t.id, title: t.title, short: t.short, category: t.category, points: t.points,
       count: counts.get(t.id) ?? 0, perMatch: mineRate,

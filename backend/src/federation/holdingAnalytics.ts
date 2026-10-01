@@ -62,11 +62,13 @@ export interface YouthCandidate extends LeaguePlayer { tier: 'ready' | 'watch' |
 export interface LosingPlayer extends LeaguePlayer { reason: 'trend' | 'rotation' }
 export interface LineIssue { teamKey: string; clubLabel: string; year: number; category: string; line: Line; title: string; teamAvg: number; divAvg: number; gapRel: number }
 /** Кандидат селекции — игрок другой школы, без имени (открытые данные — только команда, амплуа, рейтинг). */
-export interface SelectionCandidate { line: Line; position: string | null; club: string; division: string; divisionKey: DivisionKey | null; rating: number; pctRegion: number; rankRegion: number; mp: number; trend: number | null }
+export interface SelectionCandidate { id: number; line: Line; position: string | null; club: string; division: string; divisionKey: DivisionKey | null; rating: number; pctRegion: number; rankRegion: number; mp: number; trend: number | null }
 export interface SelectionGroup { teamKey: string; clubLabel: string; year: number; category: string; division: string; line: Line; title: string; ourAvg: number | null; ourBest: number | null; ourN: number; candidates: SelectionCandidate[] }
 export interface OlderAgeCandidate extends LeaguePlayer { olderTeamKey: string; olderTeamName: string; olderMedian: number; olderRank: number; olderSize: number }
 export interface HoldingAnalytics {
   slug: string; season: number; asOf: string;
+  /** 0 — текущее состояние; N — реконструкция «N туров назад» (рейтинг = среднее по матчам, отрезаем последние туры). */
+  toursBack: number;
   youthFromYear: number; youthSlots: number;
   thresholds: { youthReadyPct: number; youthWatchPct: number; minMatchesReady: number; minMatchesDecision: number; losingTrendRel: number; lineGapRel: number };
   teams: TeamLeague[];
@@ -93,9 +95,24 @@ const median = (xs: number[]): number | null => {
 };
 const rated = (p: RegionPlayer) => p.rating != null && p.mp >= MIN_MATCHES_RATED;
 
+/**
+ * Пул когорты «N туров назад»: у каждого турнира отрезаем последние N разобранных туров.
+ * Рейтинг игрока — среднее по его матчам, поэтому срез восстанавливается точно.
+ */
+export function poolToursBack(pool: RegionPlayer[], toursBack: number): RegionPlayer[] {
+  if (toursBack <= 0) return pool;
+  const maxTour = new Map<number, number>();
+  for (const p of pool) for (const s of p.series ?? []) maxTour.set(s.tid, Math.max(maxTour.get(s.tid) ?? 0, s.tour));
+  return pool.map((p) => {
+    const series = (p.series ?? []).filter((s) => s.tour <= (maxTour.get(s.tid) ?? 0) - toursBack);
+    const rating = series.length ? Math.round(series.reduce((a, s) => a + s.rating, 0) / series.length) : null;
+    return { ...p, series, mp: series.length, rating };
+  });
+}
+
 /** Аналитика по профилю холдинга (профиль уже собран — таблицы/дивизионы берём из него). */
-export async function holdingAnalytics(seasonId: number, cfg: HoldingConfig, profile: HoldingProfile): Promise<HoldingAnalytics> {
-  return cached(`holding-analytics:${cfg.slug}:${seasonId}:${profile.asOf}`, TTL, async () => {
+export async function holdingAnalytics(seasonId: number, cfg: HoldingConfig, profile: HoldingProfile, toursBack = 0): Promise<HoldingAnalytics> {
+  return cached(`holding-analytics:${cfg.slug}:${seasonId}:${profile.asOf}:${toursBack}`, TTL, async () => {
     const teamsOut: TeamLeague[] = [];
     const allPlayers: LeaguePlayer[] = [];
     const medians: HoldingAnalytics['medians'] = [];
@@ -105,7 +122,7 @@ export async function holdingAnalytics(seasonId: number, cfg: HoldingConfig, pro
     for (const year of profile.years) {
       const teamsOfYear = profile.teams.filter((t) => t.year === year);
       if (!teamsOfYear.length) continue;
-      const pool = await regionPlayers(seasonId, year);
+      const pool = poolToursBack(await regionPlayers(seasonId, year), toursBack);
       // Дивизион команды игрока: рейтинг AvanData знает дивизион каждой команды когорты.
       const tid = await tournamentIdOfYear(seasonId, year);
       const ratings: AvRatingTeam[] = tid != null ? await getClubRatingsByTournament(seasonId, tid).catch(() => []) : [];
@@ -270,14 +287,14 @@ export async function holdingAnalytics(seasonId: number, cfg: HoldingConfig, pro
           .sort((a, b) => (b.p.rating as number) - (a.p.rating as number)).slice(0, SELECTION_PER_LINE)
           .map((o): SelectionCandidate => {
             const series = o.p.series ?? []; const lastN = series.slice(-TREND_LAST_N).map((x) => x.rating);
-            return { line, position: o.p.position, club: o.club, division: o.divName, divisionKey: o.div, rating: o.p.rating as number, pctRegion: o.pctRegion, rankRegion: o.rankRegion, mp: o.p.mp, trend: lastN.length >= 2 ? Math.round(lastN.reduce((x, y) => x + y, 0) / lastN.length - (o.p.rating as number)) : null };
+            return { id: o.p.id, line, position: o.p.position, club: o.club, division: o.divName, divisionKey: o.div, rating: o.p.rating as number, pctRegion: o.pctRegion, rankRegion: o.rankRegion, mp: o.p.mp, trend: lastN.length >= 2 ? Math.round(lastN.reduce((x, y) => x + y, 0) / lastN.length - (o.p.rating as number)) : null };
           });
         if (cands.length) selection.push({ teamKey: t.key, clubLabel: t.clubLabel, year: t.year, category: t.category, division: t.division, line, title: LINE_TITLE[line], ourAvg, ourBest, ourN: ours.length, candidates: cands });
       }
     }
 
     return {
-      slug: cfg.slug, season: seasonId, asOf: new Date().toISOString(),
+      slug: cfg.slug, season: seasonId, asOf: new Date().toISOString(), toursBack,
       youthFromYear: cfg.youthFromYear, youthSlots: cfg.youthSlots,
       thresholds: { youthReadyPct: YOUTH_READY_PCT, youthWatchPct: YOUTH_WATCH_PCT, minMatchesReady: MIN_MATCHES_READY, minMatchesDecision: MIN_MATCHES_DECISION, losingTrendRel: LOSING_TREND_REL, lineGapRel: LINE_GAP_REL },
       teams: teamsOut, medians, youth, promote, olderAge, selection, risk, losing, weakLines, strongLines,

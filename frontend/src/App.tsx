@@ -75,6 +75,10 @@ const HoldingDecisions = lazy(() => import('./routes/holding/Decisions').then((m
 const HoldingTeamPage = lazy(() => import('./routes/holding/TeamPage').then((m) => ({ default: m.HoldingTeamPage })));
 const HoldingPlayerPage = lazy(() => import('./routes/holding/PlayerPage').then((m) => ({ default: m.HoldingPlayerPage })));
 const HoldingPlayersPage = lazy(() => import('./routes/holding/PlayersPage').then((m) => ({ default: m.HoldingPlayersPage })));
+const HoldingChanges = lazy(() => import('./routes/holding/Changes').then((m) => ({ default: m.HoldingChanges })));
+const HoldingCardPage = lazy(() => import('./routes/holding/CardPage').then((m) => ({ default: m.HoldingCardPage })));
+const HoldingComparePage = lazy(() => import('./routes/holding/ComparePage').then((m) => ({ default: m.HoldingComparePage })));
+const HoldingJournal = lazy(() => import('./routes/holding/Notes').then((m) => ({ default: m.HoldingJournal })));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -260,6 +264,10 @@ export function App() {
                     <Route path="teams/:key" element={<HoldingTeamPage />} />
                     <Route path="players" element={<HoldingPlayersPage />} />
                     <Route path="players/:id" element={<HoldingPlayerPage />} />
+                    <Route path="players/:id/card" element={<HoldingCardPage />} />
+                    <Route path="changes" element={<HoldingChanges />} />
+                    <Route path="compare" element={<HoldingComparePage />} />
+                    <Route path="journal" element={<HoldingJournal />} />
                     <Route path="*" element={<Navigate to="/holding" replace />} />
                   </Route>
 

@@ -5,7 +5,8 @@ import { toast } from '../../components/Toast';
 // @ts-ignore — legacy .jsx
 import ChangePasswordModal from '../../components/ChangePasswordModal';
 import { ClubShield } from '../federation/ClubShield';
-import { useHoldingProfile, useSlugQuery, shortClub } from './api';
+import { useHoldingProfile, useSlugQuery, useCanNote, shortClub } from './api';
+import { useNotes } from './Notes';
 import '../federation/federation.css';
 import '../federation/holding.css';
 import './holdingShell.css';
@@ -22,6 +23,9 @@ export function HoldingShell() {
   const slugQ = useSlugQuery();
   const profile = useHoldingProfile();
   const [pwd, setPwd] = useState(false);
+  const canNote = useCanNote();
+  const notes = useNotes();
+  const due = notes.data?.notes.filter((n) => n.due).length ?? 0;
 
   // Бренд: у руководства — из контекста входа; у федерации (смотрит по ссылке) — из профиля.
   const brand = holding?.brand ?? profile.data?.brand;
@@ -49,6 +53,9 @@ export function HoldingShell() {
         <nav className="hs-nav" aria-label="Разделы">
           <NavLink to={`/holding${q}`} end className={({ isActive }) => `fed-tab${isActive ? ' fed-tab--active' : ''}`}>Обзор</NavLink>
           <NavLink to={`/holding/decisions${q}`} className={({ isActive }) => `fed-tab${isActive ? ' fed-tab--active' : ''}`}>Решения</NavLink>
+          <NavLink to={`/holding/changes${q}`} className={({ isActive }) => `fed-tab${isActive ? ' fed-tab--active' : ''}`}>Что изменилось</NavLink>
+          <NavLink to={`/holding/compare${q}`} className={({ isActive }) => `fed-tab${isActive ? ' fed-tab--active' : ''}`}>Сравнение</NavLink>
+          {canNote && <NavLink to={`/holding/journal${q}`} className={({ isActive }) => `fed-tab hs-tab-count${isActive ? ' fed-tab--active' : ''}`}>Журнал решений{due > 0 && <span className="hs-due" title="напоминания, у которых подошла дата">{due}</span>}</NavLink>}
           <NavLink to={`/holding/players${q}`} className={({ isActive }) => `fed-tab${isActive ? ' fed-tab--active' : ''}`}>Игроки</NavLink>
 
           {members.map((m) => {

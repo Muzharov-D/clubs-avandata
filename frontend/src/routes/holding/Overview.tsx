@@ -6,6 +6,8 @@ import { fmtStamp, shortName } from '../federation/utils';
 import { ratingColor } from '../federation/ratings';
 import { useHoldingProfile, useHoldingAnalytics, useSlugQuery, num, pm, shortClub, shortPos, placeWord, type TeamLeague, type LeaguePlayer } from './api';
 import { Kpi, SectionTitle } from './parts';
+import { NotesDigest } from './Notes';
+import { WeekTeaser } from './WeekTeaser';
 
 /**
  * Обзор — первый экран руководства. Отвечает на три вопроса недели:
@@ -66,6 +68,9 @@ export function HoldingOverview() {
           <DecisionCard to={`/holding/decisions${q}#lines`} title="Слабые линии" count={a.weakLines.length} note="линии заметно ниже своей лиги" lines={a.weakLines.slice(0, 4)} tone="warn" />
         </div>
       )}
+
+      <WeekTeaser q={q} />
+      <NotesDigest q={q} />
 
       {/* Команды относительно лиги */}
       <SectionTitle sub="Место в таблице против места по рейтингу AvanData: если по рейтингу выше, чем в таблице — команда недобирает очки при своём составе.">Где мы среди команд региона</SectionTitle>

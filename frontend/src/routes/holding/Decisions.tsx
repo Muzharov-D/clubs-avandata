@@ -68,7 +68,7 @@ export function HoldingDecisions() {
       </SectionTitle>
       {a.selection.length === 0 ? <div className="fed-note">Сейчас в более слабых командах нет игроков, которые усилили бы наши линии.</div> : (
         <div className="fed-grid fed-grid--2">
-          {a.selection.map((g) => <SelectionCard key={`${g.teamKey}:${g.line}`} g={g} q={q} />)}
+          {a.selection.map((g) => <SelectionCard key={`${g.teamKey}:${g.line}`} g={g} q={q} bestId={a.teams.find((t) => t.key === g.teamKey)?.squad.filter((p) => p.line === g.line && p.rating != null).sort((x, y) => (y.rating as number) - (x.rating as number))[0]?.id ?? null} />)}
         </div>
       )}
 
@@ -114,13 +114,13 @@ export function HoldingDecisions() {
   );
 }
 
-function SelectionCard({ g, q }: { g: SelectionGroup; q: string }) {
+function SelectionCard({ g, q, bestId }: { g: SelectionGroup; q: string; bestId: number | null }) {
   return (
     <section className="fed-card">
       <h3 className="fed-card__title"><Link to={`/holding/teams/${encodeURIComponent(g.teamKey)}${q}`} style={{ color: 'inherit', textDecoration: 'none' }}>{shortClub(g.clubLabel)} {g.year}</Link> · {g.title}</h3>
       <p className="fed-card__sub">Наша линия: средний {g.ourAvg != null ? num(g.ourAvg) : '—'}, лучший {g.ourBest != null ? num(g.ourBest) : '—'} ({g.ourN} с рейтингом)</p>
       <table className="fed-table hc-table">
-        <thead><tr><th>Кто</th><th>Где играет</th><th className="fed-table__num">Рейтинг</th><th>Место в регионе</th><th>Тренд</th><th className="fed-table__num">Матчей</th></tr></thead>
+        <thead><tr><th>Кто</th><th>Где играет</th><th className="fed-table__num">Рейтинг</th><th>Место в регионе</th><th>Тренд</th><th className="fed-table__num">Матчей</th>{bestId != null && <th />}</tr></thead>
         <tbody>
           {g.candidates.map((c, i) => (
             <tr key={i}>
@@ -130,6 +130,7 @@ function SelectionCard({ g, q }: { g: SelectionGroup; q: string }) {
               <td><span className={`hc-pct ${c.pctRegion <= 10 ? 'hc-pct--elite' : c.pctRegion <= 25 ? 'hc-pct--good' : 'hc-pct--mid'}`}>топ {c.pctRegion}%</span> <span className="hc-muted hc-small">{c.rankRegion}-й</span></td>
               <td className={`hc-trend ${c.trend != null && c.trend / c.rating >= 0.08 ? 'hc-trend--up' : c.trend != null && c.trend / c.rating <= -0.08 ? 'hc-trend--down' : 'hc-trend--flat'}`}>{c.trend != null ? pm(c.trend) : '—'}</td>
               <td className="fed-table__num hc-muted">{c.mp} {plMatch(c.mp)}</td>
+              {bestId != null && <td><Link to={`/holding/compare?a=${bestId}&b=${c.id}${q ? '&' + q.slice(1) : ''}`} className="fed-link hc-small" title="Бок о бок с лучшим игроком нашей линии по всем показателям">сравнить</Link></td>}
             </tr>
           ))}
         </tbody>
