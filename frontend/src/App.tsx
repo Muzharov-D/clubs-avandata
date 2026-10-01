@@ -68,6 +68,13 @@ const LeagueVideoPublic = lazy(() => import('./routes/federation/LeagueVideoPubl
 const FederationAvPlayerProfile = lazy(() => import('./routes/federation/AvPlayerProfile').then((m) => ({ default: m.FederationAvPlayerProfile })));
 // Страница холдинга (группа школ одного бренда, напр. Динамо СПб) — достижима из сайдбара и карточки клуба.
 const FederationHolding = lazy(() => import('./routes/federation/HoldingView').then((m) => ({ default: m.FederationHolding })));
+// Кабинет холдинга (holding_admin): своя оболочка в цветах клуба, отдельные чанки.
+const HoldingShell = lazy(() => import('./routes/holding/HoldingShell').then((m) => ({ default: m.HoldingShell })));
+const HoldingOverview = lazy(() => import('./routes/holding/Overview').then((m) => ({ default: m.HoldingOverview })));
+const HoldingDecisions = lazy(() => import('./routes/holding/Decisions').then((m) => ({ default: m.HoldingDecisions })));
+const HoldingTeamPage = lazy(() => import('./routes/holding/TeamPage').then((m) => ({ default: m.HoldingTeamPage })));
+const HoldingPlayerPage = lazy(() => import('./routes/holding/PlayerPage').then((m) => ({ default: m.HoldingPlayerPage })));
+const HoldingPlayersPage = lazy(() => import('./routes/holding/PlayersPage').then((m) => ({ default: m.HoldingPlayersPage })));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -84,6 +91,8 @@ function RootRoute() {
   // platform_admin → в админку; обычный пользователь → в свой кабинет
   if (user.role === 'platform_admin') return <Navigate to="/admin" replace />;
   if (user.role === 'federation_admin') return <Navigate to="/federation" replace />;
+  // Руководство холдинга — в свой кабинет (вертикаль школ, решения относительно лиги).
+  if (user.role === 'holding_admin') return <Navigate to="/holding" replace />;
   // Спортдиректор слит со старшим тренером (одна роль) → единый клубный кабинет.
   if (user.role === 'sporting_director') return <Navigate to="/club-hub" replace />;
   // Игрок — в свой кабинет Lite (что открыл тренер + разбор), а НЕ в полный
@@ -178,6 +187,14 @@ function PlatformAdminOnly({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
+function HoldingOnly({ children }: { children: React.ReactNode }) {
+  const { user, loading } = useAuth() as { user: any; loading: boolean };
+  if (loading) return null;
+  if (!user) return <Navigate to="/login" replace />;
+  if (user.role !== 'holding_admin' && user.role !== 'federation_admin') return <Navigate to="/club" replace />;
+  return <>{children}</>;
+}
+
 function FederationOnly({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth() as { user: any; loading: boolean };
   // Как PlatformAdminOnly: на время резолва auth не редиректим (иначе прямой
@@ -227,6 +244,23 @@ export function App() {
                     <Route index element={<AdminTenantsList />} />
                     <Route path="tenants/new" element={<AdminTenantNew />} />
                     <Route path="tenants/:slug" element={<AdminTenantDetail />} />
+                  </Route>
+
+                  {/* Кабинет холдинга (holding_admin; федерация тоже может смотреть) */}
+                  <Route
+                    path="/holding"
+                    element={
+                      <HoldingOnly>
+                        <Suspense fallback={null}><HoldingShell /></Suspense>
+                      </HoldingOnly>
+                    }
+                  >
+                    <Route index element={<HoldingOverview />} />
+                    <Route path="decisions" element={<HoldingDecisions />} />
+                    <Route path="teams/:key" element={<HoldingTeamPage />} />
+                    <Route path="players" element={<HoldingPlayersPage />} />
+                    <Route path="players/:id" element={<HoldingPlayerPage />} />
+                    <Route path="*" element={<Navigate to="/holding" replace />} />
                   </Route>
 
                   {/* Кабинет федерации региона (federation_admin) */}

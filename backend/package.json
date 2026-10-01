@@ -28,7 +28,8 @@
     "sync:region-minutes": "tsx src/scripts/syncRegionMinutes.ts",
     "sync:region-scorers": "tsx src/scripts/syncRegionScorers.ts",
     "sync:federation": "npm run sync:region-census && npm run sync:region-minutes && npm run sync:region-scorers",
-    "onboard:club": "tsx src/scripts/onboardClub.ts"
+    "onboard:club": "tsx src/scripts/onboardClub.ts",
+    "seed:holding-admin": "tsx src/scripts/seedHoldingAdmin.ts"
   },
   "dependencies": {
     "@fastify/cookie": "^11.0.2",

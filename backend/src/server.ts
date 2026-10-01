@@ -16,12 +16,14 @@ import { feedbackRoutes } from './modules/feedback/routes.js';
 import { liteRoutes } from './modules/lite/routes.js';
 import { dashboardRoutes } from './dashboard/routes.js';
 import { federationRoutes } from './federation/routes.js';
+import { holdingRoutes } from './holding/routes.js';
 import { videoRoutes } from './modules/video/routes.js';
 import { closePool } from './db/client.js';
 import { runMigrations } from './db/migrate.js';
 import { startCrons, stopCrons } from './cron/runner.js';
 import { captureSnapshotIfDue } from './federation/snapshots.js';
-import { warmHoldings } from './federation/holdings.js';
+import { warmHoldings, HOLDINGS } from './federation/holdings.js';
+import { warmCohortMetrics } from './federation/holdingMetrics.js';
 
 async function buildServer() {
   const app = Fastify({
@@ -78,6 +80,7 @@ async function buildServer() {
   await app.register(liteRoutes, { prefix: '/api/v1' });
   await app.register(dashboardRoutes, { prefix: '/api/v1' });
   await app.register(federationRoutes, { prefix: '/api/v1/federation' });
+  app.register(holdingRoutes, { prefix: '/api/v1/holding' });
   await app.register(videoRoutes, { prefix: '/api/v1' });
 
   return app;
@@ -125,6 +128,8 @@ async function start() {
     // ~раза в неделю, поэтому частые деплои не плодят дубли. Fire-and-forget — старт не блокируем.
     // Прогрев профилей холдингов (тяжёлая сборка) — чтобы первый заход не ждал холодного старта.
     setTimeout(() => { void warmHoldings(2); }, 15_000);
+    // Показатели (события всех команд когорт) — тяжёлый прогрев, по одной когорте, старшие первыми.
+    setTimeout(() => warmCohortMetrics(2, [...new Set(HOLDINGS.flatMap((h) => h.years))].sort((a, b) => a - b)), 40_000);
     void captureSnapshotIfDue(2)
       .then((r) => { if (r.captured) logger.info({ written: r.written }, 'startup: базовый federation snapshot записан'); })
       .catch((err) => logger.warn({ err: err instanceof Error ? err.message : String(err) }, 'startup snapshot seed failed'));

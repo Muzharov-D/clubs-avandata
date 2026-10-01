@@ -8,7 +8,8 @@ import { syncTenantCalendarTournament } from '../services/calendarService.js';
 import { syncTenantEvents } from '../services/matchEventsService.js';
 import { federationHealth } from '../federation/avandataSource.js';
 import { captureSnapshotIfDue } from '../federation/snapshots.js';
-import { warmHoldings } from '../federation/holdings.js';
+import { warmHoldings, HOLDINGS } from '../federation/holdings.js';
+import { warmCohortMetrics } from '../federation/holdingMetrics.js';
 import { env } from '../env.js';
 
 /**
@@ -199,6 +200,8 @@ const JOBS: CronJob[] = [
   { name: 'fedSnapshot', intervalMs: 12 * 60 * 60_000, initialDelayMs: 30_000, run: tickFederationSnapshot },
   // Профили холдингов держим тёплыми (TTL 10 мин): пересобираем чуть чаще, чем они протухают.
   { name: 'holdingsWarm', intervalMs: 8 * 60_000, initialDelayMs: 60_000, run: () => warmHoldings(2) },
+  // Показатели когорт (события) протухают за 6 часов — обновляем каждые 3 часа фоном.
+  { name: 'holdingMetrics', intervalMs: 3 * 60 * 60_000, initialDelayMs: 120_000, run: async () => warmCohortMetrics(2, [...new Set(HOLDINGS.flatMap((h) => h.years))].sort((a, b) => a - b)) },
 ];
 
 export function startCrons() {

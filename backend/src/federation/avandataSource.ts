@@ -19,7 +19,7 @@ import { normTeam } from './teamName.js';
 import { DIVISION_ALIASES, matchesDivision } from './division.js';
 import { dedupPlayers, normPlayerName } from './playerDedup.js';
 import { snapshotMeta, latestSnapshotsForCohort, type SnapPayload } from './snapshots.js';
-import { ffspbSerialized } from './ffspbLive.js';
+import { ffspbSerializedFast } from './ffspbLive.js';
 
 // ─── Детали матча (для карточки матча по клику) ──────────────────────────────
 export interface MatchCard { player: string; minute: string }
@@ -417,7 +417,7 @@ class FfspbHttpError extends Error { constructor(public readonly status: number,
 // Транзиентные сбои прокси/ФФСПб (5xx/сеть/таймаут) РЕТРАИМ — иначе один блип молча роняет
 // целую стадию (баг: 2012 вернулась без «Высшей»), да ещё и кэшируется на TTL. 404 — финально.
 async function ffspbApiGet(path: string, attempts = 3): Promise<Record<string, unknown>> {
-  return ffspbSerialized(() => ffspbApiGetRaw(path, attempts));
+  return ffspbSerializedFast(() => ffspbApiGetRaw(path, attempts));
 }
 async function ffspbApiGetRaw(path: string, attempts: number): Promise<Record<string, unknown>> {
   let lastErr: unknown;
@@ -704,7 +704,11 @@ function groupByDivision<T extends { division: string }>(rows: T[], sortKey: (r:
 }
 
 // ─── Игроки региона (с разобранных матчей, все туры) ─────────────────────────
-export interface RegionPlayer { id: number; name: string; birthYear: number | null; position: string | null; club: string | null; clubLogo: string | null; photo: string | null; rating: number | null; mp: number; }
+export interface RegionPlayer {
+  id: number; name: string; birthYear: number | null; position: string | null; club: string | null; clubLogo: string | null; photo: string | null; rating: number | null; mp: number;
+  /** Рейтинг по турам (только оценённые): для трендов и «выпал из ротации». Отсортировано по туру. */
+  series?: Array<{ tid: number; tour: number; rating: number }>;
+}
 export async function regionPlayers(seasonId: number, year?: number, division?: string): Promise<RegionPlayer[]> {
   return cached(`players:${seasonId}:${year ?? 0}:${division ?? ''}`, TTL, async () => {
     let refs = await listTournaments(seasonId);
@@ -714,7 +718,7 @@ export async function regionPlayers(seasonId: number, year?: number, division?: 
     // ЗА ЭТОТ МАТЧ (поле averageRating меняется от тура к туру), поэтому копим
     // сумму+счётчик по всем турам, а не берём первый/пиковый матч. mp — число
     // оценённых матчей (на скольких турах игрок попал в рейтинг по роли).
-    const acc = new Map<number, { p: RegionPlayer; sum: number; n: number; roles: Map<string, number> }>();
+    const acc = new Map<number, { p: RegionPlayer; sum: number; n: number; roles: Map<string, number>; series: Array<{ tid: number; tour: number; rating: number }> }>();
     const jobs: Array<{ t: number; d: number; tour: number }> = [];
     for (const ref of refs) for (let tour = 1; tour <= Math.max(1, ref.lastPlayedTour); tour++) jobs.push({ t: ref.tournamentId, d: ref.divisionId, tour });
     await pmap(jobs, 6, async (job) => {
@@ -725,21 +729,22 @@ export async function regionPlayers(seasonId: number, year?: number, division?: 
         if (!e) {
           e = { p: { id: p.id, name: p.title ?? '—', birthYear: p.dateOfBirth ?? null,
             position: p.playerMatchRole?.title ?? null, club: p.team?.title ?? null,
-            clubLogo: p.team?.logoUrl ?? null, photo: p.avatarUrl ?? null, rating: null, mp: 0 }, sum: 0, n: 0, roles: new Map() };
+            clubLogo: p.team?.logoUrl ?? null, photo: p.avatarUrl ?? null, rating: null, mp: 0 }, sum: 0, n: 0, roles: new Map(), series: [] };
           acc.set(p.id, e);
         }
         const role = p.playerMatchRole?.title;
         if (role) e.roles.set(role, (e.roles.get(role) ?? 0) + 1);
         const r = p.averageRating;
-        if (typeof r === 'number' && Number.isFinite(r)) { e.sum += r; e.n += 1; }
+        if (typeof r === 'number' && Number.isFinite(r)) { e.sum += r; e.n += 1; e.series.push({ tid: job.t, tour: job.tour, rating: r }); }
       }
     });
-    const out = [...acc.values()].map(({ p, sum, n, roles }) => {
+    const out = [...acc.values()].map(({ p, sum, n, roles, series }) => {
       // Основное амплуа = самое частое по матчам (детерминированно), а не роль из
       // случайного первого матча — иначе правый защитник «уезжает» в центр.
       let pos = p.position, best = 0;
       for (const [role, c] of roles) if (c > best || (c === best && pos != null && role < pos)) { best = c; pos = role; }
-      return { ...p, position: pos, mp: n, rating: n > 0 ? Math.round(sum / n) : null };
+      series.sort((a, b) => (a.tid - b.tid) || (a.tour - b.tour));
+      return { ...p, position: pos, mp: n, rating: n > 0 ? Math.round(sum / n) : null, series };
     });
     // Дедуп: один человек с РАЗНЫМИ id AvanData (двойная регистрация/переход) иначе двоится
     // в лидерборде и сборной. Ключ — ФИО + ПОЛНАЯ дата рождения; `by-role` отдаёт только год,
