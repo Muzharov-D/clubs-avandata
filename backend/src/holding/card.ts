@@ -72,11 +72,11 @@ export function buildCard(p: LeaguePlayer, a: HoldingAnalytics, raw: RegionPlaye
 
   const facts: CardFact[] = [];
   if (p.index != null) facts.push({ text: `Индекс сезона ${p.index.toFixed(1)} из 10 (10 — лучший сверстник своей позиции в регионе, 5 — слабейший); лучше ${Math.round(p.indexPct ?? 0)}% из них (за полный матч своего возраста, ${p.minutes ?? 0} минут на поле).`, tone: p.index >= 8.5 ? 'good' : p.index < 6.5 ? 'bad' : undefined });
-  if (p.rankRegion != null) facts.push({ text: `Топ-${p.pctRegion}% региона: ${p.rankRegion}-й из ${p.sizeRegion} игроков ${p.birthYear} г.р. с рейтингом.`, tone: (p.pctRegion ?? 100) <= 25 ? 'good' : (p.pctRegion ?? 0) > 60 ? 'bad' : undefined });
+  if (p.rankRegion != null) facts.push({ text: `Топ-${p.pctRegion}% региона: ${p.rankRegion}-й из ${p.sizeRegion} игроков ${p.birthYear} г.р. (по средней оценке за матч, все позиции).`, tone: (p.pctRegion ?? 100) <= 25 ? 'good' : (p.pctRegion ?? 0) > 60 ? 'bad' : undefined });
   if (p.rankDiv != null) facts.push({ text: `${p.rankDiv}-й из ${p.sizeDiv} в своём дивизионе (${p.division}).` });
   if (p.deltaLine != null && p.lineAvgDiv != null) {
     const rel = Math.round((p.deltaLine / p.lineAvgDiv) * 100);
-    facts.push({ text: `${rel >= 0 ? 'Выше' : 'Ниже'} среднего по амплуа в лиге на ${n0(Math.abs(p.deltaLine))} (${rel >= 0 ? '+' : ''}${rel}%): ${n0(p.rating as number)} против ${n0(p.lineAvgDiv)}.`, tone: rel >= 12 ? 'good' : rel <= -12 ? 'bad' : undefined });
+    facts.push({ text: `${rel >= 0 ? 'Выше' : 'Ниже'} среднего по амплуа в лиге на ${Math.abs(rel)}%.`, tone: rel >= 12 ? 'good' : rel <= -12 ? 'bad' : undefined });
   }
   if (stability && p.lineAvgDiv != null) {
     if (streak >= STABLE_STREAK) facts.push({ text: `Стабилен: ${streak} ${matchesW(streak)} подряд выше среднего по амплуа в лиге.`, tone: 'good' });
@@ -88,15 +88,15 @@ export function buildCard(p: LeaguePlayer, a: HoldingAnalytics, raw: RegionPlaye
     else facts.push({ text: 'Форма ровная: последние матчи на уровне сезона.' });
   } else if (p.trend != null && p.rating) {
     const rel = p.trend / p.rating;
-    if (rel >= 0.08) facts.push({ text: `Форма растёт: последние матчи в среднем на ${n0(p.trend)} выше сезона.`, tone: 'good' });
-    else if (rel <= -0.08) facts.push({ text: `Форма падает: последние матчи в среднем на ${n0(-p.trend)} ниже сезона.`, tone: 'bad' });
+    if (rel >= 0.08) facts.push({ text: `Форма растёт: последние матчи в среднем на ${Math.round(rel * 100)}% выше сезона.`, tone: 'good' });
+    else if (rel <= -0.08) facts.push({ text: `Форма падает: последние матчи в среднем на ${Math.round(-rel * 100)}% ниже сезона.`, tone: 'bad' });
     else facts.push({ text: 'Форма ровная: последние матчи на уровне сезона.' });
   }
   if (!p.inRotation) facts.push({ text: 'Не попадал в оценённые составы последние туры — уточнить у тренера причину.', tone: 'bad' });
-  if (older) facts.push({ text: `В «${older.olderTeamName}» был бы ${older.olderRank}-м из ${older.olderSize} по рейтингу (медиана команды ${n0(older.olderMedian)}).`, tone: 'good' });
+  if (older) facts.push({ text: `В «${older.olderTeamName}» был бы ${older.olderRank}-м из ${older.olderSize} по средней оценке за матч.`, tone: 'good' });
   const med = a.medians.find((m) => m.year === p.birthYear);
-  if (promote && med?.top != null) facts.push({ text: `Рейтинг ${n0(p.rating as number)} не ниже медианы Высшей лиги своего возраста (${n0(med.top)}).`, tone: 'good' });
-  if (risk && med?.first != null) facts.push({ text: `Рейтинг ${n0(p.rating as number)} ниже медианы Первой лиги своего возраста (${n0(med.first)}).`, tone: 'bad' });
+  if (promote && med?.top != null) facts.push({ text: 'Играет не хуже середины Высшей лиги своего возраста.', tone: 'good' });
+  if (risk && med?.first != null) facts.push({ text: 'Играет слабее середины Первой лиги своего возраста.', tone: 'bad' });
   if (youthIdx >= 0 && youthIdx < a.youthSlots) facts.push({ text: `${youthIdx + 1}-й в очереди в молодёжную команду (мест ${a.youthSlots}).`, tone: 'good' });
 
   // Сводка одной фразой — как её прочитают на совете.

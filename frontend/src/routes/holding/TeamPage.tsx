@@ -7,16 +7,16 @@ import { fmtDate } from '../federation/utils';
 import { sides, toBase, type HMatch } from '../federation/HoldingView';
 import PizzaChartJs from '../../components/PizzaChart';
 import '../../components/analytics/analytics.css';
-import { useHoldingProfile, useHoldingAnalytics, useTeamMetrics, num, pm, plMatch, shortClub, LINE_TITLE, type TeamLeague, type LeaguePlayer, type Line, type TeamMetricRow } from './api';
+import { useHoldingProfile, useHoldingAnalytics, useTeamMetrics, num, pm, plMatch, shortClub, LINE_TITLE, GROUPS, GROUP_PLURAL, groupOf, groupTitle, type TeamLeague, type LeaguePlayer, type Line, type TeamMetricRow } from './api';
 import { TeamMetricsTable, PlayerTable } from './parts';
 import { HdLoading } from './HoldingShell';
 import { useNavQuery } from './scope';
 import { TeamPitch } from './Board';
+import { perfWord } from './cards';
 import { IndexRing, TeamScatter, indexColor } from './viz';
 
 const PizzaChart = PizzaChartJs as unknown as ComponentType<Record<string, unknown>>;
 const OUT_RU: Record<string, string> = { w: 'В', d: 'Н', l: 'П' };
-const LINES: Line[] = ['GK', 'DEF', 'MID', 'FWD'];
 // Показатели команды для пиццы (групп — как у профиля игрока).
 const TEAM_PIZZA: Array<{ id: string; group: 'attack' | 'defence' | 'fitness' }> = [
   { id: 'goal', group: 'attack' }, { id: 'hitTarget', group: 'attack' }, { id: 'goalMomentPlus', group: 'attack' }, { id: 'passPlus', group: 'attack' }, { id: 'driblePlus', group: 'attack' },
@@ -73,7 +73,7 @@ export function HoldingTeamPage() {
         </div>
         <div className="hd-teamhero__stats">
           <div className="hd-bigstat"><span className="hd-bigstat__v">{s ? s.place : '—'}<small>{s ? `/${s.size}` : ''}</small></span><span className="hd-bigstat__l">место в таблице</span><span className="hd-bigstat__s">{s ? `${s.points} оч · ${s.won}-${s.drawn}-${s.lost} · ${pm(s.goalDiff)}` : ''}</span></div>
-          <div className="hd-bigstat"><span className="hd-bigstat__v">{league?.divRankByAvg ?? '—'}<small>{league?.divTeams ? `/${league.divTeams}` : ''}</small></span><span className="hd-bigstat__l">по силе состава</span><span className={`hd-bigstat__s ${over != null && over < 0 ? 'hd-down' : over != null && over > 0 ? 'hd-up' : ''}`}>{over == null ? '' : over < 0 ? `недобирает ${-over} мест` : over > 0 ? `выше состава на ${over}` : 'по составу'}</span></div>
+          <div className="hd-bigstat"><span className="hd-bigstat__v">{league?.divRankByAvg ?? '—'}<small>{league?.divTeams ? `/${league.divTeams}` : ''}</small></span><span className="hd-bigstat__l">по уровню игры</span><span className={`hd-bigstat__s ${over != null && over < 0 ? 'hd-warn' : over != null && over > 0 ? 'hd-up' : ''}`}>{over == null ? '' : perfWord(over).text}</span></div>
           <div className="hd-bigstat hd-bigstat--ring"><IndexRing value={teamIndex == null ? null : Math.round(teamIndex * 10) / 10} size={86} stroke={7} /><span className="hd-bigstat__l">индекс состава</span></div>
         </div>
       </header>
@@ -85,9 +85,9 @@ export function HoldingTeamPage() {
 
       <div className="hd-team-grid">
         <section className="card an">
-          <div className="page-section-title">Место против силы состава <span className="an-model-tag">{team.division}</span></div>
-          {scatter.length >= 3 ? <TeamScatter points={scatter} xLabel="сила состава" yLabel="место" height={360} /> : <div className="hd-muted">Считаем силу составов дивизиона…</div>}
-          <div className="an-note">Каждая точка — команда дивизиона. Пунктир — где команда «должна» стоять при своём составе: выше линии — перевыполняет, ниже — недобирает очков.</div>
+          <div className="page-section-title">Место против уровня игры <span className="an-model-tag">{team.division}</span></div>
+          {scatter.length >= 3 ? <TeamScatter points={scatter} xLabel="уровень игры" yLabel="место" height={360} /> : <div className="hd-muted">Считаем уровень игры команд дивизиона…</div>}
+          <div className="an-note">Каждая точка — команда дивизиона. Пунктир — место, которое соответствует уровню игры: выше линии — команда набирает больше, чем позволяет игра; ниже — играет сильнее своего места в таблице.</div>
         </section>
         <section className="card an">
           <div className="page-section-title">Линии против лиги</div>
@@ -110,15 +110,15 @@ export function HoldingTeamPage() {
         </section>
       )}
 
-      {/* Карточки игроков по линиям */}
+      {/* Карточки игроков по специализациям */}
       <section className="card an">
         <div className="page-section-title">Игроки <span className="an-model-tag">индекс · минуты · форма</span></div>
-        {LINES.map((line) => {
-          const ps = squad.filter((p) => p.line === line).sort((a, b) => (b.index ?? -1) - (a.index ?? -1) || (b.minutes ?? 0) - (a.minutes ?? 0));
+        {GROUPS.map((g) => {
+          const ps = squad.filter((p) => groupOf(p) === g).sort((a, b) => (b.index ?? -1) - (a.index ?? -1) || (b.minutes ?? 0) - (a.minutes ?? 0));
           if (!ps.length) return null;
           return (
-            <div key={line} className="hd-pcards__line">
-              <div className="hd-pcards__title">{LINE_TITLE[line]}</div>
+            <div key={g} className="hd-pcards__line">
+              <div className="hd-pcards__title">{GROUP_PLURAL[g]}</div>
               <div className="hd-pcards">{ps.map((p) => <PlayerCard key={p.id} p={p} q={q} />)}</div>
             </div>
           );
@@ -187,8 +187,8 @@ function PlayerCard({ p, q }: { p: LeaguePlayer; q: string }) {
       <IndexRing value={p.index} size={52} stroke={5} />
       <span className="hd-pcard__body">
         <span className="hd-pcard__name">{surname(p.name)}</span>
-        <span className="hd-pcard__pos">{p.position ?? '—'}</span>
-        <span className="hd-pcard__meta">{p.minutes ?? 0} мин{f != null ? <> · <span className={f >= 0.5 ? 'hd-up' : f <= -0.5 ? 'hd-down' : ''}>{f >= 0.5 ? '↑' : f <= -0.5 ? '↓' : '→'} форма</span></> : null}{p.rating != null ? ` · ${num(p.rating)}` : ''}</span>
+        <span className="hd-pcard__pos">{groupTitle(p)}</span>
+        <span className="hd-pcard__meta">{p.minutes ?? 0} мин{f != null ? <> · <span className={f >= 0.5 ? 'hd-up' : f <= -0.5 ? 'hd-down' : ''}>{f >= 0.5 ? '↑' : f <= -0.5 ? '↓' : '→'} форма</span></> : null}</span>
       </span>
     </Link>
   );

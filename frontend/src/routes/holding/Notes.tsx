@@ -44,17 +44,16 @@ function useNoteMutations() {
   return { create, patch, remove };
 }
 
-/** Как изменился игрок после решения: рейтинг и место в регионе тогда и сейчас. */
+/** Как изменился игрок после решения: место среди сверстников региона тогда и сейчас. */
 function SinceDecision({ n }: { n: NoteWithNow }) {
-  if (n.ratingAt == null && n.rankAt == null) return null;
+  if (n.rankAt == null) return null;
   const now = n.now;
-  const dr = now?.rating != null && n.ratingAt != null ? now.rating - n.ratingAt : null;
-  const dk = now?.rankRegion != null && n.rankAt != null ? n.rankAt - now.rankRegion : null;
+  const dk = now?.rankRegion != null ? n.rankAt - now.rankRegion : null;
   return (
     <span className="hc-note__since">
-      тогда {n.ratingAt != null ? num(n.ratingAt) : '—'}{n.rankAt != null ? ` · ${n.rankAt}-й из ${n.sizeAt}` : ''}
-      {' → '}сейчас <b style={{ color: ratingColor(now?.rating ?? null) }}>{now?.rating != null ? num(now.rating) : '—'}</b>{now?.rankRegion != null ? ` · ${now.rankRegion}-й из ${now.sizeRegion}` : ''}
-      {dr != null && dr !== 0 && <span className={dr > 0 ? 'hc-delta--up' : 'hc-delta--down'}> ({pm(dr)}{dk ? `, ${dk > 0 ? '↑' : '↓'}${Math.abs(dk)} мест` : ''})</span>}
+      место в регионе: тогда {n.rankAt}-й из {n.sizeAt}
+      {' → '}сейчас <b>{now?.rankRegion != null ? `${now.rankRegion}-й из ${now.sizeRegion}` : '—'}</b>
+      {dk != null && dk !== 0 && <span className={dk > 0 ? 'hc-delta--up' : 'hc-delta--down'}> ({dk > 0 ? '↑' : '↓'}{Math.abs(dk)})</span>}
     </span>
   );
 }
@@ -127,7 +126,7 @@ export function PlayerNotes({ player, suggested, title = 'Решения рук�
   const list = notes.data?.notes ?? [];
   return (
     <>
-      <SectionTitle sub="Пометка фиксирует рейтинг и место игрока на момент решения — потом видно, как он изменился. Напоминание всплывёт на обзоре.">{title}</SectionTitle>
+      <SectionTitle sub="Пометка фиксирует место игрока среди сверстников на момент решения — потом видно, как он изменился. Напоминание всплывёт на обзоре.">{title}</SectionTitle>
       <section className="fed-card hc-notes">
         <NoteForm playerId={player.id} suggested={suggested} />
         {list.length > 0 && <div className="hc-notes__list">{list.map((n) => <NoteItem key={n.id} n={n} />)}</div>}

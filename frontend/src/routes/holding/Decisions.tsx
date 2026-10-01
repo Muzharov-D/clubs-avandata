@@ -1,12 +1,13 @@
 import { useEffect, type ReactNode } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { FedError } from '../federation/FedState';
-import { useHoldingAnalytics, num, pm, shortClub, shortPos, LINE_TITLE, type SelectionGroup, type HoldingAnalytics, type LeaguePlayer } from './api';
+import { useHoldingAnalytics, num, pm, shortClub, shortPos, LINE_TITLE, GROUP_TITLE, groupOfPosition, type SelectionGroup, type HoldingAnalytics, type LeaguePlayer } from './api';
 import { PlayerTable } from './parts';
 import { HdLoading } from './HoldingShell';
 import { useNavQuery, useScope, useScopeLabel, scopeAnalytics } from './scope';
 import { plural } from './Overview';
 import { PlayerCard, PctCompare, surname } from './cards';
+import { indexColor } from './viz';
 
 /**
  * Решения — списки, которые руководство закрывает действием, на карточках игроков:
@@ -62,11 +63,11 @@ export function HoldingDecisions() {
         limit={Math.max(slots + 3, 8)} empty="Пока никто не проходит по порогам." />
 
       <Block id="promote" title="Из Царского Села в ФК Динамо" tone="up" count={`${a.promote.length}`}
-        rule={<>Игроки Царского Села с рейтингом не ниже медианы Высшей лиги своего возраста. Медианы: {a.medians.map((m) => `${m.year} — ${m.top ?? '—'}`).join(', ')}.</>}
+        rule="Игроки Царского Села, которые по средней оценке за матч играют не хуже середины Высшей лиги своего возраста."
         players={a.promote} q={q} card={(p) => <PlayerCard key={p.id} p={p} q={q} tag="уровень Высшей лиги" tagTone="brand" />} empty="Сейчас никто из Царского Села не дотягивает до медианы Высшей лиги." />
 
       <Block id="older" title="Готовы играть на возраст старше" tone="brand" count={`${a.olderAge.length}`}
-        rule="Внутри своей школы: рейтинг не ниже медианы команды на год старше. На карточке — каким по силе он был бы там."
+        rule="Внутри своей школы: по средней оценке за матч не слабее середины команды на год старше. На карточке — каким по силе он был бы там."
         players={a.olderAge} q={q} card={(p) => { const c = a.olderAge.find((x) => x.id === p.id); return <PlayerCard key={p.id} p={p} q={q} tag={c ? `${c.olderRank}-й из ${c.olderSize} в ${c.olderTeamName.replace(/^ФК |Царское Село-/, '')}` : ''} tagTone="brand" />; }}
         empty="Пока никто не проходит по медиане старшей команды." />
 
@@ -86,7 +87,7 @@ export function HoldingDecisions() {
         empty="Никто не выпадает: форма ровная, ротация стабильная." />
 
       <Block id="risk" title="Зона риска в ФК Динамо" tone="warn" count={`${a.risk.length}`}
-        rule={<>Игроки ФК Динамо (Высшая лига) с рейтингом ниже медианы Первой лиги своего возраста. Медианы: {a.medians.map((m) => `${m.year} — ${m.first ?? '—'}`).join(', ')}.</>}
+        rule="Игроки ФК Динамо (Высшая лига), которые по средней оценке за матч играют слабее середины Первой лиги своего возраста."
         players={a.risk} q={q} card={(p) => <PlayerCard key={p.id} p={p} q={q} tag={p.rankRegion != null ? `${p.rankRegion}-й из ${p.sizeRegion} в регионе` : 'ниже Первой лиги'} tagTone="warn" />}
         empty="В ФК Динамо нет игроков ниже медианы Первой лиги." />
 
@@ -153,9 +154,9 @@ function SelectionCard({ g, q, best }: { g: SelectionGroup; q: string; best: Lea
       <div className="hd-selcard__list">
         {g.candidates.map((c) => (
           <div key={c.id} className="hd-selcard__row">
-            <span className="hd-selcard__who">{shortPos(c.position)}<span className="hd-muted"> · {c.club}</span></span>
+            <span className="hd-selcard__who">{(() => { const gr = groupOfPosition(c.position); return gr ? GROUP_TITLE[gr] : shortPos(c.position); })()}<span className="hd-muted"> · {c.club}</span></span>
             <span className="hd-tag hd-tag--up">топ {c.pctRegion}%</span>
-            <span className="hd-muted hd-small">{num(c.rating)}</span>
+            <span className="hd-small" style={{ fontWeight: 800, color: indexColor(c.index) }} title="индекс сезона против своей специализации">{c.index != null ? c.index.toFixed(1) : '—'}</span>
             {best && <Link to={`/holding/compare?a=${best.id}&b=${c.id}${q ? '&' + q.slice(1) : ''}`} className="hd-link hd-small">сравнить</Link>}
           </div>
         ))}

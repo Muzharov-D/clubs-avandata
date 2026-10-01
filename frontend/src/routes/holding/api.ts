@@ -15,16 +15,18 @@ export type Line = 'GK' | 'DEF' | 'MID' | 'FWD';
 export type DivisionKey = 'Высшая' | 'Первая' | null;
 export const LINE_TITLE: Record<Line, string> = { GK: 'Вратарь', DEF: 'Защита', MID: 'Полузащита', FWD: 'Атака' };
 
-export type PositionGroup = 'GK' | 'CB' | 'FB' | 'DM' | 'AM' | 'W' | 'ST';
-/** Группы позиций — как на бэкенде (federation/positionGroups.ts). */
-export const GROUP_TITLE: Record<PositionGroup, string> = { GK: 'Вратарь', CB: 'Центральный защитник', FB: 'Крайний защитник', DM: 'Опорный полузащитник', AM: 'Атакующий полузащитник', W: 'Крайний нападающий', ST: 'Центральный нападающий' };
-/** Позиция AvanData → группа (то же правило, что backend/src/federation/positionGroups.ts). */
+export type PositionGroup = 'GK' | 'CB' | 'FB' | 'CM' | 'W' | 'ST';
+export const GROUPS: PositionGroup[] = ['GK', 'CB', 'FB', 'CM', 'W', 'ST'];
+/** Специализации — как на бэкенде (federation/positionGroups.ts). Сторона (левый/правый) не важна. */
+export const GROUP_TITLE: Record<PositionGroup, string> = { GK: 'Вратарь', CB: 'Центральный защитник', FB: 'Крайний защитник', CM: 'Центральный полузащитник', W: 'Крайний нападающий', ST: 'Центральный нападающий' };
+export const GROUP_PLURAL: Record<PositionGroup, string> = { GK: 'Вратари', CB: 'Центральные защитники', FB: 'Крайние защитники', CM: 'Центральные полузащитники', W: 'Крайние нападающие', ST: 'Центральные нападающие' };
+export const GROUP_SHORT: Record<PositionGroup, string> = { GK: 'ВРТ', CB: 'ЦЗ', FB: 'КЗ', CM: 'ЦП', W: 'КН', ST: 'ЦН' };
+/** Позиция AvanData → специализация (то же правило, что backend/src/federation/positionGroups.ts). */
 export function groupOfPosition(position: string | null | undefined): PositionGroup | null {
   const p = (position ?? '').toLowerCase().trim();
   if (!p) return null;
   if (p.includes('вратар')) return 'GK';
-  if (p.includes('опорн')) return 'DM';
-  if (p.includes('атакующ')) return 'AM';
+  if (p.includes('опорн') || p.includes('атакующ') || p.includes('центральный полузащит')) return 'CM';
   if (p.includes('полузащит')) return 'W';
   if (p.includes('центральный нападающ')) return 'ST';
   if (p.includes('нападающ') || p.includes('форвард')) return 'W';
@@ -32,6 +34,12 @@ export function groupOfPosition(position: string | null | undefined): PositionGr
   if (p.includes('защитник') || p.includes('фулбек')) return 'FB';
   return null;
 }
+/** Специализация игрока: из ответа сервера (старые расчёты с «опорными»/«атакующими» — к ЦП) или по позиции. */
+export const groupOf = (p: { group?: string | null; position: string | null }): PositionGroup | null =>
+  p.group === 'DM' || p.group === 'AM' ? 'CM' : (p.group as PositionGroup | null | undefined) ?? groupOfPosition(p.position);
+/** Подпись специализации игрока. */
+export const groupTitle = (p: { group?: string | null; position: string | null }) => { const g = groupOf(p); return g ? GROUP_TITLE[g] : p.position ?? '—'; };
+
 export interface LeaguePlayer {
   id: number; name: string; photo: string | null; position: string | null; line: Line | null; group?: PositionGroup | null;
   /** Все позиции, на которых выходил, с числом матчей (самая частая — первой). */
@@ -44,6 +52,8 @@ export interface LeaguePlayer {
   trend: number | null; last: number[]; lastTour: number | null; teamLastTour: number | null; inRotation: boolean;
   /** Честный счёт: индекс 0–10 против своей позиции, минуты, форма (последние 3 матча к сезону, из 10). */
   index: number | null; indexPct: number | null; minutes: number | null; formDelta: number | null;
+  /** Перцентиль игры в обороне среди своей специализации. */
+  defPct?: number | null;
 }
 export interface LineCompare { line: Line; title: string; teamAvg: number | null; divAvg: number | null; n: number; gapRel: number | null; verdict: 'weak' | 'ok' | 'strong' | null }
 export interface TeamLeague {
@@ -56,7 +66,7 @@ export interface TeamLeague {
 export interface YouthCandidate extends LeaguePlayer { tier: 'ready' | 'watch' | 'rest' }
 export interface LosingPlayer extends LeaguePlayer { reason: 'trend' | 'rotation' }
 export interface LineIssue { teamKey: string; clubLabel: string; year: number; category: string; line: Line; title: string; teamAvg: number; divAvg: number; gapRel: number }
-export interface SelectionCandidate { id: number; line: Line; position: string | null; club: string; division: string; divisionKey: DivisionKey; rating: number; pctRegion: number; rankRegion: number; mp: number; trend: number | null }
+export interface SelectionCandidate { id: number; line: Line; position: string | null; group?: PositionGroup | null; index?: number | null; club: string; division: string; divisionKey: DivisionKey; rating: number; pctRegion: number; rankRegion: number; mp: number; trend: number | null }
 export interface SelectionGroup { teamKey: string; clubLabel: string; year: number; category: string; division: string; line: Line; title: string; ourAvg: number | null; ourBest: number | null; ourN: number; candidates: SelectionCandidate[] }
 export interface OlderAgeCandidate extends LeaguePlayer { olderTeamKey: string; olderTeamName: string; olderMedian: number; olderRank: number; olderSize: number }
 export interface HoldingAnalytics {
@@ -182,4 +192,11 @@ export function useCanNote(): boolean {
   const { holding, user } = useAuth() as { holding: unknown; user: { role?: string } | null };
   return !!holding && user?.role === 'holding_admin';
 }
+// ─── Позиции, которые видит тренер ────────────────────────────────────────────
+export interface CoachPosition { playerId: number; group: PositionGroup; authorName: string | null; createdAt: string }
+export const useCoachPositions = () => {
+  const q = useSlugQuery();
+  return useQuery({ queryKey: ['holding', 'positions', q], queryFn: () => api<{ positions: CoachPosition[] }>(`/holding/positions${q}`), staleTime: 60_000 });
+};
+
 export const fmtDay = (iso: string | null) => (iso ? new Date(iso.length === 10 ? iso + 'T12:00:00' : iso).toLocaleDateString('ru-RU', { day: 'numeric', month: 'long' }) : '—');

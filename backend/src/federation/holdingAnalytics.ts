@@ -58,6 +58,8 @@ export interface LeaguePlayer {
    * null — показатели когорты ещё считаются.
    */
   index: number | null; indexPct: number | null; minutes: number | null; formDelta: number | null;
+  /** Перцентиль игры в обороне среди своей группы: на доске в опорную зону встаёт самый оборонительный центральный полузащитник. */
+  defPct: number | null;
 }
 export interface LineCompare { line: Line; title: string; teamAvg: number | null; divAvg: number | null; n: number; gapRel: number | null; verdict: 'weak' | 'ok' | 'strong' | null }
 export interface TeamLeague {
@@ -77,7 +79,7 @@ export interface YouthCandidate extends LeaguePlayer { tier: 'ready' | 'watch' |
 export interface LosingPlayer extends LeaguePlayer { reason: 'trend' | 'rotation' }
 export interface LineIssue { teamKey: string; clubLabel: string; year: number; category: string; line: Line; title: string; teamAvg: number; divAvg: number; gapRel: number }
 /** Кандидат селекции — игрок другой школы, без имени (открытые данные — только команда, амплуа, рейтинг). */
-export interface SelectionCandidate { id: number; line: Line; position: string | null; club: string; division: string; divisionKey: DivisionKey | null; rating: number; pctRegion: number; rankRegion: number; mp: number; trend: number | null }
+export interface SelectionCandidate { id: number; line: Line; position: string | null; group: PositionGroup | null; index: number | null; club: string; division: string; divisionKey: DivisionKey | null; rating: number; pctRegion: number; rankRegion: number; mp: number; trend: number | null }
 export interface SelectionGroup { teamKey: string; clubLabel: string; year: number; category: string; division: string; line: Line; title: string; ourAvg: number | null; ourBest: number | null; ourN: number; candidates: SelectionCandidate[] }
 export interface OlderAgeCandidate extends LeaguePlayer { olderTeamKey: string; olderTeamName: string; olderMedian: number; olderRank: number; olderSize: number }
 export interface HoldingAnalytics {
@@ -255,7 +257,7 @@ async function computeAnalytics(seasonId: number, cfg: HoldingConfig, profile: H
             pctRegion: rr != null && ratedPool.length ? Math.max(1, Math.round((rr / ratedPool.length) * 100)) : null,
             lineAvgDiv, lineAvgRegion, deltaLine: isRated && lineAvgDiv != null ? (p.rating as number) - lineAvgDiv : null,
             trend, last: lastN, lastTour, teamLastTour, inRotation,
-            index: fm?.index ?? null, indexPct: fm?.indexPct ?? null, minutes: fm ? Math.round(fm.minutes) : null, formDelta: fm?.formDelta ?? null,
+            index: fm?.index ?? null, indexPct: fm?.indexPct ?? null, minutes: fm ? Math.round(fm.minutes) : null, formDelta: fm?.formDelta ?? null, defPct: fm?.defPct ?? null,
           };
         }).sort((a, b) => ((b.rating ?? -1) - (a.rating ?? -1)) || (b.mp - a.mp));
         allPlayers.push(...squad);
@@ -352,7 +354,8 @@ async function computeAnalytics(seasonId: number, cfg: HoldingConfig, profile: H
           .sort((a, b) => (b.p.rating as number) - (a.p.rating as number)).slice(0, SELECTION_PER_LINE)
           .map((o): SelectionCandidate => {
             const series = o.p.series ?? []; const lastN = series.slice(-TREND_LAST_N).map((x) => x.rating);
-            return { id: o.p.id, line, position: o.p.position, club: o.club, division: o.divName, divisionKey: o.div, rating: o.p.rating as number, pctRegion: o.pctRegion, rankRegion: o.rankRegion, mp: o.p.mp, trend: lastN.length >= 2 ? Math.round(lastN.reduce((x, y) => x + y, 0) / lastN.length - (o.p.rating as number)) : null };
+            const fm = formsByYear.get(t.year)?.get(o.p.id);
+            return { id: o.p.id, line, position: o.p.position, group: positionGroup(o.p.position), index: fm?.index ?? null, club: o.club, division: o.divName, divisionKey: o.div, rating: o.p.rating as number, pctRegion: o.pctRegion, rankRegion: o.rankRegion, mp: o.p.mp, trend: lastN.length >= 2 ? Math.round(lastN.reduce((x, y) => x + y, 0) / lastN.length - (o.p.rating as number)) : null };
           });
         if (cands.length) selection.push({ teamKey: t.key, clubLabel: t.clubLabel, year: t.year, category: t.category, division: t.division, line, title: LINE_TITLE[line], ourAvg, ourBest, ourN: ours.length, candidates: cands });
       }

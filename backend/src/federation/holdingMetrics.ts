@@ -16,7 +16,7 @@ import { classifyDivision, type DivisionKey } from './division.js';
 import { lineOf, type HoldingXi } from './holdings.js';
 import { logger } from '../shared/logger.js';
 import { metricInfo, type MetricGroup } from './metricsGlossary.js';
-import { positionGroup, type PositionGroup } from './positionGroups.js';
+import { positionGroup, normGroup, type PositionGroup } from './positionGroups.js';
 import { eq } from 'drizzle-orm';
 import { withBypassRLS } from '../db/tenantContext.js';
 import { holdingCohortCache } from '../db/schema/holding.js';
@@ -227,7 +227,7 @@ function deserialize(o: Ser): CohortMetrics {
     year: o.year as number, asOf: o.asOf as string, matchLen: o.matchLen as number, types: o.types as MetricDef[],
     players: new Map((o.players as KV<PlayerAgg & { matches: number[]; counts: Array<[string, number]> }>).map(([k, v]) => [k, { ...v, matches: new Set(v.matches), counts: counts(v.counts) }])),
     teams: new Map((o.teams as KV<TeamAgg & { matches: number[]; counts: Array<[string, number]> }>).map(([k, v]) => [k, { ...v, matches: new Set(v.matches), counts: counts(v.counts) }])),
-    lineOfPlayer: new Map(o.lineOfPlayer as KV<Line | null>), groupOfPlayer: new Map((o.groupOfPlayer ?? []) as KV<PositionGroup | null>), divOfPlayer: new Map(o.divOfPlayer as KV<DivisionKey | null>),
+    lineOfPlayer: new Map(o.lineOfPlayer as KV<Line | null>), groupOfPlayer: new Map(((o.groupOfPlayer ?? []) as KV<string | null>).map(([k, g]) => [k, normGroup(g)] as [number, PositionGroup | null])), divOfPlayer: new Map(o.divOfPlayer as KV<DivisionKey | null>),
     byMatch: new Map((o.byMatch as KV<KV<PlayerMatch & { counts: Array<[string, number]> }>>).map(([k, v]) => [k, new Map(v.map(([mk, pm]) => [mk, { ...pm, counts: counts(pm.counts) }]))])),
     minutes: new Map((o.minutes as KV<KV<number>>).map(([k, v]) => [k, new Map(v)])),
     spans: new Map(o.spans as KV<MatchSpan>),

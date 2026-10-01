@@ -10,7 +10,7 @@ import ComparePizzaJs from '../../components/analytics/ComparePizza';
 import '../../components/analytics/ComparePizza.css';
 import '../../pages/PlayerCompare.css';
 import '../../components/analytics/analytics.css';
-import { useHoldingAnalytics, useSlugQuery, num, shortClub, shortPos, groupOfPosition, GROUP_TITLE, CATEGORY_TITLE, CATEGORY_ORDER, LINE_TITLE, type CompareResponse, type CompareSide, type PlayerMetricRow, type MetricGroup, type PositionGroup } from './api';
+import { useHoldingAnalytics, useSlugQuery, num, shortClub, shortPos, groupOfPosition, groupOf, GROUP_TITLE, GROUPS, CATEGORY_TITLE, CATEGORY_ORDER, LINE_TITLE, type CompareResponse, type CompareSide, type PlayerMetricRow, type MetricGroup, type PositionGroup } from './api';
 import { MetricName, Pbar } from './parts';
 import { HdLoading } from './HoldingShell';
 import { useNavQuery } from './scope';
@@ -22,7 +22,7 @@ interface SeasonSlice { key: string; name: string; short: string; description: s
 interface SideSeason { peersWord: string; groupTitle: string | null; index: number | null; indexPct: number | null; rank: number | null; peers: number; minutes: number; matches: number; matchLen: number; archetype: { name: string; tagline: string }; slices: SeasonSlice[]; series: Array<{ overall: number | null }> }
 type Side = CompareSide & { season: SideSeason | null };
 
-const sideName = (s: CompareSide) => (s.anonymous ? `Кандидат · ${shortPos(s.position)}` : s.name ?? '—');
+const sideName = (s: CompareSide) => (s.anonymous ? `Кандидат · ${(() => { const g = groupOfPosition(s.position); return g ? GROUP_TITLE[g].toLowerCase() : shortPos(s.position); })()}` : s.name ?? '—');
 const fmtVal = (s: SeasonSlice | undefined) => (!s || s.value == null ? '—' : s.ratio ? `${Math.round(s.value)}%` : s.value >= 10 ? s.value.toFixed(0) : s.value.toFixed(1));
 
 /**
@@ -52,11 +52,11 @@ export function HoldingComparePage() {
     const d = an.data; if (!d) return [];
     const own: PickItem[] = d.teams.flatMap((t) => t.squad.map((p) => ({
       id: p.id, name: p.name, anonymous: false, club: t.clubKey, clubLabel: shortClub(t.clubLabel), year: p.birthYear,
-      group: p.group ?? groupOfPosition(p.position), position: p.position, index: p.index, pct: p.pctRegion, minutes: p.minutes,
+      group: groupOf(p), position: p.position, index: p.index, pct: p.pctRegion, minutes: p.minutes,
     })));
     const seen = new Set<number>();
     const cands: PickItem[] = d.selection.flatMap((g) => g.candidates.map((c) => ({ g, c }))).filter(({ c }) => !seen.has(c.id) && seen.add(c.id))
-      .map(({ g, c }) => ({ id: c.id, name: null, anonymous: true, club: 'candidate', clubLabel: c.club, year: g.year, group: groupOfPosition(c.position), position: c.position, index: null, pct: c.pctRegion, minutes: null }));
+      .map(({ g, c }) => ({ id: c.id, name: null, anonymous: true, club: 'candidate', clubLabel: c.club, year: g.year, group: groupOfPosition(c.position), position: c.position, index: c.index ?? null, pct: c.pctRegion, minutes: null }));
     return [...own, ...cands];
   }, [an.data]);
   const byId = useMemo(() => new Map(pool.map((x) => [String(x.id), x])), [pool]);
@@ -247,14 +247,13 @@ function AllMetrics({ r }: { r: { a: CompareSide; b: CompareSide } }) {
 
 // ─── Выбор игрока: поиск и фильтры ────────────────────────────────────────────
 interface PickItem { id: number; name: string | null; anonymous: boolean; club: string; clubLabel: string; year: number; group: PositionGroup | null; position: string | null; index: number | null; pct: number | null; minutes: number | null }
-const GROUPS: PositionGroup[] = ['GK', 'CB', 'FB', 'DM', 'AM', 'W', 'ST'];
 
 function PickRow({ it }: { it: PickItem }) {
   return (
     <span className="hd-pick">
       {it.anonymous ? <span className="hc-anon hd-pick__anon">?</span> : <IndexRing value={it.index} size={40} stroke={4} />}
       <span className="hd-pick__body">
-        <span className="hd-pick__name">{it.anonymous ? `Кандидат · ${shortPos(it.position)}` : it.name}</span>
+        <span className="hd-pick__name">{it.anonymous ? `Кандидат · ${it.group ? GROUP_TITLE[it.group].toLowerCase() : shortPos(it.position)}` : it.name}</span>
         <span className="hd-pick__meta">{it.group ? GROUP_TITLE[it.group] : it.position ?? '—'} · {it.clubLabel} {it.year}{it.pct != null ? ` · топ ${it.pct}% региона` : ''}</span>
       </span>
     </span>

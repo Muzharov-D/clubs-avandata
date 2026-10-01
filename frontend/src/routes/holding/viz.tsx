@@ -3,7 +3,7 @@
  * точками, рассеяние команд. Чистый SVG, цвета — токены шкалы рейтинга.
  */
 import type { ReactNode } from 'react';
-import type { LeaguePlayer } from './api';
+import { GROUP_TITLE, groupOf, groupOfPosition, type LeaguePlayer, type PositionGroup } from './api';
 
 // ─── Шкала индекса 0–10 ───────────────────────────────────────────────────────
 export const indexColor = (v: number | null | undefined): string => {
@@ -37,110 +37,130 @@ export function IndexRing({ value, size = 40, stroke = 4 }: { value: number | nu
 export type SlotId = 'GK' | 'LB' | 'LCB' | 'RCB' | 'RB' | 'DM' | 'CM' | 'LW' | 'ST' | 'RW';
 /**
  * Схема 4-3-3 (утверждена руководством). Место на горизонтальном поле (атака вправо): x, y — %.
- * places — сколько игроков основы на позиции (центральных полузащитников двое).
+ * group — специализация, которая закрывает место; places — сколько игроков основы на месте.
+ * Сторона (левый/правый) на отбор не влияет: специализация одна, фланг — по тому, где игрок чаще выходил.
  */
-export const SLOTS: Record<SlotId, { x: number; y: number; title: string; places: number }> = {
-  GK: { x: 8.5, y: 50, title: 'Вратарь', places: 1 },
-  LB: { x: 24, y: 11, title: 'Левый защитник', places: 1 }, LCB: { x: 21, y: 36, title: 'Центральный защитник (л)', places: 1 },
-  RCB: { x: 21, y: 64, title: 'Центральный защитник (п)', places: 1 }, RB: { x: 24, y: 89, title: 'Правый защитник', places: 1 },
-  DM: { x: 40, y: 50, title: 'Опорный полузащитник', places: 1 },
-  CM: { x: 60, y: 50, title: 'Центральные полузащитники', places: 2 },
-  LW: { x: 80, y: 13, title: 'Левый крайний нападающий', places: 1 }, ST: { x: 88, y: 50, title: 'Центральный нападающий', places: 1 }, RW: { x: 80, y: 87, title: 'Правый крайний нападающий', places: 1 },
+export const SLOTS: Record<SlotId, { x: number; y: number; title: string; places: number; group: PositionGroup }> = {
+  GK: { x: 8.5, y: 50, title: 'Вратарь', places: 1, group: 'GK' },
+  LB: { x: 24, y: 11, title: 'Крайний защитник', places: 1, group: 'FB' }, LCB: { x: 21, y: 36, title: 'Центральный защитник', places: 1, group: 'CB' },
+  RCB: { x: 21, y: 64, title: 'Центральный защитник', places: 1, group: 'CB' }, RB: { x: 24, y: 89, title: 'Крайний защитник', places: 1, group: 'FB' },
+  DM: { x: 40, y: 50, title: 'Опорная зона', places: 1, group: 'CM' },
+  CM: { x: 60, y: 50, title: 'Центральные полузащитники', places: 2, group: 'CM' },
+  LW: { x: 80, y: 13, title: 'Крайний нападающий', places: 1, group: 'W' }, ST: { x: 88, y: 50, title: 'Центральный нападающий', places: 1, group: 'ST' }, RW: { x: 80, y: 87, title: 'Крайний нападающий', places: 1, group: 'W' },
 };
-/**
- * Позиция AvanData → место в 4-3-3 (те же группы, что на бэкенде, federation/positionGroups.ts):
- * атакующие полузащитники (левый/правый/центральный) — одна позиция «центральные полузащитники»;
- * опорные — одна позиция; фулбеки — к крайним защитникам; «левый/правый полузащитник» — к крайним
- * нападающим; левый/правый центральный нападающий — к центральному.
- */
-export function slotOf(position: string | null | undefined): SlotId | null {
-  const p = (position ?? '').toLowerCase().trim();
-  if (!p) return null;
-  const right = p.startsWith('прав');
-  if (p.includes('вратар')) return 'GK';
-  if (p.includes('опорн')) return 'DM';
-  if (p.includes('атакующ')) return 'CM';
-  if (p.includes('полузащит')) return right ? 'RW' : 'LW';
-  if (p.includes('центральный нападающ')) return 'ST';
-  if (p.includes('нападающ') || p.includes('форвард')) return right ? 'RW' : 'LW';
-  if (p.includes('центральный защит')) return right ? 'RCB' : 'LCB';
-  if (p.includes('защитник') || p.includes('фулбек')) return right ? 'RB' : 'LB';
-  return null;
-}
+const SLOT_IDS = Object.keys(SLOTS) as SlotId[];
+/** Сколько мест основы у специализации в 4-3-3. */
+export const GROUP_PLACES: Record<PositionGroup, number> = { GK: 1, CB: 2, FB: 2, CM: 3, W: 2, ST: 1 };
 
-export const SLOT_SHORT: Record<SlotId, string> = { GK: 'ВРТ', LB: 'ЛЗ', LCB: 'ЛЦЗ', RCB: 'ПЦЗ', RB: 'ПЗ', DM: 'ОП', CM: 'ЦП', LW: 'ЛН', ST: 'ЦН', RW: 'ПН' };
-const MIRROR: Partial<Record<SlotId, SlotId>> = { LB: 'RB', RB: 'LB', LCB: 'RCB', RCB: 'LCB', LW: 'RW', RW: 'LW' };
+/** Игрок в основе: main — его специализация; played — выходил здесь, но чаще в другом месте; coach — сюда его ставит тренер. */
+export interface Placed { p: LeaguePlayer; slot: SlotId; group: PositionGroup; home: PositionGroup | null; games: number; how: 'main' | 'played' | 'coach' }
 
-/** Игрок на месте схемы: main — его основная позиция; played — выходил здесь, но чаще в другом месте; mirror — та же позиция с другого фланга. */
-export interface Placed { p: LeaguePlayer; slot: SlotId; home: SlotId | null; games: number; how: 'main' | 'played' | 'mirror' }
-
-/** Матчи игрока по местам схемы — из всех позиций, на которых он выходил. */
-export function slotGames(p: LeaguePlayer): Map<SlotId, number> {
-  const m = new Map<SlotId, number>();
-  const roles = p.roles?.length ? p.roles : p.position ? [{ title: p.position, n: Math.max(1, p.mp) }] : [];
-  for (const r of roles) { const s = slotOf(r.title); if (s) m.set(s, (m.get(s) ?? 0) + r.n); }
+const rolesOf = (p: LeaguePlayer) => (p.roles?.length ? p.roles : p.position ? [{ title: p.position, n: Math.max(1, p.mp) }] : []);
+/** Матчи игрока по специализациям — из всех позиций, на которых он выходил. */
+export function groupGames(p: LeaguePlayer): Map<PositionGroup, number> {
+  const m = new Map<PositionGroup, number>();
+  for (const r of rolesOf(p)) { const g = groupOfPosition(r.title); if (g) m.set(g, (m.get(g) ?? 0) + r.n); }
   return m;
 }
+/** Фланг: больше матчей слева — плюс, справа — минус. */
+const sideOf = (p: LeaguePlayer) => rolesOf(p).reduce((s, r) => s + (/^лев/i.test(r.title) ? r.n : /^прав/i.test(r.title) ? -r.n : 0), 0);
+const holdingMinded = (p: LeaguePlayer) => rolesOf(p).reduce((s, r) => s + (/опорн/i.test(r.title) ? r.n : 0), 0);
 
 /**
- * Основа одной команды по схеме 4-3-3. Сначала каждый встаёт на свою основную позицию (лучшие по
- * индексу). Пустое место закрывает тот, кто реально выходил на нём, — из запаса, а если такой
- * игрок в основе на другой позиции, где есть замена, — переставляем. Последним шагом центральные
- * и крайние берутся с другого фланга. Никто не стоит в основе дважды.
+ * Основа команды по 4-3-3: по специализациям, без учёта стороны. Сначала каждый — в своей
+ * специализации (лучшие по индексу). Недостающее место закрывает тот, кого туда ставит тренер,
+ * затем — кто реально выходил на этой позиции; если такой игрок в основе в другой линии, где
+ * есть замена, — переставляем. Никто не стоит в основе дважды.
  */
-export function lineup(players: LeaguePlayer[], cmp: (a: LeaguePlayer, b: LeaguePlayer) => number): Map<SlotId, Placed[]> {
-  const ids = Object.keys(SLOTS) as SlotId[];
-  const out = new Map<SlotId, Placed[]>(ids.map((s) => [s, []]));
-  const games = new Map(players.map((p) => [p.id, slotGames(p)]));
-  const home = new Map(players.map((p) => [p.id, slotOf(p.position)]));
+export function lineup(players: LeaguePlayer[], cmp: (a: LeaguePlayer, b: LeaguePlayer) => number, coach?: Map<number, Set<PositionGroup>>): Map<PositionGroup, Placed[]> {
+  const groups = Object.keys(GROUP_PLACES) as PositionGroup[];
+  const out = new Map<PositionGroup, Placed[]>(groups.map((g) => [g, []]));
+  const games = new Map(players.map((p) => [p.id, groupGames(p)]));
+  const home = new Map(players.map((p) => [p.id, groupOf(p)]));
   const used = new Set<number>();
-  const g = (p: LeaguePlayer, s: SlotId) => games.get(p.id)?.get(s) ?? 0;
-  const fits = (p: LeaguePlayer, s: SlotId) => (home.get(p.id) === 'GK') === (s === 'GK');   // вратаря в поле и полевого в ворота не ставим
-  const need = (s: SlotId) => SLOTS[s].places - out.get(s)!.length;
-  const put = (p: LeaguePlayer, s: SlotId, how: Placed['how']) => { out.get(s)!.push({ p, slot: s, home: home.get(p.id) ?? null, games: g(p, s), how }); used.add(p.id); };
+  const byCoach = (p: LeaguePlayer, g: PositionGroup) => !!coach?.get(p.id)?.has(g);
+  const n = (p: LeaguePlayer, g: PositionGroup) => games.get(p.id)?.get(g) ?? 0;
+  const fits = (p: LeaguePlayer, g: PositionGroup) => byCoach(p, g) || (home.get(p.id) === 'GK') === (g === 'GK');   // вратаря в поле не ставим, если не решил тренер
+  const can = (p: LeaguePlayer, g: PositionGroup) => fits(p, g) && (byCoach(p, g) || n(p, g) > 0);
+  const need = (g: PositionGroup) => GROUP_PLACES[g] - out.get(g)!.length;
+  const put = (p: LeaguePlayer, g: PositionGroup, how: Placed['how']) => { out.get(g)!.push({ p, slot: 'GK', group: g, home: home.get(p.id) ?? null, games: n(p, g), how }); used.add(p.id); };
   const free = () => players.filter((p) => !used.has(p.id));
-  const byGames = (s: SlotId) => (a: LeaguePlayer, b: LeaguePlayer) => g(b, s) - g(a, s) || cmp(a, b);
+  const rank = (g: PositionGroup) => (a: LeaguePlayer, b: LeaguePlayer) => Number(byCoach(b, g)) - Number(byCoach(a, g)) || n(b, g) - n(a, g) || cmp(a, b);
+  const howOf = (p: LeaguePlayer, g: PositionGroup): Placed['how'] => (home.get(p.id) === g ? 'main' : byCoach(p, g) ? 'coach' : 'played');
 
-  // 1. Основные позиции.
-  for (const s of ids) for (const p of players.filter((x) => home.get(x.id) === s).sort(cmp).slice(0, SLOTS[s].places)) put(p, s, 'main');
-  // 2. Из запаса — кто выходил на пустом месте.
-  for (const s of ids) while (need(s) > 0) {
-    const c = free().filter((p) => fits(p, s) && g(p, s) > 0).sort(byGames(s))[0];
-    if (!c) break; put(c, s, 'played');
+  // 1. Своя специализация.
+  for (const g of groups) for (const p of players.filter((x) => home.get(x.id) === g).sort(cmp).slice(0, GROUP_PLACES[g])) put(p, g, 'main');
+  // 2. Из запаса: кого ставит тренер, затем кто выходил здесь.
+  for (const g of groups) while (need(g) > 0) {
+    const c = free().filter((p) => can(p, g)).sort(rank(g))[0];
+    if (!c) break; put(c, g, howOf(c, g));
   }
-  // 3. Перестановка: игрок основы выходил на пустом месте, а на его позиции есть замена из запаса.
-  for (const s of ids) while (need(s) > 0) {
+  // 3. Перестановка из основы, если на его месте есть замена из запаса.
+  for (const g of groups) while (need(g) > 0) {
     let moved = false;
-    for (const from of ids) {
-      if (from === s) continue;
-      const sub = free().filter((p) => fits(p, from) && (home.get(p.id) === from || g(p, from) > 0)).sort(byGames(from))[0];
+    for (const from of groups) {
+      if (from === g) continue;
+      const sub = free().filter((p) => home.get(p.id) === from || can(p, from)).filter((p) => fits(p, from)).sort(rank(from))[0];
       if (!sub) continue;
       const list = out.get(from)!;
-      const mover = list.filter((x) => fits(x.p, s) && g(x.p, s) > 0).sort((a, b) => g(b.p, s) - g(a.p, s))[0];
+      const mover = list.filter((x) => can(x.p, g)).sort((x, y) => rank(g)(x.p, y.p))[0];
       if (!mover) continue;
       list.splice(list.indexOf(mover), 1); used.delete(mover.p.id);
-      put(mover.p, s, 'played'); put(sub, from, home.get(sub.id) === from ? 'main' : 'played');
+      put(mover.p, g, howOf(mover.p, g)); put(sub, from, howOf(sub, from));
       moved = true; break;
     }
     if (!moved) break;
   }
-  // 4. Тот же номер с другого фланга (левый ЦЗ справа, левый крайний справа).
-  for (const s of ids) while (need(s) > 0) {
-    const m = MIRROR[s]; if (!m) break;
-    const c = free().filter((p) => fits(p, s) && (home.get(p.id) === m || g(p, m) > 0)).sort(byGames(m))[0];
-    if (!c) break; put(c, s, 'mirror');
-  }
-  for (const s of ids) out.get(s)!.sort((a, b) => cmp(a.p, b.p));
+  for (const g of groups) out.get(g)!.sort((a, b) => cmp(a.p, b.p));
   return out;
 }
 
-/** Подсказка к игроку не на своей основной позиции. */
+/**
+ * Расставить основу специализации по местам схемы: фланг — по тому, где игрок чаще выходил;
+ * в опорную зону — центральный полузащитник, сильнее всех в игре в обороне.
+ */
+export function toSlots(byGroup: Map<PositionGroup, Placed[]>): Map<SlotId, Placed[]> {
+  const out = new Map<SlotId, Placed[]>(SLOT_IDS.map((s) => [s, []]));
+  const at = (x: Placed, s: SlotId) => out.get(s)!.push({ ...x, slot: s });
+  const pair = (xs: Placed[], left: SlotId, right: SlotId) => {
+    if (xs.length >= 2) { const [a, b] = xs.slice(0, 2).sort((x, y) => sideOf(y.p) - sideOf(x.p)); at(a!, left); at(b!, right); }
+    else if (xs[0]) at(xs[0], sideOf(xs[0].p) < 0 ? right : left);
+  };
+  for (const x of (byGroup.get('GK') ?? []).slice(0, 1)) at(x, 'GK');
+  for (const x of (byGroup.get('ST') ?? []).slice(0, 1)) at(x, 'ST');
+  pair(byGroup.get('CB') ?? [], 'LCB', 'RCB');
+  pair(byGroup.get('FB') ?? [], 'LB', 'RB');
+  pair(byGroup.get('W') ?? [], 'LW', 'RW');
+  const cm = (byGroup.get('CM') ?? []).slice(0, 3);
+  if (cm.length) {
+    const dm = cm.slice().sort((x, y) => (y.p.defPct ?? -1) - (x.p.defPct ?? -1) || holdingMinded(y.p) - holdingMinded(x.p))[0]!;
+    at(dm, 'DM');
+    for (const x of cm) if (x !== dm) at(x, 'CM');
+  }
+  return out;
+}
+
+/** Место запасного на схеме: фланг — по тому, где чаще выходил; центральный полузащитник с сильной игрой в обороне — в опорную зону. */
+export function depthSlot(p: LeaguePlayer, g: PositionGroup): SlotId {
+  const left = sideOf(p) >= 0;
+  switch (g) {
+    case 'GK': return 'GK';
+    case 'ST': return 'ST';
+    case 'CB': return left ? 'LCB' : 'RCB';
+    case 'FB': return left ? 'LB' : 'RB';
+    case 'W': return left ? 'LW' : 'RW';
+    case 'CM': return (p.defPct ?? 0) >= 60 || holdingMinded(p) > 0 ? 'DM' : 'CM';
+  }
+}
+
+/** Подсказка к игроку не в своей специализации. */
 export function placedNote(x: Placed): string | null {
+  const base = x.home ? GROUP_TITLE[x.home].toLowerCase() : 'не указана';
+  if (x.slot === 'DM' && x.how === 'main') return x.p.defPct != null ? `В опорной зоне — самый сильный в обороне из центральных полузащитников (лучше ${x.p.defPct}% сверстников)` : null;
   if (x.how === 'main') return null;
-  const base = x.home ? SLOTS[x.home].title.toLowerCase().replace(/ \(.\)$/, '') : 'не указана';
-  return x.how === 'played'
-    ? `Основная позиция — ${base}; здесь выходил ${x.games} ${x.games === 1 ? 'раз' : x.games < 5 ? 'раза' : 'раз'}`
-    : `Основная позиция — ${base}; на этом фланге не выходил, ставим с другого`;
+  return x.how === 'coach'
+    ? `Основная позиция — ${base}; здесь его видит тренер`
+    : `Основная позиция — ${base}; здесь выходил ${x.games} ${x.games === 1 ? 'раз' : x.games < 5 ? 'раза' : 'раз'}`;
 }
 
 /** Горизонтальное поле (атака вправо) с разметкой; дети — абсолютно поверх. */
@@ -162,7 +182,7 @@ export function Pitch({ children, className = '' }: { children?: ReactNode; clas
 }
 
 // ─── Распределение региона точками ────────────────────────────────────────────
-export interface SwarmPoint { id: number | string; value: number; mine?: boolean; label?: string; href?: string }
+export interface SwarmPoint { id: number | string; value: number; mine?: boolean; label?: string; href?: string; /** Вторая школа холдинга — кольцом, чтобы отличать от первой. */ ring?: boolean }
 /**
  * Все игроки (или команды) региона точками по шкале; свои — крупные и подписаны.
  * Точки раскладываются в «рой», чтобы не налезать друг на друга.
@@ -192,7 +212,9 @@ export function Beeswarm({ points, min = 5, max = 10, height = 120, format = (v:
       {placed.filter((d) => !d.p.mine).map((d) => <circle key={`o${d.p.id}`} cx={d.cx} cy={d.cy} r={d.rr} className="viz-swarm__other"><title>{d.p.label ?? format(d.p.value)}</title></circle>)}
       {placed.filter((d) => d.p.mine).map((d) => (
         <g key={`m${d.p.id}`} className={`viz-swarm__mine${onPick ? ' viz-swarm__mine--link' : ''}`} onClick={onPick ? () => onPick(d.p.id) : undefined}>
-          <circle cx={d.cx} cy={d.cy} r={d.rr} fill={indexColor(d.p.value)}><title>{`${d.p.label ?? ''} · ${format(d.p.value)}`}</title></circle>
+          {d.p.ring
+            ? <circle className="viz-swarm__ring" cx={d.cx} cy={d.cy} r={d.rr - 1.3} fill="#0b1224" style={{ stroke: indexColor(d.p.value) }}><title>{`${d.p.label ?? ''} · ${format(d.p.value)}`}</title></circle>
+            : <circle cx={d.cx} cy={d.cy} r={d.rr} fill={indexColor(d.p.value)}><title>{`${d.p.label ?? ''} · ${format(d.p.value)}`}</title></circle>}
         </g>
       ))}
     </svg>
@@ -214,8 +236,8 @@ export function TeamScatter({ points, xLabel, yLabel, height = 300 }: { points: 
     <svg className="viz-scatter" viewBox={`0 0 ${W} ${H}`} role="img" aria-label={`${xLabel} и ${yLabel}`}>
       <line x1={sx(x0)} y1={sy(yMax)} x2={sx(x1)} y2={sy(1)} className="viz-scatter__expect" />
       {Array.from({ length: yMax }, (_, i) => i + 1).filter((v) => v === 1 || v === yMax || v % 2 === 1).map((v) => <text key={v} x={pl - 8} y={sy(v) + 4} textAnchor="end" className="viz-tick">{v}</text>)}
-      <text x={pl} y={H - 6} className="viz-tick">← слабее состав</text>
-      <text x={W - pr} y={H - 6} textAnchor="end" className="viz-tick">сильнее состав →</text>
+      <text x={pl} y={H - 6} className="viz-tick">← слабее игра</text>
+      <text x={W - pr} y={H - 6} textAnchor="end" className="viz-tick">сильнее игра →</text>
       <text x={12} y={pt + 4} className="viz-tick" transform={`rotate(-90 12 ${pt + 4})`} textAnchor="end">{yLabel}</text>
       {points.filter((p) => !p.mine).map((p) => <circle key={p.id} cx={sx(p.x)} cy={sy(p.y)} r={6} className="viz-scatter__other"><title>{`${p.label}: ${p.y}-е место`}</title></circle>)}
       {points.filter((p) => p.mine).map((p) => (

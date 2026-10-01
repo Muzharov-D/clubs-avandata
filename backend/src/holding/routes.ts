@@ -7,7 +7,8 @@ import { isAvandataConfigured, playerProfile, registrationsOf, regionPlayers, cl
 import { lineOf } from '../federation/holdings.js';
 import { and, desc, eq, sql } from 'drizzle-orm';
 import { withBypassRLS } from '../db/tenantContext.js';
-import { holdingNotes, type HoldingNote, type HoldingNoteKind } from '../db/schema/holding.js';
+import { holdingNotes, holdingPlayerPositions, type HoldingNote, type HoldingNoteKind } from '../db/schema/holding.js';
+import { GROUP_INFO, type PositionGroup } from '../federation/positionGroups.js';
 import { users } from '../db/schema/users.js';
 import { holdingChanges, holdingTimeline, captureHoldingSnapshotIfDue } from './snapshots.js';
 import { buildCard } from './card.js';
@@ -272,6 +273,34 @@ export async function holdingRoutes(app: FastifyInstance) {
     const id = Number((req.params as { id: string }).id);
     const rows = await withBypassRLS((tx) => tx.delete(holdingNotes).where(and(eq(holdingNotes.id, id), eq(holdingNotes.holdingSlug, slug))).returning({ id: holdingNotes.id }));
     if (!rows.length) { reply.code(404); return { error: 'заметка не найдена', code: 'NOTE_NOT_FOUND' }; }
+    reply.code(204);
+    return null;
+  });
+
+  // ─── Позиции, которые видит тренер ────────────────────────────────────────
+  // Читают все, кто видит кабинет (доска комплектования их учитывает); меняет руководство холдинга.
+  const GROUPS = Object.keys(GROUP_INFO) as PositionGroup[];
+  /** GET /holding/positions — дополнительные позиции всех игроков холдинга. */
+  app.get('/positions', async (req, reply) => {
+    const cfg = cfgOf(req, reply); if (!cfg) return { error: 'холдинг не найден', code: 'HOLDING_NOT_FOUND' };
+    const rows = await withBypassRLS((tx) => tx.select().from(holdingPlayerPositions).where(eq(holdingPlayerPositions.holdingSlug, cfg.slug)));
+    return { positions: rows.map((r) => ({ playerId: r.playerId, group: r.grp, authorName: r.authorName, createdAt: r.createdAt })) };
+  });
+  /** POST /holding/players/:id/positions/:group — добавить позицию. */
+  app.post('/players/:id/positions/:group', async (req, reply) => {
+    const slug = holdingOnly(req, reply); if (!slug) return forbidden;
+    const { id, group } = req.params as { id: string; group: string };
+    const playerId = Number(id);
+    if (!Number.isFinite(playerId) || !GROUPS.includes(group as PositionGroup)) { reply.code(400); return { error: 'неверная позиция', code: 'BAD_POSITION' }; }
+    const author = await withBypassRLS((tx) => tx.select({ fullName: users.fullName }).from(users).where(eq(users.id, req.user!.sub)).limit(1));
+    await withBypassRLS((tx) => tx.insert(holdingPlayerPositions).values({ holdingSlug: slug, playerId, grp: group, authorId: req.user!.sub, authorName: author[0]?.fullName ?? null }).onConflictDoNothing());
+    return { ok: true };
+  });
+  /** DELETE /holding/players/:id/positions/:group — убрать позицию. */
+  app.delete('/players/:id/positions/:group', async (req, reply) => {
+    const slug = holdingOnly(req, reply); if (!slug) return forbidden;
+    const { id, group } = req.params as { id: string; group: string };
+    await withBypassRLS((tx) => tx.delete(holdingPlayerPositions).where(and(eq(holdingPlayerPositions.holdingSlug, slug), eq(holdingPlayerPositions.playerId, Number(id)), eq(holdingPlayerPositions.grp, group))));
     reply.code(204);
     return null;
   });

@@ -4,7 +4,8 @@ import { api } from '../../api/client';
 import { FedError } from '../federation/FedState';
 import { PlayerAvatar } from '../federation/PlayerAvatar';
 import { ratingColor } from '../federation/ratings';
-import { num, shortClub, fmtDay, plMatch, LINE_TITLE, NOTE_KIND, useSlugQuery, type CardResponse, type CardMetric, type NoteKind } from './api';
+import { num, shortClub, fmtDay, plMatch, LINE_TITLE, groupTitle, NOTE_KIND, useSlugQuery, type CardResponse, type CardMetric, type NoteKind } from './api';
+import { indexColor } from './viz';
 import { PlayerMetricsTable } from './parts';
 import { PlayerNotes } from './Notes';
 
@@ -44,12 +45,12 @@ export function HoldingCardPage() {
             <div className="hold-hero__kicker">Карточка кандидата · тренерский совет</div>
             <h1 className="hc-sheet__name">{p.name}</h1>
             <div className="hc-sheet__meta">
-              {shortClub(p.clubLabel)} {p.birthYear}{d.birthDate ? ` · родился ${new Date(d.birthDate).toLocaleDateString('ru-RU')}` : ''} · {p.position ?? (p.line ? LINE_TITLE[p.line] : '—')} · {p.division}
+              {shortClub(p.clubLabel)} {p.birthYear}{d.birthDate ? ` · родился ${new Date(d.birthDate).toLocaleDateString('ru-RU')}` : ''} · {groupTitle(p)} · {p.division}
             </div>
           </div>
           <div className="hc-sheet__rating">
-            <div className="hc-sheet__rating-value" style={{ color: ratingColor(p.rating) }}>{p.rating != null ? num(p.rating) : '—'}</div>
-            <div className="hc-muted hc-small">рейтинг · {p.mp} {plMatch(p.mp)}</div>
+            <div className="hc-sheet__rating-value" style={{ color: indexColor(p.index) }}>{p.index != null ? p.index.toFixed(1) : '—'}</div>
+            <div className="hc-muted hc-small">индекс сезона · {p.mp} {plMatch(p.mp)}</div>
           </div>
         </header>
 
@@ -68,7 +69,7 @@ export function HoldingCardPage() {
           <section>
             <h3 className="hc-sheet__h">Последние матчи</h3>
             <SeriesBars series={c.series} lineAvg={p.lineAvgDiv} />
-            {c.stability && <p className="hc-muted hc-small" style={{ marginTop: 6 }}>Выше среднего по амплуа в лиге — {c.stability.aboveLine} из {c.stability.rated}{c.stability.streak > 0 ? ` · последние ${c.stability.streak} подряд` : ''}. Линия — среднее по амплуа в дивизионе ({p.lineAvgDiv != null ? num(p.lineAvgDiv) : '—'}).</p>}
+            {c.stability && <p className="hc-muted hc-small" style={{ marginTop: 6 }}>Выше среднего по амплуа в лиге — {c.stability.aboveLine} из {c.stability.rated}{c.stability.streak > 0 ? ` · последние ${c.stability.streak} подряд` : ''}. Линия — среднее по амплуа в дивизионе.</p>}
           </section>
         </div>
 
@@ -129,9 +130,9 @@ function SeriesBars({ series, lineAvg }: { series: CardResponse['card']['series'
   const max = Math.max(lineAvg ?? 0, ...series.map((s) => s.rating), 1);
   return (
     <div className="hc-bars" role="img" aria-label="Рейтинг по матчам">
-      {lineAvg != null && <div className="hc-bars__line" style={{ bottom: `${(lineAvg / max) * 100}%` }} title={`среднее по амплуа в лиге: ${num(lineAvg)}`} />}
+      {lineAvg != null && <div className="hc-bars__line" style={{ bottom: `${(lineAvg / max) * 100}%` }} title="среднее по амплуа в лиге" />}
       {series.map((s, i) => (
-        <div key={i} className="hc-bars__col" title={`${s.tour}-й тур: ${num(s.rating)}`}>
+        <div key={i} className="hc-bars__col" title={`${s.tour}-й тур`}>
           <div className={`hc-bars__bar${s.aboveLine ? ' hc-bars__bar--up' : s.aboveLine === false ? ' hc-bars__bar--down' : ''}`} style={{ height: `${Math.max(2, (s.rating / max) * 100)}%` }} />
           <span className="hc-bars__tour">{s.tour}</span>
         </div>
