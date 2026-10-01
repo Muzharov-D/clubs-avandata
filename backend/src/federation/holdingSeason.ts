@@ -37,7 +37,7 @@ export interface PlayerSeason {
   index: number | null; indexPct: number | null; rank: number | null; peers: number;
   /** Минут меньше двух полных матчей: без оценки (б/о). */
   lowSample: boolean;
-  /** Против сильнейшей четверти команд региона: индекс (от одного полного матча), минуты, матчи. */
+  /** Против сильнейшей четверти команд своей лиги: индекс (от одного полного матча), минуты, матчи. */
   vsTop: { index: number | null; minutes: number; matches: number };
   archetype: { name: string; tagline: string };
   superline: string | null;
@@ -304,7 +304,7 @@ export async function playerSeason(season: number, year: number, ids: number[], 
  * что в профиле: за полный матч своего возраста, против своей позиции, с минутами).
  * null — когорта ещё считается.
  */
-export interface PlayerForm { index: number | null; indexPct: number | null; /** Минут меньше двух полных матчей: без оценки (б/о). */ lowSample: boolean; /** Индекс против сильнейшей четверти команд региона. */ vsTop: { index: number | null; minutes: number; matches: number }; /** Перцентиль игры в обороне среди своей группы позиций. */ defPct: number | null; minutes: number; matches: number; series: number[]; formDelta: number | null; lastMinutesShare: number | null }
+export interface PlayerForm { index: number | null; indexPct: number | null; /** Минут меньше двух полных матчей: без оценки (б/о). */ lowSample: boolean; /** Индекс против сильнейшей четверти команд своей лиги. */ vsTop: { index: number | null; minutes: number; matches: number }; /** Перцентиль игры в обороне среди своей группы позиций. */ defPct: number | null; minutes: number; matches: number; series: number[]; formDelta: number | null; lastMinutesShare: number | null }
 export async function cohortForms(season: number, year: number): Promise<{ asOf: string; forms: Map<number, PlayerForm> } | null> {
   const c = cohortMetrics(season, year);
   if (!c) return null;

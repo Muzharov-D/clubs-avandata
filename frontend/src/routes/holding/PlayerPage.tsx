@@ -242,11 +242,11 @@ export function HoldingPlayerPage() {
   );
 }
 
-/** Стресс-тест под индексом: как игрок играет против сильнейшей четверти команд региона. */
+/** Стресс-тест под индексом: как игрок играет против сильнейшей четверти своей лиги. */
 function VsTopLine({ v }: { v?: { index: number | null; minutes: number; matches: number } }) {
   if (!v) return null;
-  const text = v.matches === 0 ? 'против сильнейших команд региона не играл'
+  const text = v.matches === 0 ? 'против сильнейших своей лиги не играл'
     : v.index == null ? `против сильнейших — ${v.minutes} мин, мало для оценки`
-    : `против сильнейших: ${v.index.toFixed(1)} · ${v.matches} ${v.matches === 1 ? 'матч' : v.matches < 5 ? 'матча' : 'матчей'}`;
-  return <div className="hd-player__ringsub hd-player__vstop" title="Только матчи против сильнейшей четверти команд своего возраста в регионе">{text}</div>;
+    : `против сильнейших своей лиги: ${v.index.toFixed(1)} · ${v.matches} ${v.matches === 1 ? 'матч' : v.matches < 5 ? 'матча' : 'матчей'}`;
+  return <div className="hd-player__ringsub hd-player__vstop" title="Только матчи против сильнейшей четверти команд своей лиги">{text}</div>;
 }

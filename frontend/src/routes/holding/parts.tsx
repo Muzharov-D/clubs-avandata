@@ -37,13 +37,13 @@ export function IndexCell({ p }: { p: LeaguePlayer }) {
   return <span className={`hd-index${p.lowSample ? ' hd-index--low' : ''}`} style={{ color: c }} title={`${p.lowSample ? 'предварительно: на поле меньше двух полных матчей · ' : ''}лучше ${Math.round(p.indexPct ?? 0)}% сверстников своей позиции · ${p.minutes ?? 0} мин`}>{p.index.toFixed(1)}</span>;
 }
 
-/** Стресс-тест: индекс против сильнейшей четверти команд региона. */
+/** Стресс-тест: индекс против сильнейшей четверти своей лиги. */
 export function VsTopCell({ p }: { p: LeaguePlayer }) {
   const v = p.vsTop;
-  if (!v || v.matches === 0) return <span className="hd-muted" title="Не играл против сильнейшей четверти команд региона">не играл</span>;
+  if (!v || v.matches === 0) return <span className="hd-muted" title="Не играл против сильнейшей четверти своей лиги">не играл</span>;
   if (v.index == null) return <span className="hd-muted" title={`Против сильнейших — ${v.minutes} мин, меньше одного полного матча`}>мало мин</span>;
   const c = v.index >= 9 ? 'var(--rating-excellent)' : v.index >= 8 ? 'var(--rating-good)' : v.index >= 7 ? 'var(--rating-ok)' : v.index >= 6 ? 'var(--rating-weak)' : 'var(--rating-poor)';
-  return <span className="hd-index" style={{ color: c }} title={`Только матчи против сильнейшей четверти команд региона: ${v.matches} ${v.matches === 1 ? 'матч' : v.matches < 5 ? 'матча' : 'матчей'}, ${v.minutes} мин`}>{v.index.toFixed(1)}</span>;
+  return <span className="hd-index" style={{ color: c }} title={`Только матчи против сильнейшей четверти своей лиги: ${v.matches} ${v.matches === 1 ? 'матч' : v.matches < 5 ? 'матча' : 'матчей'}, ${v.minutes} мин`}>{v.index.toFixed(1)}</span>;
 }
 
 /** Тренд: последние оценки против сезона. */

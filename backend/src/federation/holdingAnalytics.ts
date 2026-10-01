@@ -13,8 +13,9 @@
 import { regionPlayers, clubName, cached, hasFreshCache, TTL, type RegionPlayer } from './avandataSource.js';
 import { cohortForms, type PlayerForm } from './holdingSeason.js';
 import { positionGroup, type PositionGroup } from './positionGroups.js';
-import { setTeamTiers, teamElo, leagueMatchesOf, type OppTier } from './holdingIndex.js';
+import { setTeamTiers, teamElo, leagueMatchesOf, leagueCoefFrom, type OppTier } from './holdingIndex.js';
 import { cohortMetrics } from './holdingMetrics.js';
+import { logger } from '../shared/logger.js';
 import { getClubRatingsByTournament, type AvRatingTeam } from '../services/avandataApi.js';
 import { normTeam } from './teamName.js';
 import { classifyDivision, type DivisionKey } from './division.js';
@@ -64,7 +65,7 @@ export interface LeaguePlayer {
   defPct: number | null;
   /** Минут меньше двух полных матчей: индекс предварительный. */
   lowSample: boolean;
-  /** Против сильнейшей четверти команд региона: индекс (от одного полного матча), минуты, матчи. */
+  /** Против сильнейшей четверти своей лиги: индекс (от одного полного матча), минуты, матчи. */
   vsTop: { index: number | null; minutes: number; matches: number } | null;
 }
 export interface LineCompare { line: Line; title: string; teamAvg: number | null; divAvg: number | null; n: number; gapRel: number | null; verdict: 'weak' | 'ok' | 'strong' | null }
@@ -148,7 +149,7 @@ export function seedAnalytics(slug: string, seasonId: number, a: HoldingAnalytic
 /**
  * Сила соперника: Эло команд по результатам ФФСПб; стартовая разница лиг — по рейтингу AvanData за
  * разобранный матч (единственная мера, сравнимая между Высшей и Первой лигой). Команды возраста
- * делятся на четверти региона: С1 — сильнейшая четверть … С4 — слабейшая.
+ * делятся на четверти СВОЕЙ лиги: С1 — сильнейшая четверть … С4 — слабейшая. Между лигами — коэффициент лиги.
  */
 export async function registerTiers(seasonId: number, years: number[]): Promise<void> {
   for (const y of years) {
@@ -160,20 +161,30 @@ export async function registerTiers(seasonId: number, years: number[]): Promise<
     const perMatch = new Map<string, number>();
     for (const r of ratings) { const n = played.get(key(r.name)) ?? 0; if (n >= 3) perMatch.set(key(r.name), r.points / n); }
     // Сила — Эло по результатам ФФСПб (разница лиг — по рейтингу за матч); без протоколов — сам рейтинг за матч.
-    const elo = teamElo(leagueMatchesOf(y), perMatch);
+    const ms = leagueMatchesOf(y);
+    const elo = teamElo(ms, perMatch);
+    const top = new Map<string, boolean>();
+    for (const m of ms) { top.set(m.home, m.top); top.set(m.away, m.top); }
     const strength = elo.size ? elo : perMatch;
-    const str = [...strength].sort((a, b) => b[1] - a[1]);
+    const mean = (xs: number[]) => (xs.length ? xs.reduce((a, b) => a + b, 0) / xs.length : 0);
+    const leagueMean = { top: mean([...elo].filter(([k]) => top.get(k) !== false).map(([, v]) => v)), first: mean([...elo].filter(([k]) => top.get(k) === false).map(([, v]) => v)) };
+    // Четверти — внутри своей лиги: у Первой свои сильнейшие.
     const map = new Map<string, OppTier>();
     const Q: OppTier[] = ['С1', 'С2', 'С3', 'С4'];
-    str.forEach(([k], i) => map.set(k, Q[Math.min(3, Math.floor((i * 4) / str.length))] as OppTier));
-    if (map.size) setTeamTiers(y, map, elo);
+    for (const isTop of [true, false]) {
+      const str = [...strength].filter(([k]) => (top.get(k) ?? true) === isTop).sort((a, b) => b[1] - a[1]);
+      str.forEach(([k], i) => map.set(k, Q[Math.min(3, Math.floor((i * 4) / str.length))] as OppTier));
+    }
+    const leagueCoef = elo.size && top.size ? leagueCoefFrom(Math.max(0, leagueMean.top - leagueMean.first)) : 1;
+    if (map.size) setTeamTiers(y, { map, elo, top, leagueMean, leagueCoef });
+    logger.info({ year: y, eloTop: Math.round(leagueMean.top), eloFirst: Math.round(leagueMean.first), leagueCoef: Math.round(leagueCoef * 100) / 100 }, '[index] сила лиг');
   }
 }
 
 export async function holdingAnalytics(seasonId: number, cfg: HoldingConfig, profile: HoldingProfile, toursBack = 0): Promise<HoldingAnalytics> {
   // Формы когорт (минуты, индекс) — в ключ кэша: аналитика пересчитается, когда они досчитаются.
   const formsByYear = new Map<number, Map<number, PlayerForm>>();
-  await registerTiers(seasonId, profile.years).catch(() => undefined);
+  await registerTiers(seasonId, profile.years).catch((e: unknown) => logger.warn({ err: String(e) }, '[index] сила команд не посчитана — индекс без поправки на соперника и лигу'));
   if (toursBack === 0) for (const y of profile.years) { const f = await cohortForms(seasonId, y); if (f) formsByYear.set(y, f.forms); }
   const stamp = toursBack === 0 ? profile.years.map((y) => (formsByYear.has(y) ? 1 : 0)).join('') : '';
   const key = `holding-analytics:${cfg.slug}:${seasonId}:${profile.asOf}:${toursBack}${stamp ? ':' + stamp : ''}`;
