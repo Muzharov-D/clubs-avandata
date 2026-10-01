@@ -58,9 +58,9 @@
 .hd-brand__logos img, .hd-brand__logos svg { width: 30px; height: 30px; border-radius: 50%; background: #fff; padding: 2px; }
 .hd-brand__name { font-family: var(--serif); font-weight: 600; font-size: 17px; line-height: 1.1; letter-spacing: -0.005em; }
 .hd-brand__sub { display: block; font-family: var(--sans); font-size: 11px; font-weight: 500; opacity: 0.72; letter-spacing: 0.02em; }
-.hd-nav { display: flex; align-items: stretch; gap: 2px; height: 100%; flex: 1; min-width: 0; overflow-x: auto; scrollbar-width: none; }
-.hd-nav::-webkit-scrollbar { display: none; }
-.hd-nav__item { position: relative; display: inline-flex; align-items: center; gap: 6px; padding: 0 12px; color: rgba(255,255,255,0.78); text-decoration: none; font-size: 14px; font-weight: 500; white-space: nowrap; background: none; border: none; cursor: pointer; font-family: inherit; }
+.hd-nav { display: flex; align-items: stretch; gap: 0; height: 100%; flex: 1; min-width: 0; }
+.hd-navbtn { display: none; align-items: center; gap: 8px; background: rgba(255,255,255,0.12); border: none; color: #fff; padding: 8px 14px; border-radius: 999px; font: 600 14px var(--sans); cursor: pointer; margin-left: auto; }
+.hd-nav__item { position: relative; display: inline-flex; align-items: center; gap: 6px; padding: 0 11px; color: rgba(255,255,255,0.78); text-decoration: none; font-size: 14px; font-weight: 500; white-space: nowrap; background: none; border: none; cursor: pointer; font-family: inherit; }
 .hd-nav__item:hover { color: #fff; }
 .hd-nav__item--on { color: #fff; }
 .hd-nav__item--on::after { content: ''; position: absolute; left: 12px; right: 12px; bottom: 0; height: 3px; background: #fff; border-radius: 3px 3px 0 0; }
@@ -188,6 +188,19 @@
 .hd-btn--primary:hover { filter: brightness(1.1); }
 
 /* ---- Узкие экраны ---- */
+@media (max-width: 1360px) { .hd-brand__sub { display: none; } .hd-user__name { display: none; } }
+@media (max-width: 1200px) {
+  .hd-brand__name { font-size: 15px; }
+  .hd-navbtn { display: inline-flex; }
+  .hd-nav { display: none; }
+  .hd-nav.hd-nav--open { display: flex; flex-direction: column; position: absolute; right: 16px; top: 100%; width: 260px; height: auto; padding: 8px; background: #141932; border: 1px solid var(--border-strong); border-radius: 0 0 14px 14px; box-shadow: 0 16px 40px rgba(0,0,0,0.5); z-index: 75; }
+  .hd-nav--open .hd-nav__item { color: var(--text); padding: 11px 12px; border-radius: 8px; }
+  .hd-nav--open .hd-nav__item:hover { background: rgba(255,255,255,0.06); }
+  .hd-nav--open .hd-nav__item--on { background: var(--brand-primary); color: #fff; }
+  .hd-nav--open .hd-nav__item--on::after { display: none; }
+  .hd-nav--open .hd-navwrap { display: block; }
+  .hd-nav--open .hd-navwrap .hd-nav__item { width: 100%; text-align: left; }
+}
 @media (max-width: 1000px) {
   .hd-answers { grid-template-columns: 1fr; }
   .hd-answer { padding: 18px 0 22px; border-right: none; border-bottom: 1px solid var(--rule); }
@@ -198,7 +211,6 @@
 @media (max-width: 720px) {
   .hd-main { padding: 22px 16px 60px; }
   .hd-top__inner { height: auto; flex-wrap: wrap; padding: 10px 16px 0; }
-  .hd-nav { order: 3; flex-basis: 100%; height: 44px; margin: 0 -16px; padding: 0 4px; }
   .hd-user { margin-left: auto; }
   .hd-user__name { display: none; }
   .hd-teams { position: fixed; left: 16px; right: 16px; top: 112px; width: auto; grid-template-columns: 1fr; border-radius: 12px; border-top: 1px solid var(--rule); }
@@ -263,7 +275,11 @@
 .hd .fed-card:hover { box-shadow: none; transform: none; border-color: var(--rule); }
 .hd .fed-note { color: var(--ink-3); }
 .hd .fed-link { color: var(--brand); }
-.hd .fed-select, .hd .fed-input { background: #fff; color: var(--ink); border-color: var(--rule-strong); }
+/* Поля и выпадающие списки — тёмные, текст светлый; варианты списка тоже тёмные. */
+.hd { color-scheme: dark; }
+.hd .fed-select, .hd .fed-input, .hd select, .hd input[type="date"], .hd textarea { background: #10173a; color: var(--text); border: 1px solid var(--border-strong); }
+.hd select option, .hd select optgroup { background: #10173a; color: var(--text); }
+.hd select optgroup { color: #8fb3ff; font-weight: 700; }
 .hd .fed-select:focus, .hd .fed-input:focus { border-color: var(--brand); box-shadow: 0 0 0 3px var(--brand-wash); }
 .hd .fed-badge { background: var(--wash); color: var(--ink-2); border-color: transparent; }
 .hd .fed-badge--accent { background: var(--brand-wash); color: var(--brand); }
@@ -584,3 +600,38 @@ a.hd-chip:hover { border-color: var(--border-strong); }
 .hd-selcard__row { display: grid; grid-template-columns: minmax(0, 1fr) auto auto auto; align-items: center; gap: 8px; font-size: 13px; }
 .hd-selcard__who { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 @media (max-width: 1000px) { .hd-dtoc { grid-template-columns: repeat(2, 1fr); flex-basis: 100%; } }
+
+/* ---- Сравнение: выбор игрока ---- */
+.hd-cmp-slots { display: grid; grid-template-columns: 1fr auto 1fr; gap: 14px; align-items: center; }
+.hd-cmp-slot { display: flex !important; align-items: center; gap: 14px; margin: 0 !important; min-height: 76px; }
+.hd-cmp-slot--a { box-shadow: inset 3px 0 0 var(--brand-primary), var(--shadow) !important; }
+.hd-cmp-slot--b { box-shadow: inset 3px 0 0 var(--rating-good), var(--shadow) !important; }
+.hd-cmp-slot--active { border-color: #8fb3ff !important; }
+.hd-cmp-slot__label { font: 700 11px var(--font); text-transform: uppercase; letter-spacing: 0.07em; color: #8fb3ff; flex: none; }
+.hd-cmp-slot .hd-btn { margin-left: auto; }
+.hd-pick { display: flex; align-items: center; gap: 12px; min-width: 0; text-align: left; }
+.hd-pick__anon { width: 40px !important; height: 40px !important; font-size: 18px !important; }
+.hd-pick__body { display: flex; flex-direction: column; min-width: 0; }
+.hd-pick__name { font-weight: 700; font-size: 15px; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.hd-pick__meta { font-size: 12.5px; color: var(--text-faint); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.hd-picker { display: flex; flex-direction: column; gap: 12px; margin: 0 !important; border-color: rgba(143,179,255,0.4) !important; }
+.hd-picker__head { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+.hd-picker__head b { font-size: 16px; }
+.hd-picker__search { flex: 1; min-width: 240px; padding: 11px 14px; border-radius: 10px; font: 500 15px var(--font); }
+.hd-picker__search:focus { outline: none; border-color: #8fb3ff !important; box-shadow: 0 0 0 3px rgba(79,141,255,0.2); }
+.hd-picker__filters { display: flex; flex-direction: column; gap: 8px; }
+.hd-picker__row { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.hd-picker__row > span { width: 72px; font-size: 12px; color: var(--text-faint); font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; }
+.hd-fchip { border: 1px solid var(--border-strong); background: rgba(255,255,255,0.03); color: var(--text-muted-strong); padding: 6px 12px; border-radius: 999px; font: 600 13px var(--font); cursor: pointer; }
+.hd-fchip:hover { color: var(--text); border-color: #8fb3ff; }
+.hd-fchip--on { background: var(--brand-primary); border-color: var(--brand-primary); color: #fff; }
+.hd-picker__count { font-size: 12.5px; color: var(--text-faint); }
+.hd-picker__list { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 8px; max-height: 460px; overflow-y: auto; padding-right: 4px; }
+.hd-picker__item { display: block; padding: 10px 12px; border-radius: 12px; border: 1px solid var(--border); background: rgba(255,255,255,0.03); cursor: pointer; font: inherit; color: inherit; }
+.hd-picker__item:hover { border-color: #8fb3ff; background: rgba(79,141,255,0.08); }
+@media (max-width: 900px) { .hd-cmp-slots { grid-template-columns: 1fr; } .hd-cmp-slots .pc-vs { display: none; } .hd-picker__row > span { width: 100%; } }
+.hd-cmp-slots { grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); }
+.hd-cmp-slot { min-width: 0; }
+.hd-cmp-slot .hd-pick { flex: 1; }
+.hd-cmp-slot .hd-btn { flex: none; }
+.hd-picker__list { grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); }

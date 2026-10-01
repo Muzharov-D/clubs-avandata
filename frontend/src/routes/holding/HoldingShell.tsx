@@ -30,7 +30,7 @@ export function HoldingShell() {
   const notes = useNotes();
   const due = notes.data?.notes.filter((n) => n.due).length ?? 0;
   const [pwd, setPwd] = useState(false);
-  const [open, setOpen] = useState<'teams' | 'user' | null>(null);
+  const [open, setOpen] = useState<'teams' | 'user' | 'nav' | null>(null);
   const navRef = useRef<HTMLDivElement>(null);
 
   // Закрываем выпадашки при переходе и по клику мимо.
@@ -63,7 +63,9 @@ export function HoldingShell() {
             <span className="hd-brand__name">{name}<span className="hd-brand__sub">кабинет руководства</span></span>
           </Link>
 
-          <nav className="hd-nav" aria-label="Разделы">
+          {/* На узком экране разделы — в выпадающем меню, без прокрутки полосы. */}
+          <button type="button" className="hd-navbtn" aria-expanded={open === 'nav'} onClick={() => setOpen(open === 'nav' ? null : 'nav')}>Разделы ▾{due > 0 && <span className="hd-nav__badge">{due}</span>}</button>
+          <nav className={`hd-nav${open === 'nav' ? ' hd-nav--open' : ''}`} aria-label="Разделы">
             <NavLink to={`/holding${q}`} end className={item}>Брифинг</NavLink>
             <NavLink to={`/holding/board${q}`} className={item}>Комплектование</NavLink>
             <NavLink to={`/holding/decisions${q}`} className={item}>Решения</NavLink>
