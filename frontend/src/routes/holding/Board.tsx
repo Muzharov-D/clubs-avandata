@@ -46,8 +46,11 @@ export function HoldingBoard() {
   const strong: Array<{ slot: SlotId; year: number; best: LeaguePlayer }> = [];
   const shown = teamMode ? (Object.keys(SLOTS) as SlotId[]).filter((sl) => (data.bySlot.get(sl) ?? []).some((p) => p.birthYear === scope.year) || data.used.includes(sl)) : data.used;
   for (const slot of shown) for (const y of (teamMode ? [scope.year as number] : data.years)) {
-    const best = (data.bySlot.get(slot) ?? []).filter((p) => p.birthYear === y).sort(byIndex)[0] ?? null;
-    if (!best || (best.index != null && best.index < WEAK)) gaps.push({ slot, year: y, best });
+    const ofYear = (data.bySlot.get(slot) ?? []).filter((p) => p.birthYear === y).sort(byIndex);
+    const best = ofYear[0] ?? null;
+    // Не хватает игроков на места основы или последний из основы слабый.
+    const weakest = ofYear[SLOTS[slot].places - 1] ?? null;
+    if (!weakest || (weakest.index != null && weakest.index < WEAK)) gaps.push({ slot, year: y, best: weakest });
     else if (best.index != null && best.index >= 8) strong.push({ slot, year: y, best });
   }
 
@@ -71,26 +74,30 @@ export function HoldingBoard() {
           const s = SLOTS[slot];
           const list = (data.bySlot.get(slot) ?? []);
           return (
-            <div key={slot} className="hd-slot" style={{ left: `${s.x}%`, top: `${s.y}%` }}>
-              <div className="hd-slot__title">{s.title}</div>
+            <div key={slot} className={`hd-slot${s.places > 1 ? ' hd-slot--wide' : ''}`} style={{ left: `${s.x}%`, top: `${s.y}%` }}>
+              <div className="hd-slot__title">{s.title}{s.places > 1 ? ` · ${s.places} места` : ''}</div>
               {teamMode ? (
-                <TeamSlot players={list.filter((p) => p.birthYear === scope.year).sort(byIndex)} q={q} showClub={data.clubs > 1} />
+                <TeamSlot players={list.filter((p) => p.birthYear === scope.year).sort(byIndex)} q={q} showClub={data.clubs > 1} places={s.places} />
               ) : (
                 <div className="hd-slot__years">
-                  {data.years.map((y) => {
-                    const best = list.filter((p) => p.birthYear === y).sort(byIndex)[0];
-                    const depth = list.filter((p) => p.birthYear === y).length;
-                    return (
-                      <div key={y} className={`hd-slot__row${!best ? ' hd-slot__row--gap' : best.index != null && best.index < WEAK ? ' hd-slot__row--weak' : ''}`}>
-                        <span className="hd-slot__year" title={ageOf(y)}>{String(y).slice(2)}</span>
-                        {best ? (
-                          <Link to={`/holding/players/${best.id}${q}`} className="hd-slot__name" title={`${best.name} · ${shortClub(best.clubLabel)} ${best.birthYear} · ${best.position ?? ''}${depth > 1 ? ` · ещё ${depth - 1} на позиции` : ''}`}>
-                            {data.clubs > 1 && <span className="hd-slot__club">{clubTag(best.clubLabel)}</span>}{surname(best.name)}
-                          </Link>
-                        ) : <span className="hd-slot__name hd-slot__none">никого</span>}
-                        <span className="hd-slot__idx" style={{ color: indexColor(best?.index) }}>{best?.index != null ? best.index.toFixed(1) : '—'}</span>
-                      </div>
-                    );
+                  {data.years.flatMap((y) => {
+                    const ofYear = list.filter((p) => p.birthYear === y).sort(byIndex);
+                    // На позиции столько строк, сколько мест в основе (у центральных полузащитников — две).
+                    return Array.from({ length: s.places }, (_, i) => {
+                      const best = ofYear[i];
+                      const extra = ofYear.length - s.places;
+                      return (
+                        <div key={`${y}-${i}`} className={`hd-slot__row${!best ? ' hd-slot__row--gap' : best.index != null && best.index < WEAK ? ' hd-slot__row--weak' : ''}${i > 0 ? ' hd-slot__row--cont' : ''}`}>
+                          <span className="hd-slot__year" title={ageOf(y)}>{i === 0 ? String(y).slice(2) : ''}</span>
+                          {best ? (
+                            <Link to={`/holding/players/${best.id}${q}`} className="hd-slot__name" title={`${best.name} · ${shortClub(best.clubLabel)} ${best.birthYear} · ${best.position ?? ''}${extra > 0 && i === s.places - 1 ? ` · ещё ${extra} на позиции` : ''}`}>
+                              {data.clubs > 1 && <span className="hd-slot__club">{clubTag(best.clubLabel)}</span>}{surname(best.name)}
+                            </Link>
+                          ) : <span className="hd-slot__name hd-slot__none">никого</span>}
+                          <span className="hd-slot__idx" style={{ color: indexColor(best?.index) }}>{best?.index != null ? best.index.toFixed(1) : '—'}</span>
+                        </div>
+                      );
+                    });
                   })}
                 </div>
               )}
@@ -131,17 +138,18 @@ export function HoldingBoard() {
   );
 }
 
-function TeamSlot({ players, q, showClub }: { players: LeaguePlayer[]; q: string; showClub: boolean }) {
+function TeamSlot({ players, q, showClub, places = 1 }: { players: LeaguePlayer[]; q: string; showClub: boolean; places?: number }) {
   if (!players.length) return <div className="hd-slot__empty">никого</div>;
+  const shown = places + 2;
   return (
     <div className="hd-slot__team">
-      {players.slice(0, 3).map((p, i) => (
-        <Link key={p.id} to={`/holding/players/${p.id}${q}`} className={`hd-slot__player${i === 0 ? ' hd-slot__player--first' : ''}`} title={`${p.name} · ${p.position ?? ''} · ${p.minutes ?? 0} мин`}>
-          <IndexRing value={p.index} size={i === 0 ? 40 : 30} stroke={i === 0 ? 4 : 3} />
+      {players.slice(0, shown).map((p, i) => (
+        <Link key={p.id} to={`/holding/players/${p.id}${q}`} className={`hd-slot__player${i < places ? ' hd-slot__player--first' : ''}`} title={`${p.name} · ${p.position ?? ''} · ${p.minutes ?? 0} мин`}>
+          <IndexRing value={p.index} size={i < places ? 40 : 30} stroke={i < places ? 4 : 3} />
           <span className="hd-slot__pname">{showClub && <span className="hd-slot__club">{clubTag(p.clubLabel)}</span>}{surname(p.name)}</span>
         </Link>
       ))}
-      {players.length > 3 && <span className="hd-slot__more">ещё {players.length - 3}</span>}
+      {players.length > shown && <span className="hd-slot__more">ещё {players.length - shown}</span>}
     </div>
   );
 }
@@ -154,9 +162,9 @@ export function TeamPitch({ players, q }: { players: LeaguePlayer[]; q: string }
   return (
     <Pitch className="hd-board__pitch hd-teampitch">
       {slots.map((slot) => (
-        <div key={slot} className="hd-slot" style={{ left: `${SLOTS[slot].x}%`, top: `${SLOTS[slot].y}%` }}>
+        <div key={slot} className={`hd-slot${SLOTS[slot].places > 1 ? ' hd-slot--wide' : ''}`} style={{ left: `${SLOTS[slot].x}%`, top: `${SLOTS[slot].y}%` }}>
           <div className="hd-slot__title">{SLOTS[slot].title}</div>
-          <TeamSlot players={(bySlot.get(slot) ?? []).slice().sort(byIndex)} q={q} showClub={false} />
+          <TeamSlot players={(bySlot.get(slot) ?? []).slice().sort(byIndex)} q={q} showClub={false} places={SLOTS[slot].places} />
         </div>
       ))}
     </Pitch>

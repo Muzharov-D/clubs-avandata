@@ -14,6 +14,7 @@ import { cached } from './avandataSource.js';
 import { cohortMetrics, type CohortMetrics } from './holdingMetrics.js';
 import { OUTFIELD_PROFILE, GK_PROFILE, type ProfileMetric, type MetricGroup } from './metricsGlossary.js';
 import type { HoldingXi } from './holdings.js';
+import { GROUP_INFO, type PositionGroup } from './positionGroups.js';
 
 type Line = HoldingXi['line'];
 const MIN_POOL_MINUTES = 45;           // как MIN_RANK_MINUTES в Легирусе
@@ -25,6 +26,8 @@ export interface SeasonSlice { key: string; name: string; short: string; descrip
 export interface SeasonMatch { matchId: number; minutes: number; overall: number | null; attack: number | null; defence: number | null; date: string | null; opponent: string | null; score: string | null; result: 'W' | 'D' | 'L' | null }
 export interface PlayerSeason {
   playerId: number; year: number; line: Line | null; matchLen: number;
+  /** Группа позиции и подписи: с кем сравнивается игрок. */
+  group: PositionGroup | null; groupTitle: string | null; peersWord: string;
   minutes: number; matches: number; goals: number;
   /** Индекс сезона 0–10 и место в пуле своей позиции. */
   index: number | null; indexPct: number | null; rank: number | null; peers: number;
@@ -40,21 +43,18 @@ export interface PlayerSeason {
 }
 export interface MatchContext { date: string; opponent: string; score: string; result: 'W' | 'D' | 'L' | null }
 
-const LINE_PEERS: Record<Line, string> = { GK: 'вратарей', DEF: 'защитников', MID: 'полузащитников', FWD: 'нападающих' };
-const LINE_ONE: Record<Line, string> = { GK: 'вратарь', DEF: 'защитник', MID: 'полузащитник', FWD: 'нападающий' };
-
-interface Agg { pid: number; line: Line | null; minutes: number; matches: number; counts: Map<string, number>; points: number }
+interface Agg { pid: number; group: PositionGroup | null; minutes: number; matches: number; counts: Map<string, number>; points: number }
 interface Table {
   aggs: Map<number, Agg>;
-  /** Значения показателя по пулу линии (для перцентиля). */
+  /** Значения показателя по пулу группы позиций (для перцентиля). */
   pool: Map<string, number[]>;
-  /** Индекс сезона: очки за полный матч по пулу линии. */
-  pointsPool: Map<Line, number[]>;
-  /** Распределения «за матч» по линии: общий, атака, оборона. */
-  matchPool: Map<Line, { overall: number[]; attack: number[]; defence: number[] }>;
+  /** Индекс сезона: очки за полный матч по пулу группы позиций. */
+  pointsPool: Map<PositionGroup, number[]>;
+  /** Распределения «за матч» по группе позиций: общий, атака, оборона. */
+  matchPool: Map<PositionGroup, { overall: number[]; attack: number[]; defence: number[] }>;
 }
 
-const metricsOf = (line: Line | null) => (line === 'GK' ? GK_PROFILE : OUTFIELD_PROFILE);
+const metricsOf = (group: PositionGroup | null) => (group === 'GK' ? GK_PROFILE : OUTFIELD_PROFILE);
 const sum = (counts: Map<string, number>, ids: string[]) => ids.reduce((s, id) => s + (counts.get(id) ?? 0), 0);
 
 function valueOf(m: ProfileMetric, a: { counts: Map<string, number>; minutes: number }, L: number): number | null {
@@ -77,11 +77,11 @@ function pctOf(xs: number[], v: number, polarity: 1 | -1 = 1): number | null {
 function buildTable(c: CohortMetrics): Table {
   const L = c.matchLen;
   const aggs = new Map<number, Agg>();
-  const matchPool = new Map<Line, { overall: number[]; attack: number[]; defence: number[] }>();
+  const matchPool = new Map<PositionGroup, { overall: number[]; attack: number[]; defence: number[] }>();
   for (const [pid, pmMap] of c.byMatch) {
-    const line = c.lineOfPlayer.get(pid) ?? null;
+    const line = c.groupOfPlayer.get(pid) ?? null;
     const mins = c.minutes.get(pid) ?? new Map<number, number>();
-    const a: Agg = { pid, line, minutes: 0, matches: 0, counts: new Map(), points: 0 };
+    const a: Agg = { pid, group: line, minutes: 0, matches: 0, counts: new Map(), points: 0 };
     for (const [mid, pm] of pmMap) {
       const m = mins.get(mid) ?? 0;
       if (m <= 0) continue;
@@ -96,14 +96,14 @@ function buildTable(c: CohortMetrics): Table {
     aggs.set(pid, a);
   }
   const pool = new Map<string, number[]>();
-  const pointsPool = new Map<Line, number[]>();
+  const pointsPool = new Map<PositionGroup, number[]>();
   for (const a of aggs.values()) {
-    if (!a.line || a.minutes < MIN_POOL_MINUTES) continue;
-    (pointsPool.get(a.line) ?? pointsPool.set(a.line, []).get(a.line)!).push((a.points / a.minutes) * L);
-    for (const m of metricsOf(a.line)) {
+    if (!a.group || a.minutes < MIN_POOL_MINUTES) continue;
+    (pointsPool.get(a.group) ?? pointsPool.set(a.group, []).get(a.group)!).push((a.points / a.minutes) * L);
+    for (const m of metricsOf(a.group)) {
       const v = valueOf(m, a, L);
       if (v == null) continue;
-      const k = `${a.line}:${m.key}`;
+      const k = `${a.group}:${m.key}`;
       (pool.get(k) ?? pool.set(k, []).get(k)!).push(v);
     }
   }
@@ -115,46 +115,59 @@ const tableOf = (season: number, c: CohortMetrics): Promise<Table> => cached(`ho
 // ─── ДНК: архетип по навыковым областям (как CIES-амплуа в Легирусе) ──────────
 type Areas = Record<'finishing' | 'creation' | 'takeon' | 'security' | 'ballwin' | 'defending', number | null>;
 const avgN = (...xs: Array<number | null | undefined>) => { const p = xs.filter((x): x is number => x != null); return p.length ? p.reduce((a, b) => a + b, 0) / p.length : null; };
-const ARCHETYPES: Record<Exclude<Line, 'GK'>, Array<{ area: keyof Areas; name: string; tagline: string }>> = {
-  DEF: [
+// Архетипы — по группе позиций (опорный выбирает из «опорных» ролей, а не из всей полузащиты).
+const ARCHETYPES: Record<Exclude<PositionGroup, 'GK'>, Array<{ area: keyof Areas; name: string; tagline: string }>> = {
+  CB: [
     { area: 'creation', name: 'Защитник-распасовщик', tagline: 'начинает атаки первым пасом' },
-    { area: 'takeon', name: 'Выносящий защитник', tagline: 'проводит мяч вперёд из обороны' },
     { area: 'defending', name: 'Чистильщик', tagline: 'выносит и блокирует без риска' },
     { area: 'ballwin', name: 'Цепкий защитник', tagline: 'отбирает и перехватывает' },
-    { area: 'finishing', name: 'Атакующий защитник', tagline: 'подключается к атаке и бьёт' },
     { area: 'security', name: 'Надёжный защитник', tagline: 'не теряет мяч под давлением' },
+    { area: 'takeon', name: 'Выносящий защитник', tagline: 'проводит мяч вперёд из обороны' },
+    { area: 'finishing', name: 'Защитник-бомбардир', tagline: 'опасен на стандартах и в штрафной' },
   ],
-  MID: [
-    { area: 'creation', name: 'Дирижёр', tagline: 'организует атаки команды' },
+  FB: [
+    { area: 'creation', name: 'Атакующий крайний', tagline: 'подключается и создаёт моменты' },
+    { area: 'takeon', name: 'Крайний-дриблёр', tagline: 'проходит фланг с мячом' },
+    { area: 'defending', name: 'Надёжный крайний', tagline: 'закрывает свой фланг' },
+    { area: 'ballwin', name: 'Цепкий крайний', tagline: 'отбирает мяч на своём фланге' },
+    { area: 'security', name: 'Крайний-связующий', tagline: 'держит мяч и не теряет' },
+    { area: 'finishing', name: 'Подключающийся крайний', tagline: 'врывается в штрафную и бьёт' },
+  ],
+  DM: [
     { area: 'ballwin', name: 'Разрушитель', tagline: 'выгрызает мячи в центре' },
-    { area: 'takeon', name: 'Дриблёр', tagline: 'обыгрывает и тащит мяч вперёд' },
-    { area: 'finishing', name: 'Атакующий полузащитник', tagline: 'врывается в штрафную и бьёт' },
+    { area: 'creation', name: 'Опорный-распасовщик', tagline: 'начинает атаки из глубины' },
+    { area: 'defending', name: 'Страхующий опорный', tagline: 'закрывает зону перед защитой' },
     { area: 'security', name: 'Связующий', tagline: 'держит мяч и не теряет его' },
-    { area: 'defending', name: 'Опорный', tagline: 'закрывает зону перед защитой' },
+    { area: 'finishing', name: 'Подключающийся опорный', tagline: 'доходит до штрафной и бьёт' },
+    { area: 'takeon', name: 'Опорный с мячом', tagline: 'выносит мяч из-под прессинга ведением' },
   ],
-  FWD: [
+  AM: [
+    { area: 'creation', name: 'Дирижёр', tagline: 'организует атаки команды' },
+    { area: 'finishing', name: 'Атакующий полузащитник', tagline: 'врывается в штрафную и бьёт' },
+    { area: 'takeon', name: 'Дриблёр', tagline: 'обыгрывает и тащит мяч вперёд' },
+    { area: 'security', name: 'Связующий', tagline: 'держит мяч и не теряет его' },
+    { area: 'ballwin', name: 'Прессингующий полузащитник', tagline: 'отбирает мяч высоко' },
+    { area: 'defending', name: 'Полузащитник-трудяга', tagline: 'помогает в обороне' },
+  ],
+  W: [
+    { area: 'takeon', name: 'Вингер', tagline: 'обыгрывает один в один' },
+    { area: 'finishing', name: 'Смещающийся нападающий', tagline: 'смещается в центр и бьёт' },
+    { area: 'creation', name: 'Крайний-распасовщик', tagline: 'создаёт моменты партнёрам' },
+    { area: 'ballwin', name: 'Прессингующий крайний', tagline: 'отбирает мяч на чужой половине' },
+    { area: 'security', name: 'Крайний-связующий', tagline: 'держит мяч под давлением' },
+    { area: 'defending', name: 'Трудяга', tagline: 'возвращается и помогает в обороне' },
+  ],
+  ST: [
     { area: 'finishing', name: 'Завершитель', tagline: 'решает ударами' },
     { area: 'creation', name: 'Оттянутый форвард', tagline: 'связывает игру и создаёт моменты' },
-    { area: 'takeon', name: 'Вингер', tagline: 'обыгрывает один в один' },
     { area: 'ballwin', name: 'Прессингующий форвард', tagline: 'отбирает мяч на чужой половине' },
     { area: 'security', name: 'Опорный форвард', tagline: 'держит мяч спиной к воротам' },
-    { area: 'defending', name: 'Трудяга', tagline: 'помогает в обороне всей команде' },
+    { area: 'takeon', name: 'Подвижный форвард', tagline: 'обыгрывает и уходит в прорыв' },
+    { area: 'defending', name: 'Форвард-трудяга', tagline: 'помогает в обороне всей команде' },
   ],
 };
 
-/**
- * Поправка на позицию: атакующему полузащитнику не быть «опорным» из-за пары выносов,
- * а опорному — «завершителем» из-за одного гола. Как зоны ролей в Легирусе.
- */
-function positionPrior(position: string | null): Partial<Record<keyof Areas, number>> {
-  const p = (position ?? '').toLowerCase();
-  if (/атакующ|нападающ|вингер|крайн|форвард/.test(p)) return { finishing: 1.15, creation: 1.1, takeon: 1.1, defending: 0.75, ballwin: 0.9 };
-  if (/опорн|оборонит/.test(p)) return { ballwin: 1.15, defending: 1.1, security: 1.05, finishing: 0.8, takeon: 0.9 };
-  if (/фланг|латерал/.test(p)) return { takeon: 1.1, creation: 1.05 };
-  return {};
-}
-
-function dna(line: Line | null, slices: SeasonSlice[], position: string | null): { archetype: { name: string; tagline: string }; roles: Array<{ name: string; score: number }> } {
+function dna(line: PositionGroup | null, slices: SeasonSlice[]): { archetype: { name: string; tagline: string }; roles: Array<{ name: string; score: number }> } {
   const p = (k: string) => slices.find((s) => s.key === k)?.pct ?? null;
   if (line === 'GK') {
     const hard = p('hardSaves'), clean = p('gkErrors'), feet = avgN(p('progPasses'), p('accuracy'));
@@ -166,12 +179,10 @@ function dna(line: Line | null, slices: SeasonSlice[], position: string | null):
     finishing: avgN(p('goals'), p('shots')), creation: avgN(p('chances'), p('progPasses')), takeon: p('dribbles'),
     security: avgN(p('security'), p('accuracy')), ballwin: avgN(p('ballWin'), p('pressing')), defending: p('clearances'),
   };
-  const cat = ARCHETYPES[(line ?? 'MID') as Exclude<Line, 'GK'>];
-  const prior = positionPrior(position);
-  const ranked = cat.map((a) => ({ ...a, score: areas[a.area] == null ? null : Math.min(100, (areas[a.area] as number) * (prior[a.area] ?? 1)) }))
-    .filter((a) => a.score != null).sort((a, b) => (b.score as number) - (a.score as number));
+  const cat = ARCHETYPES[(line ?? 'AM') as Exclude<PositionGroup, 'GK'>];
+  const ranked = cat.map((a) => ({ ...a, score: areas[a.area] })).filter((a) => a.score != null).sort((a, b) => (b.score as number) - (a.score as number));
   const top = ranked[0];
-  return { archetype: top ? { name: top.name, tagline: top.tagline } : { name: LINE_ONE[(line ?? 'MID') as Line], tagline: 'мало данных для профиля' }, roles: ranked.slice(0, 4).map((r) => ({ name: r.name, score: Math.round(r.score as number) })) };
+  return { archetype: top ? { name: top.name, tagline: top.tagline } : { name: GROUP_INFO[line ?? 'AM'].title, tagline: 'мало данных для профиля' }, roles: ranked.slice(0, 4).map((r) => ({ name: r.name, score: Math.round(r.score as number) })) };
 }
 
 const plural = (n: number, one: string, few: string, many: string) => { const a = Math.abs(n) % 100, b = a % 10; if (a >= 11 && a <= 14) return many; if (b === 1) return one; if (b >= 2 && b <= 4) return few; return many; };
@@ -182,7 +193,7 @@ const RESULT_WORD = { W: 'победа', D: 'ничья', L: 'поражение
  * Сезонный профиль игрока (одна или несколько регистраций одного ребёнка). null — когорта
  * ещё считается. ctx — дата/соперник/счёт матчей команд холдинга (для динамики и текста).
  */
-export async function playerSeason(season: number, year: number, ids: number[], name: string, ctx: (avMatchId: number) => MatchContext | null, position: string | null = null): Promise<PlayerSeason | null> {
+export async function playerSeason(season: number, year: number, ids: number[], name: string, ctx: (avMatchId: number) => MatchContext | null): Promise<PlayerSeason | null> {
   const c = cohortMetrics(season, year);
   if (!c) return null;
   const t = await tableOf(season, c);
@@ -203,7 +214,8 @@ export async function playerSeason(season: number, year: number, ids: number[], 
     }
   }
   minutes = Math.round(minutes);
-  const line = ids.map((id) => c.lineOfPlayer.get(id)).find((l) => l != null) ?? null;
+  const lineOfPlayer = ids.map((id) => c.lineOfPlayer.get(id)).find((l) => l != null) ?? null;
+  const line = ids.map((id) => c.groupOfPlayer.get(id)).find((g) => g != null) ?? null;   // группа позиции
   const inPool = !!line && minutes >= MIN_POOL_MINUTES;
 
   const slices: SeasonSlice[] = metricsOf(line).map((m) => {
@@ -216,11 +228,11 @@ export async function playerSeason(season: number, year: number, ids: number[], 
   const indexPct = mine != null && inPool ? pctOf(pp, mine) : null;
   const rank = mine != null && inPool ? pp.filter((x) => x > mine).length + 1 : null;
 
-  const { archetype, roles } = dna(line, slices, position);
+  const { archetype, roles } = dna(line, slices);
   const scored = slices.filter((s) => s.pct != null) as Array<SeasonSlice & { pct: number }>;
   const strengths = scored.slice().sort((a, b) => b.pct - a.pct).slice(0, 4).filter((s) => s.pct >= 50).map((s) => ({ key: s.key, name: s.name, description: s.description, pct: s.pct }));
   const growth = scored.slice().sort((a, b) => a.pct - b.pct).filter((s) => s.pct <= 40 && !strengths.some((x) => x.key === s.key)).slice(0, 3).map((s) => ({ key: s.key, name: s.name, description: s.description, pct: s.pct }));
-  const peersWord = line ? `${LINE_PEERS[line]} ${year} г.р. региона` : `игроков ${year} г.р.`;
+  const peersWord = line ? `${GROUP_INFO[line].peers} ${year} г.р. региона` : `игроков ${year} г.р.`;
   let superline: string | null = null;
   if (strengths[0]) {
     const s0 = scored.find((s) => s.key === strengths[0]!.key)!;
@@ -248,7 +260,7 @@ export async function playerSeason(season: number, year: number, ids: number[], 
   const index = indexPct != null ? Math.round(indexPct) / 10 : null;
   // Абзац-вывод, как «Профиль» в Легирусе.
   const parts: string[] = [];
-  parts.push(`${name} — ${line ? LINE_ONE[line] : 'игрок'}, ${year} г.р. В сезоне — ${matches} ${plural(matches, 'разобранный матч', 'разобранных матча', 'разобранных матчей')} (${minutes} ${plural(minutes, 'минута', 'минуты', 'минут')} на поле)${goals ? `, ${goals} ${plural(goals, 'гол', 'гола', 'голов')}` : ''}.`);
+  parts.push(`${name} — ${line ? GROUP_INFO[line].one : 'игрок'}, ${year} г.р. В сезоне — ${matches} ${plural(matches, 'разобранный матч', 'разобранных матча', 'разобранных матчей')} (${minutes} ${plural(minutes, 'минута', 'минуты', 'минут')} на поле)${goals ? `, ${goals} ${plural(goals, 'гол', 'гола', 'голов')}` : ''}.`);
   if (!inPool) parts.push(`Для сравнения со сверстниками нужно от ${MIN_POOL_MINUTES} минут на поле.`);
   else {
     if (strengths.length) parts.push(`Среди ${peersWord} сильнее всего по: ${strengths.slice(0, 2).map((s) => `${s.name.toLowerCase()} (${s.pct}-й перцентиль)`).join(', ')}.`);
@@ -260,11 +272,12 @@ export async function playerSeason(season: number, year: number, ids: number[], 
     }
     const last = series.filter((s) => s.date).slice(-1)[0];
     if (last?.date && last.opponent) parts.push(`Последний разобранный матч — ${fmtDate(last.date)} против «${last.opponent}» (${last.score ?? '—'})${last.result ? `, ${RESULT_WORD[last.result]}` : ''}.`);
-    if (index != null) parts.push(`Индекс сезона — ${index.toFixed(1)} из 10: лучше ${Math.round(indexPct as number)}% ${LINE_PEERS[line as Line]} своего возраста в регионе.`);
+    if (index != null) parts.push(`Индекс сезона — ${index.toFixed(1)} из 10: лучше ${Math.round(indexPct as number)}% ${GROUP_INFO[line as PositionGroup].peers} своего возраста в регионе.`);
   }
 
   return {
-    playerId: ids[0]!, year, line, matchLen: L, minutes, matches, goals,
+    playerId: ids[0]!, year, line: lineOfPlayer, matchLen: L, minutes, matches, goals,
+    group: line, groupTitle: line ? GROUP_INFO[line].title : null, peersWord,
     index, indexPct, rank, peers: pp.length,
     archetype, superline, strengths, growth, roles, slices, series, text: parts.join(' '), inPool,
   };
@@ -284,10 +297,10 @@ export async function cohortForms(season: number, year: number): Promise<{ asOf:
     const L = c.matchLen;
     const forms = new Map<number, PlayerForm>();
     for (const a of t.aggs.values()) {
-      const pool = a.line ? t.pointsPool.get(a.line) ?? [] : [];
-      const inPool = !!a.line && a.minutes >= MIN_POOL_MINUTES;
+      const pool = a.group ? t.pointsPool.get(a.group) ?? [] : [];
+      const inPool = !!a.group && a.minutes >= MIN_POOL_MINUTES;
       const pct = inPool ? pctOf(pool, (a.points / a.minutes) * L) : null;
-      const mp = a.line ? t.matchPool.get(a.line) : undefined;
+      const mp = a.group ? t.matchPool.get(a.group) : undefined;
       const pmMap = c.byMatch.get(a.pid) ?? new Map();
       const mins = c.minutes.get(a.pid) ?? new Map<number, number>();
       const rows = [...pmMap.entries()].map(([mid, pm]) => ({ mid, m: mins.get(mid) ?? 0, pm })).filter((x) => x.m > 0).sort((x, y) => x.mid - y.mid);

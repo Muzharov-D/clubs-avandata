@@ -16,6 +16,7 @@ import { classifyDivision, type DivisionKey } from './division.js';
 import { lineOf, type HoldingXi } from './holdings.js';
 import { logger } from '../shared/logger.js';
 import { metricInfo, type MetricGroup } from './metricsGlossary.js';
+import { positionGroup, type PositionGroup } from './positionGroups.js';
 import { eq } from 'drizzle-orm';
 import { withBypassRLS } from '../db/tenantContext.js';
 import { holdingCohortCache } from '../db/schema/holding.js';
@@ -38,7 +39,7 @@ export interface TeamMetricRow {
   id: string; title: string; short: string; description: string; category: MetricGroup; polarity: 1 | -1;
   perMatch: number; divAvg: number | null; rankDiv: number | null; sizeDiv: number;
 }
-export interface PlayerMetricsVsLeague { playerId: number; matches: number; line: Line | null; division: string; rows: PlayerMetricRow[]; asOf: string }
+export interface PlayerMetricsVsLeague { playerId: number; matches: number; line: Line | null; group: PositionGroup | null; division: string; rows: PlayerMetricRow[]; asOf: string }
 export interface TeamMetricsVsLeague { teamKey: string; matches: number; division: string; rows: TeamMetricRow[]; asOf: string }
 
 interface PlayerAgg { matches: Set<number>; counts: Map<string, number>; points: number; teamId: number }
@@ -53,6 +54,8 @@ interface CohortMetrics {
   teams: Map<number, TeamAgg>;
   /** Линия и дивизион игрока (по regionPlayers). */
   lineOfPlayer: Map<number, Line | null>;
+  /** Группа позиции (с кем сравнивать): ЦЗ, крайние, опорные, атакующие ПЗ, края, ЦН, вратари. */
+  groupOfPlayer: Map<number, PositionGroup | null>;
   divOfPlayer: Map<number, DivisionKey | null>;
   types: MetricDef[];
   /** Длина полного матча этого возраста, минуты (U14 — 60, U15–U16 — 70, U17–U18 — 80). */
@@ -176,7 +179,8 @@ async function buildCohort(seasonId: number, year: number): Promise<CohortMetric
   const lineOfPlayer = new Map<number, Line | null>(); const divOfPlayer = new Map<number, DivisionKey | null>();
   const divByClub = new Map<string, DivisionKey | null>();
   for (const t of teams.values()) divByClub.set(normTeam(clubName(t.name)), t.divKey);
-  for (const p of pool) { lineOfPlayer.set(p.id, lineOf(p.position)); divOfPlayer.set(p.id, divByClub.get(normTeam(clubName(p.club))) ?? null); }
+  const groupOfPlayer = new Map<number, PositionGroup | null>();
+  for (const p of pool) { lineOfPlayer.set(p.id, lineOf(p.position)); groupOfPlayer.set(p.id, positionGroup(p.position)); divOfPlayer.set(p.id, divByClub.get(normTeam(clubName(p.club))) ?? null); }
   const types = await eventTypes();
   // Границы матчей и минуты игроков.
   const spans = new Map<number, MatchSpan>();
@@ -198,7 +202,7 @@ async function buildCohort(seasonId: number, year: number): Promise<CohortMetric
     minutes.set(pid, out);
   }
   logger.info({ year, teams: teams.size, players: players.size }, '[metrics] когорта собрана');
-  return { year, asOf: new Date().toISOString(), players, teams, lineOfPlayer, divOfPlayer, types, matchLen, byMatch, minutes, spans };
+  return { year, asOf: new Date().toISOString(), players, teams, lineOfPlayer, groupOfPlayer, divOfPlayer, types, matchLen, byMatch, minutes, spans };
 }
 
 /** Метрики когорты из кэша; если нет — ставим сборку в очередь (по одной когорте) и возвращаем null. */
@@ -210,7 +214,7 @@ function serialize(c: CohortMetrics): Ser {
     year: c.year, asOf: c.asOf, matchLen: c.matchLen, types: c.types,
     players: mapToArr(c.players, (p) => ({ ...p, matches: [...p.matches], counts: mapToArr(p.counts) })),
     teams: mapToArr(c.teams, (t) => ({ ...t, matches: [...t.matches], counts: mapToArr(t.counts) })),
-    lineOfPlayer: mapToArr(c.lineOfPlayer), divOfPlayer: mapToArr(c.divOfPlayer),
+    lineOfPlayer: mapToArr(c.lineOfPlayer), groupOfPlayer: mapToArr(c.groupOfPlayer), divOfPlayer: mapToArr(c.divOfPlayer),
     byMatch: mapToArr(c.byMatch, (m) => mapToArr(m, (pm) => ({ ...pm, counts: mapToArr(pm.counts) }))),
     minutes: mapToArr(c.minutes, (m) => mapToArr(m)),
     spans: mapToArr(c.spans),
@@ -223,7 +227,7 @@ function deserialize(o: Ser): CohortMetrics {
     year: o.year as number, asOf: o.asOf as string, matchLen: o.matchLen as number, types: o.types as MetricDef[],
     players: new Map((o.players as KV<PlayerAgg & { matches: number[]; counts: Array<[string, number]> }>).map(([k, v]) => [k, { ...v, matches: new Set(v.matches), counts: counts(v.counts) }])),
     teams: new Map((o.teams as KV<TeamAgg & { matches: number[]; counts: Array<[string, number]> }>).map(([k, v]) => [k, { ...v, matches: new Set(v.matches), counts: counts(v.counts) }])),
-    lineOfPlayer: new Map(o.lineOfPlayer as KV<Line | null>), divOfPlayer: new Map(o.divOfPlayer as KV<DivisionKey | null>),
+    lineOfPlayer: new Map(o.lineOfPlayer as KV<Line | null>), groupOfPlayer: new Map((o.groupOfPlayer ?? []) as KV<PositionGroup | null>), divOfPlayer: new Map(o.divOfPlayer as KV<DivisionKey | null>),
     byMatch: new Map((o.byMatch as KV<KV<PlayerMatch & { counts: Array<[string, number]> }>>).map(([k, v]) => [k, new Map(v.map(([mk, pm]) => [mk, { ...pm, counts: counts(pm.counts) }]))])),
     minutes: new Map((o.minutes as KV<KV<number>>).map(([k, v]) => [k, new Map(v)])),
     spans: new Map(o.spans as KV<MatchSpan>),
@@ -239,7 +243,8 @@ async function saveCohort(seasonId: number, c: CohortMetrics): Promise<void> {
 export async function restoreCohorts(seasonId: number): Promise<number> {
   try {
     const rows = await withBypassRLS((tx) => tx.select().from(holdingCohortCache).where(eq(holdingCohortCache.season, seasonId)));
-    for (const r of rows) if (!cohorts.has(r.birthYear)) cohorts.set(r.birthYear, deserialize(r.payload as Ser));
+    // Сборки старого формата (без групп позиций) не поднимаем — пересоберутся фоном.
+    for (const r of rows) if (!cohorts.has(r.birthYear) && (r.payload as Ser).groupOfPlayer) cohorts.set(r.birthYear, deserialize(r.payload as Ser));
     logger.info({ seasonId, cohorts: rows.length }, '[metrics] когорты подняты из кэша');
     return rows.length;
   } catch (e) { logger.warn({ err: String(e) }, '[metrics] кэш когорт недоступен'); return 0; }
@@ -272,15 +277,17 @@ export function playerMetricsVsLeague(seasonId: number, year: number, playerIds:
   if (!c) return null;
   // Один ребёнок = несколько регистраций: складываем.
   const mine = playerIds.map((id) => c.players.get(id)).filter((x): x is PlayerAgg => !!x);
-  if (!mine.length) return { playerId: playerIds[0]!, matches: 0, line: null, division: '—', rows: [], asOf: c.asOf };
+  if (!mine.length) return { playerId: playerIds[0]!, matches: 0, line: null, group: null, division: '—', rows: [], asOf: c.asOf };
   const matches = new Set(mine.flatMap((m) => [...m.matches])).size;
   const counts = new Map<string, number>();
   for (const m of mine) for (const [k, v] of m.counts) counts.set(k, (counts.get(k) ?? 0) + v);
   const line = playerIds.map((id) => c.lineOfPlayer.get(id)).find((l) => l != null) ?? null;
+  const group = playerIds.map((id) => c.groupOfPlayer.get(id)).find((g) => g != null) ?? null;
   const div = playerIds.map((id) => c.divOfPlayer.get(id)).find((d) => d != null) ?? null;
   const team = c.teams.get(mine[0]!.teamId);
   // Пул сверстников того же амплуа: в дивизионе и в регионе (не меньше 2 матчей).
-  const peers = [...c.players.entries()].filter(([id, p]) => !playerIds.includes(id) && p.matches.size >= MIN_PEER_MATCHES && c.lineOfPlayer.get(id) === line);
+  // Сверстники той же группы позиций (опорный — с опорными, а не со всей полузащитой).
+  const peers = [...c.players.entries()].filter(([id, p]) => !playerIds.includes(id) && p.matches.size >= MIN_PEER_MATCHES && (group ? c.groupOfPlayer.get(id) === group : c.lineOfPlayer.get(id) === line));
   const peersDiv = peers.filter(([id]) => c.divOfPlayer.get(id) === div);
   const rows: PlayerMetricRow[] = c.types.map((t) => {
     const mineRate = perMatch(counts.get(t.id) ?? 0, matches);
@@ -299,7 +306,7 @@ export function playerMetricsVsLeague(seasonId: number, year: number, playerIds:
   }).filter((r) => r.count > 0 || (r.lineAvgDiv ?? 0) > 0)
     .sort((a, b) => b.weight * b.perMatch - a.weight * a.perMatch)
     .map(({ weight: _w, ...r }) => r);
-  return { playerId: playerIds[0]!, matches, line, division: team?.division ?? '—', rows, asOf: c.asOf };
+  return { playerId: playerIds[0]!, matches, line, group, division: team?.division ?? '—', rows, asOf: c.asOf };
 }
 
 /** Показатели команды за матч против команд её дивизиона. null — когорта ещё считается. */

@@ -32,28 +32,37 @@ export function IndexRing({ value, size = 40, stroke = 4 }: { value: number | nu
 }
 
 // ─── Поле ─────────────────────────────────────────────────────────────────────
-export type SlotId = 'GK' | 'LB' | 'LCB' | 'RCB' | 'RB' | 'LDM' | 'RDM' | 'LAM' | 'CAM' | 'RAM' | 'LW' | 'ST' | 'RW';
-/** Место на горизонтальном поле (атака вправо): x, y — проценты. */
-export const SLOTS: Record<SlotId, { x: number; y: number; title: string }> = {
-  GK: { x: 8.5, y: 50, title: 'Вратарь' },
-  LB: { x: 23, y: 11, title: 'Левый защитник' }, LCB: { x: 21, y: 36, title: 'Центральный защитник (л)' },
-  RCB: { x: 21, y: 64, title: 'Центральный защитник (п)' }, RB: { x: 23, y: 89, title: 'Правый защитник' },
-  LDM: { x: 41, y: 33, title: 'Опорный (л)' }, RDM: { x: 41, y: 67, title: 'Опорный (п)' },
-  LAM: { x: 60, y: 14, title: 'Атакующий полузащитник (л)' }, CAM: { x: 60, y: 50, title: 'Атакующий полузащитник' }, RAM: { x: 60, y: 86, title: 'Атакующий полузащитник (п)' },
-  LW: { x: 82, y: 14, title: 'Левый нападающий' }, ST: { x: 89, y: 50, title: 'Центральный нападающий' }, RW: { x: 82, y: 86, title: 'Правый нападающий' },
+export type SlotId = 'GK' | 'LB' | 'LCB' | 'RCB' | 'RB' | 'DM' | 'CM' | 'LW' | 'ST' | 'RW';
+/**
+ * Схема 4-3-3 (утверждена руководством). Место на горизонтальном поле (атака вправо): x, y — %.
+ * places — сколько игроков основы на позиции (центральных полузащитников двое).
+ */
+export const SLOTS: Record<SlotId, { x: number; y: number; title: string; places: number }> = {
+  GK: { x: 8.5, y: 50, title: 'Вратарь', places: 1 },
+  LB: { x: 24, y: 11, title: 'Левый защитник', places: 1 }, LCB: { x: 21, y: 36, title: 'Центральный защитник (л)', places: 1 },
+  RCB: { x: 21, y: 64, title: 'Центральный защитник (п)', places: 1 }, RB: { x: 24, y: 89, title: 'Правый защитник', places: 1 },
+  DM: { x: 40, y: 50, title: 'Опорный полузащитник', places: 1 },
+  CM: { x: 60, y: 50, title: 'Центральные полузащитники', places: 2 },
+  LW: { x: 80, y: 13, title: 'Левый крайний нападающий', places: 1 }, ST: { x: 88, y: 50, title: 'Центральный нападающий', places: 1 }, RW: { x: 80, y: 87, title: 'Правый крайний нападающий', places: 1 },
 };
-/** Позиция AvanData → место на поле. */
+/**
+ * Позиция AvanData → место в 4-3-3 (те же группы, что на бэкенде, federation/positionGroups.ts):
+ * атакующие полузащитники (левый/правый/центральный) — одна позиция «центральные полузащитники»;
+ * опорные — одна позиция; фулбеки — к крайним защитникам; «левый/правый полузащитник» — к крайним
+ * нападающим; левый/правый центральный нападающий — к центральному.
+ */
 export function slotOf(position: string | null | undefined): SlotId | null {
-  const p = (position ?? '').toLowerCase();
+  const p = (position ?? '').toLowerCase().trim();
   if (!p) return null;
+  const right = p.startsWith('прав');
   if (p.includes('вратар')) return 'GK';
-  const left = p.startsWith('лев'), right = p.startsWith('прав');
-  // Полузащитников — раньше защитников: в слове «полузащитник» есть «защитник».
-  if (p.includes('опорн')) return right ? 'RDM' : 'LDM';
-  if (p.includes('полузащит')) return left ? 'LAM' : right ? 'RAM' : 'CAM';
-  if (p.includes('центральный защитник')) return right ? 'RCB' : 'LCB';
+  if (p.includes('опорн')) return 'DM';
+  if (p.includes('атакующ')) return 'CM';
+  if (p.includes('полузащит')) return right ? 'RW' : 'LW';
+  if (p.includes('центральный нападающ')) return 'ST';
+  if (p.includes('нападающ') || p.includes('форвард')) return right ? 'RW' : 'LW';
+  if (p.includes('центральный защит')) return right ? 'RCB' : 'LCB';
   if (p.includes('защитник') || p.includes('фулбек')) return right ? 'RB' : 'LB';
-  if (p.includes('нападающ') || p.includes('форвард')) return p.includes('центральн') ? 'ST' : left ? 'LW' : right ? 'RW' : 'ST';
   return null;
 }
 

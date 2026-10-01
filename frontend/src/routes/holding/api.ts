@@ -15,8 +15,11 @@ export type Line = 'GK' | 'DEF' | 'MID' | 'FWD';
 export type DivisionKey = 'Высшая' | 'Первая' | null;
 export const LINE_TITLE: Record<Line, string> = { GK: 'Вратарь', DEF: 'Защита', MID: 'Полузащита', FWD: 'Атака' };
 
+export type PositionGroup = 'GK' | 'CB' | 'FB' | 'DM' | 'AM' | 'W' | 'ST';
+/** Группы позиций — как на бэкенде (federation/positionGroups.ts). */
+export const GROUP_TITLE: Record<PositionGroup, string> = { GK: 'Вратарь', CB: 'Центральный защитник', FB: 'Крайний защитник', DM: 'Опорный полузащитник', AM: 'Атакующий полузащитник', W: 'Крайний нападающий', ST: 'Центральный нападающий' };
 export interface LeaguePlayer {
-  id: number; name: string; photo: string | null; position: string | null; line: Line | null;
+  id: number; name: string; photo: string | null; position: string | null; line: Line | null; group?: PositionGroup | null;
   birthYear: number; clubKey: string; clubLabel: string; teamKey: string; team: string;
   division: string; divisionKey: DivisionKey;
   rating: number | null; mp: number;
