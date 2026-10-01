@@ -65,6 +65,7 @@ export function HoldingShell() {
 
           <nav className="hd-nav" aria-label="Разделы">
             <NavLink to={`/holding${q}`} end className={item}>Брифинг</NavLink>
+            <NavLink to={`/holding/board${q}`} className={item}>Комплектование</NavLink>
             <NavLink to={`/holding/decisions${q}`} className={item}>Решения</NavLink>
             <NavLink to={`/holding/changes${q}`} className={item}>Динамика</NavLink>
             <div className="hd-navwrap">

@@ -79,6 +79,7 @@ const HoldingChanges = lazy(() => import('./routes/holding/Changes').then((m) =>
 const HoldingCardPage = lazy(() => import('./routes/holding/CardPage').then((m) => ({ default: m.HoldingCardPage })));
 const HoldingComparePage = lazy(() => import('./routes/holding/ComparePage').then((m) => ({ default: m.HoldingComparePage })));
 const HoldingJournal = lazy(() => import('./routes/holding/Notes').then((m) => ({ default: m.HoldingJournal })));
+const HoldingBoard = lazy(() => import('./routes/holding/Board').then((m) => ({ default: m.HoldingBoard })));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -268,6 +269,7 @@ export function App() {
                     <Route path="changes" element={<HoldingChanges />} />
                     <Route path="compare" element={<HoldingComparePage />} />
                     <Route path="journal" element={<HoldingJournal />} />
+                    <Route path="board" element={<HoldingBoard />} />
                     <Route path="*" element={<Navigate to="/holding" replace />} />
                   </Route>
 
