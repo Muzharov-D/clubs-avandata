@@ -35,11 +35,11 @@ export interface TeamLeague {
 export interface YouthCandidate extends LeaguePlayer { tier: 'ready' | 'watch' | 'rest' }
 export interface LosingPlayer extends LeaguePlayer { reason: 'trend' | 'rotation' }
 export interface LineIssue { teamKey: string; clubLabel: string; year: number; category: string; line: Line; title: string; teamAvg: number; divAvg: number; gapRel: number }
-export interface SelectionCandidate { line: Line; position: string | null; club: string; division: string; divisionKey: DivisionKey; rating: number; pctRegion: number; rankRegion: number; mp: number; trend: number | null }
+export interface SelectionCandidate { id: number; line: Line; position: string | null; club: string; division: string; divisionKey: DivisionKey; rating: number; pctRegion: number; rankRegion: number; mp: number; trend: number | null }
 export interface SelectionGroup { teamKey: string; clubLabel: string; year: number; category: string; division: string; line: Line; title: string; ourAvg: number | null; ourBest: number | null; ourN: number; candidates: SelectionCandidate[] }
 export interface OlderAgeCandidate extends LeaguePlayer { olderTeamKey: string; olderTeamName: string; olderMedian: number; olderRank: number; olderSize: number }
 export interface HoldingAnalytics {
-  slug: string; season: number; asOf: string; youthFromYear: number; youthSlots: number;
+  slug: string; season: number; asOf: string; toursBack: number; youthFromYear: number; youthSlots: number;
   thresholds: { youthReadyPct: number; youthWatchPct: number; minMatchesReady: number; minMatchesDecision: number; losingTrendRel: number; lineGapRel: number };
   teams: TeamLeague[];
   medians: Array<{ year: number; top: number | null; first: number | null; ratedTop: number; ratedFirst: number }>;
@@ -94,3 +94,66 @@ export interface TeamMetricRow { id: string; title: string; short: string; categ
 export interface TeamMetricsVsLeague { teamKey: string; matches: number; division: string; rows: TeamMetricRow[]; asOf: string }
 export const CATEGORY_TITLE: Record<string, string> = { attack: 'Атака', defense: 'Оборона', general: 'Дисциплина и ошибки', pass: 'Развитие', other: 'Прочее' };
 export const useTeamMetrics = (teamKey: string) => useWarmable<TeamMetricsVsLeague>('team-metrics', `/holding/teams/${encodeURIComponent(teamKey)}/metrics${useSlugQuery()}`);
+
+// ─── Динамика: что изменилось ─────────────────────────────────────────────────
+export type ListKey = 'youthReady' | 'youthWatch' | 'promote' | 'olderAge' | 'losing' | 'risk';
+export interface SnapPlayer { id: number; name: string; teamKey: string; clubLabel: string; birthYear: number; line: Line | null; rating: number | null; mp: number; rankRegion: number | null; sizeRegion: number; pctRegion: number | null }
+export interface DiffPlayer extends SnapPlayer { ratingBefore: number | null; rankBefore: number | null; pctBefore: number | null; lists: ListKey[] }
+export interface ListChange { key: ListKey; title: string; before: number; now: number; entered: DiffPlayer[]; left: DiffPlayer[] }
+export interface LineChange { teamKey: string; clubLabel: string; year: number; line: Line; title: string; teamAvgBefore: number | null; teamAvgNow: number | null; divAvgNow: number | null; gapBefore: number | null; gapNow: number | null; verdictBefore: LineCompare['verdict']; verdictNow: LineCompare['verdict'] }
+export interface TeamChange { key: string; clubLabel: string; year: number; division: string; avgBefore: number | null; avgNow: number | null; divRankBefore: number | null; divRankNow: number | null; divTeams: number; placeBefore: number | null; placeNow: number | null }
+export interface HoldingChanges {
+  base: { kind: 'snapshot' | 'tours'; id: number | null; toursBack: number | null; date: string | null; label: string };
+  asOf: string; lists: ListChange[]; risers: DiffPlayer[]; fallers: DiffPlayer[]; newRated: DiffPlayer[];
+  lines: { sagged: LineChange[]; improved: LineChange[] }; teams: TeamChange[];
+  selection: Array<{ teamKey: string; line: Line; before: number; now: number }>;
+  snapshots: Array<{ id: number; capturedAt: string }>; maxToursBack: number;
+}
+export interface TimelinePoint { toursBack: number; date: string | null; counts: Record<ListKey, number>; weakLines: number; teams: Record<string, number | null> }
+export const LIST_SHORT: Record<ListKey, string> = { youthReady: 'В молодёжку', youthWatch: 'Молодёжка — присмотреться', promote: 'ЦС → ФК Динамо', olderAge: 'На возраст старше', losing: 'Кого теряем', risk: 'Зона риска' };
+export const LIST_ANCHOR: Record<ListKey, string> = { youthReady: 'youth', youthWatch: 'youth', promote: 'promote', olderAge: 'older', losing: 'losing', risk: 'risk' };
+export const useHoldingChanges = (base: string) => {
+  const q = useSlugQuery();
+  return useWarmable<HoldingChanges>('changes', `/holding/changes?base=${encodeURIComponent(base)}${q ? '&' + q.slice(1) : ''}`);
+};
+export const useHoldingTimeline = () => useWarmable<{ points: TimelinePoint[] }>('timeline', `/holding/timeline${useSlugQuery()}`);
+
+// ─── Карточка кандидата ───────────────────────────────────────────────────────
+export interface CardMetric { id: string; title: string; perMatch: number; lineAvgDiv: number | null; pctileDiv: number; negative: boolean }
+export interface CandidateCard {
+  verdict: { headline: string; tone: 'up' | 'watch' | 'neutral' | 'down'; summary: string };
+  facts: Array<{ text: string; tone?: 'good' | 'bad' }>;
+  strengths: CardMetric[]; weaknesses: CardMetric[];
+  stability: { streak: number; aboveLine: number; rated: number; cv: number | null } | null;
+  series: Array<{ tour: number; rating: number; aboveLine: boolean | null }>;
+  decisions: string[];
+}
+export interface CardResponse { player: LeaguePlayer; photo: string | null; birthDate: string | null; card: CandidateCard; metrics: PlayerMetricsVsLeague | null; metricsStatus: 'ready' | 'warming'; notes: HoldingNote[]; asOf: string }
+
+// ─── Сравнение ────────────────────────────────────────────────────────────────
+export interface CompareSide {
+  id: number; anonymous: boolean; name: string | null; photo: string | null; club: string; teamKey: string | null; birthYear: number;
+  position: string | null; line: Line | null; division: string; rating: number | null; mp: number;
+  rankRegion: number | null; sizeRegion: number; pctRegion: number | null; deltaLine: number | null; lineAvgDiv: number | null; trend: number | null;
+  metrics: PlayerMetricsVsLeague | null;
+}
+export interface CompareResponse { a: CompareSide; b: CompareSide; status: 'ready' | 'warming' }
+
+// ─── Заметки и решения ────────────────────────────────────────────────────────
+export type NoteKind = 'youth' | 'promote' | 'older' | 'watch' | 'keep' | 'other';
+export const NOTE_KIND: Record<NoteKind, string> = { youth: 'В молодёжную команду', promote: 'Перевести в ФК Динамо', older: 'На возраст старше', watch: 'Наблюдаем', keep: 'Оставить в команде', other: 'Заметка' };
+export interface HoldingNote {
+  id: number; holdingSlug: string; playerId: number; playerName: string; kind: NoteKind; text: string;
+  remindOn: string | null; ratingAt: number | null; rankAt: number | null; sizeAt: number | null;
+  authorId: string; authorName: string | null; createdAt: string; closedAt: string | null;
+}
+export interface NoteWithNow extends HoldingNote {
+  now: { rating: number | null; rankRegion: number | null; sizeRegion: number; pctRegion: number | null; teamKey: string; clubLabel: string; birthYear: number; line: Line | null } | null;
+  due: boolean;
+}
+/** Заметки — только у руководства холдинга (у федерации их нет). */
+export function useCanNote(): boolean {
+  const { holding, user } = useAuth() as { holding: unknown; user: { role?: string } | null };
+  return !!holding && user?.role === 'holding_admin';
+}
+export const fmtDay = (iso: string | null) => (iso ? new Date(iso.length === 10 ? iso + 'T12:00:00' : iso).toLocaleDateString('ru-RU', { day: 'numeric', month: 'long' }) : '—');

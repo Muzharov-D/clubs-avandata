@@ -10,6 +10,7 @@ import { federationHealth } from '../federation/avandataSource.js';
 import { captureSnapshotIfDue } from '../federation/snapshots.js';
 import { warmHoldings, HOLDINGS } from '../federation/holdings.js';
 import { warmCohortMetrics } from '../federation/holdingMetrics.js';
+import { captureHoldingSnapshotIfDue } from '../holding/snapshots.js';
 import { env } from '../env.js';
 
 /**
@@ -201,6 +202,8 @@ const JOBS: CronJob[] = [
   // Профили холдингов держим тёплыми (TTL 10 мин): пересобираем чуть чаще, чем они протухают.
   { name: 'holdingsWarm', intervalMs: 8 * 60_000, initialDelayMs: 60_000, run: () => warmHoldings(2) },
   // Показатели когорт (события) протухают за 6 часов — обновляем каждые 3 часа фоном.
+  // Недельный снимок решений холдинга (пишется, только если прошлому больше 6,5 дней).
+  { name: 'holdingSnapshot', intervalMs: 6 * 60 * 60_000, initialDelayMs: 10 * 60_000, run: async () => { for (const h of HOLDINGS) await captureHoldingSnapshotIfDue(2, h); } },
   { name: 'holdingMetrics', intervalMs: 3 * 60 * 60_000, initialDelayMs: 120_000, run: async () => warmCohortMetrics(2, [...new Set(HOLDINGS.flatMap((h) => h.years))].sort((a, b) => a - b)) },
 ];
 
