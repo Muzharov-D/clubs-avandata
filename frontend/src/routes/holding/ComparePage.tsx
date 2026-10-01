@@ -195,7 +195,7 @@ function Pizza({ r }: { r: { a: Side; b: Side } }) {
     const y = sb.slices.find((s) => s.key === x.key);
     return y?.pct != null ? [{ axis: x.short, a: x.pct, b: y.pct, t: 50 }] : [];
   });
-  if (slices.length < 3) return <div className="hd-empty">Мало данных для наложения профилей — у одного из игроков меньше 45 минут.</div>;
+  if (slices.length < 3) return <div className="hd-empty">Мало данных для наложения профилей — у одного из игроков меньше двух полных матчей на поле (б/о).</div>;
   return (
     <div className="card player-compare__pizza">
       <div className="page-section-title">Наложение профилей <span className="an-model-tag">перцентиль среди своей позиции · пунктир — середина региона</span></div>

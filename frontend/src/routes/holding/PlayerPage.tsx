@@ -28,7 +28,8 @@ interface SeasonMatch { matchId: number; minutes: number; overall: number | null
 interface Season {
   playerId: number; name: string; photo: string | null; birthDate: string | null; position: string | null; club: string | null; teamKey: string | null; division: string | null;
   year: number; line: 'GK' | 'DEF' | 'MID' | 'FWD' | null; matchLen: number; group: string | null; groupTitle: string | null; peersWord: string; minutes: number; matches: number; goals: number;
-  index: number | null; indexPct: number | null; rank: number | null; peers: number; inPool: boolean;
+  index: number | null; indexPct: number | null; rank: number | null; peers: number; inPool: boolean; lowSample?: boolean;
+  vsTop?: { index: number | null; minutes: number; matches: number };
   archetype: { name: string; tagline: string }; superline: string | null;
   strengths: Array<{ key: string; name: string; description: string; pct: number }>;
   growth: Array<{ key: string; name: string; description: string; pct: number }>;
@@ -110,6 +111,13 @@ export function HoldingPlayerPage() {
             <div className="dna-card__stats-inline">{s.matches} {plural(s.matches, 'матч', 'матча', 'матчей')} · {s.minutes} {plural(s.minutes, 'минута', 'минуты', 'минут')} на поле{s.goals ? ` · ${s.goals} ${plural(s.goals, 'гол', 'гола', 'голов')}` : ''}</div>
             {s.superline && <div className="dna-card__superline">{s.superline}</div>}
           </div>
+          {s.index == null && s.lowSample && (
+            <div className="dna-card__rating" title="Без оценки: на поле меньше двух полных матчей своего возраста">
+              <div className="dna-card__rating-ring"><div className="dna-card__rating-num">б/о</div></div>
+              <div className="dna-card__rating-lab">без оценки</div>
+              <div className="hd-player__ringsub">меньше двух полных матчей ({s.matchLen * 2} мин)</div>
+            </div>
+          )}
           {s.index != null && (
             <div className="dna-card__rating">
               <div className="dna-card__rating-ring">
@@ -122,6 +130,7 @@ export function HoldingPlayerPage() {
               </div>
               <div className="dna-card__rating-lab">индекс сезона</div>
               <div className="hd-player__ringsub">лучше {Math.round(s.indexPct ?? 0)}% {peersShort}{s.rank ? ` · ${s.rank}-й из ${s.peers}` : ''}</div>
+              <VsTopLine v={s.vsTop} />
             </div>
           )}
         </div>
@@ -148,7 +157,7 @@ export function HoldingPlayerPage() {
             <div className="dna-card__growth">{s.growth.map((g) => <span className="dna-growth-pill" key={g.key} title={g.description}>{g.name.toLowerCase()}<span className="dna-growth-pill__pct">{g.pct}</span></span>)}</div>
           </div>
         )}
-        {!s.inPool && <div className="dna-card__block hd-muted">Для сравнения со сверстниками нужно от 45 минут на поле — пока профиль строится только по фактам.</div>}
+        {!s.inPool && <div className="dna-card__block hd-muted">Без оценки (б/о): для сравнения со сверстниками нужно от двух полных матчей на поле — пока профиль строится только по фактам.</div>}
       </div>
 
       {flags.length > 0 && <div className="hd-player__flags">{flags.map((f) => <span key={f} className="hd-tag hd-tag--up">{f}</span>)}</div>}
@@ -203,7 +212,7 @@ export function HoldingPlayerPage() {
               </div>
             ))}
           </div>
-          <div className="an-note">Перцентиль за полный матч своего возраста ({s.matchLen}′) против {s.peers} {peers} с 45+ минутами. Зелёный — среди лучших, серый — в норме, янтарный и красный — отстаёт.</div>
+          <div className="an-note">Перцентиль за полный матч своего возраста ({s.matchLen}′) против {s.peers} {peers} с оценкой (от двух полных матчей). Зелёный — среди лучших, серый — в норме, янтарный и красный — отстаёт.</div>
         </div>
       )}
 
@@ -231,4 +240,13 @@ export function HoldingPlayerPage() {
       </details>
     </div>
   );
+}
+
+/** Стресс-тест под индексом: как игрок играет против сильнейшей четверти своей лиги. */
+function VsTopLine({ v }: { v?: { index: number | null; minutes: number; matches: number } }) {
+  if (!v) return null;
+  const text = v.matches === 0 ? 'против сильнейших своей лиги не играл'
+    : v.index == null ? `против сильнейших — ${v.minutes} мин, мало для оценки`
+    : `против сильнейших своей лиги: ${v.index.toFixed(1)} · ${v.matches} ${v.matches === 1 ? 'матч' : v.matches < 5 ? 'матча' : 'матчей'}`;
+  return <div className="hd-player__ringsub hd-player__vstop" title="Только матчи против сильнейшей четверти команд своей лиги">{text}</div>;
 }

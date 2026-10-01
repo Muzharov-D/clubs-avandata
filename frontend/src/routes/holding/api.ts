@@ -54,6 +54,10 @@ export interface LeaguePlayer {
   index: number | null; indexPct: number | null; minutes: number | null; formDelta: number | null;
   /** Перцентиль игры в обороне среди своей специализации. */
   defPct?: number | null;
+  /** Минут меньше двух полных матчей: индекс предварительный. */
+  lowSample?: boolean;
+  /** Стресс-тест: индекс только против сильнейшей четверти своей лиги (от одного полного матча). */
+  vsTop?: { index: number | null; minutes: number; matches: number } | null;
 }
 export interface LineCompare { line: Line; title: string; teamAvg: number | null; divAvg: number | null; n: number; gapRel: number | null; verdict: 'weak' | 'ok' | 'strong' | null }
 export interface TeamLeague {

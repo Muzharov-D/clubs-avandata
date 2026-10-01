@@ -18,7 +18,7 @@ export function PlayerCard({ p, q, tag, tagTone, sub, showTeam = true, rank }: {
   return (
     <Link to={`/holding/players/${p.id}${q}`} className="hd-pcard" style={{ ['--pc' as string]: indexColor(p.index) }}>
       {rank != null && <span className="hd-pcard__rank">{rank}</span>}
-      <IndexRing value={p.index} size={52} stroke={5} />
+      <IndexRing value={p.index} size={52} stroke={5} low={p.lowSample} />
       <span className="hd-pcard__body">
         <span className="hd-pcard__name">{surname(p.name)}</span>
         <span className="hd-pcard__pos">{groupTitle(p)}</span>
@@ -54,9 +54,10 @@ export function perfWord(o: number | null): { text: string; tone: 'up' | 'down' 
   return { text: o === 1 ? 'место чуть выше уровня игры' : o <= 3 ? 'место выше уровня игры' : 'место заметно выше уровня игры', tone: 'up' };
 }
 
-/** Средний индекс состава (игроки с 45+ минутами). */
+/** Средний индекс состава (игроки с оценкой — от двух полных матчей). */
 export const teamIndex = (t: TeamLeague): number | null => {
-  const xs = t.squad.filter((p) => p.index != null && (p.minutes ?? 0) >= 45).map((p) => p.index as number);
+  // Только игроки с полноценной выборкой: предварительные индексы не тянут средний вверх или вниз.
+  const xs = t.squad.filter((p) => p.index != null && (p.minutes ?? 0) >= 45 && !p.lowSample).map((p) => p.index as number);
   return xs.length ? Math.round((xs.reduce((a, b) => a + b, 0) / xs.length) * 10) / 10 : null;
 };
 

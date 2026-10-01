@@ -14,6 +14,9 @@ import {
 } from '../services/avandataApi.js';
 import { getMatch as ffspbGetMatch, isFfspbConfigured } from '../services/ffspbApi.js';
 import { logger } from '../shared/logger.js';
+import { promises as fs } from 'node:fs';
+import path from 'node:path';
+import { createHash } from 'node:crypto';
 import { env } from '../env.js';
 import { metricInfo } from './metricsGlossary.js';
 import { normTeam } from './teamName.js';
@@ -244,11 +247,40 @@ export async function regionMatchDetail(matchId: number): Promise<MatchDetail | 
 export { isAvandataConfigured };
 
 const cache = new Map<string, { at: number; val: unknown }>();
+
+// ─── Офлайн-копия ответов внешних API (только локальная разработка) ─────────
+// Каждый успешный расчёт пишется на диск; если сеть недоступна (AvanData/ФФСПб не отвечают),
+// отдаём последнюю сохранённую версию — локальный кабинет открывается без интернета.
+const OFFLINE_DIR = env.NODE_ENV === 'production' ? null : path.resolve(process.cwd(), '.offline-cache');
+const offlineFile = (key: string) => path.join(OFFLINE_DIR as string, `${createHash('sha1').update(key).digest('hex')}.json`);
+const toDisk = (_k: string, v: unknown): unknown => (v instanceof Map ? { __t: 'M', v: [...v] } : v instanceof Set ? { __t: 'S', v: [...v] } : v);
+const fromDisk = (_k: string, v: unknown): unknown => {
+  const o = v as { __t?: string; v?: unknown[] } | null;
+  return o && typeof o === 'object' && o.__t === 'M' ? new Map(o.v as Array<[unknown, unknown]>) : o && typeof o === 'object' && o.__t === 'S' ? new Set(o.v) : v;
+};
+function saveOffline(key: string, val: unknown): void {
+  if (!OFFLINE_DIR) return;
+  void fs.mkdir(OFFLINE_DIR, { recursive: true }).then(() => fs.writeFile(offlineFile(key), JSON.stringify({ key, at: Date.now(), val }, toDisk))).catch(() => undefined);
+}
+async function loadOffline(key: string): Promise<{ at: number; val: unknown } | null> {
+  if (!OFFLINE_DIR) return null;
+  try { const o = JSON.parse(await fs.readFile(offlineFile(key), 'utf8'), fromDisk) as { key: string; at: number; val: unknown }; return o.key === key ? o : null; } catch { return null; }
+}
+
 async function cached<T>(key: string, ttlMs: number, fn: () => Promise<T>): Promise<T> {
   const hit = cache.get(key);
   if (hit && Date.now() - hit.at < ttlMs) return hit.val as T;
-  const val = await fn();
+  let val: T;
+  try { val = await fn(); }
+  catch (e) {
+    // Нет сети: отдаём то, что уже есть в памяти или на диске; через минуту попробуем снова.
+    const prev = hit ?? (await loadOffline(key));
+    if (!prev) throw e;
+    cache.set(key, { at: Date.now() - ttlMs + 60_000, val: prev.val });
+    return prev.val as T;
+  }
   cache.set(key, { at: Date.now(), val });
+  saveOffline(key, val);
   return val;
 }
 const TTL = 10 * 60 * 1000;
@@ -1095,6 +1127,9 @@ export async function registrationsOf(playerId: number): Promise<number[]> {
 }
 
 export async function playerProfile(seasonId: number, playerId: number): Promise<PlayerProfile | null> {
+  return cached(`player-profile:${seasonId}:${playerId}`, TTL, () => playerProfileLive(seasonId, playerId));
+}
+async function playerProfileLive(seasonId: number, playerId: number): Promise<PlayerProfile | null> {
   // Один ребёнок = несколько записей AvanData (новая заводится при каждом переходе).
   // Карточка по одному id показывала лишь часть истории: у Завьялова Дмитрия
   // 4 регистрации и 94 события, а по id 5471 видно было 21. Собираем все.

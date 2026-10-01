@@ -17,9 +17,19 @@
  *
  * Контракт зафиксирован тестами в `teamName.test.ts` — не ослаблять без обновления тестов.
  */
-export const normTeam = (s: string): string => s.toLowerCase()
+/** Один клуб под разными именами в источниках (ФФСПб ↔ АванДата), ключ после нормализации. */
+const ALIASES: Record<string, string> = {
+  'сш №1 московского района кристалл': 'московская застава кристалл',   // ФФСПб 2009 ↔ АванДата
+};
+export const normTeam = (s: string): string => {
+  const k = normTeamRaw(s);
+  return ALIASES[k] ?? k;
+};
+const normTeamRaw = (s: string): string => s.toLowerCase()
   .replace(/[«»"']/g, '')
   .replace(/\([^)]*\)/g, ' ')                            // «(Олимпийские надежды)» — программа, не имя
+  .replace(/^ооо\s+/, '')                                // юр. форма: «ООО "Футбольный клуб Автово"»
+  .replace(/^футбольный клуб\s+/, '')
   .replace(/^фк\s+/, '')
   .replace(/\s*\d{4}\s*$/, '')                           // хвостовой год рождения (АванДата)
   .replace(/[-–—]/g, ' ')

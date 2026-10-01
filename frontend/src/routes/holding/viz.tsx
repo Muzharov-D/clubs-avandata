@@ -17,18 +17,18 @@ export const indexColor = (v: number | null | undefined): string => {
 };
 
 /** Маленькое кольцо индекса (как в профиле), число в центре. */
-export function IndexRing({ value, size = 40, stroke = 4 }: { value: number | null; size?: number; stroke?: number }) {
+export function IndexRing({ value, size = 40, stroke = 4, low = false }: { value: number | null; size?: number; stroke?: number; low?: boolean }) {
   const r = (size - stroke) / 2;
   const c = 2 * Math.PI * r;
   const p = value == null ? 0 : Math.max(0, Math.min(1, value / 10));
   return (
-    <span className="viz-ring" style={{ width: size, height: size }} title={value == null ? 'мало минут для сравнения' : `индекс ${value.toFixed(1)} из 10`}>
+    <span className={`viz-ring${low ? ' viz-ring--low' : ''}`} style={{ width: size, height: size }} title={value == null ? (low ? 'без оценки: на поле меньше двух полных матчей своего возраста' : 'показатели ещё считаются') : `индекс ${value.toFixed(1)} из 10`}>
       <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} aria-hidden>
-        <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth={stroke} />
+        <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth={stroke} strokeDasharray={low ? '3 3' : undefined} />
         <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke={indexColor(value)} strokeWidth={stroke} strokeLinecap="round"
           strokeDasharray={`${p * c} ${c}`} transform={`rotate(-90 ${size / 2} ${size / 2})`} />
       </svg>
-      <span className="viz-ring__num" style={{ fontSize: Math.round(size * 0.34) }}>{value == null ? '—' : value.toFixed(1)}</span>
+      <span className="viz-ring__num" style={{ fontSize: Math.round(size * (value == null && low ? 0.28 : 0.34)) }}>{value == null ? (low ? 'б/о' : '—') : value.toFixed(1)}</span>
     </span>
   );
 }

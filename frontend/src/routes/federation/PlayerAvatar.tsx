@@ -27,26 +27,14 @@ interface Props { name: string; size?: number; ring?: boolean; photoUrl?: string
 
 export function PlayerAvatar({ name, size = 44, ring = false, photoUrl }: Props) {
   const [failed, setFailed] = useState(false);
+  const [loaded, setLoaded] = useState(false);
   const { gid, c1, c2, ini } = useMemo(() => {
     const [a, b] = PALETTE[hash(name) % PALETTE.length];
     return { gid: `pa-${hash(name)}`, c1: a, c2: b, ini: initials(name) };
   }, [name]);
-  // Реальное фото игрока (Наградион CDN), при битой ссылке — генеративный аватар (без серых заглушек).
-  if (photoUrl && /^https?:\/\//.test(photoUrl) && !failed) {
-    return (
-      <img
-        src={photoUrl} alt={name} width={size} height={size} decoding="async" loading="lazy"
-        onError={() => setFailed(true)}
-        style={{
-          width: size, height: size, borderRadius: '50%', objectFit: 'cover', objectPosition: 'top center',
-          display: 'block', flex: 'none', background: 'var(--av-surface-2, #131a3a)',
-          border: ring ? '1.5px solid rgba(94,235,252,0.55)' : '1px solid rgba(255,255,255,0.22)',
-          filter: ring ? 'drop-shadow(0 2px 6px rgba(0,0,0,0.45))' : undefined,
-        }}
-      />
-    );
-  }
-  return (
+  // Реальное фото игрока (Наградион CDN). Под ним всегда инициалы: пока фото грузится или если CDN
+  // не ответил, круг не пустой; при битой ссылке фото убираем совсем.
+  const fallback = (
     <svg width={size} height={size} viewBox="0 0 48 48" role="img" aria-label={name} style={{ display: 'block', flex: 'none', filter: ring ? 'drop-shadow(0 2px 6px rgba(0,0,0,0.45))' : undefined }}>
       <defs>
         <linearGradient id={gid} x1="0" y1="0" x2="1" y2="1">
@@ -58,4 +46,23 @@ export function PlayerAvatar({ name, size = 44, ring = false, photoUrl }: Props)
       <text x="24" y="30" textAnchor="middle" fontFamily="Montserrat, system-ui, sans-serif" fontWeight="700" fontSize="16" fill="#fff" letterSpacing="-0.02em">{ini}</text>
     </svg>
   );
+  if (photoUrl && /^https?:\/\//.test(photoUrl) && !failed) {
+    return (
+      <span style={{ position: 'relative', display: 'block', width: size, height: size, flex: 'none' }}>
+        {fallback}
+        <img
+          src={photoUrl} alt={name} width={size} height={size} decoding="async" loading="lazy"
+          onLoad={() => setLoaded(true)} onError={() => setFailed(true)}
+          style={{
+            position: 'absolute', inset: 0, opacity: loaded ? 1 : 0, transition: 'opacity 0.25s',
+            width: size, height: size, borderRadius: '50%', objectFit: 'cover', objectPosition: 'top center',
+            display: 'block', background: 'var(--av-surface-2, #131a3a)',
+            border: ring ? '1.5px solid rgba(94,235,252,0.55)' : '1px solid rgba(255,255,255,0.22)',
+            filter: ring ? 'drop-shadow(0 2px 6px rgba(0,0,0,0.45))' : undefined,
+          }}
+        />
+      </span>
+    );
+  }
+  return fallback;
 }

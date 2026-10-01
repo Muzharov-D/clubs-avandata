@@ -50,3 +50,6 @@ screens-starter/
 _pravki.txt
 _pravki_img/
 docs/UI_INVENTORY.md
+
+# офлайн-копия ответов AvanData/ФФСПб для локального стенда
+backend/.offline-cache/
