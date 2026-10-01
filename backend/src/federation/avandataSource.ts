@@ -714,6 +714,8 @@ export interface RegionPlayer {
   id: number; name: string; birthYear: number | null; position: string | null; club: string | null; clubLogo: string | null; photo: string | null; rating: number | null; mp: number;
   /** Рейтинг по турам (только оценённые): для трендов и «выпал из ротации». Отсортировано по туру. */
   series?: Array<{ tid: number; tour: number; rating: number }>;
+  /** Все позиции, на которых игрок выходил, с числом матчей (самая частая — первой). */
+  roles?: Array<{ title: string; n: number }>;
 }
 export async function regionPlayers(seasonId: number, year?: number, division?: string): Promise<RegionPlayer[]> {
   return cached(`players:${seasonId}:${year ?? 0}:${division ?? ''}`, TTL, async () => {
@@ -750,7 +752,8 @@ export async function regionPlayers(seasonId: number, year?: number, division?: 
       let pos = p.position, best = 0;
       for (const [role, c] of roles) if (c > best || (c === best && pos != null && role < pos)) { best = c; pos = role; }
       series.sort((a, b) => (a.tid - b.tid) || (a.tour - b.tour));
-      return { ...p, position: pos, mp: n, rating: n > 0 ? Math.round(sum / n) : null, series };
+      const roleList = [...roles].map(([title, c]) => ({ title, n: c })).sort((a, b) => b.n - a.n || (a.title === pos ? -1 : b.title === pos ? 1 : 0));
+      return { ...p, position: pos, mp: n, rating: n > 0 ? Math.round(sum / n) : null, series, roles: roleList };
     });
     // Дедуп: один человек с РАЗНЫМИ id AvanData (двойная регистрация/переход) иначе двоится
     // в лидерборде и сборной. Ключ — ФИО + ПОЛНАЯ дата рождения; `by-role` отдаёт только год,

@@ -36,6 +36,8 @@ const LINE_GAP_REL = 0.12;        // линия слабее/сильнее ли
 
 export interface LeaguePlayer {
   id: number; name: string; photo: string | null; position: string | null; line: Line | null;
+  /** Все позиции, на которых выходил, с числом матчей — доска ставит игрока и туда, где он реально играл. */
+  roles: Array<{ title: string; n: number }>;
   /** Группа позиции (с кем сравнивается): ЦЗ, крайние, опорные, атакующие ПЗ, края, ЦН, вратари. */
   group: PositionGroup | null;
   birthYear: number; clubKey: string; clubLabel: string; teamKey: string; team: string;
@@ -244,6 +246,7 @@ async function computeAnalytics(seasonId: number, cfg: HoldingConfig, profile: H
           const fm = formsByYear.get(year)?.get(p.id);
           return {
             id: p.id, name: p.name, photo: p.photo, position: p.position, line, group,
+            roles: p.roles ?? (p.position ? [{ title: p.position, n: p.mp }] : []),
             birthYear: p.birthYear ?? year, clubKey: t.clubKey, clubLabel: t.clubLabel, teamKey: t.key, team: p.club ?? t.name,
             division: t.division, divisionKey: dk,
             rating: isRated ? p.rating : null, mp: p.mp,

@@ -3,6 +3,7 @@
  * точками, рассеяние команд. Чистый SVG, цвета — токены шкалы рейтинга.
  */
 import type { ReactNode } from 'react';
+import type { LeaguePlayer } from './api';
 
 // ─── Шкала индекса 0–10 ───────────────────────────────────────────────────────
 export const indexColor = (v: number | null | undefined): string => {
@@ -65,6 +66,81 @@ export function slotOf(position: string | null | undefined): SlotId | null {
   if (p.includes('центральный защит')) return right ? 'RCB' : 'LCB';
   if (p.includes('защитник') || p.includes('фулбек')) return right ? 'RB' : 'LB';
   return null;
+}
+
+export const SLOT_SHORT: Record<SlotId, string> = { GK: 'ВРТ', LB: 'ЛЗ', LCB: 'ЛЦЗ', RCB: 'ПЦЗ', RB: 'ПЗ', DM: 'ОП', CM: 'ЦП', LW: 'ЛН', ST: 'ЦН', RW: 'ПН' };
+const MIRROR: Partial<Record<SlotId, SlotId>> = { LB: 'RB', RB: 'LB', LCB: 'RCB', RCB: 'LCB', LW: 'RW', RW: 'LW' };
+
+/** Игрок на месте схемы: main — его основная позиция; played — выходил здесь, но чаще в другом месте; mirror — та же позиция с другого фланга. */
+export interface Placed { p: LeaguePlayer; slot: SlotId; home: SlotId | null; games: number; how: 'main' | 'played' | 'mirror' }
+
+/** Матчи игрока по местам схемы — из всех позиций, на которых он выходил. */
+export function slotGames(p: LeaguePlayer): Map<SlotId, number> {
+  const m = new Map<SlotId, number>();
+  const roles = p.roles?.length ? p.roles : p.position ? [{ title: p.position, n: Math.max(1, p.mp) }] : [];
+  for (const r of roles) { const s = slotOf(r.title); if (s) m.set(s, (m.get(s) ?? 0) + r.n); }
+  return m;
+}
+
+/**
+ * Основа одной команды по схеме 4-3-3. Сначала каждый встаёт на свою основную позицию (лучшие по
+ * индексу). Пустое место закрывает тот, кто реально выходил на нём, — из запаса, а если такой
+ * игрок в основе на другой позиции, где есть замена, — переставляем. Последним шагом центральные
+ * и крайние берутся с другого фланга. Никто не стоит в основе дважды.
+ */
+export function lineup(players: LeaguePlayer[], cmp: (a: LeaguePlayer, b: LeaguePlayer) => number): Map<SlotId, Placed[]> {
+  const ids = Object.keys(SLOTS) as SlotId[];
+  const out = new Map<SlotId, Placed[]>(ids.map((s) => [s, []]));
+  const games = new Map(players.map((p) => [p.id, slotGames(p)]));
+  const home = new Map(players.map((p) => [p.id, slotOf(p.position)]));
+  const used = new Set<number>();
+  const g = (p: LeaguePlayer, s: SlotId) => games.get(p.id)?.get(s) ?? 0;
+  const fits = (p: LeaguePlayer, s: SlotId) => (home.get(p.id) === 'GK') === (s === 'GK');   // вратаря в поле и полевого в ворота не ставим
+  const need = (s: SlotId) => SLOTS[s].places - out.get(s)!.length;
+  const put = (p: LeaguePlayer, s: SlotId, how: Placed['how']) => { out.get(s)!.push({ p, slot: s, home: home.get(p.id) ?? null, games: g(p, s), how }); used.add(p.id); };
+  const free = () => players.filter((p) => !used.has(p.id));
+  const byGames = (s: SlotId) => (a: LeaguePlayer, b: LeaguePlayer) => g(b, s) - g(a, s) || cmp(a, b);
+
+  // 1. Основные позиции.
+  for (const s of ids) for (const p of players.filter((x) => home.get(x.id) === s).sort(cmp).slice(0, SLOTS[s].places)) put(p, s, 'main');
+  // 2. Из запаса — кто выходил на пустом месте.
+  for (const s of ids) while (need(s) > 0) {
+    const c = free().filter((p) => fits(p, s) && g(p, s) > 0).sort(byGames(s))[0];
+    if (!c) break; put(c, s, 'played');
+  }
+  // 3. Перестановка: игрок основы выходил на пустом месте, а на его позиции есть замена из запаса.
+  for (const s of ids) while (need(s) > 0) {
+    let moved = false;
+    for (const from of ids) {
+      if (from === s) continue;
+      const sub = free().filter((p) => fits(p, from) && (home.get(p.id) === from || g(p, from) > 0)).sort(byGames(from))[0];
+      if (!sub) continue;
+      const list = out.get(from)!;
+      const mover = list.filter((x) => fits(x.p, s) && g(x.p, s) > 0).sort((a, b) => g(b.p, s) - g(a.p, s))[0];
+      if (!mover) continue;
+      list.splice(list.indexOf(mover), 1); used.delete(mover.p.id);
+      put(mover.p, s, 'played'); put(sub, from, home.get(sub.id) === from ? 'main' : 'played');
+      moved = true; break;
+    }
+    if (!moved) break;
+  }
+  // 4. Тот же номер с другого фланга (левый ЦЗ справа, левый крайний справа).
+  for (const s of ids) while (need(s) > 0) {
+    const m = MIRROR[s]; if (!m) break;
+    const c = free().filter((p) => fits(p, s) && (home.get(p.id) === m || g(p, m) > 0)).sort(byGames(m))[0];
+    if (!c) break; put(c, s, 'mirror');
+  }
+  for (const s of ids) out.get(s)!.sort((a, b) => cmp(a.p, b.p));
+  return out;
+}
+
+/** Подсказка к игроку не на своей основной позиции. */
+export function placedNote(x: Placed): string | null {
+  if (x.how === 'main') return null;
+  const base = x.home ? SLOTS[x.home].title.toLowerCase().replace(/ \(.\)$/, '') : 'не указана';
+  return x.how === 'played'
+    ? `Основная позиция — ${base}; здесь выходил ${x.games} ${x.games === 1 ? 'раз' : x.games < 5 ? 'раза' : 'раз'}`
+    : `Основная позиция — ${base}; на этом фланге не выходил, ставим с другого`;
 }
 
 /** Горизонтальное поле (атака вправо) с разметкой; дети — абсолютно поверх. */
