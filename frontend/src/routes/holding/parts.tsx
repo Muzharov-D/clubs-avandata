@@ -37,6 +37,15 @@ export function IndexCell({ p }: { p: LeaguePlayer }) {
   return <span className={`hd-index${p.lowSample ? ' hd-index--low' : ''}`} style={{ color: c }} title={`${p.lowSample ? 'предварительно: на поле меньше двух полных матчей · ' : ''}лучше ${Math.round(p.indexPct ?? 0)}% сверстников своей позиции · ${p.minutes ?? 0} мин`}>{p.index.toFixed(1)}</span>;
 }
 
+/** Стресс-тест: индекс против сильнейшей четверти команд региона. */
+export function VsTopCell({ p }: { p: LeaguePlayer }) {
+  const v = p.vsTop;
+  if (!v || v.matches === 0) return <span className="hd-muted" title="Не играл против сильнейшей четверти команд региона">не играл</span>;
+  if (v.index == null) return <span className="hd-muted" title={`Против сильнейших — ${v.minutes} мин, меньше одного полного матча`}>мало мин</span>;
+  const c = v.index >= 9 ? 'var(--rating-excellent)' : v.index >= 8 ? 'var(--rating-good)' : v.index >= 7 ? 'var(--rating-ok)' : v.index >= 6 ? 'var(--rating-weak)' : 'var(--rating-poor)';
+  return <span className="hd-index" style={{ color: c }} title={`Только матчи против сильнейшей четверти команд региона: ${v.matches} ${v.matches === 1 ? 'матч' : v.matches < 5 ? 'матча' : 'матчей'}, ${v.minutes} мин`}>{v.index.toFixed(1)}</span>;
+}
+
 /** Тренд: последние оценки против сезона. */
 export function TrendCell({ p }: { p: LeaguePlayer }) {
   if (p.formDelta != null) {
@@ -65,7 +74,7 @@ export function LineBadge({ line }: { line: Line | null }) {
   return line ? <span className="hd-muted">{lineWord[line]}</span> : <span className="hd-muted">—</span>;
 }
 
-type SortKey = 'rating' | 'index' | 'pct' | 'delta' | 'trend' | 'mp' | 'name' | 'team';
+type SortKey = 'rating' | 'index' | 'vstop' | 'pct' | 'delta' | 'trend' | 'mp' | 'name' | 'team';
 const sorters: Record<SortKey, (a: LeaguePlayer, b: LeaguePlayer) => number> = {
   rating: (a, b) => (b.rating ?? -1) - (a.rating ?? -1),
   index: (a, b) => (b.index ?? -1) - (a.index ?? -1),
@@ -73,6 +82,7 @@ const sorters: Record<SortKey, (a: LeaguePlayer, b: LeaguePlayer) => number> = {
   delta: (a, b) => (b.deltaLine ?? -9999) - (a.deltaLine ?? -9999),
   trend: (a, b) => (b.formDelta ?? (b.trend != null ? b.trend / 100 : -99)) - (a.formDelta ?? (a.trend != null ? a.trend / 100 : -99)),
   mp: (a, b) => b.mp - a.mp,
+  vstop: (a, b) => (b.vsTop?.index ?? -1) - (a.vsTop?.index ?? -1),
   name: (a, b) => a.name.localeCompare(b.name, 'ru'),
   team: (a, b) => a.team.localeCompare(b.team, 'ru') || (b.rating ?? -1) - (a.rating ?? -1),
 };
@@ -110,6 +120,7 @@ export function PlayerTable({ players, showTeam = true, showTier = false, extra,
               <Th k="index" right>Индекс</Th>
               <Th k="pct">В регионе</Th>
               <Th k="trend">Форма</Th>
+              <Th k="vstop" right>Против сильнейших</Th>
               <Th k="mp" right>Матчей</Th>
               {extra && <th>{extraTitle ?? ''}</th>}
             </tr>
@@ -126,6 +137,7 @@ export function PlayerTable({ players, showTeam = true, showTier = false, extra,
                 <td className="num"><IndexCell p={p} /></td>
                 <td style={{ whiteSpace: 'nowrap' }}><PctBadge p={p} /> <span className="hd-muted hd-small">{p.rankRegion != null ? `${p.rankRegion} из ${p.sizeRegion}` : ''}</span></td>
                 <td><TrendCell p={p} /></td>
+                <td className="num"><VsTopCell p={p} /></td>
                 <td className="num hd-muted">{p.mp}</td>
                 {extra && <td className="hd-small">{extra(p)}</td>}
               </tr>

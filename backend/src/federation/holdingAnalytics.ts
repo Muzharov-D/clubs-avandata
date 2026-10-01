@@ -13,6 +13,8 @@
 import { regionPlayers, clubName, cached, hasFreshCache, TTL, type RegionPlayer } from './avandataSource.js';
 import { cohortForms, type PlayerForm } from './holdingSeason.js';
 import { positionGroup, type PositionGroup } from './positionGroups.js';
+import { setTeamTiers, type OppTier } from './holdingIndex.js';
+import { cohortMetrics } from './holdingMetrics.js';
 import { getClubRatingsByTournament, type AvRatingTeam } from '../services/avandataApi.js';
 import { normTeam } from './teamName.js';
 import { classifyDivision, type DivisionKey } from './division.js';
@@ -62,6 +64,8 @@ export interface LeaguePlayer {
   defPct: number | null;
   /** Минут меньше двух полных матчей: индекс предварительный. */
   lowSample: boolean;
+  /** Против сильнейшей четверти команд региона: индекс (от одного полного матча), минуты, матчи. */
+  vsTop: { index: number | null; minutes: number; matches: number } | null;
 }
 export interface LineCompare { line: Line; title: string; teamAvg: number | null; divAvg: number | null; n: number; gapRel: number | null; verdict: 'weak' | 'ok' | 'strong' | null }
 export interface TeamLeague {
@@ -141,9 +145,30 @@ const lastAnalytics = new Map<string, HoldingAnalytics>();
 const analyticsInflight = new Map<string, Promise<HoldingAnalytics>>();
 export function seedAnalytics(slug: string, seasonId: number, a: HoldingAnalytics): void { lastAnalytics.set(`${slug}:${seasonId}`, a); }
 
+/**
+ * Сила соперника: рейтинг AvanData команды, делённый на число её разобранных матчей (средний за матч).
+ * Единственная мера, сравнимая между Высшей и Первой лигой. Команды возраста делятся на четверти
+ * региона: С1 — сильнейшая четверть … С4 — слабейшая.
+ */
+export async function registerTiers(seasonId: number, years: number[]): Promise<void> {
+  for (const y of years) {
+    const c = cohortMetrics(seasonId, y); if (!c) continue;
+    const tid = await tournamentIdOfYear(seasonId, y); if (tid == null) continue;
+    const ratings = await cached(`teamratings:${seasonId}:${tid}`, TTL, () => getClubRatingsByTournament(seasonId, tid)).catch(() => [] as AvRatingTeam[]);
+    const played = new Map([...c.teams.values()].map((t) => [normTeam(t.name), t.matches.size]));
+    const str = ratings.map((r) => ({ key: normTeam(r.name), per: (played.get(normTeam(r.name)) ?? 0) >= 3 ? r.points / (played.get(normTeam(r.name)) as number) : null }))
+      .filter((x): x is { key: string; per: number } => x.per != null).sort((a, b) => b.per - a.per);
+    const map = new Map<string, OppTier>();
+    const Q: OppTier[] = ['С1', 'С2', 'С3', 'С4'];
+    str.forEach((x, i) => map.set(x.key, Q[Math.min(3, Math.floor((i * 4) / str.length))] as OppTier));
+    if (map.size) setTeamTiers(y, map);
+  }
+}
+
 export async function holdingAnalytics(seasonId: number, cfg: HoldingConfig, profile: HoldingProfile, toursBack = 0): Promise<HoldingAnalytics> {
   // Формы когорт (минуты, индекс) — в ключ кэша: аналитика пересчитается, когда они досчитаются.
   const formsByYear = new Map<number, Map<number, PlayerForm>>();
+  await registerTiers(seasonId, profile.years).catch(() => undefined);
   if (toursBack === 0) for (const y of profile.years) { const f = await cohortForms(seasonId, y); if (f) formsByYear.set(y, f.forms); }
   const stamp = toursBack === 0 ? profile.years.map((y) => (formsByYear.has(y) ? 1 : 0)).join('') : '';
   const key = `holding-analytics:${cfg.slug}:${seasonId}:${profile.asOf}:${toursBack}${stamp ? ':' + stamp : ''}`;
@@ -259,7 +284,7 @@ async function computeAnalytics(seasonId: number, cfg: HoldingConfig, profile: H
             pctRegion: rr != null && ratedPool.length ? Math.max(1, Math.round((rr / ratedPool.length) * 100)) : null,
             lineAvgDiv, lineAvgRegion, deltaLine: isRated && lineAvgDiv != null ? (p.rating as number) - lineAvgDiv : null,
             trend, last: lastN, lastTour, teamLastTour, inRotation,
-            index: fm?.index ?? null, indexPct: fm?.indexPct ?? null, minutes: fm ? Math.round(fm.minutes) : null, formDelta: fm?.formDelta ?? null, defPct: fm?.defPct ?? null, lowSample: fm?.lowSample ?? false,
+            index: fm?.index ?? null, indexPct: fm?.indexPct ?? null, minutes: fm ? Math.round(fm.minutes) : null, formDelta: fm?.formDelta ?? null, defPct: fm?.defPct ?? null, lowSample: fm?.lowSample ?? false, vsTop: fm?.vsTop ?? null,
           };
         }).sort((a, b) => ((b.rating ?? -1) - (a.rating ?? -1)) || (b.mp - a.mp));
         allPlayers.push(...squad);

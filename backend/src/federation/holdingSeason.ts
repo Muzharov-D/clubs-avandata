@@ -12,7 +12,8 @@
  */
 import { cached, TTL } from './avandataSource.js';
 import { getEventTypes } from '../services/avandataApi.js';
-import { buildIndexModel, QUALIFY_MATCHES, type IndexModel, type EventTypeInfo } from './holdingIndex.js';
+import { buildIndexModel, QUALIFY_MATCHES, tiersStamp, type IndexModel, type EventTypeInfo } from './holdingIndex.js';
+import { normTeam } from './teamName.js';
 import { cohortMetrics, type CohortMetrics } from './holdingMetrics.js';
 import { OUTFIELD_PROFILE, GK_PROFILE, type ProfileMetric, type MetricGroup } from './metricsGlossary.js';
 import type { HoldingXi } from './holdings.js';
@@ -34,8 +35,10 @@ export interface PlayerSeason {
   minutes: number; matches: number; goals: number;
   /** Индекс сезона 0–10 и место в пуле своей позиции. */
   index: number | null; indexPct: number | null; rank: number | null; peers: number;
-  /** Минут меньше двух полных матчей: индекс предварительный. */
+  /** Минут меньше двух полных матчей: без оценки (б/о). */
   lowSample: boolean;
+  /** Против сильнейшей четверти команд региона: индекс (от одного полного матча), минуты, матчи. */
+  vsTop: { index: number | null; minutes: number; matches: number };
   archetype: { name: string; tagline: string };
   superline: string | null;
   strengths: Array<{ key: string; name: string; description: string; pct: number }>;
@@ -122,10 +125,10 @@ function buildTable(c: CohortMetrics, types: Map<string, EventTypeInfo>): Table 
       (pool.get(k) ?? pool.set(k, []).get(k)!).push(v);
     }
   }
-  return { aggs, pool, model: buildIndexModel(c, types) };
+  return { aggs, pool, model: buildIndexModel(c, types, normTeam) };
 }
 
-const tableOf = (season: number, c: CohortMetrics): Promise<Table> => cached(`holding-season-table:v2:${season}:${c.year}:${c.asOf}`, 6 * 60 * 60 * 1000, async () => {
+const tableOf = (season: number, c: CohortMetrics): Promise<Table> => cached(`holding-season-table:v2:${season}:${c.year}:${c.asOf}:${tiersStamp(c.year)}`, 6 * 60 * 60 * 1000, async () => {
   const raw = await cached('eventTypes', TTL, getEventTypes) as Array<{ id: string; points?: number | null; eventTypeCategoryId?: string | null }>;
   const types = new Map<string, EventTypeInfo>(raw.map((t) => [t.id, { points: t.points ?? 0, attack: t.eventTypeCategoryId === 'attack' }]));
   return buildTable(c, types);
@@ -291,6 +294,7 @@ export async function playerSeason(season: number, year: number, ids: number[], 
     playerId: ids[0]!, year, line: lineOfPlayer, matchLen: L, minutes, matches, goals,
     group: line, groupTitle: line ? GROUP_INFO[line].title : null, peersWord,
     index, indexPct, rank, peers: pp.length, lowSample: sv.lowSample,
+    vsTop: { index: sv.vsTop.value != null && pp.length >= 5 ? scaleIdx(sv.vsTop.value, lo, hi) : null, minutes: sv.vsTop.minutes, matches: sv.vsTop.matches },
     archetype, superline, strengths, growth, roles, slices, series, text: parts.join(' '), inPool,
   };
 }
@@ -300,12 +304,12 @@ export async function playerSeason(season: number, year: number, ids: number[], 
  * что в профиле: за полный матч своего возраста, против своей позиции, с минутами).
  * null — когорта ещё считается.
  */
-export interface PlayerForm { index: number | null; indexPct: number | null; /** Минут меньше двух полных матчей: индекс предварительный. */ lowSample: boolean; /** Перцентиль игры в обороне среди своей группы позиций. */ defPct: number | null; minutes: number; matches: number; series: number[]; formDelta: number | null; lastMinutesShare: number | null }
+export interface PlayerForm { index: number | null; indexPct: number | null; /** Минут меньше двух полных матчей: без оценки (б/о). */ lowSample: boolean; /** Индекс против сильнейшей четверти команд региона. */ vsTop: { index: number | null; minutes: number; matches: number }; /** Перцентиль игры в обороне среди своей группы позиций. */ defPct: number | null; minutes: number; matches: number; series: number[]; formDelta: number | null; lastMinutesShare: number | null }
 export async function cohortForms(season: number, year: number): Promise<{ asOf: string; forms: Map<number, PlayerForm> } | null> {
   const c = cohortMetrics(season, year);
   if (!c) return null;
   const t = await tableOf(season, c);
-  return cached(`holding-forms:v2:${season}:${year}:${c.asOf}`, 6 * 60 * 60 * 1000, async () => {
+  return cached(`holding-forms:v2:${season}:${year}:${c.asOf}:${tiersStamp(year)}`, 6 * 60 * 60 * 1000, async () => {
     const L = c.matchLen;
     const forms = new Map<number, PlayerForm>();
     for (const a of t.aggs.values()) {
@@ -324,7 +328,7 @@ export async function cohortForms(season: number, year: number): Promise<{ asOf:
       const last3 = rows.slice(-3);
       const lastMinutesShare = last3.length ? Math.round((last3.reduce((s, x) => s + x.m, 0) / (last3.length * L)) * 100) / 100 : null;
       const defPct = inPool ? pctOf(t.model.defencePool.get(a.group as PositionGroup) ?? [], (rows.reduce((x, r) => x + r.def, 0) / (sv.minutes || 1)) * L) : null;
-      forms.set(a.pid, { index: val != null && pool.length >= 5 ? scaleIdx(val, plo, phi) : null, indexPct: pct, lowSample: sv.lowSample, defPct, minutes: a.minutes, matches: a.matches, series, formDelta, lastMinutesShare });
+      forms.set(a.pid, { index: val != null && pool.length >= 5 ? scaleIdx(val, plo, phi) : null, indexPct: pct, lowSample: sv.lowSample, vsTop: { index: sv.vsTop.value != null && pool.length >= 5 ? scaleIdx(sv.vsTop.value, plo, phi) : null, minutes: sv.vsTop.minutes, matches: sv.vsTop.matches }, defPct, minutes: a.minutes, matches: a.matches, series, formDelta, lastMinutesShare });
     }
     return { asOf: c.asOf, forms };
   });

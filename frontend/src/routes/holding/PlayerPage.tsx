@@ -29,6 +29,7 @@ interface Season {
   playerId: number; name: string; photo: string | null; birthDate: string | null; position: string | null; club: string | null; teamKey: string | null; division: string | null;
   year: number; line: 'GK' | 'DEF' | 'MID' | 'FWD' | null; matchLen: number; group: string | null; groupTitle: string | null; peersWord: string; minutes: number; matches: number; goals: number;
   index: number | null; indexPct: number | null; rank: number | null; peers: number; inPool: boolean; lowSample?: boolean;
+  vsTop?: { index: number | null; minutes: number; matches: number };
   archetype: { name: string; tagline: string }; superline: string | null;
   strengths: Array<{ key: string; name: string; description: string; pct: number }>;
   growth: Array<{ key: string; name: string; description: string; pct: number }>;
@@ -129,6 +130,7 @@ export function HoldingPlayerPage() {
               </div>
               <div className="dna-card__rating-lab">индекс сезона</div>
               <div className="hd-player__ringsub">лучше {Math.round(s.indexPct ?? 0)}% {peersShort}{s.rank ? ` · ${s.rank}-й из ${s.peers}` : ''}</div>
+              <VsTopLine v={s.vsTop} />
             </div>
           )}
         </div>
@@ -238,4 +240,13 @@ export function HoldingPlayerPage() {
       </details>
     </div>
   );
+}
+
+/** Стресс-тест под индексом: как игрок играет против сильнейшей четверти команд региона. */
+function VsTopLine({ v }: { v?: { index: number | null; minutes: number; matches: number } }) {
+  if (!v) return null;
+  const text = v.matches === 0 ? 'против сильнейших команд региона не играл'
+    : v.index == null ? `против сильнейших — ${v.minutes} мин, мало для оценки`
+    : `против сильнейших: ${v.index.toFixed(1)} · ${v.matches} ${v.matches === 1 ? 'матч' : v.matches < 5 ? 'матча' : 'матчей'}`;
+  return <div className="hd-player__ringsub hd-player__vstop" title="Только матчи против сильнейшей четверти команд своего возраста в регионе">{text}</div>;
 }

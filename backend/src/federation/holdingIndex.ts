@@ -9,6 +9,11 @@
  *     игрок команды, которая владеет мячом, не получает преимущества только за счёт команды.
  *  3. Стабильность. Оценка матча ограничена коридором ±25% от среднего игрока за последние
  *     10 матчей (от 3 матчей) — один яркий матч не делает сезон.
+ *  5. Соперник. Сила соперника — рейтинг AvanData команды за разобранный матч (сравним между лигами),
+ *     четверти команд возраста в регионе. В сам индекс не входит: очки — это действия, и против
+ *     сильного соперника у защитника их больше, а не меньше (проверено: поправка по данным выходит
+ *     немонотонной). Вместо этого — отдельный стресс-тест «против сильнейших» (сильнейшая четверть
+ *     региона, без коридора стабильности, от одного полного матча).
  *  4. Малая выборка. Пока на поле меньше двух полных матчей своего возраста — без оценки («б/о»):
  *     индекс не считается и в шкалу не входит (решение руководства).
  * Шкала прежняя: лучший в пуле (возраст + специализация, весь регион, 45+ минут) = 10.0, слабейший = 5.0.
@@ -17,6 +22,15 @@ import type { CohortMetrics } from './holdingMetrics.js';
 import type { PositionGroup } from './positionGroups.js';
 
 export interface EventTypeInfo { points: number; attack: boolean }
+/** Сила соперника — четверть команд возраста в регионе по рейтингу AvanData за разобранный матч: С1 — сильнейшие. */
+export type OppTier = 'С1' | 'С2' | 'С3' | 'С4';
+/** Уровни команд возраста по таблицам ФФСПб (ключ — нормализованное название команды). */
+const tiersByYear = new Map<number, { stamp: string; map: Map<string, OppTier> }>();
+export function setTeamTiers(year: number, map: Map<string, OppTier>): void {
+  const stamp = [...map].sort().map(([k, v]) => `${k}=${v}`).join(';');
+  if (tiersByYear.get(year)?.stamp !== stamp) tiersByYear.set(year, { stamp, map });
+}
+export const tiersStamp = (year: number): string => { const t = tiersByYear.get(year); return t ? String(t.stamp.length) + ':' + t.map.size : '0'; };
 
 const COEF_MIN = 0.6, COEF_MAX = 1.5;          // коэффициент специализации
 const RARE_RATE = 0.02;                         // событие реже 0.02 за матч у всех — без коэффициента
@@ -31,8 +45,12 @@ const clamp = (v: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, v
 export const median = (xs: number[]) => { if (!xs.length) return 0; const s = xs.slice().sort((a, b) => a - b); const m = s.length >> 1; return s.length % 2 ? s[m]! : (s[m - 1]! + s[m]!) / 2; };
 
 /** Игрок в матче после поправок: оценка всего / атака / оборона (очки за матч, не за 90′). */
-export interface MatchRow { mid: number; m: number; adj: number; att: number; def: number }
-export interface SeasonValue { value: number | null; minutes: number; rows: MatchRow[]; clipped: Map<number, number>; lowSample: boolean }
+export interface MatchRow { mid: number; m: number; adj: number; att: number; def: number; opp: OppTier | null }
+export interface SeasonValue {
+  value: number | null; minutes: number; rows: MatchRow[]; clipped: Map<number, number>; lowSample: boolean;
+  /** Только матчи против сильнейшей четверти команд региона: оценка за полный матч (от одного полного матча), минуты, матчи. */
+  vsTop: { value: number | null; minutes: number; matches: number };
+}
 
 export interface IndexModel {
   L: number;
@@ -47,8 +65,14 @@ export interface IndexModel {
   matchPool: Map<PositionGroup, { overall: number[]; attack: number[]; defence: number[] }>;
 }
 
-export function buildIndexModel(c: CohortMetrics, types: Map<string, EventTypeInfo>): IndexModel {
+export function buildIndexModel(c: CohortMetrics, types: Map<string, EventTypeInfo>, normName: (s: string) => string): IndexModel {
   const L = c.matchLen;
+  const tiers = tiersByYear.get(c.year)?.map;
+  const tierOfTeam = (tid: number): OppTier | null => { const t = c.teams.get(tid); return t && tiers ? tiers.get(normName(t.name)) ?? null : null; };
+  // Соперник в матче: другая команда, чьи игроки есть в этом матче.
+  const teamsInMatch = new Map<number, Set<number>>();
+  for (const mm of c.byMatch.values()) for (const [mid, x] of mm) (teamsInMatch.get(mid) ?? teamsInMatch.set(mid, new Set()).get(mid)!).add(x.teamId);
+  const oppOf = (mid: number, own: number): OppTier | null => { for (const t of teamsInMatch.get(mid) ?? []) if (t !== own) return tierOfTeam(t); return null; };
   const groupOf = (pid: number) => c.groupOfPlayer.get(pid) ?? null;
 
   // 1. Частоты событий по специализациям (за полный матч) → коэффициенты.
@@ -81,11 +105,12 @@ export function buildIndexModel(c: CohortMetrics, types: Map<string, EventTypeIn
   }
 
   // 2. Очки по матчу с коэффициентами; объём полезных действий команды в матче.
-  const raw = new Map<number, Array<{ mid: number; m: number; teamKey: string; pos: number; neg: number; attPos: number; attNeg: number; defPos: number; defNeg: number }>>();
+  type Raw = { mid: number; m: number; teamKey: string; opp: OppTier | null; pos: number; neg: number; attPos: number; attNeg: number; defPos: number; defNeg: number };
+  const raw = new Map<number, Raw[]>();
   const teamVol = new Map<string, number>();
   for (const [pid, mm] of c.byMatch) {
     const k0 = coef.get(groupOf(pid) as PositionGroup);
-    const list: Array<{ mid: number; m: number; teamKey: string; pos: number; neg: number; attPos: number; attNeg: number; defPos: number; defNeg: number }> = [];
+    const list: Raw[] = [];
     for (const [mid, x] of mm) {
       const m = c.minutes.get(pid)?.get(mid) ?? 0;
       let pos = 0, neg = 0, attPos = 0, attNeg = 0, defPos = 0, defNeg = 0;
@@ -97,16 +122,17 @@ export function buildIndexModel(c: CohortMetrics, types: Map<string, EventTypeIn
       }
       const teamKey = `${mid}:${x.teamId}`;
       teamVol.set(teamKey, (teamVol.get(teamKey) ?? 0) + pos);
-      if (m > 0) list.push({ mid, m, teamKey, pos, neg, attPos, attNeg, defPos, defNeg });
+      if (m > 0) list.push({ mid, m, teamKey, opp: oppOf(mid, x.teamId), pos, neg, attPos, attNeg, defPos, defNeg });
     }
     raw.set(pid, list.sort((a, b) => a.mid - b.mid));
   }
   const volAvg = median([...teamVol.values()].filter((v) => v > 0));
   const teamF = (key: string) => { const v = teamVol.get(key) ?? 0; return v > 0 && volAvg > 0 ? clamp(Math.sqrt(volAvg / v), TEAM_MIN, TEAM_MAX) : 1; };
+  const baseRows = (pid: number) => (raw.get(pid) ?? []).map((r) => { const f = teamF(r.teamKey); return { mid: r.mid, m: r.m, opp: r.opp, adj: r.pos * f + r.neg, att: r.attPos * f + r.attNeg, def: r.defPos * f + r.defNeg }; });
   const rowsCache = new Map<number, MatchRow[]>();
   const rowsOf = (pid: number): MatchRow[] => {
     const hit = rowsCache.get(pid); if (hit) return hit;
-    const rows = (raw.get(pid) ?? []).map((r) => { const f = teamF(r.teamKey); return { mid: r.mid, m: r.m, adj: r.pos * f + r.neg, att: r.attPos * f + r.attNeg, def: r.defPos * f + r.defNeg }; });
+    const rows = baseRows(pid);
     rowsCache.set(pid, rows);
     return rows;
   };
@@ -145,7 +171,11 @@ export function buildIndexModel(c: CohortMetrics, types: Map<string, EventTypeIn
     season(rows, group) {
       const s = corridor(rows);
       const lowSample = s.minutes < L * QUALIFY_MATCHES;
-      return { value: lowSample ? null : s.value, minutes: s.minutes, rows, clipped: s.clipped, lowSample };
+      const top = rows.filter((r) => r.opp === 'С1');
+      const tm = top.reduce((x, r) => x + r.m, 0);
+      // Без коридора: стресс-тест должен показывать провалы против сильнейших, а не сглаживать их.
+      const vsTop = { value: tm >= L ? (top.reduce((x, r) => x + r.adj, 0) / tm) * L : null, minutes: Math.round(tm), matches: top.length };
+      return { value: lowSample ? null : s.value, minutes: s.minutes, rows, clipped: s.clipped, lowSample, vsTop };
     },
   };
 }
