@@ -26,7 +26,7 @@ interface SeasonSlice { key: string; name: string; short: string; description: s
 interface SeasonMatch { matchId: number; minutes: number; overall: number | null; attack: number | null; defence: number | null; date: string | null; opponent: string | null; score: string | null; result: 'W' | 'D' | 'L' | null }
 interface Season {
   playerId: number; name: string; photo: string | null; birthDate: string | null; position: string | null; club: string | null; teamKey: string | null; division: string | null;
-  year: number; line: 'GK' | 'DEF' | 'MID' | 'FWD' | null; matchLen: number; minutes: number; matches: number; goals: number;
+  year: number; line: 'GK' | 'DEF' | 'MID' | 'FWD' | null; matchLen: number; group: string | null; groupTitle: string | null; peersWord: string; minutes: number; matches: number; goals: number;
   index: number | null; indexPct: number | null; rank: number | null; peers: number; inPool: boolean;
   archetype: { name: string; tagline: string }; superline: string | null;
   strengths: Array<{ key: string; name: string; description: string; pct: number }>;
@@ -35,7 +35,6 @@ interface Season {
   slices: SeasonSlice[]; series: SeasonMatch[]; text: string;
   league: LeaguePlayer | null;
 }
-const PEERS: Record<string, string> = { GK: 'вратарей', DEF: 'защитников', MID: 'полузащитников', FWD: 'нападающих' };
 const PIZZA_GROUP: Record<MetricGroup, 'attack' | 'defence' | 'fitness'> = { finishing: 'attack', creation: 'attack', possession: 'fitness', defence: 'defence', errors: 'defence', goalkeeping: 'defence' };
 const bucket = (p: number) => (p >= 80 ? 'hi' : p >= 60 ? 'good' : p >= 40 ? 'neutral' : p >= 20 ? 'mid' : 'low');
 const fmtVal = (s: SeasonSlice) => (s.value == null ? '—' : s.ratio ? `${Math.round(s.value)}%` : s.value >= 10 ? s.value.toFixed(0) : s.value.toFixed(1));
@@ -79,7 +78,8 @@ export function HoldingPlayerPage() {
     if (older) flags.push(`готов играть за ${older.olderTeamName}`);
     if (a.risk.some((x) => x.id === pid)) flags.push('ниже медианы Первой лиги своего возраста');
   }
-  const peers = s.line ? `${PEERS[s.line]} ${s.year} г.р. региона` : `игроков ${s.year} г.р.`;
+  const peers = s.peersWord;
+  const peersShort = s.peersWord.replace(/\s+\d{4} г\.р\. региона$/, '');
   const ringPct = s.index != null ? Math.min(100, s.index * 10) : 0;
   const slices = s.slices.filter((x) => x.pct != null).map((x) => ({ axis: x.short, value: x.pct as number, group: PIZZA_GROUP[x.group], displayValue: fmtVal(x) }));
   const pctRows = s.slices.filter((x) => x.pct != null).sort((x, y) => (y.pct as number) - (x.pct as number));
@@ -103,7 +103,7 @@ export function HoldingPlayerPage() {
         <div className="dna-card__head">
           <div className="dna-card__head-main">
             <div className="dna-card__eyebrow">ДНК игрока</div>
-            <div className="dna-card__identity">{s.line ? LINE_TITLE[s.line] : s.position ?? '—'} · {s.club ? shortClub(s.club) : '—'} {s.year}{s.division ? ` · ${s.division}` : ''}</div>
+            <div className="dna-card__identity">{s.groupTitle ?? (s.line ? LINE_TITLE[s.line] : s.position ?? '—')} · {s.club ? shortClub(s.club) : '—'} {s.year}{s.division ? ` · ${s.division}` : ''}</div>
             <h1 className="dna-card__archetype"><SplitText text={s.name} /></h1>
             <div className="dna-card__tagline"><b>{s.archetype.name}</b> — {s.archetype.tagline}</div>
             <div className="dna-card__stats-inline">{s.matches} {plural(s.matches, 'матч', 'матча', 'матчей')} · {s.minutes} {plural(s.minutes, 'минута', 'минуты', 'минут')} на поле{s.goals ? ` · ${s.goals} ${plural(s.goals, 'гол', 'гола', 'голов')}` : ''}</div>
@@ -120,7 +120,7 @@ export function HoldingPlayerPage() {
                 <div className="dna-card__rating-num"><AnimatedNumber value={s.index} format={(v: number) => v.toFixed(1)} stiffness={120} damping={24} /></div>
               </div>
               <div className="dna-card__rating-lab">индекс сезона</div>
-              <div className="hd-player__ringsub">лучше {Math.round(s.indexPct ?? 0)}% {s.line ? PEERS[s.line] : 'сверстников'}{s.rank ? ` · ${s.rank}-й из ${s.peers}` : ''}</div>
+              <div className="hd-player__ringsub">лучше {Math.round(s.indexPct ?? 0)}% {peersShort}{s.rank ? ` · ${s.rank}-й из ${s.peers}` : ''}</div>
             </div>
           )}
         </div>
@@ -173,7 +173,8 @@ export function HoldingPlayerPage() {
       {slices.length >= 3 && (
         <div className="card hd-player__pizza">
           <div className="page-section-title">Профиль по сезону <span className="an-model-tag">за матч ({s.matchLen}′) · против {peers}</span></div>
-          <PizzaChart subjectName={`${s.name} · сезон`} subjectMeta={`Цифры — за полный матч (${s.matchLen}′), длина слайса — место среди ${s.peers} ${peers}`} vsLabel={s.line ? PEERS[s.line] : ''} centerLabel="регион" slices={slices} />
+          <PizzaChart subjectName={`${s.name} · сезон`} subjectMeta={`Цифры — за полный матч (${s.matchLen}′), длина слайса — место среди ${s.peers} ${peers}`} vsLabel={peersShort} centerLabel="регион" slices={slices} showLegend={false} />
+          <div className="hd-pizza-legend"><span><i style={{ background: '#22d3ee' }} />атака и созидание</span><span><i style={{ background: '#fbbf24' }} />владение</span><span><i style={{ background: '#818cf8' }} />оборона</span></div>
         </div>
       )}
 

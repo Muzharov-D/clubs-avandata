@@ -322,6 +322,36 @@ async function buildHoldingProfile(seasonId: number, cfg: HoldingConfig): Promis
       const avMatches = avLists.flat();
       const avByFf = new Map<number, number>();
       for (const { m } of avMatches) { const ff = ffIdOf(m); if (ff != null) avByFf.set(ff, m.id); }
+      // Разборы без привязки к протоколу ФФСПб (у свежих туров AvanData её нет): сшиваем по
+      // хозяевам и гостям и ближайшей дате (до 7 дней — переносы). Каждый разбор — один раз.
+      const sideKey = (home: string, away: string) => `${normTeam(clubName(home))}|${normTeam(clubName(away))}`;
+      const unlinked = new Map<string, Array<{ id: number; t: number; tour: number }>>();
+      for (const { m, tour } of avMatches) {
+        if (ffIdOf(m) != null || m.status !== 'ready') continue;
+        const k = sideKey(m.ownTeam.title, m.guestTeam.title);
+        (unlinked.get(k) ?? unlinked.set(k, []).get(k)!).push({ id: m.id, t: Date.parse(m.dateTime), tour });
+      }
+      const usedAv = new Set<number>();
+      const linkedFf = new Map<number, number | null>();   // один протокол встречается у обеих команд дерби
+      const avOfLive = (m: FfMatch): number | null => {
+        const direct = avByFf.get(m.id);
+        if (direct != null) return direct;
+        if (linkedFf.has(m.id)) return linkedFf.get(m.id) ?? null;
+        const found = matchUnlinked(m);
+        linkedFf.set(m.id, found);
+        return found;
+      };
+      const matchUnlinked = (m: FfMatch): number | null => {
+        const cands = unlinked.get(sideKey(m.home.name, m.away.name)) ?? [];
+        const t = Date.parse(m.date);
+        // Сначала — ближайшая дата (до 7 дней); иначе — тот же тур (в разметке бывают ошибки в дате).
+        const free = cands.filter((c) => !usedAv.has(c.id));
+        const best = free.filter((c) => Math.abs(c.t - t) <= 7 * 86_400_000).sort((x, y) => Math.abs(x.t - t) - Math.abs(y.t - t))[0]
+          ?? free.find((c) => m.tour != null && c.tour === m.tour && Math.abs(c.t - t) <= 45 * 86_400_000);
+        if (!best) return null;
+        usedAv.add(best.id);
+        return best.id;
+      };
 
       // Живые протоколы ФФСПб: актуальные результаты и таблицы дивизионов, посчитанные из них.
       let live: { matches: FfMatch[]; stages: Map<number, string> } | null = null;
@@ -418,7 +448,7 @@ async function buildHoldingProfile(seasonId: number, cfg: HoldingConfig): Promis
         // иначе — матчи AvanData.
         const matches: HoldingMatch[] = (liveTeam && live
           ? live.matches.filter((m) => m.home.id === liveTeam.team.id || m.away.id === liveTeam.team.id)
-            .map((m) => toLiveMatch(m, ref, division, cfg, member.key, avByFf.get(m.id) ?? null))
+            .map((m) => toLiveMatch(m, ref, division, cfg, member.key, avOfLive(m)))
           : avMatches.filter(({ m }) => memberOf(cfg, m.ownTeam.title)?.key === member.key || memberOf(cfg, m.guestTeam.title)?.key === member.key)
             .map(({ m, tour, ref: r }) => toMatch(m, r, tour, cfg, member.key))
         ).sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : 0));

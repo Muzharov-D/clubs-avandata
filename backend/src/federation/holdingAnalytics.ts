@@ -12,6 +12,7 @@
  */
 import { regionPlayers, clubName, cached, hasFreshCache, TTL, type RegionPlayer } from './avandataSource.js';
 import { cohortForms, type PlayerForm } from './holdingSeason.js';
+import { positionGroup, type PositionGroup } from './positionGroups.js';
 import { getClubRatingsByTournament, type AvRatingTeam } from '../services/avandataApi.js';
 import { normTeam } from './teamName.js';
 import { classifyDivision, type DivisionKey } from './division.js';
@@ -35,6 +36,8 @@ const LINE_GAP_REL = 0.12;        // линия слабее/сильнее ли
 
 export interface LeaguePlayer {
   id: number; name: string; photo: string | null; position: string | null; line: Line | null;
+  /** Группа позиции (с кем сравнивается): ЦЗ, крайние, опорные, атакующие ПЗ, края, ЦН, вратари. */
+  group: PositionGroup | null;
   birthYear: number; clubKey: string; clubLabel: string; teamKey: string; team: string;
   division: string; divisionKey: DivisionKey | null;
   rating: number | null; mp: number;
@@ -65,6 +68,8 @@ export interface TeamLeague {
   lines: LineCompare[];
   squad: LeaguePlayer[];
   inTop30: number; rated: number;
+  /** Все команды дивизиона: место в таблице и средний рейтинг состава — для рассеяния «сила × место». */
+  divMap: Array<{ name: string; place: number; strength: number | null; mine: boolean }>;
 }
 export interface YouthCandidate extends LeaguePlayer { tier: 'ready' | 'watch' | 'rest' }
 export interface LosingPlayer extends LeaguePlayer { reason: 'trend' | 'rotation' }
@@ -174,6 +179,10 @@ async function computeAnalytics(seasonId: number, cfg: HoldingConfig, profile: H
       const rankDiv = new Map<number, number>(); for (const arr of byDiv.values()) arr.forEach((p, i) => rankDiv.set(p.id, i + 1));
       const lineAvg = (arr: RegionPlayer[]) => { const m = new Map<Line, number[]>(); for (const p of arr) { const l = lineOf(p.position); if (l) (m.get(l) ?? m.set(l, []).get(l)!).push(p.rating as number); } return m; };
       const lineRegion = lineAvg(ratedPool);
+      // Средние по группе позиций (опорный — среди опорных): для «к амплуа лиги».
+      const groupAvg = (arr: RegionPlayer[]) => { const m = new Map<PositionGroup, number[]>(); for (const p of arr) { const g = positionGroup(p.position); if (g) (m.get(g) ?? m.set(g, []).get(g)!).push(p.rating as number); } return m; };
+      const groupRegion = groupAvg(ratedPool);
+      const groupByDiv = new Map<DivisionKey | null, Map<PositionGroup, number[]>>(); for (const [k, arr] of byDiv) groupByDiv.set(k, groupAvg(arr));
       const lineByDiv = new Map<DivisionKey | null, Map<Line, number[]>>(); for (const [k, arr] of byDiv) lineByDiv.set(k, lineAvg(arr));
       const topRated = (byDiv.get('Высшая') ?? []).map((p) => p.rating as number);
       const firstRated = (byDiv.get('Первая') ?? []).map((p) => p.rating as number);
@@ -206,8 +215,10 @@ async function computeAnalytics(seasonId: number, cfg: HoldingConfig, profile: H
         const mine = pool.filter((p) => normTeam(clubName(p.club)) === t.clubKey);
         const dk = t.divisionKey;
         const lineDiv = lineByDiv.get(dk) ?? new Map<Line, number[]>();
+        const groupDiv = groupByDiv.get(dk) ?? new Map<PositionGroup, number[]>();
         const squad: LeaguePlayer[] = mine.map((p) => {
           const line = lineOf(p.position);
+          const group = positionGroup(p.position);
           const isRated = rated(p);
           const series = p.series ?? [];
           const lastN = series.slice(-TREND_LAST_N).map((s) => Math.round(s.rating));
@@ -219,12 +230,15 @@ async function computeAnalytics(seasonId: number, cfg: HoldingConfig, profile: H
           const teamLastTour = teamLastTourByKey.get(t.clubKey) ?? null;
           const missedAfter = lastTour == null ? 0 : [...(teamToursByKey.get(t.clubKey) ?? [])].filter((x) => x > lastTour).length;
           const inRotation = lastTour == null || missedAfter < ROTATION_GAP_TOURS;
-          const lineAvgDiv = line ? avg(lineDiv.get(line) ?? []) : null;
-          const lineAvgRegion = line ? avg(lineRegion.get(line) ?? []) : null;
+          // «Амплуа» — группа позиции; если в группе мало игроков дивизиона — линия.
+          const gDiv = group ? groupDiv.get(group) ?? [] : [];
+          const lineAvgDiv = gDiv.length >= 5 ? avg(gDiv) : line ? avg(lineDiv.get(line) ?? []) : null;
+          const gReg = group ? groupRegion.get(group) ?? [] : [];
+          const lineAvgRegion = gReg.length >= 5 ? avg(gReg) : line ? avg(lineRegion.get(line) ?? []) : null;
           const rr = isRated ? rankRegion.get(p.id) ?? null : null;
           const fm = formsByYear.get(year)?.get(p.id);
           return {
-            id: p.id, name: p.name, photo: p.photo, position: p.position, line,
+            id: p.id, name: p.name, photo: p.photo, position: p.position, line, group,
             birthYear: p.birthYear ?? year, clubKey: t.clubKey, clubLabel: t.clubLabel, teamKey: t.key, team: p.club ?? t.name,
             division: t.division, divisionKey: dk,
             rating: isRated ? p.rating : null, mp: p.mp,
@@ -257,6 +271,7 @@ async function computeAnalytics(seasonId: number, cfg: HoldingConfig, profile: H
           ratingRank: t.rating?.rank ?? null, ratingSize: t.rating?.size ?? null,
           overperformance: t.standing && t.rating ? t.rating.rank - t.standing.place : null,
           lines, squad, inTop30: t.squad.inTop30, rated: squadRated.length,
+          divMap: t.table.map((row, i) => ({ name: row.name.replace(/\s*20\d{2}(-20\d{2})?\s*$/, ''), place: i + 1, strength: teamAvgByKey.get(normTeam(clubName(row.name)))?.avg ?? null, mine: row.isMember && normTeam(clubName(row.name)) === t.clubKey })),
         });
       }
     }

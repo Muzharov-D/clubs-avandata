@@ -5,7 +5,7 @@
  */
 import { useMemo, useState, type ReactNode } from 'react';
 import { Link } from 'react-router-dom';
-import { LINE_TITLE, CATEGORY_TITLE, CATEGORY_ORDER, num, pm, shortClub, type LeaguePlayer, type Line, type PlayerMetricRow, type TeamMetricRow } from './api';
+import { LINE_TITLE, GROUP_TITLE, CATEGORY_TITLE, CATEGORY_ORDER, num, pm, shortClub, type LeaguePlayer, type Line, type PlayerMetricRow, type TeamMetricRow } from './api';
 import { useNavQuery } from './scope';
 
 const lineWord: Record<Line, string> = { GK: 'вратарь', DEF: 'защитник', MID: 'полузащитник', FWD: 'нападающий' };
@@ -122,7 +122,7 @@ export function PlayerTable({ players, showTeam = true, showTier = false, extra,
                 <td className="num hd-muted">{i + 1}</td>
                 <td style={{ minWidth: 200 }}>
                   <Link to={`/holding/players/${p.id}${q}`} className="hd-pname">{p.name}</Link>
-                  <span className="hd-team__sub">{showTeam ? `${shortClub(p.clubLabel)} ${p.birthYear} · ` : ''}{p.line ? lineWord[p.line] : p.position ?? '—'}</span>
+                  <span className="hd-team__sub">{showTeam ? `${shortClub(p.clubLabel)} ${p.birthYear} · ` : ''}{p.group ? GROUP_TITLE[p.group].toLowerCase() : p.line ? lineWord[p.line] : p.position ?? '—'}</span>
                 </td>
                 {showTier && <td>{p.tier ? <TierBadge tier={p.tier} /> : p.reason ? <span className={`hd-tag ${p.reason === 'trend' ? 'hd-tag--down' : 'hd-tag--warn'}`}>{p.reason === 'trend' ? 'падение формы' : 'вне ротации'}</span> : null}</td>}
                 <td className="num"><IndexCell p={p} /></td>

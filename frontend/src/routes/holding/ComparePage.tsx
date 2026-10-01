@@ -18,12 +18,11 @@ import { useNavQuery } from './scope';
 const ComparePizza = ComparePizzaJs as unknown as ComponentType<Record<string, unknown>>;
 
 interface SeasonSlice { key: string; name: string; short: string; description: string; group: MetricGroup; polarity: 1 | -1; value: number | null; ratio: boolean; pct: number | null }
-interface SideSeason { index: number | null; indexPct: number | null; rank: number | null; peers: number; minutes: number; matches: number; matchLen: number; archetype: { name: string; tagline: string }; slices: SeasonSlice[]; series: Array<{ overall: number | null }> }
+interface SideSeason { peersWord: string; groupTitle: string | null; index: number | null; indexPct: number | null; rank: number | null; peers: number; minutes: number; matches: number; matchLen: number; archetype: { name: string; tagline: string }; slices: SeasonSlice[]; series: Array<{ overall: number | null }> }
 type Side = CompareSide & { season: SideSeason | null };
 
 const sideName = (s: CompareSide) => (s.anonymous ? `Кандидат · ${shortPos(s.position)}` : s.name ?? '—');
 const fmtVal = (s: SeasonSlice | undefined) => (!s || s.value == null ? '—' : s.ratio ? `${Math.round(s.value)}%` : s.value >= 10 ? s.value.toFixed(0) : s.value.toFixed(1));
-const PEERS: Record<string, string> = { GK: 'вратарей', DEF: 'защитников', MID: 'полузащитников', FWD: 'нападающих' };
 
 /**
  * Сравнение двух игроков — как в клубном кабинете Легируса: встречные полоски по
@@ -113,9 +112,9 @@ function Head({ s, q, tone }: { s: Side; q: string; tone: 'a' | 'b' }) {
       {s.anonymous ? <div className="hc-anon" aria-hidden>?</div> : <PlayerAvatar name={s.name ?? ''} photoUrl={s.photo} size={64} />}
       <div style={{ minWidth: 0, flex: 1 }}>
         <div className="hd-cmp-head__name">{s.anonymous ? sideName(s) : <Link to={`/holding/players/${s.id}${q}`} className="hd-pname">{s.name}</Link>}</div>
-        <div className="hd-muted hd-small">{s.line ? LINE_TITLE[s.line] : s.position ?? '—'} · {s.anonymous ? s.club : shortClub(s.club)} {s.birthYear} · {s.division}</div>
+        <div className="hd-muted hd-small">{se?.groupTitle ?? (s.line ? LINE_TITLE[s.line] : s.position ?? '—')} · {s.anonymous ? s.club : shortClub(s.club)} {s.birthYear} · {s.division}</div>
         {se && <div className="hd-cmp-head__dna"><b>{se.archetype.name}</b> — {se.archetype.tagline}</div>}
-        {se && <div className="hd-muted hd-small">{se.matches} матчей · {se.minutes} минут{se.index != null && s.line ? ` · лучше ${Math.round(se.indexPct ?? 0)}% ${PEERS[s.line]}` : ''}</div>}
+        {se && <div className="hd-muted hd-small">{se.matches} матчей · {se.minutes} минут{se.index != null ? ` · лучше ${Math.round(se.indexPct ?? 0)}% ${se.peersWord.replace(/\s+\d{4} г\.р\. региона$/, '')}` : ''}</div>}
       </div>
       {se?.index != null && <div className="hd-cmp-head__idx"><span>{se.index.toFixed(1)}</span><small>индекс</small></div>}
     </div>

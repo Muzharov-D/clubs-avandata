@@ -121,7 +121,7 @@ export async function holdingRoutes(app: FastifyInstance) {
     const year = lp?.birthYear ?? prof?.birthYear ?? null;
     if (year == null) { reply.code(404); return { error: 'игрок не найден', code: 'PLAYER_NOT_FOUND' }; }
     const name = lp?.name ?? prof?.name ?? '';
-    const s = await playerSeason(AV_SEASON, year, ids, name, matchCtx(r.profile), lp?.position ?? prof?.position ?? null);
+    const s = await playerSeason(AV_SEASON, year, ids, name, matchCtx(r.profile));
     if (!s) { reply.code(202); return { status: 'warming', code: 'METRICS_WARMING' }; }
     return { ...s, name, photo: prof?.photo ?? lp?.photo ?? null, birthDate: prof?.birthDate ?? null, position: lp?.position ?? prof?.position ?? null, club: lp?.clubLabel ?? prof?.club ?? null, teamKey: lp?.teamKey ?? null, division: lp?.division ?? null, league: lp ?? null };
   });
@@ -184,7 +184,7 @@ export async function holdingRoutes(app: FastifyInstance) {
     // Сезонные профили (как в профиле игрока) — для «пиццы на пиццу» и встречных полосок.
     const ctx = matchCtx(r.profile);
     const seasonOf = async (x: NonNullable<typeof a>) => {
-      const sp = await playerSeason(AV_SEASON, x.birthYear, [x.id], x.anonymous ? 'Кандидат' : (x.name ?? ''), ctx, x.position);
+      const sp = await playerSeason(AV_SEASON, x.birthYear, [x.id], x.anonymous ? 'Кандидат' : (x.name ?? ''), ctx);
       if (!sp) return null;
       const { text: _t, ...rest } = sp;
       return rest;

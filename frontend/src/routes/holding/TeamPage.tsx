@@ -1,151 +1,204 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, type ComponentType } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { ClubShield } from '../federation/ClubShield';
 import { MatchDetail, type MatchBase } from '../federation/MatchDetail';
 import { FedError } from '../federation/FedState';
-import { ratingColor } from '../federation/ratings';
 import { fmtDate } from '../federation/utils';
-import { Form, sides, toBase, OUT, type HMatch } from '../federation/HoldingView';
-import { useHoldingProfile, useHoldingAnalytics, useTeamMetrics, useSlugQuery, num, pm, plMatch, plPlayer, shortClub, placeWord, type TeamLeague } from './api';
-import { PlayerTable, Kpi, SectionTitle, TeamMetricsTable } from './parts';
+import { sides, toBase, type HMatch } from '../federation/HoldingView';
+import PizzaChartJs from '../../components/PizzaChart';
+import '../../components/analytics/analytics.css';
+import { useHoldingProfile, useHoldingAnalytics, useTeamMetrics, num, pm, plMatch, shortClub, LINE_TITLE, type TeamLeague, type LeaguePlayer, type Line, type TeamMetricRow } from './api';
+import { TeamMetricsTable, PlayerTable } from './parts';
+import { HdLoading } from './HoldingShell';
+import { useNavQuery } from './scope';
+import { TeamPitch } from './Board';
+import { IndexRing, TeamScatter, indexColor } from './viz';
+
+const PizzaChart = PizzaChartJs as unknown as ComponentType<Record<string, unknown>>;
+const OUT_RU: Record<string, string> = { w: 'В', d: 'Н', l: 'П' };
+const LINES: Line[] = ['GK', 'DEF', 'MID', 'FWD'];
+// Показатели команды для пиццы (групп — как у профиля игрока).
+const TEAM_PIZZA: Array<{ id: string; group: 'attack' | 'defence' | 'fitness' }> = [
+  { id: 'goal', group: 'attack' }, { id: 'hitTarget', group: 'attack' }, { id: 'goalMomentPlus', group: 'attack' }, { id: 'passPlus', group: 'attack' }, { id: 'driblePlus', group: 'attack' },
+  { id: 'ballSave', group: 'fitness' }, { id: 'underPressure', group: 'fitness' }, { id: 'passMinus', group: 'fitness' },
+  { id: 'interception', group: 'defence' }, { id: 'tackle', group: 'defence' }, { id: 'press', group: 'defence' }, { id: 'takeaway', group: 'defence' },
+];
+const surname = (name: string) => { const p = name.trim().split(/\s+/); return p.length > 1 ? `${p[p.length - 1]} ${p[0]![0]}.` : name; };
+const mean = (xs: number[]) => (xs.length ? xs.reduce((a, b) => a + b, 0) / xs.length : null);
 
 /**
- * Команда относительно лиги: место и рейтинг, средний класс против дивизиона, линии,
- * состав с местом каждого игрока в регионе и лиге, таблица дивизиона, матчи по протоколам.
+ * Команда — как «Моя команда» в клубном кабинете, но против лиги: состав на поле с
+ * индексами, место в таблице против силы состава среди всех команд дивизиона, пицца
+ * команды против дивизиона, карточки игроков по линиям, лента результатов.
  */
 export function HoldingTeamPage() {
   const { key = '' } = useParams();
   const teamKey = decodeURIComponent(key);
   const profile = useHoldingProfile();
   const an = useHoldingAnalytics();
-  const q = useSlugQuery();
+  const q = useNavQuery();
+  const tm = useTeamMetrics(teamKey);
   const [match, setMatch] = useState<MatchBase | null>(null);
   const [showAll, setShowAll] = useState(false);
 
-  const tm = useTeamMetrics(teamKey);
   const team = profile.data?.teams.find((t) => t.key === teamKey);
-  const league = an.data?.teams.find((t) => t.key === teamKey);
-  const others = useMemo(() => (profile.data?.teams ?? []).filter((t) => t.key !== teamKey), [profile.data, teamKey]);
+  const league = an.data?.teams.find((t) => t.key === teamKey) as (TeamLeague & { divMap?: Array<{ name: string; place: number; strength: number | null; mine: boolean }> }) | undefined;
 
+  const pizza = useMemo(() => (tm.data ? teamPizza(tm.data.rows) : []), [tm.data]);
   if (profile.error) return <FedError subject="Страница команды" />;
-  if (profile.isLoading || !profile.data) return <div className="fed-skeleton" style={{ height: 500 }} />;
-  if (!team) return <div className="fed-empty">Команда не найдена. <Link to={`/holding${q}`} className="fed-link">К обзору</Link></div>;
+  if (!profile.data || !team) return profile.data ? <div className="hd-empty">Команда не найдена. <Link to={`/holding${q}`} className="hd-link">К брифингу</Link></div> : <HdLoading title="Готовим команду" />;
 
-  const s = team.standing, r = team.rating;
-  const played = team.matches.filter((m) => m.played);
-  const yesterday = new Date(Date.now() - 86_400_000).toISOString();
-  const upcoming = team.matches.filter((m) => !m.played && m.date >= yesterday).slice().sort((a, b) => (a.date < b.date ? -1 : 1));
+  const s = team.standing;
+  const played = team.matches.filter((m) => m.played).slice().sort((a, b) => (a.date < b.date ? 1 : -1));
+  const upcoming = team.matches.filter((m) => !m.played && m.date >= new Date(Date.now() - 86_400_000).toISOString()).sort((a, b) => (a.date < b.date ? -1 : 1));
+  const squad = league?.squad ?? [];
+  const teamIndex = mean(squad.filter((p) => p.index != null && (p.minutes ?? 0) >= 45).map((p) => p.index as number));
   const over = league?.overperformance ?? null;
+  const scatter = (league?.divMap ?? []).filter((d) => d.strength != null).map((d) => ({ id: d.name, x: d.strength as number, y: d.place, label: d.mine ? `${shortClub(team.clubLabel)} ${team.year}` : d.name, mine: d.mine }));
+  const siblings = profile.data.teams.filter((t) => t.clubKey === team.clubKey && Math.abs(t.year - team.year) === 1);
 
   return (
-    <div>
-      <header className="hold-detail__head" style={{ marginBottom: 18 }}>
-        <ClubShield name={team.name} logoUrl={team.logo} size={60} />
+    <div className="hd-team-page">
+      {/* Шапка — как у клуба: герб, команда, место, сила состава, форма */}
+      <header className="hd-teamhero">
+        <ClubShield name={team.name} logoUrl={team.logo} size={84} />
         <div style={{ minWidth: 0, flex: 1 }}>
-          <div className="hold-hero__kicker">{shortClub(team.clubLabel)} · {team.ageTitle}</div>
-          <h1 className="hold-detail__title" style={{ fontSize: 28 }}>{team.name}</h1>
-          <div className="hold-detail__sub">{team.division} · {team.squad.players} {plPlayer(team.squad.players)} в разобранных матчах · {played.length} {plMatch(played.length)} по протоколам</div>
+          <div className="hd-kicker">{team.ageTitle} · {team.division}</div>
+          <h1 className="hd-teamhero__title">{shortClub(team.clubLabel)} {team.year}</h1>
+          <div className="hd-teamhero__form">
+            {played.slice(0, 6).reverse().map((m) => <span key={m.id} className={`hd-formdot hd-formdot--${m.outcome ?? 'd'}`} title={`${m.home.name} ${m.home.score ?? '–'}:${m.away.score ?? '–'} ${m.away.name}`}>{m.outcome ? OUT_RU[m.outcome] : '·'}</span>)}
+            {upcoming[0] && <span className="hd-muted hd-small" style={{ marginLeft: 10 }}>следующий: {fmtDate(upcoming[0].date)} — {sides(upcoming[0]).them.name.replace(/\s*20\d{2}\s*$/, '')}</span>}
+          </div>
+          <div className="hd-teamhero__sib">{siblings.map((t) => <Link key={t.key} to={`/holding/teams/${encodeURIComponent(t.key)}`} className="hd-tag hd-tag--brand">{t.year < team.year ? '↑' : '↓'} {t.year} г.р.</Link>)}</div>
         </div>
-        <div className="hold-hero__badges">
-          {others.filter((t) => t.clubKey === team.clubKey && Math.abs(t.year - team.year) === 1).map((t) => (
-            <Link key={t.key} to={`/holding/teams/${encodeURIComponent(t.key)}${q}`} className="fed-badge fed-badge--accent" style={{ textDecoration: 'none' }}>{t.year < team.year ? '↑' : '↓'} {t.year} г.р.</Link>
-          ))}
+        <div className="hd-teamhero__stats">
+          <div className="hd-bigstat"><span className="hd-bigstat__v">{s ? s.place : '—'}<small>{s ? `/${s.size}` : ''}</small></span><span className="hd-bigstat__l">место в таблице</span><span className="hd-bigstat__s">{s ? `${s.points} оч · ${s.won}-${s.drawn}-${s.lost} · ${pm(s.goalDiff)}` : ''}</span></div>
+          <div className="hd-bigstat"><span className="hd-bigstat__v">{league?.divRankByAvg ?? '—'}<small>{league?.divTeams ? `/${league.divTeams}` : ''}</small></span><span className="hd-bigstat__l">по силе состава</span><span className={`hd-bigstat__s ${over != null && over < 0 ? 'hd-down' : over != null && over > 0 ? 'hd-up' : ''}`}>{over == null ? '' : over < 0 ? `недобирает ${-over} мест` : over > 0 ? `выше состава на ${over}` : 'по составу'}</span></div>
+          <div className="hd-bigstat hd-bigstat--ring"><IndexRing value={teamIndex == null ? null : Math.round(teamIndex * 10) / 10} size={86} stroke={7} /><span className="hd-bigstat__l">индекс состава</span></div>
         </div>
       </header>
 
-      <div className="fed-grid fed-grid--4 hold-kpi">
-        <Kpi label="Место в дивизионе" value={s ? `#${s.place}` : '—'} sub={s ? `из ${s.size} · ${s.points} оч · ${s.won}-${s.drawn}-${s.lost} · мячи ${pm(s.goalDiff)}` : 'таблица недоступна'} accent />
-        <Kpi label="По рейтингу AvanData" value={r ? `${r.rank}-е` : '—'} sub={r ? `из ${r.size} · рейтинг ${num(r.value)}${over != null ? (over > 0 ? ` · в таблице выше на ${over}` : over < 0 ? ` · в таблице ниже на ${-over}` : ' · место совпадает') : ''}` : 'нет данных'} tone={over != null && over < 0 ? 'warn' : over != null && over > 0 ? 'good' : undefined} />
-        <Kpi label="Средний класс" value={league?.avgRating != null ? num(league.avgRating) : team.squad.avgRating != null ? num(team.squad.avgRating) : '—'} sub={league?.divAvgRating != null ? `в лиге ${num(league.divAvgRating)} · ${league.divRankByAvg ?? '—'}-е из ${league.divTeams} по составу` : `${team.squad.rated} с рейтингом`} tone={league?.avgRating != null && league.divAvgRating != null ? (league.avgRating >= league.divAvgRating ? 'good' : 'bad') : undefined} />
-        <Kpi label="В топ-30 лиги" value={team.squad.inTop30} sub={`среди 30 сильнейших ${team.ageTitle} · ${team.division}`} accent />
-      </div>
+      <section className="card an">
+        <div className="page-section-title">Состав на поле <span className="an-model-tag">индекс против своей позиции в регионе · по глубине</span></div>
+        {squad.length ? <TeamPitch players={squad} q={q} /> : <div className="hd-muted">Нет игроков в разобранных матчах.</div>}
+      </section>
 
-      {/* Линии */}
-      <SectionTitle sub="Средний рейтинг линии против среднего по дивизиону. Слабая линия — где усиление даст больше всего.">Линии относительно лиги</SectionTitle>
-      {league ? (
-        <div className="hc-lines-grid">
-          {league.lines.map((l) => (
-            <div key={l.line} className={`hc-linecard${l.verdict === 'weak' ? ' hc-linecard--weak' : l.verdict === 'strong' ? ' hc-linecard--strong' : ''}`}>
-              <div className="hc-linecard__title">{l.title} · {l.n} с рейтингом</div>
-              <div className="hc-linecard__nums">
-                <span className="hc-linecard__team" style={{ color: ratingColor(l.teamAvg) }}>{l.teamAvg != null ? num(l.teamAvg) : '—'}</span>
-                <span className="hc-linecard__div">лига {l.divAvg != null ? num(l.divAvg) : '—'}</span>
-              </div>
-              <div className="hc-linecard__verdict" style={{ color: l.verdict === 'weak' ? 'var(--danger)' : l.verdict === 'strong' ? 'var(--success)' : 'var(--text-secondary)' }}>
-                {l.gapRel == null ? 'мало данных' : `${pm(Math.round(l.gapRel * 100))}% к лиге · ${l.verdict === 'weak' ? 'усилить' : l.verdict === 'strong' ? 'сильная сторона' : 'на уровне'}`}
-              </div>
+      <div className="hd-team-grid">
+        <section className="card an">
+          <div className="page-section-title">Место против силы состава <span className="an-model-tag">{team.division}</span></div>
+          {scatter.length >= 3 ? <TeamScatter points={scatter} xLabel="сила состава" yLabel="место" height={360} /> : <div className="hd-muted">Считаем силу составов дивизиона…</div>}
+          <div className="an-note">Каждая точка — команда дивизиона. Пунктир — где команда «должна» стоять при своём составе: выше линии — перевыполняет, ниже — недобирает очков.</div>
+        </section>
+        <section className="card an">
+          <div className="page-section-title">Линии против лиги</div>
+          {(league?.lines ?? []).map((l) => (
+            <div key={l.line} className="hd-lineline">
+              <span className="hd-lineline__t">{l.title}</span>
+              <span className="hd-lineline__bar"><span style={{ width: `${Math.min(100, Math.max(4, 50 + (l.gapRel ?? 0) * 100))}%`, background: l.verdict === 'weak' ? 'var(--rating-poor)' : l.verdict === 'strong' ? 'var(--rating-excellent)' : 'var(--rating-ok)' }} /></span>
+              <span className={`hd-lineline__v ${l.verdict === 'weak' ? 'hd-down' : l.verdict === 'strong' ? 'hd-up' : ''}`}>{l.gapRel == null ? '—' : `${pm(Math.round(l.gapRel * 100))}%`}</span>
             </div>
           ))}
-        </div>
-      ) : <div className="fed-skeleton" style={{ height: 100 }} />}
-
-      {/* Состав */}
-      <SectionTitle sub="Место — среди игроков своего года рождения с рейтингом (не меньше 2 разобранных матчей): в регионе и в своём дивизионе. «К амплуа лиги» — отклонение от среднего по амплуа в дивизионе. Тренд — последние матчи против сезона.">Состав относительно лиги</SectionTitle>
-      <section className="fed-card">
-        {league ? <PlayerTable players={league.squad} showTeam={false} emptyText="Нет игроков в разобранных матчах." /> : <div className="fed-skeleton" style={{ height: 300 }} />}
-      </section>
-
-      {/* Действия команды против дивизиона */}
-      <SectionTitle sub={tm.data ? `${tm.data.matches} разобранных матчей · за матч против команд дивизиона «${tm.data.division}».` : 'Собираем события всех команд когорты — несколько минут после запуска.'}>Действия команды относительно лиги</SectionTitle>
-      <section className="fed-card">
-        {tm.data ? <TeamMetricsTable rows={tm.data.rows} /> : <div className="fed-skeleton" style={{ height: 160 }} />}
-      </section>
-
-      <div className="hold-detail__grid" style={{ marginTop: 20, gridTemplateColumns: '1.2fr 1fr' }}>
-        {/* Таблица */}
-        <div className="hold-block">
-          <h3 className="hold-block__title">Таблица · {team.division}</h3>
-          {team.table.length === 0 ? <div className="fed-note">Таблица недоступна.</div> : (
-            <table className="fed-table hold-table">
-              <thead><tr><th style={{ width: 28 }} /><th /><th>Команда</th><th className="fed-table__num">И</th><th className="fed-table__num">В</th><th className="fed-table__num">Н</th><th className="fed-table__num">П</th><th className="fed-table__num">±</th><th className="fed-table__num">О</th></tr></thead>
-              <tbody>
-                {team.table.map((row, i) => (
-                  <tr key={row.id} className={row.isMember ? 'hold-table__me' : undefined}>
-                    <td className="fed-table__num">{i + 1}</td>
-                    <td><ClubShield name={row.name} logoUrl={row.logo} size={20} /></td>
-                    <td className="hold-table__name"><div className="fed-row__name hold-ellipsis" title={row.name}>{row.name}</div></td>
-                    <td className="fed-table__muted">{row.played}</td>
-                    <td className="fed-table__num">{row.won}</td><td className="fed-table__num">{row.drawn}</td><td className="fed-table__num">{row.lost}</td>
-                    <td className="fed-table__num" style={{ color: row.goalDiff > 0 ? 'var(--success)' : row.goalDiff < 0 ? 'var(--danger)' : undefined }}>{pm(row.goalDiff)}</td>
-                    <td className="fed-table__num" style={{ fontWeight: 700 }}>{row.points}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
-          <p className="fed-note" style={{ marginTop: 8 }}>{team.standingsSource === 'ffspb-live' ? 'По протоколам ФФСПб: очки, личные встречи, разница мячей.' : team.standingsDegraded ? '⚠ Зеркало AvanData — протоколы ФФСПб ещё догружаются.' : 'Официальная таблица ФФСПб.'}</p>
-        </div>
-
-        {/* Матчи */}
-        <div className="hold-block">
-          <h3 className="hold-block__title">Матчи · {played.length} {plMatch(played.length)} · форма <Form form={team.form} /></h3>
-          {upcoming[0] && (
-            <div className="hold-next"><span className="fed-badge fed-badge--accent">следующий</span><span className="hold-ellipsis">{upcoming[0].home.name} — {upcoming[0].away.name}</span><span className="fed-row__meta">{fmtDate(upcoming[0].date)} · {upcoming[0].tour}-й тур</span></div>
-          )}
-          <div className="hold-matches">
-            {(showAll ? played : played.slice(0, 10)).map((m: HMatch) => {
-              const { us, them, home } = sides(m);
-              const hasCard = m.avId != null;
-              return (
-                <button type="button" key={m.id} className={`hold-match${hasCard ? '' : ' hold-match--plain'}`} onClick={hasCard ? () => setMatch(toBase(m)) : undefined} disabled={!hasCard} title={hasCard ? 'Открыть разбор матча' : 'Протокол ФФСПб — разбора матча пока нет'}>
-                  <span className={`hold-form__dot hold-form__dot--${m.outcome ?? 'd'}`}>{m.outcome ? OUT[m.outcome] : '·'}</span>
-                  <ClubShield name={them.name} logoUrl={them.logo} size={22} />
-                  <span className="hold-match__opp hold-ellipsis" title={them.name}>{them.name.replace(/\s*20\d{2}\s*$/, '')}{m.technical ? ' · техн.' : ''}</span>
-                  <span className="hold-match__ha">{home ? 'дома' : 'в гостях'}{hasCard ? ' · разбор' : ''}</span>
-                  <span className="hold-match__score">{us.score ?? '–'}:{them.score ?? '–'}</span>
-                  <span className="hold-match__date">{fmtDate(m.date)}</span>
-                </button>
-              );
-            })}
-            {played.length === 0 && <div className="fed-note">Сыгранных матчей пока нет.</div>}
-          </div>
-          {played.length > 10 && <button type="button" className="fed-link hold-more" onClick={() => setShowAll((v) => !v)}>{showAll ? 'Свернуть' : `Показать все ${played.length} ${plMatch(played.length)}`}</button>}
-        </div>
+          <div className="an-note">Средний рейтинг линии против средней по своему дивизиону. Середина полосы — уровень лиги.</div>
+        </section>
       </div>
+
+      {pizza.length >= 5 && (
+        <section className="card hd-player__pizza">
+          <div className="page-section-title">Профиль команды <span className="an-model-tag">за матч · место среди {tm.data?.rows[0]?.sizeDiv ?? ''} команд дивизиона</span></div>
+          <PizzaChart subjectName={`${shortClub(team.clubLabel)} ${team.year}`} subjectMeta="Цифры — действия команды за матч, длина слайса — место среди команд своего дивизиона" vsLabel="команд" centerLabel="дивизион" slices={pizza} showLegend={false} />
+          <div className="hd-pizza-legend"><span><i style={{ background: '#22d3ee' }} />атака и созидание</span><span><i style={{ background: '#fbbf24' }} />владение</span><span><i style={{ background: '#818cf8' }} />оборона</span></div>
+        </section>
+      )}
+
+      {/* Карточки игроков по линиям */}
+      <section className="card an">
+        <div className="page-section-title">Игроки <span className="an-model-tag">индекс · минуты · форма</span></div>
+        {LINES.map((line) => {
+          const ps = squad.filter((p) => p.line === line).sort((a, b) => (b.index ?? -1) - (a.index ?? -1) || (b.minutes ?? 0) - (a.minutes ?? 0));
+          if (!ps.length) return null;
+          return (
+            <div key={line} className="hd-pcards__line">
+              <div className="hd-pcards__title">{LINE_TITLE[line]}</div>
+              <div className="hd-pcards">{ps.map((p) => <PlayerCard key={p.id} p={p} q={q} />)}</div>
+            </div>
+          );
+        })}
+      </section>
+
+      {/* Лента результатов */}
+      <section className="card an">
+        <div className="page-section-title">Матчи <span className="an-model-tag">{played.length} {plMatch(played.length)} · клик — разбор</span></div>
+        <div className="hd-results">
+          {(showAll ? played : played.slice(0, 12)).map((m: HMatch) => {
+            const { us, them, home } = sides(m);
+            const hasCard = m.avId != null;
+            return (
+              <button type="button" key={m.id} className={`hd-result hd-result--${m.outcome ?? 'd'}`} onClick={hasCard ? () => setMatch(toBase(m)) : undefined} disabled={!hasCard} title={hasCard ? 'Открыть разбор матча' : 'Только протокол — разбора нет'}>
+                <span className="hd-result__score">{us.score ?? '–'}:{them.score ?? '–'}</span>
+                <span className="hd-result__opp">{them.name.replace(/\s*20\d{2}(-20\d{2})?\s*$/, '')}</span>
+                <span className="hd-result__meta">{fmtDate(m.date)} · {home ? 'дома' : 'в гостях'}{hasCard ? ' · разбор' : ''}</span>
+              </button>
+            );
+          })}
+        </div>
+        {played.length > 12 && <button type="button" className="hd-more" onClick={() => setShowAll((v) => !v)}>{showAll ? 'Свернуть' : `Все ${played.length} ${plMatch(played.length)}`}</button>}
+      </section>
+
+      <div>
+        <section className="card an">
+          <div className="page-section-title">Таблица · {team.division}</div>
+          <table className="hd-table hd-table--tight">
+            <thead><tr><th className="num">#</th><th>Команда</th><th className="num">И</th><th className="num">±</th><th className="num">О</th></tr></thead>
+            <tbody>
+              {team.table.map((row, i) => (
+                <tr key={row.id} className={row.isMember ? 'hd-row-me' : undefined}>
+                  <td className="num hd-muted">{i + 1}</td>
+                  <td><span className="hd-team"><ClubShield name={row.name} logoUrl={row.logo} size={20} /><span>{row.name.replace(/\s*20\d{2}(-20\d{2})?\s*$/, '')}</span></span></td>
+                  <td className="num hd-muted">{row.played}</td>
+                  <td className={`num ${row.goalDiff > 0 ? 'hd-up' : row.goalDiff < 0 ? 'hd-down' : ''}`}>{pm(row.goalDiff)}</td>
+                  <td className="num" style={{ fontWeight: 800 }}>{row.points}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          <div className="an-note">{team.standingsSource === 'ffspb-live' ? 'По протоколам ФФСПб: очки, личные встречи, разница мячей.' : 'Таблица — зеркало, протоколы ФФСПб догружаются.'}</div>
+        </section>
+
+      </div>
+
+      <details className="card an hd-player__all">
+        <summary className="page-section-title" style={{ cursor: 'pointer', marginBottom: 0 }}>Все показатели команды против дивизиона</summary>
+        {tm.data ? <TeamMetricsTable rows={tm.data.rows} /> : <div className="hd-muted" style={{ marginTop: 12 }}>Считаем показатели дивизиона…</div>}
+      </details>
+      <details className="card an hd-player__all">
+        <summary className="page-section-title" style={{ cursor: 'pointer', marginBottom: 0 }}>Состав таблицей</summary>
+        <PlayerTable players={squad} showTeam={false} emptyText="Нет игроков в разобранных матчах." />
+      </details>
 
       {match && <MatchDetail base={match} onClose={() => setMatch(null)} />}
     </div>
   );
 }
 
-export type { TeamLeague };
+function PlayerCard({ p, q }: { p: LeaguePlayer; q: string }) {
+  const f = p.formDelta;
+  return (
+    <Link to={`/holding/players/${p.id}${q}`} className="hd-pcard" style={{ ['--pc' as string]: indexColor(p.index) }}>
+      <IndexRing value={p.index} size={52} stroke={5} />
+      <span className="hd-pcard__body">
+        <span className="hd-pcard__name">{surname(p.name)}</span>
+        <span className="hd-pcard__pos">{p.position ?? '—'}</span>
+        <span className="hd-pcard__meta">{p.minutes ?? 0} мин{f != null ? <> · <span className={f >= 1 ? 'hd-up' : f <= -1 ? 'hd-down' : ''}>{f >= 1 ? '↑' : f <= -1 ? '↓' : '→'} форма</span></> : null}{p.rating != null ? ` · ${num(p.rating)}` : ''}</span>
+      </span>
+    </Link>
+  );
+}
+
+function teamPizza(rows: TeamMetricRow[]) {
+  return TEAM_PIZZA.flatMap(({ id, group }) => {
+    const r = rows.find((x) => x.id === id);
+    if (!r || r.rankDiv == null || r.sizeDiv < 3) return [];
+    const pct = Math.round(((r.sizeDiv - r.rankDiv) / (r.sizeDiv - 1)) * 100);
+    return [{ axis: r.short, value: Math.max(3, pct), group, displayValue: r.perMatch >= 10 ? r.perMatch.toFixed(0) : r.perMatch.toFixed(1) }];
+  });
+}
