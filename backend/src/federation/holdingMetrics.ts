@@ -254,7 +254,16 @@ export function cohortMetrics(seasonId: number, year: number): CohortMetrics | n
   const c = cohorts.get(year);
   if (c && Date.now() - Date.parse(c.asOf) < METRICS_TTL) return c;
   if (!building.has(year)) {
-    const job = chain.then(() => buildCohort(seasonId, year)).then((res) => { cohorts.set(year, res); void saveCohort(seasonId, res); return res; }).finally(() => building.delete(year));
+    const job = chain.then(() => buildCohort(seasonId, year)).then((res) => {
+      // Сбой AvanData посреди сборки даёт полупустую когорту (туры и события пропускаются молча).
+      // Такой не затираем прежнюю — иначе индексы года пропадают до следующей пересборки.
+      const prev = cohorts.get(year);
+      if (prev && res.players.size < prev.players.size * 0.7) {
+        logger.warn({ year, was: prev.players.size, now: res.players.size }, '[metrics] когорта собралась неполной — оставляем прежнюю');
+        return prev;
+      }
+      cohorts.set(year, res); void saveCohort(seasonId, res); return res;
+    }).finally(() => building.delete(year));
     chain = job.catch(() => undefined);
     building.set(year, job);
     job.catch((e: unknown) => logger.warn({ err: String(e), year }, '[metrics] сборка когорты упала'));
