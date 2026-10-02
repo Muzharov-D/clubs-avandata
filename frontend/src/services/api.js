@@ -106,7 +106,8 @@ export const apiFetch = (path, opts) => fetchJson(path, opts);
 // Человекочитаемое сообщение по HTTP-коду логина. Сырой «Ошибка входа (405)»
 // пугает пользователя и ничего не подсказывает — маппим коды на понятный текст.
 // Для 400/422 уважаем серверное сообщение (валидация), для остального — общий текст.
-function loginErrorMessage(status, serverMsg) {
+function loginErrorMessage(status, serverMsg, code) {
+  if (code === 'ACCESS_EXPIRED') return 'Срок доступа к кабинету истёк. Чтобы продлить, напишите в AvanData.';
   if (status === 401 || status === 403) return 'Неверный логин или пароль';
   if (status === 429) return 'Слишком много попыток входа. Подождите минуту и попробуйте снова.';
   if (status === 400 || status === 422) return serverMsg || 'Проверьте правильность введённых данных';
@@ -140,8 +141,9 @@ export async function login(loginOrEmail, password, tenantSlug) {
   const text = await res.text().catch(() => '');
   if (!res.ok) {
     let serverMsg = '';
-    try { serverMsg = JSON.parse(text).error || ''; } catch (_) { /* not JSON */ }
-    throw new Error(loginErrorMessage(res.status, serverMsg));
+    let code = '';
+    try { const j = JSON.parse(text); serverMsg = j.error || ''; code = j.code || ''; } catch (_) { /* not JSON */ }
+    throw new Error(loginErrorMessage(res.status, serverMsg, code));
   }
   const data = JSON.parse(text);
   setToken(data.accessToken);

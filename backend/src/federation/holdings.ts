@@ -46,6 +46,11 @@ export interface HoldingConfig {
   youthFromYear: number;
   /** Сколько мест в молодёжной команде реально закрыть за сезон — столько «готовых» показываем первыми. */
   youthSlots: number;
+  /**
+   * До какого момента открыт доступ руководства (ISO со смещением). После — вход, обновление
+   * сессии и любые запросы holding_admin отклоняются (ACCESS_EXPIRED). Продлить — сдвинуть дату и выкатить.
+   */
+  accessUntil?: string;
 }
 
 export const HOLDINGS: HoldingConfig[] = [
@@ -63,10 +68,18 @@ export const HOLDINGS: HoldingConfig[] = [
     years: [2009, 2010, 2011, 2012, 2013],
     youthFromYear: 2011,
     youthSlots: 5,
+    // Пилотный доступ Динамо — до 9 октября 2026, 9:00 по Москве.
+    accessUntil: '2026-10-09T09:00:00+03:00',
   },
 ];
 
 export const findHolding = (slug: string): HoldingConfig | undefined => HOLDINGS.find((h) => h.slug === slug);
+
+/** Закрыт ли доступ руководства холдинга по сроку (accessUntil). Неизвестный холдинг — не наше дело здесь. */
+export function holdingAccessExpired(slug: string | null | undefined, now = Date.now()): boolean {
+  const until = slug ? findHolding(slug)?.accessUntil : undefined;
+  return !!until && Date.parse(until) <= now;
+}
 
 /** Публичная часть конфига (без служебного) — для списка в навигации и карточки клуба. */
 export interface HoldingSummaryInfo { slug: string; name: string; short: string; region: string; brand: HoldingBrand; members: HoldingMember[]; years: number[]; youthFromYear: number }

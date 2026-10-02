@@ -9,13 +9,13 @@ import { users, type UserRole } from '../db/schema/users.js';
 import { refreshTokens } from '../db/schema/refreshTokens.js';
 import { tenants } from '../db/schema/tenants.js';
 import { federations } from '../db/schema/federations.js';
-import { findHolding, publicHolding } from '../federation/holdings.js';
+import { findHolding, publicHolding, holdingAccessExpired } from '../federation/holdings.js';
 import {
   signAccessToken,
   generateRefreshToken,
   hashRefreshToken,
 } from './jwt.js';
-import { BadRequestError, UnauthorizedError } from '../shared/errors.js';
+import { AccessExpiredError, BadRequestError, UnauthorizedError } from '../shared/errors.js';
 import { authenticate } from './middleware.js';
 import { withBypassRLS } from '../db/tenantContext.js';
 
@@ -192,6 +192,8 @@ export async function authRoutes(app: FastifyInstance) {
     }
     const ok = await argon2.verify(user.passwordHash, body.password);
     if (!ok) throw new UnauthorizedError('invalid credentials');
+    // Срок проверяем после пароля: иначе по ответу можно узнать, что такой аккаунт есть.
+    if (user.role === 'holding_admin' && holdingAccessExpired(user.holdingSlug)) throw new AccessExpiredError();
 
     return issueSession(user, req, reply);
   });
@@ -287,6 +289,7 @@ export async function authRoutes(app: FastifyInstance) {
     );
     const user = userRows[0];
     if (!user) throw new UnauthorizedError('user not found');
+    if (user.role === 'holding_admin' && holdingAccessExpired(user.holdingSlug)) throw new AccessExpiredError();
 
     await db.update(refreshTokens).set({ revokedAt: new Date() }).where(eq(refreshTokens.id, row.id));
 
