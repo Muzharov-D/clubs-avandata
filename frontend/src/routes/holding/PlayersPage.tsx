@@ -31,7 +31,7 @@ export function HoldingPlayersPage() {
         <p className="fed-hero__sub" style={{ fontSize: 14 }}>{label ?? 'Весь холдинг'} · каждый — на своём месте среди сверстников региона. Сортировка — по индексу сезона; столбцы сортируются по клику.</p>
       </div>
       <div className="fed-grid fed-grid--4 hold-kpi">
-        <Kpi label="Игроков с оценкой" value={players.length} sub="не меньше 2 разобранных матчей" />
+        <Kpi label="Игроков с оценкой" value={players.filter((p) => p.index != null).length} sub={`от двух полных матчей · без оценки (б/о): ${players.filter((p) => p.index == null).length}`} />
         <Kpi label="Топ-10% региона" value={top10} sub="в своём возрасте" tone="good" />
         <Kpi label="Топ-25% региона" value={top25} sub="в своём возрасте" accent />
         <Kpi label="Ниже медианы лиги" value={players.filter((p) => p.rankDiv != null && p.rankDiv > p.sizeDiv / 2).length} sub="в своём дивизионе" tone="warn" />
