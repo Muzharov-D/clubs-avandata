@@ -3,6 +3,7 @@ import { useNavigate, useLocation, Navigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { toast } from '../components/Toast';
 import { useDocumentTitle } from '../hooks/useDocumentTitle';
+import { ACCESS_EXPIRED_TEXT } from '../api/client';
 import './Login.css';
 
 export default function Login() {
@@ -12,7 +13,9 @@ export default function Login() {
   const location = useLocation();
   const [u, setU] = useState('');
   const [p, setP] = useState('');
-  const [error, setError] = useState(null);
+  // ?expired=1 — сюда уводит клиент API, когда у открытой сессии истёк срок доступа.
+  const [error, setError] = useState(() =>
+    new URLSearchParams(location.search).get('expired') ? ACCESS_EXPIRED_TEXT : null);
   const [busy, setBusy] = useState(false);
 
   // Если уже залогинен — отдаём в RootRoute ('/'): он раскидывает по роли

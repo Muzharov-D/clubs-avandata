@@ -27,6 +27,13 @@ export class ForbiddenError extends AppError {
   }
 }
 
+/** Срок доступа аккаунта истёк (пилотный доступ холдинга). Фронт показывает отдельный текст, не «неверный пароль». */
+export class AccessExpiredError extends AppError {
+  constructor(message = 'Срок доступа к кабинету истёк') {
+    super(403, message, 'ACCESS_EXPIRED');
+  }
+}
+
 export class BadRequestError extends AppError {
   constructor(message = 'Bad request', code = 'BAD_REQUEST') {
     super(400, message, code);

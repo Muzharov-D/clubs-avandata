@@ -1,4 +1,9 @@
+import { logout as clearSession } from '../services/api';
+
 const BASE = '/api/v1';
+
+/** Текст для экрана входа, когда истёк срок доступа (пилотный доступ холдинга). */
+export const ACCESS_EXPIRED_TEXT = 'Срок доступа к кабинету истёк. Чтобы продлить, напишите в AvanData.';
 
 let accessToken: string | null = null;
 
@@ -71,6 +76,11 @@ async function parseResponse<T>(res: Response): Promise<T> {
   const data = text ? (JSON.parse(text) as { error?: string; code?: string } & T) : ({} as T);
   if (!res.ok) {
     const d = data as { error?: string; code?: string };
+    // Срок доступа вышел посреди открытой сессии — чистим её и уводим на вход с пояснением.
+    if (d.code === 'ACCESS_EXPIRED' && !location.pathname.startsWith('/login')) {
+      clearSession();
+      location.replace('/login?expired=1');
+    }
     throw new ApiError(res.status, d.error ?? res.statusText, d.code);
   }
   return data as T;
